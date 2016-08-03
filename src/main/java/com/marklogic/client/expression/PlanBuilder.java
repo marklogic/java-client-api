@@ -240,10 +240,12 @@ public abstract class PlanBuilder {
     public ModifyPlan select(String... cols);
     public ModifyPlan orderBy(String... cols);
     public ModifyPlan groupBy(String... cols);
-     public ModifyPlan groupBy(PlanExprCol... keys);
+     public ModifyPlan except(ModifyPlan right);
+    public ModifyPlan groupBy(PlanExprCol... keys);
     public ModifyPlan groupBy(PlanExprColSeq keys);
     public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateCol... aggregates);
     public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates);
+    public ModifyPlan intersect(ModifyPlan right);
     public ModifyPlan joinCrossProduct(ModifyPlan right);
     public ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition);
     public ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys);

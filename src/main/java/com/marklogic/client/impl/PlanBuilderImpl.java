@@ -543,6 +543,10 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             .toArray(size -> new PlanExprCol[size])); 
     }
      @Override
+        public ModifyPlan except(ModifyPlan right) {
+        return new ModifyPlanCallImpl(this, "op", "except", new Object[]{ right });
+    }
+    @Override
         public ModifyPlan groupBy(PlanExprCol... keys) {
         return groupBy(new PlanExprColSeqListImpl(keys)); 
     }
@@ -557,6 +561,10 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates) {
         return new ModifyPlanCallImpl(this, "op", "group-by", new Object[]{ keys, aggregates });
+    }
+    @Override
+        public ModifyPlan intersect(ModifyPlan right) {
+        return new ModifyPlanCallImpl(this, "op", "intersect", new Object[]{ right });
     }
     @Override
         public ModifyPlan joinCrossProduct(ModifyPlan right) {
