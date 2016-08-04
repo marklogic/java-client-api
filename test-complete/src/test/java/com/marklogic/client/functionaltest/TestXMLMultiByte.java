@@ -17,6 +17,7 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -42,8 +43,7 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
 	
 
 	@BeforeClass	
-	public static void setUp() throws Exception
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 	}
@@ -89,8 +89,21 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
 
 		// get xml document for expected result
 		Document expectedDocUpdate = expectedXMLDocument(updateFilename);
-
-		assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
+		
+		assertEquals("Incorrect yen value", readDocUpdate.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(), 
+				expectedDocUpdate.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect haba value", readDocUpdate.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(), 
+				expectedDocUpdate.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect chinese value", readDocUpdate.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(), 
+				expectedDocUpdate.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect trademark value", readDocUpdate.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(), 
+				expectedDocUpdate.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect kanji value", readDocUpdate.getElementsByTagName("kanji").item(0).getFirstChild().getNodeValue(), 
+				expectedDocUpdate.getElementsByTagName("kanji").item(0).getFirstChild().getNodeValue());
 
 		// delete the document
 		deleteDocument(client, uri + filename, "XML");
@@ -100,8 +113,7 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}
