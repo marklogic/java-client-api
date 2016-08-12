@@ -25,6 +25,7 @@ import com.marklogic.client.expression.Json;
 import com.marklogic.client.expression.Math; 
 import com.marklogic.client.expression.Rdf; 
 import com.marklogic.client.expression.Sem; 
+import com.marklogic.client.expression.Spell; 
 import com.marklogic.client.expression.Sql; 
 import com.marklogic.client.expression.Xdmp; 
 import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemIriParam;
@@ -56,27 +57,28 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsGMonthExpr;
- import com.marklogic.client.type.XsUnsignedLongParam;
  import com.marklogic.client.type.XsIntegerParam;
- import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.XsDateParam;
+ import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.PlanColumnSeq;
+ import com.marklogic.client.type.XsUnsignedLongParam;
  import com.marklogic.client.type.XsAnyURIExpr;
  import com.marklogic.client.type.XsDateExpr;
  import com.marklogic.client.type.XsByteExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.XsStringParam;
- import com.marklogic.client.type.PlanAggregateCol;
- import com.marklogic.client.type.XsDateTimeParam;
- import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.XsDateTimeParam;
+ import com.marklogic.client.type.PlanAggregateCol;
+ import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.PlanTripleValSeq;
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsByteParam;
+ import com.marklogic.client.type.ItemSeqExpr;
  import com.marklogic.client.type.XsGMonthParam;
- import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.PlanColumn;
  import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.XsDayTimeDurationExpr;
  import com.marklogic.client.type.XsGYearMonthExpr;
@@ -109,8 +111,8 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanFunctionSeq;
  import com.marklogic.client.type.PlanTripleIriSeq;
- import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.PlanAggregateColSeq;
+ import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.XsAnyAtomicTypeVal;
  import com.marklogic.client.type.XsYearMonthDurationExpr;
  import com.marklogic.client.type.XsTimeParam;
@@ -122,7 +124,7 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
 // IMPORTANT: Do not edit. This file is generated. 
 public abstract class PlanBuilder {
     protected PlanBuilder(
-        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
+        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
         ) {
         this.cts = cts;
          this.fn = fn;
@@ -130,6 +132,7 @@ public abstract class PlanBuilder {
          this.math = math;
          this.rdf = rdf;
          this.sem = sem;
+         this.spell = spell;
          this.sql = sql;
          this.xdmp = xdmp;
          this.xs = xs;
@@ -141,6 +144,7 @@ public abstract class PlanBuilder {
      public final Math math;
      public final Rdf rdf;
      public final Sem sem;
+     public final Spell spell;
      public final Sql sql;
      public final Xdmp xdmp;
      public final Xs xs;
@@ -149,8 +153,8 @@ public abstract class PlanBuilder {
     public abstract XsBooleanExpr and(XsBooleanExpr... list);
     public abstract PlanAggregateCol arrayAggregate(String name, String column);
     public abstract PlanAggregateCol arrayAggregate(PlanExprCol name, PlanExprCol column);
-    public abstract PlanExprCol as(String column, ItemExpr expression);
-    public abstract PlanExprCol as(PlanColumn column, ItemExpr expression);
+    public abstract PlanExprCol as(String column, ItemSeqExpr expression);
+    public abstract PlanExprCol as(PlanColumn column, ItemSeqExpr expression);
     public abstract PlanSortKey asc(String column);
     public abstract PlanSortKey asc(PlanExprCol column);
     public abstract PlanAggregateCol avg(String name, String column);

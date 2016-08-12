@@ -556,6 +556,7 @@ $command as xs:string
 };
 
 declare function bootstrap:schema-config() { 
+    try {
     xdmp:eval('xquery version "1.0-ml";
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
@@ -582,6 +583,10 @@ xdmp:document-insert("/optic/test/musician.tdex",
     <options xmlns="xdmp:eval">
         <database>{xdmp:database("Schemas")}</database>
     </options>)
+    } catch($e) {
+        xdmp:log("Failed to create TDE template for testing"),
+        xdmp:log($e)
+    }
 };
 
 declare function bootstrap:temporal-setup() as xs:string*

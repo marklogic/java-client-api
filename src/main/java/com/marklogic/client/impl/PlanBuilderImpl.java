@@ -33,6 +33,8 @@ import com.marklogic.client.expression.Rdf;
 import com.marklogic.client.impl.RdfExprImpl; 
 import com.marklogic.client.expression.Sem;
 import com.marklogic.client.impl.SemExprImpl; 
+import com.marklogic.client.expression.Spell;
+import com.marklogic.client.impl.SpellExprImpl; 
 import com.marklogic.client.expression.Sql;
 import com.marklogic.client.impl.SqlExprImpl; 
 import com.marklogic.client.expression.Xdmp;
@@ -67,27 +69,28 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsGMonthExpr;
- import com.marklogic.client.type.XsUnsignedLongParam;
  import com.marklogic.client.type.XsIntegerParam;
- import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.XsDateParam;
+ import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.PlanColumnSeq;
+ import com.marklogic.client.type.XsUnsignedLongParam;
  import com.marklogic.client.type.XsAnyURIExpr;
  import com.marklogic.client.type.XsDateExpr;
  import com.marklogic.client.type.XsByteExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.XsStringParam;
- import com.marklogic.client.type.PlanAggregateCol;
- import com.marklogic.client.type.XsDateTimeParam;
- import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.XsDateTimeParam;
+ import com.marklogic.client.type.PlanAggregateCol;
+ import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.PlanTripleValSeq;
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsByteParam;
+ import com.marklogic.client.type.ItemSeqExpr;
  import com.marklogic.client.type.XsGMonthParam;
- import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.PlanColumn;
  import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.XsDayTimeDurationExpr;
  import com.marklogic.client.type.XsGYearMonthExpr;
@@ -120,8 +123,8 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanFunctionSeq;
  import com.marklogic.client.type.PlanTripleIriSeq;
- import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.PlanAggregateColSeq;
+ import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.XsAnyAtomicTypeVal;
  import com.marklogic.client.type.XsYearMonthDurationExpr;
  import com.marklogic.client.type.XsTimeParam;
@@ -133,10 +136,10 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
 // IMPORTANT: Do not edit. This file is generated. 
 public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanBuilderImpl(
-        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
+        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
         ) {
         super(
-            cts, fn, json, math, rdf, sem, sql, xdmp, xs
+            cts, fn, json, math, rdf, sem, spell, sql, xdmp, xs
             );
     }
 
@@ -161,11 +164,11 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "array-aggregate", new Object[]{ name, column });
     }
     @Override
-        public PlanExprCol as(String column, ItemExpr expression) {
+        public PlanExprCol as(String column, ItemSeqExpr expression) {
         return as(col(column), expression); 
     }
     @Override
-        public PlanExprCol as(PlanColumn column, ItemExpr expression) {
+        public PlanExprCol as(PlanColumn column, ItemSeqExpr expression) {
         return new PlanExprColCallImpl("op", "as", new Object[]{ column, expression });
     }
     @Override

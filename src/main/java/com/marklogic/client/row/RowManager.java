@@ -38,7 +38,6 @@ import com.marklogic.client.io.marker.RowReadHandle;
    + RowRecord - column metadata
 
    TO DO:
-   + move type interfaces into expression.marker package
    + RowRecord - sequence column values
    + RowManager.resultRowsAs()
    + PlanBuilder - node constructors

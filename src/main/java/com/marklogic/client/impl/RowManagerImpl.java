@@ -81,7 +81,8 @@ public class RowManagerImpl
 		PlanBuilderImpl planBuilder = new PlanBuilderImpl(
 				new CtsExprImpl(xs), new FnExprImpl(xs), new JsonExprImpl(xs),
 				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs),
-				new SqlExprImpl(xs), new XdmpExprImpl(xs), xs
+				new SpellExprImpl(xs), new SqlExprImpl(xs), new XdmpExprImpl(xs),
+				xs
 				);
 
 		planBuilder.setHandleRegistry(getHandleRegistry());

@@ -62,6 +62,7 @@ public class RdfValueImpl implements RdfValue {
     			throw new IllegalArgumentException("cannot take null lang");
     		}
     		this.string = string;
+    		this.lang   = lang;
     	}
 		@Override
         public String getString() {
@@ -85,7 +86,7 @@ public class RdfValueImpl implements RdfValue {
 		}
 		@Override
 		public StringBuilder exportAst(StringBuilder strb) {
-			return strb.append("{\"ns\":\"sem\", \"fn\":\"iri\", \"args\":[\"")
+			return strb.append("{\"ns\":\"rdf\", \"fn\":\"langString\", \"args\":[\"")
 					.append(getString()).append("\", \"").append(getLang())
 					.append("\"]}");
 		}

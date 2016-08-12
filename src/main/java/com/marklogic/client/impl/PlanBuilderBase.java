@@ -30,6 +30,7 @@ import com.marklogic.client.expression.Math;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.Rdf;
 import com.marklogic.client.expression.Sem;
+import com.marklogic.client.expression.Spell;
 import com.marklogic.client.expression.Sql;
 import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.expression.Xs;
@@ -46,9 +47,9 @@ abstract class PlanBuilderBase extends PlanBuilder {
 
 	PlanBuilderBase(
         Cts cts, Fn fn, Json json,
-        Math math, Rdf rdf, Sem sem, Sql sql, Xdmp xdmp, Xs xs
+        Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
     ) {
-        super(cts, fn, json, math, rdf, sem, sql, xdmp, xs);
+        super(cts, fn, json, math, rdf, sem, spell, sql, xdmp, xs);
     }
 
 	HandleFactoryRegistry getHandleRegistry() {
@@ -131,7 +132,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 
 		String getAst() {
 	    	StringBuilder strb = new StringBuilder();
-	    	strb.append("{$optic:");
+	    	strb.append("{\"$optic\":");
 	    	return exportAst(strb).append("}").toString();
 	    }
 

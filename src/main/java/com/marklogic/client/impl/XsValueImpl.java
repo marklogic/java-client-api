@@ -22,6 +22,7 @@ import java.util.Calendar;
 import java.util.Date;
 
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeConstants;
 import javax.xml.datatype.Duration;
 import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
@@ -948,7 +949,7 @@ public class XsValueImpl implements XsValue {
     	DayTimeDurationValImpl(Duration value) {
     		super("dayTimeDuration");
     		checkNull(value);
-    		checkType("dayTimeDuration", value.getXMLSchemaType());
+    		checkType("dayTimeDuration", getDurationType(value));
     		this.value = value;
     	}
 		@Override
@@ -1298,7 +1299,6 @@ public class XsValueImpl implements XsValue {
         	return value.toXMLFormat();
         }
     }
-// TODO: confim
     static class GYearMonthSeqValImpl extends AnyAtomicTypeSeqValImpl<GYearMonthValImpl> implements XsGYearMonthSeqVal {
     	GYearMonthSeqValImpl(String[] values) {
 			this((GYearMonthValImpl[]) Arrays.stream(values)
@@ -1318,16 +1318,15 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
     }
- // TODO: confim
     static class GYearMonthValImpl extends AnyAtomicTypeValImpl implements XsGYearMonthVal {
     	private XMLGregorianCalendar value = null;
     	GYearMonthValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GYearMonthValImpl(XMLGregorianCalendar value) {
-			super("gYear");
+			super("gYearMonth");
     		checkNull(value);
-    		checkType("gYear", value.getXMLSchemaType());
+    		checkType("gYearMonth", value.getXMLSchemaType());
     		this.value = value;
     	}
 		@Override
@@ -2165,7 +2164,7 @@ public class XsValueImpl implements XsValue {
     static class UntypedAtomicValImpl extends AnyAtomicTypeValImpl implements XsUntypedAtomicVal {
     	private String value = null;
     	UntypedAtomicValImpl(String value) {
-    		super("unsignedAtomic");
+    		super("untypedAtomic");
     		this.value = value;
     	}
 		@Override
@@ -2212,7 +2211,7 @@ public class XsValueImpl implements XsValue {
     	YearMonthDurationValImpl(Duration value) {
     		super("yearMonthDuration");
     		checkNull(value);
-    		checkType("yearMonthDuration", value.getXMLSchemaType());
+    		checkType("yearMonthDuration", getDurationType(value));
     		this.value = value;
     	}
 		@Override
@@ -2311,5 +2310,26 @@ public class XsValueImpl implements XsValue {
 		Calendar cal = Calendar.getInstance();
 		cal.setTime(value);
 		return cal;
+	}
+	// javax.xml.datatype.Duration.getXMLSchemaType() requires all fields to be set
+	private static QName getDurationType(Duration value) {
+        boolean hasYearMonth = (
+        		value.isSet(DatatypeConstants.YEARS)  ||
+        		value.isSet(DatatypeConstants.MONTHS)
+        		);
+        boolean hasDayTime = (
+                value.isSet(DatatypeConstants.DAYS)    ||
+                value.isSet(DatatypeConstants.HOURS)   ||
+                value.isSet(DatatypeConstants.MINUTES) ||
+                value.isSet(DatatypeConstants.SECONDS)
+        		);
+
+        if (hasYearMonth && !hasDayTime) {
+        	return DatatypeConstants.DURATION_YEARMONTH;
+        } else if ((!hasYearMonth) && hasDayTime) {
+        	return DatatypeConstants.DURATION_DAYTIME;
+        }
+
+        throw new IllegalArgumentException("value must be yearMonthDuration or dayTimeDuration: "+value);
 	}
 }
