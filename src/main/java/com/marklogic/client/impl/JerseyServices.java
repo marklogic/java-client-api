@@ -87,6 +87,7 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
+import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.ContentDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
@@ -506,6 +507,47 @@ public class JerseyServices implements RESTServices {
 		String retryAfterRaw = responseHeaders.getFirst("Retry-After");
 		int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
 		return Math.max(retryAfter, calculateDelay(randRetry, retry));
+	}
+
+	private RequestParameters addTemporalProtectionParams(RequestParameters params, String uri, ProtectionLevel level,
+			String duration, Calendar expiryTime, String archivePath) {
+		if (params == null)
+			params = new RequestParameters();
+		params.add("uri", uri);
+		params.add("level", level.toString());
+		if (duration != null)
+			params.add("duration", duration);
+		if (expiryTime != null) {
+			String formattedSystemTime = DatatypeConverter.printDateTime(expiryTime);
+			params.add("expireTime", formattedSystemTime);
+		}
+		if (archivePath != null)
+			params.add("archivePath", archivePath);
+		return params;
+	}
+
+	@Override
+	public void protectDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
+			RequestParameters extraParams, ProtectionLevel level, String duration, 
+			Calendar expiryTime, String archivePath) {
+		if (temporalDocumentURI == null)
+			throw new IllegalArgumentException(
+					"Document protection for document identifier without uri");
+		extraParams = addTemporalProtectionParams(extraParams, temporalDocumentURI, level, duration, expiryTime, archivePath);
+		if (logger.isDebugEnabled())
+			logger.debug("Protecting {} in transaction {}", temporalDocumentURI, getTransactionId(transaction));
+
+		postResource(requestLogger, "documents/protection", transaction, extraParams, null, null, "protect");
+	}
+	@Override
+	public void wipeDocument(RequestLogger reqlog, String temporalDocumentURI, Transaction transaction,
+			RequestParameters extraParams) {
+		if (logger.isDebugEnabled())
+			logger.debug("Wiping {} in transaction {}", temporalDocumentURI, getTransactionId(transaction));
+		extraParams.add("result", "wiped");
+		extraParams.add("uri", temporalDocumentURI);
+		deleteResource(reqlog, "documents", transaction, extraParams, null);
+		logRequest(reqlog, "wiped %s document", temporalDocumentURI);
 	}
 
 	@Override
@@ -3038,6 +3080,15 @@ public class JerseyServices implements RESTServices {
 			AbstractWriteHandle input, R output) throws ResourceNotFoundException,
 			ResourceNotResendableException, ForbiddenUserException,
 			FailedRequestException {
+		return postResource(reqlog, path, transaction, params, input, output, "apply");
+	}
+
+	@Override
+	public <R extends AbstractReadHandle> R postResource(RequestLogger reqlog,
+			String path, Transaction transaction, RequestParameters params,
+			AbstractWriteHandle input, R output, String operation) throws ResourceNotFoundException,
+			ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
 		if ( params == null ) params = new RequestParameters();
 		if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
@@ -3046,14 +3097,17 @@ public class JerseyServices implements RESTServices {
 		HandleImplementation outputBase = HandleAccessor.checkHandle(output,
 				"read");
 
-		String inputMimetype = inputBase.getMimetype();
-		if ( inputMimetype == null &&
-				(Format.JSON == inputBase.getFormat() || Format.XML == inputBase.getFormat()) )
-		{
-			inputMimetype = inputBase.getFormat().getDefaultMimetype();
+		String inputMimetype = null;
+		if(inputBase != null) {
+			inputMimetype = inputBase.getMimetype();
+			if ( inputMimetype == null &&
+					(Format.JSON == inputBase.getFormat() || Format.XML == inputBase.getFormat()) )
+			{
+				inputMimetype = inputBase.getFormat().getDefaultMimetype();
+			}
 		}
 		String outputMimetype = outputBase == null ? null : outputBase.getMimetype();
-		boolean isResendable = inputBase.isResendable();
+		boolean isResendable = inputBase == null ? true : inputBase.isResendable();
 		Class as = outputBase == null ? null : outputBase.receiveAs();
 
 		WebResource webResource = makePostWebResource(path, params);
@@ -3066,16 +3120,17 @@ public class JerseyServices implements RESTServices {
 				throw new ResourceNotResendableException("Cannot retry request for " + path);
 			}
 		};
+		Object value = inputBase == null ? null :inputBase.sendContent();
 		Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(reqlog, funcBuilder,
-				inputBase.sendContent(), !isResendable);
+				value, !isResendable);
 
 		ClientResponse response = makeRequest(builder, doPostFunction, resendableConsumer);
 		ClientResponse.Status status = response.getClientResponseStatus();
-		checkStatus(response, status, "apply", "resource", path,
+		checkStatus(response, status, operation, "resource", path,
 				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		if (as != null) {
-			outputBase.receiveContent(makeResult(reqlog, "apply", "resource",
+			outputBase.receiveContent(makeResult(reqlog, operation, "resource",
 					response, as));
 		} else {
 			response.close();
@@ -3189,30 +3244,35 @@ public class JerseyServices implements RESTServices {
 		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
 		ArrayList<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
 		for ( DocumentWriteOperation write: writeSet ) {
+			String temporalDocumentURI = write.getTemporalDocumentURI();
 			HandleImplementation metadata =
 				HandleAccessor.checkHandle(write.getMetadata(), "write");
 			HandleImplementation content =
 				HandleAccessor.checkHandle(write.getContent(), "write");
+			String contentDispositionTemporal = "";
+			if (temporalDocumentURI != null) {
+				contentDispositionTemporal = "; temporal-document="+temporalDocumentURI;
+			}
 			if ( write.getOperationType() == 
 					DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT )
 			{
 				MultivaluedMap headers = new MultivaluedMapImpl();
 				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
-				headers.add("Content-Disposition", "inline; category=metadata");
+				headers.add("Content-Disposition", "inline; category=metadata"+contentDispositionTemporal);
 				headerList.add(headers);
 				writeHandles.add(write.getMetadata());
 			} else if ( metadata != null ) {
 				MultivaluedMap headers = new MultivaluedMapImpl();
 				headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
 				if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
-					headers.add("Content-Disposition", "inline; category=metadata");
+					headers.add("Content-Disposition", "inline; category=metadata"+contentDispositionTemporal);
 				} else {
 					headers.add("Content-Disposition",
 						ContentDisposition
 							.type("attachment")
 							.fileName(write.getUri())
 							.build().toString() +
-						"; category=metadata"
+						"; category=metadata"+contentDispositionTemporal
 					);
 				}
 				headerList.add(headers);
@@ -3229,7 +3289,7 @@ public class JerseyServices implements RESTServices {
 					ContentDisposition
 						.type("attachment")
 						.fileName(write.getUri())
-						.build().toString()
+						.build().toString()+contentDispositionTemporal
 				);
 				headerList.add(headers);
 				writeHandles.add(write.getContent());
@@ -3807,7 +3867,10 @@ public class JerseyServices implements RESTServices {
 			makeFirstRequest(0);
 
 		ClientResponse response = null;
-		if (value instanceof OutputStreamSender) {
+		if(value == null) {
+			response = builder.post(ClientResponse.class);
+		}
+		else if (value instanceof OutputStreamSender) {
 			response = builder
 					.post(ClientResponse.class, new StreamingOutputImpl(
 							(OutputStreamSender) value, reqlog));

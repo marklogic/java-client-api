@@ -15,6 +15,11 @@
  */
 package com.marklogic.client.bitemporal;
 
+
+import java.util.Calendar;
+
+import javax.xml.datatype.Duration;
+
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -28,9 +33,43 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
-import com.marklogic.client.util.RequestParameters;
 
 public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
+
+  /**
+   * Various protection levels to prevent updation/deletion and wiping of
+   * temporal documents. You can request a more restrictive protection level than
+   * the current protection level but not a lesser restrictive level. The descending
+   * order of restriction levels are as follows: NOUPDATE, NODELETE and NOWIPE
+   */
+  public enum ProtectionLevel {
+    /**
+     * Protection level to prevent updating a temporal document. This
+     * includes protection against temporal document wipe and delete as well.
+     */
+    NOUPDATE,
+    /**
+     * Protection level to prevent deletion of a temporal document. This
+     * includes protection against temporal document wipe as well.
+     */
+    NODELETE,
+    /**
+     * Protection level to prevent wiping of a temporal document
+     */
+    NOWIPE;
+    @Override
+    public String toString() {
+        switch(this) {
+        case NODELETE:
+            return "noDelete";
+        case NOWIPE:
+            return "noWipe";
+        case NOUPDATE:
+            return "noUpdate";
+        }
+        return null;
+    }
+  }
   /**
    * Just like {@link DocumentManager#create(DocumentUriTemplate, DocumentMetadataWriteHandle,
    * AbstractWriteHandle, ServerTransform, Transaction) create} but create document
@@ -224,6 +263,81 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         String temporalCollection);
 
     /**
+     * Just like {@link #write(DocumentDescriptor, DocumentMetadataWriteHandle,
+     * AbstractWriteHandle, ServerTransform, Transaction, String) write} but creates a new 
+     * version of the document in the logical temporal collection URI passed as argument
+     * and names the new version of the document as the URI in the Document descriptor
+     * @param desc    a descriptor for the version URI identifier, format, and mimetype of the document
+     * @param temporalDocumentURI the logical temporal document collection URI of the document
+     * @param metadataHandle  a handle for writing the metadata of the document
+     * @param contentHandle   an IO representation of the document content
+     * @param transform   a server transform to modify the document content
+     * @param transaction an open transaction under which the document may have been created or deleted
+     * @param temporalCollection  the name of the temporal collection existing in the database into
+     *    which this document should be written
+     * @return the TemporalDescriptor with the temporal system time when the document was written
+     */
+    public TemporalDescriptor write(DocumentDescriptor desc, String temporalDocumentURI,
+        DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform,
+        Transaction transaction, String temporalCollection);
+
+    /**
+     * Just like {@link #write(String, DocumentMetadataWriteHandle, AbstractWriteHandle, 
+     * ServerTransform, Transaction, String) write} but creates a new 
+     * version of the document in the logical temporal collection URI passed as argument
+     * and names the new version of the document as the docId passed.
+     * @param uri   the version URI identifier for the document
+     * @param temporalDocumentURI the logical temporal document collection URI of the document
+     * @param metadataHandle  a handle for writing the metadata of the document
+     * @param contentHandle   an IO representation of the document content
+     * @param transform   a server transform to modify the document content
+     * @param transaction an open transaction under which the document may have been created or deleted
+     * @param temporalCollection  the name of the temporal collection existing in the database into
+     *    which this document should be written
+     * @return the TemporalDescriptor with the temporal system time when the document was written
+     */
+    public TemporalDescriptor write(String uri, String temporalDocumentURI, DocumentMetadataWriteHandle metadataHandle,
+        W contentHandle, ServerTransform transform, Transaction transaction, String temporalCollection);
+
+    /**
+     * Just like {@link #write(String, String, DocumentMetadataWriteHandle,
+     * AbstractWriteHandle, ServerTransform, Transaction, String) write} but writes document
+     * at a specific system time
+     * @param uri the version URI identifier for the document
+     * @param temporalDocumentURI the logical temporal document collection URI of the document
+     * @param metadataHandle    a handle for writing the metadata of the document
+     * @param contentHandle an IO representation of the document content
+     * @param transform a server transform to modify the document content
+     * @param transaction   an open transaction under which the document may have been created or deleted
+     * @param temporalCollection    the name of the temporal collection existing in the database into
+     *    which this document should be written
+     * @param systemTime    the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
+     */
+    public TemporalDescriptor write(String uri, String temporalDocumentURI, DocumentMetadataWriteHandle metadataHandle,
+            W contentHandle, ServerTransform transform, Transaction transaction, String temporalCollection,
+            Calendar systemTime);
+
+    /**
+     * Just like {@link #write(DocumentDescriptor, String, DocumentMetadataWriteHandle,
+     * AbstractWriteHandle, ServerTransform, Transaction, String) write} but writes document
+     * at a specific system time
+     * @param desc  a descriptor for the version URI identifier, format, and mimetype of the document
+     * @param temporalDocumentURI the logical temporal document collection URI of the document
+     * @param metadataHandle    a handle for writing the metadata of the document
+     * @param contentHandle an IO representation of the document content
+     * @param transform a server transform to modify the document content
+     * @param transaction   an open transaction under which the document may have been created or deleted
+     * @param temporalCollection    the name of the temporal collection existing in the database into
+     *    which this document should be written
+     * @param systemTime    the application-specified system time with which this document will be marked
+     * @return the TemporalDescriptor with the temporal system time when the document was written
+     */
+    public TemporalDescriptor write(DocumentDescriptor desc, String temporalDocumentURI,
+        DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform,
+        Transaction transaction, String temporalCollection, Calendar systemTime);
+
+    /**
      * Just like {@link #delete(DocumentDescriptor, Transaction, String) delete} but delete
      * document at a specified system time
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
@@ -254,4 +368,115 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
         String temporalCollection,
         java.util.Calendar systemTime)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
+
+    /**
+     * Removes all the versions of the temporal document specified by
+     * the temporal document logical URI in the temporalCollection
+     * @param temporalDocumentURI the logical temporal document URI of the document to be wiped
+     * @param transaction an open transaction
+     * @param temporalCollection the name of the temporal collection existing in the database
+     *    from which this temporal document should be wiped
+     */
+    public void wipe(String temporalDocumentURI, Transaction transaction, String temporalCollection);
+
+    /**
+     * Removes all the versions of the temporal document specified by
+     * the temporal document logical URI in the temporalCollection
+     * @param temporalDocumentURI the logical temporal document URI of the document to be wiped
+     * @param temporalCollection the name of the temporal collection existing in the database
+     *    from which this temporal document should be wiped
+     */
+    public void wipe(String temporalDocumentURI, String temporalCollection);
+
+    /**
+     * Protects the temporal document from document update,
+     * wipe or delete till the expiryTime provided
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE or NOUPDATE. Default value is NODELETE
+     * @param expiryTime the exact date time when the document protection expires
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime);
+
+    /**
+     * Protects the temporal document from document update, wipe or delete till the expiryTime
+     * provided and saves the serialized copy of the current version in the path given
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE or NOUPDATE. Default value is NODELETE
+     * @param expiryTime the exact date time when the document protection expires
+     * @param archivePath File path to save a serialized copy of the current version of the document
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, String archivePath);
+
+    /**
+     * Protects the temporal document from document update,
+     * wipe or delete for the specified duration.
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE, NOUPDATE. Default value is NODELETE
+     * @param duration the duration during which the document is protected
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration);
+
+    /**
+     * Protects the temporal document from document update, wipe or delete till the expiryTime
+     * provided and saves the serialized copy of the current version in the path given
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE, NOUPDATE. Default value is NODELETE
+     * @param duration the duration during which the document is protected
+     * @param archivePath File path to save a serialized copy of the current version of the document
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration, String archivePath);
+
+    /**
+     * Protects the temporal document from document update,
+     * wipe or delete for the specified duration.
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE, NOUPDATE. Default value is NODELETE
+     * @param duration the duration during which the document is protected
+     * @param transaction an open transaction
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration,
+            Transaction transaction);
+
+    /**
+     * Protects the temporal document from document update,
+     * wipe or delete till the expiryTime provided
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE or NOUPDATE. Default value is NODELETE
+     * @param expiryTime the exact date time when the document protection expires
+     * @param transaction an open transaction
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime,
+            Transaction transaction);
+
+    /**
+     * Protects the temporal document from document update, wipe or delete till the expiryTime
+     * provided and saves the serialized copy of the current version in the path given
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE, NOUPDATE. Default value is NODELETE
+     * @param duration the duration during which the document is protected
+     * @param archivePath File path to save a serialized copy of the current version of the document
+     * @param transaction an open transaction
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration, String archivePath,
+            Transaction transaction);
+
+    /**
+     * Protects the temporal document from document update, wipe or delete till the expiryTime
+     * provided and saves the serialized copy of the current version in the path given
+     * @param temporalDocumentURI the logical temporal document URI of the document to be protected
+     * @param temporalCollection the name of the temporal collection which contains the temporal document
+     * @param level the Protection level acquired - NODELETE, NOWIPE or NOUPDATE. Default value is NODELETE
+     * @param expiryTime the exact date time when the document protection expires
+     * @param archivePath File path to save a serialized copy of the current version of the document
+     * @param transaction an open transaction
+     */
+    public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, String archivePath,
+            Transaction transaction);
 }

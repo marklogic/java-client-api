@@ -103,5 +103,76 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
+
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * temporalDocumentURI and contents provided by the handle
+     * @param docId the version URI identifier for the document
+     * @param contentHandle a handle for writing the content of the document
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * temporalDocumentURI and contents.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the version URI identifier for the document
+     * @param content   an IO representation of the document content
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet addAs(String docId, Object content, String temporalDocumentURI);
+
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * metadata, temporalDocumentURI and contents provided by the handle
+     * @param docId the version URI identifier for the document
+     * @param metadataHandle    a handle for writing the metadata of the document
+     * @param contentHandle a handle for writing the content of the document
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * metadata, temporalDocumentURI and contents.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for document content are registered.
+     * 
+     * @param docId the version URI identifier for the document
+     * @param metadataHandle    a handle for writing the metadata of the document
+     * @param content   an IO representation of the document content
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, String temporalDocumentURI);
+
+    /**
+     * Adds to this write set a document with the given uri template, temporalDocumentURI and
+     * contents provided by the handle
+     * @param desc  a descriptor for the version URI identifier, format, and mimetype of the document
+     * @param contentHandle a handle for writing the content of the document
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+
+    /**
+     * Adds to this write set a document with the given uri template, metadata, temporalDocumentURI
+     * and contents provided by the handle
+     * @param desc  a descriptor for the version URI identifier, format, and mimetype of the document
+     * @param metadataHandle    a handle for writing the metadata of the document
+     * @param contentHandle a handle for writing the content of the document
+     * @param temporalDocumentURI the logical temporal document collection URI
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
 }
 

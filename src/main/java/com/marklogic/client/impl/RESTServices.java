@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.io.InputStream;
+import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
+import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -328,4 +330,15 @@ public interface RESTServices {
 	public interface RESTServiceResult extends ServiceResult {
 		public Map<String,List<String>> getHeaders();
 	}
+
+	public void wipeDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
+			RequestParameters extraParams);
+
+	public void protectDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
+			RequestParameters extraParams, ProtectionLevel level, String duration, Calendar expiryTime, String archivePath);
+	public <R extends AbstractReadHandle> R postResource(
+			RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
+			AbstractWriteHandle input, R output, String operation)
+		throws ResourceNotFoundException, ResourceNotResendableException,
+					 ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 }

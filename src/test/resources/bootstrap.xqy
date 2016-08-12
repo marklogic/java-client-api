@@ -519,6 +519,10 @@ declare function bootstrap:security-config() {
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-reader", "execute", "write-privileged")'),
     bootstrap:security-eval(
         'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/rest-writer", "execute", "write-privileged")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/temporal-document-protect", "execute", "rest-admin")'),
+    bootstrap:security-eval(
+        'sec:privilege-add-roles("http://marklogic.com/xdmp/privileges/temporal-document-wipe", "execute", "rest-admin")'),
 
     for $user in ("rest-admin", "rest-reader", "rest-writer", "rest-evaluator", "valid",
         "read-privileged", "write-privileged")

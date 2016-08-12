@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
@@ -22,6 +23,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.Duration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -385,7 +387,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     checkContentFormat(contentHandle);
 
-    extraParams = addTemporalParams(extraParams, temporalCollection, null);
+    extraParams = addTemporalParams(extraParams, temporalCollection, null, null);
 
     boolean wasModified = services.getDocument(
         requestLogger,
@@ -461,7 +463,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
           uris[0]);
 
     RequestParameters extraParams = addTemporalParams(new RequestParameters(),
-        temporalCollection, null);
+        temporalCollection, null, null);
 
     return services.getBulkDocuments(
         requestLogger,
@@ -746,7 +748,23 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       String temporalCollection, Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    return write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
+    return write(new DocumentDescriptorImpl(uri, true), null, metadataHandle, contentHandle,
+        transform, transaction, temporalCollection, systemTime, getWriteParams());
+  }
+
+  @Override
+  public TemporalDescriptor write(String uri, String temporalDocumentURI, DocumentMetadataWriteHandle metadataHandle,
+      W contentHandle, ServerTransform transform, Transaction transaction,
+      String temporalCollection) {
+	  return write(new DocumentDescriptorImpl(uri, true), temporalDocumentURI, metadataHandle, contentHandle,
+		        transform, transaction, temporalCollection, null, getWriteParams());
+  }
+
+  @Override
+  public TemporalDescriptor write(String uri, String temporalDocumentURI, DocumentMetadataWriteHandle metadataHandle,
+      W contentHandle, ServerTransform transform, Transaction transaction,
+      String temporalCollection, Calendar systemTime) {
+    return write(new DocumentDescriptorImpl(uri, true), temporalDocumentURI, metadataHandle, contentHandle,
         transform, transaction, temporalCollection, systemTime, getWriteParams());
   }
 
@@ -755,7 +773,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       String temporalCollection, Calendar systemTime,
       RequestParameters extraParams) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
-    return write(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle,
+    return write(new DocumentDescriptorImpl(uri, true), null, metadataHandle, contentHandle,
         transform, transaction, temporalCollection, systemTime, extraParams);
   }
 
@@ -839,12 +857,30 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       String temporalCollection, Calendar systemTime)
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException {
-    return write(desc, metadataHandle, contentHandle, transform, transaction,
+    return write(desc, null, metadataHandle, contentHandle, transform, transaction,
+        temporalCollection, null, getWriteParams());
+  }
+
+  @Override
+  public TemporalDescriptor write(DocumentDescriptor desc, String temporalDocumentURI,
+      DocumentMetadataWriteHandle metadataHandle, W contentHandle,
+      ServerTransform transform, Transaction transaction,
+      String temporalCollection) {
+    return write(desc, temporalDocumentURI, metadataHandle, contentHandle, transform, transaction,
+        temporalCollection, null);
+  }
+
+  @Override
+  public TemporalDescriptor write(DocumentDescriptor desc, String temporalDocumentURI,
+      DocumentMetadataWriteHandle metadataHandle, W contentHandle,
+      ServerTransform transform, Transaction transaction,
+      String temporalCollection, Calendar systemTime) {
+    return write(desc, temporalDocumentURI, metadataHandle, contentHandle, transform, transaction,
         temporalCollection, null, getWriteParams());
   }
 
   @SuppressWarnings("rawtypes")
-  protected TemporalDescriptor write(DocumentDescriptor desc,
+  protected TemporalDescriptor write(DocumentDescriptor desc, String temporalDocumentURI,
       DocumentMetadataWriteHandle metadataHandle, W contentHandle,
       ServerTransform transform, Transaction transaction,
       String temporalCollection, java.util.Calendar systemTime,
@@ -872,7 +908,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
     checkContentFormat(contentHandle);
 
-    extraParams = addTemporalParams(extraParams, temporalCollection, systemTime);
+    extraParams = addTemporalParams(extraParams, temporalCollection, temporalDocumentURI, systemTime);
 
     return services.putDocument(
         requestLogger,
@@ -962,9 +998,82 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       logger.info("Deleting {}", desc.getUri());
 
     RequestParameters extraParams = addTemporalParams(new RequestParameters(),
-        temporalCollection, systemTime);
+        temporalCollection, null, systemTime);
 
     return services.deleteDocument(requestLogger, desc, transaction, null, extraParams);
+  }
+
+  @Override
+  public void wipe(String temporalDocumentURI, String temporalCollection) {
+    wipe(temporalDocumentURI, null, temporalCollection);
+  }
+
+  @Override
+  public void wipe(String temporalDocumentURI, Transaction transaction, String temporalCollection) {
+    if (temporalDocumentURI == null || temporalCollection == null)
+      throw new IllegalArgumentException("Temporal Document URI and Temporal collection cannot be null");
+
+    if (logger.isInfoEnabled())
+      logger.info("Wiping {} of {} temporal collection", temporalDocumentURI, temporalCollection);
+
+    RequestParameters extraParams = addTemporalParams(new RequestParameters(), temporalCollection, null, null);
+    services.wipeDocument(requestLogger, temporalDocumentURI, transaction, extraParams);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration) {
+    protect(temporalDocumentURI, temporalCollection, null, level, duration.toString(), null, null);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime) {
+    protect(temporalDocumentURI, temporalCollection, null, level, null, expiryTime, null);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration, String archivePath) {
+    protect(temporalDocumentURI, temporalCollection, null, level, duration.toString(), null, archivePath);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, String archivePath) {
+    protect(temporalDocumentURI, temporalCollection, null, level, null, expiryTime, archivePath);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration, Transaction transaction) {
+    protect(temporalDocumentURI, temporalCollection, transaction, level, duration.toString(), null, null);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, Transaction transaction) {
+    protect(temporalDocumentURI, temporalCollection, transaction, level, null, expiryTime, null);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Duration duration, String archivePath, Transaction transaction) {
+    protect(temporalDocumentURI, temporalCollection, transaction, level, duration.toString(), null, archivePath);
+  }
+
+  @Override
+  public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, String archivePath, Transaction transaction) {
+    protect(temporalDocumentURI, temporalCollection, transaction, level, null, expiryTime, archivePath);
+  }
+
+  protected void protect(String temporalDocumentURI, String temporalCollection, Transaction transaction,
+      ProtectionLevel level, String duration, Calendar expiryTime, String archivePath) {
+    if (level == null) {
+      level = ProtectionLevel.NODELETE;
+    }
+    if(duration == null && expiryTime == null) {
+        throw new IllegalArgumentException(
+            "Need either duration or expiry time for protecting a document");
+    }
+    if (temporalDocumentURI == null || temporalCollection == null)
+        throw new IllegalArgumentException(
+            "Temporal Document URI and Temporal collection cannot be null");
+    RequestParameters extraParams = addTemporalParams(new RequestParameters(), temporalCollection, null, null);
+    services.protectDocument(requestLogger, temporalDocumentURI, transaction, extraParams, level, duration, expiryTime, archivePath);
   }
 
   // shortcut creators
@@ -1109,7 +1218,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       }
     }
 
-    extraParams = addTemporalParams(extraParams, temporalCollection, systemTime);
+    extraParams = addTemporalParams(extraParams, temporalCollection, null, systemTime);
 
     checkContentFormat(contentHandle);
 
@@ -1314,11 +1423,13 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   protected RequestParameters addTemporalParams(RequestParameters params,
-      String temporalCollection, Calendar systemTime) {
+      String temporalCollection, String temporalDocumentURI, Calendar systemTime) {
     if (params == null)
       params = new RequestParameters();
     if (temporalCollection != null)
       params.add("temporal-collection", temporalCollection);
+    if (temporalDocumentURI != null)
+      params.add("temporal-document", temporalDocumentURI);
     if (systemTime != null) {
       String formattedSystemTime = DatatypeConverter.printDateTime(systemTime);
       params.add("system-time", formattedSystemTime);

@@ -23,6 +23,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 public class DocumentWriteOperationImpl implements DocumentWriteOperation {
 	private OperationType operationType;
 	private String uri;
+	private String temporalDocumentURI;
 	private DocumentMetadataWriteHandle metadata;
 	private AbstractWriteHandle content;
 
@@ -33,6 +34,16 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
 		this.uri = uri;
 		this.metadata = metadata;
 		this.content = content;
+		this.temporalDocumentURI = null;
+	}
+
+	public DocumentWriteOperationImpl(OperationType type, String uri,
+			DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
+		this.operationType = type;
+		this.uri = uri;
+		this.metadata = metadata;
+		this.content = content;
+		this.temporalDocumentURI = temporalDocumentURI;
 	}
 
     public OperationType getOperationType() {
@@ -41,6 +52,10 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
 
     public String getUri() {
 		return uri;
+	}
+
+    public String getTemporalDocumentURI() {
+		return temporalDocumentURI;
 	}
 
     public DocumentMetadataWriteHandle getMetadata() {

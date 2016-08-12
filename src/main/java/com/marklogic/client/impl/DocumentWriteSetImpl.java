@@ -80,4 +80,45 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 			desc.getUri(), metadataHandle, contentHandle));
 		return this;
 	}
+
+	public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle, String temporalDocumentURI) {
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, docId, null, contentHandle, temporalDocumentURI));
+		return this;
+	}
+
+	public DocumentWriteSet addAs(String docId, Object content, String temporalDocumentURI) {
+		return addAs(docId, null, content, temporalDocumentURI);
+	}
+
+	public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle,
+			AbstractWriteHandle contentHandle, String temporalDocumentURI) {
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, docId, metadataHandle, contentHandle,
+				temporalDocumentURI));
+		return this;
+	}
+
+	public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content,
+			String temporalDocumentURI) {
+		if (content == null)
+			throw new IllegalArgumentException("content must not be null");
+
+		Class<?> as = content.getClass();
+		ContentHandle<?> handle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
+		Utilities.setHandleContent(handle, content);
+
+		return add(docId, metadataHandle, handle, temporalDocumentURI);
+	}
+
+	public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle, String temporalDocumentURI) {
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, desc.getUri(), null, contentHandle,
+				temporalDocumentURI));
+		return this;
+	}
+
+	public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle,
+			AbstractWriteHandle contentHandle, String temporalDocumentURI) {
+		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, desc.getUri(), metadataHandle, contentHandle,
+				temporalDocumentURI));
+		return this;
+	}
 }

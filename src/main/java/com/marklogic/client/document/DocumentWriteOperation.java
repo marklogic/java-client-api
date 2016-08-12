@@ -78,4 +78,11 @@ public interface DocumentWriteOperation {
      * @return the handle with the content
      */
     public AbstractWriteHandle getContent();
+
+    /**
+     * The logical temporal document URI of the document as set by your call to
+     * one of the 'add' methods which adds a document to a {@link DocumentWriteSet}
+     * @return the logical temporal document URI
+     */
+    public String getTemporalDocumentURI();
 }
