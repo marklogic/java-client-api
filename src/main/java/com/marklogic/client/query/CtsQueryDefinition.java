@@ -25,5 +25,5 @@ public interface CtsQueryDefinition extends QueryDefinition {
      * 
      * @return The serialized definition.
      */
-    public String serialize();
+    String serialize();
 }

@@ -28,16 +28,16 @@ public interface RawPlanDefinition extends Plan {
 	 * Returns the handle for the JSON representation of the plan.
 	 * @return	the JSON handle
 	 */
-	public JSONWriteHandle getHandle();
+	JSONWriteHandle getHandle();
 	/**
 	 * Specifies the handle for the JSON representation of the plan.
 	 * @param handle	the JSON handle
 	 */
-    public void setHandle(JSONWriteHandle handle);
+    void setHandle(JSONWriteHandle handle);
     /**
 	 * Assigns the handle and returns the raw plan as a convenience.
      * @param handle	the JSON handle
      * @return	this raw plan object
      */
-    public RawPlanDefinition withHandle(JSONWriteHandle handle);
+    RawPlanDefinition withHandle(JSONWriteHandle handle);
 }

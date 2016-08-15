@@ -53,7 +53,7 @@ public interface DatabaseClient {
      * 
      * @return	a Transaction object identifying and supporting operations on the transaction
      */
-	public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException;
+	Transaction openTransaction() throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Starts a transaction with the specified name, which makes the transaction easier to recognize
 	 * when you get status reports.
@@ -61,7 +61,7 @@ public interface DatabaseClient {
 	 * @param name	the transaction name
      * @return	a Transaction object identifying and supporting operations on the transaction
 	 */
-	public Transaction openTransaction(String name) throws ForbiddenUserException, FailedRequestException;
+	Transaction openTransaction(String name) throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Starts a transaction with the specified name and time limit. If the transaction is not committed
 	 * or rolled back within the specified time, the transaction rolls back automatically.
@@ -70,51 +70,51 @@ public interface DatabaseClient {
 	 * @param timeLimit	the number of the transaction in seconds
      * @return	a Transaction object identifying and supporting operations on the transaction
 	 */
-	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException;
+	Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException;
 
     /**
      * Creates a document manager for documents with unknown or heterogeneous formats.
      * @return	a manager supporting generic operations on documents
      */
-    public GenericDocumentManager newDocumentManager();
+    GenericDocumentManager newDocumentManager();
     /**
      * Creates a document manager for documents with a binary format such as images.
      * @return	a manager supporting operations on binary documents
      */
-    public BinaryDocumentManager newBinaryDocumentManager();
+    BinaryDocumentManager newBinaryDocumentManager();
     /**
      * Creates a document manager for documents containing a JSON structure.
      * @return	a manager supporting operations on JSON documents
      */
-    public JSONDocumentManager newJSONDocumentManager();
+    JSONDocumentManager newJSONDocumentManager();
     /**
      * Creates a document manager for documents containing unstructured text.
      * @return	a manager supporting operations on text documents
      */
-    public TextDocumentManager newTextDocumentManager();
+    TextDocumentManager newTextDocumentManager();
     /**
      * Creates a document manager for documents containing XML.
      * @return	a manager supporting operations on XMLdocuments
      */
-    public XMLDocumentManager newXMLDocumentManager();
+    XMLDocumentManager newXMLDocumentManager();
 
     /**
      * Creates a manager to query for database documents.
      * @return	a manager supporting search operations and lookup of values and tuples in indexes (also known as lexicons)
      */
-    public QueryManager newQueryManager();
+    QueryManager newQueryManager();
 
     /**
      * Creates a manager to retrieve rows from the database.
      * @return	a manager supporting plans for processing database rows
      */
-    public RowManager newRowManager();
+    RowManager newRowManager();
 
     /**
      * Creates a manager for building rules and rules-matching applications.
      * @return a manager for supporting rules and rule-match operations.
      */
-    public RuleManager newRuleManager();
+    RuleManager newRuleManager();
     
     /**
      * Creates a manager for configuring the REST server for the database. The
@@ -124,17 +124,17 @@ public interface DatabaseClient {
      * 
      * @return	a manager for the server properties or administrative resources
      */
-    public ServerConfigurationManager newServerConfigManager();
+    ServerConfigurationManager newServerConfigManager();
 
     /** Creates a manager for CRUD operations on semantic graphs.
      * @return the new GraphManager instance
      */
-    public GraphManager newGraphManager();
+    GraphManager newGraphManager();
     
     /** Creates a manager for executing SPARQL queries and retrieving results.
      * @return the new SPARQLQueryManager instance
      */
-    public SPARQLQueryManager newSPARQLQueryManager();
+    SPARQLQueryManager newSPARQLQueryManager();
     
     /**
      * Creates a PojoRepository specific to the specified class and its id type. 
@@ -149,7 +149,7 @@ public interface DatabaseClient {
      * @param <ID> the scalar type of the id for pojos of type &lt;T&gt;
      * @return the initialized PojoRepository
      **/
-    public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
+    <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass);
 
     /**
      * Initializes a manager for a extension resource.
@@ -159,7 +159,7 @@ public interface DatabaseClient {
      * @param <T> the type of ResourceManager to init for the extension resource
      * @return	the initialized resource manager
      */
-    public <T extends ResourceManager> T init(String resourceName, T resourceManager);
+    <T extends ResourceManager> T init(String resourceName, T resourceManager);
 
     /**
      * Creates a logger for document and query requests.  To merge the logging output
@@ -169,13 +169,13 @@ public interface DatabaseClient {
      * @param out	the output stream for the logging output
      * @return	the logger for client requests
      */
-    public RequestLogger newLogger(OutputStream out);
+    RequestLogger newLogger(OutputStream out);
 
     /**
      * Closes the database client and releases associated resources.  After the client is closed,
      * document and query managers can no longer access the database.
      */
-    public void release();
+    void release();
 
     /**
      * Returns the client object from the library that implements communication with the
@@ -192,7 +192,7 @@ public interface DatabaseClient {
      * the class of the current implementation object.
      * @return	the object implementing communication with the server 
      */
-    public Object getClientImplementation();
+    Object getClientImplementation();
 
     /**
      * Creates a ServerEvaluationCall for eval and invoke of server-side xquery or 
@@ -202,23 +202,23 @@ public interface DatabaseClient {
      * privilege.
      * @return the new ServerEvaluationCall instance
      */
-    public ServerEvaluationCall newServerEval();
+    ServerEvaluationCall newServerEval();
 
-    public String getHost();
+    String getHost();
 
-    public int getPort();
+    int getPort();
 
-    public String getDatabase();
+    String getDatabase();
 
-    public String getUser();
+    String getUser();
 
-    public String getPassword();
+    String getPassword();
 
-    public Authentication getAuthentication();
+    Authentication getAuthentication();
 
-    public SSLContext getSSLContext();
+    SSLContext getSSLContext();
 
-    public SSLHostnameVerifier getSSLHostnameVerifier();
+    SSLHostnameVerifier getSSLHostnameVerifier();
 
-    public SecurityContext getSecurityContext();
+    SecurityContext getSecurityContext();
 }

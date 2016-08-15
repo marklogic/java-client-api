@@ -27,13 +27,13 @@ public interface StringQueryDefinition
      * Returns the query criteria, that is the query string.
      * @return The query string.
      */
-    public String getCriteria();
+    String getCriteria();
 
     /**
      * Sets the query criteria as a query string.
      * @param criteria The query string.
      */
-    public void setCriteria(String criteria);
+    void setCriteria(String criteria);
 
     /**
      * Sets the query criteria as a query string and returns the query
@@ -41,5 +41,5 @@ public interface StringQueryDefinition
      * @param criteria The query string.
      * @return	This query definition.
      */
-    public StringQueryDefinition withCriteria(String criteria);
+    StringQueryDefinition withCriteria(String criteria);
 }

@@ -25,9 +25,7 @@ package com.marklogic.client.document;
  * as an object with a toString() method that provides the serialized
  * fragment.
  */
-public interface DocumentPatchBuilder
-extends DocumentMetadataPatchBuilder
-{
+public interface DocumentPatchBuilder extends DocumentMetadataPatchBuilder {
 	/**
 	 * The Position enumeration indicates the location relative
 	 * to the context for inserting content.
@@ -87,14 +85,14 @@ extends DocumentMetadataPatchBuilder
 	 * @param pathLang the language (XPath or JSONPath)
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder pathLanguage(PathLanguage pathLang);
+	DocumentPatchBuilder pathLanguage(PathLanguage pathLang);
 	
 	/**
 	 * Specifies an operation to delete an existing JSON or XML fragment.
 	 * @param selectPath	the location of the JSON or XML fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder delete(
+	DocumentPatchBuilder delete(
 			String selectPath
 			);
 	/**
@@ -103,7 +101,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param cardinality	the number of times the patch can match without error
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder delete(
+	DocumentPatchBuilder delete(
 			String selectPath, Cardinality cardinality
 			);
 	/**
@@ -113,7 +111,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the inserted fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder insertFragment(
+	DocumentPatchBuilder insertFragment(
 			String contextPath, Position position, Object fragment
 			);
 	/**
@@ -124,7 +122,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the inserted fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder insertFragment(
+	DocumentPatchBuilder insertFragment(
 			String contextPath, Position position, Cardinality cardinality, Object fragment
 			);
 	/**
@@ -133,7 +131,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param value	the new value for the node
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceValue(
+	DocumentPatchBuilder replaceValue(
 			String selectPath, Object value
 			);
 	/**
@@ -143,7 +141,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param value	the new value for the node
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceValue(
+	DocumentPatchBuilder replaceValue(
 			String selectPath, Cardinality cardinality, Object value
 			);
 	/**
@@ -152,7 +150,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the replacing fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceFragment(
+	DocumentPatchBuilder replaceFragment(
 			String selectPath, Object fragment
 			);
 	/**
@@ -162,7 +160,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the replacing fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceFragment(
+	DocumentPatchBuilder replaceFragment(
 			String selectPath, Cardinality cardinality, Object fragment
 			);
 	/**
@@ -177,7 +175,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the replacing or inserted fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceInsertFragment(
+	DocumentPatchBuilder replaceInsertFragment(
 			String selectPath, String contextPath, Position position, Object fragment
 			);
 	/**
@@ -193,7 +191,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param fragment	the replacing or inserted fragment
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceInsertFragment(
+	DocumentPatchBuilder replaceInsertFragment(
 			String selectPath, String contextPath, Position position, Cardinality cardinality,
 			Object fragment
 			);
@@ -206,7 +204,7 @@ extends DocumentMetadataPatchBuilder
 	 * @param call	the specification of the function call
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceApply(String selectPath, Call call);
+	DocumentPatchBuilder replaceApply(String selectPath, Call call);
 	/**
 	 * Specifies a replacement operation by applying a function to 
 	 * an existing JSON or XML fragment. You must use CallBuilder
@@ -216,5 +214,5 @@ extends DocumentMetadataPatchBuilder
 	 * @param call	the specification of the function call
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentPatchBuilder replaceApply(String selectPath, Cardinality cardinality, Call call);
+	DocumentPatchBuilder replaceApply(String selectPath, Cardinality cardinality, Call call);
 }

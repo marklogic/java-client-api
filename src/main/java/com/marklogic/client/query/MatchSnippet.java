@@ -26,11 +26,11 @@ public interface MatchSnippet {
      *
      * @return The hightlight value.
      */
-    public boolean isHighlighted();
+    boolean isHighlighted();
 
     /**
      * Returns the string value of the run of text in this part of the snippet.
      * @return The text string.
      */
-    public String getText();
+    String getText();
 }

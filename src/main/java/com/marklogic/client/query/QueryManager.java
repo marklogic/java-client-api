@@ -40,11 +40,11 @@ public interface QueryManager {
     /**
      * The default maximum number of documents in a page of search results.
      */
-    static final public long DEFAULT_PAGE_LENGTH = -1;
+    long DEFAULT_PAGE_LENGTH = -1;
     /**
      * The offset of the first result in the default page.
      */
-    static final public long START = 1;
+    long START = 1;
 
     /**
      * The view produced by a query.
@@ -77,26 +77,26 @@ public interface QueryManager {
      * Returns the maximum number of documents that can appear in any page of query results.
      * @return the maximum number of results
      */
-    public long getPageLength();
+    long getPageLength();
 
     /**
      * Specifies the maximum number of documents that can appear in any page of the query results,
      * overriding any maximum specified in the query options.
      * @param length	the maximum number of results
      */
-    public void setPageLength(long length);
+    void setPageLength(long length);
 
     /**
      * Returns the type of view results produced by queries.
      * @return	the view type for the queries
      */
-    public QueryView getView();
+    QueryView getView();
 
     /**
      * Specifies the type of view results produced by queries.
      * @param view	the view type for the queries
      */
-    public void setView(QueryView view);
+    void setView(QueryView view);
 
     /**
      * Creates a query definition based on a string and the default
@@ -105,7 +105,7 @@ public interface QueryManager {
      * for indexes and can be supplied by an end-user in a web form.
      * @return	the string query definition
      */
-    public StringQueryDefinition newStringDefinition();
+    StringQueryDefinition newStringDefinition();
 
     /**
      * Creates a query definition based on a string and on named query options
@@ -113,7 +113,7 @@ public interface QueryManager {
      * @param optionsName	the name of the query options
      * @return	the string query definition
      */
-    public StringQueryDefinition newStringDefinition(String optionsName);
+    StringQueryDefinition newStringDefinition(String optionsName);
 
     /**
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
@@ -125,7 +125,7 @@ public interface QueryManager {
      * @return	the key-value query definition
      */
     @Deprecated
-    public KeyValueQueryDefinition newKeyValueDefinition();
+    KeyValueQueryDefinition newKeyValueDefinition();
 
     /**
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
@@ -137,21 +137,21 @@ public interface QueryManager {
      * @return	the key-value query definition
      */
     @Deprecated
-    public KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
+    KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
 
     /**
      * Creates a suggestion definition based on a single string for completion,
      * using the default options node.
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestDefinition();
+    SuggestDefinition newSuggestDefinition();
     
     /**
      * Creates a suggestion definition based on a query options name.
      * @param optionsName	the name of the query options
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestDefinition(String optionsName);
+    SuggestDefinition newSuggestDefinition(String optionsName);
     
 
     /**
@@ -161,27 +161,27 @@ public interface QueryManager {
      * @param optionsName	the name of the query options
      * @return	the suggest definition.
      */
-    public SuggestDefinition newSuggestDefinition(String suggestString, String optionsName);
+    SuggestDefinition newSuggestDefinition(String suggestString, String optionsName);
   
     /**
      * Creates a query definition based on a structure that identifies
      * clauses and conjunctions and the default query options.
      * @return	the structured query definition
      */
-    public StructuredQueryBuilder newStructuredQueryBuilder();
+    StructuredQueryBuilder newStructuredQueryBuilder();
     /**
      * Creates a query definition based on a structure and on named
      * query options saved previously.
      * @param optionsName	the name of the query options
      * @return	the structured query definition
      */
-    public StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
+    StructuredQueryBuilder newStructuredQueryBuilder(String optionsName);
 
     /**
      * Creates a query definition for deleting documents.
      * @return	the deletion query definition
      */
-    public DeleteQueryDefinition newDeleteDefinition();
+    DeleteQueryDefinition newDeleteDefinition();
 
     /**
      * Creates a query definition for retrieving values based on
@@ -189,7 +189,7 @@ public interface QueryManager {
      * @param name	the index constraint
      * @return	the values query definition
      */
-    public ValuesDefinition newValuesDefinition(String name);
+    ValuesDefinition newValuesDefinition(String name);
 
     /**
      * Creates a query definition for retrieving values based on
@@ -198,14 +198,14 @@ public interface QueryManager {
      * @param optionsName	the name of the query options
      * @return	the values query definition
      */
-    public ValuesDefinition newValuesDefinition(String name, String optionsName);
+    ValuesDefinition newValuesDefinition(String name, String optionsName);
 
     /**
      * Creates a query definition for retrieving the list of available
      * named lexicon configurations from the default query options.
      * @return the values list definition
      */
-    public ValuesListDefinition newValuesListDefinition();
+    ValuesListDefinition newValuesListDefinition();
 
     /**
      * Creates a query definition for retrieving the list of available
@@ -213,7 +213,7 @@ public interface QueryManager {
      * @param optionsName the name of the query options
      * @return the values list definition
      */
-    public ValuesListDefinition newValuesListDefinition(String optionsName);
+    ValuesListDefinition newValuesListDefinition(String optionsName);
 
     /**
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
@@ -225,7 +225,7 @@ public interface QueryManager {
      * @return	the locator for a key-value query
      */
     @Deprecated
-    public ElementLocator newElementLocator(QName element);
+    ElementLocator newElementLocator(QName element);
 
     /**
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
@@ -238,7 +238,7 @@ public interface QueryManager {
      * @return	the locator for a key-value query
      */
     @Deprecated
-    public ElementLocator newElementLocator(QName element, QName attribute);
+    ElementLocator newElementLocator(QName element, QName attribute);
 
     /**
      * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
@@ -249,7 +249,7 @@ public interface QueryManager {
      * @return	the locator for a key-value query
      */
     @Deprecated
-    public KeyLocator newKeyLocator(String key);
+    KeyLocator newKeyLocator(String key);
 
     /**
      * Searches documents based on query criteria and, potentially, previously
@@ -259,7 +259,7 @@ public interface QueryManager {
      * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.
@@ -269,7 +269,7 @@ public interface QueryManager {
      * @param forestName a forest to limit this search
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, String forestName);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, String forestName);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -280,7 +280,7 @@ public interface QueryManager {
      * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -292,7 +292,7 @@ public interface QueryManager {
      * @param forestName a forest to limit this search
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, String forestName);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, String forestName);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.  The search includes documents modified by the
@@ -303,7 +303,7 @@ public interface QueryManager {
      * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options.  The search includes documents modified by the
@@ -315,7 +315,7 @@ public interface QueryManager {
      * @param forestName a forest to limit this search
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction, String forestName);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, Transaction transaction, String forestName);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -328,7 +328,7 @@ public interface QueryManager {
      * @param <T> the type of SearchReadHandle to return
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction);
     /**
      * Searches documents based on query criteria and, potentially, previously
      * saved query options starting with the specified page listing 
@@ -342,7 +342,7 @@ public interface QueryManager {
      * @param forestName a forest to limit this search
      * @return	the handle populated with the results from the search
      */
-    public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName);
+    <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction, String forestName);
 
     /**
      * Queries the REST server for suggested string completions based on
@@ -352,13 +352,13 @@ public interface QueryManager {
      * @param suggestionDef the partial string to complete and suggest query options
      * @return the suggested string completions
      */
-    public String[] suggest(SuggestDefinition suggestionDef);
+    String[] suggest(SuggestDefinition suggestionDef);
     
     /**
      * Deletes documents based on the query criteria.
      * @param querydef	the definition of query criteria
      */
-    public void delete(DeleteQueryDefinition querydef);
+    void delete(DeleteQueryDefinition querydef);
 
     /**
      * Deletes documents based on the query criteria as part
@@ -366,7 +366,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria
      * @param transaction	a open transaction for the delete operation
      */
-    public void delete(DeleteQueryDefinition querydef, Transaction transaction);
+    void delete(DeleteQueryDefinition querydef, Transaction transaction);
 
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
@@ -376,7 +376,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
-    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
+    <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle);
 
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
@@ -387,7 +387,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
-    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start);
+    <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start);
 
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
@@ -399,7 +399,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
-    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
+    <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, Transaction transaction);
 
     /**
      * Retrieves values from indexes based on query criteria and, potentially,
@@ -412,7 +412,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesReadHandle to return
      * @return	the handle populated with the values from the index
      */
-    public <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction);
+    <T extends ValuesReadHandle> T values(ValuesDefinition valdef, T valueHandle, long start, Transaction transaction);
 
     /**
      * Retrieves combinations of values for the same document from indexes
@@ -422,7 +422,7 @@ public interface QueryManager {
      * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle);
+    <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle);
 
     /**
      * Retrieves combinations of values for the same document from indexes
@@ -433,7 +433,7 @@ public interface QueryManager {
      * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start);
+    <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start);
 
     /**
      * Retrieves combinations of values for the same document from indexes
@@ -446,7 +446,7 @@ public interface QueryManager {
      * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction);
+    <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, Transaction transaction);
 
     /**
      * Retrieves combinations of values for the same document from indexes
@@ -460,7 +460,7 @@ public interface QueryManager {
      * @param <T> the type of TuplesReadHandle to return
      * @return	the handle populated with the tuples from the index
      */
-    public <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction);
+    <T extends TuplesReadHandle> T tuples(ValuesDefinition valdef, T tupleHandle, long start, Transaction transaction);
 
     /**
      * Retrieves the list of available named lexicon configurations from the
@@ -470,7 +470,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesListReadHandle to return
      * @return the handle populated with the names
      */
-    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
+    <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle);
 
     /**
      * Retrieves the list of available named lexicon configurations from the
@@ -483,7 +483,7 @@ public interface QueryManager {
      * @param <T> the type of ValuesListReadHandle to return
      * @return the handle populated with the names
      */
-    public <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);
+    <T extends ValuesListReadHandle> T valuesList(ValuesListDefinition valdef, T valueHandle, Transaction transaction);
 
     /**
      * Retrieves the list of available named query options.
@@ -491,7 +491,7 @@ public interface QueryManager {
      * @param <T> the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
-    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
+    <T extends QueryOptionsListReadHandle> T optionsList(T listHandle);
 
     /**
      * Retrieves the list of available named query options.
@@ -502,7 +502,7 @@ public interface QueryManager {
      * @param <T> the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
-    public <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle, Transaction transaction);
+    <T extends QueryOptionsListReadHandle> T optionsList(T valueHandle, Transaction transaction);
 
     /**
      * The findOne method is a convenience.
@@ -512,7 +512,7 @@ public interface QueryManager {
      * @param querydef	the definition of query criteria and query options
      * @return the summary of the first search result or null if there are no results
      */
-    public MatchDocumentSummary findOne(QueryDefinition querydef);
+    MatchDocumentSummary findOne(QueryDefinition querydef);
 
     /**
      * The findOne method is a convenience.
@@ -525,7 +525,7 @@ public interface QueryManager {
      * @param transaction	a open transaction for matching documents
      * @return the summary of the first search result or null if there are no results
      */
-    public MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
+    MatchDocumentSummary findOne(QueryDefinition querydef, Transaction transaction);
 
 	/**
      * Sends a query by example to the server to convert into a combined query
@@ -535,7 +535,7 @@ public interface QueryManager {
      * @param <T> the type of StructureReadHandle to return
      * @return	the handle populated with the combined query
      */
-    public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle);
+    <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle);
     /**
      * Checks a query by example for mistakes in expressing the criteria.
      * @param query	the query by example
@@ -543,7 +543,7 @@ public interface QueryManager {
      * @param <T> the type of StructureReadHandle to return
      * @return	the handle populated with the validation report
      */
-    public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle);
+    <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle);
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
@@ -551,12 +551,12 @@ public interface QueryManager {
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
 
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 
 	/**
      * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
@@ -568,7 +568,7 @@ public interface QueryManager {
 	 * @param rawQuery	an IO representation of the JSON or XML combined query
      * @return a QueryDefinition for use of the combined query
 	 */
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery);
+	RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery);
 	/**
      * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
      * 
@@ -580,21 +580,21 @@ public interface QueryManager {
      * @param optionsName the name of a persisted query options configuration
      * @return a QueryDefinition for use of the combined query
 	 */
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery, String optionsName);
+	RawCombinedQueryDefinition newRawCombinedQueryDefinitionAs(Format format, Object rawQuery, String optionsName);
 
     /**
      * Defines a combined query from a JSON or XML representation.
      * @param handle a handle for a JSON or XML combined query
      * @return a QueryDefinition for use of the combined query
      */
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
+	RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle);
     /**
      * Defines a combined query from a JSON or XML representation.
      * @param handle a handle for a JSON or XML combined query
      * @param optionsName the name of a persisted query options configuration
      * @return a QueryDefinition for use of the combined query
      */
-	public RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName);
+	RawCombinedQueryDefinition newRawCombinedQueryDefinition(StructureWriteHandle handle, String optionsName);
 
 	/**
      * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
@@ -606,7 +606,7 @@ public interface QueryManager {
 	 * @param rawQuery	an IO representation of the JSON or XML structured query
      * @return a QueryDefinition for use of the structured query.
 	 */
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object rawQuery);
+	RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object rawQuery);
 	/**
      * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
      * 
@@ -618,21 +618,21 @@ public interface QueryManager {
      * @param optionsName the name of a persisted query options configuration
      * @return a QueryDefinition for use of the structured query.
 	 */
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object rawQuery, String optionsName);
+	RawStructuredQueryDefinition newRawStructuredQueryDefinitionAs(Format format, Object rawQuery, String optionsName);
 
 	/**
      * Defines a structured query from a JSON or XML representation.
      * @param handle a handle for a JSON or XML structured query
      * @return a QueryDefinition for use of the structured query
      */
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle);
+	RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle);
     /**
      * Defines a structured query from a JSON or XML representation.
      * @param handle a handle for a JSON or XML structured query
      * @param optionsName the name of a persisted query options configuration
      * @return a QueryDefinition for use of the structured query
      */
-	public RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
+	RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
 
 	/**
      * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
@@ -644,7 +644,7 @@ public interface QueryManager {
 	 * @param rawQuery	an IO representation of the query by example
      * @return a QueryDefinition for use of the query by example
 	 */
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object rawQuery);
+	RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object rawQuery);
 	/**
      * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
      * 
@@ -656,19 +656,19 @@ public interface QueryManager {
      * @param optionsName the name of a persisted query options configuration
      * @return a QueryDefinition for use of the query by example
 	 */
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object rawQuery, String optionsName);
+	RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object rawQuery, String optionsName);
 
     /**
      * Defines a simple query by example from a JSON or XML representation.
      * @param handle a handle for a JSON or XML query by example.
      * @return a QueryDefinition for use of the query by example.
      */
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle);
+	RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle);
     /**
      * Defines a simple query by example from a JSON or XML representation.
      * @param handle a handle for a JSON or XML query by example.
      * @param optionsName The name of a persisted query options configuration
      * @return a QueryDefinition for use of the query by example.
      */
-	public RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName);
+	RawQueryByExampleDefinition newRawQueryByExampleDefinition(StructureWriteHandle handle, String optionsName);
 }

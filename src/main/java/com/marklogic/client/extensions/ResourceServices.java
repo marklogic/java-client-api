@@ -17,7 +17,6 @@ package com.marklogic.client.extensions;
 
 import java.util.Iterator;
 
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
@@ -39,7 +38,7 @@ public interface ResourceServices {
 	 * Returns the name of the resource.
 	 * @return	the resource name
 	 */
-	public String getResourceName();
+	String getResourceName();
 
 	/**
 	 * Reads resource content by calling a GET service.
@@ -48,7 +47,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle
 	 */
-	public <R extends AbstractReadHandle> R get(RequestParameters params, R output);
+	<R extends AbstractReadHandle> R get(RequestParameters params, R output);
 	/**
 	 * Reads resource content by calling a GET service.
 	 * @param params	the parameters for the call
@@ -57,7 +56,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle
 	 */
-	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output);
+	<R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output);
 
 	/**
 	 * Reads multiple resource content by calling a GET service.
@@ -65,7 +64,7 @@ public interface ResourceServices {
 	 * @param mimetypes	the mimetypes for the requested content
 	 * @return	an iterator over the requested content
 	 */
-	public ServiceResultIterator get(RequestParameters params, String... mimetypes);
+	ServiceResultIterator get(RequestParameters params, String... mimetypes);
 	/**
 	 * Reads multiple resource content by calling a GET service.
 	 * @param params	the parameters for the call
@@ -73,7 +72,7 @@ public interface ResourceServices {
 	 * @param mimetypes	the mimetypes for the requested content
 	 * @return	an iterator over the requested content
 	 */
-	public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... mimetypes);
+	ServiceResultIterator get(RequestParameters params, Transaction transaction, String... mimetypes);
 
 	/**
 	 * Writes content by calling a PUT service.
@@ -83,7 +82,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output);
+	<R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output);
 	/**
 	 * Writes content by calling a PUT service.
 	 * @param params	the parameters for the call
@@ -93,7 +92,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
+	<R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
 	/**
 	 * Writes multiple content by calling a PUT service.
 	 * @param params	the parameters for the call
@@ -103,7 +102,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output);
+	<R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output);
 	/**
 	 * Writes multiple content by calling a PUT service.
 	 * @param params	the parameters for the call
@@ -114,7 +113,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output);
+	<R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output);
 
 	/**
 	 * Applies content by calling a POST service.
@@ -124,7 +123,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output);
+	<R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output);
 	/**
 	 * Applies content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -134,7 +133,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
+	<R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output);
 	/**
 	 * Applies content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -144,7 +143,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output);
+	<R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output);
 	/**
 	 * Applies content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -155,7 +154,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output);
+	<R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output);
 
 	/**
 	 * Applies multiple content by calling a POST service.
@@ -164,7 +163,7 @@ public interface ResourceServices {
 	 * @param mimetypes	the mimetypes for the requested content
 	 * @return	an iterator over the requested content
 	 */
-	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... mimetypes);
+	ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... mimetypes);
 	/**
 	 * Applies multiple content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -173,7 +172,7 @@ public interface ResourceServices {
 	 * @param mimetypes	the mimetypes for the requested content
 	 * @return	an iterator over the requested content
 	 */
-	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... mimetypes);
+	ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... mimetypes);
 	/**
 	 * Applies multiple content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -182,7 +181,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	an iterator over the requested content
 	 */
-	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... mimetypes);
+	<W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... mimetypes);
 	/**
 	 * Applies multiple content by calling a POST service.
 	 * @param params	the parameters for the call
@@ -192,7 +191,7 @@ public interface ResourceServices {
 	 * @param <W> the type of AbstractWriteHandle's with content to send
 	 * @return	an iterator over the requested content
 	 */
-	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... mimetypes);
+	<W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... mimetypes);
 
 	/**
 	 * Deletes content by calling a DELETE service.
@@ -201,7 +200,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R delete(RequestParameters params, R output);
+	<R extends AbstractReadHandle> R delete(RequestParameters params, R output);
 	/**
 	 * Deletes content by calling a DELETE service.
 	 * @param params	the parameters for the call
@@ -210,7 +209,7 @@ public interface ResourceServices {
 	 * @param <R> the type of AbstractReadHandle to return
 	 * @return	the content handle for the response
 	 */
-	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output);
+	<R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output);
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
@@ -218,52 +217,52 @@ public interface ResourceServices {
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
     /**
      * Returns the logger for debugging client requests.
      * @return	the request logger
      */
-    public RequestLogger getRequestLogger();
+    RequestLogger getRequestLogger();
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 
     /**
      * ServiceResult provides one content response from a service.
      */
-    public interface ServiceResult {
+    interface ServiceResult {
     	/**
     	 * Returns the format of the content.
     	 * @return	the content format
     	 */
-		public abstract Format getFormat();
+		abstract Format getFormat();
 		/**
 		 * Returns the mimetype of the content.
 		 * @return	the content mimetype
 		 */
-		public abstract String getMimetype();
+		abstract String getMimetype();
 		/**
 		 * Returns the length of the content in bytes.
 		 * @return	the byte length
 		 */
-		public abstract long   getLength();
+		abstract long   getLength();
 		/**
 		 * Returns a handle on the content.
 		 * @param handle	the content handle
 		 * @param <R> the type of AbstractReadHandle to return
 		 * @return	the content handle
 		 */
-		public <R extends AbstractReadHandle> R getContent(R handle);
+		<R extends AbstractReadHandle> R getContent(R handle);
 	}
     /**
      * ServiceResultIterator provides an iterator over content responses
      * from the server.
      */
-	public interface ServiceResultIterator extends Iterator<ServiceResult> {
+	interface ServiceResultIterator extends Iterator<ServiceResult> {
 		/**
 		 * Closes the iterator when no longer needed.
 		 */
-		public void close();
+		void close();
 	}
 }

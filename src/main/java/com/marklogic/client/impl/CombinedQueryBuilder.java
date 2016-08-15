@@ -21,26 +21,26 @@ import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public interface CombinedQueryBuilder {
-    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery, String qtext);
-    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+    CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery, String qtext);
+    CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
         QueryOptionsWriteHandle options);
-    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+    CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
         QueryOptionsWriteHandle options, String qtext);
-    public CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
+    CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
         QueryOptionsWriteHandle options, String qtext, String sparql);
-    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery, String qtext);
-    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery, String qtext);
+    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
         QueryOptionsWriteHandle options);
-    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext);
-    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext, String sparql);
-    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext);
-    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext);
+    CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
         QueryOptionsWriteHandle options);
-    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext);
-    public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
+    CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
         QueryOptionsWriteHandle options, String qtext, String sparql);
 }
 

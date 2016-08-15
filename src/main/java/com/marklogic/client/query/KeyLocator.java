@@ -28,10 +28,10 @@ public interface KeyLocator extends ValueLocator {
      * Returns a JSON key.
      * @return	the JSON key
      */
-	public String getKey();
+	String getKey();
 	/**
 	 * Specifies the JSON key.
 	 * @param key	the JSON key
 	 */
-    public void setKey(String key);
+    void setKey(String key);
 }

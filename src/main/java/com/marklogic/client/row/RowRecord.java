@@ -33,7 +33,7 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * Distinguishes an atomic value, a document or other content structure,
 	 * a uri, a blank node for a triple, or a null.
 	 */
-	public enum ColumnKind {
+	enum ColumnKind {
         ATOMIC_VALUE, CONTENT, URI, BNODE, NULL;
     }
 
@@ -44,7 +44,7 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * @param columnName	the name of the column
 	 * @return	the kind of value of the column in the row
 	 */
-	public ColumnKind getKind(String columnName);
+	ColumnKind getKind(String columnName);
 
 	/**
 	 * Identifies the schema data type where a column has an
@@ -55,7 +55,7 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * @param columnName	the name of the column
 	 * @return	the schema data type
 	 */
-	public QName getAtomicDatatype(String columnName);
+	QName getAtomicDatatype(String columnName);
 
 	/**
 	 * Gets the value of a column with an xs:boolean schema data type
@@ -63,56 +63,56 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * @param columnName	the name of the column
 	 * @return	the boolean primitive for an xs:boolean column
 	 */
-	public boolean   getBoolean(String columnName);
+	boolean   getBoolean(String columnName);
 	/**
 	 * Gets the value of a column with an xs:byte schema data type
 	 * as a Java byte primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the byte primitive for an xs:byte column
 	 */
-    public byte      getByte(String    columnName);
+    byte      getByte(String    columnName);
 	/**
 	 * Gets the value of a column with an xs:double schema data type
 	 * as a Java double primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the double primitive for an xs:double column
 	 */
-    public double    getDouble(String  columnName);
+    double    getDouble(String  columnName);
 	/**
 	 * Gets the value of a column with an xs:float schema data type
 	 * as a Java float primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the float primitive for an xs:float column
 	 */
-    public float     getFloat(String   columnName);
+    float     getFloat(String   columnName);
 	/**
 	 * Gets the value of a column with an xs:int schema data type
 	 * as a Java int primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the int primitive for an xs:int column
 	 */
-    public int       getInt(String     columnName);
+    int       getInt(String     columnName);
 	/**
 	 * Gets the value of a column with an xs:long schema data type
 	 * as a Java long primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the long primitive for an xs:long column
 	 */
-    public long      getLong(String    columnName);
+    long      getLong(String    columnName);
 	/**
 	 * Gets the value of a column with an xs:short schema data type
 	 * as a Java short primitive value.
 	 * @param columnName	the name of the column
 	 * @return	the short primitive for an xs:short column
 	 */
-    public short     getShort(String   columnName);
+    short     getShort(String   columnName);
     /**
 	 * Gets the value of a column with an xs:string schema data type
 	 * as a Java String literal value.
 	 * @param columnName	the name of the column
 	 * @return	the String literal for an xs:string column
 	 */
-    public String    getString(String  columnName);
+    String    getString(String  columnName);
 
 	/**
 	 * Gets the value of a column with an atomic schema data type.
@@ -125,9 +125,9 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
      * @param <T> the type of the object for the value
 	 * @return	an object of the class with the value of the data type
 	 */
-    public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName,  Class<T> as);
+    <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName,  Class<T> as);
 /* TODO:
-	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as);
+	<T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as);
 */
 
     /**
@@ -136,14 +136,14 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * @param columnName	the name of the column
      * @return	the format of the column content
      */
-	public Format getContentFormat(String columnName);
+	Format getContentFormat(String columnName);
 	/**
      * Identifies the format where a column has a document or
      * other content value in the row instead of an atomic value.
 	 * @param columnName	the name of the column
 	 * @return	the mimetype of the column content
 	 */
-	public String getContentMimetype(String columnName);
+	String getContentMimetype(String columnName);
 	/**
 	 * Gets the content of a column with a document or other
 	 * content value.
@@ -157,7 +157,7 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
      * @param <T> the type of the handle for reading the content
      * @return	the content handle populated with the content of the column value
 	 */
-	public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
+	<T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
 	/**
 	 * Gets the content of a column with a document or other
 	 * content value.
@@ -170,5 +170,5 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
      * @param <T> the type of the IO object for the content
      * @return	an object of the IO class with the content of the column value
 	 */
-    public <T> T getContentAs(String columnName, Class<T> as);
+    <T> T getContentAs(String columnName, Class<T> as);
 }

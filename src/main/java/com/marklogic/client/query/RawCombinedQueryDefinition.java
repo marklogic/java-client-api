@@ -28,5 +28,5 @@ public interface RawCombinedQueryDefinition extends RawQueryDefinition, ValueQue
 	 * @param handle	the JSON or XML handle.
 	 * @return	the query definition.
 	 */
-	public RawCombinedQueryDefinition withHandle(StructureWriteHandle handle);
+	RawCombinedQueryDefinition withHandle(StructureWriteHandle handle);
 }

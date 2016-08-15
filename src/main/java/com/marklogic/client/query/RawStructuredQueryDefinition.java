@@ -28,5 +28,5 @@ public interface RawStructuredQueryDefinition extends RawQueryDefinition {
 	 * @param handle	the JSON or XML handle.
 	 * @return	the query definition.
 	 */
-	public RawStructuredQueryDefinition withHandle(StructureWriteHandle handle);
+	RawStructuredQueryDefinition withHandle(StructureWriteHandle handle);
 }

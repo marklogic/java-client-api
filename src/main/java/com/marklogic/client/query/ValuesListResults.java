@@ -25,7 +25,7 @@ public interface ValuesListResults {
      * Returns the map of value results.
      * @return The map.
      */
-    public HashMap<String, String> getValuesMap();
+    HashMap<String, String> getValuesMap();
 }
 
 

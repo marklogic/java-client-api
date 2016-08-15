@@ -17,18 +17,15 @@ package com.marklogic.client.semantics;
 
 import java.util.Iterator;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
-import com.marklogic.client.semantics.Capability;
 
 /**
  * <p>A manager for CRUD operations on semantic graphs which reside in
@@ -116,7 +113,7 @@ public interface GraphManager {
      *        .withMimetype(RDFMimeTypes.NTRIPLES);
      *    graphMgr.merge(DEFAULT_GRAPH, stringHandle);</pre>
      */
-    public static String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
+    String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
 
     /** <p>Get the uri for available graphs.</p>
      *
@@ -129,7 +126,7 @@ public interface GraphManager {
      *
      * @return the graph uris
      */
-    public Iterator<String> listGraphUris();
+    Iterator<String> listGraphUris();
 
     /** <p>Read triples from the server.  The server can serialize the triples
      * using any RDFMimeTypes except TRIG.  Specify the desired serialization
@@ -146,7 +143,7 @@ public interface GraphManager {
      *
      * @see GraphManager example usage in class javadoc
      */
-    public <T extends TriplesReadHandle> T read(String uri, T handle)
+    <T extends TriplesReadHandle> T read(String uri, T handle)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Read triples from the server.  The server can serialize the triples
@@ -164,7 +161,7 @@ public interface GraphManager {
      *
      * @return the populated handle
      */
-    public <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction)
+    <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Read triples from the server as the specified type.  The server can
@@ -179,7 +176,7 @@ public interface GraphManager {
      *
      * @see GraphManager example usage in class javadoc
      */
-    public <T> T readAs(String uri, Class<T> as)
+    <T> T readAs(String uri, Class<T> as)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Read triples from the server as the specified type.  The server can
@@ -193,7 +190,7 @@ public interface GraphManager {
      *
      * @return the retrieved triples as the specified type
      */
-    public <T> T readAs(String uri, Class<T> as, Transaction transaction)
+    <T> T readAs(String uri, Class<T> as, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Retrieve permissions for a graph.</p>
@@ -202,7 +199,7 @@ public interface GraphManager {
      *
      * @return the retrieved GraphPermissions
      */
-    public GraphPermissions getPermissions(String uri)
+    GraphPermissions getPermissions(String uri)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Retrieve permissions for a graph.</p>
@@ -212,14 +209,14 @@ public interface GraphManager {
      *
      * @return the retrieved GraphPermissions
      */
-    public GraphPermissions getPermissions(String uri, Transaction transaction)
+    GraphPermissions getPermissions(String uri, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Delete all permissions for the graph.</p>
      *
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      */
-    public void deletePermissions(String uri)
+    void deletePermissions(String uri)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Delete all permissions for the graph.</p>
@@ -227,7 +224,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param transaction the open transaction to delete in
      */
-    public void deletePermissions(String uri, Transaction transaction)
+    void deletePermissions(String uri, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite all permissions for the graph.</p>
@@ -235,7 +232,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param permissions the permissions to set for this graph
      */
-    public void writePermissions(String uri, GraphPermissions permissions)
+    void writePermissions(String uri, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite all permissions for the graph.</p>
@@ -244,7 +241,7 @@ public interface GraphManager {
      * @param permissions the permissions to set for this graph
      * @param transaction the open transaction to write in
      */
-    public void writePermissions(String uri, GraphPermissions permissions, Transaction transaction)
+    void writePermissions(String uri, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add to permissions on the graph.</p>
@@ -252,7 +249,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param permissions the permissions to add to this graph
      */
-    public void mergePermissions(String uri, GraphPermissions permissions)
+    void mergePermissions(String uri, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add to permissions on the graph.</p>
@@ -261,7 +258,7 @@ public interface GraphManager {
      * @param permissions the permissions to add to this graph
      * @param transaction the open transaction to write in
      */
-    public void mergePermissions(String uri, GraphPermissions permissions, Transaction transaction)
+    void mergePermissions(String uri, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** Create a GraphPermissions builder object with the specified role and capabilities.
@@ -271,7 +268,7 @@ public interface GraphManager {
      *
      * @return the new GraphPermissions object with these capabilities set
      */
-    public GraphPermissions permission(String role, Capability... capabilities);
+    GraphPermissions permission(String role, Capability... capabilities);
 
     /** <p>Add triples from the handle to the specified graph.  The server can
      * receive the triples as any of the {@link RDFMimeTypes}.  Specify the
@@ -284,7 +281,7 @@ public interface GraphManager {
      *
      * @see GraphManager example usage in class javadoc
      */
-    public void merge(String uri, TriplesWriteHandle handle)
+    void merge(String uri, TriplesWriteHandle handle)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the handle to the specified graph.  The server can
@@ -297,7 +294,7 @@ public interface GraphManager {
      * @param handle the handle containing triples of appropriate RDFMimeTypes
      * @param transaction the open transaction to write in
      */
-    public void merge(String uri, TriplesWriteHandle handle, Transaction transaction)
+    void merge(String uri, TriplesWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the handle and add specified permissions to the
@@ -311,7 +308,7 @@ public interface GraphManager {
      * @param handle the handle containing triples of appropriate RDFMimeTypes
      * @param permissions the permissions to add to this graph
      */
-    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+    void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the handle and add specified permissions to the
@@ -326,7 +323,7 @@ public interface GraphManager {
      * @param permissions the permissions to add to this graph
      * @param transaction the open transaction to write in
      */
-    public void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+    void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the graphData object to the specified graph.  The
@@ -337,7 +334,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param graphData the object containing triples of appropriate RDFMimeTypesMimetype}
      */
-    public void mergeAs(String uri, Object graphData)
+    void mergeAs(String uri, Object graphData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the graphData object to the specified graph.  The
@@ -350,7 +347,7 @@ public interface GraphManager {
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param transaction the open transaction to write in
      */
-    public void mergeAs(String uri, Object graphData, Transaction transaction)
+    void mergeAs(String uri, Object graphData, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 
@@ -364,7 +361,7 @@ public interface GraphManager {
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param permissions the permissions to add to this graph
      */
-    public void mergeAs(String uri, Object graphData, GraphPermissions permissions)
+    void mergeAs(String uri, Object graphData, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add triples from the graphData object and add specified permissions
@@ -378,7 +375,7 @@ public interface GraphManager {
      * @param permissions the permissions to add to this graph
      * @param transaction the open transaction to write in
      */
-    public void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+    void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the handle as the
@@ -392,7 +389,7 @@ public interface GraphManager {
      *
      * @see GraphManager example usage in class javadoc
      */
-    public void write(String uri, TriplesWriteHandle handle)
+    void write(String uri, TriplesWriteHandle handle)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the handle as the
@@ -405,7 +402,7 @@ public interface GraphManager {
      * @param handle the handle containing triples of appropriate RDFMimeTypes
      * @param transaction the open transaction to write in
      */
-    public void write(String uri, TriplesWriteHandle handle, Transaction transaction)
+    void write(String uri, TriplesWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the handle and specified permissions as the
@@ -420,7 +417,7 @@ public interface GraphManager {
      *
      * @see GraphManager example usage in class javadoc
      */
-    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+    void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the handle and specified permissions as the
@@ -434,7 +431,7 @@ public interface GraphManager {
      * @param permissions the permissions to ovewrite for this graph
      * @param transaction the open transaction to write in
      */
-    public void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+    void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the graphData object as the specified graph.
@@ -445,7 +442,8 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param graphData the object containing triples of RDFMimeTypes specified by
      *     {@link #setDefaultMimetype setDefaultMimetype}
-     */    public void writeAs(String uri, Object graphData)
+     */    
+    void writeAs(String uri, Object graphData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the graphData object as the specified graph.
@@ -457,7 +455,8 @@ public interface GraphManager {
      * @param graphData the object containing triples of RDFMimeTypes specified by
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param transaction the open transaction to write in
-     */    public void writeAs(String uri, Object graphData, Transaction transaction)
+     */    
+    void writeAs(String uri, Object graphData, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the graphData object and specified
@@ -469,7 +468,8 @@ public interface GraphManager {
      * @param graphData the object containing triples of RDFMimeTypes specified by
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param permissions the permissions to ovewrite for this graph
-     */    public void writeAs(String uri, Object graphData, GraphPermissions permissions)
+     */    
+    void writeAs(String uri, Object graphData, GraphPermissions permissions)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Overwrite triples from the graphData object and specified
@@ -483,14 +483,14 @@ public interface GraphManager {
      * @param permissions the permissions to ovewrite for this graph
      * @param transaction the open transaction to write in
      */
-    public void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+    void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Permanently delete the specified graph from the server.</p>
      *
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      */
-    public void delete(String uri)
+    void delete(String uri)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Permanently delete the specified graph from the server.</p>
@@ -498,7 +498,7 @@ public interface GraphManager {
      * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
      * @param transaction the open transaction to delete in
      */
-    public void delete(String uri, Transaction transaction)
+    void delete(String uri, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Retrieves all triples related to specified subject or object iris.
@@ -514,7 +514,7 @@ public interface GraphManager {
      *
      * @return the populated handle
      */
-    public <T extends TriplesReadHandle> T things(T handle, String... iris)
+    <T extends TriplesReadHandle> T things(T handle, String... iris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Retrieves all triples related to specified subject or object iris.  The server can
@@ -527,7 +527,7 @@ public interface GraphManager {
      *
      * @return the retrieved triples as the specified type
      */
-    public <T> T thingsAs(Class<T> as, String... iris)
+    <T> T thingsAs(Class<T> as, String... iris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add quads from the handle to the graphs specified in the quads data.
@@ -539,7 +539,7 @@ public interface GraphManager {
      *
      * @param handle the handle containing quads of appropriate RDFMimeTypes
      */
-    public void mergeGraphs(QuadsWriteHandle handle)
+    void mergeGraphs(QuadsWriteHandle handle)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add quads from the handle to the graphs specified in the quads data.
@@ -552,7 +552,7 @@ public interface GraphManager {
      * @param handle the handle containing quads of appropriate RDFMimeTypes
      * @param transaction the open transaction to write in
      */
-    public void mergeGraphs(QuadsWriteHandle handle, Transaction transaction)
+    void mergeGraphs(QuadsWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add quads from the object to the graphs specified in the quads data.
@@ -563,7 +563,7 @@ public interface GraphManager {
      * @param quadsData the object containing quads of RDFMimeTypes specified by
      *     {@link #setDefaultMimetype setDefaultMimetype}
      */
-    public void mergeGraphsAs(Object quadsData)
+    void mergeGraphsAs(Object quadsData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Add quads from the object to the graphs specified in the quads data.
@@ -575,7 +575,7 @@ public interface GraphManager {
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param transaction the open transaction to write in
      */
-    public void mergeGraphsAs(Object quadsData, Transaction transaction)
+    void mergeGraphsAs(Object quadsData, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Remove all quads from all graphs then insert quads from the handle
@@ -587,7 +587,7 @@ public interface GraphManager {
      *
      * @param handle the handle containing quads of appropriate RDFMimeTypes
      */
-    public void replaceGraphs(QuadsWriteHandle handle)
+    void replaceGraphs(QuadsWriteHandle handle)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Remove all quads from all graphs then insert quads from the handle
@@ -600,7 +600,7 @@ public interface GraphManager {
      * @param handle the handle containing quads of appropriate RDFMimeTypes
      * @param transaction the open transaction to write in
      */
-    public void replaceGraphs(QuadsWriteHandle handle, Transaction transaction)
+    void replaceGraphs(QuadsWriteHandle handle, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Remove all quads from all graphs then insert quads from the quadsData
@@ -612,7 +612,7 @@ public interface GraphManager {
      * @param quadsData the object containing quads of RDFMimeTypes specified by
      *     {@link #setDefaultMimetype setDefaultMimetype}
      */
-    public void replaceGraphsAs(Object quadsData)
+    void replaceGraphsAs(Object quadsData)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Remove all quads from all graphs then insert quads from the quadsData
@@ -625,26 +625,26 @@ public interface GraphManager {
      *     {@link #setDefaultMimetype setDefaultMimetype}
      * @param transaction the open transaction to write in
      */
-    public void replaceGraphsAs(Object quadsData, Transaction transaction)
+    void replaceGraphsAs(Object quadsData, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Permanently delete all quads from all graphs.</p>
      */
-    public void deleteGraphs()
+    void deleteGraphs()
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** <p>Permanently delete all quads from all graphs.</p>
      *
      * @param transaction the open transaction to delete in
      */
-    public void deleteGraphs(Transaction transaction)
+    void deleteGraphs(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** Get the mimetype set by calling setDefaultMimetype.
      *
      * @return the default mimetype set by calling setDefaultMimetype
      */
-    public String getDefaultMimetype();
+    String getDefaultMimetype();
 
     /** Set the default mimetype for data sent by write* or merge* methods
      * and data serialized by the server in response to calls to read* or
@@ -655,11 +655,11 @@ public interface GraphManager {
      *
      * @param mimetype the new default mimetype
      */
-    public void setDefaultMimetype(String mimetype);
+    void setDefaultMimetype(String mimetype);
 
     /** Get an empty GraphPermissions instance.
      *
      * @return an empty GraphPermissions instance
      */
-    public GraphPermissions newGraphPermissions();
+    GraphPermissions newGraphPermissions();
 }

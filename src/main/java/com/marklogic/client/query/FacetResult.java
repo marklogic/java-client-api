@@ -23,11 +23,11 @@ public interface FacetResult {
      * Returns the facet name.
      * @return The facet name.
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns an array of the facet values.
      * @return The facet values.
      */
-    public FacetValue[] getFacetValues();
+    FacetValue[] getFacetValues();
 }

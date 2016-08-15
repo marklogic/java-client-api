@@ -26,5 +26,5 @@ import com.marklogic.client.admin.config.QueryOptions.QueryAnnotation;
 @SuppressWarnings("deprecation")
 public interface Annotatable<T> {
 	T annotate(String xmlAnnotation);
-	public List<QueryAnnotation> getAnnotations();
+	List<QueryAnnotation> getAnnotations();
 }
