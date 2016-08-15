@@ -89,14 +89,14 @@ public interface PojoRepository<T, ID extends Serializable> {
      * serialized JSON format.
      * @param entity your pojo instance of the type managed by this PojoRepository
      */
-    public void write(T entity)
+    void write(T entity)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but also adds your collections to the 
      * persisted instance.
      * @param entity your pojo instance of the type managed by this PojoRepository
      * @param collections the collections to add to this instance in the database
      */
-    public void write(T entity, String... collections)
+    void write(T entity, String... collections)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but in your 
      * <a href="http://docs.marklogic.com/guide/app-dev/transactions">
@@ -104,7 +104,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @param entity your pojo instance of the type managed by this PojoRepository
      * @param transaction the open transaction in which to write this instance
      */
-    public void write(T entity, Transaction transaction)
+    void write(T entity, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Does everything in {@link #write(Object) write(T)} but also adds your
      * collections to the  persisted instance and performs the write in your
@@ -115,7 +115,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @param transaction the open transaction in which to write this instance
      * @param collections the collections to add to this instance in the database
      */
-    public void write(T entity, Transaction transaction, String... collections)
+    void write(T entity, Transaction transaction, String... collections)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** True if a document exists in the database with the specified id
@@ -123,7 +123,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      {@literal @}{@link Id Id})
      * @return true if a document exists in the database with the specified id
      */
-    public boolean exists(ID id)
+    boolean exists(ID id)
         throws ForbiddenUserException, FailedRequestException;
 
     /** True if in the context of transaction, a document exists in the database with
@@ -136,7 +136,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return true if in the context of transaction, a document exists in the database
      *      with the specified id
      */
-    public boolean exists(ID id, Transaction transaction)
+    boolean exists(ID id, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /** The number of documents of the type managed by this PojoRepository persisted
@@ -144,7 +144,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return The number of documents of the type
      *      managed by this PojoRepository persisted in the database
      */
-    public long count()
+    long count()
         throws ForbiddenUserException, FailedRequestException;
 
     /** In the context of transaction, the number of documents of the type managed by
@@ -155,7 +155,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return in the context of transaction, the number of documents of the type managed
      *      by this PojoRepository persisted in the database
      */
-    public long count(Transaction transaction)
+    long count(Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /** The number of documents of the type managed by this PojoRepository persisted in
@@ -165,7 +165,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      by this PojoRepository persisted in the database with at least one of the
      *      criteria collections
      */
-    public long count(String... collections)
+    long count(String... collections)
         throws ForbiddenUserException, FailedRequestException;
 
     /** In the context of transaction, the number of documents of the type managed by
@@ -179,7 +179,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      by this PojoRepository persisted in the database with at least one of the
      *      criteria collections
      */
-    public long count(String[] collections, Transaction transaction)
+    long count(String[] collections, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /** @return the number of documents of the type managed by this PojoRepository persisted in the database which match
@@ -187,7 +187,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @param query the query to perform to determine the number of matching instance in the db
      * @return the number of instance in the db matching the query
      */
-    public long count(PojoQueryDefinition query)
+    long count(PojoQueryDefinition query)
         throws ForbiddenUserException, FailedRequestException;
 
     /** In the context of transaction, the number of documents of the type managed by
@@ -199,35 +199,35 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return in the context of transaction, the number of documents of the type managed
      *      by this PojoRepository persisted in the database which match the query
      */
-    public long count(PojoQueryDefinition query, Transaction transaction)
+    long count(PojoQueryDefinition query, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /** Deletes from the database the persisted pojo instances with the corresponding ids
      * @param ids the ids for the pojo instances to delete from the server
      */
-    public void delete(ID... ids)
+    void delete(ID... ids)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database the documents with the corresponding ids
      * @param ids the ids of instances to delete
      * @param transaction the transaction within which to perform the delete
      */
-    public void delete(ID[] ids, Transaction transaction)
+    void delete(ID[] ids, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** Deletes from the database all documents of the type managed by this PojoRepositoryof type T persisted by the pojo facade */
-    public void deleteAll()
+    void deleteAll()
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /** As part of transaction, deletes from the database all documents of the type managed by this PojoRepositoryof type T persisted by 
      * the pojo facade
      * @param transaction the transaction within which to perform the delete
      */
-    public void deleteAll(Transaction transaction)
+    void deleteAll(Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /* REST API does not currently support DELETE /search with multiple collection arguments
-    public void deleteAll(String... collections)
+    void deleteAll(String... collections)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     */
 
@@ -237,7 +237,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return an instance of the correct type populated with the persisted data
      *      from the database
      */
-    public T read(ID id)
+    T read(ID id)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, read one persisted pojo by id and unmarshall its data
      * into a new pojo instance.
@@ -249,7 +249,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      * @return an instance of the correct type populated with the persisted data
      *      from the database
      */
-    public T read(ID id, Transaction transaction)
+    T read(ID id, Transaction transaction)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /** Read multiple persisted pojos by id and unmarshall their data into new pojo instances.
      * If at least one instance is found but others are not, ignores the instances not found.
@@ -261,7 +261,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      Since this call produces a finite set, only one page is returned and therefore
      *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
-    public PojoPage<T> read(ID[] ids)
+    PojoPage<T> read(ID[] ids)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction,
      * read multiple persisted pojos and unmarshall their data into new pojo instances.
@@ -277,7 +277,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      Since this call produces a finite set, only one page is returned and therefore
      *      PojoPage pagination methods will not be helpful as they would be from calls to search.
      */
-    public PojoPage<T> read(ID[] ids, Transaction transaction)
+    PojoPage<T> read(ID[] ids, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
     /** Read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
@@ -287,7 +287,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      Since this call may match a large set, only one page of {@link #getPageLength()}
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
      */    
-    public PojoPage<T> readAll(long start)
+    PojoPage<T> readAll(long start)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, read one page of persisted pojos of the type managed by this
      * PojoRepository and unmarshall their data into new pojo instances.
@@ -300,7 +300,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      Since this call may match a large set, only one page of {@link #getPageLength()}
      *      is returned just like calls to {@link #search(PojoQueryDefinition, long) search}.
      */
-    public PojoPage<T> readAll(long start, Transaction transaction)
+    PojoPage<T> readAll(long start, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /** Find all persisted pojos of the type managed by this
@@ -314,7 +314,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned and the total estimated number of results is available from
      *      {@link PojoPage#getTotalSize() PojoPage.getTotalSize()}.
      */
-    public PojoPage<T> search(long start, String... collections)
+    PojoPage<T> search(long start, String... collections)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, find all persisted pojos of the type managed by this
      * PojoRepository also in one of the specified collections and unmarshall their data
@@ -330,7 +330,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned and the total estimated number of results is available from
      *      {@link PojoPage#getTotalSize() PojoPage.getTotalSize()}.
      */
-    public PojoPage<T> search(long start, Transaction transaction, String... collections)
+    PojoPage<T> search(long start, Transaction transaction, String... collections)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, search persisted pojos of the type managed by this
      * PojoRepository for matches to this query and unmarshall their data into new pojo instances.
@@ -345,7 +345,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned and the total estimated number of results is available from
      *      {@link PojoPage#getTotalSize() PojoPage.getTotalSize()}.
      */
-    public PojoPage<T> search(PojoQueryDefinition query, long start)
+    PojoPage<T> search(PojoQueryDefinition query, long start)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, search persisted pojos of the type managed by this
      * PojoRepository for matches to this query and unmarshall their data into new pojo instances.
@@ -363,9 +363,9 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned and the total estimated number of results is available from
      *      {@link PojoPage#getTotalSize() PojoPage.getTotalSize()}.
      */
-    public PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction)
+    PojoPage<T> search(PojoQueryDefinition query, long start, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
-    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle)
+    PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle)
         throws ForbiddenUserException, FailedRequestException;
     /** Within an open transaction, search persisted pojos of the type managed by this
      * PojoRepository for matches to this query and unmarshall their data into new pojo instances.
@@ -387,7 +387,7 @@ public interface PojoRepository<T, ID extends Serializable> {
      *      is returned and the total estimated number of results is available from
      *      {@link PojoPage#getTotalSize() PojoPage.getTotalSize()}.
      */
-    public PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction)
+    PojoPage<T> search(PojoQueryDefinition query, long start, SearchReadHandle searchHandle, Transaction transaction)
         throws ForbiddenUserException, FailedRequestException;
 
     /*
@@ -396,21 +396,21 @@ public interface PojoRepository<T, ID extends Serializable> {
      * the server, it just returns the uri it would generate with {@link #write write}.
      * @return the uri generated by PojoRepository when writing this pojo
      */
-    public String getDocumentUri(T pojo);
+    String getDocumentUri(T pojo);
  
     /** Get a PojoQueryBuilder for the type managed by this PojoRepository.
      * @return a PojoQueryBuilder for the type managed by this PojoRepository
      */
-    public PojoQueryBuilder<T> getQueryBuilder();
+    PojoQueryBuilder<T> getQueryBuilder();
 
     /** The number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search} (Default: 50).
      * @return the max number of instances per page
      */
-    public long getPageLength();
+    long getPageLength();
     /** Set the number of instances per page returned when calling {@link #readAll readAll} or
      * {@link #search search}.
      * @param length the max number of instance per page
      */
-    public void setPageLength(long length);
+    void setPageLength(long length);
 }

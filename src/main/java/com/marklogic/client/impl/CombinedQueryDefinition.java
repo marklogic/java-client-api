@@ -28,9 +28,9 @@ public interface CombinedQueryDefinition
      * 
      * @return The serialized definition.
      */
-    public String serialize();
+    String serialize();
 
-    public Format getFormat();
+    Format getFormat();
 }
 
 

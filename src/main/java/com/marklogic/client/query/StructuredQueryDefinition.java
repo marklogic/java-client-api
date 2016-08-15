@@ -30,6 +30,6 @@ public interface StructuredQueryDefinition
      * 
      * @return The serialized definition.
      */
-    public String serialize();
+    String serialize();
 
 }

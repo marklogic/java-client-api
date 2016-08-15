@@ -50,7 +50,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of transform extensions
      */
-    public <T> T listTransformsAs(Format format, Class<T> as);
+    <T> T listTransformsAs(Format format, Class<T> as);
     /**
 	 * Reads the list of transform extensions installed on the server
 	 * in a JSON or XML representation provided as an object of an IO class.
@@ -64,7 +64,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of transform extensions
      */
-    public <T> T listTransformsAs(Format format, Class<T> as, boolean refresh);
+    <T> T listTransformsAs(Format format, Class<T> as, boolean refresh);
 
 	/**
 	 * Lists the installed transform extensions.
@@ -72,7 +72,7 @@ public interface TransformExtensionsManager {
 	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
-	public <T extends StructureReadHandle> T listTransforms(T listHandle)
+	<T extends StructureReadHandle> T listTransforms(T listHandle)
 	throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Lists the installed transform extensions, specifying whether to refresh
@@ -82,7 +82,7 @@ public interface TransformExtensionsManager {
 	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
-	public <T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
+	<T extends StructureReadHandle> T listTransforms(T listHandle, boolean refresh)
 		throws ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -97,7 +97,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the XSLT source code
 	 */
-	public <T> T readXSLTransformAs(String transformName, Class<T> as)
+	<T> T readXSLTransformAs(String transformName, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -107,7 +107,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of XMLReadHandle to return
      * @return	the XSLT source code
 	 */
-    public <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
+    <T extends XMLReadHandle> T readXSLTransform(String transformName, T sourceHandle)
     	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 
     /**
@@ -122,7 +122,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the XQuery source code
      */
-	public <T> T readXQueryTransformAs(String transformName, Class<T> as)
+	<T> T readXQueryTransformAs(String transformName, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -132,7 +132,7 @@ public interface TransformExtensionsManager {
      * @param <T> the type of TextReadHandle to return
      * @return	the XQuery source code
 	 */
-	public <T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
+	<T extends TextReadHandle> T readXQueryTransform(String transformName, T sourceHandle)
     	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 	
   /**
@@ -147,7 +147,7 @@ public interface TransformExtensionsManager {
    * @param <T> the type of object that will be returned by the handle registered for it
    * @return	an object of the IO class with the Javascript source code
    */
-public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
+<T> T readJavascriptTransformAs(String transformName, Class<T> as)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 /**
@@ -157,7 +157,7 @@ public <T> T readJavascriptTransformAs(String transformName, Class<T> as)
    * @param <T> the type of TextReadHandle to return
    * @return	the Javascript source code
  */
-public <T extends TextReadHandle> T readJavascriptTransform(String transformName, T sourceHandle)
+<T extends TextReadHandle> T readJavascriptTransform(String transformName, T sourceHandle)
   	throws FailedRequestException, ResourceNotFoundException, ForbiddenUserException;
 	
 	
@@ -171,7 +171,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param transformName	the name of the transform
      * @param source	an IO representation of the source code
 	 */
-	public void writeXSLTransformAs(String transformName, Object source)
+	void writeXSLTransformAs(String transformName, Object source)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	/**
      * Installs a transform implemented in XSL
@@ -184,7 +184,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param metadata	the metadata about the transform
      * @param source	an IO representation of the source code
 	 */
-	public void writeXSLTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+	void writeXSLTransformAs(String transformName, ExtensionMetadata metadata, Object source)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -192,7 +192,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XSL implementation
      */
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
+    void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
@@ -200,7 +200,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param sourceHandle	a handle on the source for the XSL implementation
      * @param metadata	the metadata about the transform
      */
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
+    void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XSL.
@@ -210,7 +210,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param paramTypes	the names and XML Schema datatypes of the transform parameters
      */
     @Deprecated
-    public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -223,7 +223,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param transformName	the name of the transform
      * @param source	an IO representation of the source code
 	 */
-	public void writeXQueryTransformAs(String transformName, Object source)
+	void writeXQueryTransformAs(String transformName, Object source)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	/**
      * Installs a transform implemented in XQuery
@@ -236,7 +236,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param metadata	the metadata about the transform
      * @param source	an IO representation of the source code
 	 */
-	public void writeXQueryTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+	void writeXQueryTransformAs(String transformName, ExtensionMetadata metadata, Object source)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -244,7 +244,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the XQuery implementation
      */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
+    void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XQuery.
@@ -252,7 +252,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param sourceHandle	a handle on the source for the XQuery implementation
      * @param metadata	the metadata about the transform
      */
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+    void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in XQuery.
@@ -262,7 +262,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param paramTypes	the names and XML Schema datatypes of the transform parameters
      */
     @Deprecated
-    public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
+    void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
   	/**
@@ -276,7 +276,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
        * @param source	an IO representation of the source code
   	 */
     
-  	public void writeJavascriptTransformAs(String transformName, Object source)
+  	void writeJavascriptTransformAs(String transformName, Object source)
   		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
   	/**
        * Installs a transform implemented in Javascript
@@ -289,7 +289,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
        * @param metadata	the metadata about the transform
        * @param source	an IO representation of the source code
   	 */
-  	public void writeJavascriptTransformAs(String transformName, ExtensionMetadata metadata, Object source)
+  	void writeJavascriptTransformAs(String transformName, ExtensionMetadata metadata, Object source)
   		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -297,7 +297,7 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param transformName	the name of the resource
      * @param sourceHandle	a handle on the source for the Javascript implementation
      */
-    public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle)
+    void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Installs a transform implemented in Javascript.
@@ -305,14 +305,14 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * @param sourceHandle	a handle on the source for the Javascript implementation
      * @param metadata	the metadata about the transform
      */
-    public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
+    void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
     /**
      * Uninstalls the transform.
      * @param transformName	the name of the transform
      */
-    public void deleteTransform(String transformName)
+    void deleteTransform(String transformName)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -321,9 +321,9 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 }

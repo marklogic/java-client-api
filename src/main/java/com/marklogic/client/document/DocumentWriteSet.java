@@ -32,12 +32,12 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param metadataHandle the handle containing the metatdata to use as defaults
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
+    DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle);
 
     /** Removes the default metadata for this write set for all documents added after this call
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet disableDefault();
+    DocumentWriteSet disableDefault();
 
     /**
      * Adds to this write set a document with the given docId (server uri)
@@ -46,7 +46,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param contentHandle	a handle for writing the content of the document
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
+    DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
 
     /**
      * Adds to this write set a document with the given docId (server uri)
@@ -59,7 +59,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param content	an IO representation of the document content
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet addAs(String docId, Object content);
+    DocumentWriteSet addAs(String docId, Object content);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -69,7 +69,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param contentHandle	a handle for writing the content of the document
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
+    DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -83,7 +83,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param content	an IO representation of the document content
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content);
+    DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content);
 
     /**
      * Adds to this write set a document with the given uri template, and
@@ -92,7 +92,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param contentHandle	a handle for writing the content of the document
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle);
+    DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle);
 
     /**
      * Adds to this write set a document with the given uri template, metadata,
@@ -102,7 +102,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param contentHandle	a handle for writing the content of the document
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
+    DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -112,7 +112,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+    DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle, String temporalDocumentURI);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -126,7 +126,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet addAs(String docId, Object content, String temporalDocumentURI);
+    DocumentWriteSet addAs(String docId, Object content, String temporalDocumentURI);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -137,7 +137,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+    DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
 
     /**
      * Adds to this write set a document with the given docId (server uri),
@@ -152,7 +152,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, String temporalDocumentURI);
+    DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, String temporalDocumentURI);
 
     /**
      * Adds to this write set a document with the given uri template, temporalDocumentURI and
@@ -162,7 +162,7 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+    DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle, String temporalDocumentURI);
 
     /**
      * Adds to this write set a document with the given uri template, metadata, temporalDocumentURI
@@ -173,6 +173,6 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @param temporalDocumentURI the logical temporal document collection URI
      * @return this instance (for method chaining)
      */
-    public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
+    DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle, String temporalDocumentURI);
 }
 

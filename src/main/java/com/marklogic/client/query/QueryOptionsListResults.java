@@ -28,7 +28,7 @@ public interface QueryOptionsListResults {
      *
      * @return The map of names to URIs.
      */
-    public HashMap<String, String> getValuesMap();
+    HashMap<String, String> getValuesMap();
 }
 
 

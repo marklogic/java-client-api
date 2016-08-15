@@ -29,39 +29,39 @@ public interface RequestLogger {
 	/**
 	 * Indicates that no content is copied to the log (the default).
 	 */
-	public final static long NO_CONTENT  = 0;
+	long NO_CONTENT  = 0;
 	/**
 	 * Indicates that all content is copied to the log.
 	 */
-	public final static long ALL_CONTENT = Long.MAX_VALUE;
+	long ALL_CONTENT = Long.MAX_VALUE;
 
 	/**
 	 * Returns how much content is copied to the log.
 	 * @return	the limit on copying content
 	 */
-	public long getContentMax();
+	long getContentMax();
 	/**
 	 * Controls how much content is copied to the log (defaulting to NO_CONTENT).
 	 * @param length	the limit on copying content
 	 */
-	public void setContentMax(long length);
+	void setContentMax(long length);
 
 	/**
 	 * Returns whether logging is active or suspended.
 	 * @return	the enablement of logging
 	 */
-	public boolean isEnabled();
+	boolean isEnabled();
 	/**
 	 * Suspend or resume logging.
 	 * @param enabled	the enablement of logging
 	 */
-    public void setEnabled(boolean enabled);
+    void setEnabled(boolean enabled);
 
     /**
      * Returns the underlying PrintStream used for logging.
      * @return	the PrintStream for logging
      */
-	public PrintStream getPrintStream();
+	PrintStream getPrintStream();
 
 	/**
 	 * Copies content to the log during request processing 
@@ -76,14 +76,14 @@ public interface RequestLogger {
 	 * @param <T> the type to return
 	 * @return	the copied content
 	 */
-    public <T> T copyContent(T content);
+    <T> T copyContent(T content);
 
     /**
      * Send buffered output to the log destination.
      */
-    public void flush();
+    void flush();
 	/**
 	 * Close the log.
 	 */
-    public void close();
+    void close();
 }

@@ -24,5 +24,5 @@ import com.marklogic.client.admin.config.QueryOptions.QueryExtractMetadata;
  */
 @SuppressWarnings("deprecation")
 public interface MetadataExtract {
-	public void build(QueryExtractMetadata metadata);
+	void build(QueryExtractMetadata metadata);
 }

@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.io.marker;
 
-import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
-
 /**
  * A XML Read Handle can represent XML content read from the database.
  *

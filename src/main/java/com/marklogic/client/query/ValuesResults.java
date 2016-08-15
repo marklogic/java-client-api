@@ -23,13 +23,13 @@ public interface ValuesResults {
      * Return the query definition for this set of results.
      * @return The query criteria.
      */
-    public ValuesDefinition getQueryCriteria();
+    ValuesDefinition getQueryCriteria();
 
     /**
      * Returns the name of the values.
      * @return The name.
      */
-    public String getName();
+    String getName();
 
     /**
      * Returns the type of the values.
@@ -38,31 +38,31 @@ public interface ValuesResults {
      *
      * @return The type.
      */
-    public String getType();
+    String getType();
 
     /**
      * Returns an array of the values.
      * @return The array of values.
      */
-    public CountedDistinctValue[] getValues();
+    CountedDistinctValue[] getValues();
 
     /**
      * Returns an array of the aggregates.
      * @return The array of aggrgates.
      */
-    public AggregateResult[] getAggregates();
+    AggregateResult[] getAggregates();
 
     /**
      * Returns the aggregate result for the named aggregate function.
      * @param name The name of the aggregate function.
      * @return The corresponding aggregate, or null if no such aggregate exists.
      */
-    public AggregateResult getAggregate(String name);
+    AggregateResult getAggregate(String name);
 
     /**
      * Returns performance metrics about the query.
      * @return The metrics
      */
-    public ValuesMetrics getMetrics();
+    ValuesMetrics getMetrics();
 }
 

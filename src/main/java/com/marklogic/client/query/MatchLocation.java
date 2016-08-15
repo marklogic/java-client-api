@@ -23,14 +23,14 @@ public interface MatchLocation {
      * Returns the path to the matching location in the document.
      * @return The path.
      */
-    public String getPath();
+    String getPath();
 
     /**
      * Returns the entire text only of the snippet, excluding any highlight tags.
      * @return The snippet text.
      */
 
-    public String getAllSnippetText();
+    String getAllSnippetText();
 
     /**
      * Returns the array of elements in the snippet.
@@ -39,5 +39,5 @@ public interface MatchLocation {
      *
      * @return The array of snippet elements.
      */
-    public MatchSnippet[] getSnippets();
+    MatchSnippet[] getSnippets();
 }

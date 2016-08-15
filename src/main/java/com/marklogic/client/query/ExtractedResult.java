@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.query;
 
-import com.marklogic.client.io.Format;
-
 /** Surfaces the data sent from the server-side XQuery search:search API. Note
  * that the most important function is to provide access to the list of ExtractedItem
  * objects.  For example:
@@ -55,29 +53,29 @@ public interface ExtractedResult extends Iterable<ExtractedItem> {
      * unavailable.
      * @return the xquery type of the extracted data
      */
-    public String getKind();
+    String getKind();
 
     /** Returns true if the underlying node is an "extracted-none" XML element or
      * JSON property.
      * @return if the underlying node is an "extracted-none" XML element or
      *         JSON property
      */
-    public boolean isEmpty();
+    boolean isEmpty();
 
     /** The number of ExtractedItem objects in the Iterator.
      * @return the number of ExtractedItem object in the Iterator
      */
-    public int size();
+    int size();
 
     /** Returns the next element in the internal iterator, which is separate
      *  from any new iterator created by calls to iterator().
      *  @return the next element in the iteration
      */
-    public ExtractedItem next();
+    ExtractedItem next();
 
     /** Returns true if internal iterator has more elements.
      *  The internal iterator is separate from any new iterator created by calls to iterator().
      *  @return true if the internal iterator has more elements
      */
-    public boolean hasNext();
+    boolean hasNext();
 }

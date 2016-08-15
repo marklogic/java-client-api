@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.bitemporal;
 
-import javax.xml.bind.DatatypeConverter;
 import com.marklogic.client.document.DocumentDescriptor;
 
 public interface TemporalDescriptor extends DocumentDescriptor {
@@ -23,7 +22,7 @@ public interface TemporalDescriptor extends DocumentDescriptor {
      * Returns the URI identifier for the database document.
      * @return	the document URI
      */
-    public String getUri();
+    String getUri();
 
     /**
      * Returns the temporal system time when the document was written or deleted.
@@ -34,5 +33,5 @@ public interface TemporalDescriptor extends DocumentDescriptor {
      * precision.
      * @return  the temporal system time
      */
-    public String getTemporalSystemTime();
+    String getTemporalSystemTime();
 }

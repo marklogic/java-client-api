@@ -23,12 +23,12 @@ public interface ValuesListDefinition {
      * Returns the name of the options node associated with this query.
      * @return The name of the options node.
      */
-    public String getOptionsName();
+    String getOptionsName();
 
     /**
      * Set the name of the options node to be used for this query.
      * @param optname The name of the options node.
      */
-    public void setOptionsName(String optname);
+    void setOptionsName(String optname);
 }
 

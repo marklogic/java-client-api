@@ -42,7 +42,8 @@ public interface DocumentPage extends Page<DocumentRecord>, Closeable {
      * @param <T> the type of AbstractReadHandle to return
      * @return the contents of the next document
      */
-    public <T extends AbstractReadHandle> T nextContent(T contentHandle);
+    <T extends AbstractReadHandle> T nextContent(T contentHandle);
     /** Frees the underlying resources, including the http connection. */
-    public void close();
+    @Override
+    void close();
 }

@@ -23,5 +23,5 @@ import java.util.List;
  * Used only in {@link com.marklogic.client.admin.config.QueryOptionsBuilder}.term(...)
  */
 public interface TermSource {
-	public List<String> getTermOptions();
+	List<String> getTermOptions();
 }

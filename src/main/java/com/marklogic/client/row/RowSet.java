@@ -28,11 +28,11 @@ import java.util.stream.Stream;
  * @param <T>	the type of the handle for reading the set of rows
  */
 public interface RowSet<T> extends Iterable<T>, Closeable {
-    public String[] getColumnNames();
+    String[] getColumnNames();
 
     /**
      * Streams each row in the set of rows.
      * @return	a stream for the set of rows read from the database
      */
-    public Stream<T> stream();
+    Stream<T> stream();
 }

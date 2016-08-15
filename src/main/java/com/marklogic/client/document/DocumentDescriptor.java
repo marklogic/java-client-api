@@ -24,18 +24,18 @@ public interface DocumentDescriptor extends ContentDescriptor {
 	/**
 	 * Indicates that the version of the database document is not known.
 	 */
-	static final public long UNKNOWN_VERSION = -1;
+	long UNKNOWN_VERSION = -1;
 
 	/**
 	 * Returns the URI identifier for the database document.
 	 * @return	the document URI
 	 */
-	public String getUri();
+	String getUri();
 	/**
 	 * Specifies the URI identifier for a database document.
 	 * @param uri	the document URI
 	 */
-	public void setUri(String uri);
+	void setUri(String uri);
 
 	/**
 	 * Specifies the format for a database document and
@@ -43,7 +43,7 @@ public interface DocumentDescriptor extends ContentDescriptor {
 	 * @param format	the document format
 	 * @return	the descriptor object
 	 */
-	public DocumentDescriptor withFormat(Format format);
+	DocumentDescriptor withFormat(Format format);
 
 	/**
 	 * Returns the version for the database document.  Each update
@@ -53,12 +53,12 @@ public interface DocumentDescriptor extends ContentDescriptor {
 	 * to enable versioning on content.
 	 * @return	the document version number
 	 */
-	public long getVersion();
+	long getVersion();
 	/**
 	 * Specifies the document version.  Checking the existence
 	 * of a document or reading a document specifies the document version
 	 * if you have enabled versioning on content.
 	 * @param version	the document version number
 	 */
-	public void setVersion(long version);
+	void setVersion(long version);
 }

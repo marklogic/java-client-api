@@ -23,17 +23,17 @@ public interface ValuesMetrics {
      * Returns the query resolution time in milliseconds.
      * @return The query resolution time.
      */
-    public long getValuesResolutionTime();
+    long getValuesResolutionTime();
 
     /**
      * Returns the facet resolution time in milliseconds.
      * @return The facet resolution time.
      */
-    public long getAggregateResolutionTime();
+    long getAggregateResolutionTime();
 
     /**
      * Returns the total time taken by the query in milliseconds.
      * @return The total time.
      */
-    public long getTotalTime();
+    long getTotalTime();
 }

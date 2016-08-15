@@ -30,32 +30,32 @@ public interface MatchDocumentSummary {
      * Returns the URI of the document.
      * @return The uri.
      */
-    public String getUri();
+    String getUri();
 
     /**
      * Returns the score associated with the document.
      * @return The score.
      */
-    public int    getScore();
+    int    getScore();
 
     /**
      * Returns the confidence messsure associated with the document.
      * @return The confidence.
      */
-    public double getConfidence();
+    double getConfidence();
 
-    public ExtractedResult getExtracted();
+    ExtractedResult getExtracted();
     /**
      * Returns the fitness of the document.
      * @return The fitness.
      */
-    public double getFitness();
+    double getFitness();
 
     /**
      * Returns the path of the match.
      * @return The path.
      */
-    public String getPath();
+    String getPath();
 
     /**
      * Returns an array of match locations.
@@ -67,7 +67,7 @@ public interface MatchDocumentSummary {
      *
      * @return The array of match locations.
      */
-    public MatchLocation[] getMatchLocations();
+    MatchLocation[] getMatchLocations();
 
     /**
      * Returns an array of snippets.
@@ -79,7 +79,7 @@ public interface MatchDocumentSummary {
      *
      * @return The array of snippet documents.
      */
-    public Document[] getSnippets();
+    Document[] getSnippets();
 
 	/**
      * Returns an iterator over the snippets matched for the result.
@@ -87,7 +87,7 @@ public interface MatchDocumentSummary {
      * @param <T> the type of XMLReadHandle to iterate over
      * @return	An iterator that populates the handle with each snippet.
 	 */
-	public <T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
+	<T extends XMLReadHandle> Iterator<T> getSnippetIterator(T handle);
 
 	/**
      * Reads the content of the first snippet for the matched result document
@@ -102,7 +102,7 @@ public interface MatchDocumentSummary {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the first snippet
 	 */
-	public <T> T getFirstSnippetAs(Class<T> as);
+	<T> T getFirstSnippetAs(Class<T> as);
 	/**
 	 * Returns the content of the first snippet for the matched result document
 	 * as a convenience, especially for a raw snippet that contains the entire
@@ -111,7 +111,7 @@ public interface MatchDocumentSummary {
 	 * @param <T> the type of XMLReadHandle to return
 	 * @return	The handle populated with the first snippet.
 	 */
-	public <T extends XMLReadHandle> T getFirstSnippet(T handle);
+	<T extends XMLReadHandle> T getFirstSnippet(T handle);
 
 	/**
 	 * Returns the text of the first snippet as a convenience,
@@ -119,14 +119,14 @@ public interface MatchDocumentSummary {
 	 * in JSON or text format.
 	 * @return	The text of the first snippet
 	 */
-	public String getFirstSnippetText();
+	String getFirstSnippetText();
 
 	/**
      * Returns the metadata associated with this document.
      *
      * @return the metadata
      */
-    public Document getMetadata();
+    Document getMetadata();
 
     /**
      * Reads the metadata extracted from the matched result document
@@ -139,33 +139,33 @@ public interface MatchDocumentSummary {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the extracted result document metadata
      */
-	public <T> T getMetadataAs(Class<T> as);
+	<T> T getMetadataAs(Class<T> as);
 	/**
      * Returns the metadata extracted from the result document.
      * @param handle	An XML handle for reading the metadata.
      * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the metadata.
 	 */
-	public <T extends XMLReadHandle> T getMetadata(T handle);
+	<T extends XMLReadHandle> T getMetadata(T handle);
 
     /**
      * Returns the mime type associated with this document.
      * @return the mime type associated with this document.
      */
-    public String getMimeType();
+    String getMimeType();
      
     /**
      * Returns the format associated with this document
      * @return the format
      */
-    public Format getFormat();
+    Format getFormat();
 
     /**
      * Get relevance info for a particular result.
      * Includes data only if a query was sent with the 'relevance-trace' search option.
      * @return A DOM Element containing relevance trace info.  In the absence of the 'relevance-trace' option, returns null.
      */
-	public Document getRelevanceInfo();
+	Document getRelevanceInfo();
 
 	/**
      * Returns the relevance information for the result.
@@ -173,11 +173,11 @@ public interface MatchDocumentSummary {
      * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the relevance information.
 	 */
-	public <T extends XMLReadHandle> T getRelevanceInfo(T handle);
+	<T extends XMLReadHandle> T getRelevanceInfo(T handle);
 
 	/**
 	 * Returns the uris for documents similar to the result (if requested).
 	 * @return	The document uris.
 	 */
-	public String[] getSimilarDocumentUris();
+	String[] getSimilarDocumentUris();
 }

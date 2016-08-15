@@ -76,7 +76,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * when replacing an existing fragment.  You must construct a call
 	 * using the CallBuilder.
 	 */
-	public interface Call {
+	interface Call {
 	}
 
 	/**
@@ -85,32 +85,32 @@ public interface DocumentMetadataPatchBuilder {
 	 * construct the CallBuilder using the factory method of the
 	 * DocumentPatchBuilder.
 	 */
-	public interface CallBuilder {
+	interface CallBuilder {
 		/**
 		 * Calls the built-in method to add to an existing value.
 		 * @param number	the added number
 		 * @return	the specification of the add call
 		 */
-		public Call add(Number number);
+		Call add(Number number);
 		/**
 		 * Calls the built-in method to subtract from an existing value.
 		 * @param number	the subtracted number
 		 * @return	the specification of the subtract call
 		 */
-		public Call subtract(Number number);
+		Call subtract(Number number);
 		/**
 		 * Calls the built-in method to multiply an existing value.
 		 * @param number	the multiplier
 		 * @return	the specification of the multiply call
 		 */
-		public Call multiply(Number number);
+		Call multiply(Number number);
 		/**
 		 * Calls the built-in method to divide an existing value
 		 * by the supplied number.
 		 * @param number	the divisor
 		 * @return	the specification of the divide call
 		 */
-		public Call divideBy(Number number);
+		Call divideBy(Number number);
 
 		/**
 		 * Calls the built-in method to append an existing string
@@ -118,7 +118,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param prefix	the string that appears first
 		 * @return	the specification of the concatenation call
 		 */
-		public Call concatenateAfter(String prefix);
+		Call concatenateAfter(String prefix);
 		/**
 		 * Calls the built-in method to concatenate an existing string
 		 * between the supplied strings.
@@ -126,28 +126,28 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param suffix	the string that appears last
 		 * @return	the specification of the concatenation call
 		 */
-		public Call concatenateBetween(String prefix, String suffix);
+		Call concatenateBetween(String prefix, String suffix);
 		/**
 		 * Calls the built-in method to concatenate an existing string
 		 * before the supplied string.
 		 * @param suffix	the string that appears last
 		 * @return	the specification of the concatenation call
 		 */
-		public Call concatenateBefore(String suffix);
+		Call concatenateBefore(String suffix);
 		/**
 		 * Calls the built-in method to reduce an existing string
 		 * to a trailing substring.
 		 * @param prefix	the initial part of the string
 		 * @return	the specification of the substring call
 		 */
-		public Call substringAfter(String prefix);
+		Call substringAfter(String prefix);
 		/**
 		 * Calls the built-in method to reduce an existing string
 		 * to a leading substring.
 		 * @param suffix	the final part of the string
 		 * @return	the specification of the substring call
 		 */
-		public Call substringBefore(String suffix);
+		Call substringBefore(String suffix);
 		/**
 		 * Calls the built-in method to modify an existing string
 		 * with a regular expression
@@ -155,7 +155,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param replacement	the replacement for the match
 		 * @return	the specification of the regex call
 		 */
-		public Call replaceRegex(String pattern, String replacement);
+		Call replaceRegex(String pattern, String replacement);
 		/**
 		 * Calls the built-in method to modify an existing string
 		 * with a regular expression
@@ -164,7 +164,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param flags	the regex flags
 		 * @return	the specification of the regex call
 		 */
-		public Call replaceRegex(
+		Call replaceRegex(
 				String pattern, String replacement, String flags
 				);
 
@@ -175,7 +175,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param function	the name of the function
 		 * @return	the specification of the function call
 		 */
-		public Call applyLibrary(String function);
+		Call applyLibrary(String function);
 		/**
 		 * Calls a function with the existing fragment and one or more
 		 * values.  The function must be provided by the library specified
@@ -184,7 +184,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param args	the literal values
 		 * @return	the specification of the function call
 		 */
-		public Call applyLibraryValues(String function, Object... args);
+		Call applyLibraryValues(String function, Object... args);
 		/**
 		 * Calls a function with the existing fragment and one or more
 		 * specified fragments.  The function must be provided by the
@@ -193,19 +193,19 @@ public interface DocumentMetadataPatchBuilder {
 		 * @param args	the fragments
 		 * @return	the specification of the function call
 		 */
-		public Call applyLibraryFragments(String function, Object... args);
+		Call applyLibraryFragments(String function, Object... args);
 	}
 
 	/**
 	 * A PatchHandle produced by the builder can produce a string
 	 * representation of the patch for saving, logging, or other uses.
 	 */
-	public interface PatchHandle extends DocumentPatchHandle {
+	interface PatchHandle extends DocumentPatchHandle {
 		/**
 		 * Returns a JSON or XML representation of the patch as a string.
 		 * @return	the patch
 		 */
-		public String toString();
+		String toString();
 	}
 
 	/**
@@ -213,7 +213,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * of a patch against XML documents.
 	 * @return	the declared namespaces
 	 */
-	public IterableNamespaceContext getNamespaces();
+	IterableNamespaceContext getNamespaces();
 	/**
 	 * Declares the namespaces available for the paths
 	 * of a patch against XML documents.  You can use the
@@ -223,7 +223,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * rapi, prop, xsi, and xs
 	 * @param namespaces	the declared namespaces
 	 */
-	public void setNamespaces(IterableNamespaceContext namespaces);
+	void setNamespaces(IterableNamespaceContext namespaces);
 
 	/**
 	 * Specifies an XQuery library installed on the server 
@@ -232,27 +232,27 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param at	the XQuery library path on the server
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder library(String ns, String at);
+	DocumentMetadataPatchBuilder library(String ns, String at);
 
 	/**
 	 * Adds the specified collections.
 	 * @param collections	the collection identifiers
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addCollection(String... collections);
+	DocumentMetadataPatchBuilder addCollection(String... collections);
 	/**
 	 * Deletes the specified collections.
 	 * @param collections	the collection identifiers
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder deleteCollection(String... collections);
+	DocumentMetadataPatchBuilder deleteCollection(String... collections);
 	/**
 	 * Replaces the specified collection.
 	 * @param oldCollection	the identifier for the existing collection
 	 * @param newCollection	the identifier for the new collection
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceCollection(String oldCollection, String newCollection);
+	DocumentMetadataPatchBuilder replaceCollection(String oldCollection, String newCollection);
 
 	/**
 	 * Adds a role with the specified capabilities
@@ -260,7 +260,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param capabilities	the set of capabilities
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addPermission(
+	DocumentMetadataPatchBuilder addPermission(
 			String role, DocumentMetadataHandle.Capability... capabilities
 			);
 	/**
@@ -268,14 +268,14 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param roles	the names of the roles
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder deletePermission(String... roles);
+	DocumentMetadataPatchBuilder deletePermission(String... roles);
 	/**
 	 * Replaces the existing capabilities of a role.
 	 * @param role	the name of the role
 	 * @param newCapabilities	the replacing set of capabilities
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePermission(
+	DocumentMetadataPatchBuilder replacePermission(
 			String role, DocumentMetadataHandle.Capability... newCapabilities
 			);
 	/**
@@ -285,7 +285,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newCapabilities	the capabilities of the replacing role
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePermission(
+	DocumentMetadataPatchBuilder replacePermission(
 			String oldRole, String newRole, DocumentMetadataHandle.Capability... newCapabilities
 			);
 
@@ -295,20 +295,20 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param value	the value of the metadata-value
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addMetadataValue(String key, String value);
+	DocumentMetadataPatchBuilder addMetadataValue(String key, String value);
 	/**
 	 * Deletes the specified metadata-value with the given key.
 	 * @param key	the key of the metadata-value
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder deleteMetadataValue(String key);
+	DocumentMetadataPatchBuilder deleteMetadataValue(String key);
 	/**
 	 * Replaces the existing metadata-value
 	 * @param key	the key of the existing metadata-value
 	 * @param newValue	the new value to be assigned to the key
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceMetadataValue(String key, String newValue);
+	DocumentMetadataPatchBuilder replaceMetadataValue(String key, String newValue);
 	/**
 	 * Specifies a replacement operation by applying a function
 	 * to the metadata-value. You must use
@@ -317,7 +317,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param call	the specification of the function call
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replaceMetadataValueApply(String key, Call call);
+	DocumentMetadataPatchBuilder replaceMetadataValueApply(String key, Call call);
 
 	/**
 	 * Adds a new metadata property with a simple name.
@@ -325,40 +325,40 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param value	the value of the new property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addPropertyValue(String name, Object value);
+	DocumentMetadataPatchBuilder addPropertyValue(String name, Object value);
 	/**
 	 * Adds a new metadata property with a namespaced name.
 	 * @param name	the namespaced name of the new property
 	 * @param value	the value of the new property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder addPropertyValue(QName name, Object value);
+	DocumentMetadataPatchBuilder addPropertyValue(QName name, Object value);
 	/**
 	 * Deletes the specified metadata properties with simple names.
 	 * @param names	the property names
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder deleteProperty(String... names);
+	DocumentMetadataPatchBuilder deleteProperty(String... names);
 	/**
 	 * Deletes the specified metadata properties with namespaced names.
 	 * @param names	the namespaced property names
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder deleteProperty(QName... names);
+	DocumentMetadataPatchBuilder deleteProperty(QName... names);
 	/**
 	 * Replaces the existing value of a metadata property having a simple name.
 	 * @param name	the name of the existing property
 	 * @param newValue the new value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyValue(String name, Object newValue);
+	DocumentMetadataPatchBuilder replacePropertyValue(String name, Object newValue);
 	/**
 	 * Replaces the existing value of a metadata property having a namespaced name.
 	 * @param name	the namespaced name of the existing property
 	 * @param newValue the new value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyValue(QName name, Object newValue);
+	DocumentMetadataPatchBuilder replacePropertyValue(QName name, Object newValue);
 	/**
 	 * Replaces an existing metadata property with a new property having a simple name.
 	 * @param oldName	the name of the existing property
@@ -366,7 +366,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newValue the value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyValue(
+	DocumentMetadataPatchBuilder replacePropertyValue(
 			String oldName, String newName, Object newValue
 			);
 	/**
@@ -376,7 +376,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param newValue the value of the property
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyValue(
+	DocumentMetadataPatchBuilder replacePropertyValue(
 			QName oldName, QName newName, Object newValue
 			);
 
@@ -385,7 +385,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * by applying built-in functions or functions from a library.
 	 * @return	the builder for function calls
 	 */
-	public CallBuilder call();
+	CallBuilder call();
 
 	/**
 	 * Specifies a replacement operation by applying a function
@@ -395,7 +395,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param call	the specification of the function call
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyApply(
+	DocumentMetadataPatchBuilder replacePropertyApply(
 			String name, Call call
 			);
 
@@ -407,7 +407,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param call	the specification of the function call
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder replacePropertyApply(
+	DocumentMetadataPatchBuilder replacePropertyApply(
 			QName name, Call call
 			);
 
@@ -416,7 +416,7 @@ public interface DocumentMetadataPatchBuilder {
 	 * @param quality	the new value for search quality
 	 * @return	the patch builder (for convenient chaining)
 	 */
-	public DocumentMetadataPatchBuilder setQuality(int quality);
+	DocumentMetadataPatchBuilder setQuality(int quality);
 
 	/**
 	 * Builds the patch that modifies the metadata or content of the
@@ -426,5 +426,5 @@ public interface DocumentMetadataPatchBuilder {
 	 * the patch builder do not alter the patch built previously.
 	 * @return	the handle on the built patch
 	 */
-	public PatchHandle build() throws MarkLogicIOException;
+	PatchHandle build() throws MarkLogicIOException;
 }

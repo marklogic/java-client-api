@@ -23,15 +23,15 @@ package com.marklogic.client.admin.config.support;
  */
 public interface RangeSpec extends IndexSpec {
 	
-	public void setType(String type);
+	void setType(String type);
 
-	public void setCollation(String collation);
+	void setCollation(String collation);
 
-	public String getType();
+	String getType();
 
-	public String getCollation();
+	String getCollation();
 	
-	public void build(RangeIndexed rangeIndexed);
+	void build(RangeIndexed rangeIndexed);
 	
 
 }

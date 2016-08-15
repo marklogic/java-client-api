@@ -27,5 +27,5 @@ public interface FacetHeatmapValue extends FacetValue {
      *
      * @return The box values.
      */
-    public double[] getBox();
+    double[] getBox();
 }

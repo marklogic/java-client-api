@@ -23,19 +23,19 @@ public interface SearchMetrics {
      * Returns the query resolution time in milliseconds.
      * @return The query resolution time.
      */
-    public long getQueryResolutionTime();
+    long getQueryResolutionTime();
 
     /**
      * Returns the facet resolution time in milliseconds.
      * @return The facet resolution time.
      */
-    public long getFacetResolutionTime();
+    long getFacetResolutionTime();
 
     /**
      * Returns the snippet resolution time in milliseconds.
      * @return The snippet resolution time.
      */
-    public long getSnippetResolutionTime();
+    long getSnippetResolutionTime();
 
     @Deprecated
     /**
@@ -43,17 +43,17 @@ public interface SearchMetrics {
      * @return The metadata resolution time.
      * @deprecated this is only populated when using the deprecated option extract-metadata
      */
-    public long getMetadataResolutionTime();
+    long getMetadataResolutionTime();
 
     /**
      * Returns the extract resolution time in milliseconds.
      * @return The extract resolution time.
      */
-    public long getExtractResolutionTime();
+    long getExtractResolutionTime();
 
     /**
      * Returns the total time taken by the query in milliseconds.
      * @return The total time.
      */
-    public long getTotalTime();
+    long getTotalTime();
 }

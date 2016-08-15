@@ -41,8 +41,7 @@ public interface RawQueryByExampleDefinition extends RawQueryDefinition {
 	 * The namespace of the built-in vocabulary for an Query by Example
 	 * in XML format.
 	 */
-	final public static String QBE_NS =
-		"http://marklogic.com/appservices/querybyexample";
+	String QBE_NS = "http://marklogic.com/appservices/querybyexample";
 
 	/**
 	 * Specifies the handle for the JSON or XML representation
@@ -50,5 +49,5 @@ public interface RawQueryByExampleDefinition extends RawQueryDefinition {
 	 * @param handle	the JSON or XML handle.
 	 * @return	the query definition.
 	 */
-	public RawQueryByExampleDefinition withHandle(StructureWriteHandle handle);
+	RawQueryByExampleDefinition withHandle(StructureWriteHandle handle);
 }

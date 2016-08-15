@@ -31,11 +31,11 @@ public interface BufferableHandle {
 	 * encoded in UTF-8.
 	 * @param buffer	the byte array
 	 */
-	public void fromBuffer(byte[] buffer);
+	void fromBuffer(byte[] buffer);
 	/**
 	 * Copies the content of the handle to a byte array buffer
 	 * encoded in UTF-8.
 	 * @return	the byte array
 	 */
-	public byte[] toBuffer();
+	byte[] toBuffer();
 }

@@ -32,22 +32,22 @@ public interface ElementLocator extends ValueLocator {
      * or value.
      * @return	the element name
      */
-	public QName getElement();
+	QName getElement();
 	/**
 	 * Specifies the name of the element containing the attribute
      * (if also specified) or value. The element may have namespace.
 	 * @param qname	the element name
 	 */
-    public void setElement(QName qname);
+    void setElement(QName qname);
     /**
      * Returns the name of the attribute (if specified).
      * @return	the attribute name
      */
-    public QName getAttribute();
+    QName getAttribute();
     /**
      * Specifies the name of the attribute containing the value.  The
      * element name must also be specified.
      * @param qname	the attribute name
      */
-    public void setAttribute(QName qname);
+    void setAttribute(QName qname);
 }

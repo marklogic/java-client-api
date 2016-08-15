@@ -22,5 +22,5 @@ import com.marklogic.client.Page;
  */
 public interface PojoPage<T> extends Page<T> {
     /** Frees the underlying resources, including the http connection. */
-    public void close();
+    void close();
 }
