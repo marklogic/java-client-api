@@ -17,8 +17,6 @@ package com.marklogic.client.admin.config.support;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.admin.config.support.GeospatialIndexType;
-
 /**
  * Defines an interface to the methods for storing
  * geospatial values in MarkLogic indexes.
@@ -30,26 +28,24 @@ import com.marklogic.client.admin.config.support.GeospatialIndexType;
 public interface GeospatialSpec {
 
 
-	public QName getElement();
+	QName getElement();
 	
-	public GeospatialIndexType getGeospatialIndexType();
+	GeospatialIndexType getGeospatialIndexType();
 
-	public QName getLatitude();
+	QName getLatitude();
 
-	public QName getLongitude();
+	QName getLongitude();
 	
-	public QName getParent();
+	QName getParent();
 	
-	public void setElement(QName element);
+	void setElement(QName element);
 	
-	public void setGeospatialIndexType(GeospatialIndexType geospatialIndexType);
+	void setGeospatialIndexType(GeospatialIndexType geospatialIndexType);
 
-	public void setLatitude(QName latitudeElement);	
+	void setLatitude(QName latitudeElement);	
 
-	public void setLongitude(QName longitudeElement);
+	void setLongitude(QName longitudeElement);
 
-	public void setParent(QName parent);
+	void setParent(QName parent);
 	
-	
-
 }

@@ -33,14 +33,14 @@ public interface ExtensionLibrariesManager {
 	 * Lists all of the library files that are installed on the server.
 	 * @return An array of ExtensionLibraryDescriptor objects.
 	 */
-	public ExtensionLibraryDescriptor[] list()
+	ExtensionLibraryDescriptor[] list()
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Lists all of the library files in one directory (infinite depth) on the server.
 	 * @param directory The directory to list.
 	 * @return An array of ExtensionLibraryDescriptor objects.
 	 */
-	public ExtensionLibraryDescriptor[] list(String directory)
+	ExtensionLibraryDescriptor[] list(String directory)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -54,7 +54,7 @@ public interface ExtensionLibrariesManager {
 	 * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the library asset 
 	 */
-	public <T> T readAs(String libraryPath, Class<T> as)
+	<T> T readAs(String libraryPath, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Reads the contents of a library asset as an object of an IO class.
@@ -67,7 +67,7 @@ public interface ExtensionLibrariesManager {
 	 * @param <T> the type of AbstractReadHandle to return
 	 * @return	an object of the IO class with the library asset 
 	 */
-	public <T> T read(ExtensionLibraryDescriptor libraryDescriptor, Class<T> as)
+	<T> T read(ExtensionLibraryDescriptor libraryDescriptor, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -77,7 +77,7 @@ public interface ExtensionLibrariesManager {
 	 * @param <T> the type of AbstractReadHandle to return
 	 * @return the handle for the library asset
 	 */
-	public <T extends AbstractReadHandle> T read(String libraryPath, T readHandle)
+	<T extends AbstractReadHandle> T read(String libraryPath, T readHandle)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Reads the contents of a library asset into a handle.
@@ -86,7 +86,7 @@ public interface ExtensionLibrariesManager {
 	 * @param <T> the type of AbstractReadHandle to return
 	 * @return The handle.
 	 */
-	public <T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor libraryDescriptor, T readHandle)
+	<T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor libraryDescriptor, T readHandle)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -99,7 +99,7 @@ public interface ExtensionLibrariesManager {
 	 * @param libraryPath The path at which to install the library.
 	 * @param content	an IO representation of the library asset
 	 */
-	public void writeAs(String libraryPath, Object content)
+	void writeAs(String libraryPath, Object content)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Writes the contents of a handle to the provided path on the REST server
@@ -111,7 +111,7 @@ public interface ExtensionLibrariesManager {
 	 * @param libraryDescriptor The descriptory which locates where to install the library.
 	 * @param content	an IO representation of the library asset
 	 */
-	public void writeAs(ExtensionLibraryDescriptor libraryDescriptor, Object content)
+	void writeAs(ExtensionLibraryDescriptor libraryDescriptor, Object content)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
@@ -119,26 +119,26 @@ public interface ExtensionLibrariesManager {
 	 * @param libraryPath The path at which to install the library.
 	 * @param contentHandle The handle containing the contents of the library.
 	 */
-	public void write(String libraryPath, AbstractWriteHandle contentHandle)
+	void write(String libraryPath, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Writes the contents of a handle to the provided path on the REST server.
 	 * @param libraryDescriptor The descriptory which locates where to install the library.
 	 * @param contentHandle The handle containing the contents of the library.
 	 */
-	public void write(ExtensionLibraryDescriptor libraryDescriptor, AbstractWriteHandle contentHandle)
+	void write(ExtensionLibraryDescriptor libraryDescriptor, AbstractWriteHandle contentHandle)
 		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Removes a library asset from the server.
 	 * @param libraryPath The path to the library to delete.
 	 */
-	public void delete(String libraryPath)
+	void delete(String libraryPath)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Removes a library asset from the server.
 	 * @param libraryDescriptor A descriptor locating the library to delete.
 	 */
-	public void delete(ExtensionLibraryDescriptor libraryDescriptor)
+	void delete(ExtensionLibraryDescriptor libraryDescriptor)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }

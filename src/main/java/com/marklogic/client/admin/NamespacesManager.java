@@ -33,42 +33,42 @@ public interface NamespacesManager {
 	 * @param prefix	the prefix for the binding
 	 * @return	the namespace URI
 	 */
-    public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
+    String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
     /**
      * Reads all of the namespace bindings from the server.
      * @return	a namespace context with the bindings
      */
-    public NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
+    NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
     /**
      * Creates a namespace binding on the server.
      * @param prefix	the prefix bound to the URI
      * @param namespaceURI	the URI bound to the prefix
      */
-    public void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
+    void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
     /**
      * Writes a namespace binding on the server.
      * @param prefix	the prefix bound to the URI
      * @param namespaceURI	the URI bound to the prefix
      */
-    public void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes a namespace binding on the server.
      * @param prefix	the prefix bound to the URI
      */
-    public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+    void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes all namespace bindings on the server.
      */
-    public void deleteAll() throws ForbiddenUserException, FailedRequestException;
+    void deleteAll() throws ForbiddenUserException, FailedRequestException;
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
      * using the methods of the logger.
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 }

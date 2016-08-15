@@ -45,24 +45,24 @@ import com.marklogic.client.io.marker.RowReadHandle;
 
 // TODO: JavaDoc
 public interface RowManager {
-	public PlanBuilder newPlanBuilder();
+	PlanBuilder newPlanBuilder();
 
-	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
+	RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
 
-	public RowSet<RowRecord> resultRows(Plan plan);
-	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
+	RowSet<RowRecord> resultRows(Plan plan);
+	RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
 
-	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
-    public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
+	<T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
+    <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
 /* TODO:
-    public <T> RowSet<T> resultRows(Plan plan, Class<T> as);
-    public <T> RowSet<T> resultRows(Plan plan, Class<T> as, Transaction transaction);
+    <T> RowSet<T> resultRows(Plan plan, Class<T> as);
+    <T> RowSet<T> resultRows(Plan plan, Class<T> as, Transaction transaction);
  */
 
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T handle);
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
+	<T extends RowReadHandle> T resultDoc(Plan plan, T handle);
+	<T extends RowReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
 
-	public <T> T resultDocAs(Plan plan, Class<T> as);
-	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
+	<T> T resultDocAs(Plan plan, Class<T> as);
+	<T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
 }

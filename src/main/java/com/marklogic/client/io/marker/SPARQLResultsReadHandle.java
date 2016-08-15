@@ -16,7 +16,6 @@
 package com.marklogic.client.io.marker;
 
 import com.marklogic.client.semantics.SPARQLMimeTypes;
-import com.marklogic.client.semantics.SPARQLQueryManager;
 
 /**
  * A marker interface for handles capable of reading SPARQL results

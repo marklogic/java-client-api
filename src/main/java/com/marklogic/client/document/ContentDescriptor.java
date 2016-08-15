@@ -24,30 +24,30 @@ public interface ContentDescriptor {
 	/**
 	 * Indicates that the length of the content is not known.
 	 */
-	final static public long UNKNOWN_LENGTH = -1;
+	long UNKNOWN_LENGTH = -1;
 
 	/**
 	 * Returns the format of the content.
 	 * @return	the content format
 	 */
-	public Format getFormat();
+	Format getFormat();
 	/**
 	 * Specifies the format of the content as binary, JSON, text, or XML.
 	 * @param format	the format of the content
 	 */
-	public void setFormat(Format format);
+	void setFormat(Format format);
 
 	/**
 	 * Returns the mimetype of the content.
 	 * @return	the content mimetype
 	 */
-	public String getMimetype();
+	String getMimetype();
 	/**
 	 * Specifies the mimetype of the content such as application/json,
 	 * text/plain, or application/xml.
 	 * @param mimetype	the content mimetype
 	 */
-	public void setMimetype(String mimetype);
+	void setMimetype(String mimetype);
 
 	/** 
 	 * Returns the length of the content in bytes as returned by the server.
@@ -56,11 +56,11 @@ public interface ContentDescriptor {
 	 * character length if the content contains multi-byte characters.
 	 * @return	the content length in bytes
 	 */
-	public long getByteLength();
+	long getByteLength();
 	/**
 	 * Specifies the length of the content in bytes or the UNKNOWN_LENGTH
 	 * constant if the length of the content is not known.
 	 * @param length	the content length in bytes
 	 */
-	public void setByteLength(long length);
+	void setByteLength(long length);
 }

@@ -20,7 +20,7 @@ import java.util.stream.Stream;
 
 // TODO: JavaDoc
 public interface RowSet<T> extends Iterable<T>, Closeable {
-    public String[] getColumnNames();
+    String[] getColumnNames();
 
-    public Stream<T> stream();
+    Stream<T> stream();
 }

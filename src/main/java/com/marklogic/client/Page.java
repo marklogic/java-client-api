@@ -22,25 +22,25 @@ public interface Page<T> extends Iterable<T> {
     /** The internal iterator of type T in this Page. This iterator is the same
      *  one used for {@link #hasNext()} and {@link #next()}.
      */
-    public Iterator<T> iterator();
+    Iterator<T> iterator();
 
     /** Returns true if internal iterator has more elements.
      *  The internal iterator is separate from any new iterator created by calls to iterator().
      *  @return true if the internal iterator has more elements
      */
-    public boolean hasNext();
+    boolean hasNext();
 
     /** Returns the next element in the internal iterator, which is separate
      *  from any new iterator created by calls to iterator().
      *  @return the next element in the iteration
      */
-    public T next();
+    T next();
 
     /** The start position of this page within all possible items.  For result sets
      * this is the position of the first result within the result set.
      * @return the start position
      */
-    public long getStart();
+    long getStart();
 
     /** The page size which is the maximum number of items allowed in one page.
      * @return the page size */
@@ -60,14 +60,14 @@ public interface Page<T> extends Iterable<T> {
      * @see <a href="http://docs.marklogic.com/xdmp:estimate">xdmp:estimate</a>
      * @see <a href="http://docs.marklogic.com/search:estimate">search:estimate</a>
      */
-    public long getTotalSize();
+    long getTotalSize();
 
     /** The count of items in this page, which is always less than getPageSize().  
      * If ({@link #getTotalSize()} - {@link #getStart()}) &gt; {@link #getPageSize()}
      * then size() == getPageSize().
      * @return the count of items in this page
      */
-    public long size();
+    long size();
 
 
     /** The number of pages covering all possible items. Since this is calculated
@@ -81,22 +81,22 @@ public interface Page<T> extends Iterable<T> {
      *Math.ceil( getTotalSize() /  getPageSize() ); 
      * }</pre>
      */
-    public long getTotalPages();
+    long getTotalPages();
 
     /** Whether there are any items in this page.  
      * @return true if {@code size() > 0; }
      */
-    public boolean hasContent();
+    boolean hasContent();
 
     /** Whether there are any items in the next page.  
      * @return true if {@code getPageNumber() < getTotalPages(); }
      */
-    public boolean hasNextPage();
+    boolean hasNextPage();
 
     /** Whether there is a previous page.  
      * @return true if {@code getPageNumber() > 0 }
      */
-    public boolean hasPreviousPage();
+    boolean hasPreviousPage();
 
     /** The page number within the count of all possible pages.
      * @return the page number.  In pseudo-code:
@@ -105,13 +105,13 @@ public interface Page<T> extends Iterable<T> {
      *else return Math.floor(getStart() / getPageSize()) + 1;
      * }</pre>
      */
-    public long getPageNumber();
+    long getPageNumber();
 
     /** @return true if {@code getPageSize()==0 or getPageNumber()==1 }
      */
-    public boolean isFirstPage();
+    boolean isFirstPage();
 
     /** @return true if {@code getPageSize()==0 or getPageNumber()==getTotalPages() }
      */
-    public boolean isLastPage();
+    boolean isLastPage();
 }

@@ -45,19 +45,19 @@ public interface DocumentRecord {
     /** Returns the uri (unique identifier) of the document in the server
      * @return the uri
      */
-    public String getUri();
+    String getUri();
 
     /** Returns the format of the document in the server
      * @return the format of the document in the server
      */
-    public Format getFormat();
+    Format getFormat();
 
     /** Returns the mime-type ("Content-Type" header) of the document as specified by
      * the server (uses the server's mime-type mapping for file extensions)
      *
      * @return the mime-type
      */
-    public String getMimetype();
+    String getMimetype();
 
     /**
      * Given a handle, populates the handle with the structured metadata directly from
@@ -71,7 +71,7 @@ public interface DocumentRecord {
      * @param <T> the type of DocumentMetadataReadHandle to return
      * @return a handle populated with the document metadata
      */
-    public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle);
+    <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle);
     /**
      * Reads the metadata from the multipart response into the representation
      * specified by the IO class.
@@ -83,7 +83,7 @@ public interface DocumentRecord {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return the document metadata as the Class type requested
      */
-    public <T> T getMetadataAs(Class<T> as);
+    <T> T getMetadataAs(Class<T> as);
 
     /**
      * Given a handle, populates the handle with the document contents directly from
@@ -94,7 +94,7 @@ public interface DocumentRecord {
      * @param <T> the type of AbstractReadHandle to return
      * @return a handle populated with the document contents
      */
-    public <T extends AbstractReadHandle> T getContent(T contentHandle);
+    <T extends AbstractReadHandle> T getContent(T contentHandle);
     /**
      * Reads the document content from the multipart response into the representation
      * specified by the IO class.
@@ -106,5 +106,5 @@ public interface DocumentRecord {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return the document contents as the Class type requested
      */
-    public <T> T getContentAs(Class<T> as);
+    <T> T getContentAs(Class<T> as);
 }

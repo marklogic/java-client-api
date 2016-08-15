@@ -26,11 +26,11 @@ public interface RawQueryDefinition extends QueryDefinition {
 	 * Returns the handle for the JSON or XML representation of the query.
 	 * @return	the JSON or XML handle.
 	 */
-	public StructureWriteHandle getHandle();
+	StructureWriteHandle getHandle();
 
 	/**
 	 * Specifies the handle for the JSON or XML representation of the query.
 	 * @param handle	the JSON or XML handle.
 	 */
-	public void setHandle(StructureWriteHandle handle);
+	void setHandle(StructureWriteHandle handle);
 }

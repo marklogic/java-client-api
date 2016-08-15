@@ -26,35 +26,35 @@ public interface DocumentUriTemplate extends ContentDescriptor {
      * Returns the directory that should prefix the document uri.
      * @return	the directory.
      */
-	public String getDirectory();
+	String getDirectory();
     /**
      * Specifies the directory that should prefix the document uri.
      * @param directory	the directory.
      */
-	public void setDirectory(String directory);
+	void setDirectory(String directory);
     /**
      * Specifies the directory that should prefix the document uri
      * and returns the template object.
      * @param directory	the directory.
      * @return	the template object.
      */
-	public DocumentUriTemplate withDirectory(String directory);
+	DocumentUriTemplate withDirectory(String directory);
     /**
      * Returns the extension that should suffix the document uri.
      * @return	the extension.
      */
-    public String getExtension();
+    String getExtension();
     /**
      * Specifies the extension that should suffix the document uri.
      * The extension should not start with the period separator.
      * @param extension	the extension.
      */
-	public void setExtension(String extension);
+	void setExtension(String extension);
 	/**
 	 * Specifies the format of the document
      * and returns the template object.
 	 * @param format	the format.
      * @return	the template object.
 	 */
-	public DocumentUriTemplate withFormat(Format format);
+	DocumentUriTemplate withFormat(Format format);
 }

@@ -30,7 +30,7 @@ public interface SearchResults {
      * Returns the query definition associated with this query.
      * @return The query definition.
      */
-    public QueryDefinition getQueryCriteria();
+    QueryDefinition getQueryCriteria();
 
     /**
      * Returns an estimate of the total number of results, which is accurate for unfiltered
@@ -39,81 +39,81 @@ public interface SearchResults {
      * for which indexes don't exist but makes the final result count unpredictable.
      * @return The result estimate.
      */
-    public long getTotalResults();
+    long getTotalResults();
 
     /**
      * Returns the offset of the first result in the search reponse page.
      * @return	The first result number.
      */
-    public long getStart();
+    long getStart();
 
     /**
      * Returns the maximum number of results in the search response page.
      * @return	The page size.
      */
-    public int getPageLength();
+    int getPageLength();
 
     /**
      * The type of transform used to produce the result snippets.
      * @return	The snippet transform type
      */
-    public String getSnippetTransformType();
+    String getSnippetTransformType();
 
     /**
      * Returns the search metrics.
      * @return The metrics.
      */
-    public SearchMetrics          getMetrics();
+    SearchMetrics          getMetrics();
 
     /**
      * Returns the match results.
      * @return The match results.
      */
-    public MatchDocumentSummary[] getMatchResults();
+    MatchDocumentSummary[] getMatchResults();
 
     /**
      * Returns the array of facet results.
      * @return The facet results.
      */
-    public FacetResult[]          getFacetResults();
+    FacetResult[]          getFacetResults();
 
     /**
      * Returns the facet results for the named facet.
      * @param name The facet name.
      * @return The facet results, or null if no facet with the specified name exists.
      */
-    public FacetResult            getFacetResult(String name);
+    FacetResult            getFacetResult(String name);
 
     /**
      * Returns the array of facet names returned by this search.
      * @return The array facet names.
      */
-    public String[]               getFacetNames();
+    String[]               getFacetNames();
 
     /**
      * Returns the query plan.
      * @return The query plan.
      */
-    public Document               getPlan();
+    Document               getPlan();
 
     /**
      * Returns the array of warnings returned by this search.
      * @return The warnings.
      */
-    public SearchHandle.Warning[] getWarnings();
+    SearchHandle.Warning[] getWarnings();
 
     /**
      * Returns the array of reports returned by this search.
      * @return The reports.
      */
-    public SearchHandle.Report[]  getReports();
+    SearchHandle.Report[]  getReports();
 
     /**
      * Returns the array of constraint names used in the search
      * (if requested).
      * @return	The constraint names.
      */
-    public String[] getConstraintNames();
+    String[] getConstraintNames();
 
     /**
      * Returns the named constraint used in the search
@@ -123,7 +123,7 @@ public interface SearchResults {
      * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the constraint.
      */
-    public <T extends XMLReadHandle> T getConstraint(String name, T handle);
+    <T extends XMLReadHandle> T getConstraint(String name, T handle);
 
     /**
      * Returns an iterator over the constraints used in the search
@@ -132,7 +132,7 @@ public interface SearchResults {
      * @param <T> the type of XMLReadHandle's to return in the Iterator
      * @return	An iterator that populates the handle with each constraint.
      */
-    public <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
+    <T extends XMLReadHandle> Iterator<T> getConstraintIterator(T handle);
 
     /**
      * Returns the plan for the search (if requested).
@@ -140,13 +140,13 @@ public interface SearchResults {
      * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the plan.
      */
-    public <T extends XMLReadHandle> T getPlan(T handle);
+    <T extends XMLReadHandle> T getPlan(T handle);
 
     /**
      * Returns the string query input (if provided and requested).
      * @return	The string queries.
      */
-    public String[] getStringQueries();
+    String[] getStringQueries();
 
     /**
      * Returns the cts:query used in the search (if requested).
@@ -154,5 +154,5 @@ public interface SearchResults {
      * @param <T> the type of XMLReadHandle to return
      * @return	The handle on the query.
      */
-    public <T extends XMLReadHandle> T getQuery(T handle);
+    <T extends XMLReadHandle> T getQuery(T handle);
 }

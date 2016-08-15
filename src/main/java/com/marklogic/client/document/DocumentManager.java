@@ -28,8 +28,6 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -88,14 +86,14 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * @param uri	the identifier for the document
      * @return	a descriptor for the document
 	 */
-    public DocumentDescriptor newDescriptor(String uri);
+    DocumentDescriptor newDescriptor(String uri);
 
 	/**
 	 * Creates a document uri template for assigning a uri to a document.
 	 * @param extension	the identifier for the document
 	 * @return	a template for the document uri
 	 */
-    public DocumentUriTemplate newDocumentUriTemplate(String extension);
+    DocumentUriTemplate newDocumentUriTemplate(String extension);
 
     /**
      * For XMLDocumentManager or JSONDocumentManager, creates a builder for specifying changes
@@ -106,7 +104,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param pathFormat	the patch path language. Set to JSON for JSONPath or XML for XPath.
      * @return	the patch builder
      */
-    public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
+    DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
 
     /**
      * Checks whether a document exists and gets its byte length, format, mimetype, and version
@@ -117,7 +115,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId the URI identifier for the document
      * @return	a descriptor for the document or null if the document is not found
      */
-    public DocumentDescriptor exists(String docId)
+    DocumentDescriptor exists(String docId)
     	throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -130,7 +128,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @return	a descriptor for the document or null if the document is not found
      */
-    public DocumentDescriptor exists(String docId, Transaction transaction)
+    DocumentDescriptor exists(String docId, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -145,7 +143,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	an object of the IO class with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T> T readAs(String docId, Class<T> as)
+    <T> T readAs(String docId, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database in the representation specified by the IO class.
@@ -160,7 +158,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	an object of the IO class with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T> T readAs(String docId, Class<T> as, ServerTransform transform)
+    <T> T readAs(String docId, Class<T> as, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document metadata and content from the database in the representation specified by the IO class.
@@ -175,7 +173,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	an object of the IO class with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as)
+    <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document metadata and content from the database in the representation specified by the IO class.
@@ -191,7 +189,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	an object of the IO class with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
+    <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -205,7 +203,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, T contentHandle)
+    <T extends R> T read(String docId, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database as transformed on the server.
@@ -219,7 +217,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
+    <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database in the representations provided by the handles
@@ -232,7 +230,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
+    <T extends R> T read(DocumentDescriptor desc, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document content from the database as transformed on the server.
@@ -246,7 +244,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
+    <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -261,7 +259,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
+    <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from the database as transformed on the server.
@@ -276,7 +274,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
+    <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from the database in the representations provided by the handles
@@ -290,7 +288,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
+    <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from the database as transformed on the server.
@@ -305,7 +303,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
+    <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -320,7 +318,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
+    <T extends R> T read(String docId, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document content from an open database transaction  as transformed on the server.
@@ -335,7 +333,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
+    <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document content from an open database transaction in the representation provided by the handle
@@ -349,7 +347,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
+    <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document content from an open database transaction as transformed on the server.
@@ -364,7 +362,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
+    <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -380,7 +378,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
+    <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from an open database transaction as transformed on the server.
@@ -396,7 +394,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
+    <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from an open database transaction in the representations provided by the handles
@@ -411,7 +409,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
+    <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Reads the document metadata and content from an open database transaction as transformed on the server.
@@ -427,7 +425,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the content handle populated with the content of the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
+    <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -439,7 +437,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(String... uris);
+    DocumentPage read(String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -453,7 +451,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(long serverTimestamp, String... uris);
+    DocumentPage read(long serverTimestamp, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -465,7 +463,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(ServerTransform transform, String... uris);
+    DocumentPage read(ServerTransform transform, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -480,7 +478,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris);
+    DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -492,7 +490,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(Transaction transaction, String... uris);
+    DocumentPage read(Transaction transaction, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -507,7 +505,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(long serverTimestamp, Transaction transaction, String... uris);
+    DocumentPage read(long serverTimestamp, Transaction transaction, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -520,7 +518,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
+    DocumentPage read(ServerTransform transform, Transaction transaction, String... uris);
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -536,7 +534,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction, String... uris);
+    DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction, String... uris);
 
     /**
      * Reads from the database the metadata for a list of documents matching the
@@ -548,7 +546,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents
      * @return the DocumentPage of metadata from matching documents
      */
-    public DocumentPage readMetadata(String... uris);
+    DocumentPage readMetadata(String... uris);
 
     /**
      * Reads from the database the metadata for a list of documents matching the
@@ -561,7 +559,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents
      * @return the DocumentPage of metadata from matching documents
      */
-    public DocumentPage readMetadata(Transaction transaction, String... uris);
+    DocumentPage readMetadata(Transaction transaction, String... uris);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
@@ -573,7 +571,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param start	the offset of the first document in the page (where 1 is the first result)
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start);
+    DocumentPage search(QueryDefinition querydef, long start);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
@@ -588,7 +586,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *   server via getServerTimestamp() on any handle.
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp);
+    DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
@@ -601,7 +599,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	an open transaction for matching documents
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
+    DocumentPage search(QueryDefinition querydef, long start, Transaction transaction);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
@@ -617,7 +615,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *   server via getServerTimestamp() on any handle.
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp, Transaction transaction);
+    DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp, Transaction transaction);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
@@ -633,7 +631,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *     {@link #setNonDocumentFormat setNonDocumentFormat}
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
+    DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle);
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction)}
@@ -650,12 +648,12 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	an open transaction for matching documents
      * @return the DocumentPage of matching documents and metadata
      */
-    public DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
+    DocumentPage search(QueryDefinition querydef, long start, SearchReadHandle searchHandle, Transaction transaction);
 
     /** Get the maximum number of records to return in a page from calls to {@link #search search}
      *  @return the maximum number of records to return in a page from calls to
      *      {@link #search search} */
-    public long getPageLength();
+    long getPageLength();
 
     /**
      * Specifies the maximum number of documents that can appear in any page of the query results,
@@ -663,7 +661,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param length	the maximum number of records to return in a page from calls to
      *     {@link #search search}
      */
-    public void setPageLength(long length);
+    void setPageLength(long length);
 
     /**
      * Returns the format (if set) for the search response from
@@ -675,7 +673,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * the server default format will be used.
      * @return the format, if set, null otherwise
      */
-    public Format getNonDocumentFormat();
+    Format getNonDocumentFormat();
 
     /**
      * Specifies the format for the search response from
@@ -687,7 +685,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * the server default format will be used.
      * @param nonDocumentFormat the format to use
      */
-    public void setNonDocumentFormat(Format nonDocumentFormat);
+    void setNonDocumentFormat(Format nonDocumentFormat);
 
     /**
      * Returns the view types included in a SearchReadHandle populated by calls to
@@ -695,7 +693,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the view types included in a SearchReadHandle populated by calls to
      *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
      */
-    public QueryView getSearchView();
+    QueryView getSearchView();
 
     /**
      * Specifies the view types included in a SearchReadHandle populated by calls to
@@ -703,9 +701,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param view	the view types included in a SearchReadHandle populated by calls to
      *     {@link #search(QueryDefinition, long, SearchReadHandle) search}
      */
-    public void setSearchView(QueryView view);
+    void setSearchView(QueryView view);
 
-    public DocumentWriteSet newWriteSet();
+    DocumentWriteSet newWriteSet();
 
     /**
      * Write a set of documents and metadata to the server via REST API bulk capabilities.
@@ -713,7 +711,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
      *      and Writing Multiple Documents</a>
      */
-    public void write(DocumentWriteSet writeSet);
+    void write(DocumentWriteSet writeSet);
 
     /**
      * Write a set of documents and metadata to the server via REST API bulk capabilities.
@@ -722,7 +720,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
      *      and Writing Multiple Documents</a>
      */
-    public void write(DocumentWriteSet writeSet, ServerTransform transform);
+    void write(DocumentWriteSet writeSet, ServerTransform transform);
 
     /**
      * Write a set of documents and metadata to the server via REST API bulk capabilities.
@@ -731,7 +729,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
      *      and Writing Multiple Documents</a>
      */
-    public void write(DocumentWriteSet writeSet, Transaction transaction);
+    void write(DocumentWriteSet writeSet, Transaction transaction);
 
     /**
      * Write a set of documents and metadata to the server via REST API bulk capabilities.
@@ -741,7 +739,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk">REST API -&gt; Reading
      *      and Writing Multiple Documents</a>
      */
-    public void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction);
+    void write(DocumentWriteSet writeSet, ServerTransform transform, Transaction transaction);
 
     /**
      * Writes the document content to the database from an object of an IO class.
@@ -752,7 +750,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
      */
-    public void writeAs(String docId, Object content)
+    void writeAs(String docId, Object content)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database from an object of an IO class.
@@ -764,7 +762,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param content	an IO representation of the document content
      * @param transform	a server transform to modify the document content
      */
-    public void writeAs(String docId, Object content, ServerTransform transform)
+    void writeAs(String docId, Object content, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database from an object of an IO class.
@@ -776,7 +774,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param content	an IO representation of the document content
      */
-    public void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content)
+    void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database from an object of an IO class.
@@ -789,7 +787,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param content	an IO representation of the document content
      * @param transform	a server transform to modify the document content
      */
-    public void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+    void writeAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -800,7 +798,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param contentHandle	a handle for writing the content of the document
      */
-    public void write(String docId, W contentHandle)
+    void write(String docId, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database as transformed on the server.
@@ -811,7 +809,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transform	a server transform to modify the document content
      */
-    public void write(String docId, W contentHandle, ServerTransform transform)
+    void write(String docId, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database from the representation provided by the handle
@@ -821,7 +819,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param contentHandle	a handle for writing the content of the document
      */
-    public void write(DocumentDescriptor desc, W contentHandle)
+    void write(DocumentDescriptor desc, W contentHandle)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to the database as transformed on the server.
@@ -832,7 +830,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transform	a server transform to modify the document content
      */
-    public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
+    void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -844,7 +842,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param contentHandle	a handle for writing the content of the document
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
+    void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database as transformed on the server.
@@ -856,7 +854,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transform	a server transform to modify the document content
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
+    void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database from the representations provided by the handles
@@ -867,7 +865,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param contentHandle	a handle for writing the content of the document
      */
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
+    void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata and content to the database as transformed on the server.
@@ -879,7 +877,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transform	a server transform to modify the document content
      */
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
+    void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -891,7 +889,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(String docId, W contentHandle, Transaction transaction)
+    void write(String docId, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction as transformed on the server.
@@ -903,7 +901,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
+    void write(String docId, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction from the representation provided by the handle
@@ -914,7 +912,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
+    void write(DocumentDescriptor desc, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document content to an open database transaction as transformed on the server.
@@ -926,7 +924,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
+    void write(DocumentDescriptor desc, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -939,7 +937,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
+    void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Writes the document metadata and content to an open database transaction as transformed on the server.
@@ -952,7 +950,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
+    void write(String docId, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Writes the document metadata and content to an open database transaction from the representations provided by the handles
@@ -964,7 +962,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
+    void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
     /**
      * Writes the document metadata and content to an open database transaction as transformed on the server.
@@ -977,7 +975,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param transaction	a open transaction under which the document may have been created or deleted
      */
-    public void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
+    void write(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
     /**
@@ -988,7 +986,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(String docId)
+    void delete(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the document metadata and content from an open database transaction
@@ -999,7 +997,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(String docId, Transaction transaction)
+    void delete(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the documents' metadata and content
@@ -1009,7 +1007,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris	the identifiers for the documents to delete
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(String... uris)
+    void delete(String... uris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the documents' metadata and content from an open database transaction
@@ -1020,7 +1018,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris	the identifiers for the documents to delete
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(Transaction transaction, String... uris)
+    void delete(Transaction transaction, String... uris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the document metadata and content from the database
@@ -1030,7 +1028,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(DocumentDescriptor desc)
+    void delete(DocumentDescriptor desc)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Deletes the document metadata and content from an open database transaction
@@ -1041,7 +1039,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void delete(DocumentDescriptor desc, Transaction transaction)
+    void delete(DocumentDescriptor desc, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1054,7 +1052,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param content	an IO representation of the document content
 	 * @return	the database uri that identifies the created document
      */
-    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content)
+    DocumentDescriptor createAs(DocumentUriTemplate template, Object content)
 		throws ForbiddenUserException, FailedRequestException;
     /**
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
@@ -1067,7 +1065,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
 	 * @return	the database uri that identifies the created document
      */
-    public DocumentDescriptor createAs(DocumentUriTemplate template, Object content, ServerTransform transform)
+    DocumentDescriptor createAs(DocumentUriTemplate template, Object content, ServerTransform transform)
 		throws ForbiddenUserException, FailedRequestException;
     /**
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
@@ -1080,7 +1078,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param content	an IO representation of the document content
 	 * @return	the database uri that identifies the created document
      */
-    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content)
+    DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content)
 		throws ForbiddenUserException, FailedRequestException;
     /**
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
@@ -1094,7 +1092,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
 	 * @return	the database uri that identifies the created document
      */
-    public DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
+    DocumentDescriptor createAs(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, Object content, ServerTransform transform)
 		throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1103,7 +1101,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
 	 * @return	the database uri that identifies the created document
      */
-    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
+    DocumentDescriptor create(DocumentUriTemplate template, W contentHandle)
     	throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with a uri assigned by the server as transformed on the server.
@@ -1112,7 +1110,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform)
+    DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with a uri assigned by the server in an open database transaction.
@@ -1121,7 +1119,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, Transaction transaction)
+    DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with a uri assigned by the server in an open database transaction as transformed on the server.
@@ -1131,7 +1129,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform, Transaction transaction)
+    DocumentDescriptor create(DocumentUriTemplate template, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with metadata and content and a uri assigned by the server.
@@ -1140,7 +1138,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for writing the content of the document
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
+    DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with metadata and content and a uri assigned by the server as transformed on the server.
@@ -1150,7 +1148,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
+    DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * @param template	the template for constructing the document uri
@@ -1159,7 +1157,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
+    DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Creates a database document with metadata and content and a uri assigned by the server in an open database transaction as transformed on the server.
@@ -1170,7 +1168,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
 	 * @return	the database uri that identifies the created document
 	 */
-    public DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
+    DocumentDescriptor create(DocumentUriTemplate template, DocumentMetadataWriteHandle metadataHandle, W contentHandle, ServerTransform transform, Transaction transaction)
 		throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1185,7 +1183,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param patch	an IO representation of the patch
      */
-    public void patchAs(String docId, Object patch)
+    void patchAs(String docId, Object patch)
 		throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1199,7 +1197,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param patch	a handle for writing the modification to the document metadata or content
      */
-    public void patch(String docId, DocumentPatchHandle patch);
+    void patch(String docId, DocumentPatchHandle patch);
     /**
      * Modifies the metadata or content of a document within an open database transaction on the server.
      * Content can only be modified for JSON or XML documents.  When sending
@@ -1212,7 +1210,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param patch	a handle for writing the modification to the document metadata or content
      * @param transaction	a open transaction
      */
-    public void patch(String docId, DocumentPatchHandle patch, Transaction transaction);
+    void patch(String docId, DocumentPatchHandle patch, Transaction transaction);
     /**
      * Modifies the metadata or content of a document.
      * Content can only be modified for JSON or XML documents.  When sending
@@ -1224,7 +1222,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param patch	a handle for writing the modification to the document metadata or content
      */
-    public void patch(DocumentDescriptor desc, DocumentPatchHandle patch);
+    void patch(DocumentDescriptor desc, DocumentPatchHandle patch);
     /**
      * Modifies the metadata or content of a document within an open database transaction on the server.
      * Content can only be modified for JSON or XML documents.  When sending
@@ -1237,7 +1235,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param patch	a handle for writing the modification to the document metadata or content
      * @param transaction	a open transaction
      */
-    public void patch(DocumentDescriptor desc, DocumentPatchHandle patch, Transaction transaction);
+    void patch(DocumentDescriptor desc, DocumentPatchHandle patch, Transaction transaction);
 
     /**
      * Reads the document metadata from the database in the representation provided by the handle
@@ -1250,7 +1248,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the metadata handle populated with the metadata for the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle)
+    <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reads the document metadata from an open database transaction in the representation provided by the handle
@@ -1264,7 +1262,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @return	the metadata handle populated with the metadata for the document in the database
      * @throws ResourceNotFoundException if the document is not found
      */
-    public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle, Transaction transaction)
+    <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1276,7 +1274,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for writing the metadata of the document
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle)
+    void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Writes the document metadata to an open database transaction from the representation provided by the handle
@@ -1288,7 +1286,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
+    void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1299,7 +1297,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void writeDefaultMetadata(String docId)
+    void writeDefaultMetadata(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
     /**
      * Reverts the document metadata in an open database transaction to the defaults
@@ -1310,7 +1308,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @throws ResourceNotFoundException if the document is not found
      */
-    public void writeDefaultMetadata(String docId, Transaction transaction)
+    void writeDefaultMetadata(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -1318,59 +1316,59 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @return	the default format for documents supported by this document manager
      */
-    public Format getContentFormat();
+    Format getContentFormat();
 
     /**
      * Sets the default format of the managed documents
      * 
      * @param format  the default format for documents supported by this document manager
      */
-    public void setContentFormat(Format format);
+    void setContentFormat(Format format);
 
     /**
      * Returns the categories of metadata to read, write, patch, or search.
      * 
      * @return	the set of metadata categories
      */
-    public Set<Metadata> getMetadataCategories();
+    Set<Metadata> getMetadataCategories();
     /**
      * Specifies the categories of metadata to read, write, patch, or search.
      * @param categories	the set of metadata categories
      */
-    public void setMetadataCategories(Set<Metadata> categories);
+    void setMetadataCategories(Set<Metadata> categories);
     /**
      * Specifies the categories of metadata to read, write, patch, or search.
      * @param categories	the set of metadata categories
      */
-    public void setMetadataCategories(Metadata... categories);
+    void setMetadataCategories(Metadata... categories);
     /**
      * Clears the metadata categories.
      */
-    public void clearMetadataCategories();
+    void clearMetadataCategories();
 
     /**
      * Returns the transform for read requests that don't specify a transform.
      * @return	the name of the transform
      */
-    public ServerTransform getReadTransform();
+    ServerTransform getReadTransform();
     /**
      * Specifies a transform for read requests that don't specify a transform.
      * 
      * @param transform	the name of the transform
      */
-    public void setReadTransform(ServerTransform transform);
+    void setReadTransform(ServerTransform transform);
  
     /**
      * Returns the transform for write requests that don't specify a transform.
      * @return	the name of the transform
      */
-    public ServerTransform getWriteTransform();
+    ServerTransform getWriteTransform();
     /**
      * Specifies a transform for write requests that don't specify a transform.
      * 
      * @param transform	the name of the transform
      */
-    public void setWriteTransform(ServerTransform transform);
+    void setWriteTransform(ServerTransform transform);
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
@@ -1378,9 +1376,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 }

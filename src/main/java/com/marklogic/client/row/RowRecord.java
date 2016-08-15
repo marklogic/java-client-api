@@ -26,28 +26,28 @@ import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 // TODO: JavaDoc
 public interface RowRecord extends RowReadHandle, Map<String, Object> {
-	public enum ColumnKind {
+	enum ColumnKind {
         ATOMIC_VALUE, CONTENT, URI, BNODE, NULL;
     }
 
-	public ColumnKind getKind(String columnName);
+	ColumnKind getKind(String columnName);
 
-	public QName getAtomicDatatype(String columnName);
+	QName getAtomicDatatype(String columnName);
 
-	public boolean   getBoolean(String columnName);
-    public byte      getByte(String    columnName);
-    public double    getDouble(String  columnName);
-    public float     getFloat(String   columnName);
-    public int       getInt(String     columnName);
-    public long      getLong(String    columnName);
-    public short     getShort(String   columnName);
-    public String    getString(String  columnName);
+	boolean   getBoolean(String columnName);
+    byte      getByte(String    columnName);
+    double    getDouble(String  columnName);
+    float     getFloat(String   columnName);
+    int       getInt(String     columnName);
+    long      getLong(String    columnName);
+    short     getShort(String   columnName);
+    String    getString(String  columnName);
 
-	public <T extends XsAnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
-	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
+	<T extends XsAnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
+	<T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
 
-	public Format getContentFormat(String columnName);
-	public String getContentMimetype(String columnName);
-	public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
-    public <T> T getContentAs(String columnName, Class<T> as);
+	Format getContentFormat(String columnName);
+	String getContentMimetype(String columnName);
+	<T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
+    <T> T getContentAs(String columnName, Class<T> as);
 }

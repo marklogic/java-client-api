@@ -20,7 +20,7 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
 
 // TODO: JavaDoc
 public interface RawPlanDefinition extends Plan {
-	public JSONWriteHandle getHandle();
-    public void setHandle(JSONWriteHandle handle);
-    public RawPlanDefinition withHandle(JSONWriteHandle handle);
+	JSONWriteHandle getHandle();
+    void setHandle(JSONWriteHandle handle);
+    RawPlanDefinition withHandle(JSONWriteHandle handle);
 }

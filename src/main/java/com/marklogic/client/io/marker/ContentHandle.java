@@ -26,10 +26,10 @@ extends AbstractReadHandle, AbstractWriteHandle {
 	 * Returns the content.
 	 * @return	the content
 	 */
-	public C get();
+	C get();
 	/**
 	 * Assigns the content.
 	 * @param content	the content
 	 */
-	public void set(C content);
+	void set(C content);
 }

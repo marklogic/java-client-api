@@ -28,5 +28,5 @@ public interface IterableNamespaceContext extends NamespaceContext {
      * Returns all bound prefixes.
      * @return	the set of prefixes
      */
-	public Collection<String> getAllPrefixes();
+	Collection<String> getAllPrefixes();
 }

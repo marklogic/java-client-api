@@ -25,13 +25,13 @@ public interface ExtractedItem {
      * @param <T> the type of StructureReadHandle to return
      * @return the item represented by this instance
      */
-    public <T extends StructureReadHandle> T get(T handle);
+    <T extends StructureReadHandle> T get(T handle);
 
     /** Get the item using the handle registered for the specified class.
      * @param as a Class type that has been registered by a handle
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return the item represented by this instance
      */
-    public <T> T getAs(Class<T> as);
+    <T> T getAs(Class<T> as);
 }
 
