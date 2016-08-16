@@ -139,13 +139,16 @@ class BinaryDocumentImpl
 		return read(desc, metadataHandle, contentHandle, transform, transaction, null, extraParams);
 	}
 
+    @Override
 	public MetadataExtraction getMetadataExtraction() {
 		return metadataExtraction;
 	}
+    @Override
 	public void setMetadataExtraction(MetadataExtraction policy) {
 		metadataExtraction = policy;	
 	}
 
+    @Override
 	protected RequestParameters getWriteParams() {
 		if (metadataExtraction == null || metadataExtraction == MetadataExtraction.NONE)
 			return null;

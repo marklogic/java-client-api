@@ -65,6 +65,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
   private boolean isProcessedMetadataModified = false;
   final private Set<Metadata> processedMetadata = new HashSet<Metadata>() {
+    @Override
     public boolean add(Metadata e) {
       isProcessedMetadataModified = true;
       return super.add(e);
@@ -472,39 +473,47 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             : getReadTransform(), extraParams), withContent, uris);
   }
 
+  @Override
   public DocumentPage readMetadata(String... uris) {
     boolean withContent = false;
     return read(-1, null, null, withContent, null, uris);
   }
 
+  @Override
   public DocumentPage readMetadata(Transaction transaction, String... uris) {
     boolean withContent = false;
     return read(-1, null, transaction, withContent, null, uris);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start) {
     return search(querydef, start, -1, null, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
     return search(querydef, start, serverTimestamp, null, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle) {
     return search(querydef, start, -1, searchHandle, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       Transaction transaction) {
     return search(querydef, start, -1, null, transaction);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       long serverTimestamp, Transaction transaction) {
     return search(querydef, start, serverTimestamp, null, transaction);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle, Transaction transaction) {
     return search(querydef, start, -1, searchHandle, transaction);
@@ -540,14 +549,17 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
         nonDocumentFormat, null);
   }
 
+  @Override
   public long getPageLength() {
     return pageLength;
   }
 
+  @Override
   public void setPageLength(long length) {
     this.pageLength = length;
   }
 
+  @Override
   public QueryView getSearchView() {
     return searchView;
   }
@@ -556,10 +568,12 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     this.searchView = view;
   }
 
+  @Override
   public Format getNonDocumentFormat() {
     return nonDocumentFormat;
   }
 
+  @Override
   public void setNonDocumentFormat(Format nonDocumentFormat) {
     if (nonDocumentFormat != Format.XML && nonDocumentFormat != Format.JSON) {
       throw new UnsupportedOperationException(

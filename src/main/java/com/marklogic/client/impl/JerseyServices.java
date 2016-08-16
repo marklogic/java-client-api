@@ -4555,6 +4555,7 @@ public class JerseyServices implements RESTServices {
 			this.content = content;
 		}
 
+        @Override
 		public String getUri() {
 			if ( content == null && metadata != null ) {
 				return metadata.getUri();
@@ -4565,32 +4566,38 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
+        @Override
 		public Format getFormat() {
 			return content.getFormat();
 		}
 
+        @Override
 		public String getMimetype() {
 			return content.getMimetype();
 		}
 
+        @Override
 		public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
 			if ( metadata == null ) throw new IllegalStateException(
 				"getMetadata called when no metadata is available");
 			return metadata.getContent(metadataHandle);
 		}
 
+        @Override
 		public <T> T getMetadataAs(Class<T> as) {
 			if ( as == null ) throw new IllegalStateException(
 				"getMetadataAs cannot accept null");
 			return metadata.getContentAs(as);
 		}
 
+        @Override
 		public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 			if ( content == null ) throw new IllegalStateException(
 				"getContent called when no content is available");
 			return content.getContent(contentHandle);
 		}
 
+        @Override
 		public <T> T getContentAs(Class<T> as) {
 			if ( as == null ) throw new IllegalStateException(
 				"getContentAs cannot accept null");

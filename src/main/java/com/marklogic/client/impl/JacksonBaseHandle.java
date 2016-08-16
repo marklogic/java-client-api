@@ -82,6 +82,7 @@ public abstract class JacksonBaseHandle<T>
      * Returns the JSON as a string.
      */
     
+    @Override
     public String toString() {
         try {
             return new String(toBuffer(),"UTF-8");
@@ -91,10 +92,12 @@ public abstract class JacksonBaseHandle<T>
     }
 
     
+    @Override
     protected Class<InputStream> receiveAs() {
         return InputStream.class;
     }
     
+    @Override
     protected OutputStreamSender sendContent() {
         if ( ! hasContent() ) {
             throw new IllegalStateException("No document to write");

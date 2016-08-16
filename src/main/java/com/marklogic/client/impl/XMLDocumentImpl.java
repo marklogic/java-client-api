@@ -47,6 +47,7 @@ class XMLDocumentImpl
     	return new DocumentPatchBuilderImpl(Format.XML);
     }
 
+    @Override
 	protected RequestParameters getWriteParams() {
 		if (repair == null)
 			return null;

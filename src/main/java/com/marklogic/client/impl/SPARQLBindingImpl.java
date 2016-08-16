@@ -41,8 +41,12 @@ public class SPARQLBindingImpl implements SPARQLBinding {
         this.value = value;
         this.languageTag = languageTag;
     }
+    @Override
     public String getName()        { return name;        }
+    @Override
     public String getValue()       { return value;       }
+    @Override
     public RDFTypes getDatatype()  { return datatype;    }
+    @Override
     public Locale getLanguageTag() { return languageTag; }
 }

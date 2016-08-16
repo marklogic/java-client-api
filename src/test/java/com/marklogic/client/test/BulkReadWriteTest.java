@@ -97,6 +97,7 @@ public class BulkReadWriteTest {
         BulkCityWriter() throws JAXBException {
         }
 
+        @Override
         public void addCity(City city) {
             writeSet.addAs( DIRECTORY + city.getGeoNameId() + ".xml", city );
         }

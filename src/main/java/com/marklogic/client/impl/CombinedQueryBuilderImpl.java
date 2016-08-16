@@ -90,6 +90,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
             }
         }
 
+        @Override
         public String serialize() {
             return CombinedQueryBuilderImpl.this.serialize(this);
         }
@@ -146,6 +147,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
     {
         return new CombinedQueryDefinitionImpl(rawQuery, options, qtext, sparql);
     }
+    @Override
     public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext)
     {
         return new CombinedQueryDefinitionImpl(rawQuery, null, qtext, null);

@@ -125,6 +125,7 @@ public class XMLDocumentTest {
 		counter.put("elementCount",0);
 		counter.put("attributeCount",0);
 		DefaultHandler handler = new DefaultHandler() {
+            @Override
 			public void startElement(String uri, String localName, String qName, Attributes attributes) {
 				counter.put("elementCount",counter.get("elementCount") + 1);
 				if (attributes != null) {

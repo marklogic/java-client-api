@@ -69,13 +69,16 @@ public class PojoFacadeTest {
     public class PojoCityWriter implements CityWriter {
         private int numCities = 0;
 
+        @Override
         public void addCity(City city) {
             if ( numCities > MAX_TO_WRITE && !"Chittagong".equals(city.getName()) ) return;
             cities.write(city);
             numCities++;
         }
+        @Override
         public void finishBatch() {
         }
+        @Override
         public void setNumRecords(int numRecords) {
             assertEquals("Number of records not expected", numRecords, BulkReadWriteTest.RECORDS_EXPECTED);
         }

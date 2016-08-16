@@ -54,6 +54,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         return pathIndex(classWrapper + "/" + pojoProperty);
     }
  
+    @Override
     public StructuredQueryDefinition containerQuery(String pojoProperty, StructuredQueryDefinition query) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -63,6 +64,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         }
     }
     @SuppressWarnings("unchecked")
+    @Override
     public <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz) {
         return new PojoQueryBuilderImpl<>((Class<C>) getType(pojoProperty), true);
     }
@@ -75,6 +77,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     public StructuredQueryBuilder.GeospatialIndex geoProperty(String pojoProperty) {
         return geoJSONProperty(jsonProperty(pojoProperty));
     }
+    @Override
     public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty) {
         return geoPath(pojoPropertyPath(pojoProperty));
     }
@@ -99,6 +102,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             convertOperator(operator), values);
     }
 
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, String... values) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -107,6 +111,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), values);
         }
     }
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, Boolean value) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -115,6 +120,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), value);
         }
     }
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, Number... values) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -123,6 +129,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), values);
         }
     }
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, String... values)
     {
@@ -133,6 +140,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), null, options, weight, values);
         }
     }
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Boolean value)
     {
@@ -143,6 +151,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), null, options, weight, value);
         }
     }
+    @Override
     public StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Number... values)
     {
@@ -153,6 +162,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return value(jsonProperty(pojoProperty), null, options, weight, values);
         }
     }
+    @Override
     public StructuredQueryDefinition word(String pojoProperty, String... words) {
         if ( wrapQueries ) {
             return super.containerQuery(jsonProperty(classWrapper),
@@ -161,6 +171,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             return super.word(jsonProperty(pojoProperty), words);
         }
     }
+    @Override
     public StructuredQueryDefinition word(String pojoProperty, String[] options,
         double weight, String... words)
     {
@@ -184,10 +195,12 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     }
 
     @SuppressWarnings("deprecation")
+    @Override
     public TermQuery term(String... terms) {
         return new PojoTermQuery(wrapQueries, null, terms);
     }
     @SuppressWarnings("deprecation")
+    @Override
     public TermQuery term(double weight, String... terms) {
         return new PojoTermQuery(wrapQueries, weight, terms);
 
@@ -211,6 +224,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         }
     }
 
+    @Override
     public PojoQueryDefinition filteredQuery(StructuredQueryDefinition query) {
         CombinedQueryBuilder cqb = new CombinedQueryBuilderImpl();
         StringHandle options = new StringHandle(

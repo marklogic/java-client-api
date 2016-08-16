@@ -57,6 +57,7 @@ public class ClosingHandlesTest {
         }
 
         private boolean isClosed = false;
+        @Override
         public void close() throws IOException {
             super.close();
             isClosed = true;

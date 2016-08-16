@@ -46,6 +46,7 @@ public class JSONDocumentImpl
 		this.language = language;
 	}
 
+    @Override
 	protected RequestParameters getWriteParams() {
 		if (language == null)
 			return null;

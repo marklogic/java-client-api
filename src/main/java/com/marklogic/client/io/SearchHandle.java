@@ -1629,10 +1629,12 @@ public class SearchHandle
             this.item = item;
         }
 
+        @Override
         public <T extends StructureReadHandle> T get(T handle) {
             HandleAccessor.receiveContent(handle, item);
             return handle;
         }
+        @Override
         public <T> T getAs(Class<T> as) {
             ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
             if ( readHandle == null ) return null;
@@ -1648,12 +1650,15 @@ public class SearchHandle
         private List<ExtractedItem> items;
         private Iterator<ExtractedItem> internalIterator;
 
+        @Override
         public boolean isEmpty() {
             return isEmpty;
         }
+        @Override
         public String getKind() {
             return kind;
         }
+        @Override
         public int size() {
             if ( items == null ) return 0;
             return items.size();
@@ -1673,14 +1678,17 @@ public class SearchHandle
             internalIterator = items.iterator();
         }
 
+        @Override
         public boolean hasNext() {
             return internalIterator.hasNext();
         }
 
+        @Override
         public ExtractedItem next() {
             return internalIterator.next();
         }
 
+        @Override
         public String toString() {
             StringBuffer sb = new StringBuffer();
             sb.append("ExtractedResult: ");

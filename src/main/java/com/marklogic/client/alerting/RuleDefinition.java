@@ -299,6 +299,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		}
 	}
 
+    @Override
 	protected void receiveContent(InputStream content) {
 		DOMHandle handle = new DOMHandle();
 		HandleAccessor.receiveContent(handle, content);
@@ -477,10 +478,12 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 
 	}
 
+    @Override
 	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
 
+    @Override
 	protected OutputStreamSender sendContent() {
 		return this;
 	}

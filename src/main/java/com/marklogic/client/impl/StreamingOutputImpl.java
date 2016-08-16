@@ -33,6 +33,7 @@ class StreamingOutputImpl implements StreamingOutput {
 		this.logger = logger;
 	}
 
+    @Override
 	public void write(OutputStream out) throws IOException {
 		if (logger != null) {
 			OutputStream tee = logger.getPrintStream();

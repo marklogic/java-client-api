@@ -30,10 +30,12 @@ import com.marklogic.client.semantics.SPARQLBindings;
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
 public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> implements SPARQLBindings {
+    @Override
     public SPARQLBindings bind(String name, String value) {
         return bind(name, value, (RDFTypes) null);
     }
 
+    @Override
     public SPARQLBindings bind(String name, String value, RDFTypes type) {
         if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
         if ( value == null ) throw new IllegalArgumentException("value cannot be null");
@@ -41,6 +43,7 @@ public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> imp
         return this;
     }
 
+    @Override
     public SPARQLBindings bind(String name, String value, Locale languageTag) {
         if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
         if ( value == null ) throw new IllegalArgumentException("value cannot be null");

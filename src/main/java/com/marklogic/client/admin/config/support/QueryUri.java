@@ -32,6 +32,7 @@ public enum QueryUri implements TupleSource {
 		values.setUri();
 	}
 	
+    @Override
 	public String toString() {
 		return "";
 	}

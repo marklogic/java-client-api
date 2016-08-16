@@ -256,6 +256,7 @@ public class BatchManager extends ResourceManager {
 		DeleteOutput() {
 			super();
 		}
+        @Override
 		public OperationType getOperationType() {
 			return OperationType.DELETE;
 		}
@@ -268,6 +269,7 @@ public class BatchManager extends ResourceManager {
 		ReadOutput() {
 			super();
 		}
+        @Override
 		public OperationType getOperationType() {
 			return OperationType.READ;
 		}
@@ -300,6 +302,7 @@ public class BatchManager extends ResourceManager {
 		WriteOutput() {
 			super();
 		}
+        @Override
 		public OperationType getOperationType() {
 			return OperationType.WRITE;
 		}

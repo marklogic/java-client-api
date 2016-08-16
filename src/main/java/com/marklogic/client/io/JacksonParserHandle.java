@@ -112,6 +112,7 @@ public class JacksonParserHandle
      * JsonParser allows streaming access to content as it arrives.
      * @return the JsonParser over the content (usually received from the server)
      */
+    @Override
     public JsonParser get() {
         if ( parser == null ) {
             if ( content == null ) {
@@ -130,6 +131,7 @@ public class JacksonParserHandle
     /**
      * Available for the edge case that content from a JsonParser must be written.
      */
+    @Override
     public void set(JsonParser parser) {
         this.parser = parser;
         if ( parser == null ) {
@@ -169,6 +171,7 @@ public class JacksonParserHandle
         this.content = content;
         if (content == null) parser = null;
     }
+    @Override
     protected boolean hasContent() {
         return content != null || parser != null;
     }
@@ -195,6 +198,7 @@ public class JacksonParserHandle
 
     /** Always call close() when finished with this handle -- it closes the underlying InputStream.
      */
+    @Override
     public void close() {
         if ( content != null && closed != true ) {
             try {

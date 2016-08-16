@@ -56,6 +56,7 @@ public class UrisHandle
     this.reader = content;
   }
 
+  @Override
   public Iterator<String> iterator() {
     if ( bufferedReader == null ) {
       bufferedReader = new BufferedReader(reader);

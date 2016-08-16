@@ -101,6 +101,7 @@ public class EditableNamespaceContext
      * Returns all bound prefixes.
      * @return	the set of prefixes
      */
+    @Override
     public Collection<String> getAllPrefixes() {
         return bindings.keySet();
     }

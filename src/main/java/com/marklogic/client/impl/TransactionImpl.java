@@ -51,6 +51,7 @@ class TransactionImpl implements Transaction {
 		}
 	}
 
+    @Override
 	public String getTransactionId() {
 		return transactionId;
 	}
@@ -58,10 +59,12 @@ class TransactionImpl implements Transaction {
 		this.transactionId = transactionId;
 	}
 
+    @Override
 	public List<NewCookie> getCookies() {
 		return cookies;
 	}
 
+    @Override
 	public String getHostId() {
 		return hostId;
 	}

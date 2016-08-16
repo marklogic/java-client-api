@@ -83,12 +83,15 @@ public class JacksonDatabindTest {
         private int numCities = 0;
         private JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 
+        @Override
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
             docMgr.writeAs(DIRECTORY + "/jsonCities/" + city.getGeoNameId() + ".json", city);
             numCities++;
         }
+        @Override
         public void finishBatch() {}
+        @Override
         public void setNumRecords(int numRecords) {}
     }
     
@@ -115,6 +118,7 @@ public class JacksonDatabindTest {
             mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         }
 
+        @Override
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
             JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
@@ -124,6 +128,7 @@ public class JacksonDatabindTest {
             writeSet.add(DIRECTORY + "/xmlCities/" + city.getGeoNameId() + ".xml", handle);
             numCities++;
         }
+        @Override
         public void finishBatch() {
             if ( writeSet.size() > 0 ) {
                 docMgr.write(writeSet);

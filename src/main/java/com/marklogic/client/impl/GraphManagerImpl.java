@@ -393,10 +393,12 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         return perms;
     }
 
+    @Override
     public String getDefaultMimetype() {
         return defaultMimetype;
     }
 
+    @Override
     public void setDefaultMimetype(String mimetype) {
         this.defaultMimetype = mimetype;
     }
@@ -416,6 +418,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         return mimetype;
     }
 
+    @Override
     public GraphPermissions newGraphPermissions() {
         return new GraphPermissionsImpl();
     }
