@@ -64,6 +64,7 @@ public class IndexSpecImpl implements TermSpec {
 	public String getJsonKey() {
 		return jsonKey;
 	}
+    @Override
 	public void setJsonKey(String jsonKey) {
 		this.jsonKey = jsonKey;
 	}

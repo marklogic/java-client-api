@@ -102,11 +102,13 @@ public class BulkReadWriteTest {
             writeSet.addAs( DIRECTORY + city.getGeoNameId() + ".xml", city );
         }
 
+        @Override
         public void finishBatch() {
             docMgr.write(writeSet);
             writeSet = docMgr.newWriteSet();
         }
 
+        @Override
         public void setNumRecords(int numWritten) {
             assertEquals("Number of records not expected", RECORDS_EXPECTED, numWritten);
         }

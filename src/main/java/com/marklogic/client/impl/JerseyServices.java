@@ -855,6 +855,7 @@ public class JerseyServices implements RESTServices {
 			return iterator.hasNext();
 		}
 		
+        @Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -880,10 +881,12 @@ public class JerseyServices implements RESTServices {
 			return record;
 		}
 
+        @Override
 		public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
 			return next().getContent(contentHandle);
 		}
 
+        @Override
 		public void close() {
 			if ( iterator != null ) iterator.close();
 		}
@@ -3323,6 +3326,7 @@ public class JerseyServices implements RESTServices {
 			return iterator.hasNext();
 		}
 		
+        @Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -3335,6 +3339,7 @@ public class JerseyServices implements RESTServices {
 			return result;
 		}
 
+        @Override
 		public void close() {
 			if ( iterator != null ) iterator.close();
 		}
@@ -4313,6 +4318,7 @@ public class JerseyServices implements RESTServices {
 			this.response = response;
 			this.multiPart = multiPart;
 		}
+        @Override
 		public void close() throws IOException {
 			if ( multiPart != null ) multiPart.close();
 			if ( response   != null ) response.close();
@@ -4509,6 +4515,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
+        @Override
 		protected void finalize() throws Throwable {
 			close();
 			super.finalize();
