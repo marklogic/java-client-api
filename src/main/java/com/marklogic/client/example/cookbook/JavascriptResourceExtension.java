@@ -21,12 +21,6 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import javax.xml.XMLConstants;
-import javax.xml.namespace.QName;
-import javax.xml.stream.XMLStreamException;
-import javax.xml.stream.XMLStreamReader;
-
-import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -43,10 +37,7 @@ import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.extensions.ResourceManager;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.util.RequestParameters;
 
 /**

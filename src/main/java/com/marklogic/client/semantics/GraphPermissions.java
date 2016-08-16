@@ -18,8 +18,6 @@ package com.marklogic.client.semantics;
 import java.util.Map;
 import java.util.Set;
 
-import com.marklogic.client.semantics.Capability;
-
 /**
  * <p>A Map of permissions for a graph, where the keys are roles and the values
  * are the Set of capabilities available to that role (one of READ, UPDATE, or

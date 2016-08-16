@@ -34,12 +34,9 @@ import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.io.SerializedString;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.test.Common;
 
 public class JacksonStreamTest {
     private static final String ORDER_FILE = "sampleOrder.json";

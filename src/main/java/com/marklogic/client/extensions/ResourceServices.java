@@ -17,7 +17,6 @@ package com.marklogic.client.extensions;
 
 import java.util.Iterator;
 
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;

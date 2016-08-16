@@ -17,8 +17,6 @@ package com.marklogic.client.admin.config.support;
 
 import javax.xml.namespace.QName;
 
-import com.marklogic.client.admin.config.support.GeospatialIndexType;
-
 /**
  * Defines an interface to the methods for storing
  * geospatial values in MarkLogic indexes.

@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.query;
 
-import com.marklogic.client.io.Format;
-
 /** Surfaces the data sent from the server-side XQuery search:search API. Note
  * that the most important function is to provide access to the list of ExtractedItem
  * objects.  For example:

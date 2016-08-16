@@ -16,14 +16,11 @@
 package com.marklogic.client.semantics;
 
 import com.marklogic.client.Transaction;
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.semantics.Capability;
 
 /**
  * <p>A manager for executing SPARQL queries in MarkLogic Server and retrieving

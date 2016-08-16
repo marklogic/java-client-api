@@ -38,7 +38,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 

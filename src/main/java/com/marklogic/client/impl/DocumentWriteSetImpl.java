@@ -16,12 +16,10 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
-import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
