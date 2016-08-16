@@ -1664,6 +1664,7 @@ public class SearchHandle
             return items.size();
         }
 
+        @Override
         public Iterator<ExtractedItem> iterator() {
             return items.iterator();
         }

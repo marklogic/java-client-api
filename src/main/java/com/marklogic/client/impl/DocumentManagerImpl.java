@@ -71,6 +71,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       return super.add(e);
     }
 
+    @Override
     public boolean addAll(Collection<? extends Metadata> c) {
       isProcessedMetadataModified = true;
       return super.addAll(c);
@@ -564,6 +565,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return searchView;
   }
 
+  @Override
   public void setSearchView(QueryView view) {
     this.searchView = view;
   }

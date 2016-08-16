@@ -137,6 +137,7 @@ public class JacksonDatabindTest {
                 writeSet = docMgr.newWriteSet();
             }
         }
+        @Override
         public void setNumRecords(int numRecords) {}
     }
     
