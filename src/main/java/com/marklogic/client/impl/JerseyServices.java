@@ -42,7 +42,6 @@ import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -72,7 +71,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory;
@@ -99,9 +97,6 @@ import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.extensions.ResourceServices.ServiceResult;
-import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonParserHandle;
@@ -2338,7 +2333,7 @@ public class JerseyServices implements RESTServices {
 					addEncodedParam(docParams, "options", optionsName);
 				}
 			} else if (queryDef.getOptionsName() != null) {
-				if (optionsName != queryDef.getOptionsName()
+				if (!queryDef.getOptionsName().equals(optionsName)
 						&& logger.isWarnEnabled())
 					logger.warn("values definition options take precedence over query definition options");
 			}
