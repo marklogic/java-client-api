@@ -124,11 +124,11 @@ public class SPARQLQueryManagerImpl extends AbstractLoggingManager implements SP
     private void setRdfXmlOrJsonMimetype(TriplesReadHandle handle) {
         HandleImplementation baseHandle = HandleAccessor.as(handle);
         if ( baseHandle.getFormat() == Format.JSON ) {
-            if ( baseHandle.getMimetype() == Format.JSON.getDefaultMimetype() ) {
+            if ( Format.JSON.getDefaultMimetype().equals(baseHandle.getMimetype()) ) {
                 baseHandle.setMimetype(RDFMimeTypes.RDFJSON);
             }
         } else if ( baseHandle.getFormat() == Format.XML ) {
-            if ( baseHandle.getMimetype() == Format.XML.getDefaultMimetype()) {
+            if ( Format.XML.getDefaultMimetype().equals(baseHandle.getMimetype())) {
                 baseHandle.setMimetype(RDFMimeTypes.RDFXML);
             }
         }

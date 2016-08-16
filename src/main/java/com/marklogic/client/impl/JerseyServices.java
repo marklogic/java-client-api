@@ -2340,7 +2340,7 @@ public class JerseyServices implements RESTServices {
 					addEncodedParam(docParams, "options", optionsName);
 				}
 			} else if (queryDef.getOptionsName() != null) {
-				if (optionsName != queryDef.getOptionsName()
+				if (!queryDef.getOptionsName().equals(optionsName)
 						&& logger.isWarnEnabled())
 					logger.warn("values definition options take precedence over query definition options");
 			}
