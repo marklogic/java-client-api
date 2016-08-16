@@ -308,11 +308,14 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
+		PlanBuilder.Prefixer rowGraph = p.prefixer("http://example.org/rowgraph");
+
 		PlanBuilder.ExportablePlan plan =
 			p.fromTriples(
 				p.pattern(
 						p.col("subject"),
-						p.sem.iri("http://example.org/rowgraph/p1"),
+						rowGraph.iri("p1"),
+//						p.sem.iri("http://example.org/rowgraph/p1"),
 						p.col("object")
 						)
 				)

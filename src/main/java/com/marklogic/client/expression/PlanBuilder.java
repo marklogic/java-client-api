@@ -16,6 +16,7 @@
 package com.marklogic.client.expression;
 
 import java.util.Map;
+import java.util.function.Function;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 
@@ -120,6 +121,7 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsDateTimeExpr;
  import com.marklogic.client.type.XsGMonthDayParam;
 
+import com.marklogic.client.type.SemIriVal;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public abstract class PlanBuilder {
@@ -302,6 +304,7 @@ public abstract class PlanBuilder {
 }
  
     public abstract PlanParam param(String name);
+    public abstract Prefixer prefixer(String base);
 
     public abstract PlanTriplePatternSeq  patterns(PlanTriplePattern... pattern);
     public abstract PlanTripleIriSeq      subjects(PlanTripleIri...   subjects);
@@ -315,5 +318,9 @@ public abstract class PlanBuilder {
 
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
+
+    public interface Prefixer {
+        public SemIriVal iri(String name);
+    }
 
 }

@@ -40,6 +40,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 abstract class PlanBuilderBase extends PlanBuilder {
@@ -57,6 +58,44 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	}
 	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
 		this.handleRegistry = handleRegistry;
+	}
+
+	@Override
+	public Prefixer prefixer(String base) {
+		if (base == null || base.length() == 0) {
+			throw new IllegalArgumentException("cannot create prefixer with empty string");
+		}
+
+		String lastChar = base.substring(base.length() - 1);
+		String prefix = (lastChar == "/" || lastChar == "#" || lastChar == "?") ?
+				base : base + "/";
+
+		return new PrefixerImpl(sem, prefix);
+	}
+
+	static public class PrefixerImpl implements Prefixer {
+		private Sem    sem;
+		private String prefix;
+		private PrefixerImpl(Sem sem, String prefix) {
+			this.prefix = prefix;
+			this.sem    = sem;
+		}
+
+		public SemIriVal iri(String suffix) {
+			if (suffix == null || suffix.length() == 0) {
+				throw new IllegalArgumentException("cannot create SemIriVal with empty string");
+			}
+
+			String firstChar = suffix.substring(0, 1);
+			if (firstChar == "/" || firstChar == "#" || firstChar == "?") {
+				if (suffix.length() == 1) {
+					throw new IllegalArgumentException("cannot create SemIriVal from: "+suffix);
+				}
+				suffix = suffix.substring(1);
+			}
+
+			return sem.iri(prefix+suffix);
+		}
 	}
 
 	@Override

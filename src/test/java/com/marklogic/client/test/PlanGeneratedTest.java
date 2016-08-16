@@ -856,6 +856,11 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
+    public void testSemCoalesce3() {
+        exportTester("testSemCoalesce3", "{\"ns\":\"sem\", \"fn\":\"coalesce\", \"args\":[[{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"a\"]}], [{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"b\"]}], [{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"c\"]}]]}", p.sem.coalesce(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")));
+    }
+
+    @Test
     public void testSemDatatype1() {
         exportTester("testSemDatatype1", "{\"ns\":\"sem\", \"fn\":\"datatype\", \"args\":[{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"a\"]}]}", p.sem.datatype(p.xs.string("a")));
     }
@@ -1497,7 +1502,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXsFloat1() {
-        exportTester("testXsFloat1", "{\"ns\":\"xs\", \"fn\":\"float\", \"args\":[1.2]}", p.xs.floatVal((float) 1.2));
+        exportTester("testXsFloat1", "{\"ns\":\"xs\", \"fn\":\"float\", \"args\":[1]}", p.xs.floatVal((float) 1));
     }
 
     @Test
