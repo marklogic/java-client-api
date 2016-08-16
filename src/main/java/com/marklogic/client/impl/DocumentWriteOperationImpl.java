@@ -46,22 +46,27 @@ public class DocumentWriteOperationImpl implements DocumentWriteOperation {
 		this.temporalDocumentURI = temporalDocumentURI;
 	}
 
+    @Override
     public OperationType getOperationType() {
 		return operationType;
 	}
 
+    @Override
     public String getUri() {
 		return uri;
 	}
 
+    @Override
     public String getTemporalDocumentURI() {
 		return temporalDocumentURI;
 	}
 
+    @Override
     public DocumentMetadataWriteHandle getMetadata() {
 		return metadata;
 	}
 
+    @Override
     public AbstractWriteHandle getContent() {
 		return content;
 	}

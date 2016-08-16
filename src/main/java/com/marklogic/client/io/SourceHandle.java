@@ -191,6 +191,7 @@ public class SourceHandle
 	/**
 	 * Restricts the format to XML.
 	 */
+    @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("SourceHandle supports the XML format only");
@@ -268,12 +269,14 @@ public class SourceHandle
 
 		return this;
 	}
+    @Override
 	public void write(OutputStream out) throws IOException {
 		transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
 	}
 
 	/** Always call close() when finished with this handle -- it closes the underlying InputStream.
 	 */
+    @Override
 	public void close() {
 		if ( underlyingStream != null ) {
 			try {

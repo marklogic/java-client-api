@@ -158,6 +158,7 @@ public class XMLEventReaderHandle
 	/**
 	 * Restricts the format to XML.
 	 */
+    @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("XMLEventReaderHandle supports the XML format only");
@@ -294,6 +295,7 @@ public class XMLEventReaderHandle
 
 	/** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
 	 */
+    @Override
 	public void close() {
 		if ( underlyingStream != null ) {
 			try {

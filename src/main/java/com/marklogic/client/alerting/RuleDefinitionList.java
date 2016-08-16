@@ -60,10 +60,12 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 		return rules.size();
 	}
 
+    @Override
 	protected Class<InputStream> receiveAs() {
 		return InputStream.class;
 	}
 	
+    @Override
 	protected void receiveContent(InputStream content) {
 		rules = new ArrayList<RuleDefinition>();
 		DOMHandle domHandle = new DOMHandle();

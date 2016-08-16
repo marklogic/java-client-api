@@ -44,5 +44,6 @@ public interface DocumentPage extends Page<DocumentRecord>, Closeable {
      */
     public <T extends AbstractReadHandle> T nextContent(T contentHandle);
     /** Frees the underlying resources, including the http connection. */
+    @Override
     public void close();
 }

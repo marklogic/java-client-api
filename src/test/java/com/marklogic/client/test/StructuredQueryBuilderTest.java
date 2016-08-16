@@ -595,14 +595,17 @@ q);
     }
 
     static private class ParseHandler extends DefaultHandler {
+        @Override
         public void fatalError(SAXParseException spe) throws SAXParseException {
             throw spe;
         }
 
+        @Override
         public void error(SAXParseException spe) throws SAXParseException {
             throw spe;
         }
 
+        @Override
         public void warning(SAXParseException spe) throws SAXParseException {
             throw spe;
         }

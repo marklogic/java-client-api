@@ -30,6 +30,7 @@ public class GeospatialSpecImpl extends IndexSpecImpl implements GeospatialSpec 
 	private GeospatialIndexType geospatialIndexType;
 	private QName parent;
 	private QName latitude;
+    @Override
 	public GeospatialIndexType getGeospatialIndexType() {
 		return geospatialIndexType;
 	}
@@ -38,20 +39,24 @@ public class GeospatialSpecImpl extends IndexSpecImpl implements GeospatialSpec 
 		this.geospatialIndexType = geospatialIndexType;
 	}
 
+    @Override
 	public QName getParent() {
 		return parent;
 	}
 
+    @Override
 	public QName getLatitude() {
 		return latitude;
 	}
 
+    @Override
 	public QName getLongitude() {
 		return longitude;
 	}
 
 	private QName longitude;
 	
+    @Override
 	public void setGeospatialIndexType(GeospatialIndexType geospatialIndexType) {
 		this.geospatialIndexType = geospatialIndexType;
 	}

@@ -90,6 +90,7 @@ public @interface PathIndexProperty {
             this.string = string;
         };
 
+        @Override
         public String toString() { return string; };
     };
 }

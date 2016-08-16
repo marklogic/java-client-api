@@ -249,6 +249,7 @@ public final class QueryOptionsHandle
      * Returns a List of all the annotations in the query options.
       * @return The annotations list.
      */
+    @Override
 	public List<QueryAnnotation> getAnnotations() {
 		return optionsHolder.getAnnotations();
 	}
@@ -904,6 +905,7 @@ public final class QueryOptionsHandle
      * @param out the output stream receiving the node.
      * @throws IOException if there is an I/O error writing to that stream.
      */
+    @Override
 	public void write(OutputStream out) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
@@ -1045,6 +1047,7 @@ public final class QueryOptionsHandle
 		}
 	}
 	
+    @Override
 	protected OutputStreamSender sendContent() {
 		return this;
 	}

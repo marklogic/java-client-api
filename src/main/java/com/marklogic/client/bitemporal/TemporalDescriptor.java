@@ -23,6 +23,7 @@ public interface TemporalDescriptor extends DocumentDescriptor {
      * Returns the URI identifier for the database document.
      * @return	the document URI
      */
+    @Override
     public String getUri();
 
     /**

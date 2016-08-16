@@ -24,10 +24,12 @@ public class RangeSpecImpl extends IndexSpecImpl implements RangeSpec {
 	private String type;
 	private String collation;
 
+    @Override
 	public void setType(String type) {
 		this.type = type;
 	}
 
+    @Override
 	public void setCollation(String collation) {
 		this.collation = collation;
 	}
@@ -42,6 +44,7 @@ public class RangeSpecImpl extends IndexSpecImpl implements RangeSpec {
 		return collation;
 	}
 
+    @Override
 	public void build(RangeIndexed indexable) {
 		indexable.setType(getType());
 	    indexable.setCollation(getCollation());	

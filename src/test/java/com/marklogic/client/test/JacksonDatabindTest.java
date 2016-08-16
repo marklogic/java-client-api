@@ -15,9 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -32,7 +29,6 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.databind.DeserializationFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
@@ -90,12 +86,15 @@ public class JacksonDatabindTest {
         private int numCities = 0;
         private JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 
+        @Override
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
             docMgr.writeAs(DIRECTORY + "/jsonCities/" + city.getGeoNameId() + ".json", city);
             numCities++;
         }
+        @Override
         public void finishBatch() {}
+        @Override
         public void setNumRecords(int numRecords) {}
     }
     
@@ -122,6 +121,7 @@ public class JacksonDatabindTest {
             mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
         }
 
+        @Override
         public void addCity(City city) {
             if ( numCities >= MAX_TO_WRITE ) return;
             JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
@@ -131,6 +131,7 @@ public class JacksonDatabindTest {
             writeSet.add(DIRECTORY + "/xmlCities/" + city.getGeoNameId() + ".xml", handle);
             numCities++;
         }
+        @Override
         public void finishBatch() {
             if ( writeSet.size() > 0 ) {
                 docMgr.write(writeSet);

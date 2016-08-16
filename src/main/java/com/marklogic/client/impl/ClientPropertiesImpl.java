@@ -69,6 +69,7 @@ public class ClientPropertiesImpl extends NameMapBase<Object>{
 	public Object put(QName name, String value) {
 		return super.put(name, value);
 	}
+    @Override
 	public Object put(QName name, Object value) {
 		// Number includes BigDecimal, BigInteger, Byte, Double, Float, Integer, Long, Short
 		if (value instanceof Boolean || value instanceof byte[] ||

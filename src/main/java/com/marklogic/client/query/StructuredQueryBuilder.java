@@ -1041,6 +1041,7 @@ public class StructuredQueryBuilder {
 			optionsUri = builderOptionsURI;
 		}
 
+        @Override
 		public String serialize() {
 			return serializeQueries(this);
         }
@@ -1842,6 +1843,7 @@ public class StructuredQueryBuilder {
     		this.weight  = weight;
     		this.values  = values;
 		}
+        @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
     		((IndexImpl) index).innerSerialize(serializer);
     		if (scope != null) {
@@ -1874,6 +1876,7 @@ public class StructuredQueryBuilder {
             this.weight  = weight;
             this.values  = values;
         }
+        @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             serializer.writeStartElement("value-query");
             if ( values != null && values.length > 0 ) {
@@ -2063,6 +2066,7 @@ public class StructuredQueryBuilder {
     	TemporalAxis(String name) {
     		this.name = name;
     	}
+        @Override
 		public String toString() {
 			return name;
 		}

@@ -35,18 +35,22 @@ public class BasicPage<T> implements Page<T> {
         this.totalSize = totalSize;
     }
 
+    @Override
     public Iterator<T> iterator() {
         return iterator;
     }
     
+    @Override
     public boolean hasNext() {
         return iterator.hasNext();
     }
 
+    @Override
     public T next() {
         return iterator.next();
     }
 
+    @Override
     public long getStart() {
         return start;
     }
@@ -56,6 +60,7 @@ public class BasicPage<T> implements Page<T> {
 		return this;
     }
 
+    @Override
     public long getPageSize() {
         return pageSize;
     }
@@ -65,6 +70,7 @@ public class BasicPage<T> implements Page<T> {
 		return this;
     }
 
+    @Override
     public long getTotalSize() {
         return totalSize;
     }
@@ -79,6 +85,7 @@ public class BasicPage<T> implements Page<T> {
 		return this;
     }
 
+    @Override
     public long size() {
         if ( size != null ) return size.longValue();
         if ( getPageSize() == 0 ) {
@@ -92,23 +99,28 @@ public class BasicPage<T> implements Page<T> {
         }
     }
 
+    @Override
     public long getTotalPages() {
         if ( getPageSize() == 0 ) return 0;
         return (long) Math.ceil((double) getTotalSize() / (double) getPageSize());
     }
 
+    @Override
     public boolean hasContent() {
         return size() > 0;
     }
 
+    @Override
     public boolean hasNextPage() {
         return getPageNumber() < getTotalPages();
     }
 
+    @Override
     public boolean hasPreviousPage() {
         return getPageNumber() > 1;
     }
 
+    @Override
     public long getPageNumber() {
         if ( getPageSize() == 0 ) return 0;
         double _start = (double) start;
@@ -117,11 +129,13 @@ public class BasicPage<T> implements Page<T> {
         else return (long) Math.floor(_start / _pageSize) + 1;
     }
 
+    @Override
     public boolean isFirstPage() {
         if ( getPageSize() == 0 ) return true;
         return getPageNumber() == 1;
     }
 
+    @Override
     public boolean isLastPage() {
         if ( getPageSize() == 0 ) return true;
         return getPageNumber() == getTotalPages();

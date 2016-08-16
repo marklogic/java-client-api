@@ -144,6 +144,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
          * For this to work the System property
          * javax.security.auth.useSubjectCredsOnly must be set to true.
          */
+        @Override
         public Object run() {
             try {
                 Oid krb5Mechanism = new Oid("1.2.840.113554.1.2.2");
@@ -244,6 +245,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
      *            the HTTP request
      * @return the HTTP response
      */
+    @Override
     public ClientResponse handle(final ClientRequest request) throws ClientHandlerException {
 
         // Add the whole Authorization line to the header

@@ -205,6 +205,7 @@ public interface DocumentMetadataPatchBuilder {
 		 * Returns a JSON or XML representation of the patch as a string.
 		 * @return	the patch
 		 */
+        @Override
 		public String toString();
 	}
 

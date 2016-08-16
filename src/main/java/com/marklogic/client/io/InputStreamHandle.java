@@ -233,6 +233,7 @@ public class InputStreamHandle
 
 	/** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
 	 */
+    @Override
 	public void close() {
 		if ( content != null ) {
 			try {
