@@ -175,7 +175,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
 			logger.info("Get element.");
 			StartElement startElement = firstEvent.asStartElement();
-			if (startElement.getName().getNamespaceURI() == RequestConstants.SEARCH_NS &&
+			if (RequestConstants.SEARCH_NS.equals(startElement.getName().getNamespaceURI()) &&
 					startElement.getName().getLocalPart().equals("query")) {
 				logger.info("It's a structured query!!!");
 				//wrap in search.
