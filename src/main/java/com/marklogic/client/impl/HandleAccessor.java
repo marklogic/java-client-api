@@ -115,11 +115,12 @@ public class HandleAccessor {
 		}
         if ( content instanceof InputStream ) {
             StringBuffer sb = new StringBuffer();
-            Reader reader = new InputStreamReader((InputStream) content, "UTF-8");
-            char[] cbuf = new char[8000];
-            int charsRead = -1;
-            while ( (charsRead = reader.read(cbuf)) != -1 ) {
-                sb.append(cbuf, 0, charsRead);
+            try (Reader reader = new InputStreamReader((InputStream) content, "UTF-8")) {
+                char[] cbuf = new char[8000];
+                int charsRead = -1;
+                while ( (charsRead = reader.read(cbuf)) != -1 ) {
+                    sb.append(cbuf, 0, charsRead);
+                }
             }
             stringContent = sb.toString();
 		}

@@ -188,20 +188,19 @@ public class JacksonDatabindTest {
         CsvMapper mapper = new CsvMapper();
         mapper.addMixInAnnotations(Toponym.class, ToponymMixIn1.class);
         ObjectReader reader = mapper.reader(Toponym.class).with(schema);
-        BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE));
-        GenericDocumentManager docMgr = Common.client.newDocumentManager();
-        DocumentWriteSet set = docMgr.newWriteSet();
-        String line = null;
-        for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
-            Toponym city = reader.readValue(line);
-            JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
-            handle.getMapper().addMixInAnnotations(Toponym.class, ToponymMixIn2.class);
-            set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.getGeoNameId() + ".json", handle);
+        try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE))) {
+            GenericDocumentManager docMgr = Common.client.newDocumentManager();
+            DocumentWriteSet set = docMgr.newWriteSet();
+            String line = null;
+            for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
+                Toponym city = reader.readValue(line);
+                JacksonDatabindHandle handle = new JacksonDatabindHandle(city);
+                handle.getMapper().addMixInAnnotations(Toponym.class, ToponymMixIn2.class);
+                set.add(DIRECTORY + "/thirdPartyJsonCities/" + city.getGeoNameId() + ".json", handle);
+            }   docMgr.write(set);
+            // we can add assertions later, for now this test just serves as example code and
+            // ensures no exceptions are thrown
         }
-        docMgr.write(set);
-        cityReader.close();
-        // we can add assertions later, for now this test just serves as example code and 
-        // ensures no exceptions are thrown
     }
 
     public static void cleanUp() {

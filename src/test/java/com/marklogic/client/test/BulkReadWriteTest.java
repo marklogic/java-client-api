@@ -116,12 +116,12 @@ public class BulkReadWriteTest {
         // we'll attach country info to each city (that's the big data set)
         Map<String, Country> countries = new HashMap<String, Country>();
         System.out.println("Reading countries:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
-        BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"));
         String line;
-        while ((line = countryReader.readLine()) != null ) {
-            addCountry(line, countries);
+        try (BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"))) {
+            while ((line = countryReader.readLine()) != null ) {
+                addCountry(line, countries);
+            }
         }
-        countryReader.close();
 
         // write batches of cities combined with their country info
         System.out.println("Reading cities:" + BulkReadWriteTest.class.getClassLoader().getResource(CITIES_FILE));
