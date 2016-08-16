@@ -174,7 +174,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		XMLEvent firstEvent = importedList.get(0);
 		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
 			StartElement startElement = firstEvent.asStartElement();
-			if (startElement.getName().getNamespaceURI() == RequestConstants.SEARCH_NS &&
+			if (RequestConstants.SEARCH_NS.equals(startElement.getName().getNamespaceURI()) &&
 					startElement.getName().getLocalPart().equals("query")) {
 				//wrap in search.
 				List<XMLEvent> wrappedList = new ArrayList<XMLEvent>();
