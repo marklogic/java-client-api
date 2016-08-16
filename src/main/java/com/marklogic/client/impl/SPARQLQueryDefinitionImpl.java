@@ -19,7 +19,6 @@ import java.util.Arrays;
 import java.util.Locale;
 
 import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.impl.SPARQLBindingsImpl;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;

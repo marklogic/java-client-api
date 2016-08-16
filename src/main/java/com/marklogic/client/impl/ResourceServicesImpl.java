@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.io.marker.AbstractReadHandle;
