@@ -58,11 +58,11 @@ public class QueryOptionsListHandleTest {
     @Test
     public void tesQueryOptionsListHandle() throws IOException, ParserConfigurationException, SAXException {
         File f = new File("src/test/resources/optionslist.xml");
-        FileInputStream is = new FileInputStream(f);
-
-        MyQueryOptionsListHandle v = new MyQueryOptionsListHandle();
-
-        v.parseTestData(is);
+        MyQueryOptionsListHandle v;
+        try (FileInputStream is = new FileInputStream(f)) {
+            v = new MyQueryOptionsListHandle();
+            v.parseTestData(is);
+        }
         HashMap<String,String> map = v.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
