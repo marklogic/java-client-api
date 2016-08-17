@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
@@ -26,7 +25,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
@@ -104,7 +102,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         GraphPermissions perms = new GraphPermissionsImpl();
         for ( JsonNode permission : json.path("permissions") ) {
             String role = permission.path("role-name").asText();
-            Set<Capability> capabilities = new HashSet<Capability>();
+            Set<Capability> capabilities = new HashSet<>();
             for ( JsonNode capability : permission.path("capabilities") ) {
                 String value = capability.asText();
                 if ( value != null ) {
@@ -390,7 +388,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
         GraphPermissionsImpl perms = new GraphPermissionsImpl();
-        perms.put(role, new HashSet<Capability>(Arrays.asList(capabilities)));
+        perms.put(role, new HashSet<>(Arrays.asList(capabilities)));
         return perms;
     }
 

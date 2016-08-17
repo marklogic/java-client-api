@@ -48,6 +48,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+import java.util.Map;
 /*
  * This test is intended for 
  * looping eval query for more than 100 times
@@ -137,7 +138,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		Transaction t1 = client.openTransaction();
 		try { 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++) {
 			writeset.add("/sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
@@ -186,7 +187,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 			Transaction t1 = client2.openTransaction();
 			try { 
 			XMLDocumentManager docMgr = client2.newXMLDocumentManager();
-			HashMap<String,String> map= new HashMap<String,String>();
+			Map<String,String> map= new HashMap<>();
 			DocumentWriteSet writeset =docMgr.newWriteSet();
 			for(int i =0;i<102;i++){
 				writeset.add("/sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));

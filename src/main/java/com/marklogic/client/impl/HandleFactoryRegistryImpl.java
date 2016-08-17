@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.ContentHandleFactory;
 
 public class HandleFactoryRegistryImpl implements HandleFactoryRegistry {
 	private Map<Class<?>,ContentHandleFactory> factories =
-		new HashMap<Class<?>,ContentHandleFactory>();
+		new HashMap<>();
 
 	public static HandleFactoryRegistry newDefault() {
 		return registerDefaults(new HandleFactoryRegistryImpl());

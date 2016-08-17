@@ -42,7 +42,6 @@ import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
-import javax.ws.rs.core.Cookie;
 import javax.ws.rs.core.HttpHeaders;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.MultivaluedMap;
@@ -72,7 +71,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClientFactory;
@@ -99,9 +97,6 @@ import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.extensions.ResourceServices.ServiceResult;
-import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonParserHandle;
@@ -373,7 +368,7 @@ public class JerseyServices implements RESTServices {
 		HttpParams httpParams = new BasicHttpParams();
 
 		if (authenType != null && authenType != Authentication.CERTIFICATE) {
-			List<String> authpref = new ArrayList<String>();
+			List<String> authpref = new ArrayList<>();
 			if (authenType == Authentication.BASIC)
 				authpref.add(AuthPolicy.BASIC);
 			else if (authenType == Authentication.DIGEST)
@@ -832,7 +827,7 @@ public class JerseyServices implements RESTServices {
 
 		JerseyDocumentPage(JerseyResultIterator iterator, boolean hasContent, boolean hasMetadata) {
 			super(
-				new ArrayList<DocumentRecord>().iterator(),
+				new ArrayList<>().iterator(),
 				iterator != null ? iterator.getStart() : 1,
 				iterator != null ? iterator.getPageSize() : 0,
 				iterator != null ? iterator.getTotalSize() : 0
@@ -3241,8 +3236,8 @@ public class JerseyServices implements RESTServices {
 			String temporalCollection)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
-		ArrayList<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
+		List<AbstractWriteHandle> writeHandles = new ArrayList<>();
+		List<Map<String, List<String>>> headerList = new ArrayList<>();
 		for ( DocumentWriteOperation write: writeSet ) {
 			String temporalDocumentURI = write.getTemporalDocumentURI();
 			HandleImplementation metadata =
@@ -3964,7 +3959,7 @@ public class JerseyServices implements RESTServices {
 		if (oldSize == 0)
 			return null;
 
-		List<String> newValues = new ArrayList<String>(oldSize);
+		List<String> newValues = new ArrayList<>(oldSize);
 		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
@@ -3983,7 +3978,7 @@ public class JerseyServices implements RESTServices {
 		if (oldSize == 0)
 			return null;
 
-		List<String> newValues = new ArrayList<String>(oldSize);
+		List<String> newValues = new ArrayList<>(oldSize);
 		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
@@ -4434,7 +4429,7 @@ public class JerseyServices implements RESTServices {
             this.reqlog = reqlog;
             if (partList != null && partList.size() > 0) {
                 this.size = partList.size();
-                this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
+                this.partQueue = new ConcurrentLinkedQueue<>(
                         partList).iterator();
             } else {
                 this.size = 0;

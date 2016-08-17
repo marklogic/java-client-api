@@ -404,9 +404,9 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 		DocumentMetadataHandle mh = setMetadata();
 		writeset.addDefault(mh);
 		
-		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<String>(String.class);
+		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<>(String.class);
 
-		Map<String, String> jsonMap = new HashMap<String, String>();
+		Map<String, String> jsonMap = new HashMap<>();
 		String[] uris = new String[150];
 				
 		String dir = new String("/");
@@ -471,9 +471,9 @@ public class TestBulkReadWriteWithJacksonDataBind extends
 		DocumentMetadataHandle mh = setMetadata();
 		writeset.addDefault(mh);
 		
-		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<String>(String.class);
+		JacksonDatabindHandle<String> handle1 = new JacksonDatabindHandle<>(String.class);
 
-		Map<String, String> jsonMap = new HashMap<String, String>();
+		Map<String, String> jsonMap = new HashMap<>();
 		String[] uris = new String[150];
 				
 		String dir = new String("/");

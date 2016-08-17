@@ -46,6 +46,7 @@ import com.marklogic.client.query.StructuredQueryBuilder.FragmentScope;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
+import java.util.Map;
 
 public class StructuredQueryBuilderTest {
 	static private XpathEngine xpather;
@@ -58,7 +59,7 @@ public class StructuredQueryBuilderTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        HashMap<String,String> namespaces = new HashMap<String, String>();
+        Map<String,String> namespaces = new HashMap<>();
         namespaces.put("rapi", "http://marklogic.com/rest-api");
         namespaces.put("prop", "http://marklogic.com/xdmp/property");
         namespaces.put("xs",   "http://www.w3.org/2001/XMLSchema");

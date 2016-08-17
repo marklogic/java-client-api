@@ -46,7 +46,7 @@ public class RequestParameters
 	 * @param value	the value of the parameter
 	 */
 	public void put(String name, String value) {
-		List<String> list = new ArrayList<String>();
+		List<String> list = new ArrayList<>();
 		list.add(value);
 		getMap().put(name, list);
 	}

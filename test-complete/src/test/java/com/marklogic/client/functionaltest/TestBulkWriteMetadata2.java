@@ -62,6 +62,7 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
+import javax.xml.transform.Source;
 
 /**
  * @author skottam
@@ -553,7 +554,7 @@ public class TestBulkWriteMetadata2 extends  BasicJavaClientREST{
 
 		writeset.add("/generic/foo1.txt",bh);
 
-		DOMSource ds = new DOMSource(getDocumentContent("This is so foo1"));
+		Source ds = new DOMSource(getDocumentContent("This is so foo1"));
 		SourceHandle sh = new SourceHandle();
 		sh.set(ds);
 		sh.setFormat(Format.XML);

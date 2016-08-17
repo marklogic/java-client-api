@@ -28,10 +28,11 @@ import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import java.util.Map;
  
 public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements PojoQueryBuilder<T> {
-    private HashMap<String, Class<?>> types = new HashMap<String, Class<?>>();
-    private HashMap<String, String> rangeIndextypes = new HashMap<String, String>();
+    private Map<String, Class<?>> types = new HashMap<>();
+    private Map<String, String> rangeIndextypes = new HashMap<>();
     private Class<?> clazz;
     private String classWrapper;
     private boolean wrapQueries = false;
@@ -63,7 +64,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
     }
     @SuppressWarnings("unchecked")
     public <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz) {
-        return new PojoQueryBuilderImpl<C>((Class<C>) getType(pojoProperty), true);
+        return new PojoQueryBuilderImpl<>((Class<C>) getType(pojoProperty), true);
     }
     @Override
     public StructuredQueryBuilder.GeospatialIndex

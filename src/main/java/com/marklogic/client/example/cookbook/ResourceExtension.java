@@ -126,7 +126,7 @@ public class ResourceExtension {
 			ServiceResultIterator resultItr = getServices().get(params, mimetypes);
 
 			// iterate over the results
-			List<Document> documents = new ArrayList<Document>();
+			List<Document> documents = new ArrayList<>();
 			DOMHandle readHandle = new DOMHandle();
 			while (resultItr.hasNext()) {
 				ServiceResult result = resultItr.next();
@@ -199,7 +199,7 @@ public class ResourceExtension {
 
 				QName wordName = new QName("http://marklogic.com/xdmp/spell", "word");
 
-				ArrayList<String> words  = new ArrayList<String>();
+				List<String> words  = new ArrayList<>();
 
 				while (streamReader.hasNext()) {
 					int current = streamReader.next();

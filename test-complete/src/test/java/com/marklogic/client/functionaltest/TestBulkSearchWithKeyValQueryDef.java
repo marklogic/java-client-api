@@ -61,7 +61,7 @@ public class TestBulkSearchWithKeyValQueryDef extends BasicJavaClientREST {
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 
 		for(int i =0;i<102;i++){
 			JsonNode jn = new ObjectMapper().readTree("{\"animal\":\"dog"+i+"\", \"says\":\"woof\"}");

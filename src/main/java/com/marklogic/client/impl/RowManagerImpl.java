@@ -192,7 +192,7 @@ public class RowManagerImpl
 		RESTServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-		return new RowSetImpl<T>(rowHandle, iter);
+		return new RowSetImpl<>(rowHandle, iter);
 	}
 	private PlanBuilderBase.RequestPlan checkPlan(Plan plan) {
 		if (plan == null) {
@@ -276,8 +276,8 @@ public class RowManagerImpl
 			try {
 				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
 				
-				Map<String, String> kinds     = new HashMap<String, String>();
-				Map<String, String> datatypes = new HashMap<String, String>();
+				Map<String, String> kinds     = new HashMap<>();
+				Map<String, String> datatypes = new HashMap<>();
 
 				@SuppressWarnings("unchecked")
 				Map<String, Object> row = new ObjectMapper().readValue(
@@ -374,7 +374,7 @@ public class RowManagerImpl
 		}
 	}
 	static class RowRecordImpl implements RowRecord {
-		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<Class<?>,Constructor<?>>();
+		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<>();
 
 		private Map<String, String> kinds     = null;
 		private Map<String, String> datatypes = null;
@@ -635,7 +635,7 @@ public class RowManagerImpl
 	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
 	    	}
 	    	if (params == null) {
-	    		params = new HashMap<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl>();
+	    		params = new HashMap<>();
 	    	}
 	    	params.put((PlanBuilderBase.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 // TODO: return clone with param for immutability

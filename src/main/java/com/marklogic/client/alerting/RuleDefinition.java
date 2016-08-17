@@ -179,7 +179,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 					startElement.getName().getLocalPart().equals("query")) {
 				logger.info("It's a structured query!!!");
 				//wrap in search.
-				List<XMLEvent> wrappedList = new ArrayList<XMLEvent>();
+				List<XMLEvent> wrappedList = new ArrayList<>();
 				XMLEventFactory  eventFactory = XMLEventFactory.newInstance();
 				XMLEvent startSearchElement = eventFactory.createStartElement("search", RequestConstants.SEARCH_NS, "search");
 				XMLEvent endSearchElement = eventFactory.createEndElement("search", RequestConstants.SEARCH_NS, "search");

@@ -124,7 +124,7 @@ public class BulkReadWriteTest {
     static void loadCities(CityWriter cityWriter) throws Exception {
         // load all the countries into a HashMap (this isn't the big data set)
         // we'll attach country info to each city (that's the big data set)
-        Map<String, Country> countries = new HashMap<String, Country>();
+        Map<String, Country> countries = new HashMap<>();
         System.out.println("Reading countries:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
         BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"));
         String line;
@@ -573,7 +573,7 @@ public class BulkReadWriteTest {
             queryMgr.delete(deleteQuery);
 
             XMLDocumentManager docMgr = client.newXMLDocumentManager();
-            HashMap<String,String> map= new HashMap<String,String>();
+            Map<String,String> map= new HashMap<>();
             DocumentWriteSet writeset =docMgr.newWriteSet();
             for(int i =0;i<2;i++) {
                 String contents = "<xml>test" + i + "</xml>";

@@ -528,10 +528,10 @@ public class XsValueImpl implements XsValue {
 	}
 
 	static XsAnySimpleTypeSeqVal anySimpleTypes(XsAnySimpleTypeVal... items) {
-		return new AnySimpleTypeSeqValImpl<AnySimpleTypeValImpl>(BaseTypeImpl.convertList(items, AnySimpleTypeValImpl.class));
+		return new AnySimpleTypeSeqValImpl<>(BaseTypeImpl.convertList(items, AnySimpleTypeValImpl.class));
 	}
 	static XsAnyAtomicTypeSeqVal anyAtomicTypes(XsAnyAtomicTypeVal... items) {
-		return new AnyAtomicTypeSeqValImpl<AnyAtomicTypeValImpl>(BaseTypeImpl.convertList(items, AnyAtomicTypeValImpl.class));
+		return new AnyAtomicTypeSeqValImpl<>(BaseTypeImpl.convertList(items, AnyAtomicTypeValImpl.class));
 	}
 
 	static class AnySimpleTypeSeqValImpl<T extends AnySimpleTypeValImpl>

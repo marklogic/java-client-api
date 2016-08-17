@@ -35,7 +35,7 @@ public class PageTest {
     }
     @Test
     public void testTestPage() {
-        Iterator<Object> iterator = new HashSet<Object>().iterator();
+        Iterator<Object> iterator = new HashSet<>().iterator();
 
         Page<Object> page = new TestPage(iterator, 1, 10, 100);
         assertEquals("Unexpected size", 10, page.size());

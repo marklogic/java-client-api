@@ -61,6 +61,7 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import java.util.Map;
 
 
 public class EvalTest {
@@ -414,7 +415,7 @@ public class EvalTest {
             queryMgr.delete(deleteQuery);
  
             XMLDocumentManager docMgr = client.newXMLDocumentManager();
-            HashMap<String,String> map= new HashMap<String,String>();
+            Map<String,String> map= new HashMap<>();
             DocumentWriteSet writeset =docMgr.newWriteSet();
             for(int i =0;i<2;i++) {
                 String contents = "<xml>test" + i + "</xml>";

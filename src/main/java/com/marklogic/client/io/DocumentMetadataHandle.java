@@ -21,7 +21,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigDecimal;
 import java.math.BigInteger;
@@ -117,7 +116,7 @@ public class DocumentMetadataHandle
 			if (capabilities == null || capabilities.length < 1)
 				return;
 
-			HashSet<Capability> caps = new HashSet<Capability>(capabilities.length);
+			Set<Capability> caps = new HashSet<>(capabilities.length);
 			for (Capability capability: capabilities)
 				caps.add(capability);
 
@@ -128,7 +127,7 @@ public class DocumentMetadataHandle
 			if (containsKey(role)) {
 				get(role).add(capability);
 			} else {
-				HashSet<Capability> caps = new HashSet<Capability>();
+				Set<Capability> caps = new HashSet<>();
 				caps.add(capability);
 				put(role, caps );
 			}
@@ -625,7 +624,7 @@ public class DocumentMetadataHandle
 		NodeList permissionsIn = document.getElementsByTagNameNS(REST_API_NS, "permission");
 		for (int i=0; i < permissionsIn.getLength(); i++) {
 			String roleName = null;
-			HashSet<Capability> caps = new HashSet<Capability>();
+			Set<Capability> caps = new HashSet<>();
 
 			NodeList children = permissionsIn.item(i).getChildNodes();
 			for (int j=0; j < children.getLength(); j++) {

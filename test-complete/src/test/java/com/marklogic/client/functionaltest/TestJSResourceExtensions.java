@@ -86,7 +86,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 			ServiceResultIterator resultItr = getServices().get(params, mimetypes);
 
 			// iterate over the results
-			List<String> responses = new ArrayList<String>();
+			List<String> responses = new ArrayList<>();
 			StringHandle readHandle = new StringHandle();
 			while (resultItr.hasNext()) {
 				ServiceResult result = resultItr.next();
@@ -111,7 +111,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 			// call the service
 			ServiceResultIterator resultItr= getServices().post(params, new StringHandle(input).withFormat(Format.JSON), mimetypes);
 			// iterate over the results
-			List<String> responses = new ArrayList<String>();
+			List<String> responses = new ArrayList<>();
 			StringHandle readHandle = new StringHandle();
 			while (resultItr.hasNext()) {
 				ServiceResult result = resultItr.next();

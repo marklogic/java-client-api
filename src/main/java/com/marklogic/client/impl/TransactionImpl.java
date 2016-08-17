@@ -33,7 +33,7 @@ class TransactionImpl implements Transaction {
 	private String          hostId;
 	// we keep cookies scoped with each tranasaction to work with load balancers
 	// that need to keep requests for one transaction on a specific MarkLogic Server host
-	private List<NewCookie> cookies = new ArrayList<NewCookie>();
+	private List<NewCookie> cookies = new ArrayList<>();
 	private Calendar        created = Calendar.getInstance();
 
 	TransactionImpl(RESTServices services, String transactionId, List<NewCookie> cookies) {

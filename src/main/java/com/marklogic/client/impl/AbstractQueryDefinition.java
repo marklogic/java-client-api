@@ -19,10 +19,11 @@ import java.util.HashSet;
 
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.query.QueryDefinition;
+import java.util.Set;
 
 public abstract class AbstractQueryDefinition implements QueryDefinition {
     protected String optionsUri = null;
-    private HashSet<String> collections = new HashSet<String>();
+    private Set<String> collections = new HashSet<>();
     private String          directory   = null;
 	private ServerTransform transform   = null;
 
