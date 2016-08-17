@@ -75,6 +75,7 @@ import com.marklogic.client.admin.config.QueryOptions.QueryWord;
 import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.QueryOptionsHandle;
+import java.util.Map;
 
 /* 
  * This test targets the QueryOptionsBuilder.
@@ -95,7 +96,7 @@ public class QueryOptionsBuilderTest {
 	@Before
 	public void before() {
 		builder = new QueryOptionsBuilder();
-		HashMap<String, String> xpathNS = new HashMap<String, String>();
+		Map<String, String> xpathNS = new HashMap<>();
 		xpathNS.put("search", "http://marklogic.com/appservices/search");
 		SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(
 				xpathNS);

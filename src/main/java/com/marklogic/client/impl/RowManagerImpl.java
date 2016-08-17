@@ -377,8 +377,8 @@ and not the content
 			try {
 				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
 				
-				Map<String, String> kinds     = new HashMap<String, String>();
-				Map<String, String> datatypes = new HashMap<String, String>();
+				Map<String, String> kinds     = new HashMap<>();
+				Map<String, String> datatypes = new HashMap<>();
 
 				// TODO: replace Jackson mapper with binding-sensitive mapper?
 				@SuppressWarnings("unchecked")
@@ -479,10 +479,9 @@ and not the content
 	static class RowRecordImpl implements RowRecord {
 		private static final
 		Map<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>> factories =
-		new HashMap<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>>();
+		new HashMap<>();
 
-		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors =
-				new HashMap<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>>();
+		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors = new HashMap<>();
 
 		private Map<String, String> kinds     = null;
 		private Map<String, String> datatypes = null;
@@ -901,7 +900,7 @@ and not the content
 	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
 	    	}
 	    	if (params == null) {
-	    		params = new HashMap<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl>();
+	    		params = new HashMap<>();
 	    	}
 	    	params.put((PlanBuilderBase.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 // TODO: return clone with param for immutability

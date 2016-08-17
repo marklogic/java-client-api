@@ -71,7 +71,7 @@ public class ExtensionLibraryDescriptor {
 	 * No-argument constructor.
 	 */
 	public ExtensionLibraryDescriptor() {
-		this.permissions = new ArrayList<Permission>();
+		this.permissions = new ArrayList<>();
 	}
 	
 	/**

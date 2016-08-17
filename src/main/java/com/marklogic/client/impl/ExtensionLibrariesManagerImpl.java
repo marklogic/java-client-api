@@ -53,7 +53,7 @@ public class ExtensionLibrariesManagerImpl
 		XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle());
 		
 		XMLEventReader reader = handle.get();
-		List<ExtensionLibraryDescriptor> modules = new ArrayList<ExtensionLibraryDescriptor>();
+		List<ExtensionLibraryDescriptor> modules = new ArrayList<>();
 		while (reader.hasNext()) {
 				XMLEvent event;
 				try {

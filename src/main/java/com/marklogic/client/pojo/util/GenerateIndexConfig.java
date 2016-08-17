@@ -124,9 +124,9 @@ public class GenerateIndexConfig {
     private static void generateConfig(String[] classes, ObjectMapper mapper, Writer out) 
         throws ClassNotFoundException, IOException 
     {
-        ArrayList<PathIndexFound> paths = new ArrayList<PathIndexFound>();
-        ArrayList<GeoPathIndexFound> geoPaths = new ArrayList<GeoPathIndexFound>();
-        ArrayList<GeoPairFound> geoPairs = new ArrayList<GeoPairFound>();
+        List<PathIndexFound> paths = new ArrayList<>();
+        List<GeoPathIndexFound> geoPaths = new ArrayList<>();
+        List<GeoPairFound> geoPairs = new ArrayList<>();
         for ( String className : classes ) {
             Class<?> clazz = ClassUtil.findClass(className);
             SerializationConfig serializationConfig = new ObjectMapper().getSerializationConfig();
@@ -271,7 +271,7 @@ public class GenerateIndexConfig {
             AnnotatedParameter parameter = property.getConstructorParameter();
             T constructorAnnotation = parameter.getAnnotation(annotation);
             if ( constructorAnnotation != null ) {
-                AnnotationFound<T> found = new AnnotationFound<T>();
+                AnnotationFound<T> found = new AnnotationFound<>();
                 found.annotation = constructorAnnotation;
                 found.foundMessage = annotationName + " on constructor parameter '" + 
                     parameter.getRawType().getName() + " " + parameter.getName() + "'";
@@ -281,7 +281,7 @@ public class GenerateIndexConfig {
         if ( property.hasField() ) {
             T fieldAnnotation = property.getField().getAnnotation(annotation);
             if ( fieldAnnotation != null ) {
-                AnnotationFound<T> found = new AnnotationFound<T>();
+                AnnotationFound<T> found = new AnnotationFound<>();
                 found.annotation = fieldAnnotation;
                 found.foundMessage = annotationName + " on field '" + property.getField().getName() + "'";
                 return found;
@@ -291,7 +291,7 @@ public class GenerateIndexConfig {
             // I have to use getMember because Jackson returns annotation whether it's on the getter or setter
             T getterAnnotation = property.getGetter().getMember().getAnnotation(annotation);
             if ( getterAnnotation != null ) {
-                AnnotationFound<T> found = new AnnotationFound<T>();
+                AnnotationFound<T> found = new AnnotationFound<>();
                 found.annotation = getterAnnotation;
                 found.foundMessage = annotationName + " on method '" + property.getGetter().getName() + "'";
                 return found;
@@ -301,7 +301,7 @@ public class GenerateIndexConfig {
             // I have to use getMember because Jackson returns annotation whether it's on the getter or setter
             T setterAnnotation = property.getSetter().getMember().getAnnotation(annotation);
             if ( setterAnnotation != null ) {
-                AnnotationFound<T> found = new AnnotationFound<T>();
+                AnnotationFound<T> found = new AnnotationFound<>();
                 found.annotation = setterAnnotation;
                 found.foundMessage = annotationName + " on method '" + property.getSetter().getName() + "'";
                 return found;

@@ -37,6 +37,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.test.Common;
+import java.util.List;
 
 public class JacksonStreamTest {
     private static final String ORDER_FILE = "sampleOrder.json";
@@ -98,7 +100,7 @@ public class JacksonStreamTest {
         if (jp.nextToken() != JsonToken.START_OBJECT) {
             throw new IOException("Expected data to start with an Object");
         }
-        ArrayList<OrderItem> orderItems = getOrderItems(jp);
+        List<OrderItem> orderItems = getOrderItems(jp);
         assertEquals("orderItems array length is wrong", 4, orderItems.size());
         assertEquals("OrderItem 1 productId is wrong", "widget",   orderItems.get(0).getProductId());
         assertEquals("OrderItem 2 productId is wrong", "cog",      orderItems.get(1).getProductId());
@@ -114,8 +116,8 @@ public class JacksonStreamTest {
         assertEquals("OrderItem 4 itemCostUSD is wrong", 1.99,  orderItems.get(3).getItemCostUSD(), 0.001);
     }
 
-    private ArrayList<OrderItem> getOrderItems(JsonParser parser) throws IOException {
-        ArrayList<OrderItem> orderItems = new ArrayList<OrderItem>();
+    private List<OrderItem> getOrderItems(JsonParser parser) throws IOException {
+        List<OrderItem> orderItems = new ArrayList<>();
         while ( parser.nextValue() != null ) {
             if ( parser.getCurrentToken() == JsonToken.START_ARRAY &&
                  "orderItems".equals(parser.getCurrentName()) )

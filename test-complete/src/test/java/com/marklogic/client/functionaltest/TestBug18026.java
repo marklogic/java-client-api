@@ -45,6 +45,7 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.InputStreamHandle;
+import java.util.Map;
 public class TestBug18026 extends BasicJavaClientREST {
 	
 	private static String dbName = "Bug18026DB";
@@ -76,7 +77,7 @@ public class TestBug18026 extends BasicJavaClientREST {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        HashMap<String,String> namespaces = new HashMap<String, String>();
+        Map<String,String> namespaces = new HashMap<>();
         namespaces.put("rapi", "http://marklogic.com/rest-api");
         namespaces.put("prop", "http://marklogic.com/xdmp/property");
         namespaces.put("xs",   "http://www.w3.org/2001/XMLSchema");
@@ -135,7 +136,7 @@ public class TestBug18026 extends BasicJavaClientREST {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        HashMap<String,String> namespaces = new HashMap<String, String>();
+        Map<String,String> namespaces = new HashMap<>();
         namespaces.put("rapi", "http://marklogic.com/rest-api");
         namespaces.put("prop", "http://marklogic.com/xdmp/property");
         namespaces.put("xs",   "http://www.w3.org/2001/XMLSchema");

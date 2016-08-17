@@ -38,6 +38,7 @@ import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesMetrics;
 import com.marklogic.client.query.ValuesResults;
+import java.util.Map;
 
 /**
  * A ValuesHandle represents a list of values or of tuples
@@ -52,7 +53,7 @@ public class ValuesHandle
 
     private ValuesBuilder.Values valuesHolder;
     private Unmarshaller unmarshaller;
-    private HashMap<String, AggregateResult> hashedAggregates = null;
+    private Map<String, AggregateResult> hashedAggregates = null;
 
     private ValuesDefinition valuesdef = null;
 
@@ -164,7 +165,7 @@ public class ValuesHandle
     @Override
     public AggregateResult getAggregate(String name) {
         if (hashedAggregates == null) {
-            hashedAggregates = new HashMap<String, AggregateResult> ();
+            hashedAggregates = new HashMap<> ();
             for (AggregateResult aggregate : valuesHolder.getAggregates()) {
                 hashedAggregates.put(aggregate.getName(), aggregate);
             }

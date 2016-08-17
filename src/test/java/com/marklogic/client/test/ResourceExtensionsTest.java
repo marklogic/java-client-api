@@ -37,6 +37,7 @@ import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+import java.util.Map;
 
 public class ResourceExtensionsTest {
 	final static String RESOURCE_NAME = "testresource";
@@ -56,7 +57,7 @@ public class ResourceExtensionsTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        HashMap<String,String> namespaces = new HashMap<String, String>();
+        Map<String,String> namespaces = new HashMap<>();
         namespaces.put("rapi", "http://marklogic.com/rest-api");
 
         SimpleNamespaceContext namespaceContext = new SimpleNamespaceContext(namespaces);

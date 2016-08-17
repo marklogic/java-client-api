@@ -373,7 +373,7 @@ public class JerseyServices implements RESTServices {
 		HttpParams httpParams = new BasicHttpParams();
 
 		if (authenType != null && authenType != Authentication.CERTIFICATE) {
-			List<String> authpref = new ArrayList<String>();
+			List<String> authpref = new ArrayList<>();
 			if (authenType == Authentication.BASIC)
 				authpref.add(AuthPolicy.BASIC);
 			else if (authenType == Authentication.DIGEST)
@@ -3243,8 +3243,8 @@ public class JerseyServices implements RESTServices {
 			String temporalCollection)
 		throws ForbiddenUserException,  FailedRequestException
 	{
-		ArrayList<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
-		ArrayList<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
+		List<AbstractWriteHandle> writeHandles = new ArrayList<>();
+		List<Map<String, List<String>>> headerList = new ArrayList<>();
 		for ( DocumentWriteOperation write: writeSet ) {
 			String temporalDocumentURI = write.getTemporalDocumentURI();
 			HandleImplementation metadata =
@@ -3966,7 +3966,7 @@ public class JerseyServices implements RESTServices {
 		if (oldSize == 0)
 			return null;
 
-		List<String> newValues = new ArrayList<String>(oldSize);
+		List<String> newValues = new ArrayList<>(oldSize);
 		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
@@ -3985,7 +3985,7 @@ public class JerseyServices implements RESTServices {
 		if (oldSize == 0)
 			return null;
 
-		List<String> newValues = new ArrayList<String>(oldSize);
+		List<String> newValues = new ArrayList<>(oldSize);
 		for (String value : oldValues) {
 			String newValue = encodeParamValue(value);
 			if (newValue == null)
@@ -4436,7 +4436,7 @@ public class JerseyServices implements RESTServices {
             this.reqlog = reqlog;
             if (partList != null && partList.size() > 0) {
                 this.size = partList.size();
-                this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
+                this.partQueue = new ConcurrentLinkedQueue<>(
                         partList).iterator();
             } else {
                 this.size = 0;

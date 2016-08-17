@@ -79,10 +79,10 @@ public class ClosingHandlesTest {
         validateClosingHandleClosesUnderlyingStream(new InputStreamHandle(), "testing");
         validateClosingHandleClosesUnderlyingStream(new JacksonHandle(), "null");
         validateClosingHandleClosesUnderlyingStream(
-            new JacksonDatabindHandle<Object>(Object.class), "null");
+            new JacksonDatabindHandle<>(Object.class), "null");
         validateClosingHandleClosesUnderlyingStream(new JacksonParserHandle(), "null");
         validateClosingHandleClosesUnderlyingStream(
-            new JAXBHandle<Object>(context), "<city><population>0</population></city>");
+            new JAXBHandle<>(context), "<city><population>0</population></city>");
         validateClosingHandleClosesUnderlyingStream(new JDOMHandle(), "<xml/>");
         validateClosingHandleClosesUnderlyingStream(
             new QueryOptionsHandle(), "<options xmlns='http://marklogic.com/appservices/search'/>");

@@ -49,6 +49,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import java.util.Map;
 
 public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 
@@ -174,7 +175,7 @@ public void testBulkWritewithTransactionCommit() throws KeyManagementException, 
 		int count=1;
 		Transaction t= client.openTransaction();
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++){
 			writeset.add(DIRECTORY+"first"+i+".xml", new DOMHandle(getDocumentContent("This is so first"+i)));
@@ -217,7 +218,7 @@ public void testBulkWritewithTransactionsNoCommit() throws KeyManagementExceptio
 		Transaction t1 = client.openTransaction();
 		try{ 
 			XMLDocumentManager docMgr = client.newXMLDocumentManager();
-			HashMap<String,String> map= new HashMap<String,String>();
+			Map<String,String> map= new HashMap<>();
 			DocumentWriteSet writeset =docMgr.newWriteSet();
 			for(int i =0;i<102;i++){
 				writeset.add(DIRECTORY+"bar"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
@@ -280,7 +281,7 @@ public void testBulkWritewithTransactionsNoCommit() throws KeyManagementExceptio
 		Transaction t1 = client.openTransaction();
 		try{ 
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++){
 			writeset.add(DIRECTORY+"sec"+i+".xml", new DOMHandle(getDocumentContent("This is so sec"+i)));
@@ -295,7 +296,7 @@ public void testBulkWritewithTransactionsNoCommit() throws KeyManagementExceptio
 			docMgr.write(writeset);
 		}
 		count=1;
-		HashMap<String,String> map2= new HashMap<String,String>();
+		Map<String,String> map2= new HashMap<>();
 		DocumentMetadataHandle mh = setMetadata();
 		for(int i =0;i<102;i++){
 			writeset.add(DIRECTORY+"sec"+i+".xml",mh, new DOMHandle(getDocumentContent("This is with metadata"+i)));
@@ -364,7 +365,7 @@ public void testBulkWritewithTransactionsNoCommit() throws KeyManagementExceptio
 	Transaction t1 = client.openTransaction();
 	try{ 
 	XMLDocumentManager docMgr = client.newXMLDocumentManager();
-	HashMap<String,String> map= new HashMap<String,String>();
+	Map<String,String> map= new HashMap<>();
 	DocumentWriteSet writeset =docMgr.newWriteSet();
 	DocumentMetadataHandle mh = setMetadata();
 	for(int i =0;i<102;i++){
@@ -470,7 +471,7 @@ public void testBulkWritewithTransactionCommitTimeOut() throws KeyManagementExce
 		Transaction t1 = client.openTransaction();
 		try {
 			XMLDocumentManager docMgr = client.newXMLDocumentManager();
-			HashMap<String, String> map = new HashMap<String, String>();
+			Map<String, String> map = new HashMap<>();
 			DocumentWriteSet writeset = docMgr.newWriteSet();
 			for (int i = 0; i < 102; i++) {
 				writeset.add(DIRECTORY + "bar" + i + ".xml", new DOMHandle(

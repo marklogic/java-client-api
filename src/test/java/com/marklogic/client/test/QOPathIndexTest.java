@@ -44,6 +44,7 @@ import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.impl.HandleAccessor;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class QOPathIndexTest {
@@ -59,7 +60,7 @@ public class QOPathIndexTest {
         Common.connectAdmin();
         builder = new QueryOptionsBuilder();
 
-        HashMap<String,String> xpathNS = new HashMap<String, String>();
+        Map<String,String> xpathNS = new HashMap<>();
         xpathNS.put("search", "http://marklogic.com/appservices/search");
         xpathNS.put("foo", "testing");
         xpathNS.put("x", "ab'c'");

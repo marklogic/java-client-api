@@ -33,6 +33,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.test.util.Referred;
 import com.marklogic.client.test.util.Refers;
+import java.util.Map;
 
 public class JAXBHandleTest {
 	@BeforeClass
@@ -49,11 +50,11 @@ public class JAXBHandleTest {
 	public void testReadWriteJAXB() throws JAXBException {
 		String docId = "/test/jaxbWrite1.xml";
 
-		HashMap<String,Integer> map = new HashMap<String,Integer>();
+		Map<String,Integer> map = new HashMap<>();
 		map.put("alpha", 1);
 		map.put("beta",  2);
 		map.put("gamma", 3);
-		List<String> list = new ArrayList<String>(3);
+		List<String> list = new ArrayList<>(3);
 		list.add("apple");
 		list.add("banana");
 		list.add("cactus");
@@ -83,7 +84,7 @@ public class JAXBHandleTest {
 		assertEquals("JAXB document with different list", refers.list.size(), refers2.list.size());
 
 		// Again with a specified generic -- useful for convenience and strong typing
-		JAXBHandle<Refers> objectHandle2 = new JAXBHandle<Refers>(context);
+		JAXBHandle<Refers> objectHandle2 = new JAXBHandle<>(context);
 
 		docMgr.write(docId, objectHandle2.with(refers));
 

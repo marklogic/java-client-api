@@ -59,6 +59,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
+import javax.xml.transform.Source;
 
 /*
  * This test is designed to to test simple bulk writes with different types of Managers and different content type like JSON,text,binary,XMl
@@ -337,7 +338,7 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 
 		writeset.add("/generic/foo1.txt",bh);
 
-		DOMSource ds = new DOMSource(getDocumentContent("This is so foo1"));
+		Source ds = new DOMSource(getDocumentContent("This is so foo1"));
 		SourceHandle sh = new SourceHandle();
 		sh.set(ds);
 		sh.setFormat(Format.XML);

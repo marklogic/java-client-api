@@ -207,7 +207,7 @@ public class JacksonDatabindHandle<T>
             super();
             this.contentClasses = contentClasses;
             this.mapper = mapper;
-            this.classSet = new HashSet<Class<?>>(Arrays.asList(contentClasses));
+            this.classSet = new HashSet<>(Arrays.asList(contentClasses));
         }
 
         @Override
@@ -221,7 +221,7 @@ public class JacksonDatabindHandle<T>
         @Override
         public <C> ContentHandle<C> newHandle(Class<C> type) {
             if ( ! isHandled(type) ) return null;
-            JacksonDatabindHandle<C> handle = new JacksonDatabindHandle<C>(type);
+            JacksonDatabindHandle<C> handle = new JacksonDatabindHandle<>(type);
             if ( mapper != null ) handle.setMapper(mapper);
             return handle;
         }

@@ -35,6 +35,7 @@ import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.StringHandle;
+import java.util.List;
 
 public class ResourceServicesTest {
 	static private String resourceServices;
@@ -76,7 +77,7 @@ public class ResourceServicesTest {
 
 		ServiceResultIterator resultItr = resourceMgr.getResourceServices().get(params, mimetypes);
 
-		ArrayList<Document> resultDocuments = new ArrayList<Document>();
+		List<Document> resultDocuments = new ArrayList<>();
 		DOMHandle readHandle = new DOMHandle();
 		while (resultItr.hasNext()) {
 			resultDocuments.add(
@@ -120,7 +121,7 @@ public class ResourceServicesTest {
 
 		resultItr = resourceMgr.getResourceServices().post(params, writeHandles, mimetypes);
 
-		resultDocuments = new ArrayList<Document>();
+		resultDocuments = new ArrayList<>();
 		readHandle = new DOMHandle();
 		while (resultItr.hasNext()) {
 			resultDocuments.add(

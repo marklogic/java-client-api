@@ -177,7 +177,7 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 			if (RequestConstants.SEARCH_NS.equals(startElement.getName().getNamespaceURI()) &&
 					startElement.getName().getLocalPart().equals("query")) {
 				//wrap in search.
-				List<XMLEvent> wrappedList = new ArrayList<XMLEvent>();
+				List<XMLEvent> wrappedList = new ArrayList<>();
 				XMLEventFactory  eventFactory = XMLEventFactory.newInstance();
 				XMLEvent startSearchElement = eventFactory.createStartElement("search", RequestConstants.SEARCH_NS, "search");
 				XMLEvent endSearchElement = eventFactory.createEndElement("search", RequestConstants.SEARCH_NS, "search");

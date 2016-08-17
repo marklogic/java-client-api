@@ -74,6 +74,7 @@ import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import java.util.Map;
 
 public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 
@@ -118,7 +119,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 
 		for(int i =0;i<102;i++){
 			JsonNode jn = new ObjectMapper().readTree("{\"animal\":\"dog"+i+"\", \"says\":\"woof\"}");

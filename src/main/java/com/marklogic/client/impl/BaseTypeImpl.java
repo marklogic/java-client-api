@@ -31,10 +31,10 @@ public class BaseTypeImpl {
     }
 
 	static BaseListImpl<BaseArgImpl> baseListImpl(Object[] items) {
-		return new BaseListImpl<BaseArgImpl>(convertList(items));
+		return new BaseListImpl<>(convertList(items));
 	}
 	static <T extends BaseArgImpl> BaseListImpl<T> baseListImpl(Object[] items, Class<T> as) {
-		return new BaseListImpl<T>(convertList(items, as));
+		return new BaseListImpl<>(convertList(items, as));
 	}
 	static class BaseListImpl<T extends BaseArgImpl> implements BaseArgImpl {
 		protected T[] items;
@@ -55,10 +55,10 @@ public class BaseTypeImpl {
     }
 
 	static BaseCallImpl<BaseArgImpl> baseCallImpl(String fnPrefix, String fnName, Object[] items) {
-		return new BaseCallImpl<BaseArgImpl>(fnPrefix, fnName, convertList(items));
+		return new BaseCallImpl<>(fnPrefix, fnName, convertList(items));
 	}
 	static <T extends BaseArgImpl> BaseCallImpl<T> baseCallImpl(String fnPrefix, String fnName, Object[] items, Class<T> as) {
-		return new BaseCallImpl<T>(fnPrefix, fnName, convertList(items, as));
+		return new BaseCallImpl<>(fnPrefix, fnName, convertList(items, as));
 	}
 	static class BaseCallImpl<T extends BaseArgImpl> extends BaseListImpl<T> {
 		protected String fnPrefix = null;
@@ -83,7 +83,7 @@ public class BaseTypeImpl {
 		private BaseCallImpl<T>[] chain = null;
 		@SuppressWarnings("unchecked")
 		protected BaseChainImpl(BaseChainImpl<T> prior, String fnPrefix, String fnName, T[] fnArgs) {
-			BaseCallImpl<T> call = new BaseCallImpl<T>(fnPrefix, fnName, fnArgs);
+			BaseCallImpl<T> call = new BaseCallImpl<>(fnPrefix, fnName, fnArgs);
 			if (prior == null) {
 				chain = (BaseCallImpl<T>[]) Array.newInstance(BaseCallImpl.class, 1);
 				chain[0] = call;

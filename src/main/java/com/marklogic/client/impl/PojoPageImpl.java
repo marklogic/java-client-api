@@ -50,7 +50,7 @@ public class PojoPageImpl<T> extends BasicPage<T> implements PojoPage<T>, Iterat
 
     @Override
     public T next() {
-        JacksonDatabindHandle<T> handle = new JacksonDatabindHandle<T>(entityClass);
+        JacksonDatabindHandle<T> handle = new JacksonDatabindHandle<>(entityClass);
         handle.getMapper().enableDefaultTyping(
             ObjectMapper.DefaultTyping.NON_FINAL, JsonTypeInfo.As.WRAPPER_OBJECT);
         return docPage.nextContent(handle).get();

@@ -24,7 +24,7 @@ import java.util.Map;
 import java.util.Set;
 
 public class KeyValueQueryDefinitionImpl extends AbstractQueryDefinition implements KeyValueQueryDefinition {
-    Map<ValueLocator, String> defs = new Hashtable<ValueLocator, String> ();
+    Map<ValueLocator, String> defs = new Hashtable<> ();
     
     protected KeyValueQueryDefinitionImpl(String uri) {
         optionsUri = uri;

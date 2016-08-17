@@ -65,6 +65,7 @@ import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
+import java.util.Map;
 
 public class XMLDocumentTest {
 	@BeforeClass
@@ -120,7 +121,7 @@ public class XMLDocumentTest {
 		assertNotNull("Read null document for SAX writer",docText);
 		assertXMLEqual("Failed to read XML document as DOM",domString,docText);
 
-		final HashMap<String,Integer> counter = new HashMap<String,Integer>(); 
+		final Map<String,Integer> counter = new HashMap<>(); 
 		counter.put("elementCount",0);
 		counter.put("attributeCount",0);
 		DefaultHandler handler = new DefaultHandler() {

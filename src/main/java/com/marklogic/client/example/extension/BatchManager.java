@@ -51,7 +51,7 @@ import com.marklogic.client.util.RequestParameters;
  */
 public class BatchManager extends ResourceManager {
 	public class BatchRequest {
-		private LinkedHashMap<String,InputItem> items = new LinkedHashMap<String,InputItem>();
+		private Map<String,InputItem> items = new LinkedHashMap<>();
 
 		BatchRequest() {
 			super();
@@ -62,7 +62,7 @@ public class BatchManager extends ResourceManager {
 				return null;
 			}
 
-			Set<DocumentManager.Metadata> catSet = new HashSet<DocumentManager.Metadata>();
+			Set<DocumentManager.Metadata> catSet = new HashSet<>();
 			for (DocumentManager.Metadata category: categories) {
 				catSet.add(category);
 			}
@@ -320,14 +320,14 @@ public class BatchManager extends ResourceManager {
 
 		StringHandle requestManifest  = new StringHandle();
 
-		ArrayList<AbstractWriteHandle> requestHandles = new ArrayList<AbstractWriteHandle>();
+		List<AbstractWriteHandle> requestHandles = new ArrayList<>();
 		requestHandles.add(requestManifest);
 
 		StringBuilder manifestBuilder = new StringBuilder();
 		manifestBuilder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
 		manifestBuilder.append("<rapi:batch-requests xmlns:rapi='http://marklogic.com/rest-api'>\n");
 
-		ArrayList<String> readMimetypes = new ArrayList<String>();
+		List<String> readMimetypes = new ArrayList<>();
 		// read the response manifest first
 		readMimetypes.add("application/xml");
 		for (Map.Entry<String,InputItem> entry: request.items.entrySet()) {
@@ -411,7 +411,7 @@ public class BatchManager extends ResourceManager {
 		
 		DOMHandle responseManifest = resultItr.next().getContent(new DOMHandle());
 
-		List<OutputItem> items = new ArrayList<OutputItem>();
+		List<OutputItem> items = new ArrayList<>();
 
 		boolean requestSuccess = true;
 

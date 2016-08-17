@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
@@ -37,14 +38,14 @@ public final class ValuesListBuilder {
         public static final String VALUES_LIST_NS = "http://marklogic.com/rest-api";
 
         @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "values")
-        private ArrayList<Values> values;
+        private List<Values> values;
 
         public ValuesList() {
-            values = new ArrayList<Values>();
+            values = new ArrayList<>();
         }
 
         public HashMap<String, String> getValuesMap() {
-            HashMap<String,String> map = new HashMap<String, String>();
+            HashMap<String,String> map = new HashMap<>();
             for (Values value : values) {
                 map.put(value.getName(), value.getUri());
             }

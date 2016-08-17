@@ -65,6 +65,7 @@ import com.marklogic.client.query.MatchSnippet;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.SearchMetrics;
 import com.marklogic.client.query.SearchResults;
+import java.util.Map;
 
 /**
  * A SearchHandle represents a set of search results returned by the server.
@@ -92,11 +93,11 @@ public class SearchHandle
 
     private MatchDocumentSummary[] summary;
     private SearchMetrics          metrics;
-    private ArrayList<Warning>     warnings;
-    private ArrayList<Report>      reports;
+    private List<Warning>     warnings;
+    private List<Report>      reports;
 
-    private LinkedHashMap<String, FacetResult> facets;
-    private LinkedHashMap<String, EventRange>  constraints;
+    private Map<String, FacetResult> facets;
+    private Map<String, EventRange>  constraints;
 
     private EventRange     planEvents;
     private List<XMLEvent> events;
@@ -382,9 +383,9 @@ public class SearchHandle
     	}
 
     	List<EventRange> constraintList =
-    		new ArrayList<EventRange>(constraints.values());
+    		new ArrayList<>(constraints.values());
 
-        return new EventIterator<T>(events, constraintList, handle);
+        return new EventIterator<>(events, constraintList, handle);
     }
 
     /**
@@ -437,7 +438,7 @@ public class SearchHandle
     		return new Document[0];
     	}
 
-    	ArrayList<Document> documents = new ArrayList<Document>();
+    	List<Document> documents = new ArrayList<>();
 
     	DOMHandle handle = new DOMHandle();
     	for (int i=0; i < rangeList.size(); i++) {
@@ -525,15 +526,15 @@ public class SearchHandle
         private double conf = -1;
         private double fit = -1;
         private String path = null;
-        private ArrayList<MatchLocation> locations = new ArrayList<MatchLocation>();
+        private List<MatchLocation> locations = new ArrayList<>();
         private String mimeType = null;
         private Format format = null;
 
-        private ArrayList<EventRange> snippetEvents;
+        private List<EventRange> snippetEvents;
         private EventRange            extractedEvents;
         private EventRange            metadataEvents;
     	private EventRange            relevanceEvents;
-    	private ArrayList<String>     similarUris;
+    	private List<String>     similarUris;
         private String                extractSelected;
 
         public MatchDocumentSummaryImpl(String uri, int score, double confidence, double fitness, String path, String mimeType, Format format, String extractSelected) {
@@ -614,7 +615,7 @@ public class SearchHandle
                     String json = event.asCharacters().getData();
                     try {
                         JsonNode jsonArray = new ObjectMapper().readTree(json);
-                        ArrayList<String> items = new ArrayList<String>(jsonArray.size());
+                        List<String> items = new ArrayList<>(jsonArray.size());
                         for ( JsonNode item : jsonArray ) {
                             items.add( item.toString() );
                         }
@@ -630,7 +631,7 @@ public class SearchHandle
                             getPath() + "--content should be characters");
                     }
                     String text = event.asCharacters().getData();
-                    ArrayList<String> items = new ArrayList<String>(1);
+                    List<String> items = new ArrayList<>(1);
                     items.add( event.asCharacters().getData() );
                     result.setItems( items );
                 }
@@ -638,9 +639,9 @@ public class SearchHandle
         }
 
         private List<String> populateExtractedItems(List<XMLEvent> events) {
-            List<String> items = new ArrayList<String>();
-            List<XMLEvent> itemEvents = new ArrayList<XMLEvent>();
-            List<QName> startNames = new ArrayList<QName>();
+            List<String> items = new ArrayList<>();
+            List<XMLEvent> itemEvents = new ArrayList<>();
+            List<QName> startNames = new ArrayList<>();
             for ( XMLEvent event : events ) {
                 itemEvents.add(event);
                 switch (event.getEventType()) {
@@ -653,7 +654,7 @@ public class SearchHandle
                         if (startNames.size() == 0 ) {
                             if ( startName.equals(event.asEndElement().getName())) {
                                 items.add(Utilities.eventsToString(itemEvents));
-                                itemEvents = new ArrayList<XMLEvent>();
+                                itemEvents = new ArrayList<>();
                             } else {
                                 throw new IllegalStateException("Error parsing xml \"" +
                                     Utilities.eventsToString(itemEvents) + "\", element " + startName +
@@ -786,7 +787,7 @@ public class SearchHandle
 
     static private class MatchLocationImpl implements MatchLocation {
         private String path = null;
-        private ArrayList<MatchSnippet> matchEvents = new ArrayList<MatchSnippet>();
+        private List<MatchSnippet> matchEvents = new ArrayList<>();
 
         public MatchLocationImpl(String path) {
             this.path = path;
@@ -1067,11 +1068,11 @@ public class SearchHandle
     }
 
 	private class SearchResponseImpl {
-	    private ArrayList<MatchDocumentSummary> tempSummary;
+	    private List<MatchDocumentSummary> tempSummary;
 	    private MatchDocumentSummaryImpl currSummary;
 
-	    private ArrayList<Warning> tempWarnings;
-	    private ArrayList<Report>  tempReports;
+	    private List<Warning> tempWarnings;
+	    private List<Report>  tempReports;
 
 	    private SearchMetrics          tempMetrics;
 	    private EventRange             tempPlanEvents;
@@ -1081,12 +1082,12 @@ public class SearchHandle
 	    private long tempStart        = -1;
 	    private int  tempPageLength   = 0;
 
-	    private LinkedHashMap<String, FacetResult> tempFacets;
-	    private LinkedHashMap<String, EventRange>  tempConstraints;
+	    private Map<String, FacetResult> tempFacets;
+	    private Map<String, EventRange>  tempConstraints;
 
 	    private String tempSnippetType;
 	    private String tempExtractSelected;
-	    private ArrayList<String>      qtextList;
+	    private List<String>      qtextList;
 
 	    private EventRange tempQueryEvents;
 
@@ -1095,7 +1096,7 @@ public class SearchHandle
 		}
 
 		private void parse(XMLEventReader reader) throws XMLStreamException {
-			tempEvents = new ArrayList<XMLEvent>();
+			tempEvents = new ArrayList<>();
 
 			while (reader.hasNext()) {
 				XMLEvent event = reader.nextEvent();
@@ -1203,7 +1204,7 @@ public class SearchHandle
 				ruri, score, confidence, fitness, path, mimeType, format, tempExtractSelected);
 
 	        if (tempSummary == null) {
-	        	tempSummary = new ArrayList<MatchDocumentSummary>();
+	        	tempSummary = new ArrayList<>();
 	        }
 	        tempSummary.add(currSummary);
 
@@ -1218,7 +1219,7 @@ public class SearchHandle
 	    	QName similarName       = new QName(SEARCH_NS, "similar");
 	    	QName relevanceInfoName = new QName(QUERY_NS,  "relevance-info");
 
-	    	ArrayList<XMLEvent> eventBuf = new ArrayList<XMLEvent>();
+	    	List<XMLEvent> eventBuf = new ArrayList<>();
 
 	    	QName resultName = element.getName();
 	    	events: while (reader.hasNext()) {
@@ -1284,7 +1285,7 @@ public class SearchHandle
 	    private void handleSimilar(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	    	if (currSummary.similarUris == null) {
-	    		currSummary.similarUris = new ArrayList<String>();
+	    		currSummary.similarUris = new ArrayList<>();
 	    	}
 	    	currSummary.similarUris.add(reader.getElementText());
 	    }
@@ -1333,7 +1334,7 @@ public class SearchHandle
 	    }
 	    private void addSnippet(EventRange snippetRange) {
 	    	if (currSummary.snippetEvents == null) {
-	    		currSummary.snippetEvents = new ArrayList<EventRange>();
+	    		currSummary.snippetEvents = new ArrayList<>();
 	    	}
 	    	currSummary.snippetEvents.add(snippetRange);
 	    }
@@ -1393,12 +1394,12 @@ public class SearchHandle
 	    private void handleFacet(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	        if (tempFacets == null) {
-	        	tempFacets = new LinkedHashMap<String, FacetResult>();
+	        	tempFacets = new LinkedHashMap<>();
 	        }
 
 	        String facetName = getAttribute(element, "name");
 
-	        List<FacetValue> values = new ArrayList<FacetValue>();
+	        List<FacetValue> values = new ArrayList<>();
 
             QName facetValuesName = new QName(SEARCH_NS, "facet-value");
 
@@ -1440,12 +1441,12 @@ public class SearchHandle
 	    private void handleGeoFacet(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	        if (tempFacets == null) {
-	        	tempFacets = new LinkedHashMap<String, FacetResult>();
+	        	tempFacets = new LinkedHashMap<>();
 	        }
 
 	        String facetName = getAttribute(element, "name");
 
-            List<FacetValue> values = new ArrayList<FacetValue>();
+            List<FacetValue> values = new ArrayList<>();
 
             QName boxName = new QName(SEARCH_NS, "box");
 
@@ -1488,7 +1489,7 @@ public class SearchHandle
 	    private void handleQText(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	    	if (qtextList == null) {
-	    		qtextList = new ArrayList<String>();
+	    		qtextList = new ArrayList<>();
 	    	}
 	    	qtextList.add(reader.getElementText());
 	    }
@@ -1559,7 +1560,7 @@ public class SearchHandle
 	    private void handleConstraint(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	        if (tempConstraints == null) {
-	        	tempConstraints = new LinkedHashMap<String, EventRange>();
+	        	tempConstraints = new LinkedHashMap<>();
 	        }
 
 	        String constraintName = getAttribute(element, "name");
@@ -1569,7 +1570,7 @@ public class SearchHandle
 	    private void handleWarning(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	        if (tempWarnings == null) {
-	            tempWarnings = new ArrayList<Warning>();
+	            tempWarnings = new ArrayList<>();
 	        }
 
 	        Warning warning = new Warning();
@@ -1580,7 +1581,7 @@ public class SearchHandle
 	    private void handleReport(XMLEventReader reader, StartElement element)
 	    throws XMLStreamException {
 	        if (tempReports == null) {
-	            tempReports = new ArrayList<Report>();
+	            tempReports = new ArrayList<>();
 	        }
 
 	        Report report = new Report();
@@ -1665,7 +1666,7 @@ public class SearchHandle
         private void setItems(List<String> itemStrings) {
             if ( itemStrings == null ) return;
             this.itemStrings = itemStrings;
-            items = new ArrayList<ExtractedItem>(itemStrings.size());
+            items = new ArrayList<>(itemStrings.size());
             for ( String itemString : itemStrings ) {
                 items.add( new ExtractedItemImpl(itemString) );
             }

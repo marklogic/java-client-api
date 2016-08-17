@@ -38,6 +38,7 @@ import com.marklogic.client.query.Tuple;
 import com.marklogic.client.query.TuplesResults;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesMetrics;
+import java.util.Map;
 
 /**
  * A TuplesHandle represents a set of tuples returned by a query on the server.
@@ -52,7 +53,7 @@ public class TuplesHandle
     private Unmarshaller unmarshaller;
 
     private ValuesDefinition valdef = null;
-    private HashMap<String, AggregateResult> hashedAggregates = null;
+    private Map<String, AggregateResult> hashedAggregates = null;
 
     public TuplesHandle() {
     	super();
@@ -158,7 +159,7 @@ public class TuplesHandle
     @Override
     public AggregateResult getAggregate(String name) {
         if (hashedAggregates == null) {
-            hashedAggregates = new HashMap<String, AggregateResult>();
+            hashedAggregates = new HashMap<>();
             for (AggregateResult aggregate : tuplesHolder.getAggregates()) {
                 hashedAggregates.put(aggregate.getName(), aggregate);
             }

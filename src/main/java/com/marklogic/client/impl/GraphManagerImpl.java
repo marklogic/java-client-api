@@ -103,7 +103,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         GraphPermissions perms = new GraphPermissionsImpl();
         for ( JsonNode permission : json.path("permissions") ) {
             String role = permission.path("role-name").asText();
-            Set<Capability> capabilities = new HashSet<Capability>();
+            Set<Capability> capabilities = new HashSet<>();
             for ( JsonNode capability : permission.path("capabilities") ) {
                 String value = capability.asText();
                 if ( value != null ) {
@@ -389,7 +389,7 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
     @Override
     public GraphPermissions permission(String role, Capability... capabilities) {
         GraphPermissionsImpl perms = new GraphPermissionsImpl();
-        perms.put(role, new HashSet<Capability>(Arrays.asList(capabilities)));
+        perms.put(role, new HashSet<>(Arrays.asList(capabilities)));
         return perms;
     }
 

@@ -41,8 +41,6 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.io.marker.TriplesReadHandle;
-import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
@@ -159,7 +157,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 	}
 	@Override
 	public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass) {
-		return new PojoRepositoryImpl<T, ID>(this, clazz, idClass);
+		return new PojoRepositoryImpl<>(this, clazz, idClass);
 
 	}
 
@@ -218,7 +216,7 @@ public class DatabaseClientImpl implements DatabaseClient {
 
 	@Override
 	public GraphManager newGraphManager() {
-		return new GraphManagerImpl<TriplesReadHandle, TriplesWriteHandle>(services, getHandleRegistry());
+		return new GraphManagerImpl<>(services, getHandleRegistry());
 	}
 
 	@Override

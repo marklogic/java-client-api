@@ -48,7 +48,7 @@ public final class TuplesBuilder {
         private List<Tuple> tuples;
 
         @XmlElement(namespace = Tuples.TUPLES_NS, name = "aggregate-result")
-        private ArrayList<AggregateResult> aggregateResults;
+        private List<AggregateResult> aggregateResults;
 
         @XmlElement(namespace = Tuples.TUPLES_NS, name = "metrics")
         private ValuesMetricsImpl metrics;
@@ -58,8 +58,8 @@ public final class TuplesBuilder {
         }
 
         public Tuples() {
-            tuples = new ArrayList<Tuple>();
-            aggregateResults = new ArrayList<AggregateResult>();
+            tuples = new ArrayList<>();
+            aggregateResults = new ArrayList<>();
         }
 
         public Tuple[] getTuples() {

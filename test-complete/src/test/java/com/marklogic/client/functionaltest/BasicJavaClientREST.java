@@ -1672,7 +1672,7 @@ return readContent;
 	 */
 	public String convertInputSourceToString(InputSource fileRead) throws IOException, TransformerException
 	{
-		SAXSource saxsrc = new SAXSource(fileRead);
+		Source saxsrc = new SAXSource(fileRead);
 		TransformerFactory tf = TransformerFactory.newInstance();
 		Transformer transformer = tf.newTransformer();
 		transformer.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");

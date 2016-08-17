@@ -50,6 +50,7 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.SourceHandle;
+import java.util.Map;
 
 public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	private static final int BATCH_SIZE=100;
@@ -155,7 +156,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		transform.put("value", "English");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++){
 
@@ -214,7 +215,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		transform.put("value", "testBulkXQYTransformWithTrans");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writesetRollback = docMgr.newWriteSet();
 		// Verify rollback with a smaller number of documents.
 		for(int i = 0;i<12;i++){
@@ -296,7 +297,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		transform.put("value", "English");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 		for(int i =0;i<102;i++){
 

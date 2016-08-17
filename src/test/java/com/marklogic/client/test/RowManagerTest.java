@@ -81,21 +81,21 @@ public class RowManagerTest {
 
 		litRows = new Map[3];
 
-		Map<String,Object>   row  = new HashMap<String,Object>();
+		Map<String,Object>   row  = new HashMap<>();
 		row.put("rowNum", 1);
 		row.put("city",   "New York");
 		row.put("temp",   "82");
 		row.put("uri",    uris[0]);
 		litRows[0] = row;
 
-		row = new HashMap<String,Object>();
+		row = new HashMap<>();
 		row.put("rowNum", 2);
 		row.put("city",   "Seattle");
 		row.put("temp",   "72");
 		row.put("uri",    uris[1]);
 		litRows[1] = row;
 
-		row = new HashMap<String,Object>();
+		row = new HashMap<>();
 		row.put("rowNum", 3);
 		row.put("city",   "Phoenix");
 		row.put("temp",   "92");
@@ -341,7 +341,7 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		Map<String, CtsReferenceExpr> lexicons = new HashMap<String, CtsReferenceExpr>();
+		Map<String, CtsReferenceExpr> lexicons = new HashMap<>();
 		lexicons.put("uri", p.cts.uriReference());
 		lexicons.put("int", p.cts.elementReference(p.xs.qname("int")));
 
