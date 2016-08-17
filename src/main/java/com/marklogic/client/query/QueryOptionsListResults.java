@@ -22,7 +22,7 @@ import java.util.HashMap;
  */
 public interface QueryOptionsListResults {
     /**
-     * Returns a HashMap of the named query options from the server.
+     * Returns a Map of the named query options from the server.
      *
      * The keys are the names of the query options, the values are the corresponding URIs on the server.
      *

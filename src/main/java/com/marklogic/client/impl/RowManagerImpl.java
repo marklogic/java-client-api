@@ -209,7 +209,7 @@ and not the content
 		RESTServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-		return new RowSetImpl<T>(rowFormat, rowHandle, iter);
+		return new RowSetImpl<>(rowFormat, rowHandle, iter);
 	}
 	private PlanBuilderBase.RequestPlan checkPlan(Plan plan) {
 		if (plan == null) {
@@ -310,7 +310,7 @@ and not the content
 				break;
 			case "sparql-xml":
 				try {
-					List<String> cols = new ArrayList<String>();
+					List<String> cols = new ArrayList<>();
 					XMLStreamReader headerReader = headerRow.getContent(new XMLStreamReaderHandle()).get();
 					while (headerReader.hasNext()) {
 						switch(headerReader.next()) {

@@ -64,7 +64,7 @@ public class QueryOptionsListHandleTest {
             v = new MyQueryOptionsListHandle();
             v.parseTestData(is);
         }
-        HashMap<String,String> map = v.getValuesMap();
+        Map<String,String> map = v.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
     }
