@@ -158,8 +158,8 @@ public void testXQueryModuleCRUDBinaryFile() throws KeyManagementException, NoSu
 		libsMgr.write(Path, new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg")).withFormat(Format.BINARY));
 
 		// read it back
-			FileHandle f = new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg"));
-		assertEquals(f.getByteLength(),libsMgr.read(Path, new StringHandle()).getByteLength());
+		File f = new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg");
+		assertEquals(f.length(),libsMgr.read(Path, new StringHandle()).getByteLength());
 		
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
@@ -233,7 +233,7 @@ public void testXQueryModuleCRUDBinaryFile() throws KeyManagementException, NoSu
 		libsMgr.write(Path, f);
 
 		// read it back
-		assertEquals(f.getByteLength(), libsMgr.read(Path, new StringHandle()).getByteLength());
+		assertEquals(209745, libsMgr.read(Path, new StringHandle()).getByteLength());
 		
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
