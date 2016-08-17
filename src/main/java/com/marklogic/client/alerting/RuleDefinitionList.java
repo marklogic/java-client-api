@@ -70,7 +70,8 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 		HandleAccessor.receiveContent(domHandle, content);
 		Document document = domHandle.get();
 		NodeList ruleNodes = document.getElementsByTagNameNS(RequestConstants.RESTAPI_NS, "rule");
-		for (int i=0; i < ruleNodes.getLength(); i++) {
+        int ruleNodesLength = ruleNodes.getLength();
+		for (int i=0; i < ruleNodesLength; i++) {
 			Element ruleElement = (Element) ruleNodes.item(i);
 			RuleDefinition ruleDefinition = new RuleDefinition();
 			ruleDefinition.receiveElement(ruleElement);

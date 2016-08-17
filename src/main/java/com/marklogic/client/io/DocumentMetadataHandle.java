@@ -576,7 +576,8 @@ public class DocumentMetadataHandle
 			return;
 
 		NodeList valuesIn = document.getElementsByTagNameNS(REST_API_NS, "metadata-values");
-		for (int i = 0; i < valuesIn.getLength(); i++) {
+        int valuesInLength = valuesIn.getLength();
+		for (int i = 0; i < valuesInLength; i++) {
 			String key = null;
 			String value = null;
 
@@ -611,7 +612,8 @@ public class DocumentMetadataHandle
 			return;
 		
 		NodeList collectionsIn = document.getElementsByTagNameNS(REST_API_NS, "collection");
-		for (int i=0; i < collectionsIn.getLength(); i++) {
+        int collectionsInLength = collectionsIn.getLength();
+		for (int i=0; i < collectionsInLength; i++) {
 			collections.add(collectionsIn.item(i).getTextContent());
 		}
 	}
@@ -623,7 +625,8 @@ public class DocumentMetadataHandle
 			return;
 
 		NodeList permissionsIn = document.getElementsByTagNameNS(REST_API_NS, "permission");
-		for (int i=0; i < permissionsIn.getLength(); i++) {
+        int permissionsInLength = permissionsIn.getLength();
+		for (int i=0; i < permissionsInLength; i++) {
 			String roleName = null;
 			HashSet<Capability> caps = new HashSet<Capability>();
 

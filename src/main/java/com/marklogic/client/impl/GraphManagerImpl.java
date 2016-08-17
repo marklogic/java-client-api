@@ -38,6 +38,7 @@ import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.GraphPermissions;
+import java.util.Map;
 
 public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWriteHandle>
     extends AbstractLoggingManager
@@ -142,11 +143,11 @@ public class GraphManagerImpl<R extends TriplesReadHandle, W extends TriplesWrit
         ObjectNode payload = mapper.createObjectNode();
         ArrayNode permissionsNode = mapper.createArrayNode();
         payload.set("permissions", permissionsNode);
-        for ( String role : permissions.keySet() ) {
+        for ( Map.Entry<String,Set<Capability>> entry : permissions.entrySet() ) {
             ObjectNode permissionNode = mapper.createObjectNode();
-            permissionNode.put("role-name", role);
+            permissionNode.put("role-name", entry.getKey());
             ArrayNode capabilitiesNode = mapper.createArrayNode();
-            for ( Capability capability : permissions.get(role) ) {
+            for ( Capability capability : entry.getValue() ) {
                 capabilitiesNode.add(capability.toString().toLowerCase());
             }
             permissionNode.set("capabilities", capabilitiesNode);

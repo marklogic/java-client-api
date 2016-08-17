@@ -248,7 +248,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
 
         // Add the whole Authorization line to the header
         try {
-            String authLine = new String("Negotiate "+ getAuthorizationHeader("HTTP/" + host));
+            String authLine = "Negotiate "+ getAuthorizationHeader("HTTP/" + host);
             request.getHeaders().add(HttpHeaders.AUTHORIZATION, authLine);
         } catch (Exception e) {
             throw new FailedRequestException(e.getMessage(), e);

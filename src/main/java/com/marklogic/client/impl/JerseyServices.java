@@ -505,7 +505,7 @@ public class JerseyServices implements RESTServices {
 		response.close();
 
 		String retryAfterRaw = responseHeaders.getFirst("Retry-After");
-		int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+		int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 		return Math.max(retryAfter, calculateDelay(randRetry, retry));
 	}
 
@@ -652,7 +652,7 @@ public class JerseyServices implements RESTServices {
 	private int getRetryAfterTime(ClientResponse response) {
 		MultivaluedMap<String, String> responseHeaders = response.getHeaders();
 		String retryAfterRaw = responseHeaders.getFirst("Retry-After");
-		return (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+		return (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 	}
 
 	private ClientResponse makeRequest(Builder builder, Function<Builder, ClientResponse> doFunction, Consumer<Boolean> resendableConsumer) {
@@ -1341,7 +1341,7 @@ public class JerseyServices implements RESTServices {
 						 ((uri != null) ? uri : "new document"));
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -1485,7 +1485,7 @@ public class JerseyServices implements RESTServices {
 						((uri != null) ? uri : "new document"));
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -1880,7 +1880,7 @@ public class JerseyServices implements RESTServices {
 		if (values != null) {
 			String timestamp = values.get(0);
 			if (timestamp != null && timestamp.length() > 0) {
-				return Long.valueOf(timestamp);
+				return Long.parseLong(timestamp);
 			}
 		}
 		return -1;
@@ -1898,7 +1898,7 @@ public class JerseyServices implements RESTServices {
 		if (headers.containsKey(HttpHeaders.CONTENT_LENGTH)) {
 			List<String> values = headers.get(HttpHeaders.CONTENT_LENGTH);
 			if (values != null) {
-				return Long.valueOf(values.get(0));
+				return Long.parseLong(values.get(0));
 			}
 		}
 		return ContentDescriptor.UNKNOWN_LENGTH;
@@ -1920,7 +1920,7 @@ public class JerseyServices implements RESTServices {
 			if (values != null) {
 				// trim the double quotes
 				String value = values.get(0);
-				version = Long.valueOf(value.substring(1, value.length() - 1));
+				version = Long.parseLong(value.substring(1, value.length() - 1));
 			}
 		}
 		descriptor.setVersion(version);
@@ -2195,7 +2195,7 @@ public class JerseyServices implements RESTServices {
 
                 MultivaluedMap<String, String> responseHeaders = response.getHeaders();
                 String retryAfterRaw = responseHeaders.getFirst("Retry-After");
-                int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+                int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
                 response.close();
 
@@ -2736,7 +2736,7 @@ public class JerseyServices implements RESTServices {
 						"Cannot retry request for " + connectPath);
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -3050,7 +3050,7 @@ public class JerseyServices implements RESTServices {
 						"Cannot retry request for " + path);
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -3201,7 +3201,7 @@ public class JerseyServices implements RESTServices {
 						"Cannot retry request for " + path);
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -3472,16 +3472,16 @@ public class JerseyServices implements RESTServices {
 		@Override
 		public Number getNumber() {
 			if      ( getType() == EvalResult.Type.DECIMAL ) return new BigDecimal(getString());
-			else if ( getType() == EvalResult.Type.DOUBLE )  return new Double(getString());
-			else if ( getType() == EvalResult.Type.FLOAT )   return new Float(getString());
+			else if ( getType() == EvalResult.Type.DOUBLE )  return Double.valueOf(getString());
+			else if ( getType() == EvalResult.Type.FLOAT )   return Float.valueOf(getString());
 			// MarkLogic integers can be much larger than Java integers, so we'll use Long instead
-			else if ( getType() == EvalResult.Type.INTEGER ) return new Long(getString());
+			else if ( getType() == EvalResult.Type.INTEGER ) return Long.valueOf(getString());
 			else return new BigDecimal(getString());
 		}
 
 		@Override
 		public Boolean getBoolean() {
-			return new Boolean(getString());
+			return Boolean.valueOf(getString());
 		}
 
 	}
@@ -3727,7 +3727,7 @@ public class JerseyServices implements RESTServices {
 						"Cannot retry request for " + path);
 			}
 
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 			nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
 		}
 		if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -4456,7 +4456,7 @@ public class JerseyServices implements RESTServices {
         }
 
         public JerseyResultIterator<T> setSize(long size) {
-            this.size = new Long(size);
+            this.size = size;
             return this;
         }
 
@@ -4789,7 +4789,7 @@ public class JerseyServices implements RESTServices {
 
 			MultivaluedMap<String, String> responseHeaders = response.getHeaders();
 			String retryAfterRaw = responseHeaders.getFirst("Retry-After");
-			int retryAfter = (retryAfterRaw != null) ? Integer.valueOf(retryAfterRaw) : -1;
+			int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
 			response.close();
 
@@ -4868,10 +4868,10 @@ public class JerseyServices implements RESTServices {
 
 	private void addPermsParams(RequestParameters params, GraphPermissions permissions) {
 		if ( permissions != null ) {
-			for ( String role : permissions.keySet() ) {
-				if ( permissions.get(role) != null ) {
-					for ( Capability capability : permissions.get(role) ) {
-						params.add("perm:" + role, capability.toString().toLowerCase());
+			for ( Map.Entry<String,Set<Capability>> entry : permissions.entrySet() ) {
+				if ( entry.getValue() != null ) {
+					for ( Capability capability : entry.getValue() ) {
+						params.add("perm:" + entry.getKey(), capability.toString().toLowerCase());
 					}
 				}
 			}
@@ -5026,10 +5026,10 @@ public class JerseyServices implements RESTServices {
 		addPermsParams(params, qdef.getUpdatePermissions());
 		String sparql = qdef.getSparql();
 		SPARQLBindings bindings = qdef.getBindings();
-		for ( String bindingName : bindings.keySet() ) {
-			String paramName = "bind:" + bindingName;
+		for ( Map.Entry<String,List<SPARQLBinding>> entry : bindings.entrySet() ) {
+			String paramName = "bind:" + entry.getKey();
 			String typeOrLang = "";
-			for ( SPARQLBinding binding : bindings.get(bindingName) ) {
+			for ( SPARQLBinding binding : entry.getValue() ) {
 				if ( binding.getDatatype() != null ) {
 					typeOrLang = ":" + binding.getDatatype();
 				} else if ( binding.getLanguageTag() != null ) {

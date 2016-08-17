@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
@@ -50,10 +51,10 @@ public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
             }
 
             super.startElement(SEARCH_NS, ename, ename, null);
-            for (String pfx : nsmap.keySet()) {
+            for (Map.Entry<String,String> entry : nsmap.entrySet()) {
                 BindingAttributes attrs = new BindingAttributes();
-                attrs.addAttribute("prefix", pfx);
-                attrs.addAttribute("namespace-uri", nsmap.get(pfx));
+                attrs.addAttribute("prefix", entry.getKey());
+                attrs.addAttribute("namespace-uri", entry.getValue());
                 super.startElement(SEARCH_NS, "binding", "binding", attrs);
                 super.endElement(SEARCH_NS, "binding", "binding");
             }
