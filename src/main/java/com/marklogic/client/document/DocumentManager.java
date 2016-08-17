@@ -683,7 +683,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * metadata available from {@link DocumentRecord#getMetadata(DocumentMetadataReadHandle)
      * DocumentPage.next().getMetadata(handle)} (assuming 
      * {@link #setMetadataCategories setMetadataCategories} has been called
-     * to request specific metadata). If setNonDocumentFormat is not is called,
+     * to request specific metadata). If setNonDocumentFormat is not called,
      * the server default format will be used.
      * @param nonDocumentFormat the format to use
      */

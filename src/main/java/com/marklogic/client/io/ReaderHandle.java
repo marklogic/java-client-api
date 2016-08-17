@@ -208,6 +208,8 @@ public class ReaderHandle
 	@Override
 	protected void receiveContent(InputStream content) {
 		try {
+			// avoid NullPointerException by using an empty InputStream
+			if ( content == null ) content = new ByteArrayInputStream(new byte[0]);
 			this.content = new InputStreamReader(content, "UTF-8");
 		} catch (UnsupportedEncodingException e) {
 			throw new MarkLogicIOException(e);
