@@ -65,7 +65,7 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 	}
 	
 	protected void receiveContent(InputStream content) {
-		rules = new ArrayList<RuleDefinition>();
+		rules = new ArrayList<>();
 		DOMHandle domHandle = new DOMHandle();
 		HandleAccessor.receiveContent(domHandle, content);
 		Document document = domHandle.get();

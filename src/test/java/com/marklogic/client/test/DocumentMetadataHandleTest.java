@@ -43,6 +43,7 @@ import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.StringHandle;
+import java.util.List;
 
 public class DocumentMetadataHandleTest {
 	@BeforeClass
@@ -155,7 +156,7 @@ public class DocumentMetadataHandleTest {
 			Object thirdValue = properties.get("third");
 			assertTrue("Third property with wrong class for value", thirdValue instanceof NodeList);
 			NodeList thirdNodes = (NodeList) thirdValue;
-			ArrayList<Element> thirdElements = new ArrayList<Element>(); 
+			List<Element> thirdElements = new ArrayList<>(); 
 			for (int i=0; i < thirdNodes.getLength(); i++) {
 				Node thirdNode = thirdNodes.item(i);
 				if (thirdNode.getNodeType() != Node.ELEMENT_NODE)

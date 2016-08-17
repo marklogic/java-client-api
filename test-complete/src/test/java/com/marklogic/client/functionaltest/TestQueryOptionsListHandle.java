@@ -31,6 +31,7 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.QueryOptionsListHandle;
+import java.util.Map;
 
 public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 
@@ -55,7 +56,7 @@ public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 
 		QueryOptionsListHandle handle = new QueryOptionsListHandle();
 
-		HashMap map = handle.getValuesMap();
+		Map map = handle.getValuesMap();
 
 		// release client
 		client.release();

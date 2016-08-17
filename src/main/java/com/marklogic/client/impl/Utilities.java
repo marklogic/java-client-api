@@ -221,7 +221,7 @@ public final class Utilities {
 				return null;
 			}
 
-			List<XMLEvent> events = new ArrayList<XMLEvent>();
+			List<XMLEvent> events = new ArrayList<>();
 			while (reader.hasNext()) {
 				XMLEvent event = reader.nextEvent();
 				switch (event.getEventType()) {

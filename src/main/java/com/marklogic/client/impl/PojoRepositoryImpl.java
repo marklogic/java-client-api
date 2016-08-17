@@ -61,6 +61,7 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.sun.jersey.api.client.ClientHandlerException;
+import java.util.Set;
 
 public class PojoRepositoryImpl<T, ID extends Serializable>
     implements PojoRepository<T, ID>
@@ -114,7 +115,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         this.entityClass = entityClass;
         this.idClass = null;
         this.docMgr = client.newJSONDocumentManager();
-        this.qb = new PojoQueryBuilderImpl<T>(entityClass);
+        this.qb = new PojoQueryBuilderImpl<>(entityClass);
     }
 
     PojoRepositoryImpl(DatabaseClient client, Class<T> entityClass, Class<ID> idClass) {
@@ -142,7 +143,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     @Override
     public void write(T entity, Transaction transaction, String... collections) {
         if ( entity == null ) return;
-        JacksonDatabindHandle<T> contentHandle = new JacksonDatabindHandle<T>(entity);
+        JacksonDatabindHandle<T> contentHandle = new JacksonDatabindHandle<>(entity);
         contentHandle.setMapper(objectMapper); 
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         metadataHandle = metadataHandle.withCollections(entityClass.getName());
@@ -270,7 +271,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
     @Override
     public T read(ID id, Transaction transaction) {
-        ArrayList<ID> ids = new ArrayList<ID>();
+        List<ID> ids = new ArrayList<>();
         ids.add(id);
         @SuppressWarnings("unchecked")
         PojoPage<T> page = read(ids.toArray((ID[])new Serializable[0]), transaction);
@@ -286,12 +287,12 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
     @Override
     public PojoPage<T> read(ID[] ids, Transaction transaction) {
-        ArrayList<String> uris = new ArrayList<String>();
+        List<String> uris = new ArrayList<>();
         for ( ID id : ids ) {
             uris.add(createUri(id));
         }
         DocumentPage docPage = (DocumentPage) docMgr.read(transaction, uris.toArray(new String[0]));
-        PojoPage<T> pojoPage = new PojoPageImpl<T>(docPage, entityClass);
+        PojoPage<T> pojoPage = new PojoPageImpl<>(docPage, entityClass);
         return pojoPage;
     }
     @Override
@@ -338,7 +339,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
         }
 
         DocumentPage docPage = docMgr.search(wrapQuery(query), start, searchHandle, transaction);
-        PojoPage<T> pojoPage = new PojoPageImpl<T>(docPage, entityClass);
+        PojoPage<T> pojoPage = new PojoPageImpl<>(docPage, entityClass);
         return pojoPage;
     }
  
@@ -377,7 +378,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
             return qb.collection(entityClass.getName());
         } else {
             List<String> collections = Arrays.asList(query.getCollections());
-            HashSet<String> collectionSet = new HashSet<String>(collections);
+            Set<String> collectionSet = new HashSet<>(collections);
             collectionSet.add(entityClass.getName());
             query.setCollections(collectionSet.toArray(new String[0]));
             return query;

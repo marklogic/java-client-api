@@ -78,6 +78,7 @@ import com.marklogic.client.impl.QueryOptionsTransformInjectNS;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.QueryOptionsReadHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
+import javax.xml.transform.Source;
 
 /**
  * @deprecated Use a JSON or XML 
@@ -907,7 +908,7 @@ public final class QueryOptionsHandle
 	public void write(OutputStream out) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
 
-		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<QueryOptions>(
+		JAXBElement<QueryOptions> jaxbElement = new JAXBElement<>(
 				new QName("http://marklogic.com/appservices/search", "options"),
 				QueryOptions.class, optionsHolder);
 		try {
@@ -933,7 +934,7 @@ public final class QueryOptionsHandle
 
             StreamResult result = new StreamResult(out);
 
-            SAXSource saxSource = new SAXSource(itransform, source);
+            Source saxSource = new SAXSource(itransform, source);
             transformer.transform(saxSource, result);
             logger.debug("End write of QueryOptionsHandle");       
         } catch (JAXBException e) {
@@ -1018,7 +1019,7 @@ public final class QueryOptionsHandle
             StringWriter sw = new StringWriter();
             StreamResult result = new StreamResult(sw);
             InputSource source = new InputSource(content);
-            SAXSource saxSource = new SAXSource(transform, source);
+            Source saxSource = new SAXSource(transform, source);
             transformer.transform(saxSource, result);
             String xmlResult = sw.toString();
             InputStream in = new ByteArrayInputStream(xmlResult.getBytes("UTF-8"));

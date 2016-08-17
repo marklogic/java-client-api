@@ -261,7 +261,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
       } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
@@ -271,11 +271,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
             .get(systemNodeName));
 
         String systemStartDate = (String) systemNode.get(systemStartERIName);
@@ -284,7 +284,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("systemEndDate = " + systemEndDate);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
@@ -633,7 +633,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     System.out.println(rootNode.toString());
 
-    JacksonDatabindHandle<ObjectNode> handle = new JacksonDatabindHandle<ObjectNode>(
+    JacksonDatabindHandle<ObjectNode> handle = new JacksonDatabindHandle<>(
         ObjectNode.class).withFormat(Format.JSON);
     handle.set(rootNode);
 
@@ -1044,7 +1044,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // Check if properties have been set. User XML DOcument Manager since
     // properties are written as XML
-    JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+    JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
         ObjectNode.class);
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     docMgr.read(docId, metadataHandle, contentHandle);
@@ -1152,7 +1152,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       if (record.getFormat() != Format.JSON) {
         assertFalse("Format is not JSON: " + Format.JSON, true);
       } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
@@ -1235,7 +1235,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // Verify that the document was inserted
     JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+    JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
         ObjectNode.class);
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     docMgr.read(docId, metadataHandle, recordHandle);
@@ -1258,11 +1258,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
       TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
       };
 
-      HashMap<String, Object> docObject = mapper.readValue(
+      Map<String, Object> docObject = mapper.readValue(
           recordHandle.toString(), typeRef);
 
       @SuppressWarnings("unchecked")
-      HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+      Map<String, Object> validNode = (HashMap<String, Object>) (docObject
           .get(systemNodeName));
 
       String systemStartDate = (String) validNode.get(systemStartERIName);
@@ -1406,7 +1406,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         assertFalse("Format is not JSON: " + Format.JSON, true);
       } else {
         // Make sure that system and valid times are what is expected
-        recordHandle = new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);
+        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
 
@@ -1415,11 +1415,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
             .get(systemNodeName));
 
         String systemStartDate = (String) systemNode.get(systemStartERIName);
@@ -1428,7 +1428,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("systemEndDate = " + systemEndDate);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
@@ -1716,7 +1716,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         assertFalse("Format is not JSON: " + Format.JSON, true);
       } else {
         // Make sure that system and valid times are what is expected
-        recordHandle = new JacksonDatabindHandle<ObjectNode>(ObjectNode.class);
+        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
 
@@ -1725,11 +1725,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
             .get(systemNodeName));
 
         String systemStartDate = (String) systemNode.get(systemStartERIName);
@@ -1738,7 +1738,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("systemEndDate = " + systemEndDate);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
@@ -2084,7 +2084,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       // Make sure document is not visible to any other transaction
       boolean exceptionThrown = false;
       try {
-        JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
         docMgr.read(docId, metadataHandle, contentHandle);        
@@ -2278,7 +2278,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 		// Verify that the document is not there after rollback
 		boolean exceptionThrown = false;
 		try {
-		  JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<ObjectNode>(
+		  JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
 		      ObjectNode.class);
 		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 		  docMgr.read(docId, metadataHandle, contentHandle);
@@ -2437,7 +2437,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
       } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
@@ -2447,11 +2447,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
             .get(systemNodeName));
 
         String systemStartDate = (String) systemNode.get(systemStartERIName);
@@ -2460,7 +2460,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("systemEndDate = " + systemEndDate);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
@@ -2546,7 +2546,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       if (record.getFormat() != Format.JSON) {
         assertFalse("Invalid document format: " + record.getFormat(), true);
       } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
@@ -2556,11 +2556,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);
@@ -2640,7 +2640,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
       } else {
-        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<ObjectNode>(
+        JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         record.getContent(recordHandle);
         System.out.println("Content = " + recordHandle.toString());
@@ -2650,11 +2650,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
         TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
         };
 
-        HashMap<String, Object> docObject = mapper.readValue(
+        Map<String, Object> docObject = mapper.readValue(
             recordHandle.toString(), typeRef);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> systemNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
             .get(systemNodeName));
 
         String systemStartDate = (String) systemNode.get(systemStartERIName);
@@ -2663,7 +2663,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("systemEndDate = " + systemEndDate);
 
         @SuppressWarnings("unchecked")
-        HashMap<String, Object> validNode = (HashMap<String, Object>) (docObject
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
             .get(validNodeName));
 
         String validStartDate = (String) validNode.get(validStartERIName);

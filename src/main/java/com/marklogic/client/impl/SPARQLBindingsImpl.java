@@ -51,7 +51,7 @@ public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> imp
     private void add(SPARQLBinding binding) {
         String name = binding.getName();
         List<SPARQLBinding> bindings = this.get(name);
-        if ( bindings == null ) bindings = new ArrayList<SPARQLBinding>();
+        if ( bindings == null ) bindings = new ArrayList<>();
         bindings.add(binding);
         this.put(name, bindings);
     }

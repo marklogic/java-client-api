@@ -67,6 +67,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+import java.util.Map;
 
 public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	
@@ -420,8 +421,8 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
         ValuesListDefinition vdef = queryMgr.newValuesListDefinition("aggregatesOpt.xml");
         ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
         // Get the Map of lexicons sorted.
-        HashMap<String,String> lexiconMap = results.getValuesMap();
-        TreeMap<String, String> treeMap = new TreeMap<String,String>(lexiconMap);
+        Map<String,String> lexiconMap = results.getValuesMap();
+        TreeMap<String, String> treeMap = new TreeMap<>(lexiconMap);
         assertEquals("Map should contain three keys", treeMap.size(), 3);
         assertEquals("First key incorrect",treeMap.firstKey(), "pop-aggr");
         assertEquals("Last key incorrect",treeMap.lastKey(), "score-aggr");

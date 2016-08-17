@@ -106,6 +106,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
+import java.util.Map;
 
 public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
@@ -826,7 +827,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		transform.put("value", "testBulkXQYTransformWithTrans");
 		int count=1;
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 		DocumentWriteSet writesetRollback = docMgr.newWriteSet();
 		// Verify rollback with a smaller number of documents.
 		for(int i = 0;i<12;i++) {

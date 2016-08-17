@@ -133,7 +133,7 @@ public class JAXBDocument {
 		// identified to the JAXB context, use a <?> wildcard instead of
 		// a specific class and call the get(class) method instead of
 		// the get() method.
-		JAXBHandle<Product> handle = new JAXBHandle<Product>(context);
+		JAXBHandle<Product> handle = new JAXBHandle<>(context);
 
 		// create an instance of the POJO class
 		Product product = new Product();

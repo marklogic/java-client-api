@@ -227,7 +227,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
 	    	}
 	    	if (params == null) {
-	    		params = new HashMap<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl>();
+	    		params = new HashMap<>();
 	    	}
 	    	params.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)literal);
 // TODO: return clone with param for immutability

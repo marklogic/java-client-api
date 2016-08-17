@@ -326,7 +326,7 @@ public class JAXBHandle<C>
 			super();
 			this.pojoClasses    = pojoClasses;
 			this.factoryContext = factoryContext;
-			this.classSet       = new HashSet<Class<?>>(Arrays.asList(pojoClasses));
+			this.classSet       = new HashSet<>(Arrays.asList(pojoClasses));
 		}
 
 		@Override
@@ -340,7 +340,7 @@ public class JAXBHandle<C>
 		@Override
 		public <C> ContentHandle<C> newHandle(Class<C> type) {
 			ContentHandle<C> handle = isHandled(type) ?
-					(ContentHandle<C>) new JAXBHandle<C>(factoryContext) : null;
+					(ContentHandle<C>) new JAXBHandle<>(factoryContext) : null;
 			return handle;
 		}
 	}

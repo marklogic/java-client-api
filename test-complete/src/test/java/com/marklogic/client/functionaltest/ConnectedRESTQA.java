@@ -751,7 +751,7 @@ public abstract class ConnectedRESTQA {
 
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests/"+fName);
 			//			
-			List<NameValuePair> urlParameters = new ArrayList<NameValuePair>();
+			List<NameValuePair> urlParameters = new ArrayList<>();
 			urlParameters.add(new BasicNameValuePair("state", "detach"));
 			urlParameters.add(new BasicNameValuePair("database", dbName));
 

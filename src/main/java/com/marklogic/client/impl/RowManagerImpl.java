@@ -209,7 +209,7 @@ and not the content
 		RESTServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-		return new RowSetImpl<T>(rowFormat, rowHandle, iter);
+		return new RowSetImpl<>(rowFormat, rowHandle, iter);
 	}
 	private PlanBuilderBase.RequestPlan checkPlan(Plan plan) {
 		if (plan == null) {
@@ -310,7 +310,7 @@ and not the content
 				break;
 			case "sparql-xml":
 				try {
-					List<String> cols = new ArrayList<String>();
+					List<String> cols = new ArrayList<>();
 					XMLStreamReader headerReader = headerRow.getContent(new XMLStreamReaderHandle()).get();
 					while (headerReader.hasNext()) {
 						switch(headerReader.next()) {
@@ -377,8 +377,8 @@ and not the content
 			try {
 				RowRecordImpl rowRecord = (RowRecordImpl) rowHandle;
 				
-				Map<String, String> kinds     = new HashMap<String, String>();
-				Map<String, String> datatypes = new HashMap<String, String>();
+				Map<String, String> kinds     = new HashMap<>();
+				Map<String, String> datatypes = new HashMap<>();
 
 				// TODO: replace Jackson mapper with binding-sensitive mapper?
 				@SuppressWarnings("unchecked")
@@ -482,7 +482,7 @@ and not the content
 		new HashMap<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>>();
 
 		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors =
-				new HashMap<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>>();
+				new HashMap<>();
 
 		private Map<String, String> kinds     = null;
 		private Map<String, String> datatypes = null;
@@ -901,7 +901,7 @@ and not the content
 	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
 	    	}
 	    	if (params == null) {
-	    		params = new HashMap<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl>();
+	    		params = new HashMap<>();
 	    	}
 	    	params.put((PlanBuilderBase.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 // TODO: return clone with param for immutability

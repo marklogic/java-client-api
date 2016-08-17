@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.query;
 
-import java.util.HashMap;
+import java.util.Map;
 
 /**
  * A ValuesListResults represents the results of a values query.
@@ -25,7 +25,7 @@ public interface ValuesListResults {
      * Returns the map of value results.
      * @return The map.
      */
-    public HashMap<String, String> getValuesMap();
+    public Map<String, String> getValuesMap();
 }
 
 

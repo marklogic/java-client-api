@@ -51,6 +51,7 @@ import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.test.util.Referred;
 import com.marklogic.client.test.util.Refers;
+import java.util.Map;
 
 public class BufferableHandleTest {
 	static private XpathEngine xpather;
@@ -65,7 +66,7 @@ public class BufferableHandleTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-        HashMap<String,String> namespaces = new HashMap<String, String>();
+        Map<String,String> namespaces = new HashMap<>();
         namespaces.put("rapi", "http://marklogic.com/rest-api");
         namespaces.put("prop", "http://marklogic.com/xdmp/property");
         namespaces.put("xs",   "http://www.w3.org/2001/XMLSchema");

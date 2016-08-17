@@ -28,6 +28,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
+import java.util.Map;
 
 public class ServerEvaluationCallImpl 
     extends AbstractLoggingManager
@@ -41,7 +42,7 @@ public class ServerEvaluationCallImpl
     private String                   modulePath;
     private Context                  evalContext;
     private Transaction              transaction;
-    private HashMap<String, Object>  vars = new HashMap<String, Object>();
+    private Map<String, Object>  vars = new HashMap<>();
     private EditableNamespaceContext namespaceContext;
 
     public ServerEvaluationCallImpl(RESTServices services, HandleFactoryRegistry handleRegistry) {

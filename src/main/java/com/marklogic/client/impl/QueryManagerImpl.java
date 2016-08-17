@@ -395,7 +395,7 @@ public class QueryManagerImpl
 
         Document doc = handle.get();
         NodeList nodeList = doc.getDocumentElement().getChildNodes();
-        List<String> suggestions = new ArrayList<String>();
+        List<String> suggestions = new ArrayList<>();
         for (int i=0; i <nodeList.getLength(); i++) {
             suggestions.add(nodeList.item(i).getTextContent());
         }

@@ -62,6 +62,7 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
+import java.util.Map;
 
 public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 	private static final int BATCH_SIZE=100;
@@ -155,7 +156,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST{
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset =docMgr.newWriteSet();
 
-		HashMap<String,String> map= new HashMap<String,String>();
+		Map<String,String> map= new HashMap<>();
 
 		for(int i =0;i<102;i++){
 			JsonNode jn = new ObjectMapper().readTree("{\"animal\":\"dog "+i+"\", \"says\":\"woof\"}");

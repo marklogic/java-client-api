@@ -20,11 +20,12 @@ import org.xml.sax.SAXException;
 import org.xml.sax.helpers.XMLFilterImpl;
 
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
     private static final String SEARCH_NS = "http://marklogic.com/appservices/search";
-    private HashMap<String, String> nsmap = new HashMap<String, String> ();
+    private Map<String, String> nsmap = new HashMap<> ();
 
     public QueryOptionsTransformExtractNS() {
     }
@@ -65,8 +66,8 @@ public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
     }
 
     private static class BindingAttributes implements Attributes {
-        private Vector<String> names = new Vector<String> ();
-        private Vector<String> values = new Vector<String> ();
+        private Vector<String> names = new Vector<> ();
+        private Vector<String> values = new Vector<> ();
 
         public BindingAttributes() {
         }
