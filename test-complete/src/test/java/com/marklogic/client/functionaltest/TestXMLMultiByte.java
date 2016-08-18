@@ -16,7 +16,6 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
@@ -56,9 +55,6 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
 
 		System.out.println("Running testXmlMultibyte");
 
-		XMLUnit.setIgnoreWhitespace(true);
-		XMLUnit.setNormalizeWhitespace(true);
-
 		// connect the client
 		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
@@ -74,7 +70,17 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
 		// get xml document for expected result
 		Document expectedDoc = expectedXMLDocument(filename);
 
-		assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+		assertEquals("Incorrect yen value", readDoc.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue(), 
+				expectedDoc.getElementsByTagName("yen").item(0).getFirstChild().getNodeValue());
+				
+		assertEquals("Incorrect haba value", readDoc.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue(), 
+				expectedDoc.getElementsByTagName("haba").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect chinese value", readDoc.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue(), 
+				expectedDoc.getElementsByTagName("chinese").item(0).getFirstChild().getNodeValue());
+		
+		assertEquals("Incorrect trademark value", readDoc.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue(), 
+				expectedDoc.getElementsByTagName("trademark").item(0).getFirstChild().getNodeValue());
 
 		// update the doc
 		// acquire the content for update
