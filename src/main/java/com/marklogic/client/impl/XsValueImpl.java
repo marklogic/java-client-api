@@ -1210,7 +1210,12 @@ public class XsValueImpl implements XsValue {
 		}
 		@Override
         public String toString() {
-        	return value.toXMLFormat();
+			String val = value.toXMLFormat();
+			// the server rejects values with the trailing hyphens
+			if (val.endsWith("--")) {
+				val = val.substring(0, val.length() - 2);
+			}
+			return val;
         }
     }
     static class GMonthDaySeqValImpl extends AnyAtomicTypeSeqValImpl<GMonthDayValImpl> implements XsGMonthDaySeqVal {
