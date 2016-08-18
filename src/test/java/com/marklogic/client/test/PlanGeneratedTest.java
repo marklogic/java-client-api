@@ -1654,4 +1654,89 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     public void testXsYearMonthDuration1() {
         exportTester("testXsYearMonthDuration1", "{\"ns\":\"xs\", \"fn\":\"yearMonthDuration\", \"args\":[\"P1Y2M\"]}", p.xs.yearMonthDuration("P1Y2M"));
     }
+
+    @Test
+    public void testOpAdd2() {
+        exportTester("testOpAdd2", "{\"ns\":\"op\", \"fn\":\"add\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}]}", p.add(p.xs.intVal(1), p.xs.intVal(2)));
+    }
+
+    @Test
+    public void testOpAdd3() {
+        exportTester("testOpAdd3", "{\"ns\":\"op\", \"fn\":\"add\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"3\"]}]}", p.add(p.xs.intVal(1), p.xs.intVal(2), p.xs.intVal(3)));
+    }
+
+    @Test
+    public void testOpAnd2() {
+        exportTester("testOpAnd2", "{\"ns\":\"op\", \"fn\":\"and\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}]}", p.and(p.xs.booleanVal(true), p.xs.booleanVal(true)));
+    }
+
+    @Test
+    public void testOpAnd3() {
+        exportTester("testOpAnd3", "{\"ns\":\"op\", \"fn\":\"and\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}]}", p.and(p.xs.booleanVal(true), p.xs.booleanVal(true), p.xs.booleanVal(true)));
+    }
+
+    @Test
+    public void testOpDivide2() {
+        exportTester("testOpDivide2", "{\"ns\":\"op\", \"fn\":\"divide\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"6\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}]}", p.divide(p.xs.intVal(6), p.xs.intVal(2)));
+    }
+
+    @Test
+    public void testOpEq2() {
+        exportTester("testOpEq2", "{\"ns\":\"op\", \"fn\":\"eq\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}]}", p.eq(p.xs.intVal(1), p.xs.intVal(1)));
+    }
+
+    @Test
+    public void testOpGe2() {
+        exportTester("testOpGe2", "{\"ns\":\"op\", \"fn\":\"ge\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}]}", p.ge(p.xs.intVal(1), p.xs.intVal(1)));
+    }
+
+    @Test
+    public void testOpGt2() {
+        exportTester("testOpGt2", "{\"ns\":\"op\", \"fn\":\"gt\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}]}", p.gt(p.xs.intVal(2), p.xs.intVal(1)));
+    }
+
+    @Test
+    public void testOpLe2() {
+        exportTester("testOpLe2", "{\"ns\":\"op\", \"fn\":\"le\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}]}", p.le(p.xs.intVal(1), p.xs.intVal(1)));
+    }
+
+    @Test
+    public void testOpLt2() {
+        exportTester("testOpLt2", "{\"ns\":\"op\", \"fn\":\"lt\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}]}", p.lt(p.xs.intVal(1), p.xs.intVal(2)));
+    }
+
+    @Test
+    public void testOpMultiply2() {
+        exportTester("testOpMultiply2", "{\"ns\":\"op\", \"fn\":\"multiply\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"3\"]}]}", p.multiply(p.xs.intVal(2), p.xs.intVal(3)));
+    }
+
+    @Test
+    public void testOpMultiply3() {
+        exportTester("testOpMultiply3", "{\"ns\":\"op\", \"fn\":\"multiply\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"3\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"4\"]}]}", p.multiply(p.xs.intVal(2), p.xs.intVal(3), p.xs.intVal(4)));
+    }
+
+    @Test
+    public void testOpNe2() {
+        exportTester("testOpNe2", "{\"ns\":\"op\", \"fn\":\"ne\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"1\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}]}", p.ne(p.xs.intVal(1), p.xs.intVal(2)));
+    }
+
+    @Test
+    public void testOpNot1() {
+        exportTester("testOpNot1", "{\"ns\":\"op\", \"fn\":\"not\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"false\"]}]}", p.not(p.xs.booleanVal(false)));
+    }
+
+    @Test
+    public void testOpOr2() {
+        exportTester("testOpOr2", "{\"ns\":\"op\", \"fn\":\"or\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"false\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}]}", p.or(p.xs.booleanVal(false), p.xs.booleanVal(true)));
+    }
+
+    @Test
+    public void testOpOr3() {
+        exportTester("testOpOr3", "{\"ns\":\"op\", \"fn\":\"or\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"false\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"true\"]}, {\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[\"false\"]}]}", p.or(p.xs.booleanVal(false), p.xs.booleanVal(true), p.xs.booleanVal(false)));
+    }
+
+    @Test
+    public void testOpSubtract2() {
+        exportTester("testOpSubtract2", "{\"ns\":\"op\", \"fn\":\"subtract\", \"args\":[{\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"3\"]}, {\"ns\":\"xs\", \"fn\":\"int\", \"args\":[\"2\"]}]}", p.subtract(p.xs.intVal(3), p.xs.intVal(2)));
+    }
 }
