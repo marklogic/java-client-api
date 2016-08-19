@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
 import java.util.Set;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
@@ -37,7 +38,6 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
-import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.impl.RESTServices.RESTServiceResult;
 import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
@@ -52,6 +52,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.util.RequestParameters;
 
@@ -209,8 +210,13 @@ public class RowManagerImpl
 		Map<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> planParams = requestPlan.getParams();
 		if (planParams != null) {
 			for (Map.Entry<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> entry: planParams.entrySet()) {
+				XsValueImpl.AnyAtomicTypeValImpl val = entry.getValue();
+				String datatype = val.getClass().getSimpleName();
+				datatype =
+						datatype.substring(0, 1).toLowerCase() +
+						datatype.substring(1, datatype.length() - "ValImpl".length());
 // TODO: add datatype and language qualifications
-				params.add("bind:"+entry.getKey().getName(), entry.getValue().toString());
+				params.add("bind:"+entry.getKey().getName(), val.toString());
 			}
 		}
 		return params;
@@ -279,6 +285,7 @@ public class RowManagerImpl
 				Map<String, String> kinds     = new HashMap<String, String>();
 				Map<String, String> datatypes = new HashMap<String, String>();
 
+				// TODO: replace Jackson mapper with binding-sensitive mapper?
 				@SuppressWarnings("unchecked")
 				Map<String, Object> row = new ObjectMapper().readValue(
 						currentRow.getContent(new InputStreamHandle()).get(), Map.class
@@ -374,7 +381,12 @@ public class RowManagerImpl
 		}
 	}
 	static class RowRecordImpl implements RowRecord {
-		private static final Map<Class<?>,Constructor<?>> constructors = new HashMap<Class<?>,Constructor<?>>();
+		private static final
+		Map<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>> factories =
+		new HashMap<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>>();
+
+		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors =
+				new HashMap<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>>();
 
 		private Map<String, String> kinds     = null;
 		private Map<String, String> datatypes = null;
@@ -415,6 +427,9 @@ public class RowManagerImpl
 
 		@Override
 		public QName getAtomicDatatype(String columnName) {
+			if (columnName == null) {
+				throw new IllegalArgumentException("cannot get column datatype with null name");
+			}
 			String datatype = datatypes.get(columnName);
 			if (datatype == null) {
 				return null;
@@ -441,6 +456,9 @@ public class RowManagerImpl
 		}
 		@Override
 		public Object get(Object key) {
+			if (key == null) {
+				throw new IllegalArgumentException("cannot get column value with null name");
+			}
 			return row.get(key);
 		}
 		@Override
@@ -481,41 +499,86 @@ public class RowManagerImpl
 		// literal casting convenience getters
 		@Override
 		public boolean getBoolean(String columnName) {
-			return (Boolean) get(columnName);
+			return asBoolean(columnName, get(columnName));
 		}
 		@Override
 		public byte getByte(String columnName) {
-			return (Byte) get(columnName);
+			return asByte(columnName, get(columnName));
 		}
 		@Override
 		public double getDouble(String columnName) {
-			return (Double) get(columnName);
+			return asDouble(columnName, get(columnName));
 		}
 		@Override
 		public float getFloat(String columnName) {
-			return (Float) get(columnName);
+			return asFloat(columnName, get(columnName));
 		}
 		@Override
 		public int getInt(String columnName) {
-			return (Integer) get(columnName);
+			return asInt(columnName, get(columnName));
 		}
 		@Override
 		public long getLong(String columnName) {
-			return (Long) get(columnName);
+			return asLong(columnName, get(columnName));
 		}
 		@Override
 		public short getShort(String columnName) {
-			return (Short) get(columnName);
+			return asShort(columnName, get(columnName));
 		}
 		@Override
 		public String getString(String columnName) {
-			Object value = get(columnName);
+			return asString(get(columnName));
+		}
+
+		private boolean asBoolean(String columnName, Object value) {
+			if (value instanceof Boolean) {
+				return ((Boolean) value).booleanValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a boolean value");
+		}
+		private byte asByte(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).byteValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a byte value");
+		}
+		private double asDouble(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).doubleValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a double value");
+		}
+		private float asFloat(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).floatValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a float value");
+		}
+		private int asInt(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).intValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have an integer value");
+		}
+		private long asLong(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).longValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a long value");
+		}
+		private short asShort(String columnName, Object value) {
+			if (value instanceof Number) {
+				return ((Number) value).shortValue();
+			}
+			throw new IllegalStateException("column "+columnName+" does not have a short value");
+		}
+		private String asString(Object value) {
 			if (value == null || value instanceof String) {
 				return (String) value;
 			}
 			return value.toString();
 		}
-		
+
 		private RESTServiceResult getServiceResult(String columnName) {
 			Object val = get(columnName);
 			if (val instanceof RESTServiceResult) {
@@ -526,14 +589,107 @@ public class RowManagerImpl
 
 		@Override
 		public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) throws Exception {
+			if (as == null) {
+				throw new IllegalArgumentException("cannot construct "+columnName+" value with null class");
+			}
+
+			Object value = get(columnName);
+			if (value == null) {
+				return null;
+			}
+
+			/* NOTE: use if refactor away from Jackson ObjectMapper to value construction
+			if (as.isInstance(value)) {
+				return as.cast(value);
+			}
+			*/
+
+			String valueStr = asString(value);
+
+			Function<String,? extends XsAnyAtomicTypeVal> factory = getFactory(as);
+			if (factory != null) {
+				return as.cast(factory.apply(valueStr));
+			}
+
+			// fallback
 			@SuppressWarnings("unchecked")
 			Constructor<T> constructor = (Constructor<T>) constructors.get(as);
 			if (constructor == null) {
-				constructor = as.getConstructor(String.class);
+				try {
+					constructor = as.getConstructor(String.class);
+				} catch(NoSuchMethodException e) {
+					throw new IllegalArgumentException("cannot construct "+columnName+" value as class: "+as.getName());
+				}
 				constructors.put(as, constructor);
 			}
-			return constructor.newInstance(getString(columnName));
+			return constructor.newInstance(valueStr);
 		}
+		<T extends XsAnyAtomicTypeVal> Function<String,? extends XsAnyAtomicTypeVal> getFactory(Class<T> as) {
+			Function<String,? extends XsAnyAtomicTypeVal> factory = factories.get(as);
+			if (factory != null) {
+				return factory;
+			}
+
+			// NOTE: more general first to avoid false fallback
+			if (as.isAssignableFrom(XsValueImpl.DecimalValImpl.class)) {
+				factory = XsValueImpl.DecimalValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.IntegerValImpl.class)) {
+				factory = XsValueImpl.IntegerValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.LongValImpl.class)) {
+				factory = XsValueImpl.LongValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.IntValImpl.class)) {
+				factory = XsValueImpl.IntValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.ShortValImpl.class)) {
+				factory = XsValueImpl.ShortValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.ByteValImpl.class)) {
+				factory = XsValueImpl.ByteValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.UnsignedLongValImpl.class)) {
+				factory = XsValueImpl.UnsignedLongValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.UnsignedIntValImpl.class)) {
+				factory = XsValueImpl.UnsignedIntValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.UnsignedShortValImpl.class)) {
+				factory = XsValueImpl.UnsignedShortValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.UnsignedByteValImpl.class)) {
+				factory = XsValueImpl.UnsignedByteValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.DoubleValImpl.class)) {
+				factory = XsValueImpl.DoubleValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.FloatValImpl.class)) {
+				factory = XsValueImpl.FloatValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.DateTimeValImpl.class)) {
+				factory = XsValueImpl.DateTimeValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.DateValImpl.class)) {
+				factory = XsValueImpl.DateValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.TimeValImpl.class)) {
+				factory = XsValueImpl.TimeValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.AnyURIValImpl.class)) {
+				factory = XsValueImpl.AnyURIValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.BooleanValImpl.class)) {
+				factory = XsValueImpl.BooleanValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.DayTimeDurationValImpl.class)) {
+				factory = XsValueImpl.DayTimeDurationValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.GDayValImpl.class)) {
+				factory = XsValueImpl.GDayValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.GMonthValImpl.class)) {
+				factory = XsValueImpl.GMonthValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.GMonthDayValImpl.class)) {
+				factory = XsValueImpl.GMonthDayValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.GYearValImpl.class)) {
+				factory = XsValueImpl.GYearValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.GYearMonthValImpl.class)) {
+				factory = XsValueImpl.GYearMonthValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.StringValImpl.class)) {
+				factory = XsValueImpl.StringValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.YearMonthDurationValImpl.class)) {
+				factory = XsValueImpl.YearMonthDurationValImpl::new;
+			}
+
+			if (factory != null) {
+				factories.put(as,factory);
+			}
+
+			return factory;
+		}
+
 		@Override
 		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
 // TODO: constructor array for sequence

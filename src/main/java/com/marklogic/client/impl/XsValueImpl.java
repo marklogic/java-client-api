@@ -608,7 +608,7 @@ public class XsValueImpl implements XsValue {
     }
     static class AnyURIValImpl extends AnyAtomicTypeValImpl implements XsAnyURIVal {
     	private String value = null;
-    	AnyURIValImpl(String value) {
+    	public AnyURIValImpl(String value) {
     		super("anyURI");
     		checkNull(value);
     		this.value = value;
@@ -640,7 +640,7 @@ public class XsValueImpl implements XsValue {
     }
     static class Base64BinaryValImpl extends AnyAtomicTypeValImpl implements XsBase64BinaryVal {
     	private byte[] value = null;
-    	Base64BinaryValImpl(byte[] value) {
+    	public Base64BinaryValImpl(byte[] value) {
 			super("base64Binary");
     		checkLength(value);
     		this.value = value;
@@ -679,7 +679,10 @@ public class XsValueImpl implements XsValue {
     }
     static class BooleanValImpl extends AnyAtomicTypeValImpl implements XsBooleanVal {
     	private boolean value = false;
-    	BooleanValImpl(boolean value) {
+    	public BooleanValImpl(String value) {
+    		this(DatatypeConverter.parseBoolean(value));
+    	}
+    	public BooleanValImpl(boolean value) {
 			super("boolean");
     		this.value = value;
     	}
@@ -741,7 +744,10 @@ public class XsValueImpl implements XsValue {
     }
     static class ByteValImpl extends AnyAtomicTypeValImpl implements XsByteVal {
     	private byte value = 0;
-    	ByteValImpl(byte value) {
+    	public ByteValImpl(String value) {
+    		this(DatatypeConverter.parseByte(value));
+    	}
+    	public ByteValImpl(byte value) {
 			super("byte");
     		this.value = value;
     	}
@@ -828,7 +834,7 @@ public class XsValueImpl implements XsValue {
     }
     static class DateValImpl extends AnyAtomicTypeValImpl implements XsDateVal {
     	private Calendar value = null;
-    	DateValImpl(String value) {
+    	public DateValImpl(String value) {
     		this(DatatypeConverter.parseDate(value));
     	}
     	DateValImpl(XMLGregorianCalendar value) {
@@ -891,7 +897,7 @@ public class XsValueImpl implements XsValue {
     static class DateTimeValImpl extends AnyAtomicTypeValImpl implements XsDateTimeVal {
 // TODO: SHOULD Xs.DateTime BE REPRESENTED AS XMLGregorianCalendar?
     	private Calendar value = null;
-    	DateTimeValImpl(String value) {
+    	public DateTimeValImpl(String value) {
     		this(DatatypeConverter.parseDateTime(value));
     	}
     	DateTimeValImpl(Date value) {
@@ -943,7 +949,7 @@ public class XsValueImpl implements XsValue {
     }
     static class DayTimeDurationValImpl extends AnyAtomicTypeValImpl implements XsDayTimeDurationVal {
     	private Duration value = null;
-    	DayTimeDurationValImpl(String value) {
+    	public DayTimeDurationValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newDuration(value));
     	}
     	DayTimeDurationValImpl(Duration value) {
@@ -1004,7 +1010,7 @@ public class XsValueImpl implements XsValue {
     }
     static class DecimalValImpl extends AnyAtomicTypeValImpl implements XsDecimalVal {
     	private BigDecimal value = null;
-    	DecimalValImpl(String value) {
+    	public DecimalValImpl(String value) {
     		this(new BigDecimal(value));
     	}
     	DecimalValImpl(long value) {
@@ -1060,7 +1066,10 @@ public class XsValueImpl implements XsValue {
     }
     static class DoubleValImpl extends AnyAtomicTypeValImpl implements XsDoubleVal {
     	private double value = 0;
-    	DoubleValImpl(double value) {
+    	public DoubleValImpl(String value) {
+    		this(DatatypeConverter.parseDouble(value));
+    	}
+    	public DoubleValImpl(double value) {
     		super("double");
     		this.value = value;
     	}
@@ -1106,7 +1115,10 @@ public class XsValueImpl implements XsValue {
     }
     static class FloatValImpl extends AnyAtomicTypeValImpl implements XsFloatVal {
     	private float value = 0;
-    	FloatValImpl(float value) {
+    	public FloatValImpl(String value) {
+    		this(DatatypeConverter.parseFloat(value));
+    	}
+    	public FloatValImpl(float value) {
     		super("float");
     		this.value = value;
     	}
@@ -1148,7 +1160,7 @@ public class XsValueImpl implements XsValue {
     }
     static class GDayValImpl extends AnyAtomicTypeValImpl implements XsGDayVal {
     	private XMLGregorianCalendar value = null;
-    	GDayValImpl(String value) {
+    	public GDayValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GDayValImpl(XMLGregorianCalendar value) {
@@ -1191,7 +1203,7 @@ public class XsValueImpl implements XsValue {
     }
     static class GMonthValImpl extends AnyAtomicTypeValImpl implements XsGMonthVal {
     	private XMLGregorianCalendar value = null;
-    	GMonthValImpl(String value) {
+    	public GMonthValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GMonthValImpl(XMLGregorianCalendar value) {
@@ -1239,7 +1251,7 @@ public class XsValueImpl implements XsValue {
     }
     static class GMonthDayValImpl extends AnyAtomicTypeValImpl implements XsGMonthDayVal {
     	private XMLGregorianCalendar value = null;
-    	GMonthDayValImpl(String value) {
+    	public GMonthDayValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GMonthDayValImpl(XMLGregorianCalendar value) {
@@ -1282,7 +1294,7 @@ public class XsValueImpl implements XsValue {
     }
     static class GYearValImpl extends AnyAtomicTypeValImpl implements XsGYearVal {
     	private XMLGregorianCalendar value = null;
-    	GYearValImpl(String value) {
+    	public GYearValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GYearValImpl(XMLGregorianCalendar value) {
@@ -1325,7 +1337,7 @@ public class XsValueImpl implements XsValue {
     }
     static class GYearMonthValImpl extends AnyAtomicTypeValImpl implements XsGYearMonthVal {
     	private XMLGregorianCalendar value = null;
-    	GYearMonthValImpl(String value) {
+    	public GYearMonthValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newXMLGregorianCalendar(value));
     	}
     	GYearMonthValImpl(XMLGregorianCalendar value) {
@@ -1360,7 +1372,7 @@ public class XsValueImpl implements XsValue {
     }
     static class HexBinaryValImpl extends AnyAtomicTypeValImpl implements XsHexBinaryVal {
     	private byte[] value = null;
-    	HexBinaryValImpl(byte[] value) {
+    	public HexBinaryValImpl(byte[] value) {
 			super("hexBinary");
     		checkLength(value);
     		this.value = value;
@@ -1407,7 +1419,10 @@ public class XsValueImpl implements XsValue {
     }
     static class IntValImpl extends AnyAtomicTypeValImpl implements XsIntVal {
     	private int value = 0;
-    	IntValImpl(int value) {
+    	public IntValImpl(String value) {
+    		this(DatatypeConverter.parseInt(value));
+    	}
+    	public IntValImpl(int value) {
 			super("int");
     		this.value = value;
     	}
@@ -1486,7 +1501,7 @@ public class XsValueImpl implements XsValue {
     }
     static class IntegerValImpl extends AnyAtomicTypeValImpl implements XsIntegerVal {
     	private BigInteger value = null;
-    	IntegerValImpl(String value) {
+    	public IntegerValImpl(String value) {
     		this(new BigInteger(value));
     	}
     	IntegerValImpl(long value) {
@@ -1547,7 +1562,10 @@ public class XsValueImpl implements XsValue {
     }
     static class LongValImpl extends AnyAtomicTypeValImpl implements XsLongVal {
     	private long value = 0;
-    	LongValImpl(long value) {
+    	public LongValImpl(String value) {
+    		this(DatatypeConverter.parseLong(value));
+    	}
+    	public LongValImpl(long value) {
 			super("long");
     		this.value = value;
     	}
@@ -1625,7 +1643,10 @@ public class XsValueImpl implements XsValue {
     }
     static class ShortValImpl extends AnyAtomicTypeValImpl implements XsShortVal {
     	private short value = 0;
-    	ShortValImpl(short value) {
+    	public ShortValImpl(String value) {
+    		this(DatatypeConverter.parseShort(value));
+    	}
+    	public ShortValImpl(short value) {
 			super("short");
     		this.value = value;
     	}
@@ -1704,7 +1725,7 @@ public class XsValueImpl implements XsValue {
     }
     static class StringValImpl extends AnyAtomicTypeValImpl implements XsStringVal {
     	private String value = null;
-    	StringValImpl(String value) {
+    	public StringValImpl(String value) {
     		super("string");
     		checkNull(value);
     		this.value = value;
@@ -1753,7 +1774,7 @@ public class XsValueImpl implements XsValue {
     }
     static class TimeValImpl extends AnyAtomicTypeValImpl implements XsTimeVal {
     	private Calendar value = null;
-    	TimeValImpl(String value) {
+    	public TimeValImpl(String value) {
     		this(DatatypeConverter.parseDateTime(value));
     	}
     	TimeValImpl(Date value) {
@@ -1836,7 +1857,10 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedByteValImpl extends AnyAtomicTypeValImpl implements XsUnsignedByteVal {
     	private byte value = 0;
-    	UnsignedByteValImpl(byte value) {
+    	public UnsignedByteValImpl(String value) {
+    		this((byte) Integer.parseUnsignedInt(value));
+    	}
+    	public UnsignedByteValImpl(byte value) {
     		super("unsignedByte");
     		this.value = value;
     	}
@@ -1934,7 +1958,10 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedIntValImpl extends AnyAtomicTypeValImpl implements XsUnsignedIntVal {
     	private int value = 0;
-    	UnsignedIntValImpl(int value) {
+    	public UnsignedIntValImpl(String value) {
+    		this(Integer.parseUnsignedInt(value));
+    	}
+    	public UnsignedIntValImpl(int value) {
     		super("unsignedInt");
     		this.value = value;
     	}
@@ -2012,7 +2039,10 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedLongValImpl extends AnyAtomicTypeValImpl implements XsUnsignedLongVal {
     	private long value = 0;
-    	UnsignedLongValImpl(long value) {
+    	public UnsignedLongValImpl(String value) {
+    		this(Long.parseUnsignedLong(value));
+    	}
+    	public UnsignedLongValImpl(long value) {
     		super("unsignedLong");
     		this.value = value;
     	}
@@ -2098,7 +2128,10 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedShortValImpl extends AnyAtomicTypeValImpl implements XsUnsignedShortVal {
     	private short value = 0;
-    	UnsignedShortValImpl(short value) {
+    	public UnsignedShortValImpl(String value) {
+    		this((short) Integer.parseUnsignedInt(value));
+    	}
+    	public UnsignedShortValImpl(short value) {
     		super("unsignedShort");
     		this.value = value;
     	}
@@ -2168,7 +2201,7 @@ public class XsValueImpl implements XsValue {
     }
     static class UntypedAtomicValImpl extends AnyAtomicTypeValImpl implements XsUntypedAtomicVal {
     	private String value = null;
-    	UntypedAtomicValImpl(String value) {
+    	public UntypedAtomicValImpl(String value) {
     		super("untypedAtomic");
     		this.value = value;
     	}
@@ -2210,7 +2243,7 @@ public class XsValueImpl implements XsValue {
     }
     static class YearMonthDurationValImpl extends AnyAtomicTypeValImpl implements XsYearMonthDurationVal {
     	private Duration value = null;
-    	YearMonthDurationValImpl(String value) {
+    	public YearMonthDurationValImpl(String value) {
     		this(Utilities.getDatatypeFactory().newDuration(value));
     	}
     	YearMonthDurationValImpl(Duration value) {
@@ -2264,10 +2297,10 @@ public class XsValueImpl implements XsValue {
     }
     static class QNameValImpl extends AnyAtomicTypeValImpl implements XsQNameVal {
     	private QName value = null;
-    	QNameValImpl(String localName) {
+    	public QNameValImpl(String localName) {
     		this(new QName(localName));
     	}
-    	QNameValImpl(String namespace, String prefix, String localName) {
+    	public QNameValImpl(String namespace, String prefix, String localName) {
     		this(new QName(namespace, localName, prefix));
     	}
     	QNameValImpl(QName value) {

@@ -58,7 +58,7 @@ public class SemValueImpl implements SemValue {
 	}
 	static class SemIriValImpl implements SemIriVal, BaseTypeImpl.BaseArgImpl {
     	private String value = null;
-    	SemIriValImpl(String value) {
+    	public SemIriValImpl(String value) {
     		if (value == null) {
     			throw new IllegalArgumentException("cannot take null value");
     		}

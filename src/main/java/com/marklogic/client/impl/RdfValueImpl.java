@@ -54,7 +54,7 @@ public class RdfValueImpl implements RdfValue {
 	static class RdfLangStringValImpl implements RdfLangStringVal, BaseTypeImpl.BaseArgImpl {
     	private String string = null;
     	private String lang   = null;
-    	RdfLangStringValImpl(String string, String lang) {
+    	public RdfLangStringValImpl(String string, String lang) {
     		if (string == null) {
     			throw new IllegalArgumentException("cannot take null string");
     		}

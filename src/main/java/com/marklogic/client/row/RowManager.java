@@ -43,13 +43,37 @@ import com.marklogic.client.io.marker.RowReadHandle;
    + PlanBuilder - node constructors
  */
 
-// TODO: JavaDoc
+/**
+ * A Row Manager provides database operations on rows projected from documents.
+ *
+ */
 public interface RowManager {
+    /**
+     * Creates a builder to define a plan for constructing and retrieving database rows.
+     * @return	a builder for row plans
+     */
 	public PlanBuilder newPlanBuilder();
 
+	/**
+     * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
+     * @param	handle a handle for a JSON serialization of a PlanAST
+	 * @return	a plan for constructing and retrieving database rows
+	 */
 	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
 
+	/**
+	 * Constructs and retrieves a set of database rows based on a plan.
+	 * @param plan	the definition of a plan for the database rows
+	 * @return	an iterable over the results with a map-like interface for each row
+	 */
 	public RowSet<RowRecord> resultRows(Plan plan);
+	/**
+	 * Constructs and retrieves a set of database rows based on a plan reflecting
+	 * documents written or deleted by an uncommitted transaction.
+	 * @param plan	the definition of a plan for the database rows
+     * @param transaction	a open transaction for documents from which rows have been projected
+	 * @return	an iterable over the results with a map-like interface for each row
+	 */
 	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
 
 	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
