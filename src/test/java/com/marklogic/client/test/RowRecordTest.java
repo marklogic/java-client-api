@@ -76,8 +76,7 @@ public class RowRecordTest {
 		datatypedValues.put("int",               p.xs.intVal(1));
 		datatypedValues.put("integer",           p.xs.integer(1));
 		datatypedValues.put("long",              p.xs.longVal((long) 1));
-// TODO:
-//		datatypedValues.put("qname",             p.xs.qname("http://a", "a", "b"));
+		datatypedValues.put("qname",             p.xs.qname("http://a", "a", "b"));
 		datatypedValues.put("short",             p.xs.shortVal((short) 1));
 		datatypedValues.put("string",            p.xs.string("abc"));
 		datatypedValues.put("unsignedInt",       p.xs.unsignedInt(1));
@@ -154,6 +153,9 @@ public class RowRecordTest {
 				case "langString":
 					expectedTypeName = "string";
 					break;
+				case "qname":
+					expectedTypeName = "QName";
+					break;
 				}
 				assertEquals("column datatype for: "+key,
 						new QName("http://www.w3.org/2001/XMLSchema", expectedTypeName),
@@ -207,9 +209,9 @@ public class RowRecordTest {
 				break;
 			}
 		});
-// TODO: content
 
 		assertFalse("too many results for datatypes", rowItr.hasNext());
         rowSet.close();
 	}
+	// Note: content payloads covered in RowManagerTest
 }

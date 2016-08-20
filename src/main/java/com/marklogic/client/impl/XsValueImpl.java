@@ -2308,6 +2308,9 @@ public class XsValueImpl implements XsValue {
     		checkNull(value);
     		this.value = value;
     	}
+    	public static QNameValImpl valueOf(String key) {
+    		return new QNameValImpl(QName.valueOf(key));
+    	}
 		@Override
         public QName getQName() {
         	return value;

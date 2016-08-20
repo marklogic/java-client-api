@@ -681,6 +681,8 @@ public class RowManagerImpl
 				factory = XsValueImpl.StringValImpl::new;
 			} else if (as.isAssignableFrom(XsValueImpl.YearMonthDurationValImpl.class)) {
 				factory = XsValueImpl.YearMonthDurationValImpl::new;
+			} else if (as.isAssignableFrom(XsValueImpl.QNameValImpl.class)) {
+				factory = XsValueImpl.QNameValImpl::valueOf;
 			}
 
 			if (factory != null) {
