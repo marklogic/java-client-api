@@ -506,16 +506,19 @@ public class RowManagerTest {
 	        assertEquals("unexpected second binding value in row record", uris[rowCount - 1], row.getString("uri"));
 
 			assertEquals("unexpected third binding kind in row record", ColumnKind.CONTENT, row.getKind("doc"));
-    		String doc = row.getContent("doc", new StringHandle()).get();
-	        if (uris[rowCount - 1].endsWith(".json")) {
-				assertEquals("unexpected third binding mimetype in row record", "application/json", row.getContentMimetype("doc"));
+			String doc = row.getContent("doc", new StringHandle()).get();
+			if (uris[rowCount - 1].endsWith(".json")) {
+				assertEquals("unexpected third binding format in row record",     Format.JSON,        row.getContentFormat("doc"));
+				assertEquals("unexpected third binding mimetype in row record",   "application/json", row.getContentMimetype("doc"));
 		        assertEquals("unexpected third binding JSON value in row record", docs[rowCount - 1], doc);
 	        } else if (uris[rowCount - 1].endsWith(".xml")) {
-				assertEquals("unexpected third binding mimetype in row record", "application/xml", row.getContentMimetype("doc"));
+				assertEquals("unexpected third binding format in row record",      Format.XML,         row.getContentFormat("doc"));
+				assertEquals("unexpected third binding mimetype in row record",    "application/xml",  row.getContentMimetype("doc"));
 	        	assertXMLEqual("unexpected third binding XML value in row record", docs[rowCount - 1], doc);
 	        } else {
-				assertEquals("unexpected third binding mimetype in row record", "text/plain", row.getContentMimetype("doc"));
-		        assertEquals("unexpected third binding value in row record", docs[rowCount - 1], doc);
+				assertEquals("unexpected third binding format in row record",   Format.TEXT,        row.getContentFormat("doc"));
+				assertEquals("unexpected third binding mimetype in row record", "text/plain",       row.getContentMimetype("doc"));
+		        assertEquals("unexpected third binding value in row record",    docs[rowCount - 1], doc);
 	        }
 		}
         assertEquals("row count for record document join", 3, rowCount);
