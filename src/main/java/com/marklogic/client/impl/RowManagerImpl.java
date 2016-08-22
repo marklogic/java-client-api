@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -38,6 +39,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
+import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
@@ -107,20 +109,7 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction) {
-		if (as == null) {
-			throw new IllegalArgumentException("Must specify a class for content with a registered handle");
-		}
-
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		if (!(handle instanceof RowReadHandle)) {
-			if (handle == null) {
-		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registerd handle");
-			} else {
-		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" uses handle " +
-						handle.getClass().getName() + " which is not a RowReadHandle");
-			}
-	    }
-
+		ContentHandle<T> handle = handleFor(as); 
 	    if (resultDoc(plan, (RowReadHandle) handle, transaction) == null) {
 	    	return null;
 	    }
@@ -147,25 +136,17 @@ public class RowManagerImpl
 	}
 
 /* TODO:
+
+May not be supportable because the class of the generic on the RowSet is for the handle
+and not the content
+
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
 		return resultRowsAs(plan, as, null);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
-		if (as == null) {
-			throw new IllegalArgumentException("Must specify a class for content with a registered handle");
-		}
-
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		if (!(handle instanceof RowReadHandle)) {
-			if (handle == null) {
-		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registerd handle");
-			} else {
-		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" uses handle " +
-						handle.getClass().getName() + " which is not a RowReadHandle");
-			}
-	    }
+		ContentHandle<T> handle = handleFor(as); 
 
 		@SuppressWarnings("unchecked")
 		RowSet<T> rowSet = (RowSet<T>) resultRows(plan, (RowReadHandle) handle, transaction);
@@ -173,6 +154,7 @@ public class RowManagerImpl
 		return rowSet;
 	}
 	*/
+
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan) {
 		return resultRows(plan, new RowRecordImpl(getHandleRegistry()), null);
@@ -254,6 +236,23 @@ public class RowManagerImpl
 			}
 		}
 		return params;
+	}
+	private <T> ContentHandle<T> handleFor(Class<T> as) {
+		if (as == null) {
+			throw new IllegalArgumentException("Must specify a class for content with a registered handle");
+		}
+
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!(handle instanceof RowReadHandle)) {
+			if (handle == null) {
+		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registered handle");
+			} else {
+		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" uses handle " +
+						handle.getClass().getName() + " which is not a RowReadHandle");
+			}
+	    }
+
+		return handle;
 	}
 
 	static class RowSetImpl<T extends RowReadHandle> implements RowSet<T>, Iterator<T> {
@@ -685,7 +684,7 @@ public class RowManagerImpl
 		}
 
 		@Override
-		public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) throws Exception {
+		public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName, Class<T> as) {
 			if (as == null) {
 				throw new IllegalArgumentException("cannot construct "+columnName+" value with null class");
 			}
@@ -719,7 +718,18 @@ public class RowManagerImpl
 				}
 				constructors.put(as, constructor);
 			}
-			return constructor.newInstance(valueStr);
+
+			try {
+				return constructor.newInstance(valueStr);
+			} catch (InstantiationException e) {
+				throw new MarkLogicBindingException("could not construct value as class: "+as.getName(), e);
+			} catch (IllegalAccessException e) {
+				throw new MarkLogicBindingException("could not construct value as class: "+as.getName(), e);
+			} catch (IllegalArgumentException e) {
+				throw new MarkLogicBindingException("could not construct value as class: "+as.getName(), e);
+			} catch (InvocationTargetException e) {
+				throw new MarkLogicBindingException("could not construct value as class: "+as.getName(), e);
+			}
 		}
 		<T extends XsAnyAtomicTypeVal> Function<String,? extends XsAnyAtomicTypeVal> getFactory(Class<T> as) {
 			Function<String,? extends XsAnyAtomicTypeVal> factory = factories.get(as);
@@ -791,7 +801,7 @@ public class RowManagerImpl
 
 // TODO: 
 //		@Override
-		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
+		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) {
 // TODO: constructor array for sequence
 			throw new UnsupportedOperationException("sequence of values not supported");
 		}
