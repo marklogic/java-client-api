@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import java.io.IOException;
 import java.lang.reflect.Constructor;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -29,6 +30,9 @@ import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
 import javax.xml.namespace.QName;
+import javax.xml.stream.XMLStreamConstants;
+import javax.xml.stream.XMLStreamException;
+import javax.xml.stream.XMLStreamReader;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonMappingException;
@@ -43,6 +47,7 @@ import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -141,6 +146,33 @@ public class RowManagerImpl
 		return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
 	}
 
+/* TODO:
+	@Override
+    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
+		return resultRowsAs(plan, as, null);
+	}
+	@Override
+    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
+		if (as == null) {
+			throw new IllegalArgumentException("Must specify a class for content with a registered handle");
+		}
+
+		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		if (!(handle instanceof RowReadHandle)) {
+			if (handle == null) {
+		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registerd handle");
+			} else {
+		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" uses handle " +
+						handle.getClass().getName() + " which is not a RowReadHandle");
+			}
+	    }
+
+		@SuppressWarnings("unchecked")
+		RowSet<T> rowSet = (RowSet<T>) resultRows(plan, (RowReadHandle) handle, transaction);
+
+		return rowSet;
+	}
+	*/
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan) {
 		return resultRows(plan, new RowRecordImpl(getHandleRegistry()), null);
@@ -164,9 +196,10 @@ public class RowManagerImpl
 		}
 
 		String rowFormat = "sparql-json";
+		String headerRow = "columns";
 		String docCols   = "inline";
 		if (rowHandle instanceof RowRecordImpl) {
-			docCols = "reference";
+			docCols   = "reference";
 		} else if (rowHandle instanceof BaseHandle) {
 			BaseHandle<?,?> baseHandle = (BaseHandle<?,?>) rowHandle;
 
@@ -187,13 +220,14 @@ public class RowManagerImpl
 
 		RequestParameters params = getParamBindings(requestPlan);
 		params.add("row-format",       rowFormat);
+		params.add("header-row",       headerRow);
 		params.add("document-columns", docCols);
 
 // QUESTION: outputMimetypes a noop?
 		RESTServiceResultIterator iter = 
 				services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 
-		return new RowSetImpl<T>(rowHandle, iter);
+		return new RowSetImpl<T>(rowFormat, rowHandle, iter);
 	}
 	private PlanBuilderBase.RequestPlan checkPlan(Plan plan) {
 		if (plan == null) {
@@ -223,26 +257,88 @@ public class RowManagerImpl
 	}
 
 	static class RowSetImpl<T extends RowReadHandle> implements RowSet<T>, Iterator<T> {
+		private String                    rowFormat = null;
 		private T                         rowHandle   = null;
 		private boolean                   isRowRecord = false;
 		private RESTServiceResultIterator results     = null;
+		private String[]                  columns     = null;
 		private RESTServiceResult         nextRow     = null;
 
-		RowSetImpl(T rowHandle, RESTServiceResultIterator results) {
+		RowSetImpl(String rowFormat, T rowHandle, RESTServiceResultIterator results) {
+			this.rowFormat = rowFormat;
 			this.rowHandle = rowHandle;
 			this.results   = results;
 			if (rowHandle instanceof RowRecord) {
 			    isRowRecord = true;
 			}
+			parseColumns();
 			if (results.hasNext()) {
 				nextRow = results.next();
 			}
 		}
 
+		private void parseColumns() {
+			if (!results.hasNext()) {
+				return;
+			}
+			RESTServiceResult headerRow = results.next();
+			switch(rowFormat) {
+			case "sparql-json":
+				try {
+					@SuppressWarnings("unchecked")
+					Map<String, Object> headObj = (Map<String, Object>) new ObjectMapper().readValue(
+					        headerRow.getContent(new InputStreamHandle()).get(), Map.class
+					        );
+					if (headObj != null) {
+						@SuppressWarnings("unchecked")
+						Map<String, Object> varsObj = (Map<String, Object>) headObj.get("head");
+						if (varsObj != null) {
+							@SuppressWarnings("unchecked")
+							List<String> cols = (List<String>) varsObj.get("vars");
+							int colSize = (cols == null) ? 0 : cols.size();
+							if (colSize > 0) {
+								columns = cols.toArray(new String[colSize]);
+							}
+						}
+					}
+				} catch (JsonParseException e) {
+					throw new MarkLogicIOException("could not read JSON header part", e);
+				} catch (JsonMappingException e) {
+					throw new MarkLogicIOException("could not read JSON header map", e);
+				} catch (IOException e) {
+					throw new MarkLogicIOException("could not read JSON header", e);
+				}
+				break;
+			case "sparql-xml":
+				try {
+					List<String> cols = new ArrayList<String>();
+					XMLStreamReader headerReader = headerRow.getContent(new XMLStreamReaderHandle()).get();
+					while (headerReader.hasNext()) {
+						switch(headerReader.next()) {
+						case XMLStreamConstants.START_ELEMENT:
+							if ("variable".equals(headerReader.getLocalName())) {
+								cols.add(headerReader.getAttributeValue(null, "name"));
+								headerReader.nextTag();
+							}
+							break;
+						}
+					}
+					int colSize = cols.size();
+					if (colSize > 0) {
+						columns = cols.toArray(new String[colSize]);
+					}
+				} catch (XMLStreamException e) {
+					throw new MarkLogicIOException("could not read XML header", e);
+				}
+				break;
+			default:
+				throw new IllegalArgumentException("Row format should be JSON or XML instead of "+rowFormat);
+			}
+		}
+
 		@Override
 		public String[] getColumnNames() {
-// TODO: send as first part
-			throw new UnsupportedOperationException("getColumnNames() is not implemented yet");
+			return columns;
 		}
 
 		@Override
@@ -377,6 +473,7 @@ public class RowManagerImpl
 				results   = null;
 				nextRow   = null;
 				rowHandle = null;
+				columns   = null;
 			}
 		}
 	}
@@ -692,7 +789,8 @@ public class RowManagerImpl
 			return factory;
 		}
 
-		@Override
+// TODO: 
+//		@Override
 		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception {
 // TODO: constructor array for sequence
 			throw new UnsupportedOperationException("sequence of values not supported");

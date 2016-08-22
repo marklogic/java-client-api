@@ -80,8 +80,8 @@ public interface RowManager {
     public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
 /* TODO:
-    public <T> RowSet<T> resultRows(Plan plan, Class<T> as);
-    public <T> RowSet<T> resultRows(Plan plan, Class<T> as, Transaction transaction);
+    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as);
+    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction);
  */
 
 	public <T extends RowReadHandle> T resultDoc(Plan plan, T handle);

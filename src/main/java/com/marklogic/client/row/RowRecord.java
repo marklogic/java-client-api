@@ -44,7 +44,8 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
     public String    getString(String  columnName);
 
 	public <T extends XsAnyAtomicTypeVal> T   getValueAs(String columnName,  Class<T> as) throws Exception;
-	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
+// TODO:
+//	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) throws Exception;
 
 	public Format getContentFormat(String columnName);
 	public String getContentMimetype(String columnName);

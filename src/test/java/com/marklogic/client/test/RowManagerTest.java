@@ -261,17 +261,21 @@ public class RowManagerTest {
 
 		StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
 		RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
-		
+
+		String[] colNames = {"rowNum", "uri", "doc"};
 		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
 			RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
-	        checkXMLDocRows(xmlRowSet);
+			checkColumnNames(colNames, xmlRowSet);
+			checkXMLDocRows(xmlRowSet);
 	        xmlRowSet.close();
 
 			RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+			checkColumnNames(colNames, jsonRowSet);
 	        checkJSONDocRows(jsonRowSet);
 	        jsonRowSet.close();
 
 			RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
+			checkColumnNames(colNames, recordRowSet);
 			checkRecordDocRows(recordRowSet);
 			recordRowSet.close();
 		}
@@ -435,6 +439,9 @@ public class RowManagerTest {
         assertEquals("unexpected first binding value in row record", "2",  row.getString("rowNum"));
 
         assertEquals("unexpected first binding value in row record", "72", row.getString("temp"));
+	}
+	private void checkColumnNames(String[] colNames, RowSet<?> rowSet) {
+		assertArrayEquals("unmatched column names", colNames, rowSet.getColumnNames());
 	}
 	private void checkXMLDocRows(RowSet<DOMHandle> rowSet)
 	throws XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException, IOException
