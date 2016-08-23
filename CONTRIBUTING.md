@@ -62,6 +62,21 @@ at least one of the project maintainers before you start coding.
 Nothing is more frustrating than seeing your hard work go to waste because
 your vision does not align with that of a project maintainer.
 
+#### Choose the appropriate branch
+
+While the \*master branches reflect the latest released code for the
+corresponding server release, the \*develop branches reflect the latest changes
+that will be released next and are therefore the right place to commit changes.
+To be clear, the following branches have the assigned meaning:
+* develop - the place to make changes for the next release
+* master  - the stable code from the last release
+* 3.0-develop - the place to make changes for the next 3.x release (corresponds with the next server 8.x release)
+* 3.0-master  - the stable code from the last 3.x release (corresponds with the latest server 8.x release)
+* 2.0-develop - the place to make changes for the next 2.x release (corresponds with the next server 7.x release)
+* 2.0-master  - the stable code from the last 2.x release (corresponds with the latest server 7.x release)
+* 1.0-develop - the place to make changes for the next 1.x release (corresponds with the next server 6.x release)
+* 1.0-master  - the stable code from the last 1.x release (corresponds with the latest server 6.x release)
+
 #### Create a branch for your changes
 
 Okay, so you have decided to fix something. Create a feature branch
