@@ -18,7 +18,24 @@ package com.marklogic.client.expression;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemIriVal;
 
+/**
+ * SemValue takes Java values and constructs atomic values and
+ * sequences of atomic values with a semantic data type
+ * 
+ * The typed values can then be passed to expression functions
+ * for execution on the server.
+ */
 public interface SemValue {
+	/**
+	 * Takes a semantic iri as a string and constructs a sem:iri value
+	 * @param stringIri	the uri as a string
+	 * @return	a value with an sem:iri data type
+	 */
     public SemIriVal     iri(String stringIri);
+	/**
+	 * Takes any number of iris as a string and constructs an sem:iri sequence
+	 * @param stringIris	the iris as strings
+	 * @return	a value sequence with an sem:iri data type
+	 */
     public SemIriSeqVal iris(String... stringIris);
 }

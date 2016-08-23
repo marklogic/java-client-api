@@ -18,9 +18,21 @@ package com.marklogic.client.row;
 import java.io.Closeable;
 import java.util.stream.Stream;
 
-// TODO: JavaDoc
+/**
+ * A Row Set represents a set of rows produced by a plan
+ * and read from the database.
+ * 
+ * The handle will be RowRecord when reading each row as a map,
+ * a JSON read handle when reading each row as a JSON document,
+ * or an XML read handle when reading each row as a XML document.
+ * @param <T>	the type of the handle for reading the set of rows
+ */
 public interface RowSet<T> extends Iterable<T>, Closeable {
     public String[] getColumnNames();
 
+    /**
+     * Streams each row in the set of rows.
+     * @return	a stream for the set of rows read from the database
+     */
     public Stream<T> stream();
 }

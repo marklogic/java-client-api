@@ -24,31 +24,151 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
-// TODO: JavaDoc
+/**
+ * A Row Record provides an extended, read-only map interface
+ * to the column values in a row.
+ */
 public interface RowRecord extends RowReadHandle, Map<String, Object> {
+	/**
+	 * Distinguishes an atomic value, a document or other content structure,
+	 * a uri, a blank node for a triple, or a null.
+	 */
 	public enum ColumnKind {
         ATOMIC_VALUE, CONTENT, URI, BNODE, NULL;
     }
 
+	/**
+	 * Identifies whether the value of a column is an atomic value,
+	 * a document or other content structure, a uri, a blank node
+	 * for a triple, or a null.
+	 * @param columnName	the name of the column
+	 * @return	the kind of value of the column in the row
+	 */
 	public ColumnKind getKind(String columnName);
 
+	/**
+	 * Identifies the schema data type where a column has an
+	 * atomic value instead of a content value. 
+	 * 
+	 * The data type is represented as a QName 
+	 * such as xs:int or xs:dateTime. 
+	 * @param columnName	the name of the column
+	 * @return	the schema data type
+	 */
 	public QName getAtomicDatatype(String columnName);
 
+	/**
+	 * Gets the value of a column with an xs:boolean schema data type
+	 * as a Java boolean primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the boolean primitive for an xs:boolean column
+	 */
 	public boolean   getBoolean(String columnName);
+	/**
+	 * Gets the value of a column with an xs:byte schema data type
+	 * as a Java byte primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the byte primitive for an xs:byte column
+	 */
     public byte      getByte(String    columnName);
+	/**
+	 * Gets the value of a column with an xs:double schema data type
+	 * as a Java double primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the double primitive for an xs:double column
+	 */
     public double    getDouble(String  columnName);
+	/**
+	 * Gets the value of a column with an xs:float schema data type
+	 * as a Java float primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the float primitive for an xs:float column
+	 */
     public float     getFloat(String   columnName);
+	/**
+	 * Gets the value of a column with an xs:int schema data type
+	 * as a Java int primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the int primitive for an xs:int column
+	 */
     public int       getInt(String     columnName);
+	/**
+	 * Gets the value of a column with an xs:long schema data type
+	 * as a Java long primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the long primitive for an xs:long column
+	 */
     public long      getLong(String    columnName);
+	/**
+	 * Gets the value of a column with an xs:short schema data type
+	 * as a Java short primitive value.
+	 * @param columnName	the name of the column
+	 * @return	the short primitive for an xs:short column
+	 */
     public short     getShort(String   columnName);
+    /**
+	 * Gets the value of a column with an xs:string schema data type
+	 * as a Java String literal value.
+	 * @param columnName	the name of the column
+	 * @return	the String literal for an xs:string column
+	 */
     public String    getString(String  columnName);
 
-	public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName,  Class<T> as);
-// TODO:
-//	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as);
+	/**
+	 * Gets the value of a column with an atomic schema data type.
+	 * 
+	 * The value class must have the same schema data type 
+	 * as the value of the column in the row.
+	 * 
+	 * @param columnName	the name of the column
+     * @param as	the value class for the schema data type of the column
+     * @param <T> the type of the object for the value
+	 * @return	an object of the class with the value of the data type
+	 */
+    public <T extends XsAnyAtomicTypeVal> T getValueAs(String columnName,  Class<T> as);
+/* TODO:
+	public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as);
+*/
 
+    /**
+     * Identifies the format where a column has a document or
+     * other content value in the row instead of an atomic value.
+	 * @param columnName	the name of the column
+     * @return	the format of the column content
+     */
 	public Format getContentFormat(String columnName);
+	/**
+     * Identifies the format where a column has a document or
+     * other content value in the row instead of an atomic value.
+	 * @param columnName	the name of the column
+	 * @return	the mimetype of the column content
+	 */
 	public String getContentMimetype(String columnName);
+	/**
+	 * Gets the content of a column with a document or other
+	 * content value.
+	 * 
+	 * The handle must support IO for content with the format
+	 * and mimetype. For instance, an XML DOM handle cannot be
+	 * used to read a JSON document.
+	 * 
+	 * @param columnName	the name of the column
+     * @param contentHandle	a handle for reading the content of the column value
+     * @param <T> the type of the handle for reading the content
+     * @return	the content handle populated with the content of the column value
+	 */
 	public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle);
+	/**
+	 * Gets the content of a column with a document or other
+	 * content value.
+	 * 
+     * The IO class must have been registered before creating the database client.
+     * By default, standard Java IO classes for JSON and XML content are registered.
+     * 
+	 * @param columnName	the name of the column
+     * @param as	the IO class for reading the content of the column value
+     * @param <T> the type of the IO object for the content
+     * @return	an object of the IO class with the content of the column value
+	 */
     public <T> T getContentAs(String columnName, Class<T> as);
 }
