@@ -51,13 +51,13 @@ To use the API in your maven project, include the following in your pom.xml:
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>java-client-api</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.5</version>
     </dependency>
 
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.1'
+        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.5'
     }
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
@@ -82,14 +82,14 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](http://repo1.maven.org/maven2/com/marklogic/java-client-api/3.0.1/).  MarkLogic's
+[maven central](http://repo1.maven.org/maven2/com/marklogic/java-client-api/3.0.5/).  MarkLogic's
 pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
 
     $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
 
 Files can be verified with the command:
 
-    $ gpg java-client-api-3.0.1.jar.asc
+    $ gpg java-client-api-3.0.5.jar.asc
 
 
 ### Building and Contributing
@@ -97,7 +97,8 @@ Files can be verified with the command:
 You can build the API in the same way as any Maven project on git:
 
 1. Clone the java-client-api repository on your machine.
-2. Execute a Maven build in the directory containing the pom.xml file.  
+2. Choose the appropriate branch (usually develop)
+3. Execute a Maven build in the directory containing the pom.xml file.
 
 You might want to skip the tests until you have configured a test database and REST server:
 
