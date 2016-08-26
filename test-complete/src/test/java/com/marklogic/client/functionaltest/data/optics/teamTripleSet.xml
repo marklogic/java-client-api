@@ -1,0 +1,56 @@
+<tripleSets xmlns:sem="http://marklogic.com/semantics">
+  <masterRelated>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/001</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Giants</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/001</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/city</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">San Francisco</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/002</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Athletics</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/002</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/city</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Oakland</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/003</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Padres</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/003</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/city</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">San Diego</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/004</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Yankees</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/004</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/city</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">New York</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/005</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Mariners</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/mlb/team/id/005</sem:subject>
+        <sem:predicate>http://marklogic.com/mlb/team/city</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Seattle</sem:object>
+      </sem:triple>
+    </sem:triples>
+  </masterRelated>
+</tripleSets>

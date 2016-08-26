@@ -1,0 +1,18 @@
+{
+  "city":"new jersey",
+  "distance":12.9,
+  "date":"1971-12-23",
+  "metro":false,
+  "description":"American forces under Washington met the forces under General Henry Clinton",
+  "popularity":2,
+  "location":{
+    "latLonPoint":"40.72, -74.07",
+    "latLonPair":{
+      "lat":40.72,
+      "long":-74.07
+    },
+    "latLonParent":{
+      "latLonChild":"40.72, -74.07"
+    }
+  }
+}

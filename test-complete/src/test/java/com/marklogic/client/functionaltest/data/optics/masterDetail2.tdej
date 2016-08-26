@@ -1,0 +1,53 @@
+{
+  "template": {
+    "context": "/sets2",
+    "templates": [{
+      "context": "masterSet/master",
+      "rows": [{
+        "schemaName": "opticFunctionalTest2",
+        "viewName": "master",
+        "columns": [{
+          "name": "id",
+          "scalarType": "int",
+          "val": "id"
+        }, {
+          "name": "name",
+          "scalarType": "string",
+          "val": "name"
+        }, {
+          "name": "date",
+          "scalarType": "date",
+          "val": "date"
+        }]
+      }]
+    }, {
+      "context": "detailSet/detail",
+      "rows": [{
+        "schemaName": "opticFunctionalTest2",
+        "viewName": "detail",
+        "columns": [{
+          "name": "id",
+          "scalarType": "int",
+          "val": "id"
+        }, {
+          "name": "name",
+          "scalarType": "string",
+          "val": "name"
+        }, {
+          "name": "masterId",
+          "scalarType": "int",
+          "val": "masterId"
+        }, {
+          "name": "amount",
+          "scalarType": "double",
+          "val": "amount"
+        }, {
+          "name": "color",
+          "scalarType": "string",
+          "val": "color"
+        }]
+      }]
+    }]
+  }
+}
+

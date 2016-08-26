@@ -1,0 +1,18 @@
+{
+  "city":"new york",
+  "distance":23.3,
+  "date":"2006-06-23",
+  "metro":true,
+  "description":"Henry Hudsons 1609 voyage marked the beginning of European involvement with the area",
+  "popularity":5,
+  "location":{
+    "latLonPoint":"40.71, -74.01",
+    "latLonPair":{
+      "lat":40.71,
+      "long":-74.01
+    },
+    "latLonParent":{
+      "latLonChild":"40.71, -74.01"
+    }
+  }
+}

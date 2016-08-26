@@ -1424,29 +1424,25 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 	public DocumentManager documentManagerSelector(DatabaseClient client, DocumentManager docMgr, String type)
 	{
 		// create doc manager
-		if(type == "XML")
-		{
+		switch(type) {
+		case "XML" :
 			docMgr = client.newXMLDocumentManager();
-		}
-		else if(type == "Text")
-		{	
+			break;
+		case "Text" :
 			docMgr = client.newTextDocumentManager();
-		}
-		else if(type == "JSON")
-		{	
+			break;
+		case "JSON" :
 			docMgr = client.newJSONDocumentManager();
-		}
-		else if(type == "Binary")
-		{	
+			break;
+		case "Binary" :
 			docMgr = client.newBinaryDocumentManager();
-		}
-		else if (type == "JAXB") {
+			break;
+		case "JAXB" :
 			docMgr = client.newXMLDocumentManager();
-		}
-		else 
-		{ 
-	
+			break;
+		default :
 			System.out.println("Invalid type");
+			break;
 		}
 		
 		return docMgr;
