@@ -36,6 +36,7 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ItemVal;
+import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
@@ -92,6 +93,29 @@ public class RowRecordTest {
 		rowMgr = null;
 
 		Common.release();
+	}
+
+	@Test
+	public void prefixerTest() {
+		// verify consistency with SJS prefixer
+		String[] prefixes = {"a", "a/", "a#", "a?"};
+		String[] suffixes = {"b", "/b", "#b", "?b"};
+		String[][] results = {
+			{"a/b", "a/b", "a/b", "a/b"},
+			{"a/b", "a/b", "a/b", "a/b"},
+			{"a#b", "a#b", "a#b", "a#b"},
+			{"a?b", "a?b", "a?b", "a?b"}
+		};
+
+		for (int prefix=0; prefix < prefixes.length; prefix++) {
+			PlanBuilder.Prefixer prefixer = p.prefixer(prefixes[prefix]);
+			for (int suffix=0; suffix < suffixes.length; suffix++) {
+				assertEquals("prefixer "+prefix+","+suffix,
+						p.sem.iri(results[prefix][suffix]).getString(),
+						prefixer.iri(suffixes[suffix]).getString()
+						);
+			}
+		}
 	}
 
 	@SuppressWarnings("incomplete-switch")

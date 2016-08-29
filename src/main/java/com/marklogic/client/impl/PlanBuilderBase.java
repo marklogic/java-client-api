@@ -67,7 +67,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		}
 
 		String lastChar = base.substring(base.length() - 1);
-		String prefix = (lastChar == "/" || lastChar == "#" || lastChar == "?") ?
+		String prefix = (lastChar.equals("/") || lastChar.equals("#") || lastChar.equals("?")) ?
 				base : base + "/";
 
 		return new PrefixerImpl(sem, prefix);
@@ -87,7 +87,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			}
 
 			String firstChar = suffix.substring(0, 1);
-			if (firstChar == "/" || firstChar == "#" || firstChar == "?") {
+			if (firstChar.equals("/") || firstChar.equals("#") || firstChar.equals("?")) {
 				if (suffix.length() == 1) {
 					throw new IllegalArgumentException("cannot create SemIriVal from: "+suffix);
 				}
