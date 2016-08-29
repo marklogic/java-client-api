@@ -16,7 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -118,7 +118,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		// Make sure we have the original document and document count is 1.
 		JsonNode jsonResults = jacksonHandle.get();
 		
-		long insTimeStamp = jacksonHandle.getPointInTimeQueryTimestamp();
+		long insTimeStamp = jacksonHandle.getServerTimestamp();
 		System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);
 		// Verify the counts
 		JsonNode jNode = getDBFragmentCount(getRestAppServerHostName(), "8002", dbName);
@@ -155,7 +155,16 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		
 		DocumentPatchHandle patchHandle = patchBldr.build();
 		docMgr.patch(docId, patchHandle);
+		
+		// Now read using a handle and time value in insTimeStamp. The updates should not be present.
+		StringHandle shReadInsTS = new StringHandle();
+		shReadInsTS.setPointInTimeQueryTimestamp(insTimeStamp);
+		String insTS = docMgr.read(docId, shReadInsTS).get();
+		System.out.println(insTS);
+		assertFalse("fragment is inserted", insTS.contains("{\"insertedKey\":9}"));
+		assertFalse("Original fragment is inserted or incorrect", insTS.contains("{\"original\":true}"));
 
+		// Now read using a handle without a Point In Time value set on the handle. Should return the latest document.
 		String content = docMgr.read(docId, new StringHandle()).get();
 
 		System.out.println(content);
