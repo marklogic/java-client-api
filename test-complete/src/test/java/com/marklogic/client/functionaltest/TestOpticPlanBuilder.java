@@ -905,6 +905,43 @@ public class TestOpticPlanBuilder extends BasicJavaClientREST {
 		}
 	}
 	
+	@Test
+	public void testPrefixerfromTriples() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	{
+		System.out.println("In testPrefixerfromTriples method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		PlanBuilder.Prefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
+		ExportablePlan  plan1 = p.fromTriples(p.pattern(p.col("id"), rowGraph.iri("age"), p.col("age")))
+				                 .orderBy(p.col("age"));
+		
+		
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		
+		rowMgr.resultDoc(plan1, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		
+		// Verify first node.
+		Iterator<JsonNode>  nameNodesItr = jsonBindingsNodes.elements();
+		// Should have 8 nodes returned.
+		assertEquals("Eight nodes not returned from testfromTriples method ", 8, jsonBindingsNodes.size());
+		JsonNode jsonNameNode = null;
+		if(nameNodesItr.hasNext()) {			
+			jsonNameNode = nameNodesItr.next();					
+			// Verify result 1's values.
+			assertEquals("Element 1 age value incorrect", "19", jsonNameNode.path("age").path("value").asText());
+			// Verify the last node's age value
+			assertEquals("Element 8 age value incorrect", "34",jsonBindingsNodes.get(7).path("age").path("value").asText());
+		}
+		else {
+			fail("Could not traverse the Eight Triplesin testfromTriples method");
+		}
+	}
+	
 	
 	// TRIPLES END
 	
