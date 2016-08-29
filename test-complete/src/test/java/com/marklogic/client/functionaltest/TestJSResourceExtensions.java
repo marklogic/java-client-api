@@ -204,6 +204,10 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		
 		JacksonHandle jh = new JacksonHandle();
 		resourceMgr.listServices(jh);
+		
+		assertEquals("Format on Handle", "JSON", jh.getFormat().name());
+		assertEquals("Mime Type on Handle", "application/json", jh.getMimetype());
+		
 		String expectedList ="{\"resources\":{\"resource\":[{\"name\":\"simpleJSResourceModule\", \"source-format\":\"javascript\", \"description\":\"Testing resource extension for java script\", \"version\":\"1.0\", \"title\":\"BasicJSTest\", \"methods\":{\"method\":[{\"method-name\":\"get\", \"parameter\":[{\"parameter-name\":\"my-uri\", \"parameter-type\":\"xs:string?\"}]}, {\"method-name\":\"post\"}, {\"method-name\":\"put\"}, {\"method-name\":\"delete\"}]}, \"resource-source\":\"/v1/resources/simpleJSResourceModule\"}]}}";
 		JSONAssert.assertEquals(expectedList,jh.get().toString(),false);
 		TestJSExtension tjs= new TestJSExtension(client);
@@ -215,12 +219,9 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 		String expAftrPost ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":1, \"content\":\"This is a JSON document\", \"document-content\":{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"array\":[1, 2, 3], \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
 		JSONAssert.assertEquals(expAftrPost, tjs.getJSON("helloJS.json"), false);
 		String expected ="{\"argument1\":\"helloJS.json\", \"argument2\":\"Earth\", \"document-count\":0, \"content\":\"This is a JSON document\", \"document-content\":null, \"response\":[200, \"OK\"], \"outputTypes\":[\"application/json\"]}";
-//		JSONAssert.assertEquals(expected, tjs.getJSON(), false);
 	
 		JSONAssert.assertEquals(expectedResponse, tjs.deleteJSON("helloJS.json"), false);
-//		System.out.println(tjs.getJSON());
 		JSONAssert.assertEquals(expected, tjs.getJSON("helloJS.json"), false);
-
 	}
 	@Test
 	public void test2GetAllResourceServicesMultipleTimes() throws KeyManagementException, NoSuchAlgorithmException, Exception {
