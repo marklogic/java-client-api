@@ -53,6 +53,10 @@ public class PlanGeneratedBase {
 	protected static Pattern deconstString   = null;
 	protected static Pattern normalDate      = null;
 
+	protected static Pattern normalTimeZone       = null;
+	protected static Pattern normalDateTimeFormat = null;
+	protected static Pattern normalTimeAdjust     = null;
+
 	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void beforeClass() {
@@ -83,6 +87,10 @@ public class PlanGeneratedBase {
 		deconstNumeric  = Pattern.compile("xs:(?:byte|decimal|double|float|int|long|numeric|short|unsigned\\w+)\\(\"([^\"]*)\"\\)");
 		deconstString   = Pattern.compile("xs:(?:anyURI|untypedAtomic)\\((\"[^\"]*\")\\)");
 		normalDate      = Pattern.compile("(xs:date\\(\"\\d\\d\\d\\d-\\d\\d-\\d\\d)(?:-\\d\\d:\\d\\d|Z)(\"\\))");
+
+		normalTimeZone       = Pattern.compile("(\\d\\d\\d\\d-)\\d\\d-\\d\\dT\\d\\d(\\:\\d\\d\\:\\d\\d\\.?\\d*-)\\d\\d(\\:\\d\\d)");
+		normalDateTimeFormat = Pattern.compile("\\w+,\\s+\\d\\d\\s+\\w+\\s+(\\d\\d\\d\\d)\\s+\\d\\d(\\:\\d\\d\\:\\d\\d)");
+		normalTimeAdjust     = Pattern.compile("\\d\\d(\\:\\d\\d\\:\\d\\d-)\\d\\d(\\:\\d\\d)");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -124,16 +132,32 @@ public class PlanGeneratedBase {
 
 		RowRecord row = rowItr.next();
 		String actual = row.getString("t");
-		if (withCompare) {
-			expected = deconstNumeric.matcher(expected).replaceAll("$1");
-			expected =  deconstString.matcher(expected).replaceAll("$1");
-			expected =     normalDate.matcher(expected).replaceAll("$1$2");
-			actual   = deconstNumeric.matcher(actual).replaceAll("$1");
-			actual   =  deconstString.matcher(actual).replaceAll("$1");
-			actual   =     normalDate.matcher(actual).replaceAll("$1$2");
-	        assertEquals("unexpected result for: "+testName, expected, actual);
-		} else {
-			assertNotNull("no result for: "+testName, actual);
+
+		switch(testName) {
+		case "testFnAdjustDateTimeToTimezone1":
+		case "testXdmpParseYymmdd2":
+		case "testXdmpParseDateTime2":
+			executeTimeZoneTester(testName, expected, actual);
+			break;
+		case "testFnAdjustTimeToTimezone1":
+			executeTimeAdjustTester(testName, expected, actual);
+			break;
+		case "testXdmpStrftime2":
+			executeDateTimeFormatTester(testName, expected, actual);
+			break;
+		default:
+			if (withCompare) {
+				expected = deconstNumeric.matcher(expected).replaceAll("$1");
+				expected =  deconstString.matcher(expected).replaceAll("$1");
+				expected =     normalDate.matcher(expected).replaceAll("$1$2");
+				actual   = deconstNumeric.matcher(actual).replaceAll("$1");
+				actual   =  deconstString.matcher(actual).replaceAll("$1");
+				actual   =     normalDate.matcher(actual).replaceAll("$1$2");
+		        assertEquals("unexpected result for: "+testName, expected, actual);
+			} else {
+				assertNotNull("no result for: "+testName, actual);
+			}
+			break;
 		}
 
 		assertFalse("too many results for: "+testName, rowItr.hasNext());
@@ -142,5 +166,20 @@ public class PlanGeneratedBase {
 		} catch(IOException e) {
 			throw new MarkLogicIOException("close for: "+testName, e);
 		}
+	}
+	protected void executeTimeZoneTester(String testName, String expected, String actual) {
+		expected = normalTimeZone.matcher(expected).replaceAll("$1 $2 $3");
+		actual   = normalTimeZone.matcher(actual).replaceAll("$1 $2 $3");
+        assertEquals("unexpected result for: "+testName, expected, actual);
+	}
+	protected void executeTimeAdjustTester(String testName, String expected, String actual) {
+		expected = normalTimeAdjust.matcher(expected).replaceAll("$1 $2");
+		actual   = normalTimeAdjust.matcher(actual).replaceAll("$1 $2");
+        assertEquals("unexpected result for: "+testName, expected, actual);
+	}
+	protected void executeDateTimeFormatTester(String testName, String expected, String actual) {
+		expected = normalDateTimeFormat.matcher(expected).replaceAll("$1 $2");
+		actual   = normalDateTimeFormat.matcher(actual).replaceAll("$1 $2");
+        assertEquals("unexpected result for: "+testName, expected, actual);
 	}
 }
