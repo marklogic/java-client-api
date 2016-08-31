@@ -1,0 +1,27 @@
+{"root": {"item":
+{
+  "point":"POINT(-34.453123 83.229523)",
+  "point-desc":"Json Point In North Pole",
+
+  "linestring":"LINESTRING(-34.453 83.22,-37.2378 86.223)",
+  "line-desc":"Json Linestring In North Pole",
+  "line-vertices":"2",
+
+  "circle":"@3467.67 83.229523,-34.453123",
+  "circle-desc":"Json Circle In North Pole",
+
+  "box":"[75.567, -40.234, 87.345, -25.14235]",
+  "box-desc":"Json Box In North Pole",
+
+  "polygon":"POLYGON((-29.87 83.0,-34.0 77.92,-39.8 83.0,-34.0 87.43,-29.87 83.0))",
+  "poly-desc":"Json Polygon In North Pole",
+  "poly-vertices":"4",
+
+  "complex-polygon":"POLYGON((-29.87 83.0,-34.0 77.92,-39.8 83.0,-34.0 87.43,-29.87 83.0), (-32.84 82.33,-35.33 82.23,-34.0 85.06,-32.84 82.33))",
+  "comppoly-desc":"Json Complex Polygon In North Pole",
+  "comppoly-outer-vertices":"4",
+  "comppoly-inner-vertices":"3"
+},
+"region":"North-Pole"}
+}
+

@@ -1,0 +1,27 @@
+{"root":{ "item":{
+
+"point":"POINT(-154.687500 61.410743)",
+"point-desc":"Json Point In North West part",
+
+"linestring":"LINESTRING(-154.7866 55.987,-151.56976 57.6896,-155.7866 59.579,-145.8383 61.89776,-167.777 63.5676,-125.8775 65.765,-144.8373 67.78609,-135.8976 69.765,-124.667897 71.7866,-156.987887 31.9237)",
+"line-desc":"Json Linestring In North West part",
+"line-vertices":"10",
+
+"circle":"@856 61.410743,-154.687500",
+"circle-desc":"Json Circle In North West part",
+
+"box":"[46.34563,-160.687500, 62.43545, -150.234]",
+"box-desc":"Json Box In North West part",
+
+"polygon":"POLYGON((-139.66 80.74,-131.62 68.27,-132.93 54.15,-140.55 42.48,-154.0 36.65,-167.74 42.08,-177.45 53.38,-176.51 68.31,-168.03 80.32,-154.0 83.47,-139.66 80.74))",
+"poly-desc":"Json Polygon In North West part",
+"poly-vertices":"10",
+
+"complex-polygon":"POLYGON((-139.66 80.74,-131.62 68.27,-132.93 54.15,-140.55 42.48,-154.0 36.65,-167.74 42.08,-177.45 53.38,-176.51 68.31,-168.03 80.32,-154.0 83.47,-139.66 80.74), (-135.63 66.97,-142.35 44.97,-164.4 46.69,-169.83 66.14,-154.0 79.26,-135.63 66.97))",
+"comppoly-desc":"Json Complex Polygon In North West part",
+"comppoly-outer-vertices":"10",
+"comppoly-inner-vertices":"5"
+},
+"region":"North-West"}
+}
+

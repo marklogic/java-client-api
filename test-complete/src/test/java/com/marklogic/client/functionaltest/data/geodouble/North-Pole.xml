@@ -1,0 +1,28 @@
+<root>
+<item>
+
+<point>POINT(-34.453123 83.229523)</point>
+<point-desc>Point In North Pole</point-desc>
+
+<linestring>LINESTRING(-34.453 83.22,-37.2378 86.223)</linestring>
+<line-desc>Linestring In North Pole</line-desc>
+<line-vertices>2</line-vertices>
+
+<circle>@3467.67 83.229523,-34.453123</circle>
+<circle-desc>Circle In North Pole</circle-desc>
+
+<box>[75.567, -40.234, 87.345, -25.14235]</box>
+<box-desc>Box In North Pole</box-desc>
+
+<polygon>POLYGON((-29.87 83.0,-34.0 77.92,-39.8 83.0,-34.0 87.43,-29.87 83.0))</polygon>
+<poly-desc>Polygon In North Pole</poly-desc>
+<poly-vertices>4</poly-vertices>
+
+<complex-polygon>POLYGON((-29.87 83.0,-34.0 77.92,-39.8 83.0,-34.0 87.43,-29.87 83.0), (-32.84 82.33,-35.33 82.23,-34.0 85.06,-32.84 82.33))</complex-polygon>
+<comppoly-desc>Complex Polygon In North Pole</comppoly-desc>
+<comppoly-outer-vertices>4</comppoly-outer-vertices>
+<comppoly-inner-vertices>3</comppoly-inner-vertices>
+
+</item>
+<region>North-Pole</region>
+</root>

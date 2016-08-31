@@ -1,0 +1,28 @@
+<root>
+<item>
+
+<point>POINT(79.035647 23.027502)</point>
+<point-desc>Point In Tropic of Cancer - Delhi</point-desc>
+
+<linestring>LINESTRING(72.879 16.987,73.8979 17.7689,74.3487 18.984,75.09842 19.0987,76.896 20.046,77.6897 21.987345,78.2342 22.345,79.9080 23.79898,80.8970 24.7769,81.0909 25.6897,82.699 26.1232,83.69869 27.9879,84.2344 28.879,85.0998 29.0987,86.8769 30.2345)</linestring>
+<line-desc>Linestring In Tropic of Cancer - Delhi</line-desc>
+<line-vertices>15</line-vertices>
+
+<circle>@12 23.027502,79.035647</circle>
+<circle-desc>Circle In Tropic of Cancer - Delhi</circle-desc>
+
+<box>[20.64, 70.435634, 25.234, 85.2345]</box>
+<box-desc>Box In Tropic of Cancer - Delhi</box-desc>
+
+<polygon>POLYGON((88.64 44.65,97.74 39.87,101.1 30.18,102.32 20.55,104.9 8.04,91.9 5.24,83.42 2.22,72.86 -5.91,66.63 5.98,53.38 8.21,51.78 20.14,57.83 29.88,58.1 41.82,69.97 43.27,79.0 47.15,88.64 44.65))</polygon>
+<poly-desc>Polygon In Tropic of Cancer - Delhi</poly-desc>
+<poly-vertices>15</poly-vertices>
+
+<complex-polygon>POLYGON((88.64 44.65,97.74 39.87,101.1 30.18,102.32 20.55,104.9 8.04,91.9 5.24,83.42 2.22,72.86 -5.91,66.63 5.98,53.38 8.21,51.78 20.14,57.83 29.88,58.1 41.82,69.97 43.27,79.0 47.15,88.64 44.65), (93.03 31.1,92.72 15.08,79.0 9.58,62.88 13.69,67.03 29.91,79.0 34.4,93.03 31.1))</complex-polygon>
+<comppoly-desc>Complex Polygon In Tropic of Cancer - Delhi</comppoly-desc>
+<comppoly-outer-vertices>15</comppoly-outer-vertices>
+<comppoly-inner-vertices>6</comppoly-inner-vertices>
+
+</item>
+<region>Tropic-of-Cancer</region>
+</root>

@@ -68,7 +68,6 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 
-
 /**
  * @author gvaidees
  *
@@ -168,9 +167,7 @@ public abstract class ConnectedRESTQA {
 			jstream =null;
 		}
 	}
-	/*
-	 * 
-	 */
+	
 	public static void createForest(String fName,String dbName)	{
 		try{
 			DefaultHttpClient client = new DefaultHttpClient();
@@ -178,7 +175,7 @@ public abstract class ConnectedRESTQA {
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests?format=json");
-//			System.out.println( getBootStrapHostFromML());
+			
 			String hName = getBootStrapHostFromML();
 			String JSONString = 
 					"{\"database\":\""+ 
@@ -187,7 +184,6 @@ public abstract class ConnectedRESTQA {
 							fName+
 							"\",\"host\":\""+hName+"\"}" 
 							;
-			//		System.out.println(JSONString);
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
@@ -221,7 +217,7 @@ public abstract class ConnectedRESTQA {
 							fName+
 							"\",\"host\":\""+hName+"\"}" 
 							;
-			//			System.out.println(JSONString);
+			
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
@@ -361,7 +357,7 @@ public abstract class ConnectedRESTQA {
 							"\",\"port\":\""+
 							restPort+
 							"\"}}";
-			//System.out.println(JSONString);		
+			
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
@@ -527,7 +523,7 @@ public abstract class ConnectedRESTQA {
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
-				//			ObjectNode childNode = mapper.createObjectNode();
+				
 				ArrayNode childArray = mapper.createArrayNode();
 				mainNode.put("user-name",usrName);
 				mainNode.put("description", "user discription");
@@ -535,7 +531,7 @@ public abstract class ConnectedRESTQA {
 				for(String rolename: roleNames)
 					childArray.add(rolename);
 				mainNode.withArray("role").addAll(childArray);
-				//System.out.println(type + mainNode.path("range-element-indexes").path("range-element-index").toString());
+				
 				System.out.println(mainNode.toString());
 				HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/users?format=json");
 				post.addHeader("Content-type", "application/json");
@@ -615,7 +611,7 @@ public abstract class ConnectedRESTQA {
 
 				ObjectMapper mapper = new ObjectMapper();
 				ObjectNode mainNode = mapper.createObjectNode();
-				// ObjectNode childNode = mapper.createObjectNode();
+				
 				ArrayNode childArray = mapper.createArrayNode();
 				mainNode.put("user-name",usrName);
 				mainNode.put("description", "user discription");
@@ -625,7 +621,7 @@ public abstract class ConnectedRESTQA {
 				mainNode.withArray("role").addAll(childArray);
 				mainNode.setAll(perm);
 				mainNode.setAll(colections);
-				//System.out.println(type + mainNode.path("range-element-indexes").path("range-element-index").toString());
+				
 				System.out.println(mainNode.toString());
 				HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/users?format=json");
 				post.addHeader("Content-type", "application/json");
@@ -689,12 +685,14 @@ public abstract class ConnectedRESTQA {
 		}
 
 	}
+	
 	public static void setupJavaRESTServerWithDB( String restServerName, int restPort)throws Exception {		 
 		createRESTServerWithDB(restServerName, restPort);
 		createRESTUser("rest-admin","x","rest-admin");
 		createRESTUser("rest-writer","x","rest-writer");
 		createRESTUser("rest-reader","x","rest-reader"); 
 	}
+	
 	/*
 	 * This function deletes the REST appserver along with attached content database and module database
 	 */
@@ -983,15 +981,16 @@ public abstract class ConnectedRESTQA {
 			HttpResponse response1 = client.execute(getrequest);
 			jsonstream =response1.getEntity().getContent();
 			JsonNode jnode= new ObjectMapper().readTree(jsonstream);
+			
 			if(!jnode.isNull()) {       	
-				((ObjectNode)jnode).put(prop, propValue);
-				//            System.out.println(jnode.toString()+"\n"+ response1.getStatusLine().getStatusCode());
+				((ObjectNode)jnode).put(prop, propValue);				
 				HttpPut put = new HttpPut("http://localhost:8002"+ "/manage/v2/databases/"+dbName+"/properties?format=json");
 				put.addHeader("Content-type", "application/json");
 				put.setEntity(new StringEntity(jnode.toString()));
 
 				HttpResponse response2 = client.execute(put);
 				HttpEntity respEntity = response2.getEntity();
+				
 				if(respEntity != null) {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
@@ -1023,15 +1022,17 @@ public abstract class ConnectedRESTQA {
 			HttpResponse response1 = client.execute(getrequest);
 			jsonstream =response1.getEntity().getContent();
 			JsonNode jnode= new ObjectMapper().readTree(jsonstream);
-			if(!jnode.isNull()){       	
-				((ObjectNode)jnode).put(prop, propValue)   ;
-				//            System.out.println(jnode.toString()+"\n"+ response1.getStatusLine().getStatusCode());
+			
+			if(!jnode.isNull()) {       	
+				((ObjectNode)jnode).put(prop, propValue);
+				
 				HttpPut put = new HttpPut("http://localhost:8002"+ "/manage/v2/databases/"+dbName+"/properties?format=json");
 				put.addHeader("Content-type", "application/json");
 				put.setEntity(new StringEntity(jnode.toString()));
 
 				HttpResponse response2 = client.execute(put);
 				HttpEntity respEntity = response2.getEntity();
+				
 				if(respEntity != null) {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
@@ -1073,7 +1074,6 @@ public abstract class ConnectedRESTQA {
 
 				if(!jnode.has(propName)) {
 					((ObjectNode)jnode).putArray(propName).addAll(objNode.withArray(propName));
-					//            		 System.out.println("when Node is null"+propName + objNode.toString());
 				}
 				else {
 					if(!jnode.path(propName).isArray()){
@@ -1084,7 +1084,6 @@ public abstract class ConnectedRESTQA {
 						JsonNode member = jnode.withArray(propName);
 						if(objNode.path(propName).isArray()){
 							((ArrayNode)member).addAll(objNode.withArray(propName));
-							//            			System.out.println("when Node is not null"+ propName + objNode.withArray(propName).toString());
 						}
 					}
 				}
@@ -1160,7 +1159,7 @@ public abstract class ConnectedRESTQA {
 	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname,boolean positions) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
-		//	ObjectNode childNode = mapper.createObjectNode();
+		
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		childNodeObject.put( "scalar-type", type);
@@ -1171,8 +1170,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);		
 		mainNode.putArray("range-element-index").addAll(childArray);
-		//	mainNode.put("range-element-indexes", childNode);
-		//		System.out.println(type + mainNode.path("range-element-indexes").path("range-element-index").toString());
+		
 		setDatabaseProperties(dbName,"range-element-index",mainNode);
 
 	}
@@ -1215,7 +1213,7 @@ public abstract class ConnectedRESTQA {
 	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname, String collation) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
-		//	ObjectNode childNode = mapper.createObjectNode();
+		
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		childNodeObject.put( "scalar-type", type);
@@ -1226,8 +1224,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		mainNode.putArray("range-element-index").addAll(childArray);
-
-		//		System.out.println(type + mainNode.path("range-element-indexes").path("range-element-index").toString());
+		
 		setDatabaseProperties(dbName,"range-element-index",mainNode);
 
 	}
@@ -1245,7 +1242,7 @@ public abstract class ConnectedRESTQA {
 
 	public static void addRangeElementAttributeIndex(String dbName, String type, String parentnamespace, String parentlocalname, String namespace, String localname, String collation) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
-		//	ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1260,18 +1257,16 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		childNode.putArray("range-element-attribute-index").addAll(childArray);
-
-		//	mainNode.put("range-element-attribute-indexes", childNode);
-		//		System.out.println(type + mainNode.path("range-element-attribute-indexes").path("range-element-attribute-index").toString());
+		
 		setDatabaseProperties(dbName,"range-element-attribute-index",childNode);
-
 	}
+	
 	/*
 	 * Overloaded function with default collation
 	 */
 	public static void addRangeElementAttributeIndex(String dbName, String type, String parentnamespace, String parentlocalname, String namespace, String localname) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
-		//ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1286,8 +1281,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		childNode.putArray("range-element-attribute-index").addAll(childArray);
-		//	mainNode.put("range-element-attribute-indexes", childNode);
-		//		System.out.println(type + mainNode.path("range-element-attribute-indexes").path("range-element-attribute-index").toString());
+		
 		setDatabaseProperties(dbName,"range-element-attribute-index",childNode);
 
 	}
@@ -1310,7 +1304,7 @@ public abstract class ConnectedRESTQA {
 	
 	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues,boolean positions) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
-		//		ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1321,8 +1315,7 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("range-path-index").addAll(childArray);
-		//		mainNode.put("range-path-indexes", childNode);
-		//		System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"range-path-index",childNode);
 
 	}
@@ -1359,9 +1352,9 @@ public abstract class ConnectedRESTQA {
 		setDatabaseProperties(dbName,"range-path-index",childNode);
 	}
 	
-	public static void addGeospatialElementIndexes(String dbName,String localname,String namespace,String coordinateSystem,String pointFormat,boolean rangeValuePositions,String invalidValues) throws Exception{
+	public static void addGeospatialElementIndexes(String dbName, String localname, String namespace, String coordinateSystem, String pointFormat ,boolean rangeValuePositions, String invalidValues) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
-		//		ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1373,14 +1366,13 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-index").addAll(childArray);
-		//			mainNode.put("geospatial-element-indexes", childNode);
-		//			System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"geospatial-element-index",childNode);
 	}
 	
-	public static void addGeoSpatialElementChildIndexes(String dbName,String parentNamespaceUri,String parentLocalName,String namespace,String localname,String coordinateSystem,String pointFormat,boolean rangeValuePositions,String invalidValues) throws Exception{
+	public static void addGeoSpatialElementChildIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String namespace, String localname, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
-		//		ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1394,13 +1386,13 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-child-index").addAll(childArray);
-		//			mainNode.put("geospatial-element-child-indexes", childNode);
-		//			System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"geospatial-element-child-index",childNode);
 	}
 	
-	public static void addGeospatialElementPairIndexes(String dbName,String parentNamespaceUri,String parentLocalName,String latNamespace,String latLocalname,String longNamespace,String longLocalname,String coordinateSystem,boolean rangeValuePositions,String invalidValues) throws Exception{
-		ObjectMapper mapper = new ObjectMapper();		
+	public static void addGeospatialElementPairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1415,12 +1407,13 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-pair-index").addAll(childArray);
-		//			mainNode.put("geospatial-element-pair-indexes", childNode);
-		//			System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"geospatial-element-pair-index",childNode);
 	}
-	public static void addGeospatialElementAttributePairIndexes(String dbName,String parentNamespaceUri,String parentLocalName,String latNamespace,String latLocalname,String longNamespace,String longLocalname,String coordinateSystem,boolean rangeValuePositions,String invalidValues) throws Exception{
-		ObjectMapper mapper = new ObjectMapper();		
+	
+	public static void addGeospatialElementAttributePairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1435,12 +1428,13 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-attribute-pair-index").addAll(childArray);
-		//			mainNode.put("geospatial-element-attribute-pair-indexes", childNode);
-		//			System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"geospatial-element-attribute-pair-index",childNode);
 	}
-	public static void addGeospatialPathIndexes(String dbName,String pathExpression,String coordinateSystem,String pointFormat,boolean rangeValuePositions,String invalidValues) throws Exception{
-		ObjectMapper mapper = new ObjectMapper();		
+	
+	public static void addGeospatialPathIndexes(String dbName, String pathExpression, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception{
+		ObjectMapper mapper = new ObjectMapper();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1451,10 +1445,45 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-path-index").addAll(childArray);
-		//		mainNode.put("geospatial-path-indexes", childNode);
-		//			System.out.println(type + mainNode.path("range-path-indexes").path("range-path-index").toString());
+		
 		setDatabaseProperties(dbName,"geospatial-path-index",childNode);
 	}
+	
+	/* 
+	 * To create a geo spatial region path index for the following geo spatial queries.
+	 * 
+	 * 1) Circle - Example - <circle>@120.5 -26.797920,136.406250</circle>
+	 * 2) Box - Example <box>[-40.234, 100.4634, -20.345, 140.45230]</box>
+	 * 3) Polygon - Example- <polygon>POLYGON((153.65 -8.35,170.57 -26.0,162.52 -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0 10.26,153.65 -8.35))</polygon>
+	 * 
+	 * End-point used for GeoSpatial Region Path Indexes: REST endpoint: manage/v2/databases/{id|name}/properties
+	 * Payload structure:
+	 * "geospatial-region-path-index": 
+	 * [
+        {
+          "path-expression": "//jurisdiction",
+          "coordinate-system": "wgs84",
+          "geohash-precision": 6,
+          "invalid-values": "ignore"
+         }
+       ]
+     */
+	
+	public static void addGeospatialRegionPathIndexes(String dbName, String pathExpression, String coordinateSystem, String geoHashPrecision, String invalidValues) throws Exception{
+		ObjectMapper mapper = new ObjectMapper();		
+		ObjectNode childNode = mapper.createObjectNode();
+		ArrayNode childArray = mapper.createArrayNode();
+		ObjectNode childNodeObject = mapper.createObjectNode();
+		childNodeObject.put( "path-expression", pathExpression);
+		childNodeObject.put( "coordinate-system", coordinateSystem);		
+		childNodeObject.put("invalid-values", invalidValues);
+		childNodeObject.put("geohash-precision", geoHashPrecision);
+		childArray.add(childNodeObject);
+		childNode.putArray("geospatial-region-path-index").addAll(childArray);
+		
+		setDatabaseProperties(dbName,"geospatial-region-path-index",childNode);
+	}
+	
 	/*
 	 * Add field will include root and it appends field to an existing fields
 	 * "fields":{
@@ -1478,7 +1507,7 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void addField(String dbName, String fieldName) throws Exception{
 		ObjectMapper mapper = new ObjectMapper();
-		//	ObjectNode mainNode = mapper.createObjectNode();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1489,13 +1518,13 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.putNull( "tokenizer-overrides");
 		arrNode.add(childNodeObject);
 		childNode.putArray("field").addAll(arrNode);
-		//		mainNode.put("fields", childNode);
-		// 		   System.out.println("Entered field to make it true");
+		
 		setDatabaseProperties(dbName,"field",childNode);
-
 	}
+	
 	public static void addFieldExcludeRoot(String dbName, String fieldName) throws Exception{
-		ObjectMapper mapper = new ObjectMapper();		
+		ObjectMapper mapper = new ObjectMapper();
+		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
@@ -1506,11 +1535,11 @@ public abstract class ConnectedRESTQA {
 		childNodeObject.putNull( "tokenizer-overrides");
 		arrNode.add(childNodeObject);
 		childNode.putArray("field").addAll(arrNode);
-		//			mainNode.put("fields", childNode);
-		//			System.out.println( childNode.toString());
+		
 		setDatabaseProperties(dbName,"field",childNode);
 
 	}
+	
 	public static void   addBuiltInGeoIndex (String dbName)throws Exception {
 		addGeospatialElementIndexes(dbName,"g-elem-point","","wgs84","point",false,"reject");
 		addGeoSpatialElementChildIndexes(dbName,"","g-elem-child-parent","","g-elem-child-point","wgs84","point",false,"reject");
