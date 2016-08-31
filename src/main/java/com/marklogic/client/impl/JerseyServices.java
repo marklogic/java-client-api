@@ -189,6 +189,7 @@ public class JerseyServices implements RESTServices {
 
 	private DatabaseClient databaseClient;
 	private String database = null;
+	private ThreadSafeClientConnManager connMgr;
 	private ApacheHttpClient4 client;
 	private WebResource connection;
 	private boolean released = false;
@@ -281,6 +282,10 @@ public class JerseyServices implements RESTServices {
 
 		if (connection != null)
 			connection = null;
+		if (connMgr != null) {
+			connMgr.shutdown();
+			connMgr = null;
+		}
 		if (client != null) {
 			client.destroy();
 			client = null;
@@ -353,7 +358,7 @@ public class JerseyServices implements RESTServices {
 		 *     maxRouteConnections);
 		 */
 		// start 4.1
-		ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+		connMgr = new ThreadSafeClientConnManager(
 				schemeRegistry);
 		connMgr.setMaxTotal(maxTotalConnections);
 		connMgr.setDefaultMaxPerRoute(maxRouteConnections);
@@ -470,6 +475,8 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Releasing connection");
 
 		connection = null;
+		connMgr.shutdown();
+		connMgr = null;
 		client.destroy();
 		client = null;
 	}
