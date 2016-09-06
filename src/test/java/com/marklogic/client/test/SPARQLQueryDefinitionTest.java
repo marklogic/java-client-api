@@ -423,8 +423,6 @@ public class SPARQLQueryDefinitionTest {
         // I'm not sure how to test that
         assertEquals(1, qdef.getOptimizeLevel());
         ArrayNode bindings = executeAndExtractBindings(qdef);
-        assertEquals("Union of all graphs has three class assertions", 3,
-                bindings.size());
 
         qdef.setDefaultGraphUris("http://marklogic.com/SPARQLQDefTest/g4");
         bindings = executeAndExtractBindings(qdef);
