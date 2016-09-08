@@ -174,16 +174,16 @@ public class AlertingTest {
 				.exportQueryDefinition(new FileHandle(new File(
 						"target/fileout.xml")));
 
-		BufferedReader reader = new BufferedReader(new FileReader(fileExport.get()));
-		String line = null;
-		StringBuilder sb = new StringBuilder();
-		String ls = System.getProperty("line.separator");
-
-		while ((line = reader.readLine()) != null) {
-			sb.append(line);
-			sb.append(ls);
-		}
-		reader.close();
+        StringBuilder sb;
+        try (BufferedReader reader = new BufferedReader(new FileReader(fileExport.get()))) {
+            String line = null;
+            sb = new StringBuilder();
+            String ls = System.getProperty("line.separator");
+            while ((line = reader.readLine()) != null) {
+                sb.append(line);
+                sb.append(ls);
+            }
+        }
 
 		String fileContents = sb.toString();
 		

@@ -133,11 +133,10 @@ public class HandleAsTest {
 		assertEquals("Reader difference in document read/write as", beforeText, afterText);
 
 		File beforeFile = File.createTempFile("testAs", "txt");
-		FileWriter tempWriter = new FileWriter(beforeFile);
-		tempWriter.write(beforeText);
-		tempWriter.flush();
-		tempWriter.close();
-		tempWriter = null;
+        try (FileWriter tempWriter = new FileWriter(beforeFile)) {
+            tempWriter.write(beforeText);
+            tempWriter.flush();
+        }
 
 		textMgr.writeAs(textDocId, beforeFile);
 		beforeFile.delete();

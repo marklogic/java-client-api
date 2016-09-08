@@ -138,12 +138,11 @@ public class ValuesHandleTest {
     @Test
     public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
         File f = new File("src/test/resources/values.xml");
-        FileInputStream is = new FileInputStream(f);
-
-        MyValuesHandle v = new MyValuesHandle();
-
-        v.parseTestData(is);
-
+        MyValuesHandle v;
+        try (FileInputStream is = new FileInputStream(f)) {
+            v = new MyValuesHandle();
+            v.parseTestData(is);
+        }
         assertTrue("Name should be 'size'", "size".equals(v.getName()));
         assertEquals("Type should be 'xs:unsignedLong'", "xs:unsignedLong", v.getType());
 

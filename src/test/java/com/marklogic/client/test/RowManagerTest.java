@@ -156,20 +156,17 @@ public class RowManagerTest {
 		RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
 		
 		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
-			ReaderHandle readerHandle = new ReaderHandle();
-
-			rowMgr.resultDoc(plan, readerHandle.withMimetype("text/csv"));
-
-			LineNumberReader lineReader = new LineNumberReader(readerHandle.get());
-
-			String[] cols = lineReader.readLine().split(",");
-			assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
-
-			cols = lineReader.readLine().split(",");
-			assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
-
-			lineReader.close();
-			readerHandle.close();
+            try (ReaderHandle readerHandle = new ReaderHandle()) {
+                rowMgr.resultDoc(plan, readerHandle.withMimetype("text/csv"));
+                
+                try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
+                    String[] cols = lineReader.readLine().split(",");
+                    assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
+                    
+                    cols = lineReader.readLine().split(",");
+                    assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
+                }
+            }
 
 	        DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
 
