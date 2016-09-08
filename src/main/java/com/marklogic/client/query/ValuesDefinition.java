@@ -37,96 +37,96 @@ public interface ValuesDefinition {
      * Returns the name of the values constraint.
      * @return The name of the values constraint.
      */
-    public String getName();
+    String getName();
 
     /**
      * Sets the name of the values constraint.
      * @param name The values constraint name.
      */
-    public void setName(String name);
+    void setName(String name);
 
     /**
      * Returns the query definition associated with this values query.
      * @return The query definition.
      */
-    public ValueQueryDefinition getQueryDefinition();
+    ValueQueryDefinition getQueryDefinition();
 
     /**
      * Set the query definition associated with this values query.
      * @param qdef The query definition.
      */
-    public void setQueryDefinition(ValueQueryDefinition qdef);
+    void setQueryDefinition(ValueQueryDefinition qdef);
 
     /**
      * Returns the name of the options node used for this values query.
      * @return The name of the options node.
      */
-    public String getOptionsName();
+    String getOptionsName();
 
     /**
      * Set the name of the options node to use for this values query.
      * @param optname The name of the options node.
      */
-    public void setOptionsName(String optname);
+    void setOptionsName(String optname);
 
     /**
      * Returns the name of the aggregate function applied to this query.
      * @return The name of the function.
      */
-    public String[] getAggregate();
+    String[] getAggregate();
 
     /**
      * Sets the name of the aggregate function to be applied as part of this values query.
      * @param aggregate The name of the function.
      */
-    public void setAggregate(String... aggregate);
+    void setAggregate(String... aggregate);
 
     /**
      * Returns the aggregate path.
      * @return The path.
      */
-    public String getAggregatePath();
+    String getAggregatePath();
 
     /**
      * Sets the aggregate path.
      * @param aggregate The aggregate path.
      */
-    public void setAggregatePath(String aggregate);
+    void setAggregatePath(String aggregate);
 
     /**
      * Returns the view for this values query.
      * @return The view.
      */
-    public String getView();
+    String getView();
 
     /**
      * Sets the view for this values query.
      * @param view The view.
      */
-    public void setView(String view);
+    void setView(String view);
 
     /**
      * Returns the direction of the results in this values query.
      * @return The direction.
      */
-    public Direction getDirection();
+    Direction getDirection();
 
     /**
      * Sets the direction of the results to use in this values query.
      * @param dir The direction.
      */
-    public void setDirection(Direction dir);
+    void setDirection(Direction dir);
 
     /**
      * Returns the frequency of the results.
      * @return The frequency.
      */
-    public Frequency getFrequency();
+    Frequency getFrequency();
 
     /**
      * Sets the frequency to be used in this values query.
      * @param freq The frequency.
      */
-    public void setFrequency(Frequency freq);
+    void setFrequency(Frequency freq);
 }
 

@@ -55,7 +55,7 @@ public interface DocumentWriteOperation {
      * {@link DocumentWriteSet#disableDefault disableDefault}.
      * @return the operation type which was set implicitly
      */
-    public OperationType getOperationType();
+    OperationType getOperationType();
 
     // The uri for this document, whether set explicitly or received from the
     // server after a write with a DocumentDescriptor.
@@ -63,26 +63,26 @@ public interface DocumentWriteOperation {
      * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add(String, ...)}
      * @return the uri
      */
-    public String getUri();
+    String getUri();
 
     /** The handle with the metadata as set by your call to
      * {@link DocumentWriteSet#add(String, DocumentMetadataWriteHandle, AbstractWriteHandle) add} or
      * {@link DocumentWriteSet#add(DocumentDescriptor, DocumentMetadataWriteHandle, AbstractWriteHandle) add}.
      * @return the handle with the metadata
      */
-    public DocumentMetadataWriteHandle getMetadata();
+    DocumentMetadataWriteHandle getMetadata();
 
     /** The handle with the content as set by your call to
      * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add} or
      * {@link DocumentWriteSet#add(DocumentDescriptor, AbstractWriteHandle) add}.
      * @return the handle with the content
      */
-    public AbstractWriteHandle getContent();
+    AbstractWriteHandle getContent();
 
     /**
      * The logical temporal document URI of the document as set by your call to
      * one of the 'add' methods which adds a document to a {@link DocumentWriteSet}
      * @return the logical temporal document URI
      */
-    public String getTemporalDocumentURI();
+    String getTemporalDocumentURI();
 }

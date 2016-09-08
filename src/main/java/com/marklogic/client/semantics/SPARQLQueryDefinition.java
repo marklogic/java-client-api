@@ -19,7 +19,6 @@ import java.util.Locale;
 
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.semantics.Capability;
 
 /**
  * <p>Represents a SPARQL query.</p>
@@ -33,19 +32,19 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @param sparql the SPARQL statement
      */
-    public void setSparql(String sparql);
+    void setSparql(String sparql);
 
     /** Set the SPARQL query or update statement
      *
      * @param sparql the SPARQL statement
      */
-    public void setSparql(TextWriteHandle sparql);
+    void setSparql(TextWriteHandle sparql);
 
     /** Get the SPARQL query or update statement
      *
      * @return the SPARQL statement
      */
-    public String getSparql();
+    String getSparql();
 
     /** Set the SPARQL query or update statement
      *
@@ -53,7 +52,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withSparql(String sparql);
+    SPARQLQueryDefinition withSparql(String sparql);
 
     /** Set the SPARQL query or update statement
      *
@@ -61,20 +60,20 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withSparql(TextWriteHandle sparql);
+    SPARQLQueryDefinition withSparql(TextWriteHandle sparql);
 
     /** Set the child SPARQLBindings instance.
      *
      * @param bindings bindings to set as the child SPARQLBindings instance
      */
-    public void setBindings(SPARQLBindings bindings);
+    void setBindings(SPARQLBindings bindings);
 
     /** Get the child SPARQLBindings instance (normally populated by calls to
      * withBinding methods).
      *
      * @return the bindings set on this instance
      */
-    public SPARQLBindings getBindings();
+    SPARQLBindings getBindings();
 
     /** <p>Bind a variable of type iri.</p>
      *
@@ -83,7 +82,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withBinding(String name, String value);
+    SPARQLQueryDefinition withBinding(String name, String value);
 
     /** <p>Bind a variable of specified type.</p>
      *
@@ -93,7 +92,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withBinding(String name, String value, RDFTypes type);
+    SPARQLQueryDefinition withBinding(String name, String value, RDFTypes type);
 
     /** <p>Bind a variable of type
      * http://www.w3.org/1999/02/22-rdf-syntax-ns#langString with the specified
@@ -106,13 +105,13 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withBinding(String name, String value, Locale languageTag);
+    SPARQLQueryDefinition withBinding(String name, String value, Locale languageTag);
 
     /** <p>Remove all variable bindings from the child SPARQLBindings instance.</p>
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition clearBindings();
+    SPARQLQueryDefinition clearBindings();
 
     /** <p>For use with {@link SPARQLQueryManager#executeUpdate SPARQL update},
      * where specified permissions will apply to any records created by the
@@ -128,14 +127,14 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @param permissions the permissions (use {@link SPARQLQueryManager#permission} to create)
      */
-    public void setUpdatePermissions(GraphPermissions permissions);
+    void setUpdatePermissions(GraphPermissions permissions);
 
     /** Get any permissions set on this instance.  This does not get any info
      * from the database.
      *
      * @return the permissions set on this instance
      */
-    public GraphPermissions getUpdatePermissions();
+    GraphPermissions getUpdatePermissions();
 
     /** Calls {@link #setUpdatePermissions} then returns this instance for
      * method chaining.
@@ -145,49 +144,49 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withUpdatePermission(String role, Capability capability);
+    SPARQLQueryDefinition withUpdatePermission(String role, Capability capability);
 
-    public String getBaseUri();
+    String getBaseUri();
 
     /** set the base IRI for the query
      * @param uri the base uri
      */
-    public void setBaseUri(String uri);
+    void setBaseUri(String uri);
 
-    public String[] getDefaultGraphUris();
+    String[] getDefaultGraphUris();
     /** Set the URI of the graph or graphs to use as the default graph. Use
      * with SPARQL query only. If this parameter is used with SPARQL Update, it
      * will cause an exception.
      *
      * @param uris the default graph uris
      */
-    public void setDefaultGraphUris(String... uris);
+    void setDefaultGraphUris(String... uris);
 
-    public String[] getNamedGraphUris();
+    String[] getNamedGraphUris();
     /** Set the URI of a named graph or graphs to include in the query or
      * update operation.  Use with SPARQL query only. If this parameter is used
      * with SPARQL Update, it will cause an exception.
      * @param uris the named graph uris
      */
-    public void setNamedGraphUris(String... uris);
+    void setNamedGraphUris(String... uris);
 
-    public String[] getUsingGraphUris();
+    String[] getUsingGraphUris();
     /** Set the URI of the graph or graphs to address as part of a SPARQL
      * update operation. Use with SPARQL Update only. If this parameter is used
      * with SPARQL query, it will cause an exception.
      *
      * @param uris the graph uris
      */
-    public void setUsingGraphUris(String... uris);
+    void setUsingGraphUris(String... uris);
 
-    public String[] getUsingNamedGraphUris();
+    String[] getUsingNamedGraphUris();
     /** Set the URI of a named graph or graphs to address as part of a SPARQL
      * update operation. Use with SPARQL Update only. If this parameter is used
      * with SPARQL query, it will cause an exception.
      *
      * @param uris the named graph uris
      */
-    public void setUsingNamedGraphUris(String... uris);
+    void setUsingNamedGraphUris(String... uris);
 
     /** Set the search query used to constrain the set of documents included in
      * the SPARQL query. Only meant to query unmanaged triples.  The behavior
@@ -195,8 +194,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @param query the constraining query
      */
-    public void setConstrainingQueryDefinition(QueryDefinition query);
-    public QueryDefinition getConstrainingQueryDefinition();
+    void setConstrainingQueryDefinition(QueryDefinition query);
+    QueryDefinition getConstrainingQueryDefinition();
     /** Set the search query used to constrain the set of documents included in
      * the SPARQL query. Only meant to query unmanaged triples.  The behavior
      * is unspecified if used to query managed triples.
@@ -205,7 +204,7 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withConstrainingQuery(QueryDefinition query);
+    SPARQLQueryDefinition withConstrainingQuery(QueryDefinition query);
 
     /** Set the name of rulesets to include for inferring triples. Ruleset
      * names can be those of the built-in rulesets, or user-managed rulesets
@@ -213,8 +212,8 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @param ruleset the names of the rulesets to use
      */
-    public void setRulesets(SPARQLRuleset... ruleset);
-    public SPARQLRuleset[] getRulesets();
+    void setRulesets(SPARQLRuleset... ruleset);
+    SPARQLRuleset[] getRulesets();
     /** Set the name of rulesets to include for inferring triples. Ruleset
      * names can be those of the built-in rulesets, or user-managed rulesets
      * stored in the schemas database.
@@ -223,29 +222,29 @@ public interface SPARQLQueryDefinition extends QueryDefinition {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
+    SPARQLQueryDefinition withRuleset(SPARQLRuleset ruleset);
 
     /** Set whether to include database-default inference or not. Default is true.
      *
      * @param include whether to include or not
      *
      */
-    public void setIncludeDefaultRulesets(Boolean include);
-    public Boolean getIncludeDefaultRulesets();
+    void setIncludeDefaultRulesets(Boolean include);
+    Boolean getIncludeDefaultRulesets();
     /** Set whether to include database-default inference or not. Default is true.
      *
      * @param include whether to include or not
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean include);
+    SPARQLQueryDefinition withIncludeDefaultRulesets(Boolean include);
 
-    public int getOptimizeLevel();
+    int getOptimizeLevel();
     /** Set a number indicating how much time for the query engine to spend
      * analyzing a query. (See <a href="http://docs.marklogic.com/sem:sparql">sem:sparql</a>
      * in the server-side XQuery API docs)
      *
      * @param level the optimization level
      */
-    public void setOptimizeLevel(int level);
+    void setOptimizeLevel(int level);
 }

@@ -42,7 +42,7 @@ public interface ResourceExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of resource service extensions
      */
-    public <T> T listServicesAs(Format format, Class<T> as);
+    <T> T listServicesAs(Format format, Class<T> as);
     /**
 	 * Reads the list of resource service extensions installed on the server
 	 * in a JSON or XML representation provided as an object of an IO class.
@@ -56,14 +56,14 @@ public interface ResourceExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the list of resource service extensions
      */
-    public <T> T listServicesAs(Format format, Class<T> as, boolean refresh);
+    <T> T listServicesAs(Format format, Class<T> as, boolean refresh);
     /**
 	 * Reads the list of resource service extensions installed on the server.
 	 * @param listHandle	a handle on a JSON or XML representation of the list
 	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
 	 */
-    public <T extends StructureReadHandle> T listServices(T listHandle);
+    <T extends StructureReadHandle> T listServices(T listHandle);
     /**
 	 * Reads the list of resource service extensions installed on the server,
 	 * specifying whether to refresh the metadata about each extension by parsing
@@ -73,7 +73,7 @@ public interface ResourceExtensionsManager {
 	 * @param <T> the type of StructureReadHandle to return
 	 * @return	the list handle
      */
-    public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh);
+    <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh);
 
     /**
      * Reads the XQuery implementation of the services for a resource
@@ -87,7 +87,7 @@ public interface ResourceExtensionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the source code for the service
      */
-    public <T> T readServicesAs(String resourceName, Class<T> as);
+    <T> T readServicesAs(String resourceName, Class<T> as);
 
     /**
      * Reads the XQuery implementation of the services for a resource.
@@ -96,7 +96,7 @@ public interface ResourceExtensionsManager {
      * @param <T> the type of TextReadHandle to return
      * @return	the XQuery source code
      */
-    public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);
+    <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle);
 
     /**
      * Installs the services that implement a resource
@@ -110,7 +110,7 @@ public interface ResourceExtensionsManager {
      * @param metadata	the metadata about the resource services
      * @param methodParams	a declaration of the parameters for the services
      */
-    public void writeServicesAs(
+    void writeServicesAs(
         	String resourceName, Object source, ExtensionMetadata metadata, MethodParameters... methodParams
         	);
 
@@ -121,13 +121,13 @@ public interface ResourceExtensionsManager {
      * @param metadata	the metadata about the resource services
      * @param methodParams	a declaration of the parameters for the services
      */
-    public void writeServices(String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams);
+    void writeServices(String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams);
 
     /**
      * Uninstalls the services that implement a resource.
      * @param resourceName	the name of the resource
      */
-    public void deleteServices(String resourceName);
+    void deleteServices(String resourceName);
 
     /**
      * Starts debugging client requests. You can suspend and resume debugging output
@@ -135,11 +135,11 @@ public interface ResourceExtensionsManager {
      * 
      * @param logger	the logger that receives debugging output
      */
-    public void startLogging(RequestLogger logger);
+    void startLogging(RequestLogger logger);
     /**
      *  Stops debugging client requests.
      */
-    public void stopLogging();
+    void stopLogging();
 
     /**
      * Method Parameters declare the parameters accepted

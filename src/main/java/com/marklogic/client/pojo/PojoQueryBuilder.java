@@ -127,7 +127,7 @@ public interface PojoQueryBuilder<T> {
      * @return a query matching pojos of type T containing the pojoProperty with contents
      *          or children matching the specified query
      */
-    public StructuredQueryDefinition containerQuery(String pojoProperty,
+    StructuredQueryDefinition containerQuery(String pojoProperty,
         StructuredQueryDefinition query);
 
     /** Use this method to provide a query builder that can query a nested object within your pojo.
@@ -142,7 +142,7 @@ public interface PojoQueryBuilder<T> {
      * @param <C> the type of the class contained by pojoProperty
      * @return a PojoQueryBuilder for nested pojos of the type corresponding with pojoProperty
      */
-    public <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz);
+    <C> PojoQueryBuilder<C> containerQueryBuilder(String pojoProperty, Class<C> clazz);
     /**
      * For use in a {@link #geospatial geospatial} query, reference a pair of properties.  These properties
      * should ideally have Geospatial Element Pair Indexes configured in the database.  For help
@@ -154,7 +154,7 @@ public interface PojoQueryBuilder<T> {
      *     ideally annotated with {@literal @}{@link GeospatialLongitude}
      * @return the geospatial element pair range query
      */
-    public StructuredQueryBuilder.GeospatialIndex
+    StructuredQueryBuilder.GeospatialIndex
         geoPair(String latitudePropertyName, String longitudePropertyName);
     /* no reason to expose geoProperty for now because it's redundant with geoPath
     public StructuredQueryBuilder.GeospatialIndex
@@ -168,7 +168,7 @@ public interface PojoQueryBuilder<T> {
      *     ideally annotated with {@literal @}{@link GeospatialPathIndexProperty}
      * @return the geospatial path range query
      */
-    public StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty);
+    StructuredQueryBuilder.GeospatialIndex geoPath(String pojoProperty);
     /**
      * Query a Path Range Index configured in the database for a pojo property.  Make sure the datatype for
      * your values parameter match the {@link ScalarType datatype} configured.  For help
@@ -180,7 +180,7 @@ public interface PojoQueryBuilder<T> {
      *     match the {@link ScalarType datatype} configured.
      * @return the range query
      */
-    public StructuredQueryDefinition range(String pojoProperty,
+    StructuredQueryDefinition range(String pojoProperty,
         PojoQueryBuilder.Operator operator, Object... values);
     /**
      * Query a Path Range Index configured in the database for a pojo property.  Make sure the datatype for
@@ -195,7 +195,7 @@ public interface PojoQueryBuilder<T> {
      *     match the {@link ScalarType datatype} configured.
      * @return the range query
      */
-    public StructuredQueryDefinition range(String pojoProperty, String[] options,
+    StructuredQueryDefinition range(String pojoProperty, String[] options,
         PojoQueryBuilder.Operator operator, Object... values);
     /**
      * Filter search results by properties matching specified values.
@@ -203,21 +203,21 @@ public interface PojoQueryBuilder<T> {
      * @param values match a persisted pojo of type T if it has the property with any of the values
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, String... values);
+    StructuredQueryDefinition value(String pojoProperty, String... values);
     /**
      * Filter search results by properties matching specified value.
      * @param pojoProperty the name of a field or JavaBean property (accessed via getter or setter) on class T
      * @param value match a persisted pojo of type T if it has the property with the boolean value
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, Boolean value);
+    StructuredQueryDefinition value(String pojoProperty, Boolean value);
     /**
      * Filter search results by properties matching specified values.
      * @param pojoProperty the name of a field or JavaBean property (accessed via getter or setter) on class T
      * @param values match a persisted pojo of type T if it has the property with any of the numeric values
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, Number... values);
+    StructuredQueryDefinition value(String pojoProperty, Number... values);
     /**
      * Filter search results by properties matching specified values.
      * @param pojoProperty the name of a field or JavaBean property (accessed via getter or setter) on class T
@@ -227,7 +227,7 @@ public interface PojoQueryBuilder<T> {
      * @param values match a persisted pojo of type T if it has the property with any of the values
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, String[] options,
+    StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, String... values);
     /**
      * Filter search results by properties matching specified values.
@@ -238,7 +238,7 @@ public interface PojoQueryBuilder<T> {
      * @param value match a persisted pojo of type T if it has the property with the boolean value
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, String[] options,
+    StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Boolean value);
     /**
      * Filter search results by properties matching specified values.
@@ -249,7 +249,7 @@ public interface PojoQueryBuilder<T> {
      * @param values match a persisted pojo of type T if it has the property with any of the numeric values
      * @return the value query
      */
-    public StructuredQueryDefinition value(String pojoProperty, String[] options,
+    StructuredQueryDefinition value(String pojoProperty, String[] options,
         double weight, Number... values);
     /**
      * Filter search results by properties with at least one of the specified words or phrases.
@@ -257,7 +257,7 @@ public interface PojoQueryBuilder<T> {
      * @param words match a persisted pojo of type T if it has the property with any of the words or phrases
      * @return the word query
      */
-    public StructuredQueryDefinition word(String pojoProperty, String... words);
+    StructuredQueryDefinition word(String pojoProperty, String... words);
     /**
      * Filter search results by properties with at least one of the specified words or phrases.
      * @param pojoProperty the name of a field or JavaBean property (accessed via getter or setter) on class T
@@ -267,14 +267,14 @@ public interface PojoQueryBuilder<T> {
      * @param words match a persisted pojo of type T if it has the property with any of the words or phrases
      * @return the word query
      */
-    public StructuredQueryDefinition word(String pojoProperty, String[] options,
+    StructuredQueryDefinition word(String pojoProperty, String[] options,
         double weight, String... words);
     /** Copied directly from  {@link StructuredQueryBuilder#and StructuredQuerybuilder.and}.
      * Defines an AND query over the list of query definitions.
      * @param queries	the query definitions
      * @return	the StructuredQueryDefinition for the AND query
      */
-    public StructuredQueryDefinition and(StructuredQueryDefinition... queries);
+    StructuredQueryDefinition and(StructuredQueryDefinition... queries);
     /** Copied directly from  {@link StructuredQueryBuilder#andNot StructuredQuerybuilder.andNot}.
      * Defines an AND NOT query combining a positive and negative
      * query. You can use an AND or OR query over a list of query
@@ -283,7 +283,7 @@ public interface PojoQueryBuilder<T> {
      * @param negative	the negative query definition
      * @return	the StructuredQueryDefinition for the AND NOT query
      */
-    public StructuredQueryDefinition andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
+    StructuredQueryDefinition andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
     /** Copied directly from  {@link StructuredQueryBuilder#boost StructuredQuerybuilder.boost}.
      * Defines a boost query for the matching and boosting query definitions.  The matching
      * or boosting query definitions can each be an AND or OR query definition for complex
@@ -292,7 +292,7 @@ public interface PojoQueryBuilder<T> {
      * @param boostingQuery	the query definition that increases the rank for some filtered documents
      * @return	the StructuredQueryDefinition for the boost query
      */
-    public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery);
+    StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery);
     /** Copied directly from  {@link StructuredQueryBuilder#box StructuredQuerybuilder.box}.
      * Specifies a geospatial region as a box, supplying
      * the coordinates for the perimeter.
@@ -302,14 +302,14 @@ public interface PojoQueryBuilder<T> {
      * @param east	the longitude of the east coordinate
      * @return	the definition of the box
      */
-    public StructuredQueryBuilder.Region box(double south, double west, double north, double east);
+    StructuredQueryBuilder.Region box(double south, double west, double north, double east);
     /** Copied directly from  {@link StructuredQueryBuilder#build StructuredQuerybuilder.build}.
      * Builds a structured query in XML from the list of query definitions.
      * The structured query can be passed to the search() method of QueryManager.
      * @param queries	the query definitions
      * @return	the structured query
      */
-    public RawStructuredQueryDefinition build(StructuredQueryDefinition... queries);
+    RawStructuredQueryDefinition build(StructuredQueryDefinition... queries);
     /** Copied directly from  {@link StructuredQueryBuilder#circle(double, double, double) StructuredQuerybuilder.circle(double, double, double)}.
      * Specifies a geospatial region as a circle,
      * supplying coordinates for the center.
@@ -318,7 +318,7 @@ public interface PojoQueryBuilder<T> {
      * @param radius	the radius of the circle
      * @return	the definition of the circle
      */
-    public StructuredQueryBuilder.Region circle(double latitude, double longitude, double radius);
+    StructuredQueryBuilder.Region circle(double latitude, double longitude, double radius);
     /** Copied directly from  {@link StructuredQueryBuilder#circle(StructuredQueryBuilder.Point, double) StructuredQuerybuilder.circle(StructuredQueryBuilder.Point, double)}.
      * Specifies a geospatial region as a circle,
      * supplying a point for the center.
@@ -326,14 +326,14 @@ public interface PojoQueryBuilder<T> {
      * @param radius	the radius of the circle
      * @return	the definition of the circle
      */
-    public StructuredQueryBuilder.Region circle(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point center, double radius);
+    StructuredQueryBuilder.Region circle(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point center, double radius);
     /** Copied directly from  {@link StructuredQueryBuilder#collection(String...) StructuredQuerybuilder.collection(String...)}.
      * Matches documents belonging to at least one
      * of the criteria collections.
      * @param uris	the identifiers for the criteria collections
      * @return	the StructuredQueryDefinition for the collection query
      */
-    public StructuredQueryDefinition collection(String... uris);
+    StructuredQueryDefinition collection(String... uris);
     /** Copied from {@link StructuredQueryBuilder#geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.FragmentScope, String[], StructuredQueryBuilder.Region...) StructuredQuerybuilder.geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.FragmentScope, String[], StructuredQueryBuilder.Region...)} but without StructuredQueryBuilder.FragmentScope.
      * Matches an element, element pair, element attribute, pair, or path
      * specifying a geospatial point that appears within one of the criteria regions.
@@ -342,7 +342,7 @@ public interface PojoQueryBuilder<T> {
      * @param regions	the possible regions containing the point
      * @return	the StructuredQueryDefinition for the geospatial query
      */
-    public StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, String[] options, StructuredQueryBuilder.Region... regions);
+    StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, String[] options, StructuredQueryBuilder.Region... regions);
     /** Copied directly from  {@link StructuredQueryBuilder#geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.Region...) StructuredQuerybuilder.geospatial(StructuredQueryBuilder.GeospatialIndex, StructuredQueryBuilder.Region...)}.
      * Matches an element, element pair, element attribute, pair, or path
      * specifying a geospatial point that appears within one of the criteria regions.
@@ -350,7 +350,7 @@ public interface PojoQueryBuilder<T> {
      * @param regions	the possible regions containing the point
      * @return	the StructuredQueryDefinition for the geospatial query
      */
-    public StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, StructuredQueryBuilder.Region... regions);
+    StructuredQueryDefinition geospatial(StructuredQueryBuilder.GeospatialIndex index, StructuredQueryBuilder.Region... regions);
     /** Copied directly from  {@link StructuredQueryBuilder#near(int, double, StructuredQueryBuilder.Ordering, StructuredQueryDefinition...) StructuredQuerybuilder.near(int, double, StructuredQueryBuilder.Ordering, StructuredQueryDefinition...)}.
      * Defines a NEAR query over the list of query definitions
      * with specified parameters.
@@ -360,14 +360,14 @@ public interface PojoQueryBuilder<T> {
      * @param queries	the query definitions
      * @return	the StructuredQueryDefinition for the NEAR query
      */
-    public StructuredQueryDefinition near(int distance, double weight, StructuredQueryBuilder.Ordering order, StructuredQueryDefinition... queries);
+    StructuredQueryDefinition near(int distance, double weight, StructuredQueryBuilder.Ordering order, StructuredQueryDefinition... queries);
     /** Copied directly from  {@link StructuredQueryBuilder#near(StructuredQueryDefinition...) StructuredQuerybuilder.near(StructuredQueryDefinition...)}.
      * Defines a NEAR query over the list of query definitions
      * with default parameters.
      * @param queries	the query definitions
      * @return	the StructuredQueryDefinition for the NEAR query
      */
-    public StructuredQueryDefinition near(StructuredQueryDefinition... queries);
+    StructuredQueryDefinition near(StructuredQueryDefinition... queries);
     /** Copied directly from  {@link StructuredQueryBuilder#not StructuredQuerybuilder.not}.
      * Defines a NOT query for a query definition. To negate
      * a list of query definitions, define an AND or
@@ -376,7 +376,7 @@ public interface PojoQueryBuilder<T> {
      * @param query	the query definition
      * @return	the StructuredQueryDefinition for the NOT query
      */
-    public StructuredQueryDefinition not(StructuredQueryDefinition query);
+    StructuredQueryDefinition not(StructuredQueryDefinition query);
     /** Copied directly from  {@link StructuredQueryBuilder#notIn StructuredQuerybuilder.and}.
      * Defines a not-in query for the positive and negative query definitions.  These query definitions
      * can each be an AND or OR query definition for complex combinations of criteria.
@@ -384,26 +384,26 @@ public interface PojoQueryBuilder<T> {
      * @param negative the query definition that excludes documents
      * @return	the StructuredQueryDefinition for the not-in query
      */
-    public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
+    StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative);
     /** Copied directly from  {@link StructuredQueryBuilder#or StructuredQuerybuilder.and}.
      * Defines an OR query over the list of query definitions.
      * @param queries	the query definitions
      * @return	the StructuredQueryDefinition for the OR query
      */
-    public StructuredQueryDefinition or(StructuredQueryDefinition... queries);
+    StructuredQueryDefinition or(StructuredQueryDefinition... queries);
     /** Copied directly from  {@link StructuredQueryBuilder#point StructuredQuerybuilder.point}.
      * Specifies a geospatial point.
      * @param latitude	the latitude coordinate
      * @param longitude	the longitude coordinate
      * @return	the definition of the point
      */
-    public StructuredQueryBuilder.Region point(double latitude, double longitude);
+    StructuredQueryBuilder.Region point(double latitude, double longitude);
     /** Copied directly from  {@link StructuredQueryBuilder#polygon StructuredQuerybuilder.polygon}.
      * Specifies a geospatial region as an arbitrary polygon.
      * @param points	the list of points defining the perimeter of the region
      * @return	the definition of the polygon
      */
-    public StructuredQueryBuilder.Region polygon(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point... points);
+    StructuredQueryBuilder.Region polygon(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point... points);
     /** Copied directly from  {@link StructuredQueryBuilder#term(double, String...) StructuredQuerybuilder.term(double, String...)}.
      * Matches documents containing the specified terms, modifying
      * the contribution of the match to the score with the weight.
@@ -411,13 +411,13 @@ public interface PojoQueryBuilder<T> {
      * @param terms	the possible terms to match
      * @return	the StructuredQueryDefinition for the term query
      */
-    public StructuredQueryDefinition term(double weight, String... terms);
+    StructuredQueryDefinition term(double weight, String... terms);
     /** Copied directly from  {@link StructuredQueryBuilder#term(String...) StructuredQuerybuilder.term(String...)}.
      * Matches documents containing the specified terms.
      * @param terms	the possible terms to match
      * @return	the StructuredQueryDefinition for the term query
      */
-    public StructuredQueryDefinition term(String... terms);
+    StructuredQueryDefinition term(String... terms);
     /** Wraps the structured query into a combined query with options containing
      * <a href="http://docs.marklogic.com/guide/rest-dev/appendixb#id_29496">
      *     &lt;search-option&gt;filtered&lt;/search-option&gt;</a> so results are accurate 
@@ -427,5 +427,5 @@ public interface PojoQueryBuilder<T> {
      * @return a QueryDefinition that can be used with PojoRepository.search() 
      *         (a REST combined query under the hood)
      */
-    public PojoQueryDefinition filteredQuery(StructuredQueryDefinition query);
+    PojoQueryDefinition filteredQuery(StructuredQueryDefinition query);
 }

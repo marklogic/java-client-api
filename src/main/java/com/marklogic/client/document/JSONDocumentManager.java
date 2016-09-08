@@ -30,7 +30,7 @@ public interface JSONDocumentManager
      * of a JSON document.
      * @return	the patch builder
      */
-    public DocumentPatchBuilder newPatchBuilder();
+    DocumentPatchBuilder newPatchBuilder();
 
     /**
 	 * Returns the language code for JSON documents written by the manager.
@@ -38,7 +38,7 @@ public interface JSONDocumentManager
 	 * @deprecated as a result of adding native json support, the lang param in the REST API is deprecated
 	 */
 	@Deprecated
-	public String getLanguage();
+	String getLanguage();
 	/**
 	 * Specifies the language code for JSON documents written by the manager.  The IANA codes
 	 * for specifying a language for JSON documents are the same as those used with
@@ -48,5 +48,5 @@ public interface JSONDocumentManager
 	 * @deprecated as a result of adding native json support, the lang param in the REST API is deprecated
 	 */
 	@Deprecated
-    public void setLanguage(String language);
+    void setLanguage(String language);
 }

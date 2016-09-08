@@ -31,7 +31,7 @@ public interface Transaction {
 	 * Transaction object to methods.
 	 * @return	the transaction identifier
 	 */
-	public String getTransactionId();
+	String getTransactionId();
 
 	/**
 	 * Returns the host identifier for the transaction that binds this
@@ -40,7 +40,7 @@ public interface Transaction {
 	 * Transaction object to methods.
 	 * @return	the host identifier
 	 */
-	public String getHostId();
+	String getHostId();
 
 	/**
 	 * Returns any cookies sent in the response to open the transaction.  This is
@@ -49,7 +49,7 @@ public interface Transaction {
 	 * originated.
 	 * @return	the cookies sent in the response to open the transaction
 	 */
-	public List<NewCookie> getCookies();
+	List<NewCookie> getCookies();
 
 	/**
 	 * Reads the status for the transaction including whether the transaction
@@ -58,19 +58,19 @@ public interface Transaction {
    * @param <T> the type of StructureReadHandle handle to return
 	 * @return	the status report handle
 	 */
-	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;
+	<T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException;
 
 	/**
 	 * Completes the transaction, making writes and deletes visible to other database clients.
 	 * 
      * To call commit(), an application must authenticate as rest-writer or rest-admin.
 	 */
-	public void commit() throws ForbiddenUserException, FailedRequestException;
+	void commit() throws ForbiddenUserException, FailedRequestException;
 	/**
 	 * Cancels the transaction, reverting the database to its state prior to the writes and deletes
 	 * made in the transaction.
 	 * 
      * To call rollback(), an application must authenticate as rest-writer or rest-admin.
 	 */
-    public void rollback() throws ForbiddenUserException, FailedRequestException;
+    void rollback() throws ForbiddenUserException, FailedRequestException;
 }

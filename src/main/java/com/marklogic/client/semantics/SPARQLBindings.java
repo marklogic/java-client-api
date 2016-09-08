@@ -67,7 +67,7 @@ public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLBindings bind(String name, String value);
+    SPARQLBindings bind(String name, String value);
 
     /** <p>Bind a variable of specified type.</p>
      *
@@ -77,7 +77,7 @@ public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLBindings bind(String name, String value, RDFTypes datatype);
+    SPARQLBindings bind(String name, String value, RDFTypes datatype);
 
     /** <p>Bind a variable of type
      * http://www.w3.org/1999/02/22-rdf-syntax-ns#langString with the specified
@@ -90,5 +90,5 @@ public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
      *
      * @return this instance (for method chaining)
      */
-    public SPARQLBindings bind(String name, String value, Locale languageTag);
+    SPARQLBindings bind(String name, String value, Locale languageTag);
 };

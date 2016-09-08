@@ -25,14 +25,14 @@ public interface ContentHandleFactory {
 	 * Returns classes that the handle always supports;
 	 * @return	the classes if any
 	 */
-	public Class<?>[] getHandledClasses();
+	Class<?>[] getHandledClasses();
 	/**
 	 * Returns true if the factory can create a handle for instances
 	 * of the IO class.
 	 * @param type	the class of the IO representation
 	 * @return	whether the factory can create a handle
 	 */
-	public boolean isHandled(Class<?> type);
+	boolean isHandled(Class<?> type);
 	/**
 	 * Instantiates a handle for an IO class recognized by the factory.
 	 * @param type	the class of the IO representation
@@ -40,5 +40,5 @@ public interface ContentHandleFactory {
 	 *            ContentHandle
 	 * @return	the handle or null if the class is unrecognized
 	 */
-	public <C> ContentHandle<C> newHandle(Class<C> type);
+	<C> ContentHandle<C> newHandle(Class<C> type);
 }

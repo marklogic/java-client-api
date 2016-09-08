@@ -41,7 +41,7 @@ public interface QueryOptionsManager {
      * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return	an object of the IO class with the option names
      */
-	public <T> T optionsListAs(Format format, Class<T> as)
+	<T> T optionsListAs(Format format, Class<T> as)
 		throws ForbiddenUserException, FailedRequestException;
     /**
      * Retrieves the list of available named query options in a JSON or
@@ -54,7 +54,7 @@ public interface QueryOptionsManager {
      * @param <T> the type of QueryOptionsListReadHandle to return
      * @return the handle populated with the names
      */
-    public <T extends QueryOptionsListReadHandle> T optionsList(T listHandle)
+    <T extends QueryOptionsListReadHandle> T optionsList(T listHandle)
     	throws ForbiddenUserException, FailedRequestException;
 
     /**
@@ -66,7 +66,7 @@ public interface QueryOptionsManager {
    * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return an object of the IO class with the query options
      */
-	public <T> T readOptionsAs(String name, Format format, Class<T> as)
+	<T> T readOptionsAs(String name, Format format, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Fetch a query options configuration from the REST Server by name.
@@ -78,7 +78,7 @@ public interface QueryOptionsManager {
 	 * @param <T> the type of QueryOptionsListReadHandle to return
 	 * @return an object holding the query configurations
 	 */
-    public <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
+    <T extends QueryOptionsReadHandle> T readOptions(String name, T queryOptionsHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
     /**
@@ -92,20 +92,20 @@ public interface QueryOptionsManager {
      * @param format	whether the options are provided in a JSON or XML representation
      * @param queryOptions	an IO representation of the JSON or XML query options
      */
-    public void writeOptionsAs(String name, Format format, Object queryOptions)
+    void writeOptionsAs(String name, Format format, Object queryOptions)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
     /**
      * Write a named QueryOptions configuration to the REST server.
      * @param name name given to the QueryOptions for use in runtime queries
      * @param queryOptionsHandle an object able to serialize a QueryOptions configuration
      */
-    public void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle)
+    void writeOptions(String name, QueryOptionsWriteHandle queryOptionsHandle)
     	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException;
     
     /**
      * Remove a search configuration from the REST server.
      * @param name name of query options to remove from the REST server.
      */
-    public void deleteOptions(String name)
+    void deleteOptions(String name)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 }

@@ -28,26 +28,26 @@ import com.marklogic.client.admin.config.QueryOptions.PathIndex;
 @SuppressWarnings("deprecation")
 public interface IndexSpec  {
 	
-	public QName getAttribute();
+	QName getAttribute();
 
-	public String getField();
+	String getField();
 
-	public QName getElement();
+	QName getElement();
 
-	public String getJsonKey();
+	String getJsonKey();
 
-	public PathIndex getPathIndex();
+	PathIndex getPathIndex();
 	
-	public void build(Indexed indexable);
+	void build(Indexed indexable);
 	
-	public void setElement(QName qname);
+	void setElement(QName qname);
 	
-	public void setAttribute(QName qname);
+	void setAttribute(QName qname);
 	
-	public void setField(String fieldName);
+	void setField(String fieldName);
 	
-	public void setJsonKey(String jsonKey);
+	void setJsonKey(String jsonKey);
 	
-	public void setPathIndex(PathIndex path);
+	void setPathIndex(PathIndex path);
 	
 }

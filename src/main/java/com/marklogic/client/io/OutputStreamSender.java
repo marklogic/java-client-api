@@ -34,5 +34,5 @@ public interface OutputStreamSender {
 	 * @param out	the output stream receiving the content
 	 * @throws IOException if io problems arise
 	 */
-	public void write(OutputStream out) throws IOException;
+	void write(OutputStream out) throws IOException;
 }

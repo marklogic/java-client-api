@@ -51,14 +51,14 @@ public interface RowManager {
      * Creates a builder to define a plan for constructing and retrieving database rows.
      * @return	a builder for row plans
      */
-	public PlanBuilder newPlanBuilder();
+	PlanBuilder newPlanBuilder();
 
 	/**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
      * @param	handle a handle for a JSON serialization of a PlanAST
 	 * @return	a plan for constructing and retrieving database rows
 	 */
-	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
+	RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle);
 
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
@@ -66,7 +66,7 @@ public interface RowManager {
 	 * @param plan	the definition of a plan for the database rows
 	 * @return	an iterable over the results with a map interface
 	 */
-	public RowSet<RowRecord> resultRows(Plan plan);
+	RowSet<RowRecord> resultRows(Plan plan);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a map interface and reflecting documents written or deleted by an
@@ -75,7 +75,7 @@ public interface RowManager {
      * @param transaction	a open transaction for documents from which rows have been projected
 	 * @return	an iterable over the results with a map interface for each row
 	 */
-	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
+	RowSet<RowRecord> resultRows(Plan plan, Transaction transaction);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a JSON or XML handle for each row.
@@ -84,7 +84,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	an iterable over the result rows
 	 */
-	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
+	<T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a JSON or XML handle for each row and reflecting documents written or 
@@ -95,11 +95,11 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	an iterable over the result rows
 	 */
-    public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
+    <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
 /* TODO:
-    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as);
-    public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction);
+    <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as);
+    <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction);
  */
 
 	/**
@@ -110,7 +110,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	the JSON or XML handle populated with the set of rows
 	 */
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T handle);
+	<T extends RowReadHandle> T resultDoc(Plan plan, T handle);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a handle to get the set of rows as a single JSON or XML structure
@@ -121,7 +121,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	the JSON or XML handle populated with the set of rows
 	 */
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
+	<T extends RowReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan
 	 * in the representation specified by the IO class.
@@ -134,7 +134,7 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the set of rows
      * @return	an object of the IO class with the content of the set of rows
 	 */
-	public <T> T resultDocAs(Plan plan, Class<T> as);
+	<T> T resultDocAs(Plan plan, Class<T> as);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan
 	 * in the representation specified by the IO class and reflecting
@@ -149,5 +149,5 @@ public interface RowManager {
      * @param <T> the type of the IO object for reading the set of rows
      * @return	an object of the IO class with the content of the set of rows
 	 */
-	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
+	<T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
 }

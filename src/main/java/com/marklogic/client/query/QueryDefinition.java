@@ -25,7 +25,7 @@ public interface QueryDefinition {
      * Returns the name of the query options used for this query.
      * @return The options name.
      */
-    public String getOptionsName();
+    String getOptionsName();
 
     /**
      * Sets the name of the query options to be used for this query.
@@ -34,45 +34,45 @@ public interface QueryDefinition {
      *
      * @param name The name of the saved query options node on the server.
      */
-    public void setOptionsName(String name);
+    void setOptionsName(String name);
 
     /**
      * Returns the array of collections to which the query is limited.
      * @return The array of collection URIs.
      */
-    public String[] getCollections();
+    String[] getCollections();
 
     /**
      * Sets the list of collections to which the query should be limited.
      *
      * @param collections The list of collection URIs.
      */
-    public void setCollections(String... collections);
+    void setCollections(String... collections);
 
     /**
      * Returns the directory to which the query is limited.
      * @return The directory URI.
      */
-    public String getDirectory();
+    String getDirectory();
 
     /**
      * Sets the directory to which the query should be limited.
      * @param directory The directory URI.
      */
-    public void setDirectory(String directory);
+    void setDirectory(String directory);
 
     /**
      * Returns the transform that modifies responses to this query
      * on the server.
      * @return The transform.
      */
-    public ServerTransform getResponseTransform();
+    ServerTransform getResponseTransform();
 
     /**
      * Specifies a transform that modifies responses to this query
      * on the server.
      * @param transform	A server transform to modify the query response.
      */
-    public void setResponseTransform(ServerTransform transform);
+    void setResponseTransform(ServerTransform transform);
 }
 

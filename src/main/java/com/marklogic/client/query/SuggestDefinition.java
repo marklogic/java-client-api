@@ -25,7 +25,7 @@ public interface SuggestDefinition {
      * Returns the name of the query options used for this query.
      * @return The options name.
      */
-    public String getOptionsName();
+    String getOptionsName();
 
     /**
      * Sets the name of the query options to be used for this query.
@@ -34,21 +34,21 @@ public interface SuggestDefinition {
      *
      * @param name The name of the saved query options node on the server.
      */
-    public void setOptionsName(String name);
+    void setOptionsName(String name);
     
     /**
      * Sets one or more criteria for the suggestion call.  
      * 
      * @param pqtext A string for input to suggestions.
      */
-    public void setStringCriteria(String pqtext);
+    void setStringCriteria(String pqtext);
     
     
     /**
      * Returns the text of the suggestion call.
      * @return The suggestion input.
      */
-    public String getStringCriteria();
+    String getStringCriteria();
     
     /**
      * Sets zero or more search strings to AND with the suggestion call.  
@@ -56,14 +56,14 @@ public interface SuggestDefinition {
      * @param qtext Zero or more
      * string queries to qualify that input string.
      */
-    public void setQueryStrings(String... qtext);
+    void setQueryStrings(String... qtext);
     
     
     /**
      * Returns the array of strings set for this SuggestDefinition.
      * @return The query text strings and suggestion input.
      */
-    public String[] getQueryStrings();
+    String[] getQueryStrings();
     
     /**
      * Sets a limit for a suggest call.  Only this number of suggestions
@@ -71,25 +71,25 @@ public interface SuggestDefinition {
      * 
      * @param limit The maximum number of suggestions to fetch.
      */
-    public void setLimit(Integer limit);
+    void setLimit(Integer limit);
     
     /**
      * Returns the maximum number of suggestions to fetch.
      * @return The limit.
      */
-    public Integer getLimit();
+    Integer getLimit();
     
     /**
      * Sets the cursor position to use in the suggest call.
      * @param cursorPosition The cursor position.
      */
-    public void setCursorPosition(Integer cursorPosition);
+    void setCursorPosition(Integer cursorPosition);
     
     /**
      * Returns the cursor position for the suggest call.
      * @return The cursor position
      */
-    public Integer getCursorPosition();
+    Integer getCursorPosition();
     
     
 }
