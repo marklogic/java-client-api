@@ -78,7 +78,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
         }
         @Override
         public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-            Map<String, String> options = new HashMap<String, String>();
+            Map<String, String> options = new HashMap<>();
             options.put("refreshKrb5Config", "true");
             options.put("useTicketCache", "true");
             options.put("doNotPrompt", "true");

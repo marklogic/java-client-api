@@ -81,7 +81,7 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		// create query options handle
 		QueryOptionsHandle handle = new QueryOptionsHandle();
 
-		List<String> listOfSearchOptions = new ArrayList<String> ();
+		List<String> listOfSearchOptions = new ArrayList<> ();
 		listOfSearchOptions.add("checked");
 		listOfSearchOptions.add("filtered");
 		listOfSearchOptions.add("score-simple");
@@ -152,7 +152,7 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		// create query options handle
 		QueryOptionsHandle handle = new QueryOptionsHandle();
 
-		List<String> listOfSearchOptions = new ArrayList<String> ();
+		List<String> listOfSearchOptions = new ArrayList<> ();
 		listOfSearchOptions.add("unchecked");
 		listOfSearchOptions.add("unfiltered");
 		listOfSearchOptions.add("score-logtfidf");

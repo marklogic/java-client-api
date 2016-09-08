@@ -61,6 +61,7 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
+import javax.xml.transform.Source;
 /**
  * @author skottam
  * This test is test the DocumentWriteSet function 
@@ -357,7 +358,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
         
        ObjectMapper mapper = new ObjectMapper();
        JacksonHandle defaultMetadata1 = new JacksonHandle();
-       Map<String,String> p = new HashMap<String,String>();
+       Map<String,String> p = new HashMap<>();
        p.put("myString", "json");
        p.put("myInt", "9");
        defaultMetadata1.with(constructJSONPropertiesMetadata(p));
@@ -448,7 +449,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 		 // put metadata
 		ObjectMapper mapper = new ObjectMapper();
 	       JacksonHandle mh = new JacksonHandle();
-	       Map<String,String> p = new HashMap<String,String>();
+	       Map<String,String> p = new HashMap<>();
 	       p.put("myString", "Generic JSON");
 	       p.put("myInt", "19");
 	       mh.with(constructJSONPropertiesMetadata(p));
@@ -477,7 +478,7 @@ public class TestBulkWriteMetadatawithRawXML extends  BasicJavaClientREST{
 	     
 	     writeset.add("/generic/foo1.txt",bh);
 	     
-	     DOMSource ds = new DOMSource(getDocumentContent("This is so foo1"));
+	     Source ds = new DOMSource(getDocumentContent("This is so foo1"));
 	     SourceHandle sh = new SourceHandle();
 	     sh.set(ds);
 	     sh.setFormat(Format.XML);

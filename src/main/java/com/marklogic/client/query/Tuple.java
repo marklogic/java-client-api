@@ -33,7 +33,7 @@ public class Tuple {
     private List<TypedDistinctValue> distinctValues;
 
     public Tuple() {
-        distinctValues = new ArrayList<TypedDistinctValue>();
+        distinctValues = new ArrayList<>();
     }
 
     /**

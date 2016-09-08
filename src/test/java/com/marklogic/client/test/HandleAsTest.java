@@ -237,7 +237,7 @@ public class HandleAsTest {
 		Product[] products = {product1, product2};
 
 		// setup
-		Set<String> prodNames = new HashSet<String>(products.length);
+		Set<String> prodNames = new HashSet<>(products.length);
 		for (Product product: products) {
 			String prodName = product.getName();
 			prodNames.add(prodName);

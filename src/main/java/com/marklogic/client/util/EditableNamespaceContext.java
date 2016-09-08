@@ -34,7 +34,7 @@ public class EditableNamespaceContext
     implements IterableNamespaceContext, Map<String, String>
 {
 	// key is prefix, value is namespace URI
-	private HashMap<String, String> bindings = new HashMap<String, String>();
+	private Map<String, String> bindings = new HashMap<>();
 
 	/**
 	 * Constructs a NamespaceContext.
@@ -134,7 +134,7 @@ public class EditableNamespaceContext
     	if (namespaceURI == null)
 			throw new IllegalArgumentException("Cannot find prefix for null namespace URI");
 
-    	List<String> list = new ArrayList<String>();
+    	List<String> list = new ArrayList<>();
     	if (XMLConstants.XML_NS_URI.equals(namespaceURI))
     		list.add(XMLConstants.XML_NS_PREFIX);
     	else if (XMLConstants.XMLNS_ATTRIBUTE_NS_URI.equals(namespaceURI))

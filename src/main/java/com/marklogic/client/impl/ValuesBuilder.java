@@ -26,6 +26,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.ValuesMetrics;
+import java.util.List;
 
 /**
  * A ValuesBuilder parses a set of value results.
@@ -47,17 +48,17 @@ public final class ValuesBuilder {
         private String type;
 
         @XmlElement(namespace = Values.VALUES_NS, name = "distinct-value")
-        private ArrayList<CountedDistinctValue> distinctValues;
+        private List<CountedDistinctValue> distinctValues;
 
         @XmlElement(namespace = Values.VALUES_NS, name = "aggregate-result")
-        private ArrayList<AggregateResult> aggregateResults;
+        private List<AggregateResult> aggregateResults;
 
         @XmlElement(namespace = Values.VALUES_NS, name = "metrics")
         private ValuesMetricsImpl metrics;
 
         public Values() {
-            distinctValues = new ArrayList<CountedDistinctValue>();
-            aggregateResults = new ArrayList<AggregateResult>();
+            distinctValues = new ArrayList<>();
+            aggregateResults = new ArrayList<>();
         }
 
         public String getName() {

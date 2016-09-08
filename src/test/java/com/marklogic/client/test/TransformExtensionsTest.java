@@ -39,6 +39,7 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.io.StringHandle;
+import java.util.Map;
 
 public class TransformExtensionsTest {
 	final static String XQUERY_NAME = "testxqy";
@@ -60,7 +61,7 @@ public class TransformExtensionsTest {
         XMLUnit.setNormalizeWhitespace(true);
         XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
 
-		HashMap<String,String> namespaces = new HashMap<String, String>();
+		Map<String,String> namespaces = new HashMap<>();
 		namespaces.put("xsl",  "http://www.w3.org/1999/XSL/Transform");
 		namespaces.put("rapi", "http://marklogic.com/rest-api");
 

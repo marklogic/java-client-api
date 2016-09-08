@@ -21,6 +21,8 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * This is an implementation class used to read the list of named query options from
@@ -37,14 +39,14 @@ public final class QueryOptionsListBuilder {
         public static final String OPTIONS_LIST_NS = "http://marklogic.com/rest-api";
 
         @XmlElement(namespace = OptionsList.OPTIONS_LIST_NS, name = "options")
-        private ArrayList<Options> options;
+        private List<Options> options;
 
         public OptionsList() {
-            options = new ArrayList<Options>();
+            options = new ArrayList<>();
         }
 
-        public HashMap<String, String> getOptionsMap() {
-            HashMap<String,String> map = new HashMap<String, String>();
+        public Map<String, String> getOptionsMap() {
+            Map<String,String> map = new HashMap<>();
             for (Options opt : options) {
                 map.put(opt.getName(), opt.getUri());
             }

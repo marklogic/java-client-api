@@ -50,6 +50,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import java.util.Map;
 
 /*
  * This test is designed to to test simple bulk reads with different types of Managers and different content type like JSON,text,binary,XMl by passing set of uris
@@ -141,7 +142,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
 	  {
 		int count=1;
 	    XMLDocumentManager docMgr = client.newXMLDocumentManager();
-	    HashMap<String,String> map= new HashMap<String,String>();
+	    Map<String,String> map= new HashMap<>();
 	    DocumentWriteSet writeset =docMgr.newWriteSet();
 	    for(int i =0;i<102;i++){
 	    	
@@ -240,7 +241,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST  {
  		 JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		 DocumentWriteSet writeset =docMgr.newWriteSet();
 		 
-		 HashMap<String,String> map= new HashMap<String,String>();
+		 Map<String,String> map= new HashMap<>();
 		 
 		 for(int i =0;i<102;i++){
 		 JsonNode jn = new ObjectMapper().readTree("{\"animal"+i+"\":\"dog"+i+"\", \"says\":\"woof\"}");
@@ -335,7 +336,7 @@ public void test6CloseMethodforReadMultipleDoc() throws KeyManagementException, 
 	 JSONDocumentManager docMgr = client.newJSONDocumentManager();
 	 DocumentWriteSet writeset =docMgr.newWriteSet();
 	 
-	 HashMap<String,String> map= new HashMap<String,String>();
+	 Map<String,String> map= new HashMap<>();
 	for(int j=0;j<102;j++){ 
 	 for(int i =0;i<10;i++){
 	 JsonNode jn = new ObjectMapper().readTree("{\"animal"+i+"\":\"dog"+i+"\", \"says\":\"woof\"}");

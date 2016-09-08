@@ -46,7 +46,7 @@ implements DocumentMetadataPatchBuilder
 	final static protected String REST_API_NS     = "http://marklogic.com/rest-api";
 	final static protected String PROPERTY_API_NS = "http://marklogic.com/xdmp/property";
 
-	final static protected Map<String,String> reserved = new HashMap<String,String>();
+	final static protected Map<String,String> reserved = new HashMap<>();
 	static {
 		reserved.put("rapi", REST_API_NS);
 		reserved.put("prop", PROPERTY_API_NS);
@@ -913,7 +913,7 @@ implements DocumentMetadataPatchBuilder
 
 	private CallBuilderImpl callBuilder;
 
-	protected List<PatchOperation>      operations       = new ArrayList<PatchOperation>();
+	protected List<PatchOperation>      operations       = new ArrayList<>();
 	protected EditableNamespaceContext  namespaces;
 	protected String                    libraryNs;
 	protected String                    libraryAt;
@@ -1163,7 +1163,7 @@ implements DocumentMetadataPatchBuilder
 
 	private void onMetadata(Metadata category) {
 		if (processedMetadata == null) {
-			processedMetadata = new HashSet<Metadata>();
+			processedMetadata = new HashSet<>();
 		} else if (processedMetadata.contains(category)) {
 			return;
 		}

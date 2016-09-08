@@ -129,7 +129,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 */
 		public QueryConstraint(String name) {
 			this();
-			annotations = new ArrayList<QueryAnnotation>();
+			annotations = new ArrayList<>();
 			setName(name);
 		}
 
@@ -272,7 +272,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Construct a new BaseConstraintItem
 		 */
 		public BaseConstraintItem() {
-			this.termOptions = new ArrayList<String>();
+			this.termOptions = new ArrayList<>();
 		}
 
 		/**
@@ -447,7 +447,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * @param termOptions A list of term options.
 		 */
 		public void setTermOptions(List<String> termOptions) {
-			this.termOptions = new ArrayList<String>();
+			this.termOptions = new ArrayList<>();
 			this.termOptions.addAll(termOptions);
 		}
 
@@ -483,7 +483,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Zero-argument constructor.
 		 */
 		public FacetableConstraintConfiguration() {
-			facetOptions = new ArrayList<String>();
+			facetOptions = new ArrayList<>();
 		}
 
 		/**
@@ -559,7 +559,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * @param facetOptions	options for faceting on the constraint
 		 */
 		public void setFacetOptions(List<String> facetOptions) {
-			this.facetOptions = new ArrayList<String>();
+			this.facetOptions = new ArrayList<>();
 			for (String option : facetOptions) {
 				this.facetOptions.add(option);
 			}
@@ -636,7 +636,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		QueryCustom() {
-			annotations = new ArrayList<QueryAnnotation>();
+			annotations = new ArrayList<>();
 		}
 
 		/**
@@ -963,8 +963,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Zero-argument constructor.
 		 */
 		public QueryRange() {
-			buckets = new ArrayList<Bucket>();
-			computedBuckets = new ArrayList<ComputedBucket>();
+			buckets = new ArrayList<>();
+			computedBuckets = new ArrayList<>();
 		}
 
 		/**
@@ -994,7 +994,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 */
 		public void deleteBuckets() {
 			this.computedBuckets = new ArrayList<ComputedBucket>();
-			this.buckets = new ArrayList<Bucket>();
+			this.buckets = new ArrayList<>();
 		}
 
 		/**
@@ -1200,8 +1200,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Zero-argument constructor.
 		 */
 		public QueryGeospatial() {
-			this.geoOptions = new ArrayList<String>();
-			this.facetOptions = new ArrayList<String>();
+			this.geoOptions = new ArrayList<>();
+			this.facetOptions = new ArrayList<>();
 
 		}
 
@@ -1747,9 +1747,9 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Zero-argument constructor.
 		 */
 		public QueryExtractMetadata() {
-			this.qnames = new ArrayList<AttributeOrElementValue>();
-			this.constraintValues = new ArrayList<ConstraintValue>();
-			this.jsonKeys = new ArrayList<JsonKey>();
+			this.qnames = new ArrayList<>();
+			this.constraintValues = new ArrayList<>();
+			this.jsonKeys = new ArrayList<>();
 
 		}
 
@@ -1928,11 +1928,11 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<org.w3c.dom.Element> annotations;
 
 		public QueryAnnotation() {
-			annotations = new ArrayList<org.w3c.dom.Element>();
+			annotations = new ArrayList<>();
 		}
 		
 		public QueryAnnotation(String xmlString) {
-			annotations = new ArrayList<org.w3c.dom.Element>();
+			annotations = new ArrayList<>();
 			annotations.add(Utilities.domElement(xmlString));
 		}
 		
@@ -2024,7 +2024,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 
 		public void deleteSuggestionOptions() {
-			suggestionOptions = new ArrayList<String>();
+			suggestionOptions = new ArrayList<>();
 		}
 
 		
@@ -2469,8 +2469,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<QueryStarter> starters;
 
 		public QueryGrammar() {
-			joiners = new ArrayList<QueryJoiner>();
-			starters = new ArrayList<QueryStarter>();
+			joiners = new ArrayList<>();
+			starters = new ArrayList<>();
 		}
 
 		public void addJoiner(QueryJoiner joiner) {
@@ -2626,7 +2626,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 		public void addForest(Long forest) {
 			if (forests == null) {
-				forests = new ArrayList<Long>();
+				forests = new ArrayList<>();
 			}
 			this.forests.add(forest);
 		}
@@ -2637,7 +2637,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		public void deleteSortOrders() {
-			sortOrders = new ArrayList<QuerySortOrder>();
+			sortOrders = new ArrayList<>();
 		}
 
 		public org.w3c.dom.Element getAdditionalQuery() {
@@ -2819,7 +2819,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<QueryAnnotation> annotations;
 		
 		public QuerySortOrder() {
-			annotations = new ArrayList<QueryAnnotation>();
+			annotations = new ArrayList<>();
 		}
 		
 		public List<QueryAnnotation> getAnnotations() {
@@ -2977,7 +2977,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private XQueryExtension xQueryExtension;
 
 		public QueryTerm() {
-			annotations = new ArrayList<QueryAnnotation>();
+			annotations = new ArrayList<>();
 		}
 
 
@@ -3075,7 +3075,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<QueryAnnotation> annotations;
 		
 		public DefaultTermSource() {
-			annotations = new ArrayList<QueryAnnotation>();
+			annotations = new ArrayList<>();
 		}
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
@@ -3226,7 +3226,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<MarkLogicQName> elements;
 
 		public PreferredElements() {
-			elements = new ArrayList<MarkLogicQName>();
+			elements = new ArrayList<>();
 		}
 
 		public void addElement(MarkLogicQName element) {
@@ -3287,14 +3287,14 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 		
 		public QueryTuples() {
-			annotations = new ArrayList<QueryAnnotation>();
-			field = new ArrayList<Field>();
-			jsonKey = new ArrayList<JsonKey>();
-			geoAttrPair = new ArrayList<QueryGeospatialAttributePair>();
-			geoElem = new ArrayList<QueryGeospatialElement>();
-			geoElemPair = new ArrayList<QueryGeospatialElementPair>();
-			range = new ArrayList<QueryRange>();
-			valuesOptions = new ArrayList<String>();
+			annotations = new ArrayList<>();
+			field = new ArrayList<>();
+			jsonKey = new ArrayList<>();
+			geoAttrPair = new ArrayList<>();
+			geoElem = new ArrayList<>();
+			geoElemPair = new ArrayList<>();
+			range = new ArrayList<>();
+			valuesOptions = new ArrayList<>();
 		}
 
 		public void addRange(QueryRange queryRange) {
@@ -3449,8 +3449,8 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 		
 		public QueryValues() {
-			annotations = new ArrayList<QueryAnnotation>();
-			this.valuesOptions = new ArrayList<String>();
+			annotations = new ArrayList<>();
+			this.valuesOptions = new ArrayList<>();
 		}
 
 		public void setJsonKey(JsonKey jsonKey) {
@@ -3574,7 +3574,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private List<ExpressionNamespaceBinding> bindings;
 
 		public ExpressionNamespaceBindings() {
-			bindings = new ArrayList<ExpressionNamespaceBinding>();
+			bindings = new ArrayList<>();
 		}
 
 		public void addBinding(String prefix, String uri) {
@@ -3782,15 +3782,15 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	public QueryOptions() {
 		// options that can have more than one cardinality
 		// are in lists.
-		queryConstraints = new ArrayList<QueryConstraint>();
-		operators = new ArrayList<QueryOperator>();
-		sortOrders = new ArrayList<QuerySortOrder>();
-		suggestionSources = new ArrayList<QuerySuggestionSource>();
-		forests = new ArrayList<Long>();
-		searchOptions = new ArrayList<String>();
-		annotations = new ArrayList<QueryAnnotation>();
-		queryValues = new ArrayList<QueryValues>();
-		queryTuples = new ArrayList<QueryTuples>();
+		queryConstraints = new ArrayList<>();
+		operators = new ArrayList<>();
+		sortOrders = new ArrayList<>();
+		suggestionSources = new ArrayList<>();
+		forests = new ArrayList<>();
+		searchOptions = new ArrayList<>();
+		annotations = new ArrayList<>();
+		queryValues = new ArrayList<>();
+		queryTuples = new ArrayList<>();
 	}
 
 	public void setSearchableExpressionNamespaceContext(
@@ -3862,7 +3862,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 
 	public List<QueryConstraint> getQueryConstraints() {
 		if (queryConstraints == null) {
-			return new ArrayList<QueryConstraint>();
+			return new ArrayList<>();
 		} else {
 			return queryConstraints;
 		}
@@ -3987,7 +3987,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
 	public void setForests(List<Long> forests) {
-		this.forests = new ArrayList<Long>();
+		this.forests = new ArrayList<>();
 		if (forests != null) this.forests.addAll(forests);
 	}
 
@@ -4085,13 +4085,13 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
 	public void setSearchOptions(List<String> searchOptions) {
-		this.searchOptions = new ArrayList<String>();
+		this.searchOptions = new ArrayList<>();
 		if (searchOptions != null)		
 			this.searchOptions.addAll(searchOptions);
 	}
 
 	public void setSortOrders(List<QuerySortOrder> sortOrders) {
-		this.sortOrders = new ArrayList<QuerySortOrder>();
+		this.sortOrders = new ArrayList<>();
 		this.sortOrders.addAll(sortOrders);
 	}
 
@@ -4135,7 +4135,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
      * @param constraints the constraints
      */
 	public void setConstraints(List<QueryConstraint> constraints) {
-		this.queryConstraints = new ArrayList<QueryConstraint>();
+		this.queryConstraints = new ArrayList<>();
 		this.queryConstraints.addAll(constraints);
 	}
 

@@ -82,6 +82,7 @@ import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
+import java.util.Map;
 
 @SuppressWarnings("deprecation")
 public class QueryOptionsHandleTest {
@@ -126,7 +127,7 @@ public class QueryOptionsHandleTest {
 
 		mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
 	
-		optionsPOJOs = new ArrayList<QueryOptionsHandle>();
+		optionsPOJOs = new ArrayList<>();
 
 		for (String option : testOptionsCorpus) {
 			FileHandle f = new FileHandle(new File("src/test/resources/"
@@ -144,7 +145,7 @@ public class QueryOptionsHandleTest {
 
 		builder = new QueryOptionsBuilder();
 
-        HashMap<String,String> xpathNS = new HashMap<String, String>();
+        Map<String,String> xpathNS = new HashMap<>();
         xpathNS.put("search", "http://marklogic.com/appservices/search");
         SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(xpathNS);
 

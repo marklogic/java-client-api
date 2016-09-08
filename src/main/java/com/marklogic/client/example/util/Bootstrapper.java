@@ -34,7 +34,6 @@ import org.apache.http.StatusLine;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.client.params.AuthPolicy;
 import org.apache.http.entity.StringEntity;
@@ -122,7 +121,7 @@ public class Bootstrapper {
 // TODO: SSL
         Authentication authType = configServer.getAuthType();
         if (authType != null) {
-            List<String> prefList = new ArrayList<String>();
+            List<String> prefList = new ArrayList<>();
             if (authType == Authentication.BASIC)
         		prefList.add(AuthPolicy.BASIC);
         	else if (authType == Authentication.DIGEST)
@@ -207,7 +206,7 @@ public class Bootstrapper {
 				continue;
 
 			if (invalid == null)
-				invalid = new ArrayList<String>();
+				invalid = new ArrayList<>();
 
 			invalid.add(key);
 		}
@@ -233,7 +232,7 @@ public class Bootstrapper {
 		return buffer.toString();
 	}
 	static private Map<String,String> getPropNames() {
-		Map<String,String> propNames = new HashMap<String, String>();
+		Map<String,String> propNames = new HashMap<>();
 		propNames.put("confighost",
 			"the host for configuring a new REST server");
 		propNames.put("configport",

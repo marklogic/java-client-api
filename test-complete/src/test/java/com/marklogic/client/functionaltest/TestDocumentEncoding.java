@@ -45,6 +45,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.StringHandle;
+import javax.xml.transform.Source;
 
 public class TestDocumentEncoding extends BasicJavaClientREST
 {
@@ -78,7 +79,7 @@ public class TestDocumentEncoding extends BasicJavaClientREST
         e2.appendChild(text);
 
         // transform the Document into a String
-        DOMSource domSource = new DOMSource(doc);
+        Source domSource = new DOMSource(doc);
         TransformerFactory tf = TransformerFactory.newInstance();
         Transformer transformer = tf.newTransformer();
         transformer.setOutputProperty(OutputKeys.METHOD, "xml");
@@ -116,7 +117,7 @@ public class TestDocumentEncoding extends BasicJavaClientREST
         Text text2 = doc2.createTextNode("漢字");
         x2.appendChild(text2);
         
-        DOMSource domSource2 = new DOMSource(doc2);
+        Source domSource2 = new DOMSource(doc2);
         TransformerFactory tf2 = TransformerFactory.newInstance();
         Transformer transformer2 = tf2.newTransformer();
         transformer2.setOutputProperty(OutputKeys.METHOD, "xml");

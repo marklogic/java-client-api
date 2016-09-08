@@ -39,6 +39,7 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.QueryOptionsListHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
+import java.util.Map;
 
 public class QueryOptionsListHandleTest {
 	@SuppressWarnings("unused")
@@ -63,7 +64,7 @@ public class QueryOptionsListHandleTest {
         MyQueryOptionsListHandle v = new MyQueryOptionsListHandle();
 
         v.parseTestData(is);
-        HashMap<String,String> map = v.getValuesMap();
+        Map<String,String> map = v.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
     }
@@ -74,7 +75,7 @@ public class QueryOptionsListHandleTest {
 
         QueryOptionsListHandle results = queryMgr.optionsList(new QueryOptionsListHandle());
         assertNotNull(results);
-        HashMap<String,String> map = results.getValuesMap();
+        Map<String,String> map = results.getValuesMap();
         assertEquals("Map should contain two keys", map.size(), 2);
         assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
     }

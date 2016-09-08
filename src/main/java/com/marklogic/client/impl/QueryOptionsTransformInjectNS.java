@@ -27,7 +27,7 @@ import java.util.Vector;
 public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
     private static final String SEARCH_NS = "http://marklogic.com/appservices/search";
     private boolean inBinding = false;
-    private HashMap<String, String> nsmap = new HashMap<String, String> ();
+    private Map<String, String> nsmap = new HashMap<> ();
 
     public QueryOptionsTransformInjectNS() {
     }
@@ -89,9 +89,9 @@ public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
     }
 
     private static class BindingAttributes implements Attributes {
-        private Vector<String> names = new Vector<String> ();
-        private Vector<String> values = new Vector<String> ();
-        private Vector<String> nsuris = new Vector<String> ();
+        private Vector<String> names = new Vector<> ();
+        private Vector<String> values = new Vector<> ();
+        private Vector<String> nsuris = new Vector<> ();
 
         @SuppressWarnings("unused")
         public BindingAttributes() {

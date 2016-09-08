@@ -65,7 +65,7 @@ public class StructuredQueryBuilder {
 	/*
 	 * This map is used to prevent reuse of reserved prefixes in path expressions.
 	 */
-	final static private Map<String,String> reserved = new HashMap<String,String>();
+	final static private Map<String,String> reserved = new HashMap<>();
 	static {
 		reserved.put("search", SEARCH_API_NS);
 		reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);

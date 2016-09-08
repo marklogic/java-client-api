@@ -109,7 +109,7 @@ public class URIHandle
 
         DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
 
-        List<String> prefList = new ArrayList<String>();
+        List<String> prefList = new ArrayList<>();
 		if (authType == Authentication.BASIC)
 			prefList.add(AuthPolicy.BASIC);
 		else if (authType == Authentication.DIGEST)

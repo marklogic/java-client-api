@@ -63,7 +63,7 @@ public class TestBug18736 extends BasicJavaClientREST {
 		String docId = "/content/without-xml-ext";
 		//XpathEngine xpathEngine;
 		
-		/*HashMap<String,String> xpathNS = new HashMap<String, String>();
+		/*Map<String,String> xpathNS = new HashMap<>();
 		xpathNS.put("", "http://purl.org/dc/elements/1.1/");
 		SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(xpathNS);
 
