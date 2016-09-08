@@ -137,6 +137,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		 * Returns the list of annotations on the constraint.
 		 * @return	the annotations
 		 */
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
@@ -219,6 +220,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Adds an annotation and returns the constraint.
 		 */
+        @Override
 		public QueryConstraint annotate(String xmlAnnotation) {
 			QueryAnnotation annotation = new QueryAnnotation();
 			annotation.add(Utilities.domElement(xmlAnnotation));
@@ -605,6 +607,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Gets the annotations on this custom constraint.
 		 */
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
@@ -612,6 +615,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Adds an annotation, returning this custom constraint.
 		 */
+        @Override
 		public QueryCustom annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -1033,6 +1037,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Add this QueryRange to the tuples query.
 		 */
+        @Override
 		public void build(QueryTuples tuples) {
 			tuples.addRange(this);
 		}
@@ -1041,6 +1046,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Add this QueryRange to the values query.
 		 */
+        @Override
 		public void build(QueryValues values) {
 			values.setRange(this);
 		}
@@ -1095,6 +1101,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Add this QueryCollection to the tuples query.
 		 */
+        @Override
 		public void build(QueryTuples tuples) {
 			tuples.setCollection(this);
 		}
@@ -1103,6 +1110,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Add this QueryCollection to the values query.
 		 */
+        @Override
 		public void build(QueryValues values) {
 			values.setCollection(this);
 		}
@@ -1624,6 +1632,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Adds this JSON key to the metadata extraction specification.
 		 */
+        @Override
 		public void build(QueryExtractMetadata extractMetadata) {
 			extractMetadata.getJsonKeys().add(this);
 		}
@@ -1678,6 +1687,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Adds this field to the tuples query specification.
 		 */
+        @Override
 		public void build(QueryTuples tuples) {
 			tuples.addField(this);
 		}
@@ -1709,6 +1719,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		/**
 		 * Adds this field to the values query specification.
 		 */
+        @Override
 		public void build(QueryValues values) {
 			values.setField(this);
 		}
@@ -1902,6 +1913,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		private String ref;
 
 		
+        @Override
 		public void build(QueryExtractMetadata extractMetadata) {
 			extractMetadata.addConstraintReference(this);
 		}
@@ -1963,10 +1975,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QuerySuggestionSource annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -2529,10 +2543,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QueryOperator annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -2822,10 +2838,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			annotations = new ArrayList<QueryAnnotation>();
 		}
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QuerySortOrder annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -2861,6 +2879,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		
+        @Override
 		public void setAttribute(MarkLogicQName attribute) {
 			this.attributeReference = attribute;
 		}
@@ -2873,14 +2892,17 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			this.direction = direction.toXMLString();
 		}
 
+        @Override
 		public void setElement(MarkLogicQName element) {
 			this.elementReference = element;
 		}
 
+        @Override
 		public void setField(Field field) {
 			this.fieldReference = field;
 		}
 
+        @Override
 		public void setPath(PathIndex pathIndex) {
 			// TODO: Is this the right thing to do?
 			throw new UnsupportedOperationException(
@@ -2904,6 +2926,7 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 			this.type = type;
 		}
 
+        @Override
 		public void setJsonKey(JsonKey jsonKey) {
 			this.jsonKey = jsonKey;
 		}
@@ -2965,10 +2988,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QueryTerm annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -3008,11 +3033,13 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		
+        @Override
 		public List<String> getTermOptions() {
 			return termOptions;
 		}
 
 		
+        @Override
 		public Double getWeight() {
 			return this.weight;
 		}
@@ -3032,11 +3059,13 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		}
 
 		
+        @Override
 		public void setTermOptions(List<String> termOptions) {
 			this.termOptions = termOptions;
 		}
 
 		
+        @Override
 		public void setWeight(Double weight) {
 			this.weight = weight;
 		}
@@ -3077,10 +3106,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		public DefaultTermSource() {
 			annotations = new ArrayList<QueryAnnotation>();
 		}
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public DefaultTermSource annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -3277,10 +3308,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QueryTuples annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -3439,10 +3472,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 		@XmlElement(namespace = QueryOptions.SEARCH_NS, name = "annotation", required = false)
 		private List<QueryAnnotation> annotations;
 		
+        @Override
 		public List<QueryAnnotation> getAnnotations() {
 			return this.annotations;
 		}
 		
+        @Override
 		public QueryValues annotate(String xmlString) {
 			this.annotations.add(new QueryAnnotation(xmlString));
 			return this;
@@ -3815,10 +3850,12 @@ public final class QueryOptions implements Annotatable<QueryOptions> {
 	}
 
 	
+    @Override
 	public List<QueryAnnotation> getAnnotations() {
 		return annotations;
 	}
 	
+    @Override
 	public QueryOptions annotate(String xmlAnnotation) {
 		annotations.add(new QueryAnnotation(xmlAnnotation));
 		return this;

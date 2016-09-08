@@ -18,6 +18,7 @@ import com.marklogic.client.impl.FailedRequestParser;
 public class JSONErrorParser implements FailedRequestParser {
 
 	@SuppressWarnings("unchecked")
+    @Override
 	public FailedRequest parseFailedRequest(int httpStatus, InputStream content) {
 		FailedRequest failure = new FailedRequest();
 		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally

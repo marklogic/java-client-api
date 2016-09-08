@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 
-import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashSet;
@@ -28,7 +27,6 @@ import javax.xml.datatype.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -41,8 +39,6 @@ import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentPage;
-import com.marklogic.client.document.DocumentRecord;
-import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DocumentMetadataPatchBuilderImpl.DocumentPatchHandleImpl;
@@ -54,7 +50,6 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -70,11 +65,13 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
 
   private boolean isProcessedMetadataModified = false;
   final private Set<Metadata> processedMetadata = new HashSet<Metadata>() {
+    @Override
     public boolean add(Metadata e) {
       isProcessedMetadataModified = true;
       return super.add(e);
     }
 
+    @Override
     public boolean addAll(Collection<? extends Metadata> c) {
       isProcessedMetadataModified = true;
       return super.addAll(c);
@@ -477,39 +474,47 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
             : getReadTransform(), extraParams), withContent, uris);
   }
 
+  @Override
   public DocumentPage readMetadata(String... uris) {
     boolean withContent = false;
     return read(-1, null, null, withContent, null, uris);
   }
 
+  @Override
   public DocumentPage readMetadata(Transaction transaction, String... uris) {
     boolean withContent = false;
     return read(-1, null, transaction, withContent, null, uris);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start) {
     return search(querydef, start, -1, null, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
     return search(querydef, start, serverTimestamp, null, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle) {
     return search(querydef, start, -1, searchHandle, null);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       Transaction transaction) {
     return search(querydef, start, -1, null, transaction);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       long serverTimestamp, Transaction transaction) {
     return search(querydef, start, serverTimestamp, null, transaction);
   }
 
+  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       SearchReadHandle searchHandle, Transaction transaction) {
     return search(querydef, start, -1, searchHandle, transaction);
@@ -545,26 +550,32 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
         nonDocumentFormat, null);
   }
 
+  @Override
   public long getPageLength() {
     return pageLength;
   }
 
+  @Override
   public void setPageLength(long length) {
     this.pageLength = length;
   }
 
+  @Override
   public QueryView getSearchView() {
     return searchView;
   }
 
+  @Override
   public void setSearchView(QueryView view) {
     this.searchView = view;
   }
 
+  @Override
   public Format getNonDocumentFormat() {
     return nonDocumentFormat;
   }
 
+  @Override
   public void setNonDocumentFormat(Format nonDocumentFormat) {
     if (nonDocumentFormat != Format.XML && nonDocumentFormat != Format.JSON) {
       throw new UnsupportedOperationException(

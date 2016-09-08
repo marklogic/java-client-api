@@ -57,6 +57,7 @@ public class DocumentOutputStream {
 		// create an anonymous class with a callback method
 		OutputStreamSender sender = new OutputStreamSender() {
             // the callback receives the output stream
+            @Override
 			public void write(OutputStream out) throws IOException {
         		// acquire the content
 				InputStream docStream = Util.openStream(

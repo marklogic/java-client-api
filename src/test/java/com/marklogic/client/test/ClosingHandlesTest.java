@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.test;
 
-import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.ByteArrayInputStream;
@@ -24,8 +23,6 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBContext;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.extra.dom4j.DOM4JHandle;
@@ -60,6 +57,7 @@ public class ClosingHandlesTest {
         }
 
         private boolean isClosed = false;
+        @Override
         public void close() throws IOException {
             super.close();
             isClosed = true;

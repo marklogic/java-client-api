@@ -15,30 +15,19 @@
  */
 package com.marklogic.client.impl;
 
-import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Map;
 
-import com.marklogic.client.expression.PlanBuilder;
 
 import com.marklogic.client.expression.Cts;
-import com.marklogic.client.impl.CtsExprImpl; 
 import com.marklogic.client.expression.Fn;
-import com.marklogic.client.impl.FnExprImpl; 
 import com.marklogic.client.expression.Json;
-import com.marklogic.client.impl.JsonExprImpl; 
 import com.marklogic.client.expression.Math;
-import com.marklogic.client.impl.MathExprImpl; 
 import com.marklogic.client.expression.Rdf;
-import com.marklogic.client.impl.RdfExprImpl; 
 import com.marklogic.client.expression.Sem;
-import com.marklogic.client.impl.SemExprImpl; 
 import com.marklogic.client.expression.Spell;
-import com.marklogic.client.impl.SpellExprImpl; 
 import com.marklogic.client.expression.Sql;
-import com.marklogic.client.impl.SqlExprImpl; 
 import com.marklogic.client.expression.Xdmp;
-import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.Xs;
 import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.SemIriExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
@@ -448,9 +437,11 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanTripleIriSeq subjects(PlanTripleIri...   subjects) {
         return new PlanTripleIriSeqListImpl(subjects);
     }
+    @Override
     public PlanTripleIriSeq predicates(PlanTripleIri... predicates) {
         return new PlanTripleIriSeqListImpl(predicates);
     }
+    @Override
     public PlanTripleValSeq objects(PlanTripleVal...    objects) {
         return new PlanTripleValSeqListImpl(objects);
     }

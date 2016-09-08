@@ -227,33 +227,39 @@ public interface RESTServices {
 
 	public enum ResponseStatus {
 		OK() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return status == ClientResponse.Status.OK;
 			}
 		},
 		CREATED() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return status == ClientResponse.Status.CREATED;
 			}
 		},
 		NO_CONTENT() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return status == ClientResponse.Status.NO_CONTENT;
 			}
 		},
 		OK_OR_NO_CONTENT() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return (status == ClientResponse.Status.OK ||
 						status == ClientResponse.Status.NO_CONTENT);
 			}
 		},
 		CREATED_OR_NO_CONTENT() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return (status == ClientResponse.Status.CREATED ||
 						status == ClientResponse.Status.NO_CONTENT);
 			}
 		},
 		OK_OR_CREATED_OR_NO_CONTENT() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return (status == ClientResponse.Status.OK ||
 						status == ClientResponse.Status.CREATED ||
@@ -261,6 +267,7 @@ public interface RESTServices {
 			}
 		},
 		SEE_OTHER() {
+            @Override
 			public boolean isExpected(ClientResponse.Status status) {
 				return status == ClientResponse.Status.SEE_OTHER;
 			}

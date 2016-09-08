@@ -290,10 +290,12 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
         return this;
     }
 
+    @Override
     public int getOptimizeLevel() {
         return optimizeLevel;
     }
 
+    @Override
     public void setOptimizeLevel(int level) {
         this.optimizeLevel = level;
     }

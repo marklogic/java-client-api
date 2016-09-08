@@ -28,33 +28,43 @@ import com.marklogic.client.admin.config.QueryOptions.PathIndex;
  */
 @SuppressWarnings("deprecation")
 public class IndexSpecImpl implements TermSpec {
+    @Override
 	public QName getAttribute() {
 		return attribute;
 	}
+    @Override
 	public void setAttribute(QName attribute) {
 		this.attribute = attribute;
 	}
+    @Override
 	public javax.xml.namespace.QName getElement() {
 		return element;
 	}
+    @Override
 	public void setElement(QName element) {
 		this.element = element;
 	}
+    @Override
 	public String getField() {
 		return field;
 	}
+    @Override
 	public void setField(String field) {
 		this.field = field;
 	}
+    @Override
 	public PathIndex getPathIndex() {
 		return pathIndex;
 	}
+    @Override
 	public void setPathIndex(PathIndex pathIndex) {
 		this.pathIndex = pathIndex;
 	}
+    @Override
 	public String getJsonKey() {
 		return jsonKey;
 	}
+    @Override
 	public void setJsonKey(String jsonKey) {
 		this.jsonKey = jsonKey;
 	}

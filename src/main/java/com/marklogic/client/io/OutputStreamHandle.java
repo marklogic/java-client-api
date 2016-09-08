@@ -94,6 +94,7 @@ public class OutputStreamHandle
 	 * Returns whether the content can be resent to the output stream
 	 * if the request must be retried.  The default is false.
 	 */
+    @Override
 	public boolean isResendable() {
 		return super.isResendable();
 	}
@@ -101,6 +102,7 @@ public class OutputStreamHandle
 	 * Specifies whether the content can be resent to the output stream
 	 * if the request must be retried.
 	 */
+    @Override
 	public void setResendable(boolean resendable) {
 		super.setResendable(resendable);
 	}

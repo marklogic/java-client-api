@@ -417,6 +417,7 @@ public class InputSourceHandle
 
 	/** Always call close() when finished with this handle -- it closes the underlying InputStream.
 	 */
+    @Override
 	public void close() {
 		if ( underlyingStream != null ) {
 			try {

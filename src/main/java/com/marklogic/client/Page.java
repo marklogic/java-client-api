@@ -22,6 +22,7 @@ public interface Page<T> extends Iterable<T> {
     /** The internal iterator of type T in this Page. This iterator is the same
      *  one used for {@link #hasNext()} and {@link #next()}.
      */
+    @Override
     public Iterator<T> iterator();
 
     /** Returns true if internal iterator has more elements.

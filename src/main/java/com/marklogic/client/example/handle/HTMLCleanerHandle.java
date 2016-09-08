@@ -156,6 +156,7 @@ public class HTMLCleanerHandle
     	return this;
     }
 
+    @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException(

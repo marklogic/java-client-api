@@ -21,8 +21,11 @@ import java.util.Iterator;
  * {@link ServerEvaluationCall#eval()}.
  */
 public interface EvalResultIterator extends Iterable<EvalResult>, Iterator<EvalResult> {
+    @Override
     public Iterator<EvalResult> iterator();
+    @Override
     public boolean hasNext();
+    @Override
     public EvalResult next();
 	public void close();
 }

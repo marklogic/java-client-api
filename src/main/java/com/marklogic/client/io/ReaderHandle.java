@@ -251,6 +251,7 @@ public class ReaderHandle
 
 	/** Either call close() or get().close() when finished with this handle to close the underlying Reader.
 	 */
+    @Override
 	public void close() {
 		if ( content != null ) {
 			try {

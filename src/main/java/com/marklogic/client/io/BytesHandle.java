@@ -170,13 +170,16 @@ public class BytesHandle
 		}
 	}
 
+    @Override
 	protected Class<byte[]> receiveAs() {
 		return byte[].class;
 	}
+    @Override
 	protected void receiveContent(byte[] content) {
 		this.content = content;
 	}
 	
+    @Override
 	protected byte[] sendContent() {
 		if (content == null || content.length == 0) {
 			throw new IllegalStateException("No bytes to write");

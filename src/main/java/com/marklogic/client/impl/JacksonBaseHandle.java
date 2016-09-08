@@ -19,30 +19,16 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.io.UnsupportedEncodingException;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonGenerator;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.marker.BufferableHandle;
-import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.io.marker.StructureWriteHandle;
-import com.marklogic.client.io.marker.TextReadHandle;
-import com.marklogic.client.io.marker.TextWriteHandle;
-import com.marklogic.client.io.marker.XMLReadHandle;
-import com.marklogic.client.io.marker.XMLWriteHandle;
 
 public abstract class JacksonBaseHandle<T>
     extends BaseHandle<InputStream, OutputStreamSender>
@@ -96,6 +82,7 @@ public abstract class JacksonBaseHandle<T>
      * Returns the JSON as a string.
      */
     
+    @Override
     public String toString() {
         try {
             return new String(toBuffer(),"UTF-8");
@@ -105,10 +92,12 @@ public abstract class JacksonBaseHandle<T>
     }
 
     
+    @Override
     protected Class<InputStream> receiveAs() {
         return InputStream.class;
     }
     
+    @Override
     protected OutputStreamSender sendContent() {
         if ( ! hasContent() ) {
             throw new IllegalStateException("No document to write");

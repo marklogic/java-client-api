@@ -159,6 +159,7 @@ public class XMLStreamReaderHandle
 	/**
 	 * Restricts the format to XML.
 	 */
+    @Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
@@ -203,6 +204,7 @@ public class XMLStreamReaderHandle
 	 * the XMLStreamReader.  This method or get().close() should always be called when finished
 	 * with the stream reader.
 	 */
+    @Override
 	public void close() {
 		try {
 			if ( content != null ) content.close();

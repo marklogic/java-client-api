@@ -33,6 +33,7 @@ public class ValuesMetricsImpl implements ValuesMetrics {
     @XmlElement(namespace = Values.VALUES_NS, name = "total-time")
     private ValuesMetricImpl totalTime;
 
+    @Override
     public long getValuesResolutionTime() {
         if (valuesResolutionTime == null) {
             return -1;
@@ -40,6 +41,7 @@ public class ValuesMetricsImpl implements ValuesMetrics {
         return valuesResolutionTime.getValue();
     }
 
+    @Override
     public long getAggregateResolutionTime() {
         if (aggregateResolutionTime == null) {
             return -1;
@@ -47,6 +49,7 @@ public class ValuesMetricsImpl implements ValuesMetrics {
         return aggregateResolutionTime.getValue();
     }
 
+    @Override
     public long getTotalTime() {
         if (totalTime == null) {
             return -1;

@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.io.Format;
-import com.marklogic.client.bitemporal.TemporalDocumentManager;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.util.RequestParameters;
@@ -47,6 +46,7 @@ public class JSONDocumentImpl
 		this.language = language;
 	}
 
+    @Override
 	protected RequestParameters getWriteParams() {
 		if (language == null)
 			return null;

@@ -31,34 +31,40 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import java.util.LinkedHashSet;
 
 public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> implements DocumentWriteSet {
+    @Override
     public DocumentWriteSet addDefault(DocumentMetadataWriteHandle metadataHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.METADATA_DEFAULT,
 			null, metadataHandle, null));
 		return this;
 	}
 
+    @Override
     public DocumentWriteSet disableDefault() {
 		add(new DocumentWriteOperationImpl(OperationType.DISABLE_METADATA_DEFAULT,
 			null, new StringHandle("{ }").withFormat(Format.JSON), null));
 		return this;
 	}
 
+    @Override
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			docId, null, contentHandle));
 		return this;
 	}
 
+    @Override
     public DocumentWriteSet addAs(String docId, Object content) {
       return addAs(docId, null, content);
     }
 
+    @Override
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			docId, metadataHandle, contentHandle));
 		return this;
 	}
 
+    @Override
     public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content) {
         if (content == null) throw new IllegalArgumentException("content must not be null");
 
@@ -69,27 +75,32 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
         return add(docId, metadataHandle, handle);
     }
 
+    @Override
     public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			desc.getUri(), null, contentHandle));
 		return this;
 	}
 
+    @Override
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			desc.getUri(), metadataHandle, contentHandle));
 		return this;
 	}
 
+    @Override
 	public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle, String temporalDocumentURI) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, docId, null, contentHandle, temporalDocumentURI));
 		return this;
 	}
 
+    @Override
 	public DocumentWriteSet addAs(String docId, Object content, String temporalDocumentURI) {
 		return addAs(docId, null, content, temporalDocumentURI);
 	}
 
+    @Override
 	public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle,
 			AbstractWriteHandle contentHandle, String temporalDocumentURI) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, docId, metadataHandle, contentHandle,
@@ -97,6 +108,7 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 		return this;
 	}
 
+    @Override
 	public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content,
 			String temporalDocumentURI) {
 		if (content == null)
@@ -109,12 +121,14 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 		return add(docId, metadataHandle, handle, temporalDocumentURI);
 	}
 
+    @Override
 	public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle, String temporalDocumentURI) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, desc.getUri(), null, contentHandle,
 				temporalDocumentURI));
 		return this;
 	}
 
+    @Override
 	public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle,
 			AbstractWriteHandle contentHandle, String temporalDocumentURI) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, desc.getUri(), metadataHandle, contentHandle,

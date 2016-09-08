@@ -43,18 +43,22 @@ public class DocumentRecordImpl implements DocumentRecord {
 		this.content = content;
 	}
 
+    @Override
     public String getUri() {
 		return uri;
 	}
 
+    @Override
     public Format getFormat() {
 		return format;
 	}
 
+    @Override
     public String getMimetype() {
 		return mimetype;
 	}
 
+    @Override
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
 		HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
 		Format metadataFormat = metadataBase.getFormat();
@@ -67,6 +71,7 @@ public class DocumentRecordImpl implements DocumentRecord {
 		return metadataHandle;
 	}
 
+    @Override
 	public <T> T getMetadataAs(Class<T> clazz) {
 		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
 		if ( readHandle instanceof DocumentMetadataReadHandle ) {
@@ -80,12 +85,14 @@ public class DocumentRecordImpl implements DocumentRecord {
 		}
 	}
 
+    @Override
     public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 		HandleAccessor.checkHandle(contentHandle, "content");
 		HandleAccessor.receiveContent(contentHandle, content);
 		return contentHandle;
 	}
 
+    @Override
 	public <T> T getContentAs(Class<T> clazz) {
 		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
 		readHandle = getContent(readHandle);
