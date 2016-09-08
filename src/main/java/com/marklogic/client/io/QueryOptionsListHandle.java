@@ -18,7 +18,7 @@ package com.marklogic.client.io;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
-import java.util.Map;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -113,14 +113,14 @@ public class QueryOptionsListHandle
     }
 
     /**
-     * Returns a Map of the named query options from the server.
+     * Returns a HashMap of the named query options from the server.
      *
      * The keys are the names of the query options, the values are the corresponding URIs on the server.
      *
      * @return The map of names to URIs.
      */
     @Override
-    public Map<String, String> getValuesMap() {
+    public HashMap<String, String> getValuesMap() {
     	if (optionsHolder == null ) return null;
     	else return optionsHolder.getOptionsMap();
     }
