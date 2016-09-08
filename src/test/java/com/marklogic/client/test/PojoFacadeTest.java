@@ -34,7 +34,6 @@ import org.junit.runners.MethodSorters;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.impl.PojoRepositoryImpl;

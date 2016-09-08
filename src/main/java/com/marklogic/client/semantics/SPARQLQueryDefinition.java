@@ -19,7 +19,6 @@ import java.util.Locale;
 
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.semantics.Capability;
 
 /**
  * <p>Represents a SPARQL query.</p>

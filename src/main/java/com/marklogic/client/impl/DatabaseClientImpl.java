@@ -21,7 +21,6 @@ import java.io.Serializable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
@@ -42,7 +41,6 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.impl.PojoRepositoryImpl;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.DatabaseClientFactory.Authentication;

@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.io.Format;
-import com.marklogic.client.bitemporal.TemporalDocumentManager;
 import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.util.RequestParameters;

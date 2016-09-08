@@ -15,8 +15,6 @@
  */
 package com.marklogic.client;
 
-import java.io.IOException;
-
 import com.marklogic.client.impl.FailedRequest;
 
 /**

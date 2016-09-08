@@ -15,14 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
-import java.util.TreeMap;
 
 import com.marklogic.client.semantics.RDFTypes;
 import com.marklogic.client.semantics.SPARQLBinding;
-import com.marklogic.client.semantics.SPARQLBindings;
 
 /**
  * Represents binding names and values to go with a SPARQL Query.

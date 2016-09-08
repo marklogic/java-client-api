@@ -19,8 +19,6 @@ import java.util.Iterator;
 
 import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.marklogic.client.Page;
-import com.marklogic.client.impl.BasicPage;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.pojo.PojoPage;
