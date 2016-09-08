@@ -799,7 +799,7 @@ public class JerseyServices implements RESTServices {
 		return true;
 	}
 
-    @Override
+	@Override
 	public DocumentPage getBulkDocuments(RequestLogger reqlog, long serverTimestamp,
 			Transaction transaction, Set<Metadata> categories, 
 			Format format, RequestParameters extraParams, boolean withContent, String... uris)
@@ -810,7 +810,7 @@ public class JerseyServices implements RESTServices {
 		return new JerseyDocumentPage(iterator, withContent, hasMetadata);
 	}
 
-    @Override
+	@Override
 	public DocumentPage getBulkDocuments(RequestLogger reqlog, long serverTimestamp,
 			QueryDefinition querydef,
 			long start, long pageLength,
@@ -862,7 +862,7 @@ public class JerseyServices implements RESTServices {
 			return iterator.hasNext();
 		}
 		
-        @Override
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -888,12 +888,12 @@ public class JerseyServices implements RESTServices {
 			return record;
 		}
 
-        @Override
+		@Override
 		public <T extends AbstractReadHandle> T nextContent(T contentHandle) {
 			return next().getContent(contentHandle);
 		}
 
-        @Override
+		@Override
 		public void close() {
 			if ( iterator != null ) iterator.close();
 		}
@@ -3333,7 +3333,7 @@ public class JerseyServices implements RESTServices {
 			return iterator.hasNext();
 		}
 		
-        @Override
+		@Override
 		public void remove() {
 			throw new UnsupportedOperationException();
 		}
@@ -3346,7 +3346,7 @@ public class JerseyServices implements RESTServices {
 			return result;
 		}
 
-        @Override
+		@Override
 		public void close() {
 			if ( iterator != null ) iterator.close();
 		}
@@ -4325,7 +4325,7 @@ public class JerseyServices implements RESTServices {
 			this.response = response;
 			this.multiPart = multiPart;
 		}
-        @Override
+		@Override
 		public void close() throws IOException {
 			if ( multiPart != null ) multiPart.close();
 			if ( response   != null ) response.close();
@@ -4522,7 +4522,7 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-        @Override
+		@Override
 		protected void finalize() throws Throwable {
 			close();
 			super.finalize();
@@ -4562,7 +4562,7 @@ public class JerseyServices implements RESTServices {
 			this.content = content;
 		}
 
-        @Override
+		@Override
 		public String getUri() {
 			if ( content == null && metadata != null ) {
 				return metadata.getUri();
@@ -4573,38 +4573,38 @@ public class JerseyServices implements RESTServices {
 			}
 		}
 
-        @Override
+		@Override
 		public Format getFormat() {
 			return content.getFormat();
 		}
 
-        @Override
+		@Override
 		public String getMimetype() {
 			return content.getMimetype();
 		}
 
-        @Override
+		@Override
 		public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
 			if ( metadata == null ) throw new IllegalStateException(
 				"getMetadata called when no metadata is available");
 			return metadata.getContent(metadataHandle);
 		}
 
-        @Override
+		@Override
 		public <T> T getMetadataAs(Class<T> as) {
 			if ( as == null ) throw new IllegalStateException(
 				"getMetadataAs cannot accept null");
 			return metadata.getContentAs(as);
 		}
 
-        @Override
+		@Override
 		public <T extends AbstractReadHandle> T getContent(T contentHandle) {
 			if ( content == null ) throw new IllegalStateException(
 				"getContent called when no content is available");
 			return content.getContent(contentHandle);
 		}
 
-        @Override
+		@Override
 		public <T> T getContentAs(Class<T> as) {
 			if ( as == null ) throw new IllegalStateException(
 				"getContentAs cannot accept null");
