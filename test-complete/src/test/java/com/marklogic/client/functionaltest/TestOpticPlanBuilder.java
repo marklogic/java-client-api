@@ -16,7 +16,9 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -46,22 +48,16 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.QualifiedPlan;
 import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.PlanColumnSeq;
-import com.marklogic.client.type.PlanJoinKeySeq;
-import com.marklogic.client.type.PlanSortKeySeq;
-import com.marklogic.client.type.PlanTriplePattern;
 import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsStringParam;
 import com.marklogic.client.type.XsStringVal;
 
 public class TestOpticPlanBuilder extends BasicJavaClientREST {
@@ -338,7 +334,7 @@ public class TestOpticPlanBuilder extends BasicJavaClientREST {
 		JsonNode jsonResults = jacksonHandle.get();
 		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 		
-		// Should have 2 nodes returned.
+		// Should have 6 nodes returned.
 		assertEquals("Six nodes not returned from testNamedSchemaViewWithQualifier method ", 6, jsonBindingsNodes.size());
 	}
 	
@@ -1050,6 +1046,123 @@ public class TestOpticPlanBuilder extends BasicJavaClientREST {
 
 		JsonNode jsonBindingsNodes3 = jsonResults3.path("results").path("bindings");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes3.size());	
+	}
+	
+	/*
+	 * Test join inner with joinInnerDoc
+	 */
+	@Test
+	public void testJoinInnerWithInnerDocfromLexicons() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testJoinInnerWithInnerDocfromLexicons method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		
+		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
+		index1.put("uri1", p.cts.uriReference());
+		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
+		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("distance", p.cts.jsonPropertyReference("distance"));
+		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+		
+		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
+		index2.put("uri2", p.cts.uriReference());
+		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+	
+		// plan1
+		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
+		// plan2
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
+		
+		// plan2
+		ModifyPlan plan3 = plan1.joinInner(plan2)
+				                .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+			                    .orderBy(p.asc(p.col("date")))
+			                    .joinInnerDoc("doc", "uri2");
+		
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(plan3, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		
+		StringHandle strHandle = new StringHandle();
+		strHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(plan3, strHandle);
+		String strContent = strHandle.get();
+		
+		JsonNode jsonInnerDocNodes = jsonResults.path("results").path("bindings");
+		assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonInnerDocNodes.size());
+		//Verify first result
+		assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", jsonInnerDocNodes.get(0).path("myCity.date").path("value").asText());
+		assertEquals("Element 1 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc3.json", jsonInnerDocNodes.get(0).path("myCity.uri1").path("value").asText());
+		assertEquals("Element 1 (myCity) in distance incorrect", "12.9", jsonInnerDocNodes.get(0).path("myCity.distance").path("value").asText());
+		assertEquals("Element 1 (myCity) in city incorrect", "new jersey", jsonInnerDocNodes.get(0).path("myCity.city").path("value").asText());
+		assertEquals("Element 1 (myCity) in popularity incorrect", "2", jsonInnerDocNodes.get(0).path("myCity.popularity").path("value").asText());
+		assertEquals("Element 1 (myCity) in point incorrect", "40.720001,-74.07", jsonInnerDocNodes.get(0).path("myCity.point").path("value").asText());
+		
+		assertEquals("Element 1 (myTeam) in URI2 incorrect", "/optic/lexicon/test/city3.json", jsonInnerDocNodes.get(0).path("myTeam.uri2").path("value").asText());
+		assertEquals("Element 1 (myTeam) in city incorrect", "new jersey", jsonInnerDocNodes.get(0).path("myTeam.cityName").path("value").asText());
+		assertEquals("Element 1 (myTeam) in team incorrect", "nets", jsonInnerDocNodes.get(0).path("myTeam.cityTeam").path("value").asText());
+		
+		assertEquals("Element 1 (doc) in city incorrect", "new jersey", jsonInnerDocNodes.get(0).path("doc").path("value").path("cityName").asText());
+		assertEquals("Element 1 (doc) in population incorrect", "3000000", jsonInnerDocNodes.get(0).path("doc").path("value").path("cityPopulation").asText());
+		assertEquals("Element 1 (doc) in team incorrect", "nets", jsonInnerDocNodes.get(0).path("doc").path("value").path("cityTeam").asText());
+		
+		assertEquals("Element 2 (myCity) in date incorrect", "1981-11-09", jsonInnerDocNodes.get(1).path("myCity.date").path("value").asText());
+		assertEquals("Element 3 (myCity) in date incorrect", "1999-04-22", jsonInnerDocNodes.get(2).path("myCity.date").path("value").asText());
+		assertEquals("Element 4 (myCity) in date incorrect", "2006-06-23", jsonInnerDocNodes.get(3).path("myCity.date").path("value").asText());
+		
+		//Verify lasst result, since records are ordered.
+		assertEquals("Element 5 (myCity) in date incorrect", "2007-01-01", jsonInnerDocNodes.get(4).path("myCity.date").path("value").asText());
+		assertEquals("Element 5 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc1.json", jsonInnerDocNodes.get(4).path("myCity.uri1").path("value").asText());
+		assertEquals("Element 5 (myCity) in distance incorrect", "50.4", jsonInnerDocNodes.get(4).path("myCity.distance").path("value").asText());
+		assertEquals("Element 5 (myCity) in city incorrect", "london", jsonInnerDocNodes.get(4).path("myCity.city").path("value").asText());
+		assertEquals("Element 5 (myCity) in popularity incorrect", "5", jsonInnerDocNodes.get(4).path("myCity.popularity").path("value").asText());
+		assertEquals("Element 5 (myCity) in point incorrect", "51.5,-0.12", jsonInnerDocNodes.get(4).path("myCity.point").path("value").asText());
+		
+		assertEquals("Element 5 (myTeam) in URI2 incorrect", "/optic/lexicon/test/city1.json", jsonInnerDocNodes.get(4).path("myTeam.uri2").path("value").asText());
+		assertEquals("Element 5 (myTeam) in city incorrect", "london", jsonInnerDocNodes.get(4).path("myTeam.cityName").path("value").asText());
+		assertEquals("Element 5 (myTeam) in team incorrect", "arsenal", jsonInnerDocNodes.get(4).path("myTeam.cityTeam").path("value").asText());
+		
+		assertEquals("Element 5 (doc) in city incorrect", "london", jsonInnerDocNodes.get(4).path("doc").path("value").path("cityName").asText());
+		assertEquals("Element 5 (doc) in population incorrect", "2000000", jsonInnerDocNodes.get(4).path("doc").path("value").path("cityPopulation").asText());
+		assertEquals("Element 5 (doc) in team incorrect", "arsenal", jsonInnerDocNodes.get(4).path("doc").path("value").path("cityTeam").asText());
+		
+		// Validate RowRecord.
+		// Validate the document content, Kind and MimeType.
+		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan3);
+		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+		RowRecord recordRow = recordRowItr.next();
+				
+		assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", recordRow.getString("myCity.date"));
+		assertEquals("Element 1 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc3.json",  recordRow.getString("myCity.uri1"));
+		assertEquals(12.9, recordRow.getFloat("myCity.distance"), 0.1);
+		assertEquals("Element 1 (myCity) in city incorrect", "new jersey", recordRow.getString("myCity.city"));
+		assertEquals("Element 1 (myCity) in popularity incorrect", 2, recordRow.getInt("myCity.popularity"));
+		assertEquals("Element 1 (myCity) in point incorrect", "40.720001,-74.07", recordRow.getString("myCity.point"));
+				
+		// Use a handle different from Jackson.		
+		StringHandle strDocHandle = new StringHandle();
+		recordRow.getContent("doc", strDocHandle);
+		String docAsaString = strDocHandle.get();
+		
+		// Validate the document returned.		
+		assertTrue("Document does not have correct cityName value", docAsaString.contains("new jersey"));
+		assertTrue("Document does not have cityname field", docAsaString.contains("cityName"));
+		assertTrue("Document does not have correct cityName value", docAsaString.contains("3000000"));
+		assertTrue("Document does not have cityname field", docAsaString.contains("cityPopulation"));
+		assertTrue("Document does not have correct cityName value", docAsaString.contains("nets"));
+		assertTrue("Document does not have cityname field", docAsaString.contains("cityTeam"));
+		
+		// Validate the format and Mime-type.
+		assertTrue("Document format incorrect", recordRow.getContentFormat("doc") == Format.JSON);
+		assertTrue("Document Mime-type incorrect", recordRow.getContentMimetype("doc").contains("application/json"));		
 	}
 	
 	
