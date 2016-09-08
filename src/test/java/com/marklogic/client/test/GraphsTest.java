@@ -156,7 +156,7 @@ public class GraphsTest {
         gmgr.write(tripleGraphUri, new StringHandle(ntriple5 + "\n" + ntriple6)
             );
         String triples5and6 = gmgr.readAs(tripleGraphUri, String.class);
-        String expected = new String(ntriple5 + "\n" + ntriple6);
+        String expected = ntriple5 + "\n" + ntriple6;
         assertEquals(expected, triples5and6);
 
         gmgr.merge(tripleGraphUri, new StringHandle(ntriple7));

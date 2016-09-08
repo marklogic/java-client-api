@@ -21,6 +21,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
 
 import javax.xml.XMLConstants;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Vector;
 
 public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
@@ -50,12 +51,12 @@ public class QueryOptionsTransformInjectNS extends XMLFilterImpl {
             BindingAttributes attrs = new BindingAttributes(attributes);
             if ("path-index".equals(localName) || "searchable-expression".equals(localName)) {
                 String xmlns = null;
-                for (String pfx : nsmap.keySet()) {
+                for (Map.Entry<String,String> entry : nsmap.entrySet()) {
                     xmlns = "xmlns";
-                    if (!"".equals(pfx)) {
-                        xmlns += ":" + pfx;
+                    if (!"".equals(entry.getKey())) {
+                        xmlns += ":" + entry.getKey();
                     }
-                    attrs.addAttribute(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, xmlns, nsmap.get(pfx));
+                    attrs.addAttribute(XMLConstants.XMLNS_ATTRIBUTE_NS_URI, xmlns, entry.getValue());
                 }
             }
 
