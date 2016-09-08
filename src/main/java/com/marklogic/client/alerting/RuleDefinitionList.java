@@ -48,9 +48,9 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 	 * @return an iterator over [matched] rules.
 	 */
 	@Override
-    public Iterator<RuleDefinition> iterator(){ 
-    	return rules.iterator();
-    }
+	public Iterator<RuleDefinition> iterator(){ 
+		return rules.iterator();
+	}
 
 	/**
 	 * gets the number of rules in the list.
@@ -72,7 +72,7 @@ implements Iterable<RuleDefinition>, RuleListReadHandle {
 		HandleAccessor.receiveContent(domHandle, content);
 		Document document = domHandle.get();
 		NodeList ruleNodes = document.getElementsByTagNameNS(RequestConstants.RESTAPI_NS, "rule");
-        int ruleNodesLength = ruleNodes.getLength();
+		int ruleNodesLength = ruleNodes.getLength();
 		for (int i=0; i < ruleNodesLength; i++) {
 			Element ruleElement = (Element) ruleNodes.item(i);
 			RuleDefinition ruleDefinition = new RuleDefinition();

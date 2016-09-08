@@ -66,8 +66,8 @@ import com.marklogic.client.util.NameMap;
  */
 public class DocumentMetadataHandle
 	extends BaseHandle<InputStream, OutputStreamSender>
-    implements OutputStreamSender, BufferableHandle,
-    	DocumentMetadataReadHandle, DocumentMetadataWriteHandle
+	implements OutputStreamSender, BufferableHandle,
+	DocumentMetadataReadHandle, DocumentMetadataWriteHandle
 {
 	final static private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -88,11 +88,11 @@ public class DocumentMetadataHandle
 	@SuppressWarnings("serial")
 	static private class CollectionsImpl extends HashSet<String> implements DocumentCollections {
 		@Override
-	    public void addAll(String... collections) {
-	    	if (collections == null || collections.length < 1)
-	    		return;
+		public void addAll(String... collections) {
+			if (collections == null || collections.length < 1)
+				return;
 
-	    	for (String collection: collections)
+			for (String collection: collections)
 				add(collection);
 		}
 	}
@@ -101,12 +101,12 @@ public class DocumentMetadataHandle
 	 * Represents the permissions for a database document.
 	 */
 	public interface DocumentPermissions extends Map<String,Set<Capability>> {
-	    /**
-	     * Adds a role with one or more capabilities to the metadata that can be written
-	     * for the document.
-	     * @param role	the role for users permitted to access the document
-	     * @param capabilities	the permissions to be granted to users with the role
-	     */
+		/**
+		 * Adds a role with one or more capabilities to the metadata that can be written
+		 * for the document.
+		 * @param role	the role for users permitted to access the document
+		 * @param capabilities	the permissions to be granted to users with the role
+		 */
 		public void add(String role, Capability... capabilities);
 	}
 	@SuppressWarnings("serial")
@@ -137,21 +137,21 @@ public class DocumentMetadataHandle
 	 * A document operation restricted to users with a role. 
 	 */
 	public enum Capability {
-	    /**
-	     * Permission to execute the document.
-	     */
+		/**
+		 * Permission to execute the document.
+		 */
 		EXECUTE,
-	    /**
-	     * Permission to create but not modify the document.
-	     */
+		/**
+		 * Permission to create but not modify the document.
+		 */
 		INSERT,
-	    /**
-	     * Permission to read the document.
-	     */
+		/**
+		 * Permission to read the document.
+		 */
 		READ,
-	    /**
-	     * Permission to create or modify the document.
-	     */
+		/**
+		 * Permission to create or modify the document.
+		 */
 		UPDATE;
 	}
 
@@ -292,7 +292,7 @@ public class DocumentMetadataHandle
 	}
 	
 	private DocumentCollections collections;
-    private DocumentPermissions permissions;
+	private DocumentPermissions permissions;
 	private DocumentProperties  properties;
 	private int                 quality = 0;
 	private DocumentMetadataValues metadataValues;
@@ -305,7 +305,7 @@ public class DocumentMetadataHandle
 	public DocumentMetadataHandle() {
 		super();
 		super.setFormat(Format.XML);
-   		setResendable(true);
+		setResendable(true);
 	}
 
 	/**
@@ -360,8 +360,8 @@ public class DocumentMetadataHandle
 	/**
 	 * Locally adds the role and its capabilities to the current
 	 * permissions for the document.
-     * @param role	the role for users permitted to access the document
-     * @param capabilities	the permissions to be granted to users with the role
+	 * @param role	the role for users permitted to access the document
+	 * @param capabilities	the permissions to be granted to users with the role
 	 * @return	the document metadata handle
 	 */
 	public DocumentMetadataHandle withPermission(
@@ -477,16 +477,16 @@ public class DocumentMetadataHandle
 	/**
 	 * Restricts the format used parsing and serializing the metadata.
 	 */
-    @Override
+	@Override
 	public void setFormat(Format format) {
 		if (format != Format.XML)
 			throw new IllegalArgumentException("DocumentMetadataHandle supports the XML format only");
 	}
 
 	/**
-     * fromBuffer() populates DocumentMetadataHandle from a byte array
-     * buffer.  The buffer must store document metadata in XML format
-     * in the UTF-8 encoding.
+	 * fromBuffer() populates DocumentMetadataHandle from a byte array
+	 * buffer.  The buffer must store document metadata in XML format
+	 * in the UTF-8 encoding.
 	 */
 	@Override
 	public void fromBuffer(byte[] buffer) {
@@ -575,7 +575,7 @@ public class DocumentMetadataHandle
 			return;
 
 		NodeList valuesIn = document.getElementsByTagNameNS(REST_API_NS, "metadata-values");
-        int valuesInLength = valuesIn.getLength();
+		int valuesInLength = valuesIn.getLength();
 		for (int i = 0; i < valuesInLength; i++) {
 			String key = null;
 			String value = null;
@@ -611,7 +611,7 @@ public class DocumentMetadataHandle
 			return;
 		
 		NodeList collectionsIn = document.getElementsByTagNameNS(REST_API_NS, "collection");
-        int collectionsInLength = collectionsIn.getLength();
+		int collectionsInLength = collectionsIn.getLength();
 		for (int i=0; i < collectionsInLength; i++) {
 			collections.add(collectionsIn.item(i).getTextContent());
 		}
@@ -624,7 +624,7 @@ public class DocumentMetadataHandle
 			return;
 
 		NodeList permissionsIn = document.getElementsByTagNameNS(REST_API_NS, "permission");
-        int permissionsInLength = permissionsIn.getLength();
+		int permissionsInLength = permissionsIn.getLength();
 		for (int i=0; i < permissionsInLength; i++) {
 			String roleName = null;
 			Set<Capability> caps = new HashSet<>();
