@@ -834,7 +834,7 @@ public class JerseyServices implements RESTServices {
 
 		JerseyDocumentPage(JerseyResultIterator iterator, boolean hasContent, boolean hasMetadata) {
 			super(
-				new ArrayList<T>().iterator(),
+				new ArrayList<DocumentRecord>().iterator(),
 				iterator != null ? iterator.getStart() : 1,
 				iterator != null ? iterator.getPageSize() : 0,
 				iterator != null ? iterator.getTotalSize() : 0
