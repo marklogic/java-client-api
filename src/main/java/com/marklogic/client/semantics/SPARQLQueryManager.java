@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.semantics;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;

@@ -16,6 +16,7 @@
 package com.marklogic.client.bitemporal;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import javax.xml.bind.DatatypeConverter;
 
 public interface TemporalDescriptor extends DocumentDescriptor {
     /**

@@ -17,6 +17,7 @@ package com.marklogic.client.semantics;
 
 import java.util.Iterator;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -26,6 +27,7 @@ import com.marklogic.client.io.marker.QuadsWriteHandle;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.io.marker.TriplesWriteHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
+import com.marklogic.client.io.BaseHandle;
 
 /**
  * <p>A manager for CRUD operations on semantic graphs which reside in
