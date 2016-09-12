@@ -239,8 +239,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
     }
 
     private XMLStreamWriter makeXMLSerializer(OutputStream out) {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+        XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
         try {
             XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");

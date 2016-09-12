@@ -56,6 +56,7 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.impl.ClientPropertiesImpl;
 import com.marklogic.client.impl.DOMWriter;
 import com.marklogic.client.impl.ValueConverter;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
@@ -656,8 +657,7 @@ public class DocumentMetadataHandle
 	// TODO: select the metadata sent
 	private void sendMetadataImpl(OutputStream out) {
 		try {
-			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
+			XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
 			valueSerializer = null;
 
