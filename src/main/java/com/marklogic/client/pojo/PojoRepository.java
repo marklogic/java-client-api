@@ -82,6 +82,11 @@ import java.io.Serializable;
  * precision, use Strings to persist those numbers.
  */
 public interface PojoRepository<T, ID extends Serializable> {
+    /** Get the value of the id field (the field marked with the {@literal @}Id 
+     * annotation).
+     */
+    public ID getId(T entity);
+
     /** Write this instance to the database.  Uses the field marked with {@literal @}Id 
      * annotation to generate a unique uri for the document.  Adds a collection with the 
      * fully qualified class name.  Uses a particular configuration of 
