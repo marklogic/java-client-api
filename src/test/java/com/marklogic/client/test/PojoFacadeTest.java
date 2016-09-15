@@ -638,6 +638,7 @@ public class PojoFacadeTest {
         assertNotNull("City should never be null", city);
         assertNotNull("GeoNamId should never be null", city.getGeoNameId());
         if ( "Chittagong".equals(city.getName()) ) {
+            assertEquals("Chittagong should have id 1205733", 1205733, cities.getId(city).intValue());
             BulkReadWriteTest.validateChittagong(city);
         }
     }
