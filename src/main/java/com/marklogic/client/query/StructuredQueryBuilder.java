@@ -60,25 +60,25 @@ import com.marklogic.client.util.IterableNamespaceContext;
  * <pre>StructuredQueryDefinition andQry = structuredQueryBuilder.and(... query definitions ...);</pre>
  */
 public class StructuredQueryBuilder {
-	public static final String SEARCH_API_NS="http://marklogic.com/appservices/search";
+    public static final String SEARCH_API_NS="http://marklogic.com/appservices/search";
 
-	/*
-	 * This map is used to prevent reuse of reserved prefixes in path expressions.
-	 */
-	final static private Map<String,String> reserved = new HashMap<>();
-	static {
-		reserved.put("search", SEARCH_API_NS);
-		reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-		reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
-	};
+    /*
+     * This map is used to prevent reuse of reserved prefixes in path expressions.
+     */
+    final static private Map<String,String> reserved = new HashMap<>();
+    static {
+        reserved.put("search", SEARCH_API_NS);
+        reserved.put("xsi",  XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+        reserved.put("xs",   XMLConstants.W3C_XML_SCHEMA_NS_URI);
+    };
 
-	private static Templates extractor;
+    private static Templates extractor;
 
     private String builderOptionsURI = null;
-	/**
-	 * Used only for serializing StructuredQueryDefinitions.
-	 */
-	private IterableNamespaceContext namespaces;
+    /**
+     * Used only for serializing StructuredQueryDefinitions.
+     */
+    private IterableNamespaceContext namespaces;
 
     /**
      * Control over ordering for use in near queries.
@@ -86,7 +86,7 @@ public class StructuredQueryBuilder {
     public enum Ordering {
         ORDERED, UNORDERED;
     }
-    
+
     /**
      * Geospatial operators to be used in geospatial region index queries
      */
@@ -107,23 +107,23 @@ public class StructuredQueryBuilder {
     /**
      * A comparison operator for use in range queries.
      */
-	public enum Operator {
+    public enum Operator {
         LT, LE, GT, GE, EQ, NE;
     }
-    
+
     /**
      * Whether a query should search the document or its associated properties.
      * The value "DOCUMENT" is here for backward-compatibility but deprecated
      * in favor of DOCUMENTS.
      */
     public enum FragmentScope {
-    	@Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
+        @Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
     }
 
     /**
      * A TextIndex can be used for word and value queries.
      */
-    public interface TextIndex { 
+    public interface TextIndex {
     }
     /**
      * A RangeIndex can be used for range queries.  The range index
@@ -186,71 +186,71 @@ public class StructuredQueryBuilder {
      * Zero-argument constructor.
      */
     public StructuredQueryBuilder() {
-    	this((IterableNamespaceContext) null);
+        this((IterableNamespaceContext) null);
     }
     /**
      * Constructs a query builder for queries against the options
      * persisted with the specified name.  The query can include
      * constraint queries for any constraints defined by the options.
-     * @param optionsName	the name of the persisted query options
+     * @param optionsName    the name of the persisted query options
      */
     public StructuredQueryBuilder(String optionsName) {
-    	this((IterableNamespaceContext) null);
+        this((IterableNamespaceContext) null);
         builderOptionsURI = optionsName;
     }
     /**
      * Constructs a query builder for queries using the specified
      * namespace bindings.
-     * @param namespaces	the bindings of prefixes and namespaces
+     * @param namespaces    the bindings of prefixes and namespaces
      */
     public StructuredQueryBuilder(IterableNamespaceContext namespaces) {
-    	super();
-    	setNamespaces(namespaces);
+        super();
+        setNamespaces(namespaces);
     }
     /**
      * Constructs a query builder for queries against the options
      * persisted with the specified name using the specified
      * namespace bindings.  The query can include constraint queries
      * for any constraints defined by the options.
-     * @param optionsName	the name of the persisted query options
-     * @param namespaces	the bindings of prefixes and namespaces
+     * @param optionsName    the name of the persisted query options
+     * @param namespaces    the bindings of prefixes and namespaces
      */
     public StructuredQueryBuilder(String optionsName, IterableNamespaceContext namespaces) {
-    	this(namespaces);
+        this(namespaces);
         builderOptionsURI = optionsName;
     }
 
     /**
      * Builds a structured query in XML from the list of query definitions.
      * The structured query can be passed to the search() method of QueryManager.
-     * @param queries	the query definitions
-     * @return	the structured query
+     * @param queries    the query definitions
+     * @return    the structured query
      */
     public RawStructuredQueryDefinition build(StructuredQueryDefinition... queries) {
-    	checkQueries(queries);
-		return new RawQueryDefinitionImpl.Structured(
-				new StructuredQueryXMLWriter(queries), builderOptionsURI
-				);
+        checkQueries(queries);
+        return new RawQueryDefinitionImpl.Structured(
+                new StructuredQueryXMLWriter(queries), builderOptionsURI
+                );
     }
 
     /**
      * Defines an AND query over the list of query definitions.
-     * @param queries	the query definitions
-     * @return	the StructuredQueryDefinition for the AND query
+     * @param queries    the query definitions
+     * @return    the StructuredQueryDefinition for the AND query
      */
     public AndQuery and(StructuredQueryDefinition... queries) {
-    	checkQueries(queries);
+        checkQueries(queries);
         return new AndQuery(queries);
     }
 
     /**
      * Defines an OR query over the list of query definitions.
-     * @param queries	the query definitions
-     * @return	the StructuredQueryDefinition for the OR query
+     * @param queries    the query definitions
+     * @return    the StructuredQueryDefinition for the OR query
      */
     public OrQuery or(StructuredQueryDefinition... queries) {
-    	checkQueries(queries);
-    	return new OrQuery(queries);
+        checkQueries(queries);
+        return new OrQuery(queries);
     }
 
     /**
@@ -258,11 +258,11 @@ public class StructuredQueryBuilder {
      * a list of query definitions, define an AND or
      * OR query over the list and define the NOT query over
      * the AND or OR query.
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the NOT query
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the NOT query
      */
     public NotQuery not(StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new NotQuery(query);
     }
 
@@ -270,60 +270,60 @@ public class StructuredQueryBuilder {
      * Defines an AND NOT query combining a positive and negative
      * query. You can use an AND or OR query over a list of query
      * definitions as the positive or negative query.
-     * @param positive	the positive query definition
-     * @param negative	the negative query definition
-     * @return	the StructuredQueryDefinition for the AND NOT query
+     * @param positive    the positive query definition
+     * @param negative    the negative query definition
+     * @return    the StructuredQueryDefinition for the AND NOT query
      */
     public AndNotQuery andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
-    	checkQuery(positive);
-    	checkQuery(negative);
+        checkQuery(positive);
+        checkQuery(negative);
         return new AndNotQuery(positive, negative);
     }
 
     /**
      * Defines a NEAR query over the list of query definitions
      * with default parameters.
-     * @param queries	the query definitions
-     * @return	the StructuredQueryDefinition for the NEAR query
+     * @param queries    the query definitions
+     * @return    the StructuredQueryDefinition for the NEAR query
      */
     public NearQuery near(StructuredQueryDefinition... queries) {
-    	checkQueries(queries);
+        checkQueries(queries);
         return new NearQuery(queries);
     }
 
     /**
      * Defines a NEAR query over the list of query definitions
      * with specified parameters.
-     * @param distance	the proximity for the query terms
-     * @param weight	the weight for the query
-     * @param order	the ordering for the query terms
-     * @param queries	the query definitions
-     * @return	the StructuredQueryDefinition for the NEAR query
+     * @param distance    the proximity for the query terms
+     * @param weight    the weight for the query
+     * @param order    the ordering for the query terms
+     * @param queries    the query definitions
+     * @return    the StructuredQueryDefinition for the NEAR query
      */
     public NearQuery near(int distance, double weight, Ordering order, StructuredQueryDefinition... queries) {
-    	checkQueries(queries);
+        checkQueries(queries);
         return new NearQuery(distance, weight, order, queries);
     }
 
     /**
      * Associates a query with the content of documents (as opposed to
      * the properties of documents).
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the document fragment query
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the document fragment query
      */
     public DocumentFragmentQuery documentFragment(StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new DocumentFragmentQuery(query);
     }
 
     /**
      * Associates a query with the properties of documents (as opposed to
      * the content of documents).
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the properties query
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the properties query
      */
     public PropertiesQuery properties(StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new PropertiesQuery(query);
     }
 
@@ -331,30 +331,30 @@ public class StructuredQueryBuilder {
      * Associates a query with durable locks on documents (as opposed to
      * the content or properties of documents). Such lock fragments are
      * created with xdmp:lock-acquire().
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the locks query
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the locks query
      */
     public LocksQuery locks(StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new LocksQuery(query);
     }
 
     /**
      * Matches a query within the substructure contained by an element or JSON property.
-     * @param index	the element or JSON property
-     * @param query	the query over the contained substructure
-     * @return	the StructuredQueryDefinition for the container query
+     * @param index    the element or JSON property
+     * @param query    the query over the contained substructure
+     * @return    the StructuredQueryDefinition for the container query
      */
     public StructuredQueryDefinition containerQuery(ContainerIndex index, StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new ContainerQuery(index, query);
     }
 
     /**
      * Matches documents belonging to at least one
      * of the criteria collections.
-     * @param uris	the identifiers for the criteria collections
-     * @return	the StructuredQueryDefinition for the collection query
+     * @param uris    the identifiers for the criteria collections
+     * @return    the StructuredQueryDefinition for the collection query
      */
     public CollectionQuery collection(String... uris) {
         return new CollectionQuery(uris);
@@ -363,9 +363,9 @@ public class StructuredQueryBuilder {
     /**
      * Matches documents at the specified depth within at least one
      * of the criteria directories.
-     * @param isInfinite	true to match a document at any level of depth
-     * @param uris	the identifiers for the criteria directories
-     * @return	the StructuredQueryDefinition for the directory query
+     * @param isInfinite    true to match a document at any level of depth
+     * @param uris    the identifiers for the criteria directories
+     * @return    the StructuredQueryDefinition for the directory query
      */
     public DirectoryQuery directory(boolean isInfinite, String... uris) {
         return new DirectoryQuery(isInfinite, uris);
@@ -374,29 +374,29 @@ public class StructuredQueryBuilder {
     /**
      * Matches documents at the specified depth within at least one
      * of the criteria directories.
-     * @param depth specifies how many subdirectories deep to traverse  
+     * @param depth specifies how many subdirectories deep to traverse
      * A value of 1 means to exclude subdirectories.
-     * @param uris	the identifiers for the criteria directories
-     * @return	the StructuredQueryDefinition for the directory query
+     * @param uris    the identifiers for the criteria directories
+     * @return    the StructuredQueryDefinition for the directory query
      */
     public DirectoryQuery directory(int depth, String... uris) {
-		return new DirectoryQuery(depth, uris);
+        return new DirectoryQuery(depth, uris);
     }
-    
+
     /**
      * Matches the specified documents.
-     * @param uris	the identifiers for the documents
-     * @return	the StructuredQueryDefinition for the document query
+     * @param uris    the identifiers for the documents
+     * @return    the StructuredQueryDefinition for the document query
      */
     public DocumentQuery document(String... uris) {
         return new DocumentQuery(uris);
     }
-    
-	 
+
+
     /**
      * Matches documents containing the specified terms.
-     * @param terms	the possible terms to match
-     * @return	the StructuredQueryDefinition for the term query
+     * @param terms    the possible terms to match
+     * @return    the StructuredQueryDefinition for the term query
      */
     public TermQuery term(String... terms) {
         return new TermQuery(null, terms);
@@ -404,9 +404,9 @@ public class StructuredQueryBuilder {
     /**
      * Matches documents containing the specified terms, modifying
      * the contribution of the match to the score with the weight.
-     * @param weight	the multiplier for the match in the document ranking
-     * @param terms	the possible terms to match
-     * @return	the StructuredQueryDefinition for the term query
+     * @param weight    the multiplier for the match in the document ranking
+     * @param terms    the possible terms to match
+     * @return    the StructuredQueryDefinition for the term query
      */
     public TermQuery term(double weight, String... terms) {
         return new TermQuery(weight, terms);
@@ -416,9 +416,9 @@ public class StructuredQueryBuilder {
      * Matches an element, attribute, JSON property, or field
      * that has a value with the same string value as at least one
      * of the criteria values.
-     * @param index	the value container
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, String... values) {
         return new ValueQuery(index, null, null, null, values);
@@ -427,9 +427,9 @@ public class StructuredQueryBuilder {
      * Matches a JSON property that has a value with the same boolean value
      * as at least one of the criteria values.  Note this method will not match
      * any XML node.
-     * @param index	the value container
-     * @param value	either true or false
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param value    either true or false
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, Boolean value) {
         return new ValueQuery(index, null, null, null, new Object[] {value});
@@ -438,9 +438,9 @@ public class StructuredQueryBuilder {
      * Matches an JSON property that has a value with the same numeric
      * value as at least one of the criteria values.  Note this method will not
      * match any XML node.
-     * @param index	the value container
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, Number... values) {
         return new ValueQuery(index, null, null, null, values);
@@ -449,12 +449,12 @@ public class StructuredQueryBuilder {
      * Matches an element, attribute, JSON property, or field
      * that has a value with the same string value as at least one
      * of the criteria values.
-     * @param index	the value container
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param weight	the multiplier for the match in the document ranking
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param weight    the multiplier for the match in the document ranking
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, String... values) {
         return new ValueQuery(index, scope, options, weight, values);
@@ -463,12 +463,12 @@ public class StructuredQueryBuilder {
      * Matches a JSON property that has a value with the same boolean
      * value as at least one of the criteria values.  Note this method will not
      * match any XML node.
-     * @param index	the value container
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param weight	the multiplier for the match in the document ranking
-     * @param value		either true or false
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param weight    the multiplier for the match in the document ranking
+     * @param value        either true or false
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, Boolean value) {
         return new ValueQuery(index, scope, options, weight, new Object[] {value});
@@ -477,12 +477,12 @@ public class StructuredQueryBuilder {
      * Matches a JSON property that has a value with the same numeric
      * value as at least one of the criteria values.  Note this method will not
      * match any XML node.
-     * @param index	the value container
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param weight	the multiplier for the match in the document ranking
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value query
+     * @param index    the value container
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param weight    the multiplier for the match in the document ranking
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value query
      */
     public StructuredQueryDefinition value(TextIndex index, FragmentScope scope, String[] options, double weight, Number... values) {
         return new ValueQuery(index, scope, options, weight, values);
@@ -491,9 +491,9 @@ public class StructuredQueryBuilder {
     /**
      * Matches an element, attribute, JSON property, or field
      * that has at least one of the criteria words.
-     * @param index	the word container
-     * @param words	the possible words to match
-     * @return	the StructuredQueryDefinition for the word query
+     * @param index    the word container
+     * @param words    the possible words to match
+     * @return    the StructuredQueryDefinition for the word query
      */
     public StructuredQueryDefinition word(TextIndex index, String... words) {
         return new WordQuery(index, null, null, null, words);
@@ -501,149 +501,149 @@ public class StructuredQueryBuilder {
     /**
      * Matches an element, attribute, JSON property, or field
      * that has at least one of the criteria words.
-     * @param index	the word container
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param weight	the multiplier for the match in the document ranking
-     * @param words	the possible words to match
-     * @return	the StructuredQueryDefinition for the word query
+     * @param index    the word container
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param weight    the multiplier for the match in the document ranking
+     * @param words    the possible words to match
+     * @return    the StructuredQueryDefinition for the word query
      */
     public StructuredQueryDefinition word(TextIndex index, FragmentScope scope,
-    		String[] options, double weight, String... words) {
+            String[] options, double weight, String... words) {
         return new WordQuery(index, scope, options, weight, words);
     }
 
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
-    public StructuredQueryDefinition range(RangeIndex index, String type, 
-    		Operator operator, Object... values) {
+    public StructuredQueryDefinition range(RangeIndex index, String type,
+            Operator operator, Object... values) {
         return new RangeQuery(index, type, null, null, null, operator, values);
     }
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param collation	the identifier for the strategy for comparing types 
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param collation    the identifier for the strategy for comparing types
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		Operator operator, Object... values) {
+            Operator operator, Object... values) {
         return new RangeQuery(index, type, collation, null, null, operator, values);
     }
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param collation	the identifier for the strategy for comparing types 
-     * @param scope	whether the query matches the document content or properties
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param collation    the identifier for the strategy for comparing types
+     * @param scope    whether the query matches the document content or properties
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		FragmentScope scope, Operator operator,
-    		Object... values) {
+            FragmentScope scope, Operator operator,
+            Object... values) {
         return new RangeQuery(index, type, collation, scope, null, operator, values);
     }
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param options	options for fine tuning the query
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param options    options for fine tuning the query
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
     public StructuredQueryDefinition range(RangeIndex index, String type, String[] options, Operator operator,
-    		Object... values) {
+            Object... values) {
         return new RangeQuery(index, type, null, null, options, operator, values);
     }
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param collation	the identifier for the strategy for comparing types 
-     * @param options	options for fine tuning the query
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param collation    the identifier for the strategy for comparing types
+     * @param options    options for fine tuning the query
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		String[] options, Operator operator, Object... values) {
+            String[] options, Operator operator, Object... values) {
         return new RangeQuery(index, type, collation, null, options, operator, values);
     }
     /**
      * Matches an element, attribute, JSON property, field, or path
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param index	the range container
-     * @param type	the datatype of the container and specified values
-     * @param collation	the identifier for the strategy for comparing types 
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range query
+     * @param index    the range container
+     * @param type    the datatype of the container and specified values
+     * @param collation    the identifier for the strategy for comparing types
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range query
      */
     public StructuredQueryDefinition range(RangeIndex index, String type, String collation,
-    		FragmentScope scope, String[] options, Operator operator,
-    		Object... values) {
+            FragmentScope scope, String[] options, Operator operator,
+            Object... values) {
         return new RangeQuery(index, type, collation, scope, options, operator, values);
     }
 
     /**
      * Matches an element, element pair, element attribute, pair, or path
      * specifying a geospatial point that appears within one of the criteria regions.
-     * @param index	the container for the coordinates of the geospatial point
-     * @param regions	the possible regions containing the point
-     * @return	the StructuredQueryDefinition for the geospatial query
+     * @param index    the container for the coordinates of the geospatial point
+     * @param regions    the possible regions containing the point
+     * @return    the StructuredQueryDefinition for the geospatial query
      */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, Region... regions) {
-    	checkRegions(regions);
+        checkRegions(regions);
         return new GeospatialPointQuery(index, null, regions, null);
     }
     /**
      * Matches an element, element pair, element attribute, pair, or path
      * specifying a geospatial point that appears within one of the criteria regions.
-     * @param index	the container for the coordinates of the geospatial point
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param regions	the possible regions containing the point
-     * @return	the StructuredQueryDefinition for the geospatial query
+     * @param index    the container for the coordinates of the geospatial point
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param regions    the possible regions containing the point
+     * @return    the StructuredQueryDefinition for the geospatial query
      */
     public StructuredQueryDefinition geospatial(GeospatialIndex index, FragmentScope scope, String[] options, Region... regions) {
-    	checkRegions(regions);
+        checkRegions(regions);
         return new GeospatialPointQuery(index, scope, regions, options);
     }
 
 
     /**
-     * Matches a path specifying a geospatial region, which is indexed via 
+     * Matches a path specifying a geospatial region, which is indexed via
      * geospatial region index, that has the relationship given by the operator
      * with at least one of the criteria regions.
-     * @param index	the container for the geospatial regions
-     * @param operator	the geospatial operator to be applied with the regions in the
+     * @param index    the container for the geospatial regions
+     * @param operator    the geospatial operator to be applied with the regions in the
      *                  index and the specified regions
-     * @param regions	the possible regions containing the region
-     * @return	the StructuredQueryDefinition for the geospatial query
+     * @param regions    the possible regions containing the region
+     * @return    the StructuredQueryDefinition for the geospatial query
      */
     public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, Region... regions) {
         checkRegions(regions);
@@ -651,16 +651,16 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * Matches a path specifying a geospatial region, which is indexed via 
+     * Matches a path specifying a geospatial region, which is indexed via
      * geospatial region index, that has the relationship given by the operator
      * with at least one of the criteria regions.
-     * @param index	the container for the geospatial regions
-     * @param operator	the geospatial operator to be applied with the regions in the
+     * @param index    the container for the geospatial regions
+     * @param operator    the geospatial operator to be applied with the regions in the
      *                  index and the specified regions
-     * @param scope	whether the query matches the document content or properties
-     * @param options	options for fine tuning the query
-     * @param regions	the possible regions containing the region
-     * @return	the StructuredQueryDefinition for the geospatial query
+     * @param scope    whether the query matches the document content or properties
+     * @param options    options for fine tuning the query
+     * @param regions    the possible regions containing the region
+     * @return    the StructuredQueryDefinition for the geospatial query
      */
     public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, FragmentScope scope, String[] options, Region... regions) {
         checkRegions(regions);
@@ -669,152 +669,152 @@ public class StructuredQueryBuilder {
 
     /**
      * Identifies a namespaced element to match with a query.
-     * @param qname	the name of the element
-     * @return	the element identifier
+     * @param qname    the name of the element
+     * @return    the element identifier
      */
     public Element element(QName qname) {
-    	return new ElementImpl(qname);
+        return new ElementImpl(qname);
     }
     /**
      * Identifies a simple element to match with a query.
-     * @param name	the name of the element
-     * @return	the element identifier
+     * @param name    the name of the element
+     * @return    the element identifier
      */
     public Element element(String name) {
-    	return new ElementImpl(name);
+        return new ElementImpl(name);
     }
     /**
      * Identifies a namespaced attribute to match with a query.
-     * @param qname	the name of the attribute 
-     * @return	the attribute identifier
+     * @param qname    the name of the attribute
+     * @return    the attribute identifier
      */
     public Attribute attribute(QName qname) {
-    	return new AttributeImpl(qname);
+        return new AttributeImpl(qname);
     }
     /**
      * Identifies a simple attribute to match with a query.
-     * @param name	the name of the attribute
-     * @return	the attribute identifier
+     * @param name    the name of the attribute
+     * @return    the attribute identifier
      */
     public Attribute attribute(String name) {
-    	return new AttributeImpl(name);
+        return new AttributeImpl(name);
     }
     /**
      * Identifies an element having an attribute to match with a query.
-     * @param element	the element identifier
-     * @param attribute	the attribute identifier
-     * @return	the identifier for the element-attribute pair
+     * @param element    the element identifier
+     * @param attribute    the attribute identifier
+     * @return    the identifier for the element-attribute pair
      */
     public ElementAttribute elementAttribute(Element element, Attribute attribute) {
-    	return new ElementAttributeImpl(element, attribute);
+        return new ElementAttributeImpl(element, attribute);
     }
     /**
      * Identifies a field to match with a query.  Fields are defined
-     * in the configuration for the database. 
-     * @param name	the name of the field
-     * @return	the identifier for the field
+     * in the configuration for the database.
+     * @param name    the name of the field
+     * @return    the identifier for the field
      */
     public Field field(String name) {
-    	return new FieldImpl(name);
+        return new FieldImpl(name);
     }
     /**
      * Identifies a JSON property to match with a query.
-     * @param name	the name of the JSON property
-     * @return	the identifier for the JSON property
+     * @param name    the name of the JSON property
+     * @return    the identifier for the JSON property
      */
     public JSONProperty jsonProperty(String name) {
-    	return new JSONPropertyImpl(name);
+        return new JSONPropertyImpl(name);
     }
     /**
      * Identifies a path index to match with a query.
-     * @param path	the indexed path
-     * @return	the identifier for the path index 
+     * @param path    the indexed path
+     * @return    the identifier for the path index
      */
     public PathIndex pathIndex(String path) {
-    	return new PathIndexImpl(path);
+        return new PathIndexImpl(path);
     }
     /**
      * Identifies a json property whose text has the point format latitude and longitude
      * coordinates to match with a geospatial query.
-     * @param jsonProperty	the json property containing the geospatial coordinates
-     * @return	the specification for the index on the geospatial coordinates
+     * @param jsonProperty    the json property containing the geospatial coordinates
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoJSONProperty(JSONProperty jsonProperty) {
         if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
-    	return new GeoJSONPropertyImpl(jsonProperty);
+        return new GeoJSONPropertyImpl(jsonProperty);
     }
     /**
      * Identifies a parent json property with a child json property whose text has
      * the latitude and longitude coordinates to match with a geospatial query.
-     * @param parent	the parent of the json property with the coordinates
-     * @param jsonProperty	the json property containing the geospatial coordinates
-     * @return	the specification for the index on the geospatial coordinates
+     * @param parent    the parent of the json property with the coordinates
+     * @param jsonProperty    the json property containing the geospatial coordinates
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoJSONProperty(JSONProperty parent, JSONProperty jsonProperty) {
         if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
         if ( jsonProperty == null ) throw new IllegalArgumentException("jsonProperty cannot be null");
-    	return new GeoJSONPropertyImpl(parent, jsonProperty);
+        return new GeoJSONPropertyImpl(parent, jsonProperty);
     }
     /**
      * Identifies a parent json property with child latitude and longitude json properties
      * to match with a geospatial query.
-     * @param parent	the parent json property of lat and lon
-     * @param lat	the json property with the latitude coordinate
-     * @param lon	the json property with the longitude coordinate
-     * @return	the specification for the index on the geospatial coordinates
+     * @param parent    the parent json property of lat and lon
+     * @param lat    the json property with the latitude coordinate
+     * @param lon    the json property with the longitude coordinate
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoJSONPropertyPair(JSONProperty parent, JSONProperty lat, JSONProperty lon) {
         if ( parent == null ) throw new IllegalArgumentException("parent cannot be null");
         if ( lat == null )    throw new IllegalArgumentException("lat cannot be null");
         if ( lon == null )    throw new IllegalArgumentException("lon cannot be null");
-    	return new GeoJSONPropertyPairImpl(parent, lat, lon);
+        return new GeoJSONPropertyPairImpl(parent, lat, lon);
     }
     /**
      * Identifies an element whose text has the latitude and longitude
      * coordinates to match with a geospatial query.
-     * @param element	the element containing the geospatial coordinates
-     * @return	the specification for the index on the geospatial coordinates
+     * @param element    the element containing the geospatial coordinates
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoElement(Element element) {
-    	return new GeoElementImpl(element);
+        return new GeoElementImpl(element);
     }
     /**
      * Identifies a parent element with a child element whose text has
      * the latitude and longitude coordinates to match with a geospatial query.
-     * @param parent	the parent of the element with the coordinates
-     * @param element	the element containing the geospatial coordinates
-     * @return	the specification for the index on the geospatial coordinates
+     * @param parent    the parent of the element with the coordinates
+     * @param element    the element containing the geospatial coordinates
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoElement(Element parent, Element element) {
-    	return new GeoElementImpl(parent, element);
+        return new GeoElementImpl(parent, element);
     }
     /**
      * Identifies a parent element with child latitude and longitude elements
      * to match with a geospatial query.
-     * @param parent	the parent of the element with the coordinates
-     * @param lat	the element with the latitude coordinate
-     * @param lon	the element with the longitude coordinate
-     * @return	the specification for the index on the geospatial coordinates
+     * @param parent    the parent of the element with the coordinates
+     * @param lat    the element with the latitude coordinate
+     * @param lon    the element with the longitude coordinate
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoElementPair(Element parent, Element lat, Element lon) {
-    	return new GeoElementPairImpl(parent, lat, lon);
+        return new GeoElementPairImpl(parent, lat, lon);
     }
     /**
      * Identifies a parent element with child latitude and longitude attributes
      * to match with a geospatial query.
-     * @param parent	the parent of the element with the coordinates
-     * @param lat	the attribute with the latitude coordinate
-     * @param lon	the attribute with the longitude coordinate
-     * @return	the specification for the index on the geospatial coordinates
+     * @param parent    the parent of the element with the coordinates
+     * @param lat    the attribute with the latitude coordinate
+     * @param lon    the attribute with the longitude coordinate
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoAttributePair(Element parent, Attribute lat, Attribute lon) {
-    	return new GeoAttributePairImpl(parent, lat, lon);
+        return new GeoAttributePairImpl(parent, lat, lon);
     }
     /**
      * Identifies a path with the latitude and longitude to match
      * with a geospatial query.
-     * @param pathIndex	the indexed path
-     * @return	the specification for the index on the geospatial coordinates
+     * @param pathIndex    the indexed path
+     * @return    the specification for the index on the geospatial coordinates
      */
     public GeospatialIndex geoPath(PathIndex pathIndex) {
         return new GeoPointPathImpl(pathIndex);
@@ -823,8 +823,8 @@ public class StructuredQueryBuilder {
     /**
      * Identifies a path with regions to match
      * with a geospatial query.
-     * @param pathIndex	the indexed path
-     * @return	the specification for the index on the geospatial region
+     * @param pathIndex    the indexed path
+     * @return    the specification for the index on the geospatial region
      */
     public GeospatialRegionIndex geoRegionPath(PathIndex pathIndex) {
         return new GeoRegionPathImpl(pathIndex);
@@ -832,9 +832,9 @@ public class StructuredQueryBuilder {
 
     /**
      * Specifies a geospatial point.
-     * @param latitude	the latitude coordinate
-     * @param longitude	the longitude coordinate
-     * @return	the definition of the point
+     * @param latitude    the latitude coordinate
+     * @param longitude    the longitude coordinate
+     * @return    the definition of the point
      */
     public Point point(double latitude, double longitude) {
         return new Point(latitude, longitude);
@@ -843,10 +843,10 @@ public class StructuredQueryBuilder {
     /**
      * Specifies a geospatial region as a circle,
      * supplying coordinates for the center.
-     * @param latitude	the latitude coordinate of the center
-     * @param longitude	the longitude coordinate of the center
-     * @param radius	the radius of the circle
-     * @return	the definition of the circle
+     * @param latitude    the latitude coordinate of the center
+     * @param longitude    the longitude coordinate of the center
+     * @param radius    the radius of the circle
+     * @return    the definition of the circle
      */
     public Circle circle(double latitude, double longitude, double radius) {
         return new Circle(latitude, longitude, radius);
@@ -854,9 +854,9 @@ public class StructuredQueryBuilder {
     /**
      * Specifies a geospatial region as a circle,
      * supplying a point for the center.
-     * @param center	the point defining the center
-     * @param radius	the radius of the circle
-     * @return	the definition of the circle
+     * @param center    the point defining the center
+     * @param radius    the radius of the circle
+     * @return    the definition of the circle
      */
     public Circle circle(Point center, double radius) {
         return new Circle(center.getLatitude(), center.getLongitude(), radius);
@@ -865,11 +865,11 @@ public class StructuredQueryBuilder {
     /**
      * Specifies a geospatial region as a box, supplying
      * the coordinates for the perimeter.
-     * @param south	the latitude of the south coordinate
-     * @param west	the longitude of the west coordinate
-     * @param north	the latitude of the north coordinate
-     * @param east	the longitude of the east coordinate
-     * @return	the definition of the box
+     * @param south    the latitude of the south coordinate
+     * @param west    the longitude of the west coordinate
+     * @param north    the latitude of the north coordinate
+     * @param east    the longitude of the east coordinate
+     * @return    the definition of the box
      */
     public Box box(double south, double west, double north, double east) {
         return new Box(south, west, north, east);
@@ -877,8 +877,8 @@ public class StructuredQueryBuilder {
 
     /**
      * Specifies a geospatial region as an arbitrary polygon.
-     * @param points	the list of points defining the perimeter of the region
-     * @return	the definition of the polygon
+     * @param points    the list of points defining the perimeter of the region
+     * @return    the definition of the polygon
      */
     public Polygon polygon(Point... points) {
         return new Polygon(points);
@@ -887,12 +887,12 @@ public class StructuredQueryBuilder {
     /**
      * Matches a query within the substructure of the container specified
      * by the constraint.
-     * @param constraintName	the constraint definition
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the element constraint query
+     * @param constraintName    the constraint definition
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the element constraint query
      */
     public StructuredQueryDefinition containerConstraint(String constraintName, StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new ContainerConstraintQuery(constraintName, query);
     }
 
@@ -901,13 +901,13 @@ public class StructuredQueryBuilder {
      * by the constraint.
      * This method is deprecated in favor of the more general
      * {@link #containerConstraint(String, StructuredQueryDefinition) containerConstraint()} method.
-     * @param constraintName	the constraint definition
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the element constraint query
+     * @param constraintName    the constraint definition
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the element constraint query
      */
-	@Deprecated
+    @Deprecated
     public ElementConstraintQuery elementConstraint(String constraintName, StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new ElementConstraintQuery(constraintName, query);
     }
 
@@ -915,21 +915,21 @@ public class StructuredQueryBuilder {
     /**
      * Associates a query with the properties of documents (as opposed to
      * the content of documents) with the specified constraint.
-     * @param constraintName	the constraint definition
-     * @param query	the query definition
-     * @return	the StructuredQueryDefinition for the properties constraint query
+     * @param constraintName    the constraint definition
+     * @param query    the query definition
+     * @return    the StructuredQueryDefinition for the properties constraint query
      */
     public PropertiesConstraintQuery propertiesConstraint(String constraintName, StructuredQueryDefinition query) {
-    	checkQuery(query);
+        checkQuery(query);
         return new PropertiesConstraintQuery(constraintName, query);
     }
 
     /**
      * Matches documents belonging to at least one
      * of the criteria collections with the specified constraint.
-     * @param constraintName	the constraint definition
-     * @param uris	the identifiers for the criteria collections
-     * @return	the StructuredQueryDefinition for the collection constraint query
+     * @param constraintName    the constraint definition
+     * @param uris    the identifiers for the criteria collections
+     * @return    the StructuredQueryDefinition for the collection constraint query
      */
     public CollectionConstraintQuery collectionConstraint(String constraintName, String... uris) {
         return new CollectionConstraintQuery(constraintName, uris);
@@ -939,9 +939,9 @@ public class StructuredQueryBuilder {
      * Matches the container specified by the constraint when it
      * has a value with the same string value as at least one
      * of the criteria values.
-     * @param constraintName	the constraint definition
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value constraint query
+     * @param constraintName    the constraint definition
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value constraint query
      */
     public ValueConstraintQuery valueConstraint(String constraintName, String... values) {
         return new ValueConstraintQuery(constraintName, values);
@@ -950,10 +950,10 @@ public class StructuredQueryBuilder {
      * Matches the container specified by the constraint when it
      * has a value with the same string value as at least one
      * of the criteria values.
-     * @param constraintName	the constraint definition
-     * @param weight	the multiplier for the match in the document ranking
-     * @param values	the possible values to match
-     * @return	the StructuredQueryDefinition for the value constraint query
+     * @param constraintName    the constraint definition
+     * @param weight    the multiplier for the match in the document ranking
+     * @param values    the possible values to match
+     * @return    the StructuredQueryDefinition for the value constraint query
      */
     public ValueConstraintQuery valueConstraint(String constraintName, double weight, String... values) {
         return new ValueConstraintQuery(constraintName, weight, values);
@@ -962,9 +962,9 @@ public class StructuredQueryBuilder {
     /**
      * Matches the container specified by the constraint when it
      * has at least one of the criteria words.
-     * @param constraintName	the constraint definition
-     * @param words	the possible words to match
-     * @return	the StructuredQueryDefinition for the word constraint query
+     * @param constraintName    the constraint definition
+     * @param words    the possible words to match
+     * @return    the StructuredQueryDefinition for the word constraint query
      */
     public WordConstraintQuery wordConstraint(String constraintName, String... words) {
         return new WordConstraintQuery(constraintName, words);
@@ -972,10 +972,10 @@ public class StructuredQueryBuilder {
     /**
      * Matches the container specified by the constraint when it
      * has at least one of the criteria words.
-     * @param constraintName	the constraint definition
-     * @param weight	the multiplier for the match in the document ranking
-     * @param words	the possible words to match
-     * @return	the StructuredQueryDefinition for the word constraint query
+     * @param constraintName    the constraint definition
+     * @param weight    the multiplier for the match in the document ranking
+     * @param words    the possible words to match
+     * @return    the StructuredQueryDefinition for the word constraint query
      */
     public WordConstraintQuery wordConstraint(String constraintName, double weight, String... words) {
         return new WordConstraintQuery(constraintName, weight, words);
@@ -983,12 +983,12 @@ public class StructuredQueryBuilder {
 
     /**
      * Matches the container specified by the constraint
-     * whose value that has the correct datatyped comparison with 
+     * whose value that has the correct datatyped comparison with
      * one of the criteria values.
-     * @param constraintName	the constraint definition
-     * @param operator	the comparison with the criteria values
-     * @param values	the possible datatyped values for the comparison
-     * @return	the StructuredQueryDefinition for the range constraint query
+     * @param constraintName    the constraint definition
+     * @param operator    the comparison with the criteria values
+     * @param values    the possible datatyped values for the comparison
+     * @return    the StructuredQueryDefinition for the range constraint query
      */
     public RangeConstraintQuery rangeConstraint(String constraintName, Operator operator, String... values) {
         return new RangeConstraintQuery(constraintName, operator, values);
@@ -997,23 +997,23 @@ public class StructuredQueryBuilder {
     /**
      * Matches the container specified by the constraint
      * whose geospatial point appears within one of the criteria regions.
-     * @param constraintName	the constraint definition
-     * @param regions	the possible regions containing the point
-     * @return	the StructuredQueryDefinition for the geospatial constraint query
+     * @param constraintName    the constraint definition
+     * @param regions    the possible regions containing the point
+     * @return    the StructuredQueryDefinition for the geospatial constraint query
      */
     public GeospatialConstraintQuery geospatialConstraint(String constraintName, Region... regions) {
-    	checkRegions(regions);
+        checkRegions(regions);
         return new GeospatialConstraintQuery(constraintName, regions);
     }
 
     /**
      * Matches the container specified by the constraint
      * whose geospatial region appears within one of the criteria regions.
-     * @param constraintName	the constraint definition
-     * @param operator	the geospatial operator to be applied with the regions 
+     * @param constraintName    the constraint definition
+     * @param operator    the geospatial operator to be applied with the regions
      *                  in the index and the criteria regions
-     * @param regions	the possible regions containing the point
-     * @return	the StructuredQueryDefinition for the geospatial constraint query
+     * @param regions    the possible regions containing the point
+     * @return    the StructuredQueryDefinition for the geospatial constraint query
      */
     public StructuredQueryDefinition geospatialRegionConstraint(String constraintName, GeoSpatialOperator operator, Region... regions) {
         checkRegions(regions);
@@ -1023,9 +1023,9 @@ public class StructuredQueryBuilder {
     /**
      * Matches documents as specified by a constraint that implements
      * a custom query parameterized with the supplied text.
-     * @param constraintName	the constraint definition
-     * @param text	the input to the custom query
-     * @return	the StructuredQueryDefinition for the custom constraint query
+     * @param constraintName    the constraint definition
+     * @param text    the input to the custom query
+     * @return    the StructuredQueryDefinition for the custom constraint query
      */
     public CustomConstraintQuery customConstraint(String constraintName, String... text) {
         return new CustomConstraintQuery(constraintName, text);
@@ -1034,26 +1034,26 @@ public class StructuredQueryBuilder {
     /* ************************************************************************************* */
 
     // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
-	protected abstract class AbstractStructuredQuery
+    protected abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
-		public AbstractStructuredQuery() {
-			optionsUri = builderOptionsURI;
-		}
+        public AbstractStructuredQuery() {
+            optionsUri = builderOptionsURI;
+        }
 
         @Override
-		public String serialize() {
-			return serializeQueries(this);
+        public String serialize() {
+            return serializeQueries(this);
         }
 
         /**
          * Returns the query as a partial string.  This method will be removed in a future
          * release.
-         * @return	the query content
+         * @return    the query content
          */
         @Deprecated
         public String innerSerialize() {
-        	return extractQueryContent(serializeQueries(this));
+            return extractQueryContent(serializeQueries(this));
         }
 
         public abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
@@ -1061,7 +1061,7 @@ public class StructuredQueryBuilder {
 
     // TODO IN A FUTURE RELEASE:  change the visibility of the deprecated
     // classes from public to package and change the return type of the
-	// builder methods to StructuredQueryDefinition
+    // builder methods to StructuredQueryDefinition
 
     /**
      * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
@@ -1070,7 +1070,7 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class AndQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition[] queries;
+        private StructuredQueryDefinition[] queries;
 
         /**
          * @deprecated Use the and() builder method of StructuredQueryBuilder
@@ -1085,7 +1085,7 @@ public class StructuredQueryBuilder {
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	writeQueryList(serializer, "and-query", convertQueries(queries));
+            writeQueryList(serializer, "and-query", convertQueries(queries));
         }
     }
 
@@ -1095,7 +1095,7 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class OrQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition[] queries;
+        private StructuredQueryDefinition[] queries;
 
         /**
          * @deprecated Use the or() builder method of StructuredQueryBuilder
@@ -1103,14 +1103,14 @@ public class StructuredQueryBuilder {
          * @param queries deprecated
          */
         @Deprecated
-    	public OrQuery(StructuredQueryDefinition... queries) {
+        public OrQuery(StructuredQueryDefinition... queries) {
             super();
             this.queries = queries;
         }
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	writeQueryList(serializer, "or-query", convertQueries(queries));
+            writeQueryList(serializer, "or-query", convertQueries(queries));
         }
     }
 
@@ -1120,47 +1120,47 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class NotQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition query;
+        private StructuredQueryDefinition query;
 
         /**
          * @deprecated Use the not() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          * @param query deprecated
          */
-    	@Deprecated
-    	public NotQuery(StructuredQueryDefinition query) {
+        @Deprecated
+        public NotQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	writeQuery(serializer, "not-query", (AbstractStructuredQuery) query);
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            writeQuery(serializer, "not-query", (AbstractStructuredQuery) query);
         }
     }
 
     private class NotInQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition positive;
-    	private StructuredQueryDefinition negative;
+        private StructuredQueryDefinition positive;
+        private StructuredQueryDefinition negative;
 
         /**
          * @deprecated Use the notIn() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
-    	public NotInQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+        public NotInQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
             super();
             this.positive = positive;
             this.negative = negative;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("not-in-query");
-        	writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
-        	writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("not-in-query");
+            writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
+            writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
+            serializer.writeEndElement();
         }
     }
 
@@ -1171,8 +1171,8 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class AndNotQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition positive;
-    	private StructuredQueryDefinition negative;
+        private StructuredQueryDefinition positive;
+        private StructuredQueryDefinition negative;
 
         /**
          * @deprecated Use the andNot() builder method of StructuredQueryBuilder
@@ -1181,47 +1181,47 @@ public class StructuredQueryBuilder {
          * @param negative deprecated
          */
         @Deprecated
-    	public AndNotQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+        public AndNotQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
             super();
             this.positive = positive;
             this.negative = negative;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("and-not-query");
-        	writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
-        	writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("and-not-query");
+            writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
+            writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
+            serializer.writeEndElement();
         }
     }
 
     private class BoostQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition matchingQuery;
-    	private StructuredQueryDefinition boostingQuery;
+        private StructuredQueryDefinition matchingQuery;
+        private StructuredQueryDefinition boostingQuery;
 
         /**
          * @deprecated Use the boost() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
         @Deprecated
-    	public BoostQuery(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
+        public BoostQuery(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
             super();
             this.matchingQuery = matchingQuery;
             this.boostingQuery = boostingQuery;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("boost-query");
-        	writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
-        	writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("boost-query");
+            writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
+            writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
+            serializer.writeEndElement();
         }
     }
-    
-    
+
+
     /**
      * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
      * as the type for instances of DocumentQuery.
@@ -1243,10 +1243,10 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("document-query");
-        	writeTextList(serializer, "uri", uris);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("document-query");
+            writeTextList(serializer, "uri", uris);
+            serializer.writeEndElement();
         }
     }
 
@@ -1274,11 +1274,11 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-		public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("term-query");
-        	writeTextList(serializer, "text", terms);
-        	writeText(serializer, "weight", weight);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("term-query");
+            writeTextList(serializer, "text", terms);
+            writeText(serializer, "weight", weight);
+            serializer.writeEndElement();
         }
     }
 
@@ -1300,7 +1300,7 @@ public class StructuredQueryBuilder {
          * @param queries deprecated
          */
         @Deprecated
-    	public NearQuery(StructuredQueryDefinition... queries) {
+        public NearQuery(StructuredQueryDefinition... queries) {
             super();
             this.queries = queries;
         }
@@ -1313,18 +1313,18 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("near-query");
-        	writeQueryList(serializer, queries);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("near-query");
+            writeQueryList(serializer, queries);
             if (order != null) {
-    			serializer.writeStartElement("ordered");
-    			serializer.writeCharacters(
-    					Boolean.toString(order == Ordering.ORDERED));
-    			serializer.writeEndElement();
+                serializer.writeStartElement("ordered");
+                serializer.writeCharacters(
+                        Boolean.toString(order == Ordering.ORDERED));
+                serializer.writeEndElement();
             }
-        	writeText(serializer, "distance", distance);
-        	writeText(serializer, "distance-weight", weight);
-        	serializer.writeEndElement();
+            writeText(serializer, "distance", distance);
+            writeText(serializer, "distance-weight", weight);
+            serializer.writeEndElement();
         }
     }
 
@@ -1343,16 +1343,16 @@ public class StructuredQueryBuilder {
          * @param uris deprecated
          */
         @Deprecated
-    	public CollectionQuery(String... uris) {
+        public CollectionQuery(String... uris) {
             super();
             this.uris = uris;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("collection-query");
-        	writeTextList(serializer, "uri", uris);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("collection-query");
+            writeTextList(serializer, "uri", uris);
+            serializer.writeEndElement();
         }
     }
 
@@ -1374,29 +1374,29 @@ public class StructuredQueryBuilder {
          * @param uris deprecated
          */
         @Deprecated
-    	public DirectoryQuery(Boolean isInfinite, String... uris) {
+        public DirectoryQuery(Boolean isInfinite, String... uris) {
             super();
             this.isInfinite = isInfinite;
             this.uris = uris;
             this.depth = null;
         }
-        
+
         DirectoryQuery(Integer depth, String... uris) {
-        	super();
-        	this.isInfinite = false;
-        	this.uris = uris;
-        	this.depth = depth;
+            super();
+            this.isInfinite = false;
+            this.uris = uris;
+            this.depth = depth;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("directory-query");
-        	if (depth != null) {
-        		serializer.writeAttribute("depth", Integer.toString(depth));
-        	}
-        	writeTextList(serializer, "uri", uris);
-        	writeText(serializer, "infinite", isInfinite);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("directory-query");
+            if (depth != null) {
+                serializer.writeAttribute("depth", Integer.toString(depth));
+            }
+            writeTextList(serializer, "uri", uris);
+            writeText(serializer, "infinite", isInfinite);
+            serializer.writeEndElement();
         }
     }
 
@@ -1407,7 +1407,7 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class DocumentFragmentQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition query;
+        private StructuredQueryDefinition query;
 
         /**
          * @deprecated Use the documentFragment() builder method of StructuredQueryBuilder
@@ -1415,14 +1415,14 @@ public class StructuredQueryBuilder {
          * @param query deprecated
          */
         @Deprecated
-    	public DocumentFragmentQuery(StructuredQueryDefinition query) {
+        public DocumentFragmentQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "document-fragment-query", (AbstractStructuredQuery) query);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            writeQuery(serializer, "document-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
@@ -1433,7 +1433,7 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class PropertiesQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition query;
+        private StructuredQueryDefinition query;
 
         /**
          * @deprecated Use the properties() builder method of StructuredQueryBuilder
@@ -1441,14 +1441,14 @@ public class StructuredQueryBuilder {
          * @param query deprecated
          */
         @Deprecated
-    	public PropertiesQuery(StructuredQueryDefinition query) {
+        public PropertiesQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "properties-fragment-query", (AbstractStructuredQuery) query);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            writeQuery(serializer, "properties-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
@@ -1459,7 +1459,7 @@ public class StructuredQueryBuilder {
     @Deprecated
     public class LocksQuery
     extends AbstractStructuredQuery {
-    	private StructuredQueryDefinition query;
+        private StructuredQueryDefinition query;
 
         /**
          * @deprecated Use the locks() builder method of StructuredQueryBuilder
@@ -1467,20 +1467,20 @@ public class StructuredQueryBuilder {
          * @param query deprecated
          */
         @Deprecated
-    	public LocksQuery(StructuredQueryDefinition query) {
+        public LocksQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-			writeQuery(serializer, "locks-fragment-query", (AbstractStructuredQuery) query);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            writeQuery(serializer, "locks-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
-    
-    
-    
+
+
+
     /**
      * Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
      * as the type for instances of ContainerConstraintQuery.
@@ -1494,18 +1494,18 @@ public class StructuredQueryBuilder {
          * Use the containerConstraint() builder method of StructuredQueryBuilder
          * and type the object as an instance of the StructuredQueryDefinition interface.
          */
-    	public ContainerConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+        public ContainerConstraintQuery(String constraintName, StructuredQueryDefinition query) {
             super();
             name = constraintName;
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("container-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeQuery(serializer, query);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("container-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeQuery(serializer, query);
+            serializer.writeEndElement();
         }
     }
 
@@ -1526,18 +1526,18 @@ public class StructuredQueryBuilder {
          * @param query deprecated
          */
         @Deprecated
-    	public ElementConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+        public ElementConstraintQuery(String constraintName, StructuredQueryDefinition query) {
             super();
             name = constraintName;
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("element-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeQuery(serializer, query);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("element-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeQuery(serializer, query);
+            serializer.writeEndElement();
         }
     }
 
@@ -1558,18 +1558,18 @@ public class StructuredQueryBuilder {
          * @param query deprecated
          */
         @Deprecated
-    	public PropertiesConstraintQuery(String constraintName, StructuredQueryDefinition query) {
+        public PropertiesConstraintQuery(String constraintName, StructuredQueryDefinition query) {
             super();
             name = constraintName;
             this.query = query;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("properties-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeQuery(serializer, query);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("properties-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeQuery(serializer, query);
+            serializer.writeEndElement();
         }
     }
 
@@ -1590,18 +1590,18 @@ public class StructuredQueryBuilder {
          * @param uris deprecated
          */
         @Deprecated
-    	public CollectionConstraintQuery(String constraintName, String... uris) {
+        public CollectionConstraintQuery(String constraintName, String... uris) {
             super();
             name = constraintName;
             this.uris = uris;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("collection-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeTextList(serializer, "uri", uris);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("collection-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeTextList(serializer, "uri", uris);
+            serializer.writeEndElement();
         }
     }
 
@@ -1623,7 +1623,7 @@ public class StructuredQueryBuilder {
          * @param values deprecated
          */
         @Deprecated
-    	public ValueConstraintQuery(String constraintName, String... values) {
+        public ValueConstraintQuery(String constraintName, String... values) {
             super();
             name = constraintName;
             this.values = values;
@@ -1636,12 +1636,12 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("value-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeTextList(serializer, "text", values);
-        	writeText(serializer, "weight", weight);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("value-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeTextList(serializer, "text", values);
+            writeText(serializer, "weight", weight);
+            serializer.writeEndElement();
         }
     }
 
@@ -1663,7 +1663,7 @@ public class StructuredQueryBuilder {
          * @param words deprecated
          */
         @Deprecated
-    	public WordConstraintQuery(String constraintName, String... words) {
+        public WordConstraintQuery(String constraintName, String... words) {
             super();
             name = constraintName;
             this.words = words;
@@ -1676,12 +1676,12 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("word-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeTextList(serializer, "text", words);
-        	writeText(serializer, "weight", weight);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("word-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeTextList(serializer, "text", words);
+            writeText(serializer, "weight", weight);
+            serializer.writeEndElement();
         }
     }
 
@@ -1704,7 +1704,7 @@ public class StructuredQueryBuilder {
          * @param values deprecated
          */
         @Deprecated
-    	public RangeConstraintQuery(String constraintName, Operator operator, String... values) {
+        public RangeConstraintQuery(String constraintName, Operator operator, String... values) {
             super();
             name = constraintName;
             this.values = values;
@@ -1712,12 +1712,12 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("range-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeTextList(serializer, "value", values);
-        	writeText(serializer, "range-operator", operator);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("range-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeTextList(serializer, "value", values);
+            writeText(serializer, "range-operator", operator);
+            serializer.writeEndElement();
         }
     }
 
@@ -1738,20 +1738,20 @@ public class StructuredQueryBuilder {
          * @param regions deprecated
          */
         @Deprecated
-    	public GeospatialConstraintQuery(String constraintName, Region... regions) {
+        public GeospatialConstraintQuery(String constraintName, Region... regions) {
             super();
             name = constraintName;
             this.regions = regions;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("geospatial-constraint-query");
-        	writeText(serializer, "constraint-name", name);
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("geospatial-constraint-query");
+            writeText(serializer, "constraint-name", name);
             for (Region region : regions) {
-            	((RegionImpl) region).innerSerialize(serializer);
+                ((RegionImpl) region).innerSerialize(serializer);
             }
-        	serializer.writeEndElement();
+            serializer.writeEndElement();
         }
     }
 
@@ -1796,68 +1796,68 @@ public class StructuredQueryBuilder {
          * @param terms deprecated
          */
         @Deprecated
-    	public CustomConstraintQuery(String constraintName, String... terms) {
+        public CustomConstraintQuery(String constraintName, String... terms) {
             super();
             name = constraintName;
             this.terms = terms;
         }
 
         @Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("custom-constraint-query");
-        	writeText(serializer, "constraint-name", name);
-        	writeTextList(serializer, "text", terms);
-        	serializer.writeEndElement();
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("custom-constraint-query");
+            writeText(serializer, "constraint-name", name);
+            writeTextList(serializer, "text", terms);
+            serializer.writeEndElement();
         }
     }
 
     class ContainerQuery
     extends AbstractStructuredQuery {
-    	private ContainerIndex index;
-    	private StructuredQueryDefinition query;
-    	ContainerQuery(ContainerIndex index, StructuredQueryDefinition query) {
-    		this.index = index;
-    		this.query = query;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("container-query");
-    		((IndexImpl) index).innerSerialize(serializer);
-    		writeQuery(serializer, query);
-    		serializer.writeEndElement();
+        private ContainerIndex index;
+        private StructuredQueryDefinition query;
+        ContainerQuery(ContainerIndex index, StructuredQueryDefinition query) {
+            this.index = index;
+            this.query = query;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("container-query");
+            ((IndexImpl) index).innerSerialize(serializer);
+            writeQuery(serializer, query);
+            serializer.writeEndElement();
         }
     }
 
     abstract class TextQuery
     extends AbstractStructuredQuery {
-		TextIndex     index;
-		FragmentScope scope;
+        TextIndex     index;
+        FragmentScope scope;
         String[]      values;
         String[]      options;
-		Double        weight;
+        Double        weight;
         TextQuery(TextIndex index, FragmentScope scope,
-        		String[] options, Double weight, String[] values) {
-    		this.index   = index;
-    		this.scope   = scope;
-    		this.options = options;
-    		this.weight  = weight;
-    		this.values  = values;
-		}
+                String[] options, Double weight, String[] values) {
+            this.index   = index;
+            this.scope   = scope;
+            this.options = options;
+            this.weight  = weight;
+            this.values  = values;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		((IndexImpl) index).innerSerialize(serializer);
-    		if (scope != null) {
-    			if (scope == FragmentScope.DOCUMENT) {
-    				writeText(serializer, "fragment-scope", "documents");
-    			}
-    			else {
-    				writeText(serializer, "fragment-scope",
-        				scope.toString().toLowerCase());
-    			}
-    		}
-    		writeTextList(serializer, "text", values);
-    		writeTextList(serializer, "term-option", options);
-    		writeText(serializer, "weight", weight);
+            ((IndexImpl) index).innerSerialize(serializer);
+            if (scope != null) {
+                if (scope == FragmentScope.DOCUMENT) {
+                    writeText(serializer, "fragment-scope", "documents");
+                }
+                else {
+                    writeText(serializer, "fragment-scope",
+                        scope.toString().toLowerCase());
+                }
+            }
+            writeTextList(serializer, "text", values);
+            writeTextList(serializer, "term-option", options);
+            writeText(serializer, "weight", weight);
         }
     }
 
@@ -1917,65 +1917,65 @@ public class StructuredQueryBuilder {
     // QUESTION: why collation on word but not values?
     class WordQuery
     extends TextQuery {
-    	WordQuery(TextIndex index, FragmentScope scope, String[] options,
-    			Double weight, String[] values) {
-    		super(index, scope, options, weight, values);
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("word-query");
-    		super.innerSerialize(serializer);
-    		serializer.writeEndElement();
+        WordQuery(TextIndex index, FragmentScope scope, String[] options,
+                Double weight, String[] values) {
+            super(index, scope, options, weight, values);
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("word-query");
+            super.innerSerialize(serializer);
+            serializer.writeEndElement();
         }
     }
 
-        
-    class RangeQuery 
+
+    class RangeQuery
     extends AbstractStructuredQuery {
-    	RangeIndex    index;
-		FragmentScope scope;
-		String        type;
-		String        collation;
-		String[]      options;
-    	Operator      operator;
-    	String[]      values;
-    	RangeQuery(RangeIndex index, String type, String collation, 
-    			FragmentScope scope, String[] rangeOptions, Operator operator, 
-    			Object[] values) {
-    		this.index     = index;
-    		this.type      = type;
-    		this.collation = collation;
-    		this.scope     = scope;
-    		this.options = rangeOptions;
-    		this.operator  = operator;
-    		this.values    = new String[values.length];
-    		for (int i=0; i < values.length; i++) {
-    			Object value = values[i];
-    			this.values[i] = (value instanceof String) ?
-    					(String) value : value.toString();
-   			}
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("range-query");
-    		if (type != null) {
-    			serializer.writeAttribute("type", type);
-        		if (collation!= null) {
-        			serializer.writeAttribute("collation", collation);
-        		}
-    		}
-    		((IndexImpl) index).innerSerialize(serializer);
-    		if (scope != null) {
-        		writeText(serializer, "fragment-scope",
-        				scope.toString().toLowerCase());
-    		}
-    		writeTextList(serializer, "value", values);
-    		if (operator != null) {
-        		writeText(serializer, "range-operator",
-        				operator.toString().toUpperCase());
-    		}
-    		writeTextList(serializer, "range-option", options);
-    		serializer.writeEndElement();
+        RangeIndex    index;
+        FragmentScope scope;
+        String        type;
+        String        collation;
+        String[]      options;
+        Operator      operator;
+        String[]      values;
+        RangeQuery(RangeIndex index, String type, String collation,
+                FragmentScope scope, String[] rangeOptions, Operator operator,
+                Object[] values) {
+            this.index     = index;
+            this.type      = type;
+            this.collation = collation;
+            this.scope     = scope;
+            this.options = rangeOptions;
+            this.operator  = operator;
+            this.values    = new String[values.length];
+            for (int i=0; i < values.length; i++) {
+                Object value = values[i];
+                this.values[i] = (value instanceof String) ?
+                        (String) value : value.toString();
+               }
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("range-query");
+            if (type != null) {
+                serializer.writeAttribute("type", type);
+                if (collation!= null) {
+                    serializer.writeAttribute("collation", collation);
+                }
+            }
+            ((IndexImpl) index).innerSerialize(serializer);
+            if (scope != null) {
+                writeText(serializer, "fragment-scope",
+                        scope.toString().toLowerCase());
+            }
+            writeTextList(serializer, "value", values);
+            if (operator != null) {
+                writeText(serializer, "range-operator",
+                        operator.toString().toUpperCase());
+            }
+            writeTextList(serializer, "range-option", options);
+            serializer.writeEndElement();
         }
     }
 
@@ -1993,41 +1993,41 @@ public class StructuredQueryBuilder {
 
     class GeospatialPointQuery
     extends GeospatialBaseQuery {
-    	GeospatialIndex index;
+        GeospatialIndex index;
         GeospatialPointQuery(GeospatialIndex index, FragmentScope scope, Region[] regions,
-        		String[] options) {
-        	super(scope, regions, options);
-        	this.index   = index;
+                String[] options) {
+            super(scope, regions, options);
+            this.index   = index;
         }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	String elemName = null;
-        	if (index instanceof GeoJSONPropertyImpl)
-        		elemName = "geo-json-property-query";
-        	else if (index instanceof GeoJSONPropertyPairImpl)
-        		elemName = "geo-json-property-pair-query";
-        	else if (index instanceof GeoElementImpl)
-        		elemName = "geo-elem-query";
-        	else if (index instanceof GeoElementPairImpl)
-        		elemName = "geo-elem-pair-query";
-        	else if (index instanceof GeoAttributePairImpl)
-        		elemName = "geo-attr-pair-query";
-        	else if (index instanceof GeoPointPathImpl) {
-        		elemName = "geo-path-query";
-        	}
-        	else
-        		throw new IllegalStateException(
-        				"unknown index class: "+index.getClass().getName());
+            String elemName = null;
+            if (index instanceof GeoJSONPropertyImpl)
+                elemName = "geo-json-property-query";
+            else if (index instanceof GeoJSONPropertyPairImpl)
+                elemName = "geo-json-property-pair-query";
+            else if (index instanceof GeoElementImpl)
+                elemName = "geo-elem-query";
+            else if (index instanceof GeoElementPairImpl)
+                elemName = "geo-elem-pair-query";
+            else if (index instanceof GeoAttributePairImpl)
+                elemName = "geo-attr-pair-query";
+            else if (index instanceof GeoPointPathImpl) {
+                elemName = "geo-path-query";
+            }
+            else
+                throw new IllegalStateException(
+                        "unknown index class: "+index.getClass().getName());
 
-    		serializer.writeStartElement(elemName);
-    		((IndexImpl) index).innerSerialize(serializer);
-    		if (scope != null) {
-        		writeText(serializer, "fragment-scope",
-        				scope.toString().toLowerCase());
-    		}
-     		writeTextList(serializer, "geo-option", options);
+            serializer.writeStartElement(elemName);
+            ((IndexImpl) index).innerSerialize(serializer);
+            if (scope != null) {
+                writeText(serializer, "fragment-scope",
+                        scope.toString().toLowerCase());
+            }
+             writeTextList(serializer, "geo-option", options);
             for (Region region : regions) {
-            	((RegionImpl) region).innerSerialize(serializer);
+                ((RegionImpl) region).innerSerialize(serializer);
             }
            serializer.writeEndElement();
         }
@@ -2062,165 +2062,165 @@ public class StructuredQueryBuilder {
     }
 
     class TemporalAxis implements Axis {
-    	private String name;
-    	TemporalAxis(String name) {
-    		this.name = name;
-    	}
+        private String name;
+        TemporalAxis(String name) {
+            this.name = name;
+        }
         @Override
-		public String toString() {
-			return name;
-		}
+        public String toString() {
+            return name;
+        }
     }
 
-    class TemporalPeriod 
+    class TemporalPeriod
     extends AbstractStructuredQuery implements Period {
-    	private String formattedStart;
-    	private String formattedEnd;
-    	private String[] options;
-    	TemporalPeriod(String start, String end) {
-    		this.formattedStart = start;
-    		this.formattedEnd = end;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("period");
-			writeText(serializer, "period-start", formattedStart);
-			writeText(serializer, "period-end", formattedEnd);
-    		serializer.writeEndElement();
+        private String formattedStart;
+        private String formattedEnd;
+        private String[] options;
+        TemporalPeriod(String start, String end) {
+            this.formattedStart = start;
+            this.formattedEnd = end;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("period");
+            writeText(serializer, "period-start", formattedStart);
+            writeText(serializer, "period-end", formattedEnd);
+            serializer.writeEndElement();
         }
     }
 
     class TemporalPeriodRangeQuery
     extends AbstractStructuredQuery {
-    	private Axis[] axes;
-    	private TemporalOperator operator;
-    	private Period[] periods;
-    	private String[] options;
-    	TemporalPeriodRangeQuery(Axis[] axes, TemporalOperator operator, Period[] periods, String... options) {
-    		this.axes = axes;
-    		this.operator = operator;
-    		this.periods = periods;
-    		this.options = options;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("period-range-query");
-			writeTextList(serializer, "axis", axes);
-			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
-			for ( Period period : periods ) {
-				((TemporalPeriod) period).innerSerialize(serializer);
-			}
-			writeTextList(serializer, "query-option", options);
-    		serializer.writeEndElement();
+        private Axis[] axes;
+        private TemporalOperator operator;
+        private Period[] periods;
+        private String[] options;
+        TemporalPeriodRangeQuery(Axis[] axes, TemporalOperator operator, Period[] periods, String... options) {
+            this.axes = axes;
+            this.operator = operator;
+            this.periods = periods;
+            this.options = options;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("period-range-query");
+            writeTextList(serializer, "axis", axes);
+            writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+            for ( Period period : periods ) {
+                ((TemporalPeriod) period).innerSerialize(serializer);
+            }
+            writeTextList(serializer, "query-option", options);
+            serializer.writeEndElement();
         }
     }
 
     class TemporalPeriodCompareQuery
     extends AbstractStructuredQuery {
-    	private Axis axis1;
-    	private TemporalOperator operator;
-    	private Axis axis2;
-    	private String[] options;
-		TemporalPeriodCompareQuery(Axis axis1, TemporalOperator operator, Axis axis2, String[] options) {
-    		this.axis1 = axis1;
-    		this.operator = operator;
-    		this.axis2 = axis2;
-    		this.options = options;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("period-compare-query");
-			writeText(serializer, "axis1", axis1);
-			writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
-			writeText(serializer, "axis2", axis2);
-			writeTextList(serializer, "query-option", options);
-    		serializer.writeEndElement();
+        private Axis axis1;
+        private TemporalOperator operator;
+        private Axis axis2;
+        private String[] options;
+        TemporalPeriodCompareQuery(Axis axis1, TemporalOperator operator, Axis axis2, String[] options) {
+            this.axis1 = axis1;
+            this.operator = operator;
+            this.axis2 = axis2;
+            this.options = options;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("period-compare-query");
+            writeText(serializer, "axis1", axis1);
+            writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
+            writeText(serializer, "axis2", axis2);
+            writeTextList(serializer, "query-option", options);
+            serializer.writeEndElement();
         }
     }
 
     class TemporalLsqtQuery
     extends AbstractStructuredQuery {
-    	private String temporalCollection;
-    	private String formattedTimestamp = null;
-    	private double weight;
-    	private String[] options;
-		TemporalLsqtQuery(String temporalCollection, String timestamp, double weight, String[] options) {
-    		this.temporalCollection = temporalCollection;
-			if ( timestamp != null ) {
-				this.formattedTimestamp = timestamp;
-			}
-    		this.weight = weight;
-    		this.options = options;
-    	}
-    	@Override
-    	public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		serializer.writeStartElement("lsqt-query");
-			writeText(serializer, "temporal-collection", temporalCollection);
-			if ( formattedTimestamp != null && formattedTimestamp.length() > 0 ) {
-				writeText(serializer, "timestamp", formattedTimestamp);
-			}
-			writeText(serializer, "weight", weight);
-			writeTextList(serializer, "query-option", options);
-    		serializer.writeEndElement();
+        private String temporalCollection;
+        private String formattedTimestamp = null;
+        private double weight;
+        private String[] options;
+        TemporalLsqtQuery(String temporalCollection, String timestamp, double weight, String[] options) {
+            this.temporalCollection = temporalCollection;
+            if ( timestamp != null ) {
+                this.formattedTimestamp = timestamp;
+            }
+            this.weight = weight;
+            this.options = options;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            serializer.writeStartElement("lsqt-query");
+            writeText(serializer, "temporal-collection", temporalCollection);
+            if ( formattedTimestamp != null && formattedTimestamp.length() > 0 ) {
+                writeText(serializer, "timestamp", formattedTimestamp);
+            }
+            writeText(serializer, "weight", weight);
+            writeTextList(serializer, "query-option", options);
+            serializer.writeEndElement();
         }
     }
 
     /* ************************************************************************************* */
 
     protected abstract class IndexImpl {
-    	protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+        protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
     }
     class ElementImpl extends IndexImpl implements Element {
-    	String name;
-    	QName qname;
-    	ElementImpl(QName qname) {
-    		this.qname = qname;
-    	}
-    	ElementImpl(String name) {
-    		this.name = name;
-    	}
+        String name;
+        QName qname;
+        ElementImpl(QName qname) {
+            this.qname = qname;
+        }
+        ElementImpl(String name) {
+            this.name = name;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializeNamedIndex(serializer, "element", qname, name);
+            serializeNamedIndex(serializer, "element", qname, name);
         }
     }
     class AttributeImpl extends IndexImpl implements Attribute {
-    	String name;
-    	QName qname;
-    	AttributeImpl(QName qname) {
-    		this.qname = qname;
-    	}
-    	AttributeImpl(String name) {
-    		this.name = name;
-    	}
+        String name;
+        QName qname;
+        AttributeImpl(QName qname) {
+            this.qname = qname;
+        }
+        AttributeImpl(String name) {
+            this.name = name;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializeNamedIndex(serializer, "attribute", qname, name);
+            serializeNamedIndex(serializer, "attribute", qname, name);
         }
     }
     class ElementAttributeImpl extends IndexImpl implements ElementAttribute {
-    	Element   element;
-    	Attribute attribute;
-    	ElementAttributeImpl(Element element, Attribute attribute) {
-    		this.element   = element;
-    		this.attribute = attribute;
-    	}
+        Element   element;
+        Attribute attribute;
+        ElementAttributeImpl(Element element, Attribute attribute) {
+            this.element   = element;
+            this.attribute = attribute;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	((IndexImpl) element).innerSerialize(serializer);
-        	((IndexImpl) attribute).innerSerialize(serializer);
+            ((IndexImpl) element).innerSerialize(serializer);
+            ((IndexImpl) attribute).innerSerialize(serializer);
         }
     }
     class FieldImpl extends IndexImpl implements Field {
-    	String name;
-    	FieldImpl(String name) {
-    		this.name = name;
-    	}
+        String name;
+        FieldImpl(String name) {
+            this.name = name;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("field");
-        	serializer.writeAttribute("name", name);
-        	serializer.writeEndElement();
+            serializer.writeStartElement("field");
+            serializer.writeAttribute("name", name);
+            serializer.writeEndElement();
         }
     }
     class JSONPropertyImpl extends IndexImpl implements JSONProperty {
@@ -2234,13 +2234,13 @@ public class StructuredQueryBuilder {
         }
     }
     class PathIndexImpl extends IndexImpl implements PathIndex {
-    	String path;
-    	PathIndexImpl(String path) {
-    		this.path = path;
-    	}
+        String path;
+        PathIndexImpl(String path) {
+            this.path = path;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-    		writeText(serializer, "path-index", path);
+            writeText(serializer, "path-index", path);
         }
     }
     class GeoJSONPropertyImpl extends IndexImpl implements GeospatialIndex {
@@ -2282,71 +2282,71 @@ public class StructuredQueryBuilder {
             writeText(serializer, "lat-property", latImpl.name);
             writeText(serializer, "lon-property", lonImpl.name);
         }
-    } 
+    }
     class GeoElementImpl extends IndexImpl implements GeospatialIndex {
-    	Element parent;
-    	Element element;
-    	GeoElementImpl(Element element) {
-    		super();
-    		this.element = element;
-    	}
-    	GeoElementImpl(Element parent, Element element) {
-    		this(element);
-    		this.parent  = parent;
-    	}
+        Element parent;
+        Element element;
+        GeoElementImpl(Element element) {
+            super();
+            this.element = element;
+        }
+        GeoElementImpl(Element parent, Element element) {
+            this(element);
+            this.parent  = parent;
+        }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	if (parent != null && parent instanceof ElementImpl) {
-        		ElementImpl parentImpl  = (ElementImpl) parent;
-        		serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
-        	} else if (parent != null && parent instanceof IndexImpl) {
-        		IndexImpl parentImpl  = (IndexImpl) parent;
-        		parentImpl.innerSerialize(serializer);
-        	}
-        	if ( element instanceof ElementImpl ) {
-        		ElementImpl elementImpl = (ElementImpl) element;
-        		serializeNamedIndex(serializer, "element", elementImpl.qname, elementImpl.name);
-        	} else if ( element instanceof IndexImpl ) {
-        		IndexImpl indexImpl  = (IndexImpl) element;
-        		indexImpl.innerSerialize(serializer);
-        	}
+            if (parent != null && parent instanceof ElementImpl) {
+                ElementImpl parentImpl  = (ElementImpl) parent;
+                serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
+            } else if (parent != null && parent instanceof IndexImpl) {
+                IndexImpl parentImpl  = (IndexImpl) parent;
+                parentImpl.innerSerialize(serializer);
+            }
+            if ( element instanceof ElementImpl ) {
+                ElementImpl elementImpl = (ElementImpl) element;
+                serializeNamedIndex(serializer, "element", elementImpl.qname, elementImpl.name);
+            } else if ( element instanceof IndexImpl ) {
+                IndexImpl indexImpl  = (IndexImpl) element;
+                indexImpl.innerSerialize(serializer);
+            }
         }
     }
     class GeoElementPairImpl extends IndexImpl implements GeospatialIndex {
-    	Element parent;
-    	Element lat;
-    	Element lon;
-    	GeoElementPairImpl(Element parent, Element lat, Element lon) {
-    		this.parent = parent;
-    		this.lat    = lat;
-    		this.lon    = lon;
-    	}
-        @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	ElementImpl parentImpl = (ElementImpl) parent;
-        	ElementImpl latImpl    = (ElementImpl) lat;
-        	ElementImpl lonImpl    = (ElementImpl) lon;
-        	serializeNamedIndex(serializer, "parent", parentImpl.qname, parentImpl.name);
-        	serializeNamedIndex(serializer, "lat", latImpl.qname, latImpl.name);
-        	serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
+        Element parent;
+        Element lat;
+        Element lon;
+        GeoElementPairImpl(Element parent, Element lat, Element lon) {
+            this.parent = parent;
+            this.lat    = lat;
+            this.lon    = lon;
         }
-    } 
-    class GeoAttributePairImpl extends IndexImpl implements GeospatialIndex {
-    	Element   parent;
-    	Attribute lat;
-    	Attribute lon;
-    	GeoAttributePairImpl(Element parent, Attribute lat, Attribute lon) {
-    		this.parent = parent;
-    		this.lat    = lat;
-    		this.lon    = lon;
-    	}
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	ElementImpl   parentImpl = (ElementImpl) parent;
-        	AttributeImpl latImpl    = (AttributeImpl) lat;
-        	AttributeImpl lonImpl    = (AttributeImpl) lon;
-        	serializeNamedIndex(serializer, "parent", parentImpl.qname, parentImpl.name);
-        	serializeNamedIndex(serializer, "lat", latImpl.qname, latImpl.name);
+            ElementImpl parentImpl = (ElementImpl) parent;
+            ElementImpl latImpl    = (ElementImpl) lat;
+            ElementImpl lonImpl    = (ElementImpl) lon;
+            serializeNamedIndex(serializer, "parent", parentImpl.qname, parentImpl.name);
+            serializeNamedIndex(serializer, "lat", latImpl.qname, latImpl.name);
+            serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
+        }
+    }
+    class GeoAttributePairImpl extends IndexImpl implements GeospatialIndex {
+        Element   parent;
+        Attribute lat;
+        Attribute lon;
+        GeoAttributePairImpl(Element parent, Attribute lat, Attribute lon) {
+            this.parent = parent;
+            this.lat    = lat;
+            this.lon    = lon;
+        }
+        @Override
+        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+            ElementImpl   parentImpl = (ElementImpl) parent;
+            AttributeImpl latImpl    = (AttributeImpl) lat;
+            AttributeImpl lonImpl    = (AttributeImpl) lon;
+            serializeNamedIndex(serializer, "parent", parentImpl.qname, parentImpl.name);
+            serializeNamedIndex(serializer, "lat", latImpl.qname, latImpl.name);
             serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
         }
     }
@@ -2384,13 +2384,13 @@ public class StructuredQueryBuilder {
     public interface Region {
         // TODO IN A FUTURE RELEASE:  remove the deprecated serialize() method
 
-    	/**
+        /**
          * @deprecated Returns the region as a partial string.  This method will be removed in a future
          * release.
-         * @return	the query content identifying a region
+         * @return    the query content identifying a region
          */
-    	@Deprecated
-    	public abstract String serialize();
+        @Deprecated
+        public abstract String serialize();
     }
 
     // TODO IN A FUTURE RELEASE:  separate a public Point interface
@@ -2400,13 +2400,13 @@ public class StructuredQueryBuilder {
         /**
          * @deprecated Returns the region as a partial string.  This method will be removed in a future
          * release.
-         * @return	the query content identifying a region
+         * @return    the query content identifying a region
          */
-    	@Deprecated
+        @Deprecated
         public String serialize() {
-        	return extractQueryContent(serializeRegions(this));
+            return extractQueryContent(serializeRegions(this));
         }
-    	protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+        protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
     }
 
     /**
@@ -2439,10 +2439,10 @@ public class StructuredQueryBuilder {
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("point");
-        	writeText(serializer, "latitude", String.valueOf(lat));
-        	writeText(serializer, "longitude", String.valueOf(lon));
-        	serializer.writeEndElement();
+            serializer.writeStartElement("point");
+            writeText(serializer, "latitude", String.valueOf(lat));
+            writeText(serializer, "longitude", String.valueOf(lon));
+            serializer.writeEndElement();
         }
     }
 
@@ -2473,10 +2473,10 @@ public class StructuredQueryBuilder {
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("circle");
-        	writeText(serializer, "radius", String.valueOf(radius));
-        	center.innerSerialize(serializer);
-        	serializer.writeEndElement();
+            serializer.writeStartElement("circle");
+            writeText(serializer, "radius", String.valueOf(radius));
+            center.innerSerialize(serializer);
+            serializer.writeEndElement();
         }
     }
 
@@ -2505,12 +2505,12 @@ public class StructuredQueryBuilder {
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("box");
-        	writeText(serializer, "south", String.valueOf(south));
-        	writeText(serializer, "west",  String.valueOf(west));
-        	writeText(serializer, "north", String.valueOf(north));
-        	writeText(serializer, "east",  String.valueOf(east));
-        	serializer.writeEndElement();
+            serializer.writeStartElement("box");
+            writeText(serializer, "south", String.valueOf(south));
+            writeText(serializer, "west",  String.valueOf(west));
+            writeText(serializer, "north", String.valueOf(north));
+            writeText(serializer, "east",  String.valueOf(east));
+            serializer.writeEndElement();
         }
     }
 
@@ -2533,565 +2533,565 @@ public class StructuredQueryBuilder {
 
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-        	serializer.writeStartElement("polygon");
+            serializer.writeStartElement("polygon");
             for (Point point: points) {
-            	point.innerSerialize(serializer);
+                point.innerSerialize(serializer);
             }
-        	serializer.writeEndElement();
+            serializer.writeEndElement();
         }
     }
 
     private void checkQueries(StructuredQueryDefinition... queries) {
-    	if (queries != null) {
-    		for (StructuredQueryDefinition query: queries) {
-    			checkQuery(query);
-    		}
-    	}
+        if (queries != null) {
+            for (StructuredQueryDefinition query: queries) {
+                checkQuery(query);
+            }
+        }
     }
     private void checkQuery(StructuredQueryDefinition query) {
-    	if (query != null && !AbstractStructuredQuery.class.isAssignableFrom(
-    			query.getClass()))
-    	{
-    		throw new IllegalArgumentException(
-    				"Only built queries are supported: "+
-    				query.getClass().getName());
-    	}
+        if (query != null && !AbstractStructuredQuery.class.isAssignableFrom(
+                query.getClass()))
+        {
+            throw new IllegalArgumentException(
+                    "Only built queries are supported: "+
+                    query.getClass().getName());
+        }
     }
     private void checkRegions(Region... regions) {
-    	if (regions != null) {
-    		for (Region region: regions) {
-    			checkRegion(region);
-    		}
-    	}
+        if (regions != null) {
+            for (Region region: regions) {
+                checkRegion(region);
+            }
+        }
     }
     private void checkRegion(Region region) {
-    	if (region != null && !RegionImpl.class.isAssignableFrom(
-    			region.getClass()))
-    	{
-    		throw new IllegalArgumentException(
-    				"Only built regions are supported: "+
-    				region.getClass().getName());
-    	}
+        if (region != null && !RegionImpl.class.isAssignableFrom(
+                region.getClass()))
+        {
+            throw new IllegalArgumentException(
+                    "Only built regions are supported: "+
+                    region.getClass().getName());
+        }
     }
 
     static private XMLStreamWriter makeSerializer(OutputStream out) {
-		XMLOutputFactory factory = XMLOutputFactory.newInstance();
-		factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+        XMLOutputFactory factory = XMLOutputFactory.newInstance();
+        factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
 
-		try {
-			XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
+        try {
+            XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");
 
-			serializer.setDefaultNamespace(SEARCH_API_NS);
-			serializer.setPrefix("xs",  XMLConstants.W3C_XML_SCHEMA_NS_URI);
+            serializer.setDefaultNamespace(SEARCH_API_NS);
+            serializer.setPrefix("xs",  XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-			return serializer;
-		} catch (Exception e) {
-			throw new MarkLogicIOException(e);
-		}
+            return serializer;
+        } catch (Exception e) {
+            throw new MarkLogicIOException(e);
+        }
     }
     private String serializeRegions(RegionImpl... regions) {
-		return serializeQueriesImpl((Object[]) regions);
-	}
+        return serializeQueriesImpl((Object[]) regions);
+    }
 
-	private String serializeQueries(AbstractStructuredQuery... queries) {
-		return serializeQueriesImpl((Object[]) queries);
-	}
+    private String serializeQueries(AbstractStructuredQuery... queries) {
+        return serializeQueriesImpl((Object[]) queries);
+    }
 
-	private String serializeQueriesImpl(Object... objects) {
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			writeStructuredQueryImpl(baos, objects);
-			return baos.toString("UTF-8");
-		} catch (Exception e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+    private String serializeQueriesImpl(Object... objects) {
+        try {
+            ByteArrayOutputStream baos = new ByteArrayOutputStream();
+            writeStructuredQueryImpl(baos, objects);
+            return baos.toString("UTF-8");
+        } catch (Exception e) {
+            throw new MarkLogicIOException(e);
+        }
+    }
      private void writeStructuredQuery(OutputStream out, AbstractStructuredQuery... queries) {
-    	writeStructuredQueryImpl(out, (Object[]) queries);
+        writeStructuredQueryImpl(out, (Object[]) queries);
     }
      private void writeStructuredQueryImpl(OutputStream out, Object... objects) {
-		try {
-			XMLStreamWriter serializer = makeSerializer(out);
+        try {
+            XMLStreamWriter serializer = makeSerializer(out);
 
 // omit the XML prolog
-//			serializer.writeStartDocument();
-			serializer.writeStartElement(SEARCH_API_NS, "query");
-			
-			if (objects != null) {
-				if (objects instanceof AbstractStructuredQuery[]) {
-					if (namespaces != null) {
-						for (String prefix : namespaces.getAllPrefixes()) {
-							serializer.writeNamespace(prefix, namespaces.getNamespaceURI(prefix));
-						}
-					}
-					for (AbstractStructuredQuery query: (AbstractStructuredQuery[]) objects) {
-						query.innerSerialize(serializer);
-					}
-				} else if (objects instanceof RegionImpl[]) {
-					for (RegionImpl region: (RegionImpl[]) objects) {
-						region.innerSerialize(serializer);
-					}
-				}
-			}
+//            serializer.writeStartDocument();
+            serializer.writeStartElement(SEARCH_API_NS, "query");
 
-			serializer.writeEndElement();
-//			serializer.writeEndDocument();
-			serializer.flush();
-			serializer.close();
-		} catch (Exception e) {
-			throw new MarkLogicIOException(e);
-		}
+            if (objects != null) {
+                if (objects instanceof AbstractStructuredQuery[]) {
+                    if (namespaces != null) {
+                        for (String prefix : namespaces.getAllPrefixes()) {
+                            serializer.writeNamespace(prefix, namespaces.getNamespaceURI(prefix));
+                        }
+                    }
+                    for (AbstractStructuredQuery query: (AbstractStructuredQuery[]) objects) {
+                        query.innerSerialize(serializer);
+                    }
+                } else if (objects instanceof RegionImpl[]) {
+                    for (RegionImpl region: (RegionImpl[]) objects) {
+                        region.innerSerialize(serializer);
+                    }
+                }
+            }
+
+            serializer.writeEndElement();
+//            serializer.writeEndDocument();
+            serializer.flush();
+            serializer.close();
+        } catch (Exception e) {
+            throw new MarkLogicIOException(e);
+        }
     }
 
     // TODO IN A FUTURE RELEASE:  remove the transformation once the deprecated serialization
     // methods are removed
     static private Transformer makeExtractorTransformer() {
-		try {
-	    	if (extractor == null) {
-	        	extractor = TransformerFactory.newInstance().newTemplates(new StreamSource(new StringReader(
-	        			"<xsl:stylesheet version='1.0'"+
-	        			    " xmlns:xsl='http://www.w3.org/1999/XSL/Transform'"+
-	        			    " xmlns:search='http://marklogic.com/appservices/search'"+
-	        			    " xmlns:xs='http://www.w3.org/2001/XMLSchema'"+
-	        			    " exclude-result-prefixes='search xs'>"+
-	        			"<xsl:output method='xml' omit-xml-declaration='yes'/>"+
-	        			"<xsl:template match='/'>"+
-	        				"<xsl:apply-templates select='*/node()'/>"+
-	        			"</xsl:template>"+
-	        			"<xsl:template match='search:*'>"+
-        					"<xsl:element name='{local-name(.)}'>"+
-        						"<xsl:copy-of select='@*'/>"+
-    	        				"<xsl:apply-templates select='node()'/>"+
-        					"</xsl:element>"+
-        				"</xsl:template>"+
-	        			"<xsl:template match='*'>"+
-    						"<xsl:copy>"+
-    							"<xsl:copy-of select='@*'/>"+
-	        					"<xsl:apply-templates select='node()'/>"+
-	        				"</xsl:copy>"+
-    					"</xsl:template>"+
-	        			"<xsl:template match='node()'>"+
-	        				"<xsl:copy-of select='.'/>"+
-	        			"</xsl:template>"+
-	        			"</xsl:stylesheet>"
-	        			)));
-	    	}
-			return extractor.newTransformer();
-		} catch (TransformerConfigurationException e) {
-			throw new MarkLogicIOException(e);
-		}
+        try {
+            if (extractor == null) {
+                extractor = TransformerFactory.newInstance().newTemplates(new StreamSource(new StringReader(
+                        "<xsl:stylesheet version='1.0'"+
+                            " xmlns:xsl='http://www.w3.org/1999/XSL/Transform'"+
+                            " xmlns:search='http://marklogic.com/appservices/search'"+
+                            " xmlns:xs='http://www.w3.org/2001/XMLSchema'"+
+                            " exclude-result-prefixes='search xs'>"+
+                        "<xsl:output method='xml' omit-xml-declaration='yes'/>"+
+                        "<xsl:template match='/'>"+
+                            "<xsl:apply-templates select='*/node()'/>"+
+                        "</xsl:template>"+
+                        "<xsl:template match='search:*'>"+
+                            "<xsl:element name='{local-name(.)}'>"+
+                                "<xsl:copy-of select='@*'/>"+
+                                "<xsl:apply-templates select='node()'/>"+
+                            "</xsl:element>"+
+                        "</xsl:template>"+
+                        "<xsl:template match='*'>"+
+                            "<xsl:copy>"+
+                                "<xsl:copy-of select='@*'/>"+
+                                "<xsl:apply-templates select='node()'/>"+
+                            "</xsl:copy>"+
+                        "</xsl:template>"+
+                        "<xsl:template match='node()'>"+
+                            "<xsl:copy-of select='.'/>"+
+                        "</xsl:template>"+
+                        "</xsl:stylesheet>"
+                        )));
+            }
+            return extractor.newTransformer();
+        } catch (TransformerConfigurationException e) {
+            throw new MarkLogicIOException(e);
+        }
     }
     static private String extractQueryContent(String query) {
-    	if (query == null) {
-    		return null;
-    	}
-    	try {
-        	StringWriter writer = new StringWriter();
-			makeExtractorTransformer().transform(
-					new StreamSource(new StringReader(query)),
-					new StreamResult(writer)
-				);
-	    	return writer.toString();
-		} catch (TransformerException e) {
-			throw new MarkLogicIOException(e);
-		}
+        if (query == null) {
+            return null;
+        }
+        try {
+            StringWriter writer = new StringWriter();
+            makeExtractorTransformer().transform(
+                    new StreamSource(new StringReader(query)),
+                    new StreamResult(writer)
+                );
+            return writer.toString();
+        } catch (TransformerException e) {
+            throw new MarkLogicIOException(e);
+        }
     }
 
     static private void serializeNamedIndex(XMLStreamWriter serializer,
-    		String elemName, QName qname, String name)
+            String elemName, QName qname, String name)
     throws Exception {
-    	serializer.writeStartElement(elemName);
-    	if (qname != null) {
-    		String ns = qname.getNamespaceURI();
-    		serializer.writeAttribute("ns", (ns != null) ? ns : "");
-    		serializer.writeAttribute("name", qname.getLocalPart());
-    	} else {
-    		serializer.writeAttribute("ns", "");
-    		serializer.writeAttribute("name", name);
-    	}
-    	serializer.writeEndElement();
+        serializer.writeStartElement(elemName);
+        if (qname != null) {
+            String ns = qname.getNamespaceURI();
+            serializer.writeAttribute("ns", (ns != null) ? ns : "");
+            serializer.writeAttribute("name", qname.getLocalPart());
+        } else {
+            serializer.writeAttribute("ns", "");
+            serializer.writeAttribute("name", name);
+        }
+        serializer.writeEndElement();
     }
 
     static private void writeText(XMLStreamWriter serializer,
-    		String container, Object object)
+            String container, Object object)
     throws Exception
     {
-    	if (object == null) {
-    		return;
-    	}
-   		serializer.writeStartElement(container);
-   		serializer.writeCharacters(
-   				(object instanceof String) ?
-   				(String) object : object.toString()
-   				);
-   		serializer.writeEndElement();
+        if (object == null) {
+            return;
+        }
+           serializer.writeStartElement(container);
+           serializer.writeCharacters(
+                   (object instanceof String) ?
+                   (String) object : object.toString()
+                   );
+           serializer.writeEndElement();
     }
     static private void writeTextList(XMLStreamWriter serializer,
-    		String container, Object[] objects)
+            String container, Object[] objects)
     throws Exception
     {
-    	if (objects == null) {
-    		return;
-    	}
-		for (Object object: objects) {
-			if ( object == null ) continue;
-    		serializer.writeStartElement(container);
-    		serializer.writeCharacters(
-    				(object instanceof String) ?
-    				(String) object : object.toString()
-    				);
-    		serializer.writeEndElement();
-		}
-	}
+        if (objects == null) {
+            return;
+        }
+        for (Object object: objects) {
+            if ( object == null ) continue;
+            serializer.writeStartElement(container);
+            serializer.writeCharacters(
+                    (object instanceof String) ?
+                    (String) object : object.toString()
+                    );
+            serializer.writeEndElement();
+        }
+    }
     static private void writeQuery(XMLStreamWriter serializer, StructuredQueryDefinition query)
     throws Exception
     {
-    	((AbstractStructuredQuery) query).innerSerialize(serializer);
+        ((AbstractStructuredQuery) query).innerSerialize(serializer);
     }
     static private void writeQueryList(XMLStreamWriter serializer,
-    		StructuredQueryDefinition... queries)
+            StructuredQueryDefinition... queries)
     throws Exception
     {
-    	if (queries == null) {
-    		return;
-    	}
+        if (queries == null) {
+            return;
+        }
 
-    	for (AbstractStructuredQuery query: convertQueries(queries)) {
-			query.innerSerialize(serializer);
-    	}
-	}
+        for (AbstractStructuredQuery query: convertQueries(queries)) {
+            query.innerSerialize(serializer);
+        }
+    }
     static private void writeQuery(XMLStreamWriter serializer,
-    		String container, AbstractStructuredQuery query)
+            String container, AbstractStructuredQuery query)
     throws Exception
     {
-    	serializer.writeStartElement(container);
-    	if (query != null) {
-    		query.innerSerialize(serializer);
-    	}
+        serializer.writeStartElement(container);
+        if (query != null) {
+            query.innerSerialize(serializer);
+        }
         serializer.writeEndElement();
     }
     static private void writeQueryList(XMLStreamWriter serializer,
-    		String container, AbstractStructuredQuery... queries)
+            String container, AbstractStructuredQuery... queries)
     throws Exception
     {
-    	serializer.writeStartElement(container);
-    	if (queries != null) {
-    		for (AbstractStructuredQuery query: queries) {
-    			query.innerSerialize(serializer);
-    		}
+        serializer.writeStartElement(container);
+        if (queries != null) {
+            for (AbstractStructuredQuery query: queries) {
+                query.innerSerialize(serializer);
+            }
         }
         serializer.writeEndElement();
     }
     static private AbstractStructuredQuery[] convertQueries(StructuredQueryDefinition... queries) {
-		if (queries == null) {
-			return null;
-		}
+        if (queries == null) {
+            return null;
+        }
 
-		AbstractStructuredQuery[] innerQueries = new AbstractStructuredQuery[queries.length];
-		for (int i=0; i < queries.length; i++) {
-			innerQueries[i] = (AbstractStructuredQuery) queries[i];
-		}
-		return innerQueries;
+        AbstractStructuredQuery[] innerQueries = new AbstractStructuredQuery[queries.length];
+        for (int i=0; i < queries.length; i++) {
+            innerQueries[i] = (AbstractStructuredQuery) queries[i];
+        }
+        return innerQueries;
     }
 
     class StructuredQueryXMLWriter
     extends BaseHandle<OperationNotSupported, OutputStreamSender>
-	implements StructureWriteHandle, XMLWriteHandle, BufferableHandle, OutputStreamSender
-	{
-    	StructuredQueryDefinition[] queries;
-    	StructuredQueryXMLWriter(StructuredQueryDefinition[] queries) {
-			super();
-			super.setResendable(true);
-			super.setFormat(Format.XML);
-			this.queries = queries;
-		}
-		@Override
-		protected OutputStreamSender sendContent() {
-			return this;
-		}
-		@Override
-		public void setFormat(Format format) {
-			if (format != Format.XML)
-				throw new IllegalArgumentException("StructuredQueryWriter supports the XML format only");
-		}
-		@Override
-		public void fromBuffer(byte[] buffer) {
-			throw new UnsupportedOperationException("Cannot set StructuredQueryWriter from buffer");
-		}
-		@Override
-		public byte[] toBuffer() {
-			try {
-				ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-				write(buffer);
+    implements StructureWriteHandle, XMLWriteHandle, BufferableHandle, OutputStreamSender
+    {
+        StructuredQueryDefinition[] queries;
+        StructuredQueryXMLWriter(StructuredQueryDefinition[] queries) {
+            super();
+            super.setResendable(true);
+            super.setFormat(Format.XML);
+            this.queries = queries;
+        }
+        @Override
+        protected OutputStreamSender sendContent() {
+            return this;
+        }
+        @Override
+        public void setFormat(Format format) {
+            if (format != Format.XML)
+                throw new IllegalArgumentException("StructuredQueryWriter supports the XML format only");
+        }
+        @Override
+        public void fromBuffer(byte[] buffer) {
+            throw new UnsupportedOperationException("Cannot set StructuredQueryWriter from buffer");
+        }
+        @Override
+        public byte[] toBuffer() {
+            try {
+                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                write(buffer);
 
-				return buffer.toByteArray();
-			} catch (IOException e) {
-				throw new MarkLogicIOException(e);
-			}
-		}
-		
-		@Override
-		public String toString() {
-			try {
-				return new String(toBuffer(), "UTF-8");
-			} catch (IOException e) {
-				throw new MarkLogicIOException(e);
-			}
-		}
+                return buffer.toByteArray();
+            } catch (IOException e) {
+                throw new MarkLogicIOException(e);
+            }
+        }
 
-		@Override
-		public void write(OutputStream out) throws IOException {
-			writeStructuredQuery(out, convertQueries(queries));
-		}
-	}
+        @Override
+        public String toString() {
+            try {
+                return new String(toBuffer(), "UTF-8");
+            } catch (IOException e) {
+                throw new MarkLogicIOException(e);
+            }
+        }
+
+        @Override
+        public void write(OutputStream out) throws IOException {
+            writeStructuredQuery(out, convertQueries(queries));
+        }
+    }
 
     /**
      * Converts the list of options used for a range query to an array
      * as a convenience.
-     * @param options	the list of range query options
-     * @return	the range query options as an array
+     * @param options    the list of range query options
+     * @return    the range query options as an array
      */
-	public String[] rangeOptions(String... options) {
-		return options;
-	}
+    public String[] rangeOptions(String... options) {
+        return options;
+    }
 
-	/**
-	 * Defines a boost query for the matching and boosting query definitions.  The matching
-	 * or boosting query definitions can each be an AND or OR query definition for complex
-	 * combinations of criteria.
-	 * @param matchingQuery the query definition that filters documents
-	 * @param boostingQuery	the query definition that increases the rank for some filtered documents
-	 * @return	the StructuredQueryDefinition for the boost query
-	 */
-	public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
-		return new BoostQuery(matchingQuery, boostingQuery);
-	}
-	/**
-	 * Defines a not-in query for the positive and negative query definitions.  These query definitions
-	 * can each be an AND or OR query definition for complex combinations of criteria.
-	 * @param positive the query definition that includes documents
-	 * @param negative the query definition that excludes documents
-	 * @return	the StructuredQueryDefinition for the not-in query
-	 */
-	public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
-		return new NotInQuery(positive, negative);
-	}
+    /**
+     * Defines a boost query for the matching and boosting query definitions.  The matching
+     * or boosting query definitions can each be an AND or OR query definition for complex
+     * combinations of criteria.
+     * @param matchingQuery the query definition that filters documents
+     * @param boostingQuery    the query definition that increases the rank for some filtered documents
+     * @return    the StructuredQueryDefinition for the boost query
+     */
+    public StructuredQueryDefinition boost(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
+        return new BoostQuery(matchingQuery, boostingQuery);
+    }
+    /**
+     * Defines a not-in query for the positive and negative query definitions.  These query definitions
+     * can each be an AND or OR query definition for complex combinations of criteria.
+     * @param positive the query definition that includes documents
+     * @param negative the query definition that excludes documents
+     * @return    the StructuredQueryDefinition for the not-in query
+     */
+    public StructuredQueryDefinition notIn(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+        return new NotInQuery(positive, negative);
+    }
 
-	/**
-	 * Gets the namespace bindings used for the query.
-	 * @return	the namespace bindings
-	 */
-	public IterableNamespaceContext getNamespaces() {
-		return namespaces;
-	}
+    /**
+     * Gets the namespace bindings used for the query.
+     * @return    the namespace bindings
+     */
+    public IterableNamespaceContext getNamespaces() {
+        return namespaces;
+    }
 
-	/**
-	 * Specifies the namespace bindings used for the query.  You can use
-	 * the {@link com.marklogic.client.util.EditableNamespaceContext EditableNamespaceContext}
-	 * class to instantiate a set of bindings between namespace prefixes and Uris.
-	 * @param namespaces	the namespace bindings
-	 */
-	public void setNamespaces(IterableNamespaceContext namespaces) {
-		EditableNamespaceContext newNamespaces = makeNamespaces();
-		if (namespaces != null) {
-			for (String prefix: namespaces.getAllPrefixes()) {
-				String nsUri = namespaces.getNamespaceURI(prefix);
-				if (!newNamespaces.containsKey(prefix)) {
-					newNamespaces.put(prefix, nsUri);
-				} else if (!nsUri.equals(newNamespaces.getNamespaceURI(prefix))) {
-					throw new IllegalArgumentException(
-							"Cannot change namespace URI for prefix: "+prefix);
-				}
-			}
-		}
-		this.namespaces = newNamespaces;
-	}
-	private EditableNamespaceContext makeNamespaces() {
-		EditableNamespaceContext newNamespaces = new EditableNamespaceContext();
-		for (Map.Entry<String, String> entry: reserved.entrySet()) {
-			newNamespaces.put(entry.getKey(), entry.getValue());
-		}
-		return newNamespaces;
-	}
-	
-	/**
-	 * The Allen and ISO SQL 2011 temporal operators available for use in
-	 * {@link #temporalPeriodRange temporalPeriodRange}
-	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
-	 * @see <a href="http://docs.marklogic.com/guide/temporal/searching#id_78584">
-	 * Temporal Developer's Guide -&gt; Period Comparison Operators</a>
-	 */
-	public enum TemporalOperator {
-		ALN_EQUALS,
-		ALN_CONTAINS,
-		ALN_CONTAINED_BY,
-		ALN_MEETS,
-		ALN_MET_BY,
-		ALN_BEFORE,
-		ALN_AFTER,
-		ALN_STARTS,
-		ALN_STARTED_BY,
-		ALN_FINISHES,
-		ALN_FINISHED_BY,
-		ALN_OVERLAPS,
-		ALN_OVERLAPPED_BY,
-		ISO_CONTAINS,
-		ISO_OVERLAPS,
-		ISO_SUCCEEDS,
-		ISO_PRECEDES,
-		ISO_IMM_SUCCEEDS,
-		ISO_IMM_PRECEDES,
-		ISO_EQUALS;
-	};
-	/**
-	 * An axis for use in {@link #temporalPeriodRange temporalPeriodRange}
-	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
-	 */
-	public interface Axis {};
-	/**
-	 * A temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
-	 * queries.
-	 */
-	public interface Period {};
+    /**
+     * Specifies the namespace bindings used for the query.  You can use
+     * the {@link com.marklogic.client.util.EditableNamespaceContext EditableNamespaceContext}
+     * class to instantiate a set of bindings between namespace prefixes and Uris.
+     * @param namespaces    the namespace bindings
+     */
+    public void setNamespaces(IterableNamespaceContext namespaces) {
+        EditableNamespaceContext newNamespaces = makeNamespaces();
+        if (namespaces != null) {
+            for (String prefix: namespaces.getAllPrefixes()) {
+                String nsUri = namespaces.getNamespaceURI(prefix);
+                if (!newNamespaces.containsKey(prefix)) {
+                    newNamespaces.put(prefix, nsUri);
+                } else if (!nsUri.equals(newNamespaces.getNamespaceURI(prefix))) {
+                    throw new IllegalArgumentException(
+                            "Cannot change namespace URI for prefix: "+prefix);
+                }
+            }
+        }
+        this.namespaces = newNamespaces;
+    }
+    private EditableNamespaceContext makeNamespaces() {
+        EditableNamespaceContext newNamespaces = new EditableNamespaceContext();
+        for (Map.Entry<String, String> entry: reserved.entrySet()) {
+            newNamespaces.put(entry.getKey(), entry.getValue());
+        }
+        return newNamespaces;
+    }
 
-	/**
-	 * Identify an axis for use in {@link #temporalPeriodRange temporalPeriodRange}
-	 * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
-	 * @param name the name of the axis as configured in the server
-	 * @return a temporal axis
-	 */
-	public StructuredQueryBuilder.Axis axis(String name) {
-		return new TemporalAxis(name);
-	}
-	
-	/**
-	 * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
-	 * queries.
-	 * @param start the start date/time for this period
-	 * @param end   the end date/time for this period
-	 * @return a temporal period
-	 */
-	public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
-		return new TemporalPeriod(DatatypeConverter.printDateTime(start),
-			DatatypeConverter.printDateTime(end));
-	}
+    /**
+     * The Allen and ISO SQL 2011 temporal operators available for use in
+     * {@link #temporalPeriodRange temporalPeriodRange}
+     * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+     * @see <a href="http://docs.marklogic.com/guide/temporal/searching#id_78584">
+     * Temporal Developer's Guide -&gt; Period Comparison Operators</a>
+     */
+    public enum TemporalOperator {
+        ALN_EQUALS,
+        ALN_CONTAINS,
+        ALN_CONTAINED_BY,
+        ALN_MEETS,
+        ALN_MET_BY,
+        ALN_BEFORE,
+        ALN_AFTER,
+        ALN_STARTS,
+        ALN_STARTED_BY,
+        ALN_FINISHES,
+        ALN_FINISHED_BY,
+        ALN_OVERLAPS,
+        ALN_OVERLAPPED_BY,
+        ISO_CONTAINS,
+        ISO_OVERLAPS,
+        ISO_SUCCEEDS,
+        ISO_PRECEDES,
+        ISO_IMM_SUCCEEDS,
+        ISO_IMM_PRECEDES,
+        ISO_EQUALS;
+    };
+    /**
+     * An axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+     * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+     */
+    public interface Axis {};
+    /**
+     * A temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+     * queries.
+     */
+    public interface Period {};
 
-	/**
-	 * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
-	 * queries.
-	 * @param start the start date/time for this period, in ISO 8601 format
-	 * @param end   the end date/time for this period, in ISO 8601 format
-	 * @return a temporal period
-	 */
-	public StructuredQueryBuilder.Period period(String start, String end) {
-		return new TemporalPeriod(start, end);
-	}
+    /**
+     * Identify an axis for use in {@link #temporalPeriodRange temporalPeriodRange}
+     * or {@link #temporalPeriodCompare temporalPeriodCompare} queries.
+     * @param name the name of the axis as configured in the server
+     * @return a temporal axis
+     */
+    public StructuredQueryBuilder.Axis axis(String name) {
+        return new TemporalAxis(name);
+    }
 
-	/**
-	 * Matches documents that have a value in the specified axis that matches the specified
-	 * period using the specified operator.
-	 * @param axis the axis of document temporal values used to determine which documents have
-	 *        values that match this query
-	 * @param operator the operator used to determine if values in the axis match the specified period
-	 * @param period the period considered using the operator
-	 * @param options string options from the list for
-	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
-	 * @return a query to filter by comparing a temporal axis to period values
-	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
-	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
-	 *      Structured Queries: period-range-query</a>
-	 */
-	public StructuredQueryDefinition temporalPeriodRange(Axis axis, TemporalOperator operator, 
-		Period period, String... options) 
-	{
-		if ( axis == null ) throw new IllegalArgumentException("axis cannot be null");
-		if ( period == null ) throw new IllegalArgumentException("period cannot be null");
-		return temporalPeriodRange(new Axis[] {axis}, operator, new Period[] {period}, options);
-	}
+    /**
+     * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+     * queries.
+     * @param start the start date/time for this period
+     * @param end   the end date/time for this period
+     * @return a temporal period
+     */
+    public StructuredQueryBuilder.Period period(Calendar start, Calendar end) {
+        return new TemporalPeriod(DatatypeConverter.printDateTime(start),
+            DatatypeConverter.printDateTime(end));
+    }
 
-	/**
-	 * Matches documents that have a value in the specified axis that matches the specified
-	 * periods using the specified operator.
-	 * @param axes the set of axes of document temporal values used to determine which documents have
-	 *        values that match this query
-	 * @param operator the operator used to determine if values in the axis match the specified period
-	 * @param periods the periods considered using the operator.  When multiple periods are specified,
-	 *     the query matches if a value matches any period.
-	 * @param options string options from the list for
-	 *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
-	 * @return a query to filter by comparing a temporal axis to period values
-	 * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
-	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
-	 *      Structured Queries: period-range-query</a>
-	 */
-	public StructuredQueryDefinition temporalPeriodRange(Axis[] axes, TemporalOperator operator, 
-		Period[] periods, String... options) 
-	{
-		if ( axes == null ) throw new IllegalArgumentException("axes cannot be null");
-		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
-		if ( periods == null ) throw new IllegalArgumentException("periods cannot be null");
-		return new TemporalPeriodRangeQuery(axes, operator, periods, options);
-	}
+    /**
+     * Construct a temporal period for use in {@link #temporalPeriodRange temporalPeriodRange}
+     * queries.
+     * @param start the start date/time for this period, in ISO 8601 format
+     * @param end   the end date/time for this period, in ISO 8601 format
+     * @return a temporal period
+     */
+    public StructuredQueryBuilder.Period period(String start, String end) {
+        return new TemporalPeriod(start, end);
+    }
 
-	/**
-	 * Matches documents that have a relevant pair of period values. Values from axis1 must match
-	 * values from axis2 using the specified operator.
-	 * @param axis1 the first axis of document temporal values 
-	 *        values that match this query
-	 * @param operator the operator used to determine if values in the axis match the specified period
-	 * @param axis2 the second axis of document temporal values 
-	 * @param options string options from the list for
-	 *     <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query calls</a>
-	 * @return a query to filter by comparing temporal axes
-	 * @see <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query</a>
-	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_19798">
-	 *      Structured Queries: period-compare-query</a>
-	 */
-	public StructuredQueryDefinition temporalPeriodCompare(Axis axis1, TemporalOperator operator, 
-		Axis axis2, String... options) 
-	{
-		if ( axis1 == null ) throw new IllegalArgumentException("axis1 cannot be null");
-		if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
-		if ( axis2 == null ) throw new IllegalArgumentException("axis2 cannot be null");
-		return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
-	}
+    /**
+     * Matches documents that have a value in the specified axis that matches the specified
+     * period using the specified operator.
+     * @param axis the axis of document temporal values used to determine which documents have
+     *        values that match this query
+     * @param operator the operator used to determine if values in the axis match the specified period
+     * @param period the period considered using the operator
+     * @param options string options from the list for
+     *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+     * @return a query to filter by comparing a temporal axis to period values
+     * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+     * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+     *      Structured Queries: period-range-query</a>
+     */
+    public StructuredQueryDefinition temporalPeriodRange(Axis axis, TemporalOperator operator,
+        Period period, String... options)
+    {
+        if ( axis == null ) throw new IllegalArgumentException("axis cannot be null");
+        if ( period == null ) throw new IllegalArgumentException("period cannot be null");
+        return temporalPeriodRange(new Axis[] {axis}, operator, new Period[] {period}, options);
+    }
 
-	/**
-	 * Matches documents with LSQT prior to timestamp
-	 * @param temporalCollection the temporal collection to query
-	 * @param time documents with lsqt equal to or prior to this timestamp will match
-	 * @param weight the weight for for this query
-	 * @param options string options from the list for
-	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
-	 * @return a query to filter by lsqt
-	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
-	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
-	 *      Structured Queries: lsqt-query</a>
-	 */
-	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar time,
-		double weight, String... options)
-	{
-		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
-		return new TemporalLsqtQuery(temporalCollection, DatatypeConverter.printDateTime(time), weight, options);
-	}
+    /**
+     * Matches documents that have a value in the specified axis that matches the specified
+     * periods using the specified operator.
+     * @param axes the set of axes of document temporal values used to determine which documents have
+     *        values that match this query
+     * @param operator the operator used to determine if values in the axis match the specified period
+     * @param periods the periods considered using the operator.  When multiple periods are specified,
+     *     the query matches if a value matches any period.
+     * @param options string options from the list for
+     *     <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query calls</a>
+     * @return a query to filter by comparing a temporal axis to period values
+     * @see <a href="http://docs.marklogic.com/cts:period-range-query">cts:period-range-query</a>
+     * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_91434">
+     *      Structured Queries: period-range-query</a>
+     */
+    public StructuredQueryDefinition temporalPeriodRange(Axis[] axes, TemporalOperator operator,
+        Period[] periods, String... options)
+    {
+        if ( axes == null ) throw new IllegalArgumentException("axes cannot be null");
+        if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+        if ( periods == null ) throw new IllegalArgumentException("periods cannot be null");
+        return new TemporalPeriodRangeQuery(axes, operator, periods, options);
+    }
 
-	/**
-	 * Matches documents with LSQT prior to timestamp
-	 * @param temporalCollection the temporal collection to query
-	 * @param timestamp timestamp in ISO 8601 format - documents with lsqt equal to or
-	 *        prior to this timestamp will match
-	 * @param weight the weight for for this query
-	 * @param options string options from the list for
-	 *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
-	 * @return a query to filter by lsqt
-	 * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
-	 * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
-	 *      Structured Queries: lsqt-query</a>
-	 */
-	public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, String timestamp,
-		double weight, String... options)
-	{
-		if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
-		return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
-	}
+    /**
+     * Matches documents that have a relevant pair of period values. Values from axis1 must match
+     * values from axis2 using the specified operator.
+     * @param axis1 the first axis of document temporal values
+     *        values that match this query
+     * @param operator the operator used to determine if values in the axis match the specified period
+     * @param axis2 the second axis of document temporal values
+     * @param options string options from the list for
+     *     <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query calls</a>
+     * @return a query to filter by comparing temporal axes
+     * @see <a href="http://docs.marklogic.com/cts:period-compare-query">cts:period-compare-query</a>
+     * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_19798">
+     *      Structured Queries: period-compare-query</a>
+     */
+    public StructuredQueryDefinition temporalPeriodCompare(Axis axis1, TemporalOperator operator,
+        Axis axis2, String... options)
+    {
+        if ( axis1 == null ) throw new IllegalArgumentException("axis1 cannot be null");
+        if ( operator == null ) throw new IllegalArgumentException("operator cannot be null");
+        if ( axis2 == null ) throw new IllegalArgumentException("axis2 cannot be null");
+        return new TemporalPeriodCompareQuery(axis1, operator, axis2, options);
+    }
+
+    /**
+     * Matches documents with LSQT prior to timestamp
+     * @param temporalCollection the temporal collection to query
+     * @param time documents with lsqt equal to or prior to this timestamp will match
+     * @param weight the weight for for this query
+     * @param options string options from the list for
+     *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+     * @return a query to filter by lsqt
+     * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
+     * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
+     *      Structured Queries: lsqt-query</a>
+     */
+    public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, Calendar time,
+        double weight, String... options)
+    {
+        if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
+        return new TemporalLsqtQuery(temporalCollection, DatatypeConverter.printDateTime(time), weight, options);
+    }
+
+    /**
+     * Matches documents with LSQT prior to timestamp
+     * @param temporalCollection the temporal collection to query
+     * @param timestamp timestamp in ISO 8601 format - documents with lsqt equal to or
+     *        prior to this timestamp will match
+     * @param weight the weight for for this query
+     * @param options string options from the list for
+     *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
+     * @return a query to filter by lsqt
+     * @see <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query</a>
+     * @see <a href="http://docs.marklogic.com/guide/search-dev/structured-query#id_85930">
+     *      Structured Queries: lsqt-query</a>
+     */
+    public StructuredQueryDefinition temporalLsqtQuery(String temporalCollection, String timestamp,
+        double weight, String... options)
+    {
+        if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
+        return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
+    }
 }
