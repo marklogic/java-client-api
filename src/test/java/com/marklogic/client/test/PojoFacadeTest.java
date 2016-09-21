@@ -626,7 +626,8 @@ public class PojoFacadeTest {
         PojoQueryBuilder<TimeTest> qb = times.getQueryBuilder();
         for ( String jsonProperty : new String[] {"calendarTest", "calendarTestCet", "dateTest"} ) {
           PojoQueryDefinition query = qb.range(jsonProperty, Operator.GT, septSecondUTC);
-          try ( PojoPage<TimeTest> page = times.search(query, 1) ) {
+          PojoPage<TimeTest> page = times.search(query, 1);
+          try {
             int numRead = 0;
             for ( TimeTest time : page ) {
               numRead++;
@@ -634,6 +635,8 @@ public class PojoFacadeTest {
             }
             assertEquals("Failed to find number of records expected", 1, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+          } finally {
+              page.close();
           }
         }
 
