@@ -439,7 +439,10 @@ declare function bootstrap:create-path-range-indexes(
         let $new-idx  := (
             "long", "com.marklogic.client.test.City/population",
             "string", "com.marklogic.client.test.City/alternateNames",
-            "string", "com.marklogic.client.test.Country/continent"
+            "string", "com.marklogic.client.test.Country/continent",
+            "dateTime", "com.marklogic.client.test.TimeTest/calendarTest",
+            "dateTime", "com.marklogic.client.test.TimeTest/calendarTestCet",
+            "dateTime", "com.marklogic.client.test.TimeTest/dateTest"
             )
         for $i in 1 to (count($new-idx) idiv 2)
         let $offset    := ($i * 2) - 1

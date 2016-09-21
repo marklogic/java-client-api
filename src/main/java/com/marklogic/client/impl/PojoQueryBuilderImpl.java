@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -259,6 +260,8 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
             } else if ( Number.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:decimal";
             } else if ( Date.class.isAssignableFrom(propertyClass) ) {
+                type = "xs:dateTime";
+            } else if ( Calendar.class.isAssignableFrom(propertyClass) ) {
                 type = "xs:dateTime";
             }
             if ( type == null ) {
