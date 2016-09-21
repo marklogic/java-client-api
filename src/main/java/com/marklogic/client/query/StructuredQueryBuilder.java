@@ -21,6 +21,7 @@ import java.io.OutputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -1844,9 +1845,35 @@ public class StructuredQueryBuilder {
             this.values    = new String[values.length];
             for (int i=0; i < values.length; i++) {
                 Object value = values[i];
-                this.values[i] = (value instanceof String) ?
-                        (String) value : value.toString();
-               }
+                this.values[i] = formatValue(value, type);
+            }
+        }
+
+        String formatValue(Object value, String type) {
+          if ( value == null ) {
+            return "null";
+          }
+          Class<?> valClass = value.getClass();
+          if ( String.class.isAssignableFrom(valClass) ) {
+            return (String) value;
+          } else if ( type != null &&
+              ( type.endsWith("date") || type.endsWith("dateTime") || type.endsWith("time") ) &&
+              ( Date.class.isAssignableFrom(valClass) || Calendar.class.isAssignableFrom(valClass) ) )
+          {
+            if ( Date.class.isAssignableFrom(valClass) ) {
+              Calendar cal = Calendar.getInstance();
+              cal.setTime((Date) value);
+              value = cal;
+            }
+            if ( type.endsWith("date") ) {
+              return DatatypeConverter.printDate((Calendar) value);
+            } else if ( type.endsWith("dateTime") ) {
+              return DatatypeConverter.printDateTime((Calendar) value);
+            } else if ( type.endsWith("time") ) {
+              return DatatypeConverter.printTime((Calendar) value);
+            }
+          }
+          return value.toString();
         }
         @Override
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
