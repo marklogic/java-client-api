@@ -18,10 +18,12 @@ package com.marklogic.client.impl;
 import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
+import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.PrintStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.StandardCharsets;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.net.URI;
@@ -220,13 +222,23 @@ public class JerseyServices implements RESTServices {
 
 	private FailedRequest extractErrorFields(ClientResponse response) {
 		if ( response == null ) return null;
-		InputStream is = response.getEntityInputStream();
+		if ( response.getStatus() == 401 ) {
+			FailedRequest failure = new FailedRequest();
+			failure.setMessageString("Unauthorized");
+			failure.setStatusString("Failed Auth");
+			return failure;
+		}
+		String responseBody = response.getEntity(String.class);
 		try {
+			InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
 			FailedRequest handler = FailedRequest.getFailedRequest(
 					response.getStatus(), response.getType(), is);
+			if ( handler.getMessage() == null ) {
+				handler.setMessageString(responseBody);
+			}
 			return handler;
-		} catch (RuntimeException e) {
-			throw (e);
+		} catch (UnsupportedEncodingException e) {
+			throw new IllegalStateException("UTF-8 is unsupported", e);
 		} finally {
 			response.close();
 		}
