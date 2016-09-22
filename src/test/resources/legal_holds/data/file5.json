@@ -1,0 +1,6 @@
+{ "description": "This file matches all the criteria for the disposition query",
+  "type": "X",
+  "originJurisdiction": "Y",
+  "state": "resolved",
+  "lastModified": "2007-12-31T00:00:00-08:00"
+}
