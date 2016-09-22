@@ -51,6 +51,7 @@ declare function bootstrap:create-range-element-indexes(
     let $index-specs :=
         let $curr-idx := admin:database-get-range-element-indexes($c, $dbid)
         let $new-idx  := (
+            "dateTime", "",                                   "lastModified",
             "dateTime", "http://marklogic.com/xdmp/property", "last-modified",
             "string",   "http://nwalsh.com/ns/photolib",      "tag",
             "date",     "http://nwalsh.com/ns/photolib",      "date",
