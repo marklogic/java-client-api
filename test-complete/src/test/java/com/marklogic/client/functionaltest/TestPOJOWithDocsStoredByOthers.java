@@ -339,11 +339,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * are different.
 	 * 
 	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Invalid type id 'junk' (for id type 'Id.class'): no such class found
-	 * Issue 136 might solve this also.
+	 * com.marklogic.client.MarkLogicIOException: com.fasterxml.jackson.databind.exc.InvalidTypeIdException: 
+	 * Could not resolve type id 'junk' into a subtype of [simple type, class com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper]: 
+	 * no such class found 
 	 */
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=com.marklogic.client.MarkLogicIOException.class)
 	public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
