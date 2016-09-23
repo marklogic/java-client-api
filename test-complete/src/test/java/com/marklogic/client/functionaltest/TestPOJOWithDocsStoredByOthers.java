@@ -16,8 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.Calendar;
 
@@ -498,6 +497,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		pojoReposSmallArtifact.write(art,"com.marklogic.client.functionaltest.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
 		SmallArtifactNoId artifact1 = pojoReposSmallArtifact.read(artifactName);
+		assertTrue("GetId for String incorrect", "SmallArtifactInSuperOnly".equalsIgnoreCase(pojoReposSmallArtifact.getId(artifact1)));
 		validateSmallArtifactSuper(artifact1);			
 	}
 	
@@ -520,11 +520,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		art.setInventory(1000);
 		art.setName(artifactName);
 		art.setOriginCountry("USA");
-				
+						
 		// Load the object into database
 		pojoReposSmallArtifact.write(art,"com.marklogic.client.functionaltest.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
 		SmallArtifactIdInSuperAndSub artifact1 = pojoReposSmallArtifact.read(artifactName);
+		assertEquals("Repository getId value incorrect", artifact1.getName(), pojoReposSmallArtifact.getId(artifact1).toString());
 		validateSmallArtifactSuperAndSub(artifact1);			
 	}
 	
