@@ -127,7 +127,10 @@ public interface RowManager {
 	 * in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for JSON and XML content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading the set of rows
@@ -141,7 +144,10 @@ public interface RowManager {
 	 * documents written or deleted by an uncommitted transaction.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for JSON and XML content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param plan	the definition of a plan for the database rows
      * @param as	the IO class for reading the set of rows
