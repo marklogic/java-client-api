@@ -43,8 +43,11 @@ public interface RuleManager {
 	 * as an object of an IO class.
 	 *
 	 * The IO class must have been registered before creating the database client.
-	 * By default, standard Java IO classes for document content are registered.
-	 *
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+	 * 
 	 * @param ruleName	name of rule on REST server
 	 * @param as	the IO class for reading the rule
 	 * @param <T> the type of object that will be returned by the handle registered for it
@@ -67,11 +70,14 @@ public interface RuleManager {
 
 	/**
 	 * Writes a rule to the server in an XML representation provided
-	 * as an object of an IO class.
+	 * as an object of an IO class. 
 	 *
 	 * The IO class must have been registered before creating the database client.
-	 * By default, standard Java IO classes for document content are registered.
-	 *
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+	 * 
 	 * @param ruleName	name of rule on REST server
 	 * @param ruleSource	an IO representation of the rule
 	 */
@@ -177,8 +183,11 @@ public interface RuleManager {
 	 * in a textual representation provided as an object of an IO class.
 	 *
 	 * The IO class must have been registered before creating the database client.
-	 * By default, standard Java IO classes for document content are registered.
-	 *
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+	 * 
 	 * @param content	an IO representation of the document to match against rules
 	 * @param ruleListHandle a handle to hold the match results
 	 * @param <T> the type of object that will be returned by the handle registered for it
@@ -190,8 +199,11 @@ public interface RuleManager {
 	 * in a textual representation provided as an object of an IO class.
 	 *
 	 * The IO class must have been registered before creating the database client.
-	 * By default, standard Java IO classes for document content are registered.
-	 *
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+	 * 
 	 * @param content	an IO representation of the document to match against rules
 	 * @param candidateRules an array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle a handle to hold the match results
@@ -205,8 +217,11 @@ public interface RuleManager {
 	 * in a textual representation provided as an object of an IO class.
 	 *
 	 * The IO class must have been registered before creating the database client.
-	 * By default, standard Java IO classes for document content are registered.
-	 *
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+	 * 
 	 * @param content	an IO representation of the document to match against rules
 	 * @param candidateRules an array of rule names to match.  A zero-length array matches all rules.
 	 * @param ruleListHandle a handle to hold the match results

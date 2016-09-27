@@ -35,7 +35,10 @@ public interface ResourceExtensionsManager {
 	 * in a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of resource service extensions
@@ -48,7 +51,10 @@ public interface ResourceExtensionsManager {
 	 * in a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of resource service extensions
@@ -80,7 +86,10 @@ public interface ResourceExtensionsManager {
 	 * in a textual representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param resourceName	the name of the resource
      * @param as	the IO class for reading the source code as text
@@ -103,7 +112,10 @@ public interface ResourceExtensionsManager {
 	 * in a textual representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param resourceName	the name of the resource
      * @param source	an IO representation of the source code

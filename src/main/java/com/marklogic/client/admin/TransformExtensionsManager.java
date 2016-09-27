@@ -43,7 +43,10 @@ public interface TransformExtensionsManager {
 	 * in a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of transform extensions
@@ -56,7 +59,10 @@ public interface TransformExtensionsManager {
 	 * in a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of transform extensions
@@ -90,7 +96,10 @@ public interface TransformExtensionsManager {
 	 * in an XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param as	the IO class for reading the source code as XML
@@ -115,7 +124,10 @@ public interface TransformExtensionsManager {
 	 * in a textual representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param as	the IO class for reading the source code as text
@@ -140,7 +152,10 @@ public interface TransformExtensionsManager {
    * in a textual representation provided as an object of an IO class.
    * 
    * The IO class must have been registered before creating the database client.
-   * By default, standard Java IO classes for document content are registered.
+   * By default, the provided handles that implement 
+   * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+   * 
+   * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
    * 
    * @param transformName	the name of the transform
    * @param as	the IO class for reading the source code as text
@@ -166,7 +181,10 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
 	 * in an XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param source	an IO representation of the source code
@@ -178,7 +196,10 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
 	 * in an XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param metadata	the metadata about the transform
@@ -218,7 +239,10 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
 	 * in a textual representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param source	an IO representation of the source code
@@ -230,7 +254,10 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
 	 * in a textual representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param transformName	the name of the transform
      * @param metadata	the metadata about the transform
@@ -266,28 +293,34 @@ public <T extends TextReadHandle> T readJavascriptTransform(String transformName
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
   	/**
-       * Installs a transform implemented in XQuery
-  	 * in a textual representation provided as an object of an IO class.
-       * 
-       * The IO class must have been registered before creating the database client.
-       * By default, standard Java IO classes for document content are registered.
-       * 
-       * @param transformName	the name of the transform
-       * @param source	an IO representation of the source code
+     * Installs a transform implemented in XQuery
+     * in a textual representation provided as an object of an IO class.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+     * @param transformName	the name of the transform
+     * @param source	an IO representation of the source code
   	 */
     
   	public void writeJavascriptTransformAs(String transformName, Object source)
   		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
   	/**
-       * Installs a transform implemented in Javascript
-   	   * in a textual representation provided as an object of an IO class.
-       * 
-       * The IO class must have been registered before creating the database client.
-       * By default, standard Java IO classes for document content are registered.
-       * 
-       * @param transformName	the name of the transform
-       * @param metadata	the metadata about the transform
-       * @param source	an IO representation of the source code
+     * Installs a transform implemented in Javascript
+     * in a textual representation provided as an object of an IO class.
+     * 
+     *The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+     * @param transformName	the name of the transform
+     * @param metadata	the metadata about the transform
+     * @param source	an IO representation of the source code
   	 */
   	public void writeJavascriptTransformAs(String transformName, ExtensionMetadata metadata, Object source)
   		throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;

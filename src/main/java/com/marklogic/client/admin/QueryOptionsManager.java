@@ -34,7 +34,10 @@ public interface QueryOptionsManager {
      * XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether to provide the list in a JSON or XML representation
      * @param as	the IO class for reading the list of options
@@ -60,10 +63,16 @@ public interface QueryOptionsManager {
     /**
 	 * Fetch a query options configuration from the REST Server by name.
      * 
-	 * @param name the name of options configuration stored on MarkLogic REST instance.
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+     * @param name the name of options configuration stored on MarkLogic REST instance.
      * @param format	whether to provide the options in a JSON or XML representation
      * @param as	the IO class for reading the query options
-   * @param <T> the type of object that will be returned by the handle registered for it
+     * @param <T> the type of object that will be returned by the handle registered for it
 	 * @return an object of the IO class with the query options
      */
 	public <T> T readOptionsAs(String name, Format format, Class<T> as)
@@ -86,7 +95,10 @@ public interface QueryOptionsManager {
      * XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param name name given to the QueryOptions for use in runtime queries
      * @param format	whether the options are provided in a JSON or XML representation

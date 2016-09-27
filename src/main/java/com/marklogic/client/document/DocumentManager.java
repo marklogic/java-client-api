@@ -123,7 +123,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
@@ -137,7 +140,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
@@ -152,7 +158,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document metadata and content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
@@ -167,7 +176,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document metadata and content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
@@ -642,7 +654,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
@@ -653,7 +668,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
@@ -665,7 +683,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -677,7 +698,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -943,7 +967,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param content	an IO representation of the document content
@@ -955,7 +982,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param content	an IO representation of the document content
@@ -968,7 +998,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -981,7 +1014,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -1075,7 +1111,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * input stream, or XML DOM specifies the patch as content.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param patch	an IO representation of the patch
