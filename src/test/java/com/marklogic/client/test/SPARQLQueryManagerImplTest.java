@@ -13,16 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.impl;
+package com.marklogic.client.test;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.TriplesReadHandle;
 import com.marklogic.client.semantics.RDFMimeTypes;
 import com.marklogic.client.semantics.SPARQLQueryDefinition;
+import com.marklogic.client.impl.HandleImplementation;
+import com.marklogic.client.impl.RESTServices;
+import com.marklogic.client.impl.SPARQLQueryManagerImpl;
+import com.marklogic.client.impl.SPARQLQueryDefinitionImpl;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Test;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.mock;
 
 /**
  *
