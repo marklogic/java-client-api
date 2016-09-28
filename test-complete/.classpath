@@ -4,28 +4,4 @@
 	<classpathentry kind="src" path="src/test/java"/>
 	<classpathentry kind="src" path="src/test/resources"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.m2/repository/com/marklogic/java-client-api/4.0-SNAPSHOT/java-client-api-4.0-SNAPSHOT-sources.jar" kind="lib" path="/Users/kkanthet/.m2/repository/com/marklogic/java-client-api/4.0-SNAPSHOT/java-client-api-4.0-SNAPSHOT.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/xmlunit/xmlunit/1.5/fca719d9f09ccf77b2df232099067d202309ad2c/xmlunit-1.5-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/xmlunit/xmlunit/1.5/7789cef5caffdecab50fd6099535ad2bc2e98044/xmlunit-1.5.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.m2/repository/junit/junit/4.11/junit-4.11-sources.jar" kind="lib" path="/Users/kkanthet/.m2/repository/junit/junit/4.11/junit-4.11.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.skyscreamer/jsonassert/1.2.3/d9ed7a5ba6f772dc64ec0e53968cebe8d63d5970/jsonassert-1.2.3-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.skyscreamer/jsonassert/1.2.3/2cb01fdff70caf688561d877cea55451ab164527/jsonassert-1.2.3.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/b49dafc9cfef24c356827f322e773e7c26725dd2/commons-lang3-3.4-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.commons/commons-lang3/3.4/5fe28b9518e58819180a43a850fbc0dd24b7c050/commons-lang3-3.4.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/org/apache/httpcomponents/httpclient/4.1.1/httpclient-4.1.1.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.1/171e4563feb5bf66ef790a8e679557a03b378f8e/log4j-api-2.1-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.1/588c32c91544d80cc706447aa2b8037230114931/log4j-api-2.1.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.1/6e6c4141f6d96e57fd48df5d398a122226ef92d7/log4j-core-2.1-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-core/2.1/31823dcde108f2ea4a5801d1acc77869d7696533/log4j-core-2.1.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/sun/jersey/jersey-core/1.17/jersey-core-1.17.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.m2/repository/com/sun/jersey/jersey-client/1.17/jersey-client-1.17-sources.jar" kind="lib" path="/Users/kkanthet/.m2/repository/com/sun/jersey/jersey-client/1.17/jersey-client-1.17.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.m2/repository/org/apache/httpcomponents/httpcore/4.1/httpcore-4.1-sources.jar" kind="lib" path="/Users/kkanthet/.m2/repository/org/apache/httpcomponents/httpcore/4.1/httpcore-4.1.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/commons-logging/commons-logging/1.1.1/commons-logging-1.1.1.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/commons-codec/commons-codec/1.4/commons-codec-1.4.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/sun/jersey/contribs/jersey-apache-client4/1.17/jersey-apache-client4-1.17.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/org/jvnet/mimepull/1.6/mimepull-1.6.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/sun/jersey/contribs/jersey-multipart/1.17/jersey-multipart-1.17.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/org/jvnet/mimepull/mimepull/1.9.4/mimepull-1.9.4.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/org/slf4j/slf4j-api/1.7.4/slf4j-api-1.7.4.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.8.3/jackson-core-2.8.3.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.8.3/jackson-annotations-2.8.3.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.8.3/jackson-databind-2.8.3.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.m2/repository/org/hamcrest/hamcrest-core/1.3/hamcrest-core-1.3.jar" exported="true"/>
-	<classpathentry kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/org.json/json/20090211/c183aa3a2a6250293808bba12262c8920ce5a51c/json-20090211.jar" exported="true"/>
-	<classpathentry sourcepath="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/1.3.2/b41a5f39fa90007a6c247175933555ba5f166d70/commons-io-1.3.2-sources.jar" kind="lib" path="/Users/kkanthet/.gradle/caches/modules-2/files-2.1/commons-io/commons-io/1.3.2/b6dde38349ba9bb5e6ea6320531eae969985dae5/commons-io-1.3.2.jar" exported="true"/>
 </classpath>
