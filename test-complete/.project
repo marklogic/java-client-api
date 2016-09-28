@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <projectDescription>
 	<name>test-complete</name>
-	<comment></comment>
-	<projects>
-	</projects>
+	<comment/>
+	<projects/>
+	<natures>
+		<nature>org.eclipse.jdt.core.javanature</nature>
+	</natures>
 	<buildSpec>
 		<buildCommand>
 			<name>org.eclipse.jdt.core.javabuilder</name>
-			<arguments>
-			</arguments>
+			<arguments/>
 		</buildCommand>
 	</buildSpec>
-	<natures>
-		<nature>org.springsource.ide.eclipse.gradle.core.nature</nature>
-		<nature>org.eclipse.jdt.core.javanature</nature>
-	</natures>
+	<linkedResources/>
 </projectDescription>
