@@ -1,0 +1,28 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <constraint name="pop">
+    <range type="xs:int" facet="true">
+        <element ns="" name="popularity"/>
+        <bucket name="high" ge="5">High</bucket>
+        <bucket name="medium" ge="3" lt="5">Medium</bucket>
+        <bucket name="low" ge="1" lt="3">Low</bucket>
+    </range>
+  </constraint>
+  <constraint name="price" >
+    <range type="xs:decimal"  facet="false">
+      <element ns="http://cloudbank.com" name="price"/>
+      <attribute ns="" name="amt"/>
+      <bucket name="high" ge="120">High</bucket>
+      <bucket name="medium" ge="3" lt="14">Medium</bucket>
+      <bucket name="low" ge="0" lt="2">Low</bucket>
+    </range>
+  </constraint>
+  <constraint name="intitle">
+    <word>
+      <element ns="" name="title"/>
+    </word>
+  </constraint>
+</options>
