@@ -33,6 +33,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends AbstractWriteHandle> {
 
@@ -479,4 +480,56 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
      */
     public void protect(String temporalDocumentURI, String temporalCollection, ProtectionLevel level, Calendar expiryTime, String archivePath,
             Transaction transaction);
+
+    /**
+     * Modifies the content of a temporal JSON or XML document in the temporal collection.
+     * 
+     * @param uri the URI identifier for the document
+     * @param temporalCollection the name of the temporal collection which contains 
+     *        the temporal document to be patched.
+     * @param patch a handle definition of what to patch in the document
+     */
+    void patch(String uri, String temporalCollection, DocumentPatchHandle patch);
+
+    /**
+     * Modifies the content of a temporal JSON or XML document in the temporal collection.
+     * 
+     * @param uri the URI identifier for the document
+     * @param temporalCollection the name of the temporal collection which contains 
+     *        the temporal document to be patched.
+     * @param patch a handle definition of what to patch in the document
+     * @param transaction an open transaction
+     */
+    void patch(String uri, String temporalCollection, DocumentPatchHandle patch, Transaction transaction);
+
+    /**
+     * Patches a temporal document by taking the content from the sourceDocumentURI
+     * present in the temporalDocumentURI collection with the patch handle and 
+     * creates a new version identified by the uri in the temporalCollection.
+     * 
+     * @param uri the new version URI identifier for the document
+     * @param temporalDocumentURI the logical temporal document URI
+     * @param temporalCollection the name of the temporal collection which contains 
+     *        the temporal document to be patched.
+     * @param sourceDocumentURI the URI of the document to be used as the source of the patch
+     * @param patch a handle definition of what to patch in the document
+     */
+    void patch(String uri, String temporalDocumentURI, String temporalCollection, String sourceDocumentURI,
+        DocumentPatchHandle patch);
+
+    /**
+     * Patches a temporal document by taking the content from the sourceDocumentURI
+     * present in the temporalDocumentURI collection with the patch handle and 
+     * creates a new version identified by the uri in the temporalCollection.
+     * 
+     * @param uri the new version URI identifier for the document
+     * @param temporalDocumentURI the logical temporal document URI
+     * @param temporalCollection the name of the temporal collection which contains 
+     *        the temporal document to be patched.
+     * @param sourceDocumentURI the URI of the document to be used as the source of the patch
+     * @param patch a handle definition of what to patch in the document
+     * @param transaction an open transaction
+     */
+    void patch(String uri, String temporalDocumentURI, String temporalCollection, String sourceDocumentURI,
+        DocumentPatchHandle patch, Transaction transaction);
 }

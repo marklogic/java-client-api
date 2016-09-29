@@ -163,7 +163,10 @@ public interface RowRecord extends RowReadHandle, Map<String, Object> {
 	 * content value.
 	 * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for JSON and XML content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param columnName	the name of the column
      * @param as	the IO class for reading the content of the column value

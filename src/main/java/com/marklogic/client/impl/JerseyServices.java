@@ -1567,11 +1567,21 @@ public class JerseyServices implements RESTServices {
 			Set<Metadata> categories, boolean isOnContent, DocumentPatchHandle patchHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException {
-		HandleImplementation patchBase = HandleAccessor.checkHandle(
-				patchHandle, "patch");
+		patchDocument(reqlog, desc, transaction, categories, isOnContent, null, null, patchHandle);
+	}
 
-		putPostDocumentImpl(reqlog, "patch", desc, transaction, categories, isOnContent, null,
-				patchBase.getMimetype(), patchHandle);
+	@Override
+	public void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction,
+			Set<Metadata> categories, boolean isOnContent, RequestParameters extraParams, String sourceDocumentURI, 
+			DocumentPatchHandle patchHandle)
+			throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException {
+		HandleImplementation patchBase = HandleAccessor.checkHandle(patchHandle, "patch");
+
+		if(sourceDocumentURI != null)
+			extraParams.add("source-document", sourceDocumentURI);
+		putPostDocumentImpl(reqlog, "patch", desc, transaction, categories, isOnContent, extraParams, patchBase.getMimetype(),
+				patchHandle);
 	}
 
 	@Override

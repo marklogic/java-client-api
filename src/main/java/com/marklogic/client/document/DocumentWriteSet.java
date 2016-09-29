@@ -53,7 +53,10 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * and contents.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
@@ -76,7 +79,10 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * metadata, and contents.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -119,7 +125,10 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * temporalDocumentURI and contents.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the version URI identifier for the document
      * @param content   an IO representation of the document content
@@ -144,7 +153,10 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * metadata, temporalDocumentURI and contents.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the version URI identifier for the document
      * @param metadataHandle    a handle for writing the metadata of the document

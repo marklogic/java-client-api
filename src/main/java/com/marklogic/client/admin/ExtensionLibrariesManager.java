@@ -45,9 +45,12 @@ public interface ExtensionLibrariesManager {
 
 	/**
 	 * Reads the contents of a library asset as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+	 * 
+	 * The IO class must have been registered before creating the database client.
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
 	 * 
 	 * @param libraryPath the path to the library
 	 * @param as	the IO class for reading the library asset
@@ -58,9 +61,12 @@ public interface ExtensionLibrariesManager {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 	/**
 	 * Reads the contents of a library asset as an object of an IO class.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+	 * 
+	 * The IO class must have been registered before creating the database client.
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
 	 * 
 	 * @param  libraryDescriptor a descriptor that locates the library
 	 * @param as	the IO class for reading the library asset
@@ -94,7 +100,10 @@ public interface ExtensionLibrariesManager {
 	 * as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
 	 * 
 	 * @param libraryPath The path at which to install the library.
 	 * @param content	an IO representation of the library asset
@@ -106,7 +115,10 @@ public interface ExtensionLibrariesManager {
 	 * as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+	 * By default, the provided handles that implement 
+	 * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+	 * 
+	 * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
 	 * 
 	 * @param libraryDescriptor The descriptory which locates where to install the library.
 	 * @param content	an IO representation of the library asset
