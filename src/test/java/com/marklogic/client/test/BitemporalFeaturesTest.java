@@ -1,19 +1,32 @@
 package com.marklogic.client.test;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
+import org.xml.sax.SAXException;
+
 import static org.junit.Assert.assertEquals;
+
+import java.io.IOException;
+
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
+import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder.Cardinality;
+import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -25,6 +38,8 @@ public class BitemporalFeaturesTest {
   static String temporalDocument2 = "temporal-document2";
   static String temporalDocument3 = "temporal-document3";
   static String temporalDocument4 = "temporal-document4";
+  static String temporalDocument5 = "temporal-document5";
+
   static XMLDocumentManager docMgr;
   static QueryManager queryMgr;
   static String uniqueBulkTerm = "temporalBulkDocTerm";
@@ -86,7 +101,7 @@ public class BitemporalFeaturesTest {
     assertEquals("Incorrect number of docs",2, docs.length);
   }
 
-   @Test
+  @Test
   public void testBitemporalDocumentBulk() {
     String prefix = "test_" + uniqueBulkTerm;
     String doc1 = "<test>" +
@@ -139,6 +154,49 @@ public class BitemporalFeaturesTest {
   }
 
   @Test
+  public void testTemporalDocumentPatch() throws XpathException, SAXException, IOException {
+    String doc1 = "<test>" +
+        uniqueTerm1 + " doc1" +
+        "<system-start></system-start>" +
+        "<system-end></system-end>" +
+        "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+        "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+        "<song>Here without you</song>" +
+    "</test>";
+    
+    StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
+    docMgr.write(temporalDocument5, null, handle1, null, null, temporalCollection);
+    
+    DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+    patchBldr.insertFragment("/test/song", Position.AFTER, "<song>Kryptonite</song>");
+    DocumentPatchHandle patchHandle = patchBldr.build();
+    docMgr.patch(temporalDocument5, temporalCollection, patchHandle);
+    String content = docMgr.read(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
+    assertXpathEvaluatesTo("2","count(/*[local-name()='test']/*[local-name()='song'])",content);
+
+    DocumentMetadataPatchBuilder metadatapatchBldr = docMgr.newPatchBuilder(Format.XML);
+    DocumentPatchHandle metadatapatchHandle = metadatapatchBldr
+    .addMetadataValue("key1", "value1").build();
+    docMgr.patch(temporalDocument5, temporalCollection, metadatapatchHandle);
+    String metadata = docMgr.readMetadata(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
+    assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
+
+    patchBldr = docMgr.newPatchBuilder();
+    patchBldr.insertFragment("/test", Position.LAST_CHILD, "<song>Here I am</song>");
+    patchHandle = patchBldr.build();
+    docMgr.patch("temporal-document5v1", temporalDocument5, temporalCollection, temporalDocument5, patchHandle);
+    content = docMgr.read("temporal-document5v1", new StringHandle().withFormat(Format.XML)).get();
+    assertXpathEvaluatesTo("3","count(/*[local-name()='test']/*[local-name()='song'])",content);
+
+    patchBldr = docMgr.newPatchBuilder();
+    patchBldr.insertFragment("/test", Position.LAST_CHILD, "<song>Please forgive me</song>");
+    patchHandle = patchBldr.build();
+    docMgr.patch("temporal-document5v2", temporalDocument5, temporalCollection, "temporal-document5v1", patchHandle);
+    content = docMgr.read("temporal-document5v2", new StringHandle().withFormat(Format.XML)).get();
+    assertXpathEvaluatesTo("4","count(/*[local-name()='test']/*[local-name()='song'])",content);
+  }
+
+  @Test
   public void testProtectWipe() throws DatatypeConfigurationException {
       String protectDocID = "protectedDocument.xml";
       String protectDocIDv2 = "protectedDocumentv2.xml";
@@ -179,7 +237,7 @@ public class BitemporalFeaturesTest {
 
   static public void cleanUp() throws DatatypeConfigurationException {
     String temporalDoc = "temporal-document";
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < 6; i++) {
       docMgr.protect(temporalDoc + i, temporalCollection, ProtectionLevel.NOWIPE,
           DatatypeFactory.newInstance().newDuration("PT1S"));
     }
@@ -188,7 +246,7 @@ public class BitemporalFeaturesTest {
     } catch (InterruptedException e) {
       e.printStackTrace();
     }
-    for (int i = 1; i < 5; i++) {
+    for (int i = 1; i < 6; i++) {
       docMgr.wipe(temporalDoc + i, temporalCollection);
     }
   }

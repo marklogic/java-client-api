@@ -348,4 +348,8 @@ public interface RESTServices {
 			AbstractWriteHandle input, R output, String operation)
 		throws ResourceNotFoundException, ResourceNotResendableException,
 					 ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+	void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction, Set<Metadata> categories, boolean isOnContent,
+			RequestParameters extraParams, String sourceDocumentURI, DocumentPatchHandle patchHandle)
+			throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
+			FailedRequestException;
 }

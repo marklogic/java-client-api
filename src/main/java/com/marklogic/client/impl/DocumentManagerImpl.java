@@ -1302,6 +1302,40 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
+  public void patch(String uri, String temporalCollection, DocumentPatchHandle patch) {
+    patch(uri, null, temporalCollection, null, patch, null);
+  }
+
+  @Override
+  public void patch(String uri, String temporalCollection, DocumentPatchHandle patch, Transaction transaction) {
+    patch(uri, null, temporalCollection, null, patch, transaction);
+  }
+
+  @Override
+  public void patch(String uri, String temporalDocumentURI, String temporalCollection, String sourceDocumentURI, DocumentPatchHandle patch) {
+    patch(uri, temporalDocumentURI, temporalCollection, sourceDocumentURI, patch, null);
+  }
+
+  @Override
+  public void patch(String uri, String temporalDocumentURI,  String temporalCollection, String sourceDocumentURI, DocumentPatchHandle patch, Transaction transaction) {
+    if (uri == null) {
+      throw new IllegalArgumentException("Document URI cannot be null");
+    }
+    if (temporalCollection == null) {
+      throw new IllegalArgumentException("Need temporal collection to patch a temporal document");
+    }
+    if (logger.isInfoEnabled())
+      logger.info("Patching document");
+
+    RequestParameters extraParams = null;
+    extraParams = addTemporalParams(extraParams, temporalCollection, temporalDocumentURI, null);
+    DocumentPatchHandleImpl builtPatch = (patch instanceof DocumentPatchHandleImpl) ? (DocumentPatchHandleImpl) patch
+        : null;
+    services.patchDocument(requestLogger, new DocumentDescriptorImpl(uri, true), transaction, (builtPatch != null) ? builtPatch.getMetadata() : processedMetadata,
+        (builtPatch != null) ? builtPatch.isOnContent() : true, extraParams, sourceDocumentURI, patch);
+  }
+
+  @Override
   public <T extends DocumentMetadataReadHandle> T readMetadata(String uri,
       T metadataHandle) throws ResourceNotFoundException,
       ForbiddenUserException, FailedRequestException {
