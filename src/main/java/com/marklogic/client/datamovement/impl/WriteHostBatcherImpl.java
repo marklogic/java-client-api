@@ -886,10 +886,9 @@ public class WriteHostBatcherImpl
   public static class WriteThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
     private ConcurrentHashMap<Runnable,Future<?>> futures = new ConcurrentHashMap<>();
-    private static int initialCapacity = 1000;
 
     public WriteThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
-      super(threadCount, threadCount, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>());
+      super(threadCount, threadCount, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
       allowCoreThreadTimeOut(true);
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
