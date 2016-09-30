@@ -520,7 +520,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 				ArtifactIndexedOnCalendar a = p.next();
 				// Assert if id = 97 is found.
 				if (a.getId() == 97) {
-					fail("Range Query on Calendar type failed when greater than or equal used.");
+					fail("Range Query on Calendar type failed when greater than 97 used.");
 				}
 				count++;
 			}
