@@ -124,6 +124,8 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
+		// Add a path range index for expiryDate indexed on dateTime (with POJO having Java Calendar type)
+		addRangePathIndex(dbName, "dateTime", "com.marklogic.client.functionaltest.ArtifactIndexedOnCalendar/expiryDate", "", "reject",true);
 	}
 
 	@AfterClass
@@ -210,7 +212,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		//Load more than 110 objects into different collections
 		products.deleteAll();
 		for(int i=112;i<222;i++) {
-			if (i%2==0) {
+			if (i%2 == 0) {
 			products.write(this.getArtifact(i),"even","numbers");
 			}
 			else {
@@ -244,18 +246,18 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
 		products.deleteAll();
-		Long[] ids= new Long[112];
+		Long[] ids = new Long[112];
 		int j=0;
 		for(int i=222;i<333;i++) {
 			ids[j] =(long) i;j++;
-			if (i%2==0) {
+			if (i%2 == 0) {
 				products.write(this.getArtifact(i), "even", "numbers");
 			}
 			else {
 				products.write(this.getArtifact(i), "odd", "numbers");
 			}
 		}
-		ids[j]=(long)1234234;j++;
+		ids[j] = (long)1234234;j++;
 		assertEquals("Total number of object recods",111, products.count("numbers"));
 		assertEquals("Collection even count", 56, products.count("even"));
 		assertEquals("Collection odd count", 55, products.count("odd"));
@@ -287,7 +289,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		//Load more than 110 objects into different collections
 		products.deleteAll();
 		for(int i=222;i<333;i++) {
-			if (i%2==0) {
+			if (i%2 == 0) {
 				products.write(this.getArtifact(i), "even", "numbers");
 			}
 			else {
@@ -320,7 +322,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		assertFalse("Is first page has previous page ?", p.hasPreviousPage());
 		long pageNo=1,count=0;
 		do {
-			count=0;
+			count = 0;
 			p = products.readAll(pageNo);
 			
 			if (pageNo >1) { 
@@ -350,7 +352,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 public void testPOJOgetDocumentUri() {
 	PojoRepository<StringPOJO,String> strPojoRepo = client.newPojoRepository(StringPOJO.class, String.class);
 	StringPOJO sobj = new StringPOJO();
-	String uri ="StringUri";
+	String uri = "StringUri";
 	sobj.setName("StringUri");
 	strPojoRepo.write(sobj);
 	System.out.println(strPojoRepo.getDocumentUri(sobj));
@@ -426,7 +428,7 @@ public void testPOJOgetDocumentUri() {
 				count++;
 			}
 			assertEquals("Page size",count, p.size());
-			pageNo=pageNo+p.getPageSize();
+			pageNo = pageNo + p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page number after the loop", 1, p.getPageNumber());
 		assertEquals("total no of pages", 1, p.getTotalPages());
@@ -448,12 +450,12 @@ public void testPOJOgetDocumentUri() {
 
 				if (a.getId() == 97) {
 					assertTrue("Expiry date incorrect",a.getExpiryDate().getTime().equals(calTwo.getTime()));
-					assertTrue("Expiry date incorrect", a.getInventory() == 1097);
-					assertTrue("Expiry date incorrect", a.getName().equalsIgnoreCase("Cogs special 97"));
-					assertTrue("Expiry date incorrect", a.getManufacturer().getLatitude() == 138.998);
-					assertTrue("Expiry date incorrect", a.getManufacturer().getLongitude() == 9.03400000000001);
-					assertTrue("Expiry date incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
-					assertTrue("Expiry date incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
+					assertTrue("Artifact inventory incorrect", a.getInventory() == 1097);
+					assertTrue("Artifact name incorrect", a.getName().equalsIgnoreCase("Cogs special 97"));
+					assertTrue("Artifact manufacturer latitude incorrect", a.getManufacturer().getLatitude() == 138.998);
+					assertTrue("Artifact manufacturer longitude incorrect", a.getManufacturer().getLongitude() == 9.03400000000001);
+					assertTrue("Artifact manufacturer name incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
+					assertTrue("Artifact website incorrect incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
 
 					bFound = true;
 				}
@@ -463,9 +465,9 @@ public void testPOJOgetDocumentUri() {
 			if (!bFound) {
 				fail("Range Query on Calendar type failed when greater than or equal used.");
 			}
-			assertEquals("Number of rows returned count should be 14", count, 14);
+			assertEquals("Number of rows returned count should be 14", 14, count);
 			assertEquals("Page size",count, p.size());
-			pageNo=pageNo+p.getPageSize();
+			pageNo = pageNo + p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page number after the loop", 1, p.getPageNumber());
 		assertEquals("total no of pages", 1, p.getTotalPages());
@@ -486,12 +488,12 @@ public void testPOJOgetDocumentUri() {
 				ArtifactIndexedOnCalendar a = p.next();
 				// Assert if id = 97 is found.
 				if (a.getId() == 97) {
-					fail("Range Query on Calendar type failed when greater than or equal used.");
+					fail("Range Query on Calendar type failed when greater than 97 used.");
 				}
 				count++;
 			}
 					
-			assertEquals("Number of rows returned count should be 13", count, 13);
+			assertEquals("Number of rows returned count should be 13", 13, count);
 			assertEquals("Page size",count, p.size());
 			pageNo=pageNo+p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
