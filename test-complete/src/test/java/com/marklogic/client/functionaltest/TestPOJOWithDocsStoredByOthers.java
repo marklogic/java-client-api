@@ -344,7 +344,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * Issue 136 might solve this also.
 	 */
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=com.marklogic.client.MarkLogicIOException.class)
 	public void testPOJOReadDocStoredWithInvalidContent() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
