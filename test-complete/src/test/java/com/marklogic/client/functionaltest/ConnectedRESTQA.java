@@ -102,10 +102,10 @@ public abstract class ConnectedRESTQA {
 	 */
 	private static final Logger logger = LogManager.getLogger(ConnectedRESTQA.class);
 	
-	public static void createDB(String dbName)	{
-		try {	
-
-			DefaultHttpClient client = new DefaultHttpClient();
+	public static void createDB(String dbName) {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -116,7 +116,6 @@ public abstract class ConnectedRESTQA {
 			post.addHeader("Content-type", "application/json");
 			post.setEntity( new StringEntity(JSONString));
 
-
 			HttpResponse response = client.execute(post);
 			HttpEntity respEntity = response.getEntity();
 
@@ -125,15 +124,21 @@ public abstract class ConnectedRESTQA {
 				String content =  EntityUtils.toString(respEntity);
 				System.out.println(content);
 			}
-		}catch (Exception e) {
+			EntityUtils.consume(respEntity);
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
+	
 	public static String getBootStrapHostFromML() {
 		InputStream jstream = null;
+		DefaultHttpClient client = null;
 		try {
-		DefaultHttpClient client = new DefaultHttpClient();
+		client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
 				new AuthScope("localhost", 8002),
 				new UsernamePasswordCredentials("admin", "admin"));
@@ -142,40 +147,45 @@ public abstract class ConnectedRESTQA {
 		jstream =resp.getEntity().getContent();
 		JsonNode jnode= new ObjectMapper().readTree(jstream);
 		String propName ="bootstrap-host";
-		if(!jnode.isNull()) {
-
-			if(jnode.has(propName)) {
-			System.out.println("Bootstrap Host: " + jnode.withArray(propName).get(0).get("bootstrap-host-name").asText());
-			return jnode.withArray(propName).get(0).get("bootstrap-host-name").asText();
+		if (!jnode.isNull()) {
+			if (jnode.has(propName)) {
+				System.out.println("Bootstrap Host: " + jnode.withArray(propName).get(0).get("bootstrap-host-name").asText());
+				return jnode.withArray(propName).get(0).get("bootstrap-host-name").asText();
 			}
 			else {
 				System.out.println("Missing "+propName+" field from properties end point so sending java conanical host name\n"+jnode.toString());
 				return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
-				}
 			}
+		}
 		else {
-			 System.out.println("Rest endpoint returns empty stream");
-			 return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
+			System.out.println("Rest endpoint returns empty stream");
+			return InetAddress.getLocalHost().getCanonicalHostName().toLowerCase();
 		}
 		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
-			
 			return "localhost";
 		}
 		finally {
-			jstream =null;
+			try {
+				jstream.close();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			jstream = null;
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
-	public static void createForest(String fName,String dbName)	{
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+	public static void createForest(String fName, String dbName) {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests?format=json");
-			
 			String hName = getBootStrapHostFromML();
 			String JSONString = 
 					"{\"database\":\""+ 
@@ -199,13 +209,18 @@ public abstract class ConnectedRESTQA {
 			// writing error to Log
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
+	
 	/*
 	 * creating forests on different hosts
 	 */
-	public static void createForestonHost(String fName,String dbName,String hName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+	public static void createForestonHost(String fName, String dbName, String hName) {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -217,7 +232,7 @@ public abstract class ConnectedRESTQA {
 							fName+
 							"\",\"host\":\""+hName+"\"}" 
 							;
-			
+
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
@@ -233,11 +248,15 @@ public abstract class ConnectedRESTQA {
 			// writing error to Log
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 
 	public static void assocRESTServer(String restServerName, String dbName, int restPort) {
-		DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
 		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -267,51 +286,71 @@ public abstract class ConnectedRESTQA {
 					enableSecurityOnRESTServer(restServerName, dbName);
 				}
 			}
-
 		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
-	}
-	
-	public static void enableSecurityOnRESTServer(String restServerName,String dbName)throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
-
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", 8002),
-				new UsernamePasswordCredentials("admin", "admin"));
-		String  body = "{\"group-name\": \"Default\",\"internal-security\":\"true\", \"ssl-certificate-template\":\"ssl1-QAXdbcServer\", \"ssl-require-client-certificate\":\"true\"" +					
-							"}";
-
-		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
-
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
-			String content =  EntityUtils.toString(respEntity);
-			System.out.println(content);
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
-	public static void associateRESTServerWithDB(String restServerName,String dbName)throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
+	public static void enableSecurityOnRESTServer(String restServerName, String dbName) throws Exception {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", 8002),
-				new UsernamePasswordCredentials("admin", "admin"));
-		String  body = "{\"content-database\": \""+dbName+"\",\"group-name\": \"Default\"}";
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			String  body = "{\"group-name\": \"Default\",\"internal-security\":\"true\", \"ssl-certificate-template\":\"ssl1-QAXdbcServer\", \"ssl-require-client-certificate\":\"true\"" +					
+					"}";
 
-		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
+			HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+			put.addHeader("Content-type", "application/json");
+			put.setEntity(new StringEntity(body));
 
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
-			String content =  EntityUtils.toString(respEntity);
-			System.out.println(content);
+			HttpResponse response2 = client.execute(put);
+			HttpEntity respEntity = response2.getEntity();
+			if (respEntity != null) {
+				String content =  EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
+	}
+	
+	public static void associateRESTServerWithDB(String restServerName, String dbName) throws Exception {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
+
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			String  body = "{\"content-database\": \""+dbName+"\",\"group-name\": \"Default\"}";
+
+			HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+			put.addHeader("Content-type", "application/json");
+			put.setEntity(new StringEntity(body));
+
+			HttpResponse response2 = client.execute(put);
+			HttpEntity respEntity = response2.getEntity();
+			if (respEntity != null) {
+				String content =  EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
@@ -319,32 +358,42 @@ public abstract class ConnectedRESTQA {
 	 * Associate REST server with default user 
 	 * this is created for the sake of runtime DB selection
 	 */
-	public static void associateRESTServerWithDefaultUser(String restServerName,String userName,String authType)throws Exception {
-		DefaultHttpClient client = new DefaultHttpClient();
+	public static void associateRESTServerWithDefaultUser(String restServerName, String userName, String authType) throws Exception {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", 8002),
-				new UsernamePasswordCredentials("admin", "admin"));
-		String  body = "{ \"default-user\":\""+userName+"\",\"authentication\": \""+authType+"\",\"group-name\": \"Default\"}";
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			String  body = "{ \"default-user\":\""+userName+"\",\"authentication\": \""+authType+"\",\"group-name\": \"Default\"}";
 
-		HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
-		put.addHeader("Content-type", "application/json");
-		put.setEntity(new StringEntity(body));
+			HttpPut put = new HttpPut("http://localhost:8002/manage/v2/servers/"+restServerName+"/properties?server-type=http");
+			put.addHeader("Content-type", "application/json");
+			put.setEntity(new StringEntity(body));
 
-		HttpResponse response2 = client.execute(put);
-		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
-			String content =  EntityUtils.toString(respEntity);
-			System.out.println(content);
+			HttpResponse response2 = client.execute(put);
+			HttpEntity respEntity = response2.getEntity();
+			if (respEntity != null) {
+				String content =  EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 		
 	/*
 	 * Creating RESTServer With default content and module database
 	 */
-	public static void createRESTServerWithDB(String restServerName,int restPort) {
+	public static void createRESTServerWithDB(String restServerName, int restPort) {
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
@@ -357,7 +406,7 @@ public abstract class ConnectedRESTQA {
 							"\",\"port\":\""+
 							restPort+
 							"\"}}";
-			
+
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(JSONString));
 
@@ -373,14 +422,16 @@ public abstract class ConnectedRESTQA {
 			// writing error to Log
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 
 	/*
 	 * This function creates database,forests and REST server independently and attaches the database to the rest server
 	 * 
 	 */
-	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort)throws Exception {
-		 		
+	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort) throws Exception {
 		Calendar  cal = Calendar.getInstance();
 		Date d = cal.getTime();
 		long beforeSetup =cal.getTimeInMillis();
@@ -409,10 +460,9 @@ public abstract class ConnectedRESTQA {
 		
 //		String msg = "### Ending TESTCASE SETUP ###: "+diff/1000+" seconds";
 //		logger.info(msg);
-		
 	}
-	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB)throws Exception {
-
+	
+	public static void setupJavaRESTServer(String dbName, String fName, String restServerName, int restPort,boolean attachRestContextDB) throws Exception {
 		createDB(dbName); 
 		createForest(fName,dbName); 
 		Thread.sleep(1500);
@@ -431,15 +481,16 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void createUserRolesWithPrevilages(String roleName, String... privNames ) {
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/roles/"+roleName);
 			HttpResponse resp = client.execute(getrequest);
 
-			if( resp.getStatusLine().getStatusCode() == 200) {
+			if (resp.getStatusLine().getStatusCode() == 200) {
 				System.out.println("Role already exist");
 			}
 			else {
@@ -492,26 +543,29 @@ public abstract class ConnectedRESTQA {
 				}
 				else {System.out.println("No Proper Response");}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
 	/*
 	 * This function creates a REST user with given roles 
 	 */
-
 	public static void createRESTUser(String usrName, String pass, String... roleNames ) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpGet getrequest = new HttpGet("http://localhost:8002"+ "/manage/v2/users/"+usrName);
 			HttpResponse resp = client.execute(getrequest);
 
-			if( resp.getStatusLine().getStatusCode() == 200) {
+			if (resp.getStatusLine().getStatusCode() == 200) {
 				System.out.println("User already exist");
 			}
 			else {
@@ -539,7 +593,7 @@ public abstract class ConnectedRESTQA {
 
 				HttpResponse response = client.execute(post);
 				HttpEntity respEntity = response.getEntity();
-				if( response.getStatusLine().getStatusCode() == 400) {
+				if (response.getStatusLine().getStatusCode() == 400) {
 					System.out.println("User already exist");
 				}
 				else if (respEntity != null) {
@@ -549,9 +603,12 @@ public abstract class ConnectedRESTQA {
 				}
 				else {System.out.println("No Proper Response");}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -590,16 +647,17 @@ public abstract class ConnectedRESTQA {
 		return mNode;
 	}
 
-	public static void createRESTUserWithPermissions(String usrName, String pass,ObjectNode perm,ObjectNode colections, String... roleNames ) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+	public static void createRESTUserWithPermissions(String usrName, String pass, ObjectNode perm, ObjectNode colections, String... roleNames ) {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpGet getrequest = new HttpGet("http://localhost:8002"+ "/manage/v2/users/"+usrName);
 			HttpResponse resp = client.execute(getrequest);
 
-			if( resp.getStatusLine().getStatusCode() == 200) {
+			if (resp.getStatusLine().getStatusCode() == 200) {
 				System.out.println("User already exist");
 			}
 			else {
@@ -639,15 +697,19 @@ public abstract class ConnectedRESTQA {
 				}
 				else {System.out.println("No Proper Response");}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void deleteRESTUser(String usrName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
@@ -656,18 +718,22 @@ public abstract class ConnectedRESTQA {
 			HttpDelete delete = new HttpDelete("http://localhost:8002/manage/v2/users/"+usrName);
 
 			HttpResponse response = client.execute(delete);
-			if(response.getStatusLine().getStatusCode()== 202) {
+			if (response.getStatusLine().getStatusCode() == 202) {
 				Thread.sleep(3500);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
-
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
+	
 	public static void deleteUserRole(String roleName) {
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
@@ -676,17 +742,19 @@ public abstract class ConnectedRESTQA {
 			HttpDelete delete = new HttpDelete("http://localhost:8002/manage/v2/roles/"+roleName);
 
 			HttpResponse response = client.execute(delete);
-			if(response.getStatusLine().getStatusCode()== 202){
+			if (response.getStatusLine().getStatusCode() == 202){
 				Thread.sleep(3500);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
-
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 	
-	public static void setupJavaRESTServerWithDB( String restServerName, int restPort)throws Exception {		 
+	public static void setupJavaRESTServerWithDB(String restServerName, int restPort)throws Exception {		 
 		createRESTServerWithDB(restServerName, restPort);
 		createRESTUser("rest-admin","x","rest-admin");
 		createRESTUser("rest-writer","x","rest-writer");
@@ -698,8 +766,9 @@ public abstract class ConnectedRESTQA {
 	 */
 
 	public static void deleteRESTServerWithDB(String restServerName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
@@ -708,18 +777,22 @@ public abstract class ConnectedRESTQA {
 			HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"?include=content&include=modules");
 
 			HttpResponse response = client.execute(delete);
-			if(response.getStatusLine().getStatusCode()== 202) {
+			if (response.getStatusLine().getStatusCode() == 202) {
 				Thread.sleep(9500);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
 	public static void deleteRESTServer(String restServerName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
@@ -728,27 +801,31 @@ public abstract class ConnectedRESTQA {
 			HttpDelete delete = new HttpDelete("http://localhost:8002/v1/rest-apis/"+restServerName+"&include=modules");
 			HttpResponse response = client.execute(delete);
 
-			if(response.getStatusLine().getStatusCode()== 202) {
+			if (response.getStatusLine().getStatusCode() == 202) {
 				Thread.sleep(3500);
 				waitForServerRestart();
 			}
 			else System.out.println("Server response "+response.getStatusLine().getStatusCode());
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			System.out.println("Inside Deleting Rest server is throwing an error");
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
+	
 	public static void detachForest(String dbName, String fName) {
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 
-			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests/"+fName);
-			//			
+			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/forests/"+fName);	
 			List<NameValuePair> urlParameters = new ArrayList<>();
 			urlParameters.add(new BasicNameValuePair("state", "detach"));
 			urlParameters.add(new BasicNameValuePair("database", dbName));
@@ -763,10 +840,13 @@ public abstract class ConnectedRESTQA {
 				String content =  EntityUtils.toString(respEntity);
 				System.out.println(content);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
-		}	
+		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 	
 	/*
@@ -774,18 +854,21 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void deleteForest(String fName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 
 			HttpDelete delete = new HttpDelete("http://localhost:8002/manage/v2/forests/"+fName+"?level=full");
 			client.execute(delete);
-
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
@@ -794,8 +877,9 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void deleteDB(String dbName) {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -803,9 +887,12 @@ public abstract class ConnectedRESTQA {
 			HttpDelete delete = new HttpDelete("http://localhost:8002/manage/v2/databases/"+dbName);
 			client.execute(delete);
 
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -814,12 +901,13 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */	
 	public static void clearDB(int port) {
+		DefaultHttpClient client = null;
 		try {
 			InputStream jsonstream=null;
 			String uri  = null;
 			if (IsSecurityEnabled()) {
 				// In case of SSL use 8002 port to clear DB contents.
-				DefaultHttpClient client = new DefaultHttpClient();
+				client = new DefaultHttpClient();
 				client.getCredentialsProvider().setCredentials(
 						new AuthScope("localhost", 8002),
 						new UsernamePasswordCredentials("admin", "admin"));
@@ -841,7 +929,7 @@ public abstract class ConnectedRESTQA {
 
 				HttpResponse response = client.execute(post);
 				HttpEntity respEntity = response.getEntity();
-				if( response.getStatusLine().getStatusCode() == 400) {
+				if (response.getStatusLine().getStatusCode() == 400) {
 					System.out.println("Database contents cleared");
 				}
 				else if (respEntity != null) {
@@ -854,7 +942,7 @@ public abstract class ConnectedRESTQA {
 				}
 			}
 			else {
-				DefaultHttpClient client = new DefaultHttpClient();
+				client = new DefaultHttpClient();
 				client.getCredentialsProvider().setCredentials(
 						new AuthScope("localhost", port),
 						new UsernamePasswordCredentials("admin", "admin"));
@@ -862,17 +950,21 @@ public abstract class ConnectedRESTQA {
 				HttpDelete delete = new HttpDelete(uri);
 				client.execute(delete);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
 	public static void waitForServerRestart() {
+		DefaultHttpClient client = null;
 		try {
 			int count = 0;
 			while(count <20) {
-				DefaultHttpClient client = new DefaultHttpClient();
+				client = new DefaultHttpClient();
 				client.getCredentialsProvider().setCredentials(
 						new AuthScope("localhost", 8001),
 						new UsernamePasswordCredentials("admin", "admin"));
@@ -881,30 +973,35 @@ public abstract class ConnectedRESTQA {
 				try {
 					HttpGet getrequest = new HttpGet("http://localhost:8001/admin/v1/timestamp");
 					HttpResponse response = client.execute(getrequest);
-					if(response.getStatusLine().getStatusCode() == 503) {Thread.sleep(5000);}
-					else if(response.getStatusLine().getStatusCode() == 200){
+					if (response.getStatusLine().getStatusCode() == 503) {Thread.sleep(5000);}
+					else if (response.getStatusLine().getStatusCode() == 200){
 						break;
 					}
 					else {
 						System.out.println("Waiting for response from server, Trial :"+response.getStatusLine().getStatusCode()+count);
 						Thread.sleep(6000);
 					}
-				}catch(Exception e){Thread.sleep(6000);}
+				} catch(Exception e){Thread.sleep(6000);}
 			}
-		}catch(Exception e) {
+		}
+		catch(Exception e) {
 			System.out.println("Inside wait for server restart is throwing an error");
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 	
-	public static void logTestMessages(String txt, long before)
-	{
-//		Calendar  cal = Calendar.getInstance();
-//		long after =cal.getTimeInMillis();
-//		long diff = after - before;
-//		String msg = "### "+txt+" ### "+diff/1000+" seconds";
-//		logger.info(msg);
+	public static void logTestMessages(String txt, long before) {
+		/*Calendar  cal = Calendar.getInstance();
+		 long after =cal.getTimeInMillis();
+	     long diff = after - before;
+	     String msg = "### "+txt+" ### "+diff/1000+" seconds";
+	     logger.info(msg);
+		 */	
 	}
+	
 	/*
 	 * This function move rest server first to documents and deletes forests and databases in separate calls
 	 */
@@ -917,7 +1014,7 @@ public abstract class ConnectedRESTQA {
 		long before =cal.getTimeInMillis();
 		try {
 			associateRESTServerWithDB(restServerName,"Documents"); 
-		}catch(Exception e){
+		} catch(Exception e){
 			System.out.println("From Deleting Rest server called funnction is throwing an error");
 			e.printStackTrace(); 
 		}
@@ -928,17 +1025,17 @@ public abstract class ConnectedRESTQA {
 			for(int i = 0; i < fNames.length; i++) {
 				detachForest(dbName, fNames[i]); 
 			}
-		}catch(Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		logTestMessages("DETACH-FOREST-FROM-DB",before);
 		
-		before =Calendar.getInstance().getTimeInMillis();
+		before = Calendar.getInstance().getTimeInMillis();
 		try {
 			for(int i = 0; i < fNames.length; i++) {
 				deleteForest(fNames[i]); 
 			}
-		}catch(Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace();
 		}
 		logTestMessages("DELETE-FOREST",before);
@@ -950,7 +1047,6 @@ public abstract class ConnectedRESTQA {
 		logTestMessages(" Ending TESTCASE TEARDOWN ",beforeTeardown);		
 	}
 	
-
 	/*
 	 * This function deletes rest server along with default forest and database 
 	 */
@@ -958,11 +1054,10 @@ public abstract class ConnectedRESTQA {
 		try {
 			deleteRESTServerWithDB(restServerName); 
 			waitForServerRestart();
-		}catch(Exception e) {
+		} catch(Exception e) {
 			e.printStackTrace(); 
 		}
 		Thread.sleep(6000); 
-
 	}
 
 	/*
@@ -970,10 +1065,11 @@ public abstract class ConnectedRESTQA {
 	 * setting up AppServices configurations 
 	 * setting up database properties whose value is string
 	 */
-	public static void setDatabaseProperties(String dbName,String prop,String propValue ) throws IOException {
+	public static void setDatabaseProperties(String dbName, String prop, String propValue ) throws IOException {
 		InputStream jsonstream=null;
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -982,7 +1078,7 @@ public abstract class ConnectedRESTQA {
 			jsonstream =response1.getEntity().getContent();
 			JsonNode jnode= new ObjectMapper().readTree(jsonstream);
 			
-			if(!jnode.isNull()) {       	
+			if (!jnode.isNull()) {       	
 				((ObjectNode)jnode).put(prop, propValue);				
 				HttpPut put = new HttpPut("http://localhost:8002"+ "/manage/v2/databases/"+dbName+"/properties?format=json");
 				put.addHeader("Content-type", "application/json");
@@ -991,7 +1087,7 @@ public abstract class ConnectedRESTQA {
 				HttpResponse response2 = client.execute(put);
 				HttpEntity respEntity = response2.getEntity();
 				
-				if(respEntity != null) {
+				if (respEntity != null) {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
@@ -999,22 +1095,24 @@ public abstract class ConnectedRESTQA {
 			else {
 				System.out.println("REST call for database properties returned NULL ");
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
 		finally {
-			if(jsonstream == null){}
+			if (jsonstream == null){}
 			else {
 				jsonstream.close();
 			}
+			client.getConnectionManager().shutdown();
 		}
 	}
 
-	public static void setDatabaseProperties(String dbName,String prop,boolean propValue ) throws IOException {
+	public static void setDatabaseProperties(String dbName, String prop, boolean propValue ) throws IOException {
 		InputStream jsonstream=null;
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -1023,7 +1121,7 @@ public abstract class ConnectedRESTQA {
 			jsonstream =response1.getEntity().getContent();
 			JsonNode jnode= new ObjectMapper().readTree(jsonstream);
 			
-			if(!jnode.isNull()) {       	
+			if (!jnode.isNull()) {       	
 				((ObjectNode)jnode).put(prop, propValue);
 				
 				HttpPut put = new HttpPut("http://localhost:8002"+ "/manage/v2/databases/"+dbName+"/properties?format=json");
@@ -1033,7 +1131,7 @@ public abstract class ConnectedRESTQA {
 				HttpResponse response2 = client.execute(put);
 				HttpEntity respEntity = response2.getEntity();
 				
-				if(respEntity != null) {
+				if (respEntity != null) {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
@@ -1041,7 +1139,7 @@ public abstract class ConnectedRESTQA {
 			else {
 				System.out.println("REST call for database properties returned NULL ");
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
 		}
@@ -1050,6 +1148,7 @@ public abstract class ConnectedRESTQA {
 			else{
 				jsonstream.close();
 			}
+			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -1058,10 +1157,11 @@ public abstract class ConnectedRESTQA {
 	 * if root propname exist and equals to null then it just add the object node under root property name else if it has an existing sub property name then it adds 
 	 * elements to that array 
 	 */
-	public static void setDatabaseProperties(String dbName,String propName, ObjectNode objNode ) throws IOException {
+	public static void setDatabaseProperties(String dbName, String propName, ObjectNode objNode ) throws IOException {
 		InputStream jsonstream=null;
+		DefaultHttpClient client = null;
 		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -1070,13 +1170,12 @@ public abstract class ConnectedRESTQA {
 			jsonstream =response1.getEntity().getContent();
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode jnode= mapper.readTree(jsonstream);
-			if(!jnode.isNull()) {
-
-				if(!jnode.has(propName)) {
+			if (!jnode.isNull()) {
+				if (!jnode.has(propName)) {
 					((ObjectNode)jnode).putArray(propName).addAll(objNode.withArray(propName));
 				}
 				else {
-					if(!jnode.path(propName).isArray()){
+					if (!jnode.path(propName).isArray()){
 						System.out.println("property is not array");
 						((ObjectNode)jnode).putAll(objNode);
 					}
@@ -1111,21 +1210,22 @@ public abstract class ConnectedRESTQA {
 			else {
 				jsonstream.close();
 			}
+			client.getConnectionManager().shutdown();
 		}
 	}
 
 	public static void enableCollectionLexicon(String dbName) throws Exception {
-		setDatabaseProperties(dbName,"collection-lexicon",true );
+		setDatabaseProperties(dbName, "collection-lexicon", true );
 	}
 	
 	// Enable triple-Index
 	public static void enableTripleIndex(String dbName) throws Exception {
-		setDatabaseProperties(dbName,"triple-index",true );
+		setDatabaseProperties(dbName, "triple-index", true );
 	}
 	
 	// Set triple-positions to false
 	public static void enableTriplePositions(String dbName) throws Exception {
-		setDatabaseProperties(dbName,"triple-positions",false );
+		setDatabaseProperties(dbName, "triple-positions", false );
 	}
 	
 	public static void enableWordLexicon(String dbName) throws Exception {
@@ -1134,20 +1234,21 @@ public abstract class ConnectedRESTQA {
 		ArrayNode childArray = mapper.createArrayNode();
 		childArray.add("http://marklogic.com/collation/");
 		childNode.putArray("word-lexicon").addAll(childArray);
-		setDatabaseProperties(dbName,"word-lexicons",childNode);
+		setDatabaseProperties(dbName, "word-lexicons", childNode);
 	}
 	
 	public static void enableTrailingWildcardSearches(String dbName) throws Exception {
-		setDatabaseProperties(dbName,"trailing-wildcard-searches",true );
+		setDatabaseProperties(dbName, "trailing-wildcard-searches", true );
 	}
 
 	public static void setMaintainLastModified(String dbName,boolean opt) throws Exception {
-		setDatabaseProperties(dbName,"maintain-last-modified",opt);
+		setDatabaseProperties(dbName, "maintain-last-modified", opt);
 	}
 	
 	public static void setAutomaticDirectoryCreation(String dbName, String opt) throws Exception {
-		setDatabaseProperties(dbName,"directory-creation",opt);
+		setDatabaseProperties(dbName, "directory-creation", opt);
 	}
+	
 	/*
 	 * This function constructs a range element index with default collation,range-value-positions and invalid values
 	 * 
@@ -1156,23 +1257,22 @@ public abstract class ConnectedRESTQA {
 		addRangeElementIndex( dbName,   type,  namespace,  localname, false);
 	}
 	
-	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname,boolean positions) throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname, boolean positions) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 		
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "scalar-type", type);
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
-		childNodeObject.put( "collation", "");
+		childNodeObject.put("scalar-type", type);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
+		childNodeObject.put("collation", "");
 		childNodeObject.put("range-value-positions", positions);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);		
 		mainNode.putArray("range-element-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"range-element-index",mainNode);
-
+		setDatabaseProperties(dbName, "range-element-index", mainNode);
 	}
 	
 	public static void addRangeElementIndex(String dbName, String[][] rangeElements) throws Exception {
@@ -1202,31 +1302,29 @@ public abstract class ConnectedRESTQA {
 			j = 0;
 		}		
 		mainNode.putArray("range-element-index").addAll(childArray);		
-		setDatabaseProperties(dbName,"range-element-index",mainNode);
+		setDatabaseProperties(dbName, "range-element-index", mainNode);
 	}
-
 
 	/*
 	 * This is a overloaded function constructs a range element index with default range-value-positions and invalid values
 	 * 
 	 */
-	public static void addRangeElementIndex(String dbName,  String type, String namespace, String localname, String collation) throws Exception {
+	public static void addRangeElementIndex(String dbName, String type, String namespace, String localname, String collation) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
 		
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "scalar-type", type);
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
-		childNodeObject.put( "collation", collation);
+		childNodeObject.put("scalar-type", type);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
+		childNodeObject.put("collation", collation);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		mainNode.putArray("range-element-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"range-element-index",mainNode);
-
+		setDatabaseProperties(dbName, "range-element-index", mainNode);
 	}
 
 	/*
@@ -1246,19 +1344,19 @@ public abstract class ConnectedRESTQA {
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "scalar-type", type);
-		childNodeObject.put( "collation", collation);
-		childNodeObject.put( "parent-namespace-uri", parentnamespace);
-		childNodeObject.put( "parent-localname", parentlocalname);
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
+		childNodeObject.put("scalar-type", type);
+		childNodeObject.put("collation", collation);
+		childNodeObject.put("parent-namespace-uri", parentnamespace);
+		childNodeObject.put("parent-localname", parentlocalname);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
 
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		childNode.putArray("range-element-attribute-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"range-element-attribute-index",childNode);
+		setDatabaseProperties(dbName, "range-element-attribute-index", childNode);
 	}
 	
 	/*
@@ -1270,20 +1368,19 @@ public abstract class ConnectedRESTQA {
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "scalar-type", type);
-		childNodeObject.put( "collation", "");
-		childNodeObject.put( "parent-namespace-uri", parentnamespace);
-		childNodeObject.put( "parent-localname", parentlocalname);
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
+		childNodeObject.put("scalar-type", type);
+		childNodeObject.put("collation", "");
+		childNodeObject.put("parent-namespace-uri", parentnamespace);
+		childNodeObject.put("parent-localname", parentlocalname);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
 
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", "reject");
 		childArray.add(childNodeObject);
 		childNode.putArray("range-element-attribute-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"range-element-attribute-index",childNode);
-
+		setDatabaseProperties(dbName, "range-element-attribute-index", childNode);
 	}
 	/*
 	 *  "range-path-indexes": {
@@ -1299,29 +1396,27 @@ public abstract class ConnectedRESTQA {
   }
 	 */
 	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues) throws Exception {
-		addRangePathIndex( dbName,  type,  pathexpr,  collation,  invalidValues, false);
+		addRangePathIndex( dbName, type, pathexpr, collation, invalidValues, false);
 	}
 	
-	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues,boolean positions) throws Exception {
+	public static void addRangePathIndex(String dbName, String type, String pathexpr, String collation, String invalidValues, boolean positions) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "scalar-type", type);
-		childNodeObject.put( "collation", collation);
-		childNodeObject.put( "path-expression", pathexpr);
+		childNodeObject.put("scalar-type", type);
+		childNodeObject.put("collation", collation);
+		childNodeObject.put("path-expression", pathexpr);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("range-path-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"range-path-index",childNode);
-
+		setDatabaseProperties(dbName, "range-path-index", childNode);
 	}
 	
 	public static void addRangePathIndex(String dbName, String[][] rangePaths) throws Exception {
-		
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode childNode = mapper.createObjectNode();		
 		ArrayNode childArray = mapper.createArrayNode();
@@ -1348,105 +1443,104 @@ public abstract class ConnectedRESTQA {
 			j = 0;
 		}
 		childNode.putArray("range-path-index").addAll(childArray);
-		
-		setDatabaseProperties(dbName,"range-path-index",childNode);
+		setDatabaseProperties(dbName, "range-path-index", childNode);
 	}
 	
-	public static void addGeospatialElementIndexes(String dbName, String localname, String namespace, String coordinateSystem, String pointFormat ,boolean rangeValuePositions, String invalidValues) throws Exception{
+	public static void addGeospatialElementIndexes(String dbName, String localname, String namespace, String coordinateSystem, String pointFormat ,boolean rangeValuePositions, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
-		childNodeObject.put( "coordinate-system", coordinateSystem);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
+		childNodeObject.put("coordinate-system", coordinateSystem);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-element-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-element-index", childNode);
 	}
 	
-	public static void addGeoSpatialElementChildIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String namespace, String localname, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception{
+	public static void addGeoSpatialElementChildIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String namespace, String localname, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put( "parent-localname", parentLocalName);
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", localname);
-		childNodeObject.put( "coordinate-system", coordinateSystem);
+		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
+		childNodeObject.put("parent-localname", parentLocalName);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", localname);
+		childNodeObject.put("coordinate-system", coordinateSystem);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-child-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-element-child-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-element-child-index", childNode);
 	}
 	
-	public static void addGeospatialElementPairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception{
+	public static void addGeospatialElementPairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put( "parent-localname", parentLocalName);
-		childNodeObject.put( "latitude-namespace-uri", latNamespace);
-		childNodeObject.put( "latitude-localname", latLocalname);
-		childNodeObject.put( "longitude-namespace-uri", latNamespace);
-		childNodeObject.put( "longitude-localname", longLocalname);
-		childNodeObject.put( "coordinate-system", coordinateSystem);
+		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
+		childNodeObject.put("parent-localname", parentLocalName);
+		childNodeObject.put("latitude-namespace-uri", latNamespace);
+		childNodeObject.put("latitude-localname", latLocalname);
+		childNodeObject.put("longitude-namespace-uri", latNamespace);
+		childNodeObject.put("longitude-localname", longLocalname);
+		childNodeObject.put("coordinate-system", coordinateSystem);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-pair-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-element-pair-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-element-pair-index", childNode);
 	}
 	
-	public static void addGeospatialElementAttributePairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception{
+	public static void addGeospatialElementAttributePairIndexes(String dbName, String parentNamespaceUri, String parentLocalName, String latNamespace, String latLocalname, String longNamespace, String longLocalname, String coordinateSystem, boolean rangeValuePositions, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "parent-namespace-uri", parentNamespaceUri);
-		childNodeObject.put( "parent-localname", parentLocalName);
-		childNodeObject.put( "latitude-namespace-uri", latNamespace);
-		childNodeObject.put( "latitude-localname", latLocalname);
-		childNodeObject.put( "longitude-namespace-uri", latNamespace);
-		childNodeObject.put( "longitude-localname", longLocalname);
-		childNodeObject.put( "coordinate-system", coordinateSystem);
+		childNodeObject.put("parent-namespace-uri", parentNamespaceUri);
+		childNodeObject.put("parent-localname", parentLocalName);
+		childNodeObject.put("latitude-namespace-uri", latNamespace);
+		childNodeObject.put("latitude-localname", latLocalname);
+		childNodeObject.put("longitude-namespace-uri", latNamespace);
+		childNodeObject.put("longitude-localname", longLocalname);
+		childNodeObject.put("coordinate-system", coordinateSystem);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-element-attribute-pair-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-element-attribute-pair-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-element-attribute-pair-index", childNode);
 	}
 	
-	public static void addGeospatialPathIndexes(String dbName, String pathExpression, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception{
+	public static void addGeospatialPathIndexes(String dbName, String pathExpression, String coordinateSystem, String pointFormat, boolean rangeValuePositions, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "path-expression", pathExpression);
-		childNodeObject.put( "coordinate-system", coordinateSystem);
+		childNodeObject.put("path-expression", pathExpression);
+		childNodeObject.put("coordinate-system", coordinateSystem);
 		childNodeObject.put("range-value-positions", false);
 		childNodeObject.put("invalid-values", invalidValues);
 		childNodeObject.put("point-format",pointFormat);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-path-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-path-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-path-index", childNode);
 	}
 	
 	/* 
@@ -1469,19 +1563,19 @@ public abstract class ConnectedRESTQA {
        ]
      */
 	
-	public static void addGeospatialRegionPathIndexes(String dbName, String pathExpression, String coordinateSystem, String geoHashPrecision, String invalidValues) throws Exception{
+	public static void addGeospatialRegionPathIndexes(String dbName, String pathExpression, String coordinateSystem, String geoHashPrecision, String invalidValues) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "path-expression", pathExpression);
-		childNodeObject.put( "coordinate-system", coordinateSystem);		
+		childNodeObject.put("path-expression", pathExpression);
+		childNodeObject.put("coordinate-system", coordinateSystem);		
 		childNodeObject.put("invalid-values", invalidValues);
 		childNodeObject.put("geohash-precision", geoHashPrecision);
 		childArray.add(childNodeObject);
 		childNode.putArray("geospatial-region-path-index").addAll(childArray);
 		
-		setDatabaseProperties(dbName,"geospatial-region-path-index",childNode);
+		setDatabaseProperties(dbName, "geospatial-region-path-index", childNode);
 	}
 	
 	/*
@@ -1505,39 +1599,38 @@ public abstract class ConnectedRESTQA {
 				]
 			}
 	 */
-	public static void addField(String dbName, String fieldName) throws Exception{
+	public static void addField(String dbName, String fieldName) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "field-name", fieldName);
-		childNodeObject.put( "include-root", true);
-		childNodeObject.putNull( "included-elements");
-		childNodeObject.putNull( "excluded-elements");
-		childNodeObject.putNull( "tokenizer-overrides");
+		childNodeObject.put("field-name", fieldName);
+		childNodeObject.put("include-root", true);
+		childNodeObject.putNull("included-elements");
+		childNodeObject.putNull("excluded-elements");
+		childNodeObject.putNull("tokenizer-overrides");
 		arrNode.add(childNodeObject);
 		childNode.putArray("field").addAll(arrNode);
 		
-		setDatabaseProperties(dbName,"field",childNode);
+		setDatabaseProperties(dbName, "field", childNode);
 	}
 	
-	public static void addFieldExcludeRoot(String dbName, String fieldName) throws Exception{
+	public static void addFieldExcludeRoot(String dbName, String fieldName) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "field-name", fieldName);
-		childNodeObject.put( "include-root", false);
-		childNodeObject.putNull( "included-elements");
-		childNodeObject.putNull( "excluded-elements");
-		childNodeObject.putNull( "tokenizer-overrides");
+		childNodeObject.put("field-name", fieldName);
+		childNodeObject.put("include-root", false);
+		childNodeObject.putNull("included-elements");
+		childNodeObject.putNull("excluded-elements");
+		childNodeObject.putNull("tokenizer-overrides");
 		arrNode.add(childNodeObject);
 		childNode.putArray("field").addAll(arrNode);
 		
-		setDatabaseProperties(dbName,"field",childNode);
-
+		setDatabaseProperties(dbName, "field", childNode);
 	}
 	
 	public static void   addBuiltInGeoIndex (String dbName)throws Exception {
@@ -1554,8 +1647,9 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static void setDatabaseFieldProperties(String dbName,String field_name, String propName, ObjectNode objNode ) throws IOException {
 		InputStream jsonstream=null;
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -1564,22 +1658,19 @@ public abstract class ConnectedRESTQA {
 			jsonstream =response1.getEntity().getContent();
 			ObjectMapper mapper = new ObjectMapper();
 			JsonNode jnode= mapper.readTree(jsonstream);
-			if(!jnode.isNull()&& jnode.has("field")) {
+			if (!jnode.isNull() && jnode.has("field")) {
 				JsonNode  fieldNode = jnode.withArray("field");
 				Iterator<JsonNode> fnode = fieldNode.elements();
 				while(fnode.hasNext()) {
 					JsonNode fnchild =fnode.next();
-					if((fnchild.path("field-name").asText()).equals(field_name)){
-						//            			System.out.println("Hurray" +fnchild.has(propName));
-						if(!fnchild.has(propName)){
+					if ((fnchild.path("field-name").asText()).equals(field_name)) {
+						if (!fnchild.has(propName)) {
 							((ObjectNode)fnchild).putArray(propName).addAll(objNode.withArray(propName));
-//							System.out.println("Adding child array include node" + jnode.toString());
 						}
 						else {
 							JsonNode member = fnchild.withArray(propName);
 							((ArrayNode)member).addAll(objNode.withArray(propName));
 						}
-
 					}
 				}
 
@@ -1589,7 +1680,7 @@ public abstract class ConnectedRESTQA {
 
 				HttpResponse response2 = client.execute(put);
 				HttpEntity respEntity = response2.getEntity();
-				if(respEntity != null){
+				if (respEntity != null) {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
@@ -1606,6 +1697,7 @@ public abstract class ConnectedRESTQA {
 			else {
 				jsonstream.close();
 			}
+			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -1614,34 +1706,33 @@ public abstract class ConnectedRESTQA {
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", elementName);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", elementName);
 		childNodeObject.put("weight", 1.0);
 		
-		childNodeObject.put( "attribute-namespace-uri", "");
-		childNodeObject.put( "attribute-localname", "");
-		childNodeObject.put( "attribute-value", "");
+		childNodeObject.put("attribute-namespace-uri", "");
+		childNodeObject.put("attribute-localname", "");
+		childNodeObject.put("attribute-value", "");
 		
 		arrNode.add(childNodeObject);
-		childNode.putArray("included-element").addAll(arrNode);
-		//	mainNode.put("included-elements", childNode);
+		childNode.putArray("included-element").addAll(arrNode);		
 		System.out.println( childNode.toString());
 		setDatabaseFieldProperties(dbName,field_name,"included-element",childNode);
-
 	}
-	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace, String elementName, double weight, String attrNS_URI, String attr_localname, String attr_value) throws Exception{
+	
+	public static void includeElementFieldWithWeight(String dbName, String field_name, String namespace, String elementName, double weight, String attrNS_URI, String attr_localname, String attr_value) throws Exception {
 
 		ObjectMapper mapper = new ObjectMapper();		
 		ObjectNode childNode = mapper.createObjectNode();
 		ArrayNode arrNode = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
-		childNodeObject.put( "namespace-uri", namespace);
-		childNodeObject.put( "localname", elementName);
+		childNodeObject.put("namespace-uri", namespace);
+		childNodeObject.put("localname", elementName);
 		childNodeObject.put("weight", weight);
 		// These 3 are new fields that have been added as of 8.0.2 from 03/20/2015 in the Management API.
-		childNodeObject.put( "attribute-namespace-uri", attrNS_URI);
-		childNodeObject.put( "attribute-localname", attr_localname);
-		childNodeObject.put( "attribute-value", attr_value);				
+		childNodeObject.put("attribute-namespace-uri", attrNS_URI);
+		childNodeObject.put("attribute-localname", attr_localname);
+		childNodeObject.put("attribute-value", attr_value);				
 		arrNode.add(childNodeObject);
 		childNode.putArray("included-element").addAll(arrNode);		
 		setDatabaseFieldProperties(dbName,field_name,"included-element",childNode);
@@ -1770,7 +1861,7 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response = client.execute(post);
 		HttpEntity respEntity = response.getEntity();
-		if( response.getStatusLine().getStatusCode() == 400) {
+		if (response.getStatusLine().getStatusCode() == 400) {
 			HttpEntity entity = response.getEntity();
 			String responseString = EntityUtils.toString(entity, "UTF-8");
 			System.out.println(responseString);
@@ -1786,6 +1877,7 @@ public abstract class ConnectedRESTQA {
 		else {
 			System.out.println("No Proper Response");
 		}
+		client.getConnectionManager().shutdown();
 	}
 
 	/*
@@ -1806,7 +1898,7 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response = client.execute(del);
 		HttpEntity respEntity = response.getEntity();
-		if( response.getStatusLine().getStatusCode() == 400) {
+		if (response.getStatusLine().getStatusCode() == 400) {
 			HttpEntity entity = response.getEntity();
 			String responseString = EntityUtils.toString(entity, "UTF-8");
 			System.out.println(responseString);
@@ -1820,6 +1912,7 @@ public abstract class ConnectedRESTQA {
 			System.out.println("Axis: " + axisName + " deleted");
 			System.out.println("==============================================================");
 		}
+		client.getConnectionManager().shutdown();
 	}
 
 	/*
@@ -1834,9 +1927,9 @@ public abstract class ConnectedRESTQA {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode rootNode = mapper.createObjectNode();
 
-		rootNode.put( "collection-name", collectionName);
-		rootNode.put( "system-axis", systemAxisName);
-		rootNode.put( "valid-axis", validAxisName);
+		rootNode.put("collection-name", collectionName);
+		rootNode.put("system-axis", systemAxisName);
+		rootNode.put("valid-axis", validAxisName);
 
 		System.out.println(rootNode.toString());
 
@@ -1853,7 +1946,7 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response = client.execute(post);
 		HttpEntity respEntity = response.getEntity();
-		if( response.getStatusLine().getStatusCode() == 400) {
+		if (response.getStatusLine().getStatusCode() == 400) {
 			HttpEntity entity = response.getEntity();
 			String responseString = EntityUtils.toString(entity, "UTF-8");
 			System.out.println(responseString);
@@ -1869,6 +1962,7 @@ public abstract class ConnectedRESTQA {
 		else {
 			System.out.println("No Proper Response");
 		}
+		client.getConnectionManager().shutdown();
 	}
 
 	/*
@@ -1905,7 +1999,7 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response = client.execute(put);
 		HttpEntity respEntity = response.getEntity();
-		if( response.getStatusLine().getStatusCode() == 400) {
+		if (response.getStatusLine().getStatusCode() == 400) {
 			HttpEntity entity = response.getEntity();
 			String responseString = EntityUtils.toString(entity, "UTF-8");
 			System.out.println(responseString);
@@ -1921,6 +2015,7 @@ public abstract class ConnectedRESTQA {
 		else {
 			System.out.println("No Proper Response");
 		}
+		client.getConnectionManager().shutdown();
 	}
 
 	/*
@@ -1941,7 +2036,7 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response = client.execute(del);
 		HttpEntity respEntity = response.getEntity();
-		if( response.getStatusLine().getStatusCode() == 400) {
+		if (response.getStatusLine().getStatusCode() == 400) {
 			HttpEntity entity = response.getEntity();
 			String responseString = EntityUtils.toString(entity, "UTF-8");
 			System.out.println(responseString);
@@ -1955,11 +2050,13 @@ public abstract class ConnectedRESTQA {
 			System.out.println("Collection: " + collectionName + " deleted");
 			System.out.println("==============================================================");
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	public static void loadBug18993() {
-		try{
-			DefaultHttpClient client = new DefaultHttpClient();
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8011),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -1974,9 +2071,12 @@ public abstract class ConnectedRESTQA {
 				String content =  EntityUtils.toString(respEntity);
 				System.out.println(content);
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 
@@ -1994,10 +2094,11 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response2 = client.execute(put);
 		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
+		if (respEntity != null) {
 			String content =  EntityUtils.toString(respEntity);
 			System.out.println(content);
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	public static void setDefaultUser(String usr,String restServerName) throws ClientProtocolException, IOException {
@@ -2015,10 +2116,11 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response2 = client.execute(put);
 		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null){
+		if (respEntity != null) {
 			String content =  EntityUtils.toString(respEntity);
 			System.out.println(content);
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	public static void setupServerRequestLogging(DatabaseClient client,boolean flag) throws Exception {
@@ -2033,8 +2135,9 @@ public abstract class ConnectedRESTQA {
 	 * 
 	 */
 	public static void setPathRangeIndexInDatabase(String dbName, JsonNode jnode) throws IOException {
+		DefaultHttpClient client = null;
 		try {			
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -2049,9 +2152,12 @@ public abstract class ConnectedRESTQA {
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
-			}catch (Exception e) {
+			} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
@@ -2172,7 +2278,7 @@ public abstract class ConnectedRESTQA {
 	 */
 	public static boolean IsSecurityEnabled() {	
 		boolean bSecurityEnabled = false;
-		if(getSslEnabled().trim().equalsIgnoreCase("true")) 
+		if (getSslEnabled().trim().equalsIgnoreCase("true")) 
 			  bSecurityEnabled = true;
 		else if ( getSslEnabled().trim().equalsIgnoreCase("false") || getSslEnabled() == null || getSslEnabled().trim().isEmpty() ) 
 			  bSecurityEnabled = false;
@@ -2189,7 +2295,7 @@ public abstract class ConnectedRESTQA {
 		DatabaseClient client = null;
 		try {			
 			   SSLContext sslcontext = null;
-			   if 	(IsSecurityEnabled()) {
+			   if (IsSecurityEnabled()) {
 				sslcontext = getSslContext();
 				 client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), user, password, authType, sslcontext, SSLHostnameVerifier.ANY);
 			  }
@@ -2221,7 +2327,7 @@ public abstract class ConnectedRESTQA {
 		try {			
 			SSLContext sslcontext = null;
 			// Enable secure access on non 8000 port. Uber servers on port 8000 aren't security enabled as of now.
-			if 	(IsSecurityEnabled() && port != 8000) {
+			if (IsSecurityEnabled() && port != 8000) {
 				sslcontext = getSslContext();
 				if (hostName.equalsIgnoreCase("localhost"))
 						hostName = getSslServer();
@@ -2440,10 +2546,11 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response2 = client.execute(put);
 		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
+		if (respEntity != null) {
 			String content =  EntityUtils.toString(respEntity);
 			System.out.println(content);
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	/*
@@ -2469,10 +2576,11 @@ public abstract class ConnectedRESTQA {
 
 		HttpResponse response2 = client.execute(put);
 		HttpEntity respEntity = response2.getEntity();
-		if(respEntity != null) {
+		if (respEntity != null) {
 			String content =  EntityUtils.toString(respEntity);
 			System.out.println(content);
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	/*
@@ -2505,6 +2613,7 @@ public abstract class ConnectedRESTQA {
 			String content =  EntityUtils.toString(respEntity);
 			System.out.println(content);
 		}
+		client.getConnectionManager().shutdown();
 	}
 	
 	/*
@@ -2512,21 +2621,23 @@ public abstract class ConnectedRESTQA {
 	 */
 
 	public static void createRESTKerberosUser(String usrName, String pass, String externalName, String... roleNames ) {
+		DefaultHttpClient clientReq = null;
+		DefaultHttpClient clientPost = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
-			client.getCredentialsProvider().setCredentials(
+			clientReq = new DefaultHttpClient();
+			clientReq.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
 			HttpGet getrequest = new HttpGet("http://localhost:8002"+ "/manage/v2/users/"+usrName);
-			HttpResponse resp = client.execute(getrequest);
+			HttpResponse resp = clientReq.execute(getrequest);
 
-			if( resp.getStatusLine().getStatusCode() == 200) {
+			if(resp.getStatusLine().getStatusCode() == 200) {
 				System.out.println("User already exist");
 			}
 			else {
 				System.out.println("User dont exist");
-				client = new DefaultHttpClient();
-				client.getCredentialsProvider().setCredentials(
+				clientPost = new DefaultHttpClient();
+				clientPost.getCredentialsProvider().setCredentials(
 						new AuthScope("localhost", 8002),
 						new UsernamePasswordCredentials("admin", "admin"));
 
@@ -2554,7 +2665,7 @@ public abstract class ConnectedRESTQA {
 				post.addHeader("Content-type", "application/json");
 				post.setEntity(new StringEntity(mainNode.toString()));
 
-				HttpResponse response = client.execute(post);
+				HttpResponse response = clientPost.execute(post);
 				HttpEntity respEntity = response.getEntity();
 				if( response.getStatusLine().getStatusCode() == 400) {
 					System.out.println("User already exist");
@@ -2566,9 +2677,13 @@ public abstract class ConnectedRESTQA {
 				}
 				else {System.out.println("No Proper Response");}
 			}
-		}catch (Exception e) {
+		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			clientReq.getConnectionManager().shutdown();
+			clientPost.getConnectionManager().shutdown();
 		}
 	}	
 }

@@ -357,9 +357,9 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 	public JsonNode getDBFragmentCount(String hostname, String adminport, String dbName) {
 		InputStream jstream = null;
 		JsonNode jnode = null;
-		
+		DefaultHttpClient client = null;
 		try {
-		DefaultHttpClient client = new DefaultHttpClient();
+		client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
 				new AuthScope("localhost", 8002),
 				new UsernamePasswordCredentials("admin", "admin"));
@@ -376,6 +376,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		}
 		finally {
 			jstream = null;
+			client.getConnectionManager().shutdown();
 		}
 	}
 	

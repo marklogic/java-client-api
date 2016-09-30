@@ -91,8 +91,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		InputStream jsonstream = null;
 		boolean propFound = false;
 		String propertyAvailable = null;
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -125,6 +126,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			// writing error to Log
 			e.printStackTrace();
 		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
 	}
 	
 	/*
@@ -137,8 +141,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		boolean propFound = false;
 		String propertyAvailable1 = null;
 		String propertyAvailable2 = null;
+		DefaultHttpClient client = null;
 		try {
-			DefaultHttpClient client = new DefaultHttpClient();
+			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope("localhost", 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
@@ -178,6 +183,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		} catch (Exception e) {
 			// writing error to Log
 			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
 		}
 	}
 	
