@@ -54,8 +54,6 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	Calendar calOne = null;
 	Calendar calTwo = null;
 	
-	Date dateOne = null;
-	Date dateTwo = null;
 	/*
 	 * @Id annotation on String type 
 	 */
@@ -193,11 +191,11 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		return cogs;
 	}
 	
-    public void validateArtifact(Artifact art) {
-    assertNotNull("Artifact object should never be Null",art);
-    assertNotNull("Id should never be Null",art.id);
-    assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
-    }
+	public void validateArtifact(Artifact art) {
+		assertNotNull("Artifact object should never be Null",art);
+		assertNotNull("Id should never be Null",art.id);
+		assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
+	}
     
     //This test is to persist a simple design model objects in ML, read from ML, delete all
 	@Test
@@ -215,7 +213,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 			this.validateArtifact(products.read(i));
 		}
 		products.deleteAll();
-		for(long i=1;i<112;i++){
+		for(long i=1;i<112;i++) {
 			assertFalse("Product id exists ?",products.exists(i));
 		}
 	}
@@ -246,7 +244,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		//Load more than 110 objects into different collections
 		products.deleteAll();
 		for(int i=112;i<222;i++) {
-			if(i%2==0) {
+			if (i%2 == 0) {
 			products.write(this.getArtifact(i),"even","numbers");
 			}
 			else {
@@ -280,11 +278,11 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		//Load more than 110 objects into different collections
 		products.deleteAll();
-		Long[] ids= new Long[112];
+		Long[] ids = new Long[112];
 		int j=0;
 		for(int i=222;i<333;i++) {
-			ids[j] =(long) i;j++;
-			if(i%2==0) {
+			ids[j] = (long) i;j++;
+			if (i%2 == 0) {
 				products.write(this.getArtifact(i),"even","numbers");
 			}
 			else {
@@ -299,7 +297,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		System.out.println("Default Page length setting on docMgr :"+products.getPageLength());
 		assertEquals("Default setting for page length",50,products.getPageLength());
 
-		PojoPage<Artifact> p= products.read(ids);
+		PojoPage<Artifact> p = products.read(ids);
 		// test for page methods
 		System.out.println("Total number of estimated results:"+p.getTotalSize()+ids.length);
 		System.out.println("Total number of estimated pages :"+p.getTotalPages());
@@ -323,7 +321,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		//Load more than 110 objects into different collections
 		products.deleteAll();
 		for(int i=222;i<333;i++) {
-		if(i%2==0) {
+		if (i%2 == 0) {
 			products.write(this.getArtifact(i),"even","numbers");
 			}
 		else {
@@ -357,9 +355,9 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		long pageNo=1,count=0;
 		do {
 			count=0;
-			p= products.readAll(pageNo);
+			p = products.readAll(pageNo);
 			
-			if(pageNo >1) { 
+			if (pageNo >1) { 
 				assertFalse("Is this first Page", p.isFirstPage());
 				assertTrue("Is page has previous page ?",p.hasPreviousPage());
 			}
@@ -371,7 +369,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		assertEquals("document count", p.size(),count);
 		
 		pageNo = pageNo + p.getPageSize();
-		}while(!(p.isLastPage()) && pageNo < p.getTotalSize());
+		} while(!(p.isLastPage()) && pageNo < p.getTotalSize());
 		assertTrue("page count is 111 ",pageNo == p.getTotalPages());
 		assertTrue("Page has previous page ?",p.hasPreviousPage());
 		assertEquals("page size", 1,p.getPageSize());
@@ -462,7 +460,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 				count++;
 			}
 			assertEquals("Page size",count, p.size());
-			pageNo=pageNo+p.getPageSize();
+			pageNo = pageNo+p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page number after the loop", 1, p.getPageNumber());
 		assertEquals("total no of pages", 1, p.getTotalPages());
@@ -484,12 +482,12 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 
 				if (a.getId() == 97) {
 					assertTrue("Expiry date incorrect",a.getExpiryDate().getTime().equals(calTwo.getTime()));
-					assertTrue("Expiry date incorrect", a.getInventory() == 1097);
-					assertTrue("Expiry date incorrect", a.getName().equalsIgnoreCase("Cogs special 97"));
-					assertTrue("Expiry date incorrect", a.getManufacturer().getLatitude() == 138.998);
-					assertTrue("Expiry date incorrect", a.getManufacturer().getLongitude() == 9.03400000000001);
-					assertTrue("Expiry date incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
-					assertTrue("Expiry date incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
+					assertTrue("Artifact inventory incorrect", a.getInventory() == 1097);
+					assertTrue("Artifact name incorrect", a.getName().equalsIgnoreCase("Cogs special 97"));
+					assertTrue("Artifact manufacturer latitude incorrect", a.getManufacturer().getLatitude() == 138.998);
+					assertTrue("Artifact manufacturer longitude incorrect", a.getManufacturer().getLongitude() == 9.03400000000001);
+					assertTrue("Artifact manufacturer name incorrect", a.getManufacturer().getName().equalsIgnoreCase("Acme special, Inc."));
+					assertTrue("Artifact website incorrect incorrect", a.getManufacturer().getWebsite().equalsIgnoreCase("http://www.acme special.com"));
 
 					bFound = true;
 				}
@@ -499,9 +497,9 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 			if (!bFound) {
 				fail("Range Query on Calendar type failed when greater than or equal used.");
 			}
-			assertEquals("Number of rows returned count should be 14", count, 14);
+			assertEquals("Number of rows returned count should be 14", 14, count);
 			assertEquals("Page size",count, p.size());
-			pageNo=pageNo+p.getPageSize();
+			pageNo = pageNo+p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page number after the loop", 1, p.getPageNumber());
 		assertEquals("total no of pages", 1, p.getTotalPages());
@@ -527,9 +525,9 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 				count++;
 			}
 					
-			assertEquals("Number of rows returned count should be 13", count, 13);
+			assertEquals("Number of rows returned count should be 13", 13, count);
 			assertEquals("Page size",count, p.size());
-			pageNo=pageNo+p.getPageSize();
+			pageNo = pageNo+p.getPageSize();
 		} while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page number after the loop", 1, p.getPageNumber());
 		assertEquals("total no of pages", 1, p.getTotalPages());
@@ -537,7 +535,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 	
 	public void loadSimplePojos(PojoRepository rangeQueryRepos) {
 		for(int i=1;i<111;i++) {
-			if(i%2==0) {
+			if (i%2 == 0) {
 				rangeQueryRepos.write(this.getArtifactIndexedOnCalendar(i),"even","numbers");
 			}
 			else {
@@ -559,7 +557,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 		// there will be difference on times between client and ML server values.
 		Calendar expiryDate = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
 				
-		if( counter % 57 == 0) {			
+		if (counter % 57 == 0) {			
 			calOne = expiryDate;
 
 			Company acme = new Company();
@@ -571,7 +569,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 			cogs.setExpiryDate(expiryDate);
 			cogs.setName("Cogs special 57");
 		}
-		else if( counter % 97 == 0) {			
+		else if (counter % 97 == 0) {			
 			calTwo = expiryDate;
 
 			Company acme = new Company();
