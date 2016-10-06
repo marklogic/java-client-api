@@ -40,7 +40,7 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
   private static Logger logger = LoggerFactory.getLogger(HostAvailabilityListener.class);
   private DataMovementManager moveMgr;
   private HostBatcher batcher;
-  private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(1);
+  private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
@@ -51,6 +51,10 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
     hostUnavailableExceptions.add(UnknownHostException.class);
   }
 
+  /**
+   * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
+   * @param batcher the WriteHostBatcher or QueryHostBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
+   */
   public HostAvailabilityListener(DataMovementManager moveMgr, HostBatcher batcher) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
     if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
@@ -60,6 +64,10 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
 
   /** If a host becomes unavailable (NoHttpResponseException, SocketException, SSLException,
    * UnknownHostException), adds it to the blacklist
+   *
+   * @param duration the amount of time an unavailable host will be suspended
+   *
+   * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withSuspendTimeForHostUnavailable(Duration
   duration) {
@@ -69,6 +77,10 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
   }
 
   /** If less than minHosts are left, calls stopJob.
+   *
+   * @param numHosts the minimum number of hosts before this will call dataMovementMangaer.stopJob(batcher)
+   *
+   * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
     this.minHosts = numHosts;
@@ -76,6 +88,10 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
   }
 
   /** Overwrites the list of exceptions for which a host will be blacklisted
+   *
+   * @param exceptionTypes the list of types of Throwable, any of which constitute a host that's unavailable
+   *
+   * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withHostUnavailableExceptions(Class<Throwable>... exceptionTypes) {
     hostUnavailableExceptions = new ArrayList<>();
@@ -85,27 +101,49 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
     return this;
   }
 
+  /**
+   * @return the list of types of Throwable, any of which constitute a host that's unavailable
+   */
   public Throwable[] getHostUnavailableExceptions() {
     return hostUnavailableExceptions.toArray(new Throwable[hostUnavailableExceptions.size()]);
   }
 
+  /**
+   * @return the amount of time an unavailable host will be suspended
+   */
   public Duration getSuspendTimeForHostUnavailable() {
     return suspendTimeForHostUnavailable;
   }
 
+  /**
+   * @return the minimum number of hosts before this will call dataMovementMangaer.stopJob(batcher)
+   */
   public int getMinHosts() {
     return minHosts;
   }
 
+  /**
+   * This implements the BatchFailureListener interface
+   *
+   * @param hostClient the host-specific client
+   * @param batch the batch of WriteEvents
+   * @param throwable the exception
+   */
   public void processEvent(DatabaseClient hostClient, Batch<WriteEvent> batch, Throwable throwable) {
     processException(throwable, hostClient.getHost());
   }
 
+  /**
+   * This implements the FailureListener interface
+   *
+   * @param client the host-specific client
+   * @param throwable the exception with information about the status of the job
+   */
   public void processFailure(DatabaseClient client, QueryHostException throwable) {
     processException(throwable, client.getHost());
   }
 
-  public void processException(Throwable throwable, String host) {
+  private void processException(Throwable throwable, String host) {
     if ( isHostUnavailableException(throwable, new HashSet<>()) ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
       if ( minHosts < existingForestConfig.getHosts().length ) {

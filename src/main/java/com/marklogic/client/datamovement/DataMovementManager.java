@@ -29,7 +29,7 @@ import java.util.Iterator;
  * host-specific DatabaseClient instances for each applicable host.  Applicable
  * hosts are those with forests for the database specified in the
  * DatabaseClient.  If not specified, the database is the default database for
- * the port in the DatabaseClient.  Call {@link release()
+ * the port in the DatabaseClient.  Call {@link #release()
  * dataMovementMangaer.release()} when you're done with your
  * DataMovementManager instance to free resources associated with those
  * host-specific DatabaseClient instances.
