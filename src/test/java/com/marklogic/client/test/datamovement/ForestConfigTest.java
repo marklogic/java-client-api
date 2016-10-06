@@ -24,14 +24,15 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
 
 public class ForestConfigTest {
-  private DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private DataMovementManager moveMgr = client.newDataMovementManager();
 
   @BeforeClass
   public static void beforeClass() {
@@ -44,33 +45,23 @@ public class ForestConfigTest {
 
   @Test
   public void testArgs() throws Exception {
-    moveMgr.withClient(client);
-    String defaultUser = client.getUser();
-    String defaultPass = client.getPassword();
     int defaultPort = client.getPort();
-    Authentication defaultAuth = client.getAuthentication();
+    Class<?> defaultAuthContext = client.getSecurityContext().getClass();
     ForestConfiguration forestConfig = moveMgr.readForestConfig();
     Forest[] forests = forestConfig.listForests();
     String defaultDatabase = forests[0].getDatabaseName();
     assertEquals(3, forests.length);
     for ( Forest forest : forests ) {
-      DatabaseClient forestClient = forestConfig.getForestClient(forest);
+      DatabaseClient forestClient = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
       // not all forests for a database are on the same host, so all we
       // can check is that the hostname is not null
-      assertNotNull(forest.getHostName());
-      assertEquals(defaultUser, forestClient.getUser());
-      assertEquals(defaultPass, forestClient.getPassword());
+      assertNotNull(forest.getHost());
       // not all hosts have the original REST server, but all hosts have the uber port
       assertEquals(defaultPort, forestClient.getPort());
       assertEquals(defaultDatabase, forest.getDatabaseName());
-      assertEquals(defaultAuth, forestClient.getAuthentication());
+      assertEquals(defaultAuthContext, forestClient.getSecurityContext().getClass());
       assertEquals(true, forest.isUpdateable());
       assertEquals(false, forest.isDeleteOnly());
-      long count = forest.getFragmentCount();
-      forest.increaseFragmentCount(5);
-      assertEquals(count + 5, forest.getFragmentCount());
-      forest.decreaseFragmentCount(10);
-      assertEquals(count - 5, forest.getFragmentCount());
       if ( ! "java-unittest-1".equals(forest.getForestName()) &&
            ! "java-unittest-2".equals(forest.getForestName()) &&
            ! "java-unittest-3".equals(forest.getForestName()) ) {

@@ -557,7 +557,6 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, user, password, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof DigestAuthContext) {
 			DigestAuthContext digestContext = (DigestAuthContext) securityContext;
 			user = digestContext.user;
@@ -571,9 +570,9 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, user, password, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof KerberosAuthContext) {
 			KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
+			user = kerberosContext.externalName;
 			type = Authentication.KERBEROS;
 			if (kerberosContext.sslContext != null) {
 				sslContext = kerberosContext.sslContext;
@@ -583,19 +582,49 @@ public class DatabaseClientFactory {
 					sslVerifier = SSLHostnameVerifier.COMMON;
 				}
 			}
-			return newClient(host, port, database, kerberosContext.externalName, null, type, sslContext, sslVerifier);
 		} else if (securityContext instanceof CertificateAuthContext) {
 			CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
 			type = Authentication.CERTIFICATE;
+			sslContext = certificateContext.getSSLContext();
 			if (certificateContext.sslVerifier != null) {
 				sslVerifier = certificateContext.sslVerifier;
 			} else {
 				sslVerifier = SSLHostnameVerifier.COMMON;
 			}
-			return newClient(host, port, database, null, null, type, certificateContext.getSSLContext(), sslVerifier);
+		} else {
+			throw new IllegalArgumentException("securityContext must be of type BasicAuthContext, " +
+				"DigestAuthContext, KerberosAuthContext, or CertificateAuthContext");
 		}
-		return null;
+
+		JerseyServices services = new JerseyServices();
+		services.connect(host, port, database, user, password, type, sslContext, sslVerifier);
+
+		if (clientConfigurator != null) {
+			((HttpClientConfigurator) clientConfigurator).configure(
+				services.getClientImplementation()
+				);
+		}
+
+		DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, database, securityContext);
+		client.setHandleRegistry(getHandleRegistry().copy());
+		return client;
 	}
+
+
+	static private SecurityContext makeSecurityContext(String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+		if ( Authentication.BASIC == type ) {
+			return new BasicAuthContext(user, password)
+				.withSSLContext(context)
+				.withSSLHostnameVerifier(verifier);
+		} else if ( Authentication.DIGEST == type ) {
+			return new DigestAuthContext(user, password)
+				.withSSLContext(context)
+				.withSSLHostnameVerifier(verifier);
+		} else {
+			throw new IllegalStateException("makeSecurityContext should only be called with BASIC or DIGEST Authentication");
+		}
+	}
+
 	/**
 	 * Creates a client to access the database by means of a REST server.
 	 * 
@@ -609,7 +638,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
-		return newClient(host, port, null, user, password, type, null, null);
+		return newClient(host, port, null, makeSecurityContext(user, password, type, null, null));
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -625,7 +654,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
-		return newClient(host, port, database, user, password, type, null, null);
+		return newClient(host, port, database, makeSecurityContext(user, password, type, null, null));
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -641,7 +670,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
-		return newClient(host, port, null, user, password, type, context, SSLHostnameVerifier.COMMON);
+		return newClient(host, port, null, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON));
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -658,7 +687,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
-		return newClient(host, port, database, user, password, type, context, SSLHostnameVerifier.COMMON);
+		return newClient(host, port, database, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON));
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -675,9 +704,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, context, verifier);
-		client.setHandleRegistry(getHandleRegistry().copy());
-		return client;
+		return newClient(host, port, null, makeSecurityContext(user, password, type, context, verifier));
 	}
 	/**
 	 * Creates a client to access the database by means of a REST server.
@@ -695,23 +722,7 @@ public class DatabaseClientFactory {
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-		DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, context, verifier);
-		client.setHandleRegistry(getHandleRegistry().copy());
-		return client;
-	}
-
-	static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-		logger.debug("Creating new database client for server at "+host+":"+port);
-		JerseyServices services = new JerseyServices();
-		services.connect(host, port, database, user, password, type, context, verifier);
-
-		if (clientConfigurator != null) {
-			((HttpClientConfigurator) clientConfigurator).configure(
-				services.getClientImplementation()
-				);
-		}
-
-		return new DatabaseClientImpl(services, host, port, database, user, password, type, context, verifier);
+		return newClient(host, port, database, makeSecurityContext(user, password, type, context, verifier));
 	}
 
 	/**
@@ -1020,10 +1031,8 @@ public class DatabaseClientFactory {
 		 * @return	a new client for making database requests
 		 */
 		public DatabaseClient newClient() {
-			DatabaseClientImpl client = newClientImpl(host, port, database, user, password, authentication, context, verifier);
-			client.setHandleRegistry(getHandleRegistry().copy());
-
-			return client;
+			return DatabaseClientFactory.newClient(host, port, database,
+				makeSecurityContext(user, password, authentication, context, verifier));
 		}
 	}
 }

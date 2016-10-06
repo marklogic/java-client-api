@@ -22,4 +22,6 @@ public interface HostBatcher {
   int getBatchSize();
   HostBatcher withThreadCount(int threadCount);
   int getThreadCount();
+  ForestConfiguration getForestConfig();
+  HostBatcher withForestConfig(ForestConfiguration forestConfig);
 }

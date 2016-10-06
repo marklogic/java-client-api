@@ -18,33 +18,31 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.datamovement.Forest;
 
 public class ForestImpl implements Forest {
-  private String hostName;
+  private String host;
   private String databaseName;
   private String forestName;
   private String forestId;
   private boolean isUpdateable;
   private boolean isDeleteOnly;
-  private long fragmentCount;
 
-  public ForestImpl(String hostName, String databaseName, String forestName, String forestId,
-    boolean isUpdateable, boolean isDeleteOnly, long fragmentCount)
+  public ForestImpl(String host, String databaseName, String forestName, String forestId,
+    boolean isUpdateable, boolean isDeleteOnly)
   {
-    this.hostName = hostName;
+    this.host = host;
     this.databaseName  = databaseName;
     this.forestName    = forestName;
     this.forestId      = forestId;
     this.isUpdateable  = isUpdateable;
     this.isDeleteOnly  = isDeleteOnly;
-    this.fragmentCount = fragmentCount;
   }
 
   @Override
-  public String getHostName() {
-    return hostName;
+  public String getHost() {
+    return host;
   }
 
-  public void setHostName(String hostName) {
-    this.hostName = hostName;
+  public void setHost(String host) {
+    this.host = host;
   }
 
   @Override
@@ -93,37 +91,18 @@ public class ForestImpl implements Forest {
   }
 
   @Override
-  public long getFragmentCount() {
-    return fragmentCount;
-  }
-
-  public void setFragmentCount(long fragmentCount) {
-    this.fragmentCount = fragmentCount;
-  }
-
-  @Override
-  public void increaseFragmentCount(long numFragments) {
-    this.fragmentCount += numFragments;
-  }
-
-  @Override
-  public void decreaseFragmentCount(long numFragments) {
-    this.fragmentCount -= numFragments;
-  }
-
-  @Override
   public boolean equals(Object obj) {
     if ( obj == null ) return false;
     if ( ! (obj instanceof ForestImpl) ) return false;
     ForestImpl forestObj = (ForestImpl) obj;
-    return getHostName().equals(forestObj.getHostName()) &&
+    return getHost().equals(forestObj.getHost()) &&
             getDatabaseName().equals(forestObj.getDatabaseName()) &&
             getForestId().equals(forestObj.getForestId());
   }
 
   @Override
   public int hashCode() {
-    return (getHostName() != null ? getHostName().hashCode()     : 0) ^
+    return (getHost() != null ? getHost().hashCode()     : 0) ^
       (getDatabaseName()  != null ? getDatabaseName().hashCode() : 0) ^
       (getForestId()    != null ? getForestId().hashCode()   : 0);
   }

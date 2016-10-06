@@ -17,11 +17,12 @@ package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 
+import java.util.stream.Stream;
+
 public interface ForestConfiguration {
   Forest[] listForests();
-  Forest assign(String uri);
-  DatabaseClient getForestClient(Forest forest);
-  AssignmentPolicy getAssignmentPolicy();
 
-  enum AssignmentPolicy { BUCKET, LEGACY, STATISTICAL, RANGE };
+  public default String[] getHosts() {
+    return Stream.of(listForests()).map((forest) -> forest.getHost()).toArray(String[]::new);
+  }
 }

@@ -19,6 +19,7 @@ import java.io.OutputStream;
 import java.io.Serializable;
 
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -97,6 +98,13 @@ public interface DatabaseClient {
      * @return	a manager supporting operations on XMLdocuments
      */
     XMLDocumentManager newXMLDocumentManager();
+
+    /**
+     * Creates a manager for long-running asynchronous write or query jobs.  Don't forget
+     * to call dataMovementManager.release() when you're done with it.
+     * @return	a manager supporting long-running asynchronous write or query jobs
+     */
+    DataMovementManager newDataMovementManager();
 
     /**
      * Creates a manager to query for database documents.
@@ -209,16 +217,6 @@ public interface DatabaseClient {
     int getPort();
 
     String getDatabase();
-
-    String getUser();
-
-    String getPassword();
-
-    Authentication getAuthentication();
-
-    SSLContext getSSLContext();
-
-    SSLHostnameVerifier getSSLHostnameVerifier();
 
     SecurityContext getSecurityContext();
 }

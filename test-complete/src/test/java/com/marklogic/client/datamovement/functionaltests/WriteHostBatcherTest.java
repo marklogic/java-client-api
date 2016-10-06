@@ -815,8 +815,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb1.onBatchSuccess(
 		        (client, batch) -> {
 		        	successHost.append(client.getHost()+":");  
-		        	successUser.append(client.getUser()+":");  
-		        	successPassword.append(client.getPassword()+":");  
 		        	successPort.append(client.getPort()+":");  
 		        	  
 		         	
@@ -825,8 +823,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        .onBatchFailure(
 		          (client, batch, throwable) -> {
 		        	failureHost.append(client.getHost()+":");  
-					failureUser.append(client.getUser()+":");  
-					failurePassword.append(client.getPassword()+":");  
 					failurePort.append(client.getPort()+":");  
 					  
 		           
@@ -846,13 +842,9 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		System.out.println(successUser.toString());
 		System.out.println(count(successUser.toString(),user));
-		Assert.assertTrue(count(successUser.toString(),user)==10);
-		Assert.assertTrue(count(successPassword.toString(),password)==10);
 		Assert.assertTrue(count(successPort.toString(),String.valueOf(port))==10);
 		Assert.assertTrue(count(successHost.toString(),String.valueOf(host))!=10);
 				
-		Assert.assertTrue(count(failureUser.toString(),user)==5);
-		Assert.assertTrue(count(failurePassword.toString(),password)==5);
 		Assert.assertTrue(count(failurePort.toString(),String.valueOf(port))==5);
 		Assert.assertTrue(count(failureHost.toString(),String.valueOf(host))!=5);
 	}

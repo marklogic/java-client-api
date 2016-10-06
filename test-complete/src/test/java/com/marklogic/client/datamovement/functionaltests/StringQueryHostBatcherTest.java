@@ -554,11 +554,9 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append('|')			
 					.append(forest.getForestName())
 					.append('|')
-					.append(forest.getHostName())
+					.append(forest.getHost())
 					.append('|')
 					.append(forest.getDatabaseName())		
-					.append('|')
-					.append(forest.getFragmentCount())
 					.append('|')
 					.append(forest.isDeleteOnly())
 					.append('|')
@@ -1461,7 +1459,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					Forest forest = batch.getForest();
 					forestDetails.append(forest.getDatabaseName())
 					.append('|')
-					.append(forest.getHostName())
+					.append(forest.getHost())
 					.append('|')
 					.append(forest.getForestName());
 					

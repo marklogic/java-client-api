@@ -121,6 +121,15 @@ public interface WriteHostBatcher extends HostBatcher {
       Object content);
 
   /**
+   * Add docs in the form of WriteEvents.  This is a convenience method for re-adding
+   * documents from failed batches.
+   *
+   * @param batch the batch of WriteEvents where each WriteEvent represents one document
+   * @return WriteHostBatcher the batcher containing the documents added
+   */
+  WriteHostBatcher add(WriteEvent... docs);
+
+  /**
    * Add a listener to run each time a batch is successfully written.
    * @param listener the action which has to be done when the batch gets written
    *        successfully

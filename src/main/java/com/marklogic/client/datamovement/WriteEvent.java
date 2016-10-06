@@ -15,7 +15,11 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
+
 public interface WriteEvent extends DataMovementEvent {
   String getTargetUri();
-  WriteEvent withTargetUri(String targetUri);
+  AbstractWriteHandle getContent();
+  DocumentMetadataWriteHandle getMetadata();
 }

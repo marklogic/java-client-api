@@ -1,5 +1,5 @@
 /*
- * Copyright 2015 MarkLogic Corporation
+ * Copyright 2015-2016 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -55,8 +56,10 @@ import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.BatchListener;
 import com.marklogic.client.datamovement.DataMovementException;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteHostBatcher;
 
@@ -186,6 +189,7 @@ public class WriteHostBatcherImpl
   implements WriteHostBatcher
 {
   private static Logger logger = LoggerFactory.getLogger(WriteHostBatcherImpl.class);
+  private DataMovementManager moveMgr;
   private int transactionSize;
   private String temporalCollection;
   private ServerTransform transform;
@@ -202,58 +206,32 @@ public class WriteHostBatcherImpl
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
 
-  public WriteHostBatcherImpl(ForestConfiguration forestConfig) {
+  public WriteHostBatcherImpl(DatabaseClient client, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
-    this.forestConfig = forestConfig;
+    if (client == null)       throw new IllegalArgumentException("client must not be null");
+    if (moveMgr == null)      throw new IllegalArgumentException("moveMgr must not be null");
+    if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
+    super.setClient(client);
+    this.moveMgr = moveMgr;
+    withForestConfig( forestConfig );
+    // add a default listener to handle host failover scenarios
+    failureListeners.add(new HostAvailabilityListener(moveMgr, this));
   }
 
   public void initialize() {
     if ( initialized == true ) return;
     synchronized(this) {
       if ( initialized == true ) return;
-      if ( getClient() == null ) {
-        throw new IllegalStateException("Client must be set before calling add or addAs");
-      }
       if ( getBatchSize() <= 0 ) {
         withBatchSize(1);
         logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
       }
       if ( transactionSize > 1 ) usingTransactions = true;
-      // call out to REST /v1/forestinfo so we can get a list of hosts to use
-      Forest[] forests = forestConfig.listForests();
-      if ( forests.length == 0 ) {
-        throw new IllegalStateException("WriteHostBatcher requires at least one writeable forest");
-      }
-      Map<String,Forest> hosts = new HashMap<>();
-      for ( Forest forest : forests ) {
-        if ( forest.getHostName() == null ) {
-          throw new IllegalStateException("Hostname must not be null for any forest");
-        }
-        hosts.put(forest.getHostName(), forest);
-      }
-      logger.info("Found {} hosts with forests for \"{}\"", hosts.size(), forests[0].getDatabaseName());
-      // initialize a DatabaseClient for each host
-      hostInfos = new HostInfo[hosts.size()];
-      DatabaseClient client = getClient();
-      int i=0;
-      for ( String host : hosts.keySet() ) {
-        hostInfos[i] = new HostInfo();
-        hostInfos[i].hostName = host;
-        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation", client.getPort(), host);
-        if ( host.equals(client.getHost()) ) {
-          hostInfos[i].client = client;
-        } else {
-          Forest forest = hosts.get(host);
-          // this is a host-specific client (no DatabaseClient anywhere in datamovement is actually forest-specific)
-          hostInfos[i].client = forestConfig.getForestClient(forest);
-        }
-        i++;
-      }
       int threadCount = getThreadCount();
       // if threadCount is negative or 0, use one thread per host
       if ( threadCount <= 0 ) {
-        threadCount = hosts.size();
-        logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", hosts.size());
+        threadCount = hostInfos.length;
+        logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", hostInfos.length);
       }
       // create a threadPool where threads are kept alive for up to one minute of inactivity
       threadPool = new WriteThreadPoolExecutor(threadCount, this);
@@ -264,13 +242,6 @@ public class WriteHostBatcherImpl
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
     }
-  }
-
-  @Override
-  public void setClient(DatabaseClient client) {
-    requireNotInitialized();
-    super.setClient(client);
-
   }
 
   @Override
@@ -311,6 +282,14 @@ public class WriteHostBatcherImpl
       if ( writeSet.getWriteSet().size() > 0 ) {
         threadPool.submit( new BatchWriter(writeSet) );
       }
+    }
+    return this;
+  }
+
+  @Override
+  public WriteHostBatcher add(WriteEvent... docs) {
+    for ( WriteEvent doc : docs ) {
+      add( doc.getTargetUri(), doc.getMetadata(), doc.getContent() );
     }
     return this;
   }
@@ -459,11 +438,6 @@ public class WriteHostBatcherImpl
       logger.warn("Error writing batch: {}", throwable.toString());
     });
     return batchWriteSet;
-  }
-
-  private Forest assign(String uri) {
-    // TODO: actually get host or forest assignments
-    return forestConfig.assign("default");
   }
 
   @Override
@@ -637,8 +611,74 @@ public class WriteHostBatcherImpl
 
   @Override
   public WriteHostBatcher withForestConfig(ForestConfiguration forestConfig) {
-    requireNotInitialized();
+    // get the list of hosts to use
+    Forest[] forests = forestConfig.listForests();
+    if ( forests.length == 0 ) {
+      throw new IllegalStateException("WriteHostBatcher requires at least one writeable forest");
+    }
+    Map<String,Forest> hosts = new HashMap<>();
+    for ( Forest forest : forests ) {
+      if ( forest.getHost() == null ) {
+        throw new IllegalStateException("Hostname must not be null for any forest");
+      }
+      hosts.put(forest.getHost(), forest);
+    }
+    Map<String,HostInfo> existingHostInfos = new HashMap<>();
+    Map<String,HostInfo> removedHostInfos = new HashMap<>();
+    if ( hostInfos != null ) {
+      for ( HostInfo hostInfo : hostInfos ) {
+        existingHostInfos.put(hostInfo.hostName, hostInfo);
+        removedHostInfos.put(hostInfo.hostName, hostInfo);
+      }
+    }
+    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.size(), forests[0].getDatabaseName());
+    // initialize a DatabaseClient for each host
+    HostInfo[] newHostInfos = new HostInfo[hosts.size()];
+    DatabaseClient client = getClient();
+    int i=0;
+    for ( String host : hosts.keySet() ) {
+      if ( existingHostInfos.get(host) != null ) {
+        newHostInfos[i] = existingHostInfos.get(host);
+        removedHostInfos.remove(host);
+      } else {
+        newHostInfos[i] = new HostInfo();
+        newHostInfos[i].hostName = host;
+        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation", client.getPort(), host);
+        if ( host.equals(client.getHost()) ) {
+          newHostInfos[i].client = client;
+        } else {
+          Forest forest = hosts.get(host);
+          // this is a host-specific client (no DatabaseClient anywhere in datamovement is actually forest-specific)
+          newHostInfos[i].client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+        }
+      }
+      i++;
+    }
     this.forestConfig = forestConfig;
+    this.hostInfos = newHostInfos;
+
+    if ( removedHostInfos.size() > 0 ) {
+      // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host
+      List<Runnable> tasks = new ArrayList<>();
+      threadPool.getQueue().drainTo(tasks);
+      for ( Runnable task : tasks ) {
+        if ( task instanceof BatchWriter ) {
+          BatchWriter writerTask = (BatchWriter) task;
+          if ( removedHostInfos.containsKey(writerTask.writeSet.getClient().getHost()) ) {
+            // this batch was targeting a host that's no longer on the list
+            // if we re-add these docs they'll now be in batches that target acceptable hosts
+            add(writerTask.writeSet.getBatchOfWriteEvents().getItems());
+            // jump to the next task
+            continue;
+          }
+        }
+        // this task is still valid so add it back to the queue
+        threadPool.submit(task);
+      }
+      for ( HostInfo removedHostInfo : removedHostInfos.values() ) {
+        cleanupUnfinishedTransactions(removedHostInfo);
+      }
+    }
     return this;
   }
 
@@ -733,30 +773,33 @@ public class WriteHostBatcherImpl
 
 
   private void cleanupUnfinishedTransactions() {
-    long recordInBatch = batchCounter.get();
     for ( HostInfo host : hostInfos ) {
-      Iterator<TransactionInfo> iterator = host.unfinishedTransactions.iterator();
-      while ( iterator.hasNext() ) {
-        TransactionInfo transactionInfo = iterator.next();
-        if ( transactionInfo.alive.get() == false ) {
-          iterator.remove();
-        } else if ( transactionInfo.queuedForCleanup.get() == true ) {
-          // skip this one, it's already queued
-        } else {
-          if ( transactionInfo.inProcess.get() <= 0 ) {
-            if ( transactionInfo.written.get() == true ) {
-              transactionInfo.queuedForCleanup.set(true);
-              threadPool.submit( () -> {
-                if ( completeTransaction(host.client, transactionInfo) ) {
-                  host.unfinishedTransactions.remove(transactionInfo);
-                } else {
-                  // let's try again next cleanup
-                  transactionInfo.queuedForCleanup.set(false);
-                }
-              });
-            } else {
-              iterator.remove();
-            }
+      cleanupUnfinishedTransactions(host);
+    }
+  }
+
+  private void cleanupUnfinishedTransactions(HostInfo host) {
+    Iterator<TransactionInfo> iterator = host.unfinishedTransactions.iterator();
+    while ( iterator.hasNext() ) {
+      TransactionInfo transactionInfo = iterator.next();
+      if ( transactionInfo.alive.get() == false ) {
+        iterator.remove();
+      } else if ( transactionInfo.queuedForCleanup.get() == true ) {
+        // skip this one, it's already queued
+      } else {
+        if ( transactionInfo.inProcess.get() <= 0 ) {
+          if ( transactionInfo.written.get() == true ) {
+            transactionInfo.queuedForCleanup.set(true);
+            threadPool.submit( () -> {
+              if ( completeTransaction(host.client, transactionInfo) ) {
+                host.unfinishedTransactions.remove(transactionInfo);
+              } else {
+                // let's try again next cleanup
+                transactionInfo.queuedForCleanup.set(false);
+              }
+            });
+          } else {
+            iterator.remove();
           }
         }
       }
@@ -887,8 +930,34 @@ public class WriteHostBatcherImpl
     private Object objectToNotifyFrom;
     private ConcurrentHashMap<Runnable,Future<?>> futures = new ConcurrentHashMap<>();
 
+    private static class FutureAwareQueue extends LinkedBlockingQueue<Runnable> {
+      Map<Runnable,Future<?>> futures;
+
+      FutureAwareQueue(int capacity) {
+        super(capacity);
+      }
+
+      void setFutures(Map<Runnable,Future<?>> futures) {
+        this.futures = futures;
+      }
+
+      @Override
+      public int drainTo(Collection<? super Runnable> c) {
+        List<Runnable> tasks = new ArrayList<>();
+        int count = super.drainTo(tasks);
+        // clear the associated futures
+        for ( Runnable task : tasks ) {
+          futures.remove(task);
+          c.add(task);
+        }
+        return count;
+      }
+    }
+
     public WriteThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
-      super(threadCount, threadCount, 1, TimeUnit.MINUTES, new LinkedBlockingQueue<Runnable>(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
+      super(threadCount, threadCount, 1, TimeUnit.MINUTES,
+        new FutureAwareQueue(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
+      ((FutureAwareQueue) getQueue()).setFutures(futures);
       allowCoreThreadTimeOut(true);
       this.objectToNotifyFrom = objectToNotifyFrom;
     }

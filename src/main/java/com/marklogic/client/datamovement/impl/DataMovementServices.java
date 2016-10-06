@@ -22,11 +22,13 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.datamovement.HostBatcher;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
 import com.marklogic.client.datamovement.QueryHostBatcher;
 import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
 import java.util.List;
 
 public class DataMovementServices {
@@ -53,11 +55,10 @@ public class DataMovementServices {
       String name = forestNode.get("name").asText();
       boolean isUpdateable = "all".equals(forestNode.get("updatesAllowed").asText());
       boolean isDeleteOnly = false; // TODO: get this for real after we start using a REST endpoint
-      long fragmentCount = 0;       // TODO: get this for real after we start using a REST endpoint
-      forests.add(new ForestImpl(host, database, name, id, isUpdateable, isDeleteOnly, fragmentCount));
+      forests.add(new ForestImpl(host, database, name, id, isUpdateable, isDeleteOnly));
     }
 
-    return new ForestConfigurationImpl(client, forests.toArray(new ForestImpl[forests.size()]));
+    return new ForestConfigurationImpl(forests.toArray(new ForestImpl[forests.size()]));
   }
 
   public JobTicket startJob(WriteHostBatcher batcher) {
@@ -86,6 +87,14 @@ public class DataMovementServices {
       } else if ( ticketImpl.getJobType() == JobType.QUERY_HOST_BATCHER ) {
         ticketImpl.getQueryHostBatcher().stop();
       }
+    }
+  }
+
+  public void stopJob(HostBatcher batcher) {
+    if ( batcher instanceof QueryHostBatcherImpl ) {
+      ((QueryHostBatcherImpl) batcher).stop();
+    } else if ( batcher instanceof WriteHostBatcherImpl ) {
+      ((WriteHostBatcherImpl) batcher).stop();
     }
   }
 

@@ -44,6 +44,8 @@ import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 
 import javax.net.ssl.SSLContext;
 
@@ -54,26 +56,16 @@ public class DatabaseClientImpl implements DatabaseClient {
 	private String                host;
 	private int                   port;
 	private String                database;
-	private String                user;
-	private String                password;
-	private Authentication        type;
-	private SSLContext            context;
-	private SSLHostnameVerifier   verifier;
 	private HandleFactoryRegistry handleRegistry;
-	private SecurityContext       securityContext; // Would be used once we remove Authentication entirely
+	private SecurityContext       securityContext;
 
-	public DatabaseClientImpl(RESTServices services, String host, int port, String database,
-		String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier)
+	public DatabaseClientImpl(RESTServices services, String host, int port, String database, SecurityContext securityContext)
 	{
 		this.services = services;
 		this.host     = host;
 		this.port     = port;
 		this.database = database;
-		this.user     = user;
-		this.password = password;
-		this.type     = type;
-		this.context  = context;
-		this.verifier = verifier;
+		this.securityContext = securityContext;
 		services.setDatabaseClient(this);
 	}
 
@@ -141,6 +133,11 @@ public class DatabaseClientImpl implements DatabaseClient {
 		QueryManagerImpl queryMgr = new QueryManagerImpl(services);
 		queryMgr.setHandleRegistry(getHandleRegistry());
 		return queryMgr;
+	}
+	@Override
+	public DataMovementManager newDataMovementManager() {
+		DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
+		return moveMgr;
 	}
 	@Override
 	public RowManager newRowManager() {
@@ -238,31 +235,6 @@ public class DatabaseClientImpl implements DatabaseClient {
 	@Override
 	public String getDatabase() {
 		return database;
-	}
-
-	@Override
-	public String getUser() {
-		return user;
-	}
-
-	@Override
-	public String getPassword() {
-		return password;
-	}
-
-	@Override
-	public Authentication getAuthentication() {
-		return type;
-	}
-
-	@Override
-	public SSLContext getSSLContext() {
-		return context;
-	}
-
-	@Override
-	public SSLHostnameVerifier getSSLHostnameVerifier() {
-		return verifier;
 	}
 
 	@Override

@@ -36,24 +36,6 @@ public class BatchWriteSet {
   private Consumer<Throwable> onFailure;
   private Runnable onBeforeWrite;
 
-  public static class WriteEventImpl 
-    extends DataMovementEventImpl<WriteEventImpl>
-    implements WriteEvent
-  {
-    private String targetUri;
-
-    @Override
-    public String getTargetUri() {
-      return targetUri;
-    }
-
-    @Override
-    public WriteEventImpl withTargetUri(String targetUri) {
-      this.targetUri = targetUri;
-      return this;
-    }
-  }
-
   public BatchWriteSet(DocumentWriteSet writeSet, DatabaseClient client,
     ServerTransform transform, String temporalCollection)
   {
@@ -144,7 +126,12 @@ public class BatchWriteSet {
       .withJobBatchNumber(batchNumber)
       .withJobResultsSoFar(itemsSoFar);
     WriteEvent[] writeEvents = getWriteSet().stream()
-            .map(writeOperation ->  new WriteEventImpl().withTargetUri(writeOperation.getUri()))
+            .map(writeOperation ->
+              new WriteEventImpl()
+                .withTargetUri(writeOperation.getUri())
+                .withContent(writeOperation.getContent())
+                .withMetadata(writeOperation.getMetadata())
+            )
             .toArray(WriteEventImpl[]::new);
     batch.withItems(writeEvents);
     return batch;

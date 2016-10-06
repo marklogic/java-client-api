@@ -16,13 +16,10 @@
 package com.marklogic.client.datamovement;
 
 public interface Forest {
-  String getHostName();
+  String getHost();
   String getDatabaseName();
   String getForestName();
   String getForestId();
   boolean isUpdateable();
   boolean isDeleteOnly();
-  long getFragmentCount();
-  void increaseFragmentCount(long numFragments);
-  void decreaseFragmentCount(long numFragments);
 }

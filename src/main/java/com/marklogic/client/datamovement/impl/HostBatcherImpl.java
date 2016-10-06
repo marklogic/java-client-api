@@ -17,11 +17,13 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.HostBatcher;
+import com.marklogic.client.datamovement.ForestConfiguration;
 
 public class HostBatcherImpl implements HostBatcher {
   private String jobName = "unnamed";
   private int batchSize = 100;
   private int threadCount = 1;
+  private ForestConfiguration forestConfig;
   private DatabaseClient client;
 
   @Override
@@ -61,6 +63,15 @@ public class HostBatcherImpl implements HostBatcher {
   @Override
   public int getThreadCount() {
     return threadCount;
+  }
+
+  public ForestConfiguration getForestConfig() {
+    return forestConfig;
+  }
+
+  public HostBatcher withForestConfig(ForestConfiguration forestConfig) {
+    this.forestConfig = forestConfig;
+    return this;
   }
 
   public synchronized void setClient(DatabaseClient client) {

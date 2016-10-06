@@ -27,6 +27,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.BatchListener;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
@@ -47,6 +48,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   private static Logger logger = LoggerFactory.getLogger(QueryHostBatcherImpl.class);
   private QueryDefinition query;
   private Iterator<String> iterator;
+  private DataMovementManager moveMgr;
   private boolean threadCountSet = false;
   private ForestConfiguration forestConfig;
   private List<BatchListener<String>> urisReadyListeners = new ArrayList<>();
@@ -62,15 +64,17 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
 
-  public QueryHostBatcherImpl(QueryDefinition query, ForestConfiguration forestConfig) {
+  public QueryHostBatcherImpl(QueryDefinition query, DataMovementManager moveMger, ForestConfiguration forestConfig) {
     super();
+    this.moveMgr = moveMgr;
     this.query = query;
     this.forestConfig = forestConfig;
     withBatchSize(1000);
   }
 
-  public QueryHostBatcherImpl(Iterator<String> iterator, ForestConfiguration forestConfig) {
+  public QueryHostBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
+    this.moveMgr = moveMgr;
     this.iterator = iterator;
     this.forestConfig = forestConfig;
     withBatchSize(1000);
@@ -181,14 +185,14 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     forests = forestConfig.listForests();
     Map<String,Forest> hosts = new HashMap<>();
     for ( Forest forest : forests ) {
-      if ( forest.getHostName() == null ) throw new IllegalStateException("Hostname must not be null for any forest");
-      hosts.put(forest.getHostName(), forest);
+      if ( forest.getHost() == null ) throw new IllegalStateException("Hostname must not be null for any forest");
+      hosts.put(forest.getHost(), forest);
       forestResults.put(forest, new AtomicLong());
       forestIsDone.put(forest, new AtomicBoolean(false));
     }
     for ( String host : hosts.keySet() ) {
       Forest forest = hosts.get(host);
-      DatabaseClient client = forestConfig.getForestClient(forest);
+      DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
       clientList.add(client);
     }
     if ( threadCountSet == false ) {
@@ -210,7 +214,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   private void startQuerying() {
     boolean consistentSnapshotFirstQueryHasRun = false;
     for ( final Forest forest : forests ) {
-      QueryTask runnable = new QueryTask(forest, query, 1, 1);
+      QueryTask runnable = new QueryTask(moveMgr, forest, query, 1, 1);
       if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
         // let's run this first time in-line so we'll have the serverTimestamp set
         // before we launch all the parallel threads
@@ -223,12 +227,14 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   private class QueryTask implements Runnable {
+    private DataMovementManager moveMgr;
     private Forest forest;
     private QueryDefinition query;
     private long forestBatchNum;
     private long start;
 
-    QueryTask(Forest forest, QueryDefinition query, long forestBatchNum, long start) {
+    QueryTask(DataMovementManager moveMgr, Forest forest, QueryDefinition query, long forestBatchNum, long start) {
+      this.moveMgr = moveMgr;
       this.forest = forest;
       this.query = query;
       this.forestBatchNum = forestBatchNum;
@@ -238,7 +244,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     public void run() {
       AtomicBoolean isDone = forestIsDone.get(forest);
       if ( isDone.get() == true ) return;
-      DatabaseClient client = forestConfig.getForestClient(forest);
+      DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
       try {
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
         queryMgr.setPageLength(getBatchSize());
@@ -313,7 +319,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
       // we made it to the end, so don't launch anymore tasks
       if ( isDone.get() == true ) return;
       long nextStart = start + getBatchSize();
-      threadPool.execute(new QueryTask(forest, query, forestBatchNum + 1, nextStart));
+      threadPool.execute(new QueryTask(moveMgr, forest, query, forestBatchNum + 1, nextStart));
     }
   };
 
@@ -367,7 +373,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     threadPool.shutdown();
   }
 
-  void stop() {
+  public void stop() {
     stopped.set(true);
     threadPool.shutdownNow();
   }
