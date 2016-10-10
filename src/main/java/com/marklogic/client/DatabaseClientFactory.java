@@ -1031,8 +1031,10 @@ public class DatabaseClientFactory {
 		 * @return	a new client for making database requests
 		 */
 		public DatabaseClient newClient() {
-			return DatabaseClientFactory.newClient(host, port, database,
+			DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(host, port, database,
 				makeSecurityContext(user, password, authentication, context, verifier));
+			client.setHandleRegistry(getHandleRegistry().copy());
+			return client;
 		}
 	}
 }
