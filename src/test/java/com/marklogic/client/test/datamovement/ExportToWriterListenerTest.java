@@ -67,7 +67,7 @@ public class ExportToWriterListenerTest {
       uris[i] = "/" + collection + "/doc" + i + ".txt";
       batcher.addAs(uris[i], meta, docContents);
     }
-    batcher.flush();
+    batcher.flushAndWait();
 
     // verify that the files made it to the db
     assertEquals( "There should be 100 documents in the db",

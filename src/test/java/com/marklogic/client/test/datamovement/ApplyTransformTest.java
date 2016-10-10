@@ -131,7 +131,7 @@ public class ApplyTransformTest {
     for ( int i=0; i < numDocs; i++) {
       batcher1.addAs(collection + "/test_doc_" + i + ".json", meta, "{ \"testProperty\": \"test3\" }");
     }
-    batcher1.flush();
+    batcher1.flushAndWait();
     moveMgr.stopJob(ticket1);
 
 

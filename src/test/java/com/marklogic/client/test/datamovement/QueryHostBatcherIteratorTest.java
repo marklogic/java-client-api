@@ -85,7 +85,7 @@ public class QueryHostBatcherIteratorTest {
       writeBatcher.addAs(collection + "/doc_" + i + ".json", meta,
           new StringHandle("{name:\"John Doe\",dept:\"HR\"}").withFormat(JSON));
     }
-    writeBatcher.flush();
+    writeBatcher.flushAsync();
     writeBatcher.awaitCompletion();
   }
 

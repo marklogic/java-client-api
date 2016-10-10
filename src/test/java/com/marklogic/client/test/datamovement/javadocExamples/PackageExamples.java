@@ -118,7 +118,7 @@ public class PackageExamples {
     whb.add  ("doc1.txt", new StringHandle("doc1 contents"));
     whb.addAs("doc2.txt", "doc2 contents");
 
-    whb.flush(); // send the two docs even though they're not a full batch
+    whb.flushAndWait(); // send the two docs even though they're not a full batch
     dataMovementManager.stopJob(ticket);
     // end copy from "Using WriteHostBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
 

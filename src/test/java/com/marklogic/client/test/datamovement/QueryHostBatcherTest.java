@@ -89,7 +89,7 @@ public class QueryHostBatcherTest {
     writeBatcher.addAs(uri2, meta, new StringHandle("{name:\"Jane Doe\",dept:\"HR\"}").withFormat(JSON));
     writeBatcher.addAs(uri3, meta, new StringHandle("{name:\"John Smith\",dept:\"HR\"}").withFormat(JSON));
     writeBatcher.addAs(uri4, meta, new StringHandle("{name:\"John Lennon\",dept:\"HR\"}").withFormat(JSON));
-    writeBatcher.flush();
+    writeBatcher.flushAsync();
     writeBatcher.awaitCompletion();
   }
 

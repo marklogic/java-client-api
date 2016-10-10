@@ -83,7 +83,7 @@ public class PointInTimeQueryTest {
     for ( int i=1; i <= numDocs; i++ ) {
       writeBatcher.addAs(collection + "/doc_" + i + ".txt", meta, "test contents");
     }
-    writeBatcher.flush();
+    writeBatcher.flushAsync();
     writeBatcher.awaitCompletion();
     if ( failures.length() > 0 ) fail(failures.toString());
     logger.info("Successfully wrote {} docs to collection {}", numDocs, collection);

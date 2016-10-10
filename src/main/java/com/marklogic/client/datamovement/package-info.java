@@ -105,7 +105,7 @@
  *     whb.add  ("doc1.txt", new StringHandle("doc1 contents"));
  *     whb.addAs("doc2.txt", "doc2 contents");
  *
- *     whb.flush(); // send the two docs even though they're not a full batch
+ *     whb.flushAndWait(); // send the two docs even though they're not a full batch
  *     dataMovementManager.stopJob(ticket);
  * ```
  * [mlcp]: https://developer.marklogic.com/products/mlcp

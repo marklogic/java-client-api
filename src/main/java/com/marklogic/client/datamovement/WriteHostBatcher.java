@@ -32,8 +32,8 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * time enough documents are added to make a batch, the batch is added to an
  * internal queue where the first available internal thread will pick it up and
  * write it to the server.  Since batches are not written until they are full,
- * you should always call {@link #flush} when no more documents will be written to
- * ensure that any partial batch is written.
+ * you should always call {@link #flushAsync} or {@link #flushAndWait} when no
+ * more documents will be written to ensure that any partial batch is written.
  *
  * Sample Usage:
  *
@@ -48,7 +48,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *     whb.add  ("doc1.txt", new StringHandle("doc1 contents"));
  *     whb.addAs("doc2.txt", "doc2 contents");
  *
- *     whb.flush(); // send the two docs even though they're not a full batch
+ *     whb.flushAndWait(); // send the two docs even though they're not a full batch
  *     dataMovementManager.stopJob(ticket);
  *
  * Note: All Closeable content or metadata handles passed to {@link #add add}
@@ -64,7 +64,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 public interface WriteHostBatcher extends HostBatcher {
   /**
    * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flush} is called.
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.
    *
    * #####See Also:
    *   [the Java Guide](http://docs.marklogic.com/guide/java/document-operations) for more on using handles
@@ -77,7 +77,7 @@ public interface WriteHostBatcher extends HostBatcher {
 
   /**
    * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flush} is called.
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.
    *
    * #####See Also:
    *   [IO Shortcut in MarkLogic Java Client API](http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/)
@@ -91,7 +91,7 @@ public interface WriteHostBatcher extends HostBatcher {
 
   /**
    * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flush} is called.
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.
    *
    * #####See Also:
    *   [the Java Guide](http://docs.marklogic.com/guide/java/document-operations) for more on using handles
@@ -106,7 +106,7 @@ public interface WriteHostBatcher extends HostBatcher {
 
   /**
    * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flush} is called.
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.
    *
    * #####See Also:
    *   [IO Shortcut in MarkLogic Java Client API](http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/)
@@ -230,10 +230,15 @@ public interface WriteHostBatcher extends HostBatcher {
   @Override
   WriteHostBatcher withThreadCount(int threadCount);
 
+  /** Create a batch from any unbatched documents and write that batch
+   * asynchronously.
+   */
+  void flushAsync();
+
   /** Create a batch from any unbatched documents and write that batch, then
    * wait for all batches to complete (the same as awaitCompletion().
    */
-  void flush();
+  void flushAndWait();
 
   /**
    * Blocks until the job has no batches queued for writing.
