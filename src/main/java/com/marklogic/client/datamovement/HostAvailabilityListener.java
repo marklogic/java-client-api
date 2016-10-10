@@ -144,9 +144,11 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
   }
 
   private void processException(Throwable throwable, String host) {
+    // we only do something if this throwable is on our list of exceptions
+    // which we consider marking a host as unavilable
     if ( isHostUnavailableException(throwable, new HashSet<>()) ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
-      if ( minHosts < existingForestConfig.getHosts().length ) {
+      if ( existingForestConfig.getHosts().length > minHosts ) {
         logger.error("ERROR: host unavailable \"" + host + "\", black-listing it for " +
           suspendTimeForHostUnavailable.toString(), throwable);
         ForestConfiguration filteredForestConfig =
