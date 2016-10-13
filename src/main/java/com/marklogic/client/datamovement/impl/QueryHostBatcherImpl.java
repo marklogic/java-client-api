@@ -64,7 +64,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
 
-  public QueryHostBatcherImpl(QueryDefinition query, DataMovementManager moveMger, ForestConfiguration forestConfig) {
+  public QueryHostBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     this.moveMgr = moveMgr;
     this.query = query;
