@@ -93,6 +93,38 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
+  public BatchListener<String>[]               getQuerySuccessListeners() {
+    return urisReadyListeners.toArray(new BatchListener[urisReadyListeners.size()]);
+  }
+
+  @Override
+  public FailureListener<QueryHostException>[] getQueryFailureListeners() {
+    return failureListeners.toArray(new FailureListener[failureListeners.size()]);
+  }
+
+  @Override
+  public void setBatchSuccessListeners(BatchListener<String>... listeners) {
+    requireNotStarted();
+    urisReadyListeners.clear();
+    if ( listeners != null ) {
+      for ( BatchListener<String> listener : listeners ) {
+        urisReadyListeners.add(listener);
+      }
+    }
+  }
+
+  @Override
+  public void setBatchFailureListeners(FailureListener<QueryHostException>... listeners) {
+    requireNotStarted();
+    failureListeners.clear();
+    if ( listeners != null ) {
+      for ( FailureListener<QueryHostException> listener : listeners ) {
+        failureListeners.add(listener);
+      }
+    }
+  }
+
+  @Override
   public QueryHostBatcher withJobName(String jobName) {
     requireNotStarted();
     super.withJobName(jobName);

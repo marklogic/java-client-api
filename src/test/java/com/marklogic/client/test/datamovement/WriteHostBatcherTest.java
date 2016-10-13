@@ -49,7 +49,10 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.datamovement.BatchListener;
+import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteHostBatcher;
@@ -193,6 +196,56 @@ public class WriteHostBatcherTest {
           "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
       }
     }
+  }
+
+  @Test
+  public void testListenerManagement() {
+    BatchListener<WriteEvent> successListener = (client, batch) -> {};
+    BatchFailureListener<WriteEvent> failureListener = (client, batch, throwable) -> {};
+
+    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher();
+    BatchListener<WriteEvent>[] successListeners = batcher.getBatchSuccessListeners();
+    assertEquals(0, successListeners.length);
+
+    batcher.onBatchSuccess(successListener);
+    successListeners = batcher.getBatchSuccessListeners();
+    assertEquals(1, successListeners.length);
+    assertEquals(successListener, successListeners[0]);
+
+    BatchFailureListener<WriteEvent>[] failureListeners = batcher.getBatchFailureListeners();
+    assertEquals(1, failureListeners.length);
+    assertEquals(HostAvailabilityListener.class, failureListeners[0].getClass());
+
+    batcher.onBatchFailure(failureListener);
+    failureListeners = batcher.getBatchFailureListeners();
+    assertEquals(2, failureListeners.length);
+    assertEquals(failureListener, failureListeners[1]);
+
+    batcher.setBatchSuccessListeners();
+    successListeners = batcher.getBatchSuccessListeners();
+    assertEquals(0, successListeners.length);
+
+    batcher.setBatchSuccessListeners(successListener);
+    successListeners = batcher.getBatchSuccessListeners();
+    assertEquals(1, successListeners.length);
+    assertEquals(successListener, successListeners[0]);
+
+    batcher.setBatchSuccessListeners(null);
+    successListeners = batcher.getBatchSuccessListeners();
+    assertEquals(0, successListeners.length);
+
+    batcher.setBatchFailureListeners();
+    failureListeners = batcher.getBatchFailureListeners();
+    assertEquals(0, failureListeners.length);
+
+    batcher.setBatchFailureListeners(failureListener);
+    failureListeners = batcher.getBatchFailureListeners();
+    assertEquals(1, failureListeners.length);
+    assertEquals(failureListener, failureListeners[0]);
+
+    batcher.setBatchFailureListeners(null);
+    failureListeners = batcher.getBatchFailureListeners();
+    assertEquals(0, failureListeners.length);
   }
 
   /*

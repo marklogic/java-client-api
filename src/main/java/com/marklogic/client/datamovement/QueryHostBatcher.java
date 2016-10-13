@@ -124,6 +124,44 @@ public interface QueryHostBatcher extends HostBatcher {
   QueryHostBatcher onQueryFailure(FailureListener<QueryHostException> listener);
 
   /**
+   * Get the array of BatchListener&lt;String&gt; instances registered via
+   * onBatchSuccess.
+   *
+   * @return the BatchListener&lt;String&gt; instances this batcher
+   *   is using
+   */
+  BatchListener<String>[] getQuerySuccessListeners();
+
+  /**
+   * Get the array of FailureListener&lt;QueryHostException&gt; instances
+   * registered via onBatchFailure including the HostAvailabilityListener
+   * registered by default.
+   *
+   * @return the FailureListener&lt;QueryHostException&gt; instances this
+   *   batcher is using
+   */
+  FailureListener<QueryHostException>[] getQueryFailureListeners();
+
+  /**
+   * Remove any existing BatchListener&lt;String&gt; instances registered
+   * via onBatchSuccess and replace them with the provided listeners.
+   *
+   * @param listeners the BatchListener&lt;String&gt; instances this
+   *   batcher should use
+   */
+  void setBatchSuccessListeners(BatchListener<String>... listeners);
+
+  /**
+   * Remove any existing FailureListener&lt;QueryHostException&gt; instances
+   * registered via onBatchFailure including the HostAvailabilityListener
+   * registered by default and replace them with the provided listeners.
+   *
+   * @param listeners the FailureListener&lt;QueryHostException&gt; instances this
+   *   batcher should use
+   */
+  void setBatchFailureListeners(FailureListener<QueryHostException>... listeners);
+
+  /**
    * Specifies that matching uris should be retrieved as they were when this
    * QueryHostBatcher job started.  This enables a point-in-time query so that
    * the set of uri matches is as it was at that point in time.  This requires

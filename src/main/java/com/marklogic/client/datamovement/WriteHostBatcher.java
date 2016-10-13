@@ -151,6 +151,44 @@ public interface WriteHostBatcher extends HostBatcher {
   */
 
   /**
+   * Get the array of BatchListener&lt;WriteEvent&gt; instances registered via
+   * onBatchSuccess.
+   *
+   * @return the BatchListener&lt;WriteEvent&gt; instances this batcher
+   *   is using
+   */
+  BatchListener<WriteEvent>[]        getBatchSuccessListeners();
+
+  /**
+   * Get the array of BatchFailureListener&lt;WriteEvent&gt; instances
+   * registered via onBatchFailure including the HostAvailabilityListener
+   * registered by default.
+   *
+   * @return the BatchFailureListener&lt;WriteEvent&gt; instances this batcher
+   *   is using
+   */
+  BatchFailureListener<WriteEvent>[] getBatchFailureListeners();
+
+  /**
+   * Remove any existing BatchListener&lt;WriteEvent&gt; instances registered
+   * via onBatchSuccess and replace them with the provided listeners.
+   *
+   * @param listeners the BatchListener&lt;WriteEvent&gt; instances this
+   *   batcher should use
+   */
+  void setBatchSuccessListeners(BatchListener<WriteEvent>... listeners);
+
+  /**
+   * Remove any existing BatchFailureListener&lt;WriteEvent&gt; instances
+   * registered via onBatchFailure including the HostAvailabilityListener
+   * registered by default and replace them with the provided listeners.
+   *
+   * @param listeners the BatchFailureListener&lt;WriteEvent&gt; instances this
+   *   batcher should use
+   */
+  void setBatchFailureListeners(BatchFailureListener<WriteEvent>... listeners);
+
+  /**
    * The temporal collection to use for a temporal document insert
    *
    * @param collection The temporal collection to use for a temporal document insert

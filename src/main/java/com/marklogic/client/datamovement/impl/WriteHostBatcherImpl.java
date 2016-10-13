@@ -452,6 +452,38 @@ public class WriteHostBatcherImpl
   }
 
   @Override
+  public BatchListener<WriteEvent>[]        getBatchSuccessListeners() {
+    return successListeners.toArray(new BatchListener[successListeners.size()]);
+  }
+
+  @Override
+  public BatchFailureListener<WriteEvent>[] getBatchFailureListeners() {
+    return failureListeners.toArray(new BatchFailureListener[failureListeners.size()]);
+  }
+
+  @Override
+  public void setBatchSuccessListeners(BatchListener<WriteEvent>... listeners) {
+    requireNotInitialized();
+    successListeners.clear();
+    if ( listeners != null ) {
+      for ( BatchListener<WriteEvent> listener : listeners ) {
+        successListeners.add(listener);
+      }
+    }
+  }
+
+  @Override
+  public void setBatchFailureListeners(BatchFailureListener<WriteEvent>... listeners) {
+    requireNotInitialized();
+    failureListeners.clear();
+    if ( listeners != null ) {
+      for ( BatchFailureListener<WriteEvent> listener : listeners ) {
+        failureListeners.add(listener);
+      }
+    }
+  }
+
+  @Override
   public void flush() {
     requireInitialized();
     requireNotStopped();
