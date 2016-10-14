@@ -16,7 +16,6 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.SqlCollatedStringExpr;
  import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.RdfLangStringSeqExpr;
 
@@ -25,6 +24,6 @@ import com.marklogic.client.type.XsStringExpr;
 public interface Rdf extends RdfValue {
     public RdfLangStringExpr langString(XsStringExpr string, String lang);
     public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
-    public SqlCollatedStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
+    public XsStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
 
 }

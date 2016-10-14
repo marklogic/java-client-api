@@ -62,10 +62,6 @@ public class SemExprImpl extends SemValueImpl implements Sem {
         return new SemExprImpl.SemIriCallImpl("sem", "datatype", new Object[]{ value });
     }
     @Override
-    public SemIriExpr defaultGraphIri() {
-        return new SemExprImpl.SemIriCallImpl("sem", "default-graph-iri", null);
-    }
-    @Override
         public ItemSeqExpr ifExpr(boolean condition, ItemSeqExpr then, ItemExpr... elseExpr) {
         return ifExpr(xs.booleanVal(condition), then, BaseTypeImpl.items(elseExpr)); 
     }

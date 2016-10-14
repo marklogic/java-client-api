@@ -20,7 +20,6 @@ import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.Rdf;
 import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.SqlCollatedStringExpr;
  import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.RdfLangStringSeqExpr;
 
@@ -42,8 +41,8 @@ public class RdfExprImpl extends RdfValueImpl implements Rdf {
         return new RdfExprImpl.RdfLangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
     }
     @Override
-        public SqlCollatedStringExpr langStringLanguage(RdfLangStringExpr val) {
-        return new SqlExprImpl.SqlCollatedStringCallImpl("rdf", "langString-language", new Object[]{ val });
+        public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
+        return new XsExprImpl.XsStringCallImpl("rdf", "langString-language", new Object[]{ val });
     }     @Override
     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items) {
         return new RdfLangStringSeqListImpl(items);

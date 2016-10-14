@@ -1711,16 +1711,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testSemDefaultGraphIri0Exp() {
-        exportTester("testSemDefaultGraphIri0", p.sem.defaultGraphIri(), "{\"ns\":\"sem\", \"fn\":\"default-graph-iri\", \"args\":[]}");
-    }
-
-    @Test
-    public void testSemDefaultGraphIri0Exist() {
-        executeTester("testSemDefaultGraphIri0", p.sem.defaultGraphIri());
-    }
-
-    @Test
     public void testSemIf3Exp() {
         exportTester("testSemIf3", p.sem.ifExpr(p.xs.booleanVal(true), p.xs.string("a"), p.xs.string("b")), "{\"ns\":\"sem\", \"fn\":\"if\", \"args\":[{\"ns\":\"xs\", \"fn\":\"boolean\", \"args\":[true]}, [{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"a\"]}], [{\"ns\":\"xs\", \"fn\":\"string\", \"args\":[\"b\"]}]]}");
     }

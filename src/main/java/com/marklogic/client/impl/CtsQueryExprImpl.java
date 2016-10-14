@@ -563,10 +563,6 @@ public class CtsQueryExprImpl implements CtsQuery {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "locks-fragment-query", new Object[]{ query });
     }
     @Override
-        public CtsQueryExpr locksQuery(CtsQueryExpr arg1) {
-        return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "locks-query", new Object[]{ arg1 });
-    }
-    @Override
         public CtsQueryExpr lsqtQuery(String temporalCollection) {
         return lsqtQuery(xs.string(temporalCollection)); 
     }
@@ -753,10 +749,6 @@ public class CtsQueryExprImpl implements CtsQuery {
     @Override
         public CtsQueryExpr propertiesFragmentQuery(CtsQueryExpr query) {
         return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "properties-fragment-query", new Object[]{ query });
-    }
-    @Override
-        public CtsQueryExpr propertiesQuery(CtsQueryExpr arg1) {
-        return new CtsQueryExprImpl.CtsQueryCallImpl("cts", "properties-query", new Object[]{ arg1 });
     }
     @Override
         public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object) {

@@ -39,7 +39,6 @@ public interface Sem extends SemValue {
     public SemBlankExpr bnode(XsAnyAtomicTypeExpr value);
     public ItemSeqExpr coalesce(ItemExpr... parameter1);
     public SemIriExpr datatype(XsAnyAtomicTypeExpr value);
-    public SemIriExpr defaultGraphIri();
     public ItemSeqExpr ifExpr(boolean condition, ItemSeqExpr then, ItemExpr... elseExpr);
     public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr);
     public SemInvalidExpr invalid(String string, SemIriExpr datatype);

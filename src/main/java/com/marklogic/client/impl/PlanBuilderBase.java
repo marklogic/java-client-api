@@ -38,6 +38,7 @@ import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.SemIriVal;
@@ -130,6 +131,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
     extends PlanChainedImpl
     implements PlanBuilder.Plan, PlanBuilder.ExportablePlan, RequestPlan, BaseTypeImpl.BaseArgImpl {
 		private Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> params = null;
+
 		PlanBase(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
 			super(prior, fnPrefix, fnName, fnArgs);
 		}
@@ -141,7 +143,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 				throw new IllegalArgumentException("cannot export with handle that doesn't extend base");
 			}
 			String planAst = getAst();
-// TODO: move to utility?
+// TODO: move to a method of BaseHandle?
 			@SuppressWarnings("rawtypes")
 			BaseHandle baseHandle = (BaseHandle) handle;
 			@SuppressWarnings("rawtypes")
@@ -165,8 +167,17 @@ abstract class PlanBuilderBase extends PlanBuilder {
 				throw new IllegalArgumentException("Must specify a class to export content with a registered handle");
 			}
 
-// TODO: look up in registry
-			throw new UnsupportedOperationException("exportAs() is not implemented yet");
+			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+			if (handle == null) {
+				throw new IllegalArgumentException("No handle registered for class: "+as.getName());
+			}
+			if (!(handle instanceof JSONReadHandle)) {
+				throw new IllegalArgumentException("Cannot parse JSON with handle registered for class: "+as.getName());
+			}
+
+			export((JSONReadHandle) handle);
+
+			return handle.get();
 	    }
 
 		String getAst() {
@@ -246,8 +257,20 @@ abstract class PlanBuilderBase extends PlanBuilder {
         }
     }
     static class PlanChainedImpl extends BaseTypeImpl.BaseChainImpl<BaseTypeImpl.BaseArgImpl> {
+		private HandleFactoryRegistry handleRegistry;
+
         PlanChainedImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+            if (prior != null) {
+            	setHandleRegistry(prior.getHandleRegistry());
+            }
         }
+
+        HandleFactoryRegistry getHandleRegistry() {
+			return handleRegistry;
+		}
+		void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+			this.handleRegistry = handleRegistry;
+		}
     }
 }

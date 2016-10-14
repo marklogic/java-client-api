@@ -21,12 +21,15 @@ import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.expression.Json;
 import com.marklogic.client.type.JsonArrayExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
  import com.marklogic.client.type.NodeElementExpr;
+ import com.marklogic.client.type.JsonObjectExpr;
  import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.JsonArraySeqExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.JsonObjectSeqExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -62,8 +65,24 @@ public class JsonExprImpl implements Json {
         return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array, flatten });
     }
     @Override
-        public JsonArrayExpr arrayWith(JsonArrayExpr arg1, ItemSeqExpr arg2) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "array-with", new Object[]{ arg1, arg2 });
+        public JsonObjectExpr object() {
+        return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{  });
+    }
+    @Override
+        public JsonObjectExpr object(NodeElementExpr map) {
+        return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{ map });
+    }
+    @Override
+        public JsonObjectExpr objectDefine() {
+        return new JsonExprImpl.JsonObjectCallImpl("json", "object-define", new Object[]{  });
+    }
+    @Override
+        public JsonObjectExpr objectDefine(String... keys) {
+        return objectDefine((keys == null) ? null : xs.strings(keys)); 
+    }
+    @Override
+        public JsonObjectExpr objectDefine(XsStringSeqExpr keys) {
+        return new JsonExprImpl.JsonObjectCallImpl("json", "object-define", new Object[]{ keys });
     }
     @Override
         public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc) {
@@ -92,6 +111,10 @@ public class JsonExprImpl implements Json {
     public JsonArraySeqExpr array(JsonArrayExpr... items) {
         return new JsonArraySeqListImpl(items);
     }
+     @Override
+    public JsonObjectSeqExpr object(JsonObjectExpr... items) {
+        return new JsonObjectSeqListImpl(items);
+    }
         static class JsonArraySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
             JsonArraySeqListImpl(Object[] items) {
                 super(BaseTypeImpl.convertList(items));
@@ -104,6 +127,21 @@ public class JsonExprImpl implements Json {
         }
         static class JsonArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArrayExpr {
             JsonArrayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+            }
+        }
+         static class JsonObjectSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+            JsonObjectSeqListImpl(Object[] items) {
+                super(BaseTypeImpl.convertList(items));
+            }
+        }
+        static class JsonObjectSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+            JsonObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+            }
+        }
+        static class JsonObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectExpr {
+            JsonObjectCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
                 super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
             }
         }

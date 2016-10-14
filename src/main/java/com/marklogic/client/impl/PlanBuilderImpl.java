@@ -15,19 +15,30 @@
  */
 package com.marklogic.client.impl;
 
+import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.Map;
 
+import com.marklogic.client.expression.PlanBuilder;
 
 import com.marklogic.client.expression.Cts;
+import com.marklogic.client.impl.CtsExprImpl; 
 import com.marklogic.client.expression.Fn;
+import com.marklogic.client.impl.FnExprImpl; 
 import com.marklogic.client.expression.Json;
+import com.marklogic.client.impl.JsonExprImpl; 
 import com.marklogic.client.expression.Math;
+import com.marklogic.client.impl.MathExprImpl; 
 import com.marklogic.client.expression.Rdf;
+import com.marklogic.client.impl.RdfExprImpl; 
 import com.marklogic.client.expression.Sem;
+import com.marklogic.client.impl.SemExprImpl; 
 import com.marklogic.client.expression.Spell;
+import com.marklogic.client.impl.SpellExprImpl; 
 import com.marklogic.client.expression.Sql;
+import com.marklogic.client.impl.SqlExprImpl; 
 import com.marklogic.client.expression.Xdmp;
+import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.Xs;
 import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.SemIriExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
@@ -225,7 +236,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns) {
-        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns });
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns });
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName) {
@@ -233,7 +244,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName) {
-        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName });
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName });
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri) {
@@ -241,7 +252,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri) {
-        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery) {
@@ -249,7 +260,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery) {
-        return new QualifiedPlanCallImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
     }
     @Override
         public ViewPlan fromView(String schema, String view) {
@@ -257,7 +268,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view) {
-        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view });
+        return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view });
     }
     @Override
         public ViewPlan fromView(String schema, String view, String qualifierName) {
@@ -265,7 +276,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName) {
-        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName });
+        return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName });
     }
     @Override
         public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumn... sysCols) {
@@ -273,7 +284,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols) {
-        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+        return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
     }
     @Override
         public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
@@ -281,7 +292,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
-        return new ViewPlanCallImpl("op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
+        return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
     }
     @Override
         public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -437,41 +448,39 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanTripleIriSeq subjects(PlanTripleIri...   subjects) {
         return new PlanTripleIriSeqListImpl(subjects);
     }
-    @Override
     public PlanTripleIriSeq predicates(PlanTripleIri... predicates) {
         return new PlanTripleIriSeqListImpl(predicates);
     }
-    @Override
     public PlanTripleValSeq objects(PlanTripleVal...    objects) {
         return new PlanTripleValSeqListImpl(objects);
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes)});
+        return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{literal(indexes)});
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
+        return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{
+        return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
             literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols
             });
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
-        return new QualifiedPlanCallImpl("op", "from-lexicons", new Object[]{
+        return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
             literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery
             });
     }
     @Override
     public QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows) {
-        return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows)});
+        return new QualifiedPlanCallImpl(this, "op", "from-literals", new Object[]{literal(rows)});
     }
     @Override
     public QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName) {
-        return new QualifiedPlanCallImpl("op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
+        return new QualifiedPlanCallImpl(this, "op", "from-literals", new Object[]{literal(rows), xs.string(qualifierName)});
     }
  public class PlanCallImpl  extends PlanBase  implements Plan {
         PlanCallImpl(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
@@ -483,8 +492,9 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         XsStringParam view = null;
          XsStringParam schema = null;
          XsStringParam qualifier = null;
-         ViewPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+         ViewPlanCallImpl(PlanBuilderBase builder, String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
+            setHandleRegistry(builder.getHandleRegistry());
          schema = (fnArgs.length <= 0) ? null : (XsStringParam) fnArgs[0];
          view = (fnArgs.length <= 1) ? null : (XsStringParam) fnArgs[1];
          qualifier = (fnArgs.length <= 2) ? null : (XsStringParam) fnArgs[2];
@@ -727,8 +737,9 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 }
  public class QualifiedPlanCallImpl  extends AccessPlanCallImpl  implements QualifiedPlan {
         XsStringParam qualifier = null;
-         QualifiedPlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+         QualifiedPlanCallImpl(PlanBuilderBase builder, String fnPrefix, String fnName, Object[] fnArgs) {
             super(null, fnPrefix, fnName, fnArgs);
+            setHandleRegistry(builder.getHandleRegistry());
          qualifier = (fnArgs.length <= 1) ? null : (XsStringParam) fnArgs[1];
          }
      @Override

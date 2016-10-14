@@ -171,7 +171,6 @@ public interface CtsQuery {
     public CtsQueryExpr jsonPropertyWordQuery(String propertyName, XsStringSeqVal text, XsStringSeqVal options, double weight);
     public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     public CtsQueryExpr locksFragmentQuery(CtsQueryExpr query);
-    public CtsQueryExpr locksQuery(CtsQueryExpr arg1);
     public CtsQueryExpr lsqtQuery(String temporalCollection);
     public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection);
     public CtsQueryExpr lsqtQuery(String temporalCollection, XsDateTimeVal timestamp);
@@ -219,7 +218,6 @@ public interface CtsQuery {
     public CtsQueryExpr periodRangeQuery(String axisName, String operator, CtsPeriodSeqExpr period, String... options);
     public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator, CtsPeriodSeqExpr period, XsStringSeqVal options);
     public CtsQueryExpr propertiesFragmentQuery(CtsQueryExpr query);
-    public CtsQueryExpr propertiesQuery(CtsQueryExpr arg1);
     public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object);
     public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, String... operator);
     public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator);
