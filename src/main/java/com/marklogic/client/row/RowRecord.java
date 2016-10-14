@@ -21,14 +21,13 @@ import javax.xml.namespace.QName;
 
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
-import com.marklogic.client.io.marker.RowReadHandle;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
 /**
  * A Row Record provides an extended, read-only map interface
  * to the column values in a row.
  */
-public interface RowRecord extends RowReadHandle, Map<String, Object> {
+public interface RowRecord extends Map<String, Object> {
 	/**
 	 * Distinguishes an atomic value, a document or other content structure,
 	 * a uri, a blank node for a triple, or a null.

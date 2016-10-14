@@ -42,6 +42,7 @@ import javax.xml.xpath.XPathExpressionException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
@@ -213,34 +214,63 @@ public class RowManagerTest {
 		RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
 		
 		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
-			RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
+			xmlhandle: {
+				RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
+	
+				Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
+				assertTrue("no XML row to iterate", xmlRowItr.hasNext());
+				DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
+		        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
+		        assertFalse("expected one XML row", xmlRowItr.hasNext());
+	
+		        xmlRowSet.close();
+		    }
 
-			Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
-			assertTrue("no XML row to iterate", xmlRowItr.hasNext());
-			DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
-	        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
-	        assertFalse("expected one XML row", xmlRowItr.hasNext());
+		    xmlshortcut: {
+				RowSet<Document> xmlRowSetAs = rowMgr.resultRowsAs(plan, Document.class);
 
-	        xmlRowSet.close();
+				Iterator<Document> xmlRowItrAs = xmlRowSetAs.iterator();
+				assertTrue("no XML rows as to iterate", xmlRowItrAs.hasNext());
+				DOMHandle xmlRow = initNamespaces(new DOMHandle().with(xmlRowItrAs.next()));
+		        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
+		        assertFalse("expected one XML row", xmlRowItrAs.hasNext());
 
-			RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+		        xmlRowSetAs.close();
+		    }
 
-			Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
-			assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
-			JacksonHandle jsonRow = jsonRowItr.next();
-	        checkSingleRow(jsonRow.get());
-	        assertFalse("expected one JSON row", jsonRowItr.hasNext());
+		    jsonhandle: {
+				RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
 
-	        jsonRowSet.close();
+				Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
+				assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
+				JacksonHandle jsonRow = jsonRowItr.next();
+		        checkSingleRow(jsonRow.get());
+		        assertFalse("expected one JSON row", jsonRowItr.hasNext());
 
-			RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
-			Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-			assertTrue("no record row to iterate", recordRowItr.hasNext());
-			RowRecord recordRow = recordRowItr.next();
-			checkSingleRow(recordRow);
-	        assertFalse("expected one record row", recordRowItr.hasNext());
+		        jsonRowSet.close();
+		    }
 
-	        recordRowSet.close();
+		    jsonshortcut: {
+		        RowSet<JsonNode> jsonRowSetAs = rowMgr.resultRowsAs(plan, JsonNode.class);
+
+				Iterator<JsonNode> jsonRowItrAs = jsonRowSetAs.iterator();
+				assertTrue("no JSON row to iterate", jsonRowItrAs.hasNext());
+		        checkSingleRow(jsonRowItrAs.next());
+		        assertFalse("expected one JSON row", jsonRowItrAs.hasNext());
+
+		        jsonRowSetAs.close();
+		    }
+
+		    rowrecord: {
+				RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
+				Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+				assertTrue("no record row to iterate", recordRowItr.hasNext());
+				RowRecord recordRow = recordRowItr.next();
+				checkSingleRow(recordRow);
+		        assertFalse("expected one record row", recordRowItr.hasNext());
+
+		        recordRowSet.close();
+		    }
 		}
 	}
 	@Test

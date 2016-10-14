@@ -97,10 +97,41 @@ public interface RowManager {
 	 */
 	<T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
-/* TODO:
+	/**
+	 * Constructs and retrieves a set of database rows based on a plan using
+	 * a JSON or XML handle for each row and reflecting documents written or 
+	 * deleted by an uncommitted transaction.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+	 * @param plan	the definition of a plan for the database rows
+     * @param as	the IO class for reading each row as JSON or XML content
+     * @param <T> the type of object that will be returned by the handle registered for it
+	 * @return	an iterable over the result rows
+	 */
 	<T> RowSet<T> resultRowsAs(Plan plan, Class<T> as);
+	/**
+	 * Constructs and retrieves a set of database rows based on a plan using
+	 * a JSON or XML handle for each row and reflecting documents written or 
+	 * deleted by an uncommitted transaction.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+	 * @param plan	the definition of a plan for the database rows
+     * @param as	the IO class for reading each row as JSON or XML content
+     * @param transaction	a open transaction for documents from which rows have been projected
+     * @param <T> the type of object that will be returned by the handle registered for it
+	 * @return	an iterable over the result rows
+	 */
 	<T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction);
- */
 
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
