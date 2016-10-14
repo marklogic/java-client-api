@@ -514,7 +514,10 @@ public interface QueryManager {
      * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the JSON or XML combined query
@@ -525,7 +528,10 @@ public interface QueryManager {
      * Defines a combined query from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the JSON or XML combined query
@@ -552,7 +558,10 @@ public interface QueryManager {
      * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the JSON or XML structured query
@@ -563,7 +572,10 @@ public interface QueryManager {
      * Defines a structured query from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the JSON or XML structured query
@@ -590,7 +602,10 @@ public interface QueryManager {
      * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the query by example
@@ -601,7 +616,10 @@ public interface QueryManager {
      * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param format	whether the format of the representation is JSON or XML
 	 * @param rawQuery	an IO representation of the query by example

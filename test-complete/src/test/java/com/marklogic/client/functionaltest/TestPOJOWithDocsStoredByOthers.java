@@ -16,8 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.*;
 
 import java.util.Calendar;
 
@@ -340,11 +339,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 	 * are different.
 	 * 
 	 * Current results (10/13/2014) are: 
-	 * java.lang.IllegalArgumentException: Invalid type id 'junk' (for id type 'Id.class'): no such class found
-	 * Issue 136 might solve this also.
+	 * com.marklogic.client.MarkLogicIOException: com.fasterxml.jackson.databind.exc.InvalidTypeIdException: 
+	 * Could not resolve type id 'junk' into a subtype of [simple type, class com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper]: 
+	 * no such class found 
 	 */
 
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=com.marklogic.client.MarkLogicIOException.class)
 	public void testPOJOReadDocStoredWithInvalidContent() throws Exception {
 
 		String docId[] = { "com.marklogic.client.functionaltest.TestPOJOWithDocsStoredByOthers$SmallArtifactIdInSuper/SmallArtifactIdInSuper.json" };
@@ -498,6 +498,7 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		pojoReposSmallArtifact.write(art,"com.marklogic.client.functionaltest.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
 		SmallArtifactNoId artifact1 = pojoReposSmallArtifact.read(artifactName);
+		assertTrue("GetId for String incorrect", "SmallArtifactInSuperOnly".equalsIgnoreCase(pojoReposSmallArtifact.getId(artifact1)));
 		validateSmallArtifactSuper(artifact1);			
 	}
 	
@@ -520,11 +521,12 @@ public class TestPOJOWithDocsStoredByOthers extends BasicJavaClientREST {
 		art.setInventory(1000);
 		art.setName(artifactName);
 		art.setOriginCountry("USA");
-				
+						
 		// Load the object into database
 		pojoReposSmallArtifact.write(art,"com.marklogic.client.functionaltest.TestPOJOMissingIdGetSetMethod$SmallArtifactSuper/SmallArtifactSuper.json");
 						
 		SmallArtifactIdInSuperAndSub artifact1 = pojoReposSmallArtifact.read(artifactName);
+		assertEquals("Repository getId value incorrect", artifact1.getName(), pojoReposSmallArtifact.getId(artifact1).toString());
 		validateSmallArtifactSuperAndSub(artifact1);			
 	}
 	

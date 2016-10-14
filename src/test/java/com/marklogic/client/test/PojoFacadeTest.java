@@ -20,8 +20,10 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.TimeZone;
 
@@ -566,39 +568,78 @@ public class PojoFacadeTest {
         }
     }
 
-    public static class TimeTest {     
-        @Id public String id;
-        public Calendar timeTest;
-
-        public TimeTest() {}
-        public TimeTest(String id, Calendar timeTest) {
-            this.id = id;
-            this.timeTest = timeTest;
-        }
-    }
-
     @Test
     public void testF_DateTime() {
         PojoRepository<TimeTest, String> times = Common.client.newPojoRepository(TimeTest.class, String.class);
 
-        GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
-        septFirst.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
+        GregorianCalendar septFirstUTC = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        septFirstUTC.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
 
-        TimeTest timeTest1 = new TimeTest("1", septFirst);
+        TimeTest timeTest1 = new TimeTest("1", septFirstUTC);
         times.write(timeTest1);
 
         TimeTest timeTest1FromDb = times.read("1");
-        assertEquals("Times should be equal", timeTest1.timeTest.getTime().getTime(), 
-            timeTest1FromDb.timeTest.getTime().getTime());
+        assertEquals("Calendar objs should be equal", timeTest1.calendarTest,
+            timeTest1FromDb.calendarTest);
+        assertEquals("Date objs should be equal", timeTest1.dateTest,
+            timeTest1FromDb.dateTest);
+        assertEquals("Epoch time should be equal", timeTest1.dateTest.getTime(),
+            timeTest1FromDb.dateTest.getTime());
 
-        GregorianCalendar septFirstGMT = new GregorianCalendar(TimeZone.getTimeZone("GMT"));
-        septFirstGMT.set(2014, Calendar.SEPTEMBER, 1, 12, 0, 0);
+        GregorianCalendar septThirdCET = new GregorianCalendar(TimeZone.getTimeZone("CET"));
+        septThirdCET.set(2014, Calendar.SEPTEMBER, 3, 12, 0, 0);
 
-        TimeTest timeTest2 = new TimeTest("2", septFirstGMT);
+        TimeTest timeTest2 = new TimeTest("2", septThirdCET);
         times.write(timeTest2);
 
         TimeTest timeTest2FromDb = times.read("2");
-        assertEquals("Times should be equal", timeTest2.timeTest, timeTest2FromDb.timeTest);
+        /* Jackson 2.8.3 converts all Date/Calendar to UTC, so we can't get the object in the correct timezone
+        assertEquals("Calendar objs should be equal", timeTest2.calendarTest,
+            timeTest2FromDb.calendarTestCet);
+        */
+        assertEquals("Calendar objs timestamps should be equal", timeTest2.calendarTest.getTime().getTime(),
+            timeTest2FromDb.calendarTestCet.getTime().getTime());
+        assertEquals("Date objs should be equal", timeTest2.dateTest,
+            timeTest2FromDb.dateTest);
+        assertEquals("Epoch time should be equal", timeTest2.calendarTest.getTime().getTime(),
+            timeTest2FromDb.calendarTest.getTime().getTime());
+
+        // let's try to test serializing back to CET time zone
+        /* nevermind, it turns out Jackson 2.8.3 doesn't yet support this--it converts all dates to UTC
+
+        // start with the ISO 8601 format compatible with xs:dateTime and thus MarkLogic
+        SimpleDateFormat cetDateFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSSXXX");
+        cetDateFormat.setTimeZone(TimeZone.getTimeZone("CET"));
+        // modify the objectMapper for this PojoRepository instance
+        ((PojoRepositoryImpl) times).getObjectMapper().setDateFormat(cetDateFormat);
+        // re-read the object with the modified objectMapper
+        timeTest2FromDb = times.read("2");
+        // now validate that the object has everything including the time zone equal
+        assertEquals("Calendar objs should be equal", timeTest2.calendarTest,
+            timeTest2FromDb.calendarTest);
+        */
+
+        // let's test a range query that should only match record "2"
+        GregorianCalendar septSecondUTC = new GregorianCalendar(TimeZone.getTimeZone("UTC"));
+        septSecondUTC.set(2014, Calendar.SEPTEMBER, 2, 12, 0, 0);
+
+        PojoQueryBuilder<TimeTest> qb = times.getQueryBuilder();
+        for ( String jsonProperty : new String[] {"calendarTest", "calendarTestCet", "dateTest"} ) {
+          PojoQueryDefinition query = qb.range(jsonProperty, Operator.GT, septSecondUTC);
+          PojoPage<TimeTest> page = times.search(query, 1);
+          try {
+            int numRead = 0;
+            for ( TimeTest time : page ) {
+              numRead++;
+              assertEquals("Should find the right TimeTest id", "2", time.id);
+            }
+            assertEquals("Failed to find number of records expected", 1, numRead);
+            assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+          } finally {
+              page.close();
+          }
+        }
+
     }
 
     /* TODO: uncomment when we have a fix for https://github.com/marklogic/java-client-api/issues/383
@@ -638,6 +679,7 @@ public class PojoFacadeTest {
         assertNotNull("City should never be null", city);
         assertNotNull("GeoNamId should never be null", city.getGeoNameId());
         if ( "Chittagong".equals(city.getName()) ) {
+            assertEquals("Chittagong should have id 1205733", 1205733, cities.getId(city).intValue());
             BulkReadWriteTest.validateChittagong(city);
         }
     }

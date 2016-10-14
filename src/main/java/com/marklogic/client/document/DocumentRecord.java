@@ -77,8 +77,11 @@ public interface DocumentRecord {
      * specified by the IO class.
      *
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     *
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
      * @param as the Class which a handle should instantiate, populate and return
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return the document metadata as the Class type requested
@@ -100,8 +103,11 @@ public interface DocumentRecord {
      * specified by the IO class.
      *
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
-     *
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
      * @param as the Class which a handle should instantiate, populate and return
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return the document contents as the Class type requested

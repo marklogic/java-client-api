@@ -50,7 +50,10 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * Reads a range of bytes from the content of a binary database document in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param as	the IO class for reading the range of bytes
@@ -65,7 +68,10 @@ public interface BinaryDocumentManager extends DocumentManager<BinaryReadHandle,
      * Reads a range of bytes from the content of a binary database document in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
 	 * @param metadataHandle	a handle for reading the metadata of the document

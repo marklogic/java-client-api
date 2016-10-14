@@ -96,7 +96,10 @@ public interface MatchDocumentSummary {
      * result document.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param as	the IO class for reading the first snippet for the result
      * @param <T> the type of object that will be returned by the handle registered for it
@@ -133,7 +136,10 @@ public interface MatchDocumentSummary {
      * in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param as	the IO class for reading the metadata for the result
      * @param <T> the type of object that will be returned by the handle registered for it

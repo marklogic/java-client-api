@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentWriteOperation;
@@ -23,6 +25,7 @@ import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
+import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 import java.util.LinkedHashSet;
@@ -46,11 +49,25 @@ public class DocumentWriteSetImpl extends LinkedHashSet<DocumentWriteOperation> 
 		return this;
 	}
 
+    public DocumentWriteSet addAs(String docId, Object content) {
+      return addAs(docId, null, content);
+    }
+
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,
 			docId, metadataHandle, contentHandle));
 		return this;
 	}
+
+    public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content) {
+        if (content == null) throw new IllegalArgumentException("content must not be null");
+
+        Class<?> as = content.getClass();
+        ContentHandle<?> handle = DatabaseClientFactory.getHandleRegistry().makeHandle(as);
+        Utilities.setHandleContent(handle, content);
+
+        return add(docId, metadataHandle, handle);
+    }
 
     public DocumentWriteSet add(DocumentDescriptor desc, AbstractWriteHandle contentHandle) {
 		add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE,

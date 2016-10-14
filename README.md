@@ -51,13 +51,13 @@ To use the API in your maven project, include the following in your pom.xml:
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>java-client-api</artifactId>
-        <version>3.0.1</version>
+        <version>3.0.6</version>
     </dependency>
 
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.1'
+        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.6'
     }
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
@@ -82,14 +82,14 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](http://repo1.maven.org/maven2/com/marklogic/java-client-api/3.0.1/).  MarkLogic's
-pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
+[maven central](http://repo1.maven.org/maven2/com/marklogic/java-client-api/3.0.6/).  MarkLogic's
+pgp key ID is 38A56C73 and it is available from pgp.mit.edu by installing gnupg and running the command:
 
-    $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
+    $ gpg --keyserver pgp.mit.edu --recv-key 38A56C73
 
 Files can be verified with the command:
 
-    $ gpg java-client-api-3.0.1.jar.asc
+    $ gpg java-client-api-3.0.6.jar.asc
 
 
 ### Building and Contributing
@@ -108,7 +108,7 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for more on contributing to this github p
 ### Running JUnit Tests
 
     $ mvn test-compile
-    $ sh src/test/resources/boot-test.sh
+    $ mvn exec:java@test-server-init
     $ mvn test
 
 ## Support

@@ -25,11 +25,12 @@ import com.marklogic.client.query.QueryManager;
 
 import java.io.Serializable;
 
-/** PojoRepository is the central class for the Pojo Facade.  It supports CRUD operations
+/** <p>PojoRepository is the central class for the Pojo Facade.  It supports CRUD operations
  * and search.  Each PojoRepository instance operates on only one pojo class.  Create new
- * PojoRepository instances based on your custom pojo type like so:
+ * PojoRepository instances based on your custom pojo type like so:</p>
+ *
  * <pre>    public class MyClass {
- *        {@literal @}Id
+ *       {@literal @}Id
  *        public Integer getMyId() {
  *            ...
  *        }
@@ -43,45 +44,77 @@ import java.io.Serializable;
  *    PojoRepository&lt;MyClass, Integer&gt; myClassRepo = 
  *        client.newPojoRepository(MyClass.class, Integer.class);</pre>
  *
- * Where MyClass is your custom pojo type, and myId is the bean property of type Integer
+ * <p>Where MyClass is your custom pojo type, and myId is the bean property of type Integer
  * marked with the 
  * {@literal @}{@link Id Id annotation}.  The 
  * {@literal @}Id annotation can be attached to a public field or a public getter or a 
  * public setter.  The bean property marked with {@literal @}Id must be a native type or 
  * {@link java.io.Serializable} class and must contain an 
  * identifier value unique across all persisted instances of that
- * type or the instance will overwrite the persisted instance with the same identifier.
+ * type or the instance will overwrite the persisted instance with the same identifier.</p>
  *
- * The current implementation of the Pojo Facade uses 
- * <a href="https://github.com/FasterXML/jackson-databind/">Jackson databind</a> for serialization
- * and deserialization to json.  Thus only classes which can be serialized and deserialized 
- * directly by Jackson can be serialized by the Pojo Facade.  Every bean property
- * including the one marked with {@literal @}Id must either expose a public field or both a public 
- * getter and a public setter.  To test if your class can be directly serialized and 
- * deserialized by Jackson, perform the following:
+ * <p>The current implementation of the Pojo Facade uses 
+ * <a href="https://github.com/FasterXML/jackson-databind/">Jackson databind</a>
+ * for serialization and deserialization to and from json.  Thus only classes which
+ * can be serialized and deserialized directly by Jackson can be serialized by the
+ * Pojo Facade.  Every bean property including the one marked with {@literal @}Id
+ * must either expose a public field or both a public getter and a public
+ * setter.  To test if your class can be directly serialized and deserialized
+ * by Jackson, perform the following:</p>
+ *
  * <pre>    ObjectMapper objectMapper = new ObjectMapper();
  *    String value = objectMapper.writeValueAsString(myObjectIn);
  *    MyClass myObjectOut = objectMapper.readValue(value, MyClass.class);</pre>
  *
- * If that works but the configured objectMapper in the Pojo Facade is different and not
- * working, you can troubleshoot by directly accessing the objectMapper used by the Pojo 
- * Facade using an unsupported internal method attached to the current implementation: 
- * <a 
+ * <p>If that works but the configured objectMapper in the Pojo Facade is different and not
+ * working, you can troubleshoot by directly accessing the objectMapper used by the Pojo
+ * Facade using an unsupported internal method attached to the current implementation:
+ * <a
  * href="https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/impl/PojoRepositoryImpl.java"
- * >com.marklogic.client.impl.PojoRepositoryImpl</a>.
+ * >com.marklogic.client.impl.PojoRepositoryImpl</a>.</p>
+ *
  * <pre>    ObjectMapper objectMapper = ((PojoRepositoryImpl) myClassRepo).getObjectMapper();</pre>
  *
- * If your class has properties which are classes (non-native types) they will be automatically 
- * serialized and deserialized, but cannot be written, read, or searched directly.  If you 
- * wish to directly write, read, or search another class, create a new instance of 
- * PojoRepository specific to that class.
+ * <p>Special handling is provided for bean properties of type
+ * {@link java.util.Date Date} and {@link java.util.Calendar Calendar}.  The
+ * current implementation of Jackson ObjectMapper changes the timezone to UTC.
+ * The serialized format is ISO 8601 format which is compatible with
+ * xs:dateTime format and can therefore be indexed in the server by a path
+ * range index of type dateTime.  However, if you wish to query using a range
+ * index, it is recommended that you modify serialization to remove the class
+ * wrapper by adding a JsonTypeInfo annotation like so:</p>
  *
- * Since PojoRepository stores in JSON format, which limits number precision to 15
- * significant digits (IEEE754 double precision), you will lose precision on numbers
- * longer than 15 significant digits.  If you desire larger numbers with no loss of
- * precision, use Strings to persist those numbers.
+ * <pre>   {@literal @}JsonTypeInfo(use=JsonTypeInfo.Id.NONE, include=JsonTypeInfo.As.EXTERNAL_PROPERTY)
+ *    public Calendar getMyDateTime();</pre>
+ *
+ * <p>That way you can query the field directly without needing to traverse the
+ * java.util.GregorianCalendar type wrapper.  By removing that wrapper, you can
+ * create a query like this:</p>
+ *
+ * <pre>    PojoQueryBuilder qb = pojoRepository.getQueryBuilder();
+ *    PojoQueryDefinition query = qb.range("myDateTime", Operator.LT, Calendar.getInstance());</pre>
+ *
+ * <p>If your class has properties which are classes (non-native types) they
+ * will be automatically serialized and deserialized, but can only be written,
+ * read, or searched as properties of the parent instance.  If you wish to
+ * directly write, read, or search instances of another class, create and use
+ * an instance of PojoRepository specific to that class.</p>
+ *
+ * <p>Since PojoRepository stores in JSON format, which limits number precision
+ * to 15 significant digits (IEEE754 double precision), you will lose precision
+ * on numbers longer than 15 significant digits.  If you desire larger numbers
+ * with no loss of precision, use Strings to persist those numbers.</p>
  */
 public interface PojoRepository<T, ID extends Serializable> {
+    /** Get the value of the id field (the field marked with the {@literal @}Id
+     * annotation).
+     *
+     * @param entity the entity instance from which you want to get the id value
+     *
+     * @return the id value for this entity of type ID
+     */
+    public ID getId(T entity);
+
     /** Write this instance to the database.  Uses the field marked with {@literal @}Id 
      * annotation to generate a unique uri for the document.  Adds a collection with the 
      * fully qualified class name.  Uses a particular configuration of 

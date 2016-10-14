@@ -173,11 +173,9 @@ public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
 		// modify XMLEvent list if the imported XML was a structured query.
 		XMLEvent firstEvent = importedList.get(0);
 		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
-			logger.info("Get element.");
 			StartElement startElement = firstEvent.asStartElement();
 			if (startElement.getName().getNamespaceURI() == RequestConstants.SEARCH_NS &&
 					startElement.getName().getLocalPart().equals("query")) {
-				logger.info("It's a structured query!!!");
 				//wrap in search.
 				List<XMLEvent> wrappedList = new ArrayList<XMLEvent>();
 				XMLEventFactory  eventFactory = XMLEventFactory.newInstance();

@@ -108,6 +108,7 @@ public class TestPOJOBasicSearch extends BasicJavaClientREST {
 			while(p.iterator().hasNext()){
 				Artifact a =p.iterator().next();
 				validateArtifact(a);
+				assertEquals("Repository getId value incorrect", a.getId(), products.getId(a).longValue());
 				assertTrue("Artifact Id is even", a.getId()%2==0);
 				count++;
 			}
@@ -122,6 +123,7 @@ public class TestPOJOBasicSearch extends BasicJavaClientREST {
 			while(p.iterator().hasNext()){
 				Artifact a =p.iterator().next();
 				assertTrue("Artifact Id is even", a.getId()%2 !=0);
+		        assertEquals("Repository getId value incorrect", a.getId(), products.getId(a).longValue());
 				validateArtifact(a);
 				products.delete(a.getId());
 				count++;

@@ -95,24 +95,26 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
     public DocumentMetadataPatchBuilder newPatchBuilder(Format pathFormat);
 
     /**
-     * Checks whether a document exists and gets its format and mimetype
+     * Checks whether a document exists and gets its byte length, format, mimetype, and version
+     * if it does.
      * 
      * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param docId the URI identifier for the document
-     * @return	a descriptor for the document
+     * @return	a descriptor for the document or null if the document is not found
      */
     public DocumentDescriptor exists(String docId)
     	throws ForbiddenUserException, FailedRequestException;
 
     /**
-     * Checks whether a document exists in an open transaction and gets its length and format
+     * Checks whether a document exists in an open transaction and gets its byte length, format,
+     * mimetype, and version if it does.
      * 
      * To call exists(), an application must authenticate as rest-reader, rest-writer, or rest-admin.
      * 
      * @param docId	the URI identifier for the document
      * @param transaction	a open transaction under which the document may have been created or deleted
-     * @return	a descriptor for the document
+     * @return	a descriptor for the document or null if the document is not found
      */
     public DocumentDescriptor exists(String docId, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
@@ -121,12 +123,16 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T> T readAs(String docId, Class<T> as)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -134,13 +140,17 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param as	the IO class for reading the content of the document
      * @param transform	a server transform to modify the document content
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T> T readAs(String docId, Class<T> as, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -148,13 +158,17 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document metadata and content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param as	the IO class for reading the content of the document
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -162,7 +176,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Reads the document metadata and content from the database in the representation specified by the IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId the URI identifier for the document
      * @param metadataHandle	a handle for reading the metadata of the document
@@ -170,6 +187,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param <T> the type of object that will be returned by the handle registered for it
      * @return	an object of the IO class with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T> T readAs(String docId, DocumentMetadataReadHandle metadataHandle, Class<T> as, ServerTransform transform)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -183,6 +201,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -196,6 +215,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -208,6 +228,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -221,6 +242,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -235,6 +257,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -249,6 +272,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -262,6 +286,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param contentHandle	a handle for reading the content of the document
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -276,6 +301,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transform	a server transform to modify the document content
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -290,6 +316,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -304,6 +331,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -317,6 +345,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -331,6 +360,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -346,6 +376,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -361,6 +392,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(String docId, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -375,6 +407,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -390,6 +423,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of content handle to return
      * @return	the content handle populated with the content of the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends R> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
@@ -620,7 +654,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
@@ -631,7 +668,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param content	an IO representation of the document content
@@ -643,7 +683,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -655,7 +698,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * Writes the document content to the database from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -859,6 +905,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId	the URI identifier for the document
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -869,6 +916,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param docId	the URI identifier for the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -878,6 +926,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
      *
      * @param uris	the identifiers for the documents to delete
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(String... uris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -888,6 +937,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *
      * @param transaction	an open transaction
      * @param uris	the identifiers for the documents to delete
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(Transaction transaction, String... uris)
         throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -897,6 +947,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * To call delete(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(DocumentDescriptor desc)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -907,6 +958,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param desc	a descriptor for the URI identifier, format, and mimetype of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void delete(DocumentDescriptor desc, Transaction transaction)
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -915,7 +967,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param content	an IO representation of the document content
@@ -927,7 +982,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param content	an IO representation of the document content
@@ -940,7 +998,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -953,7 +1014,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
 	 * Creates a database document with a uri assigned by the server from an object of an IO class.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
 	 * @param template	the template for constructing the document uri
      * @param metadataHandle	a handle for writing the metadata of the document
@@ -1047,7 +1111,10 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * input stream, or XML DOM specifies the patch as content.
      * 
      * The IO class must have been registered before creating the database client.
-     * By default, standard Java IO classes for document content are registered.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
      * 
      * @param docId	the URI identifier for the document
      * @param patch	an IO representation of the patch
@@ -1115,6 +1182,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param metadataHandle	a handle for reading the metadata of the document
      * @param <T> the type of DocumentMetadataReadHandle to return
      * @return	the metadata handle populated with the metadata for the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -1128,6 +1196,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param transaction	a open transaction under which the document may have been created or deleted
      * @param <T> the type of DocumentMetadataReadHandle to return
      * @return	the metadata handle populated with the metadata for the document in the database
+     * @throws ResourceNotFoundException if the document is not found
      */
     public <T extends DocumentMetadataReadHandle> T readMetadata(String docId, T metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -1139,6 +1208,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -1150,6 +1220,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param docId	the URI identifier for the document
      * @param metadataHandle	a handle for writing the metadata of the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void writeMetadata(String docId, DocumentMetadataWriteHandle metadataHandle, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -1160,6 +1231,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * To call writeDefaultMetadata(), an application must authenticate as rest-writer or rest-admin.
      * 
      * @param docId	the URI identifier for the document
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void writeDefaultMetadata(String docId)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
@@ -1170,6 +1242,7 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * 
      * @param docId	the URI identifier for the document
      * @param transaction	a open transaction under which the document may have been created or deleted
+     * @throws ResourceNotFoundException if the document is not found
      */
     public void writeDefaultMetadata(String docId, Transaction transaction)
     	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;

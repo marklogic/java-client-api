@@ -813,7 +813,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			String strTURTLE = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.TURTLE), t).get().toString();
 			System.out.println("\n TURTLE format is " + strTURTLE);
 			assertTrue("TURTLE subject value output is incorrect ", strTURTLE.contains("<http://www.ucsb.edu/random-alum>"));
-			assertTrue("TURTLE predicate value output is incorrect ", strTURTLE.contains("<http://xmlns.com/foaf/0.1/knows>"));
+			assertTrue("TURTLE predicate value output is incorrect ", strTURTLE.contains("foaf:knows"));
 			assertTrue("TURTLE object value output is incorrect ", strTURTLE.contains("<1bfbfb8:ff2d706919:-7fa9>"));
 			
 			//String strN3 = sparqlQmgr.executeConstruct(qdef, new StringHandle().withMimetype(RDFMimeTypes.N3), t).get().toString();

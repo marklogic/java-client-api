@@ -49,6 +49,22 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
     public DocumentWriteSet add(String docId, AbstractWriteHandle contentHandle);
 
     /**
+     * Adds to this write set a document with the given docId (server uri)
+     * and contents.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+     * @param docId	the URI identifier for the document
+     * @param content	an IO representation of the document content
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet addAs(String docId, Object content);
+
+    /**
      * Adds to this write set a document with the given docId (server uri),
      * metadata, and contents provided by the handle
      * @param docId	the URI identifier for the document
@@ -57,6 +73,23 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      * @return this instance (for method chaining)
      */
     public DocumentWriteSet add(String docId, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
+
+    /**
+     * Adds to this write set a document with the given docId (server uri),
+     * metadata, and contents.
+     * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+     * @param docId	the URI identifier for the document
+     * @param metadataHandle	a handle for writing the metadata of the document
+     * @param content	an IO representation of the document content
+     * @return this instance (for method chaining)
+     */
+    public DocumentWriteSet addAs(String docId, DocumentMetadataWriteHandle metadataHandle, Object content);
 
     /**
      * Adds to this write set a document with the given uri template, and
@@ -77,4 +110,3 @@ public interface DocumentWriteSet extends Set<DocumentWriteOperation> {
      */
     public DocumentWriteSet add(DocumentDescriptor desc, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle);
 }
-

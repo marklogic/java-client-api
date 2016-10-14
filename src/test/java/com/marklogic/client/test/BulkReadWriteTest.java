@@ -79,12 +79,13 @@ public class BulkReadWriteTest {
     private static final String COUNTRIES_FILE = "countryInfo.txt";
     private static final String CITIES_FILE = "cities_above_300K.txt";
     static final int RECORDS_EXPECTED = 1363;
-    private static JAXBContext context = null;
 
     @BeforeClass
     public static void beforeClass() throws JAXBException {
         Common.connect();
-        context = JAXBContext.newInstance(City.class);
+        DatabaseClientFactory.getHandleRegistry().register(
+            JAXBHandle.newFactory(City.class)
+        );
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
@@ -101,18 +102,13 @@ public class BulkReadWriteTest {
 
     private class BulkCityWriter implements CityWriter {
         private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-        private JAXBContext context;
         private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
         BulkCityWriter() throws JAXBException {
-            context = JAXBContext.newInstance(City.class);
         }
 
         public void addCity(City city) {
-            JAXBHandle<City> handle = new JAXBHandle<City>(context);
-            // set the handle to the POJO instance
-            handle.set(city);
-            writeSet.add( DIRECTORY + city.getGeoNameId() + ".xml", handle );
+            writeSet.addAs( DIRECTORY + city.getGeoNameId() + ".xml", city );
         }
 
         public void finishBatch() {
@@ -295,7 +291,6 @@ public class BulkReadWriteTest {
     }
 
     private void validateRecord(DocumentRecord record) {
-        JAXBHandle<City> handle = new JAXBHandle<City>(context);
         assertNotNull("DocumentRecord should never be null", record);
         assertNotNull("Document uri should never be null", record.getUri());
         assertTrue("Document uri should start with " + DIRECTORY, record.getUri().startsWith(DIRECTORY));
@@ -305,7 +300,7 @@ public class BulkReadWriteTest {
           record.getMimetype());
         */
         if ( record.getUri().equals(DIRECTORY + "1205733.xml") ) {
-            City chittagong = record.getContent(handle).get();
+            City chittagong = record.getContentAs(City.class);
             validateChittagong(chittagong);
         }
     }

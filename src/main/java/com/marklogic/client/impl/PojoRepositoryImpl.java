@@ -500,7 +500,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     }
 
     @SuppressWarnings("unchecked")
-    private ID getId(T entity) {
+    public ID getId(T entity) {
         findId();
         if ( idMethod != null ) {
             try {

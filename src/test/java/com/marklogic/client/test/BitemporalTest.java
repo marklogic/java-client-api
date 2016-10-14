@@ -54,7 +54,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BitemporalTest {
-	// src/test/resources/bootstrap.xqy is run by src/test/resources/boot-test.sh
+	// src/test/resources/bootstrap.xqy is run by com.marklogic.client.test.util.TestServerBootstrapper
 	// and sets up the "temporal-collection" and required underlying axes
 	// system-axis and valid-axis which have required underlying range indexes
 	// system-start, system-end, valid-start, and valid-end

@@ -115,7 +115,6 @@ public final class QueryOptionsHandle
         pfactory.setNamespaceAware(true);
     }
 
-    private JAXBContext jc;
 	private Marshaller marshaller;
 	private QueryOptions optionsHolder;
 	private Unmarshaller unmarshaller;
@@ -135,7 +134,7 @@ public final class QueryOptionsHandle
             QueryOptionsTransformExtractNS transform = new QueryOptionsTransformExtractNS();
             transform.setParent(reader);
 
-            jc = JAXBContext.newInstance(QueryOptions.class);
+            JAXBContext jc = JaxbContextLoader.CACHED_CONTEXT;
             marshaller = jc.createMarshaller();
             marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
             unmarshaller = jc.createUnmarshaller();
@@ -145,6 +144,8 @@ public final class QueryOptionsHandle
             throw new MarkLogicBindingException(e);
         } catch (ParserConfigurationException e) {
             throw new MarkLogicBindingException(e);
+        } catch (NoClassDefFoundError ncdfe) {
+            throw new MarkLogicBindingException(new JAXBException("JAXB context initialization failed"));
         }
     }
 
@@ -1133,7 +1134,20 @@ public final class QueryOptionsHandle
 		return this;
 	}
 
-	
+    /**
+     * Initialization-on-demand holder for {@link QueryOptionsHandle}'s JAXB context.
+     */
+    private static class JaxbContextLoader {
 
+        private static final JAXBContext CACHED_CONTEXT;
+
+        static {
+            try {
+                CACHED_CONTEXT = JAXBContext.newInstance(QueryOptions.class);
+            } catch (JAXBException e) {
+                throw new MarkLogicBindingException(e);
+            }
+        }
+    }
 
 }

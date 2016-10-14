@@ -294,7 +294,7 @@ public class SPARQLQueryDefinitionImpl implements SPARQLQueryDefinition {
         return optimizeLevel;
     }
 
-    public void setOptimzeLevel(int level) {
+    public void setOptimizeLevel(int level) {
         this.optimizeLevel = level;
     }
 }

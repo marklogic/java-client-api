@@ -51,7 +51,6 @@ public class ValuesHandle
     static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
     private ValuesBuilder.Values valuesHolder;
-    private JAXBContext jc;
     private Unmarshaller unmarshaller;
     private HashMap<String, AggregateResult> hashedAggregates = null;
 
@@ -65,10 +64,12 @@ public class ValuesHandle
     	super.setFormat(Format.XML);
 
         try {
-            jc = JAXBContext.newInstance(ValuesBuilder.Values.class);
+            JAXBContext jc = JaxbContextLoader.CACHED_CONTEXT;
             unmarshaller = jc.createUnmarshaller();
         } catch (JAXBException e) {
             throw new MarkLogicBindingException(e);
+        } catch (NoClassDefFoundError ncdfe) {
+            throw new MarkLogicBindingException(new JAXBException("JAXB context initialization failed"));
         }
     }
 
@@ -180,4 +181,21 @@ public class ValuesHandle
     public ValuesMetrics getMetrics() {
         return valuesHolder.getMetrics();
     }
+
+    /**
+     * Initialization-on-demand holder for {@link ValuesHandle}'s JAXB context.
+     */
+    private static class JaxbContextLoader {
+
+        private static final JAXBContext CACHED_CONTEXT;
+
+        static {
+            try {
+                CACHED_CONTEXT = JAXBContext.newInstance(ValuesBuilder.Values.class);
+            } catch (JAXBException e) {
+                throw new MarkLogicBindingException(e);
+            }
+        }
+    }
+
 }
