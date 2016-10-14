@@ -30,6 +30,10 @@ public class SemValueImpl implements SemValue {
 	public SemIriSeqVal iris(String... stringIris) {
 		return new SemIriSeqValImpl(stringIris);
 	}
+	@Override
+	public SemIriSeqVal iris(SemIriVal... iris) {
+		return new SemIriSeqValImpl(iris);
+	}
 	static class SemIriSeqValImpl
 	extends BaseTypeImpl.BaseListImpl<SemIriValImpl>
 	implements SemIriSeqVal, BaseTypeImpl.BaseArgImpl {
@@ -39,14 +43,7 @@ public class SemValueImpl implements SemValue {
 	                .toArray(size -> new SemIriValImpl[size]));
 		}
 		SemIriSeqValImpl(SemIriVal[] values) {
-			this((SemIriValImpl[]) Arrays.stream(values)
-	                .map(val -> {
-	                	if (!(val instanceof SemIriValImpl)) {
-	                		throw new IllegalArgumentException("argument with unknown class "+val.getClass().getName());
-	                	}
-	                	return (SemIriValImpl) val;
-	                	})
-	                .toArray(size -> new SemIriValImpl[size]));
+			this(Arrays.copyOf(values, values.length, SemIriValImpl[].class));
 		}
 		SemIriSeqValImpl(SemIriValImpl[] values) {
 			super(values);

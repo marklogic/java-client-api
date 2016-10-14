@@ -38,4 +38,5 @@ public interface SemValue {
 	 * @return	a value sequence with an sem:iri data type
 	 */
     public SemIriSeqVal iris(String... stringIris);
+    public SemIriSeqVal iris(SemIriVal... iris);
 }

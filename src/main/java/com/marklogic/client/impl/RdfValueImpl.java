@@ -18,6 +18,7 @@ package com.marklogic.client.impl;
 import java.util.Arrays;
 
 import com.marklogic.client.expression.RdfValue;
+import com.marklogic.client.impl.SemValueImpl.SemIriValImpl;
 import com.marklogic.client.type.RdfLangStringSeqVal;
 import com.marklogic.client.type.RdfLangStringVal;
 
@@ -34,14 +35,7 @@ public class RdfValueImpl implements RdfValue {
 	extends BaseTypeImpl.BaseListImpl<RdfLangStringValImpl>
 	implements RdfLangStringSeqVal, BaseTypeImpl.BaseArgImpl {
 		RdfLangStringSeqValImpl(RdfLangStringVal[] values) {
-			this((RdfLangStringValImpl[]) Arrays.stream(values)
-	                .map(val -> {
-	                	if (!(val instanceof RdfLangStringValImpl)) {
-	                		throw new IllegalArgumentException("argument with unknown class "+val.getClass().getName());
-	                	}
-	                	return (RdfLangStringValImpl) val;
-	                	})
-	                .toArray(size -> new RdfLangStringValImpl[size]));
+			this(Arrays.copyOf(values, values.length, RdfLangStringValImpl[].class));
 		}
 		RdfLangStringSeqValImpl(RdfLangStringValImpl[] values) {
 			super(values);

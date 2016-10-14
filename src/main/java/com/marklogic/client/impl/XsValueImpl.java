@@ -103,6 +103,10 @@ public class XsValueImpl implements XsValue {
 	public XsAnyURISeqVal anyURIs(String... values) {
 		return new AnyURISeqValImpl(values);
 	}
+	@Override
+	public XsAnyURISeqVal anyURIs(XsAnyURIVal... values) {
+		return new AnyURISeqValImpl(values);
+	}
 
 	@Override
 	public XsBase64BinaryVal base64Binary(byte[] value) {
@@ -110,6 +114,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsBase64BinarySeqVal base64Binarys(byte[]... values) {
+		return new Base64BinarySeqValImpl(values);
+	}
+	@Override
+	public XsBase64BinarySeqVal base64Binarys(XsBase64BinaryVal... values) {
 		return new Base64BinarySeqValImpl(values);
 	}
 
@@ -121,6 +129,10 @@ public class XsValueImpl implements XsValue {
 	public XsBooleanSeqVal booleanVals(boolean... values) {
 		return new BooleanSeqValImpl(values);
 	}
+	@Override
+	public XsBooleanSeqVal booleanVals(XsBooleanVal... values) {
+		return new BooleanSeqValImpl(values);
+	}
 
 	@Override
 	public XsByteVal byteVal(byte value) {
@@ -128,6 +140,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsByteSeqVal byteVals(byte... values) {
+		return new ByteSeqValImpl(values);
+	}
+	@Override
+	public XsByteSeqVal byteVals(XsByteVal... values) {
 		return new ByteSeqValImpl(values);
 	}
 
@@ -153,6 +169,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsDateSeqVal dates(XMLGregorianCalendar... values) {
+		return new DateSeqValImpl(values);
+	}
+	@Override
+	public XsDateSeqVal dates(XsDateVal... values) {
 		return new DateSeqValImpl(values);
 	}
 
@@ -188,6 +208,10 @@ public class XsValueImpl implements XsValue {
 	public XsDateTimeSeqVal dateTimes(XMLGregorianCalendar... values) {
 		return new DateTimeSeqValImpl(values);
 	}
+	@Override
+	public XsDateTimeSeqVal dateTimes(XsDateTimeVal... values) {
+		return new DateTimeSeqValImpl(values);
+	}
 
 	@Override
 	public XsDayTimeDurationVal dayTimeDuration(String value) {
@@ -203,6 +227,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsDayTimeDurationSeqVal dayTimeDurations(Duration... values) {
+		return new DayTimeDurationSeqValImpl(values);
+	}
+	@Override
+	public XsDayTimeDurationSeqVal dayTimeDurations(XsDayTimeDurationVal... values) {
 		return new DayTimeDurationSeqValImpl(values);
 	}
 
@@ -238,6 +266,10 @@ public class XsValueImpl implements XsValue {
 	public XsDecimalSeqVal decimals(BigDecimal... values) {
 		return new DecimalSeqValImpl(values);
 	}
+	@Override
+	public XsDecimalSeqVal decimals(XsDecimalVal... values) {
+		return new DecimalSeqValImpl(values);
+	}
 
 	@Override
 	public XsDoubleVal doubleVal(double value) {
@@ -248,11 +280,20 @@ public class XsValueImpl implements XsValue {
 		return new DoubleSeqValImpl(values);
 	}
 	@Override
+	public XsDoubleSeqVal doubleVals(XsDoubleVal... values) {
+		return new DoubleSeqValImpl(values);
+	}
+
+	@Override
 	public XsFloatVal floatVal(float value) {
 		return new FloatValImpl(value);
 	}
 	@Override
 	public XsFloatSeqVal floatVals(float... values) {
+		return new FloatSeqValImpl(values);
+	}
+	@Override
+	public XsFloatSeqVal floatVals(XsFloatVal... values) {
 		return new FloatSeqValImpl(values);
 	}
 
@@ -272,6 +313,10 @@ public class XsValueImpl implements XsValue {
 	public XsGDaySeqVal gDays(XMLGregorianCalendar... values) {
 		return new GDaySeqValImpl(values);
 	}
+	@Override
+	public XsGDaySeqVal gDays(XsGDayVal... values) {
+		return new GDaySeqValImpl(values);
+	}
 
 	@Override
 	public XsGMonthVal gMonth(String value) {
@@ -287,6 +332,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsGMonthSeqVal gMonths(XMLGregorianCalendar... values) {
+		return new GMonthSeqValImpl(values);
+	}
+	@Override
+	public XsGMonthSeqVal gMonths(XsGMonthVal... values) {
 		return new GMonthSeqValImpl(values);
 	}
 
@@ -306,6 +355,10 @@ public class XsValueImpl implements XsValue {
 	public XsGMonthDaySeqVal gMonthDays(XMLGregorianCalendar... values) {
 		return new GMonthDaySeqValImpl(values);
 	}
+	@Override
+	public XsGMonthDaySeqVal gMonthDays(XsGMonthDayVal... values) {
+		return new GMonthDaySeqValImpl(values);
+	}
 
 	@Override
 	public XsGYearVal gYear(String value) {
@@ -321,6 +374,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsGYearSeqVal gYears(XMLGregorianCalendar... values) {
+		return new GYearSeqValImpl(values);
+	}
+	@Override
+	public XsGYearSeqVal gYears(XsGYearVal... values) {
 		return new GYearSeqValImpl(values);
 	}
 
@@ -340,6 +397,10 @@ public class XsValueImpl implements XsValue {
 	public XsGYearMonthSeqVal gYearMonths(XMLGregorianCalendar... values) {
 		return new GYearMonthSeqValImpl(values);
 	}
+	@Override
+	public XsGYearMonthSeqVal gYearMonths(XsGYearMonthVal... values) {
+		return new GYearMonthSeqValImpl(values);
+	}
 
 	@Override
 	public XsHexBinaryVal hexBinary(byte[] value) {
@@ -349,6 +410,10 @@ public class XsValueImpl implements XsValue {
 	public XsHexBinarySeqVal hexBinarys(byte[]... values) {
 		return new HexBinarySeqValImpl(values);
 	}
+	@Override
+	public XsHexBinarySeqVal hexBinarys(XsHexBinaryVal... values) {
+		return new HexBinarySeqValImpl(values);
+	}
 
 	@Override
 	public XsIntVal intVal(int value) {
@@ -356,6 +421,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsIntSeqVal intVals(int... values) {
+		return new IntSeqValImpl(values);
+	}
+	@Override
+	public XsIntSeqVal intVals(XsIntVal... values) {
 		return new IntSeqValImpl(values);
 	}
 
@@ -383,6 +452,10 @@ public class XsValueImpl implements XsValue {
 	public XsIntegerSeqVal integers(BigInteger... values) {
 		return new IntegerSeqValImpl(values);
 	}
+	@Override
+	public XsIntegerSeqVal integers(XsIntegerVal... values) {
+		return new IntegerSeqValImpl(values);
+	}
 
 	@Override
 	public XsLongVal longVal(long value) {
@@ -392,6 +465,10 @@ public class XsValueImpl implements XsValue {
 	public XsLongSeqVal longVals(long... values) {
 		return new LongSeqValImpl(values);
 	}
+	@Override
+	public XsLongSeqVal longVals(XsLongVal... values) {
+		return new LongSeqValImpl(values);
+	}
 
 	@Override
 	public XsShortVal shortVal(short value) {
@@ -399,6 +476,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsShortSeqVal shortVals(short... values) {
+		return new ShortSeqValImpl(values);
+	}
+	@Override
+	public XsShortSeqVal shortVals(XsShortVal... values) {
 		return new ShortSeqValImpl(values);
 	}
 
@@ -439,6 +520,10 @@ public class XsValueImpl implements XsValue {
 	public XsTimeSeqVal times(XMLGregorianCalendar... values) {
 		return new TimeSeqValImpl(values);
 	}
+	@Override
+	public XsTimeSeqVal times(XsTimeVal... values) {
+		return new TimeSeqValImpl(values);
+	}
 
 	@Override
 	public XsUnsignedByteVal unsignedByte(byte value) {
@@ -446,6 +531,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsUnsignedByteSeqVal unsignedBytes(byte... values) {
+		return new UnsignedByteSeqValImpl(values);
+	}
+	@Override
+	public XsUnsignedByteSeqVal unsignedBytes(XsUnsignedByteVal... values) {
 		return new UnsignedByteSeqValImpl(values);
 	}
 
@@ -457,6 +546,10 @@ public class XsValueImpl implements XsValue {
 	public XsUnsignedIntSeqVal unsignedInts(int... values) {
 		return new UnsignedIntSeqValImpl(values);
 	}
+	@Override
+	public XsUnsignedIntSeqVal unsignedInts(XsUnsignedIntVal... values) {
+		return new UnsignedIntSeqValImpl(values);
+	}
 
 	@Override
 	public XsUnsignedLongVal unsignedLong(long value) {
@@ -464,6 +557,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsUnsignedLongSeqVal unsignedLongs(long... values) {
+		return new UnsignedLongSeqValImpl(values);
+	}
+	@Override
+	public XsUnsignedLongSeqVal unsignedLongs(XsUnsignedLongVal... values) {
 		return new UnsignedLongSeqValImpl(values);
 	}
 
@@ -475,6 +572,10 @@ public class XsValueImpl implements XsValue {
 	public XsUnsignedShortSeqVal unsignedShorts(short... values) {
 		return new UnsignedShortSeqValImpl(values);
 	}
+	@Override
+	public XsUnsignedShortSeqVal unsignedShorts(XsUnsignedShortVal... values) {
+		return new UnsignedShortSeqValImpl(values);
+	}
 
 	@Override
 	public XsUntypedAtomicVal untypedAtomic(String value) {
@@ -482,6 +583,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsUntypedAtomicSeqVal untypedAtomics(String... values) {
+		return new UntypedAtomicSeqValImpl(values);
+	}
+	@Override
+	public XsUntypedAtomicSeqVal untypedAtomics(XsUntypedAtomicVal... values) {
 		return new UntypedAtomicSeqValImpl(values);
 	}
 
@@ -499,6 +604,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsYearMonthDurationSeqVal yearMonthDurations(Duration... values) {
+		return new YearMonthDurationSeqValImpl(values);
+	}
+	@Override
+	public XsYearMonthDurationSeqVal yearMonthDurations(XsYearMonthDurationVal... values) {
 		return new YearMonthDurationSeqValImpl(values);
 	}
 
@@ -524,6 +633,10 @@ public class XsValueImpl implements XsValue {
 	}
 	@Override
 	public XsQNameSeqVal qnames(QName... values) {
+		return new QNameSeqValImpl(values);
+	}
+	@Override
+	public XsQNameSeqVal qnames(XsQNameVal... values) {
 		return new QNameSeqValImpl(values);
 	}
 
@@ -597,10 +710,17 @@ public class XsValueImpl implements XsValue {
     // implementations
 	static class AnyURISeqValImpl extends AnyAtomicTypeSeqValImpl<AnyURIValImpl> implements XsAnyURISeqVal {
 		AnyURISeqValImpl(String[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
 					              .map(val -> new AnyURIValImpl(val))
 					              .toArray(size -> new AnyURIValImpl[size]));
 		}
+		AnyURISeqValImpl(XsAnyURIVal[] values) {
+			this(Arrays.copyOf(values, values.length, AnyURIValImpl[].class));
+    	}
+		AnyURISeqValImpl(AnyURIValImpl[] values) {
+			super(values);
+		}
+
 		@Override
 		public XsAnyURIVal[] getAnyURIItems() {
 			return getItems();
@@ -628,9 +748,15 @@ public class XsValueImpl implements XsValue {
     }
     static class Base64BinarySeqValImpl extends AnyAtomicTypeSeqValImpl<Base64BinaryValImpl> implements XsBase64BinarySeqVal {
     	Base64BinarySeqValImpl(byte[][] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
 		                                .map(val -> new Base64BinaryValImpl(val))
 		                                .toArray(size -> new Base64BinaryValImpl[size]));
+		}
+    	Base64BinarySeqValImpl(XsBase64BinaryVal[] values) {
+    		this(Arrays.copyOf(values, values.length, Base64BinaryValImpl[].class));
+		}
+    	Base64BinarySeqValImpl(Base64BinaryValImpl[] values) {
+    		super(values);
 		}
 
 		@Override
@@ -660,7 +786,13 @@ public class XsValueImpl implements XsValue {
     }
     static class BooleanSeqValImpl extends AnyAtomicTypeSeqValImpl<BooleanValImpl> implements XsBooleanSeqVal {
     	BooleanSeqValImpl(boolean[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	BooleanSeqValImpl(XsBooleanVal[] values) {
+			this(Arrays.copyOf(values, values.length, BooleanValImpl[].class));
+    	}
+    	BooleanSeqValImpl(BooleanValImpl[] values) {
+    		super(values);
 		}
         private static BooleanValImpl[] toArray(boolean[] vals) {
         	if (vals == null) {
@@ -701,7 +833,13 @@ public class XsValueImpl implements XsValue {
     }
     static class ByteSeqValImpl extends AnyAtomicTypeSeqValImpl<ByteValImpl> implements XsByteSeqVal {
     	ByteSeqValImpl(byte[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	ByteSeqValImpl(XsByteVal[] values) {
+			this(Arrays.copyOf(values, values.length, ByteValImpl[].class));
+    	}
+    	ByteSeqValImpl(ByteValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -824,6 +962,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new DateValImpl(val))
 					   .toArray(size -> new DateValImpl[size]));
 		}
+    	DateSeqValImpl(XsDateVal[] values) {
+			this(Arrays.copyOf(values, values.length, DateValImpl[].class));
+    	}
     	DateSeqValImpl(DateValImpl[] values) {
 			super(values);
 		}
@@ -886,6 +1027,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new DateTimeValImpl(val))
 					   .toArray(size -> new DateTimeValImpl[size]));
 		}
+    	DateTimeSeqValImpl(XsDateTimeVal[] values) {
+			this(Arrays.copyOf(values, values.length, DateTimeValImpl[].class));
+    	}
     	DateTimeSeqValImpl(DateTimeValImpl[] values) {
 			super(values);
 		}
@@ -935,6 +1079,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new DayTimeDurationValImpl(val))
 					   .toArray(size -> new DayTimeDurationValImpl[size]));
 		}
+    	DayTimeDurationSeqValImpl(XsDayTimeDurationVal[] values) {
+			this(Arrays.copyOf(values, values.length, DayTimeDurationValImpl[].class));
+    	}
     	DayTimeDurationSeqValImpl(DayTimeDurationValImpl[] values) {
 			super(values);
 		}
@@ -996,6 +1143,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new DecimalValImpl(val))
 					   .toArray(size -> new DecimalValImpl[size]));
 		}
+    	DecimalSeqValImpl(XsDecimalVal[] values) {
+			this(Arrays.copyOf(values, values.length, DecimalValImpl[].class));
+    	}
     	DecimalSeqValImpl(DecimalValImpl[] values) {
 			super(values);
 		}
@@ -1043,7 +1193,13 @@ public class XsValueImpl implements XsValue {
     }
     static class DoubleSeqValImpl extends AnyAtomicTypeSeqValImpl<DoubleValImpl> implements XsDoubleSeqVal {
     	DoubleSeqValImpl(double[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	DoubleSeqValImpl(XsDoubleVal[] values) {
+			this(Arrays.copyOf(values, values.length, DoubleValImpl[].class));
+    	}
+    	DoubleSeqValImpl(DoubleValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1092,7 +1248,13 @@ public class XsValueImpl implements XsValue {
     }
     static class FloatSeqValImpl extends AnyAtomicTypeSeqValImpl<FloatValImpl> implements XsFloatSeqVal {
     	FloatSeqValImpl(float[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	FloatSeqValImpl(XsFloatVal[] values) {
+			this(Arrays.copyOf(values, values.length, FloatValImpl[].class));
+    	}
+    	FloatSeqValImpl(FloatValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1150,6 +1312,9 @@ public class XsValueImpl implements XsValue {
 		                .map(val -> new GDayValImpl(val))
 		                .toArray(size -> new GDayValImpl[size]));
 		}
+    	GDaySeqValImpl(XsGDayVal[] values) {
+			this(Arrays.copyOf(values, values.length, GDayValImpl[].class));
+    	}
     	GDaySeqValImpl(GDayValImpl[] values) {
 			super(values);
 		}
@@ -1193,6 +1358,9 @@ public class XsValueImpl implements XsValue {
 		                .map(val -> new GMonthValImpl(val))
 		                .toArray(size -> new GMonthValImpl[size]));
 		}
+    	GMonthSeqValImpl(XsGMonthVal[] values) {
+			this(Arrays.copyOf(values, values.length, GMonthValImpl[].class));
+    	}
     	GMonthSeqValImpl(GMonthValImpl[] values) {
 			super(values);
 		}
@@ -1241,6 +1409,9 @@ public class XsValueImpl implements XsValue {
 		                .map(val -> new GMonthDayValImpl(val))
 		                .toArray(size -> new GMonthDayValImpl[size]));
 		}
+    	GMonthDaySeqValImpl(XsGMonthDayVal[] values) {
+			this(Arrays.copyOf(values, values.length, GMonthDayValImpl[].class));
+    	}
     	GMonthDaySeqValImpl(GMonthDayValImpl[] values) {
 			super(values);
 		}
@@ -1284,6 +1455,9 @@ public class XsValueImpl implements XsValue {
 		                .map(val -> new GYearValImpl(val))
 		                .toArray(size -> new GYearValImpl[size]));
 		}
+    	GYearSeqValImpl(XsGYearVal[] values) {
+			this(Arrays.copyOf(values, values.length, GYearValImpl[].class));
+    	}
     	GYearSeqValImpl(GYearValImpl[] values) {
 			super(values);
 		}
@@ -1327,6 +1501,9 @@ public class XsValueImpl implements XsValue {
 		                .map(val -> new GYearMonthValImpl(val))
 		                .toArray(size -> new GYearMonthValImpl[size]));
 		}
+    	GYearMonthSeqValImpl(XsGYearMonthVal[] values) {
+			this(Arrays.copyOf(values, values.length, GYearMonthValImpl[].class));
+    	}
     	GYearMonthSeqValImpl(GYearMonthValImpl[] values) {
 			super(values);
 		}
@@ -1361,9 +1538,15 @@ public class XsValueImpl implements XsValue {
     }
     static class HexBinarySeqValImpl extends AnyAtomicTypeSeqValImpl<HexBinaryValImpl> implements XsHexBinarySeqVal {
     	HexBinarySeqValImpl(byte[][] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
 		                .map(val -> new HexBinaryValImpl(val))
 		                .toArray(size -> new HexBinaryValImpl[size]));
+		}
+    	HexBinarySeqValImpl(XsHexBinaryVal[] values) {
+			this(Arrays.copyOf(values, values.length, HexBinaryValImpl[].class));
+    	}
+    	HexBinarySeqValImpl(HexBinaryValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsHexBinaryVal[] getHexBinaryItems() {
@@ -1392,9 +1575,15 @@ public class XsValueImpl implements XsValue {
     }
     static class IntSeqValImpl extends AnyAtomicTypeSeqValImpl<IntValImpl> implements XsIntSeqVal {
     	IntSeqValImpl(int[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
    					    .mapToObj(val -> new IntValImpl(val))
    					    .toArray(size -> new IntValImpl[size]));
+		}
+    	IntSeqValImpl(XsIntVal[] values) {
+			this(Arrays.copyOf(values, values.length, IntValImpl[].class));
+    	}
+    	IntSeqValImpl(IntValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1483,6 +1672,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new IntegerValImpl(val))
 					   .toArray(size -> new IntegerValImpl[size]));
 		}
+    	IntegerSeqValImpl(XsIntegerVal[] values) {
+			this(Arrays.copyOf(values, values.length, IntegerValImpl[].class));
+    	}
     	IntegerSeqValImpl(IntegerValImpl[] values) {
 			super(values);
 		}
@@ -1539,9 +1731,15 @@ public class XsValueImpl implements XsValue {
     }
     static class LongSeqValImpl extends AnyAtomicTypeSeqValImpl<LongValImpl> implements XsLongSeqVal {
     	LongSeqValImpl(long[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
    					    .mapToObj(val -> new LongValImpl(val))
    					    .toArray(size -> new LongValImpl[size]));
+		}
+    	LongSeqValImpl(XsLongVal[] values) {
+			this(Arrays.copyOf(values, values.length, LongValImpl[].class));
+    	}
+    	LongSeqValImpl(LongValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1604,7 +1802,13 @@ public class XsValueImpl implements XsValue {
     }
     static class ShortSeqValImpl extends AnyAtomicTypeSeqValImpl<ShortValImpl> implements XsShortSeqVal {
     	ShortSeqValImpl(short[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	ShortSeqValImpl(XsShortVal[] values) {
+			this(Arrays.copyOf(values, values.length, ShortValImpl[].class));
+    	}
+    	ShortSeqValImpl(ShortValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1706,14 +1910,7 @@ public class XsValueImpl implements XsValue {
 		                .toArray(size -> new StringValImpl[size]));
 		}
     	StringSeqValImpl(XsStringVal[] values) {
-			this((StringValImpl[]) Arrays.stream(values)
-	                .map(val -> {
-	                	if (!(val instanceof StringValImpl)) {
-	                		throw new IllegalArgumentException("argument with unknown class "+val.getClass().getName());
-	                	}
-	                	return (StringValImpl) val;
-	                	})
-	                .toArray(size -> new StringValImpl[size]));
+			this(Arrays.copyOf(values, values.length, StringValImpl[].class));
     	}
     	StringSeqValImpl(StringValImpl[] values) {
 			super(values);
@@ -1764,6 +1961,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new TimeValImpl(val))
 					   .toArray(size -> new TimeValImpl[size]));
 		}
+    	TimeSeqValImpl(XsTimeVal[] values) {
+			this(Arrays.copyOf(values, values.length, TimeValImpl[].class));
+    	}
     	TimeSeqValImpl(TimeValImpl[] values) {
 			super(values);
 		}
@@ -1810,7 +2010,13 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedByteSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedByteValImpl> implements XsUnsignedByteSeqVal {
     	UnsignedByteSeqValImpl(byte[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	UnsignedByteSeqValImpl(XsUnsignedByteVal[] values) {
+			this(Arrays.copyOf(values, values.length, UnsignedByteValImpl[].class));
+    	}
+    	UnsignedByteSeqValImpl(UnsignedByteValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -1927,9 +2133,15 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedIntSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedIntValImpl> implements XsUnsignedIntSeqVal {
     	UnsignedIntSeqValImpl(int[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedIntValImpl(val))
    					    .toArray(size -> new UnsignedIntValImpl[size]));
+		}
+    	UnsignedIntSeqValImpl(XsUnsignedIntVal[] values) {
+			this(Arrays.copyOf(values, values.length, UnsignedIntValImpl[].class));
+    	}
+    	UnsignedIntSeqValImpl(UnsignedIntValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -2012,9 +2224,15 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedLongSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedLongValImpl> implements XsUnsignedLongSeqVal {
     	UnsignedLongSeqValImpl(long[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedLongValImpl(val))
    					    .toArray(size -> new UnsignedLongValImpl[size]));
+		}
+    	UnsignedLongSeqValImpl(XsUnsignedLongVal[] values) {
+			this(Arrays.copyOf(values, values.length, UnsignedLongValImpl[].class));
+    	}
+    	UnsignedLongSeqValImpl(UnsignedLongValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -2085,7 +2303,13 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedShortSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedShortValImpl> implements XsUnsignedShortSeqVal {
     	UnsignedShortSeqValImpl(short[] values) {
-			super(toArray(values));
+			this(toArray(values));
+		}
+    	UnsignedShortSeqValImpl(XsUnsignedShortVal[] values) {
+			this(Arrays.copyOf(values, values.length, UnsignedShortValImpl[].class));
+    	}
+    	UnsignedShortSeqValImpl(UnsignedShortValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsNumericVal[] getNumericItems() {
@@ -2190,9 +2414,15 @@ public class XsValueImpl implements XsValue {
     }
     static class UntypedAtomicSeqValImpl extends AnyAtomicTypeSeqValImpl<UntypedAtomicValImpl> implements XsUntypedAtomicSeqVal {
     	UntypedAtomicSeqValImpl(String[] values) {
-			super(Arrays.stream(values)
+			this(Arrays.stream(values)
 		                .map(val -> new UntypedAtomicValImpl(val))
 		                .toArray(size -> new UntypedAtomicValImpl[size]));
+		}
+    	UntypedAtomicSeqValImpl(XsUntypedAtomicVal[] values) {
+			this(Arrays.copyOf(values, values.length, UntypedAtomicValImpl[].class));
+    	}
+    	UntypedAtomicSeqValImpl(UntypedAtomicValImpl[] values) {
+			super(values);
 		}
 		@Override
 		public XsUntypedAtomicVal[] getUntypedAtomicItems() {
@@ -2229,6 +2459,9 @@ public class XsValueImpl implements XsValue {
 					   .map(val -> new YearMonthDurationValImpl(val))
 					   .toArray(size -> new YearMonthDurationValImpl[size]));
 		}
+    	YearMonthDurationSeqValImpl(XsYearMonthDurationVal[] values) {
+			this(Arrays.copyOf(values, values.length, YearMonthDurationValImpl[].class));
+    	}
     	YearMonthDurationSeqValImpl(YearMonthDurationValImpl[] values) {
 			super(values);
 		}
@@ -2286,6 +2519,9 @@ public class XsValueImpl implements XsValue {
 			this((QNameValImpl[]) Arrays.stream(values)
 		               .map(val -> new QNameValImpl(val))
 		               .toArray(size -> new QNameValImpl[size]));
+    	}
+    	QNameSeqValImpl(XsQNameVal[] values) {
+			this(Arrays.copyOf(values, values.length, QNameValImpl[].class));
     	}
     	QNameSeqValImpl(QNameValImpl[] values) {
 			super(values);
