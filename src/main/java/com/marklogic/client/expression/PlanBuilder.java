@@ -122,6 +122,7 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsGMonthDayParam;
 
 import com.marklogic.client.type.SemIriVal;
+import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public abstract class PlanBuilder {
@@ -319,8 +320,62 @@ public abstract class PlanBuilder {
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
 
+    public abstract JsonDocumentExpr jsonDocument(JsonRootExpr root);
+    public abstract JsonObjectExpr   jsonObject(JsonPropertyExpr... properties);
+    public abstract JsonArrayExpr    jsonArray(JsonContentExpr... items);
+    public abstract JsonPropertyExpr prop(String key, JsonContentExpr value);
+    public abstract JsonPropertyExpr prop(XsStringExpr key, JsonContentExpr value);
+    public abstract JsonStringExpr   jsonString(String value);
+    public abstract JsonStringExpr   jsonString(XsAnySimpleTypeSeqExpr value);
+    public abstract JsonNumberExpr   jsonNumber(double value);
+    public abstract JsonNumberExpr   jsonNumber(long value);
+    public abstract JsonNumberExpr   jsonNumber(XsNumericExpr value);
+    public abstract JsonBooleanExpr  jsonBoolean(boolean value);
+    public abstract JsonBooleanExpr  jsonBoolean(XsBooleanExpr value);
+    public abstract JsonNullExpr     jsonNull();
+
+    public abstract XmlDocumentExpr  xmlDocument(XmlRootExpr root);
+    public abstract XmlElementExpr   xmlElement(String name, XmlAttributeExpr... attributes);
+    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlAttributeExpr... attributes);
+    public abstract XmlElementExpr   xmlElement(String name, XmlContentExpr... content);
+    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlContentExpr... content);
+    public abstract XmlElementExpr   xmlElement(String name, XmlAttributeSeqExpr attributes, XmlContentExpr... content);
+    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlAttributeSeqExpr attributes, XmlContentExpr... content);
+    public abstract XmlAttributeExpr xmlAttribute(String name, XsAnySimpleTypeSeqExpr value);
+    public abstract XmlAttributeExpr xmlAttribute(XsQNameExpr name, XsAnySimpleTypeSeqExpr value);
+    public abstract XmlTextExpr      xmlText(String value);
+    public abstract XmlTextExpr      xmlText(XsAnySimpleTypeSeqExpr value);
+    public abstract XmlCommentExpr   xmlComment(String content);
+    public abstract XmlCommentExpr   xmlComment(XsAnySimpleTypeSeqExpr content);
+    public abstract XmlPIExpr        xmlPI(String name, String value);
+    public abstract XmlPIExpr        xmlPI(XsStringExpr name, XsAnySimpleTypeSeqExpr value);
+
+    public abstract XmlAttributeSeqExpr xmlAttributes(XmlAttributeExpr... attributes);
+
     public interface Prefixer {
         public SemIriVal iri(String name);
     }
+
+    public interface JsonDocumentExpr extends ItemExpr                                {}
+    public interface JsonRootExpr                                                     {}
+    public interface JsonContentExpr                                                  {}
+    public interface JsonObjectExpr   extends JsonContentExpr, JsonRootExpr, ItemExpr {}
+    public interface JsonPropertyExpr extends ItemExpr                                {}
+    public interface JsonArrayExpr    extends JsonContentExpr, JsonRootExpr, ItemExpr {}
+    public interface JsonStringExpr   extends JsonContentExpr, ItemExpr               {}
+    public interface JsonNumberExpr   extends JsonContentExpr, ItemExpr               {}
+    public interface JsonBooleanExpr  extends JsonContentExpr, ItemExpr               {}
+    public interface JsonNullExpr     extends JsonContentExpr, ItemExpr               {}
+
+    public interface XmlAttributeSeqExpr extends ItemSeqExpr {}
+
+    public interface XmlDocumentExpr  extends ItemExpr                              {}
+    public interface XmlRootExpr                                                    {}
+    public interface XmlContentExpr                                                 {}
+    public interface XmlElementExpr   extends XmlRootExpr, XmlContentExpr, ItemExpr {}
+    public interface XmlAttributeExpr extends ItemExpr, XmlAttributeSeqExpr         {}
+    public interface XmlTextExpr      extends XmlContentExpr, ItemExpr              {}
+    public interface XmlCommentExpr   extends XmlRootExpr, XmlContentExpr, ItemExpr {}
+    public interface XmlPIExpr        extends XmlRootExpr, XmlContentExpr, ItemExpr {}
 
 }

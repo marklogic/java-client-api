@@ -19,6 +19,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -43,6 +44,11 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsStringExpr;
 
 abstract class PlanBuilderBase extends PlanBuilder {
 	private HandleFactoryRegistry handleRegistry;
@@ -72,6 +78,125 @@ abstract class PlanBuilderBase extends PlanBuilder {
 				base : base + "/";
 
 		return new PrefixerImpl(sem, prefix);
+	}
+
+	@Override
+    public JsonDocumentExpr jsonDocument(JsonRootExpr root) {
+		return new JsonDocumentCallImpl(new Object[]{ root });
+    }
+	@Override
+    public JsonObjectExpr jsonObject(JsonPropertyExpr... properties) {
+		return new JsonObjectCallImpl(new Object[]{ new JsonPropertySeqListImpl(properties) });
+    }
+	@Override
+    public JsonArrayExpr jsonArray(JsonContentExpr... items) {
+		return new JsonArrayCallImpl(new Object[]{ new JsonContentSeqListImpl(items) });
+    }
+	@Override
+    public JsonPropertyExpr prop(String key, JsonContentExpr value) {
+		return prop(new XsValueImpl.StringValImpl(key), value);
+    }
+	@Override
+    public JsonPropertyExpr prop(XsStringExpr key, JsonContentExpr value) {
+		return new JsonPropertyCallImpl(new Object[]{ key, value });
+    }
+	@Override
+    public JsonStringExpr jsonString(String value) {
+		return jsonString(new XsValueImpl.StringValImpl(value));
+	}
+	@Override
+    public JsonStringExpr jsonString(XsAnySimpleTypeSeqExpr value) {
+		return new JsonStringCallImpl(new Object[]{ value });
+    }
+	@Override
+    public JsonNumberExpr jsonNumber(double value) {
+		return jsonNumber(new XsValueImpl.DoubleValImpl(value));
+	}
+	@Override
+    public JsonNumberExpr jsonNumber(long value) {
+		return jsonNumber(new XsValueImpl.LongValImpl(value));
+	}
+	@Override
+    public JsonNumberExpr jsonNumber(XsNumericExpr value) {
+		return new JsonNumberCallImpl(new Object[]{ value });
+    }
+	@Override
+    public JsonBooleanExpr jsonBoolean(boolean value) {
+		return jsonBoolean(new XsValueImpl.BooleanValImpl(value));
+	}
+	@Override
+    public JsonBooleanExpr jsonBoolean(XsBooleanExpr value) {
+		return new JsonBooleanCallImpl(new Object[]{ value });
+    }
+	@Override
+    public JsonNullExpr jsonNull() {
+		return new JsonNullCallImpl();
+    }
+
+	@Override
+    public XmlDocumentExpr xmlDocument(XmlRootExpr root) {
+		return new XmlDocumentCallImpl(new Object[]{ root });
+    }
+	@Override
+    public XmlElementExpr xmlElement(String name, XmlAttributeExpr... attributes) {
+		return xmlElement(new XsValueImpl.QNameValImpl(name), attributes);
+    }
+	@Override
+    public XmlElementExpr xmlElement(XsQNameExpr name, XmlAttributeExpr... attributes) {
+		return new XmlElementCallImpl(new Object[]{ name, new XmlAttributeSeqListImpl(attributes) });
+    }
+	@Override
+    public XmlElementExpr xmlElement(String name, XmlContentExpr... content) {
+		return xmlElement(new XsValueImpl.QNameValImpl(name), content);
+    }
+	@Override
+    public XmlElementExpr xmlElement(XsQNameExpr name, XmlContentExpr... content) {
+		return new XmlElementCallImpl(new Object[]{ name, new XmlContentSeqListImpl(content) });
+    }
+	@Override
+    public XmlElementExpr xmlElement(String name, XmlAttributeSeqExpr attributes, XmlContentExpr... content) {
+		return xmlElement(new XsValueImpl.QNameValImpl(name), attributes, content);
+    }
+	@Override
+    public XmlElementExpr xmlElement(XsQNameExpr name, XmlAttributeSeqExpr attributes, XmlContentExpr... content) {
+		return new XmlElementCallImpl(new Object[]{ name, attributes, new XmlContentSeqListImpl(content) });
+    }
+	@Override
+    public XmlAttributeExpr xmlAttribute(String name, XsAnySimpleTypeSeqExpr value) {
+		return xmlAttribute(new XsValueImpl.QNameValImpl(name), value);
+    }
+	@Override
+    public XmlAttributeExpr xmlAttribute(XsQNameExpr name, XsAnySimpleTypeSeqExpr value) {
+		return new XmlAttributeCallImpl(new Object[]{ name, value });
+    }
+	@Override
+    public XmlTextExpr xmlText(String value) {
+		return xmlText(new XsValueImpl.StringValImpl(value));
+	}
+	@Override
+    public XmlTextExpr xmlText(XsAnySimpleTypeSeqExpr value) {
+		return new XmlTextCallImpl(new Object[]{ value });
+    }
+	@Override
+    public XmlCommentExpr xmlComment(String content) {
+		return xmlComment(new XsValueImpl.StringValImpl(content));
+	}
+	@Override
+    public XmlCommentExpr xmlComment(XsAnySimpleTypeSeqExpr content) {
+		return new XmlCommentCallImpl(new Object[]{ content });
+    }
+	@Override
+    public XmlPIExpr xmlPI(String name, String value) {
+		return xmlPI(new XsValueImpl.StringValImpl(name), new XsValueImpl.StringValImpl(value));
+    }
+	@Override
+    public XmlPIExpr xmlPI(XsStringExpr name, XsAnySimpleTypeSeqExpr value) {
+		return new XmlPICallImpl(new Object[]{ name, value });
+    }
+
+	@Override
+	public XmlAttributeSeqExpr xmlAttributes(XmlAttributeExpr... attributes) {
+        return new XmlAttributeSeqListImpl(attributes);
 	}
 
 	static public class PrefixerImpl implements Prefixer {
@@ -272,5 +397,103 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
 			this.handleRegistry = handleRegistry;
 		}
+    }
+
+    static interface JsonContentCallImpl extends JsonContentExpr, BaseTypeImpl.BaseArgImpl {}
+    static class JsonContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+    	JsonContentSeqListImpl(JsonContentExpr[] items) {
+            super(Arrays.copyOf(items, items.length, JsonContentCallImpl[].class));
+        }
+    }
+
+    static class JsonPropertySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+    	JsonPropertySeqListImpl(JsonPropertyExpr[] items) {
+            super(Arrays.copyOf(items, items.length, JsonPropertyCallImpl[].class));
+        }
+    }
+
+    static class JsonDocumentCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonDocumentExpr {
+    	JsonDocumentCallImpl(Object[] args) {
+            super("op", "json-document", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectExpr, JsonContentCallImpl {
+    	JsonObjectCallImpl(Object[] args) {
+            super("op", "json-object", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonPropertyCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonPropertyExpr {
+    	JsonPropertyCallImpl(Object[] args) {
+            super("op", "prop", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArrayExpr, JsonContentCallImpl {
+    	JsonArrayCallImpl(Object[] args) {
+            super("op", "json-array", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonStringExpr, JsonContentCallImpl {
+    	JsonStringCallImpl(Object[] args) {
+            super("op", "json-string", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonNumberCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonNumberExpr, JsonContentCallImpl {
+    	JsonNumberCallImpl(Object[] args) {
+            super("op", "json-number", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonBooleanCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonBooleanExpr, JsonContentCallImpl {
+    	JsonBooleanCallImpl(Object[] args) {
+            super("op", "json-boolean", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class JsonNullCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonNullExpr, JsonContentCallImpl {
+    	JsonNullCallImpl() {
+            super("op", "json-number", new BaseTypeImpl.BaseArgImpl[]{});
+        }
+    }
+
+    static class XmlAttributeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XmlAttributeSeqExpr {
+    	XmlAttributeSeqListImpl(XmlAttributeExpr[] items) {
+            super(Arrays.copyOf(items, items.length, XmlAttributeCallImpl[].class));
+        }
+    }
+
+    static interface XmlContentCallImpl  extends XmlContentExpr,  BaseTypeImpl.BaseArgImpl {}
+    static class XmlContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+    	XmlContentSeqListImpl(XmlContentExpr[] items) {
+            super(Arrays.copyOf(items, items.length, XmlContentCallImpl[].class));
+        }
+    }
+
+    static class XmlDocumentCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlDocumentExpr {
+    	XmlDocumentCallImpl(Object[] args) {
+            super("op", "xml-document", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class XmlElementCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlElementExpr, XmlContentCallImpl {
+    	XmlElementCallImpl(Object[] args) {
+            super("op", "xml-element", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class XmlAttributeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlAttributeExpr {
+    	XmlAttributeCallImpl(Object[] args) {
+            super("op", "xml-attribute", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class XmlTextCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlTextExpr, XmlContentCallImpl {
+    	XmlTextCallImpl(Object[] args) {
+            super("op", "xml-text", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class XmlCommentCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlCommentExpr, XmlContentCallImpl {
+    	XmlCommentCallImpl(Object[] args) {
+            super("op", "xml-comment", BaseTypeImpl.convertList(args));
+        }
+    }
+    static class XmlPICallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XmlPIExpr, XmlContentCallImpl {
+    	XmlPICallImpl(Object[] args) {
+            super("op", "xml-pi", BaseTypeImpl.convertList(args));
+        }
     }
 }
