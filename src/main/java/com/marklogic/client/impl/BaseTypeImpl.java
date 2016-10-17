@@ -259,7 +259,7 @@ public class BaseTypeImpl {
 	    	Arrays.stream(items)
 	    	      .map(item -> {
 	    	          if (item != null && !as.isInstance(item)) {
-	    	            throw new IllegalArgumentException("argument with unknown class "+item.getClass().getName());
+	    	            throw new IllegalArgumentException("expected "+as.getName()+" argument instead of "+item.getClass().getName());
 	    	          }
 	    	          return (T) item;
 	    	          })

@@ -28,6 +28,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.impl.SemValueImpl.SemIriValImpl;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsAnySimpleTypeSeqVal;
@@ -710,7 +711,7 @@ public class XsValueImpl implements XsValue {
     // implementations
 	static class AnyURISeqValImpl extends AnyAtomicTypeSeqValImpl<AnyURIValImpl> implements XsAnyURISeqVal {
 		AnyURISeqValImpl(String[] values) {
-			this(Arrays.stream(values)
+			this((XsAnyURIVal[]) Arrays.stream(values)
 					              .map(val -> new AnyURIValImpl(val))
 					              .toArray(size -> new AnyURIValImpl[size]));
 		}
@@ -748,7 +749,7 @@ public class XsValueImpl implements XsValue {
     }
     static class Base64BinarySeqValImpl extends AnyAtomicTypeSeqValImpl<Base64BinaryValImpl> implements XsBase64BinarySeqVal {
     	Base64BinarySeqValImpl(byte[][] values) {
-			this(Arrays.stream(values)
+			this((XsBase64BinaryVal[]) Arrays.stream(values)
 		                                .map(val -> new Base64BinaryValImpl(val))
 		                                .toArray(size -> new Base64BinaryValImpl[size]));
 		}
@@ -1538,7 +1539,7 @@ public class XsValueImpl implements XsValue {
     }
     static class HexBinarySeqValImpl extends AnyAtomicTypeSeqValImpl<HexBinaryValImpl> implements XsHexBinarySeqVal {
     	HexBinarySeqValImpl(byte[][] values) {
-			this(Arrays.stream(values)
+			this((XsHexBinaryVal[]) Arrays.stream(values)
 		                .map(val -> new HexBinaryValImpl(val))
 		                .toArray(size -> new HexBinaryValImpl[size]));
 		}
@@ -1575,7 +1576,7 @@ public class XsValueImpl implements XsValue {
     }
     static class IntSeqValImpl extends AnyAtomicTypeSeqValImpl<IntValImpl> implements XsIntSeqVal {
     	IntSeqValImpl(int[] values) {
-			this(Arrays.stream(values)
+			this((XsIntVal[]) Arrays.stream(values)
    					    .mapToObj(val -> new IntValImpl(val))
    					    .toArray(size -> new IntValImpl[size]));
 		}
@@ -1731,7 +1732,7 @@ public class XsValueImpl implements XsValue {
     }
     static class LongSeqValImpl extends AnyAtomicTypeSeqValImpl<LongValImpl> implements XsLongSeqVal {
     	LongSeqValImpl(long[] values) {
-			this(Arrays.stream(values)
+			this((XsLongVal[]) Arrays.stream(values)
    					    .mapToObj(val -> new LongValImpl(val))
    					    .toArray(size -> new LongValImpl[size]));
 		}
@@ -2133,7 +2134,7 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedIntSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedIntValImpl> implements XsUnsignedIntSeqVal {
     	UnsignedIntSeqValImpl(int[] values) {
-			this(Arrays.stream(values)
+			this((XsUnsignedIntVal[]) Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedIntValImpl(val))
    					    .toArray(size -> new UnsignedIntValImpl[size]));
 		}
@@ -2224,7 +2225,7 @@ public class XsValueImpl implements XsValue {
     }
     static class UnsignedLongSeqValImpl extends AnyAtomicTypeSeqValImpl<UnsignedLongValImpl> implements XsUnsignedLongSeqVal {
     	UnsignedLongSeqValImpl(long[] values) {
-			this(Arrays.stream(values)
+			this((XsUnsignedLongVal[]) Arrays.stream(values)
    					    .mapToObj(val -> new UnsignedLongValImpl(val))
    					    .toArray(size -> new UnsignedLongValImpl[size]));
 		}
@@ -2414,7 +2415,7 @@ public class XsValueImpl implements XsValue {
     }
     static class UntypedAtomicSeqValImpl extends AnyAtomicTypeSeqValImpl<UntypedAtomicValImpl> implements XsUntypedAtomicSeqVal {
     	UntypedAtomicSeqValImpl(String[] values) {
-			this(Arrays.stream(values)
+			this((XsUntypedAtomicVal[]) Arrays.stream(values)
 		                .map(val -> new UntypedAtomicValImpl(val))
 		                .toArray(size -> new UntypedAtomicValImpl[size]));
 		}

@@ -36,11 +36,11 @@ import com.marklogic.client.io.marker.RowReadHandle;
    + RowSet
    + RowRecord
    + RowRecord - column metadata
+   + RowManager.resultRowsAs()
+   + PlanBuilder - node constructors
 
    TO DO:
    + RowRecord - sequence column values
-   + RowManager.resultRowsAs()
-   + PlanBuilder - node constructors
  */
 
 /**

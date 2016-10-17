@@ -439,6 +439,47 @@ public class RowManagerTest {
 
         recordRowSet.close();
 	}
+	@Test
+	public void testNodes() throws IOException, XPathExpressionException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(litRows)
+				 .where(p.lt(p.col("rowNum"), p.xs.intVal(3)))
+				 .select(p.as("node", p.sem.ifExpr(p.eq(p.col("rowNum"), p.xs.intVal(1)),
+						 p.jsonDocument(
+							p.jsonObject(
+								p.prop("p1", p.jsonString("s")),
+								p.prop("p2", p.jsonArray(
+									p.jsonNumber(p.col("city"))
+									))
+								)
+							),
+						 p.xmlDocument(
+							p.xmlElement("e",
+								p.xmlAttribute("a", p.xs.string("s")),
+								p.xmlText(p.col("city"))
+								)
+							)
+						 )));
+
+		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
+
+		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+		assertTrue("no JSON node row", recordRowItr.hasNext());
+		RowRecord recordRow = recordRowItr.next();
+		assertTrue("no JSON node value", recordRow.containsKey("node"));
+// TODO: get node value as JSON after fix to REST API serialization
+		assertTrue("no XML node row", recordRowItr.hasNext());
+		recordRow = recordRowItr.next();
+		assertTrue("no XML node value", recordRow.containsKey("node"));
+// TODO: inspect node value as XML after fix to REST API serialization
+		assertFalse("expected one record row", recordRowItr.hasNext());
+
+		recordRowSet.close();
+	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
         EditableNamespaceContext namespaces = new EditableNamespaceContext();
         namespaces.setNamespaceURI("sp", "http://www.w3.org/2005/sparql-results#");
