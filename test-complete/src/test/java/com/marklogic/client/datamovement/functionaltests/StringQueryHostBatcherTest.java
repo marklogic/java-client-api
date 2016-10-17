@@ -218,7 +218,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 			// Verify if the batch flushes when batch size is reached.
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 			// Hold for asserting the callbacks batch contents, since callback are on different threads than the main JUnit thread.
 			// JUnit can not assert on different threads; other than the main one. 
 			StringBuilder batchResults = new StringBuilder();
@@ -327,7 +327,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 			// Verify if the batch flushes when batch size is reached.
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 			// Hold for asserting the callbacks batch contents, since callback are on different threads than the main JUnit thread.
 			// JUnit can not assert on different threads; other than the main one. 
 			StringBuilder batchResults = new StringBuilder();
@@ -413,7 +413,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.add("/batcher-contraints5.json", contentHandle5);
 		
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 
 		StringBuilder querybatchResults = new StringBuilder();
 		StringBuilder querybatchFailResults = new StringBuilder();
@@ -501,7 +501,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.add("/fail-contraints5.xml", contentHandle5);
 
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 		StringBuilder batchResults = new StringBuilder();
 		StringBuilder batchFailResults = new StringBuilder();
 		// create query def
@@ -598,7 +598,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.add("contraints1.json", contentHandle1);
 			
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 		StringBuffer batchFailResults  = new StringBuffer();
 		String expectedStr = "Vannevar Bush wrote an article for The Atlantic Monthly";
 		
@@ -734,7 +734,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 		StringBuffer batchResults  = new StringBuffer();
 		StringBuffer batchFailResults  = new StringBuffer();
 			
@@ -848,7 +848,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 		
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 		StringBuilder batchResults = new StringBuilder();
 		StringBuilder batchFailResults = new StringBuilder();
 
@@ -946,7 +946,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batcher.add(uri, handleBar);
 		}
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 		
 		StringBuffer batchResults  = new StringBuffer();
 		StringBuffer batchFailResults  = new StringBuffer();
@@ -1039,7 +1039,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			}
 
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 			StringBuffer batchResults  = new StringBuffer();
 			StringBuffer batchFailResults  = new StringBuffer();
 
@@ -1202,7 +1202,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			}
 
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 			StringBuilder batchResults = new StringBuilder();
 			StringBuffer batchFailResults = new StringBuffer();
 			StringBuilder ccBuf = new StringBuilder();
@@ -1308,7 +1308,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.add("/batcher-contraints5.json", contentHandle5);
 
 		// Flush
-		batcher.flush();
+		batcher.flushAndWait();
 
 		StringBuffer querybatchResults = new StringBuffer();
 		StringBuilder querybatchFailResults = new StringBuilder();
@@ -1358,7 +1358,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		// Update contents to same doc uri.
 		batcherTwo.withBatchSize(1);
 		batcherTwo.add("/batcher-contraints11.json", handle);
-		batcherTwo.flush();
+		batcherTwo.flushAndWait();
 		
 		JobTicket jobTicketWriteTwo = moveMgr.startJob(batcherTwo);
 		
@@ -1431,7 +1431,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batcher.add("/abs-range-constraint/batcher-contraints5.xml", contentHandle5);
 
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 
 			StringBuilder batchResults = new StringBuilder();
 			StringBuilder batchDetails = new StringBuilder();
@@ -1584,7 +1584,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batcher.add("/abs-range-constraint/batcher-contraints5.xml", contentHandle5);
 
 			// Flush
-			batcher.flush();
+			batcher.flushAndWait();
 
 			StringBuilder batchWordResults = new StringBuilder();
 			StringBuilder batchWordFailResults = new StringBuilder();

@@ -484,7 +484,16 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public void flush() {
+  public void flushAsync() {
+    flush(false);
+  }
+
+  @Override
+  public void flushAndWait() {
+    flush(true);
+  }
+
+  private void flush(boolean waitForCompletion) {
     requireInitialized();
     requireNotStopped();
     // drain any docs left in the queue

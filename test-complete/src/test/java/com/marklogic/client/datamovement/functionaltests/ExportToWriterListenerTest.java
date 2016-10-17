@@ -133,7 +133,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 			ihb2.addAs(uri, meta3, stringHandle);
 		}
 		
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 30);
 	}
 

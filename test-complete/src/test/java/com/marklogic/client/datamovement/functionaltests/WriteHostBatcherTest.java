@@ -327,7 +327,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_wrongjson", docMeta2, osHandle).add("/doc/bytes", docMeta1, bytesHandle).add("/doc/dom", domHandle);
 		
 		
-		ihb1.flush();
+		ihb1.flushAndWait();
 		
 		   	
 		System.out.println("Success URI's: "+successBatch.toString());
@@ -381,7 +381,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_wrongjson", docMeta2, osHandle).add("/doc/bytes", docMeta1, bytesHandle).add("/doc/dom", domHandle);
 		
 		
-		ihb2.flush();
+		ihb2.flushAndWait();
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
      	Assert.assertTrue(uriExists(failureBatch.toString(),"/doc/reader_wrongxml"));
     	
@@ -418,7 +418,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_json",  osHandle1).add("/doc/bytes",  bytesHandle).add("/doc/dom", docMeta1, domHandle);
 		
 		
-		ihb3.flush();
+		ihb3.flushAndWait();
 		
 		System.out.println("Size is "+dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
@@ -467,10 +467,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb4);
 		
 		ihb4.add("/doc/jackson", docMeta2, jacksonHandle).add("/doc/reader_wrongxml",docMeta1, readerHandle).add("/doc/string", stringHandle).add("/doc/file",  fileHandle);
-		ihb4.flush();
+		ihb4.flushAndWait();
 		
 		ihb4.add("/doc/is", docMeta2,isHandle).add("/doc/os_wrongjson",  osHandle).add("/doc/bytes",  bytesHandle).add("/doc/dom", docMeta1, domHandle);
-		ihb4.flush();
+		ihb4.flushAndWait();
 		
 		
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
@@ -516,7 +516,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb3.addAs("/doc/jackson", docMeta2, jsonNode).addAs("/doc/reader_xml",docMeta1, docStream1).addAs("/doc/string", stringTriple).addAs("/doc/dom", docMeta1, docContent);
 		
 		
-		ihb3.flush();
+		ihb3.flushAndWait();
 		System.out.println("Size is "+dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==4);
     	
@@ -573,7 +573,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_wrongjson", docMeta2, osHandle).add("/doc/bytes", docMeta1, bytesHandle).addAs("/doc/dom", domHandle);
 		
 		
-		ihb1.flush();
+		ihb1.flushAndWait();
 		
     
     	Assert.assertTrue(uriExists(failureBatch.toString(),"/doc/os_wrongjson"));
@@ -623,7 +623,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_wrongjson", docMeta2, osHandle).addAs("/doc/bytes", docMeta1, bytesJson).addAs("/doc/dom", domHandle);
 		
 		
-		ihb2.flush();
+		ihb2.flushAndWait();
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
      	Assert.assertTrue(uriExists(failureBatch.toString(),"/doc/reader_wrongxml"));
     	
@@ -660,7 +660,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		.add("/doc/os_json",  osHandle1).add("/doc/bytes",  bytesHandle).addAs("/doc/dom", docMeta1, docContent);
 		
 		
-		ihb3.flush();
+		ihb3.flushAndWait();
 		System.out.println("Size is "+dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
     	
@@ -707,10 +707,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb4);
 		
 		ihb4.addAs("/doc/jackson", docMeta2, jsonNode).add("/doc/reader_wrongxml",docMeta1, readerHandle).add("/doc/string", stringHandle).addAs("/doc/file",  fileJson);
-		ihb4.flush();
+		ihb4.flushAndWait();
 		
 		ihb4.add("/doc/is", docMeta2,isHandle).add("/doc/os_wrongjson",  osHandle).add("/doc/bytes",  bytesHandle).addAs("/doc/dom", docMeta1, docContent);
-		ihb4.flush();
+		ihb4.flushAndWait();
 		
 		
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
@@ -755,7 +755,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		
 		
-		ihb.flush();
+		ihb.flushAndWait();
 		
 	}
 	
@@ -786,7 +786,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb1.add(uri, jacksonHandle);
 		}
 	
-		ihb1.flush();
+		ihb1.flushAndWait();
 		Assert.assertTrue(state.booleanValue());
 		System.out.println(numberOfSuccessFulBatches.intValue());
 		Assert.assertTrue(numberOfSuccessFulBatches.intValue()==21);
@@ -837,7 +837,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		for (int i =0 ; i < 5; i++){
 			ihb1.add("", stringHandle);
 		}
-		ihb1.flush();
+		ihb1.flushAndWait();
 
 		
 		System.out.println(successUser.toString());
@@ -909,7 +909,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		for (int i =0 ;i < 5; i++){
 			ihb1.add("", stringHandle);
 		}
-		ihb1.flush();
+		ihb1.flushAndWait();
 		dmManager.stopJob(jt);
 		
 		System.out.println(successBatchNum.toString());
@@ -1027,7 +1027,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.addAs(uri, stringHandle);
 		}
 	
-		ihb2.flush();
+		ihb2.flushAndWait();
 		
 		properties.put("updates-allowed", "all");
 		for (int i =0 ; i < clusterInfo.size(); i++)
@@ -1066,7 +1066,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb1.add(uri, stringHandle);
 		}
 	
-		ihb1.flush();
+		ihb1.flushAndWait();
 		
 	 	Number response = dbClient.newServerEval().xquery(query1).eval().next().getNumber();
     	Assert.assertTrue(response.intValue()==20);
@@ -1098,7 +1098,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, stringHandle);
 		}
 
-		ihb2.flush();
+		ihb2.flushAndWait();
 		
 		properties.put("updates-allowed", "all");
 		for (int i =0 ; i < clusterInfo.size(); i++)
@@ -1151,7 +1151,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
 		
-		ihb2.flush();
+		ihb2.flushAndWait();
 		
 		properties.put("enabled", "true");
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
@@ -1231,7 +1231,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
                   ihb1.addAs(uri1, handleFoo).addAs(uri2, handleBar);
            }
            // Flush
-           ihb1.flush();
+           ihb1.flushAndWait();
    		   Assert.assertFalse(failState.booleanValue());
    		   Assert.assertTrue(successCount.intValue()==8);
            Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
@@ -1299,7 +1299,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
                   ihb1.add(uri1, handleFoo).add(uri2, handleBar);;
            }
            // Flush
-           ihb1.flush();
+           ihb1.flushAndWait();
            Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==4);
    		   Assert.assertTrue(failState.booleanValue());
    		   Assert.assertTrue(successCount.intValue()==4);
@@ -1333,7 +1333,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
                ihb2.add(uri1, handleFoo);
         }
         // Flush
-        ihb2.flush();
+        ihb2.flushAndWait();
         Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
 	    Assert.assertTrue(failState.booleanValue());
 	    Assert.assertTrue(successCount.intValue()==0);
@@ -1383,7 +1383,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				
     				
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
@@ -1438,7 +1438,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				//System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
     				ihbMT.add(uri, fileHandle);
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
@@ -1507,7 +1507,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				
     				
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
@@ -1608,7 +1608,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				
     				
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
@@ -1704,7 +1704,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				
     				
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
@@ -1802,7 +1802,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			}
 		
 			
-		    ihb2.flush();
+		    ihb2.flushAndWait();
 		    
 	    	System.out.println("Fail : "+failCount.intValue());
 	    	System.out.println("Success : "+successCount.intValue());
@@ -1905,7 +1905,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			}
 		
 			
-		    ihb2.flush();
+		    ihb2.flushAndWait();
 		    t1.join();
 		    
 	    	System.out.println("Fail : "+failCount.intValue());
@@ -1986,7 +1986,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		);
 		try{
-			ihb2.flush();
+			ihb2.flushAndWait();
 			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
 		}
 		catch(Exception e){
@@ -2031,7 +2031,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
     				ihbMT.add(uri, fileHandle);
     				if(j ==80){
-    					ihbMT.flush();
+    					ihbMT.flushAndWait();
     					dmManager.stopJob(writeTicket);
     				}
     					
@@ -2094,10 +2094,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     				ihbMT.add(uri, fileHandle);
     				if(j ==80){
     					dmManager.startJob(ihbMT);
-    					ihbMT.flush();
+    					ihbMT.flushAndWait();
     				}
     			}
-           		ihbMT.flush();
+           		ihbMT.flushAndWait();
 				
 		 }  
            		
@@ -2158,7 +2158,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		properties.put("enabled", "false");
 		changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
 		Thread.currentThread().sleep(1000L);
-		ihb2.flush();
+		ihb2.flushAndWait();
 		
 		properties.put("enabled", "true");
 		changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
@@ -2206,7 +2206,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, fileHandle);
 		}
 				
-		ihb2.flush();
+		ihb2.flushAndWait();
 		t1.join();
     	
     	
@@ -2275,7 +2275,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, fileHandle);
 		}
 				
-		ihb2.flush();
+		ihb2.flushAndWait();
 		t1.join();
 		properties.put("enabled", "true");
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
@@ -2370,7 +2370,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, fileHandle);
 		}
 				
-		ihb2.flush();
+		ihb2.flushAndWait();
 		t1.join();
 		
 				

@@ -56,7 +56,7 @@ public class DeleteListenerTest {
       uris[i] = "doc" + i + ".txt";
       writeBatcher.addAs(uris[i], meta, docContents);
     }
-    writeBatcher.flush();
+    writeBatcher.flushAndWait();
 
     // verify that the files made it to the db
     assertEquals( "There should be 100 documents in the db",

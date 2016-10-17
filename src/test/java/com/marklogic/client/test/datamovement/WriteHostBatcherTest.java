@@ -130,7 +130,7 @@ public class WriteHostBatcherTest {
       .add("/doc/dom", new DomHandle);
       */
 
-    ihb1.flush();
+    ihb1.flushAndWait();
   }
   @Test
   public void testWrites() throws Exception {
@@ -181,7 +181,7 @@ public class WriteHostBatcherTest {
     batcher.addAs(uri2, meta, doc2);
     batcher.add(uri3, meta, doc3);
     batcher.add(uri4, meta, new JacksonHandle(doc4));
-    batcher.flush();
+    batcher.flushAndWait();
     assertEquals("The success listener should have run", "true", successListenerWasRun.toString());
     assertEquals("The failure listener should have run", "true", failListenerWasRun.toString());
 
@@ -308,7 +308,7 @@ public class WriteHostBatcherTest {
     batcher.add  (whbTestCollection + "doc_7.json", meta, doc7);
     StringHandle doc8 = new StringHandle("{ \"testProperty8\": \"test8\" }").withFormat(Format.JSON);
     batcher.add  (whbTestCollection + "doc_8.json", meta, doc8);
-    batcher.flush();
+    batcher.flushAndWait();
     moveMgr.stopJob(ticket);
 
     if ( failures.length() > 0 ) fail(failures.toString());
@@ -443,14 +443,14 @@ public class WriteHostBatcherTest {
     for ( Thread thread : externalThreads ) {
       try { thread.join(); } catch (Exception e) {}
     }
-    batcher.flush();
+    batcher.flushAndWait();
     int leftover = (totalDocCount % docsPerExternalThread);
     // write any leftovers
     for (int j =0; j < leftover; j++) {
       String uri = "/" + collection + "/"+ Thread.currentThread().getName() + "/" + j + ".txt";
       batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
     }
-    batcher.flush();
+    batcher.flushAndWait();
     moveMgr.stopJob(ticket);
 
     if ( failures.length() > 0 ) fail(failures.toString());
@@ -509,7 +509,7 @@ public class WriteHostBatcherTest {
 
 
           }
-          batcher.flush();
+          batcher.flushAndWait();
         }  
 
     } 
@@ -568,7 +568,7 @@ public class WriteHostBatcherTest {
 
 
           }
-          batcher.flush();
+          batcher.flushAndWait();
         } 
 
     }
@@ -613,7 +613,7 @@ public class WriteHostBatcherTest {
 
     String docContents = "{a:{b1:{c:\"jsonValue1\"}, b2:[\"b2 val1\", \"b2 val2\"]}}";
     batcher.add("/doc/string", meta, new StringHandle(docContents));
-    batcher.flush();
+    batcher.flushAndWait();
     moveMgr.stopJob(ticket);
 
     BytesHandle readContents = client.newDocumentManager().read("/doc/string", new BytesHandle());
@@ -649,8 +649,8 @@ public class WriteHostBatcherTest {
 
     batcher.add("test.xml", meta, new InputStreamHandle(fileStream));
 
-    // when we call flush, the WriteHostBatcher should write the batch the close all the handles
-    batcher.flush();
+    // when we call flushAndWait, the WriteHostBatcher should write the batch the close all the handles
+    batcher.flushAndWait();
     assertEquals(true, closed.get());
 
     moveMgr.stopJob(ticket);
@@ -696,7 +696,7 @@ public class WriteHostBatcherTest {
           System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
           ihbMT.add(uri, meta, new StringHandle("test"));
           if(j ==80){
-            ihbMT.flush();
+            ihbMT.flushAndWait();
             moveMgr.stopJob(writeTicket);
           }
 

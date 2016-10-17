@@ -155,7 +155,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, meta, jacksonHandle);
 		}
 	
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 	}
 	

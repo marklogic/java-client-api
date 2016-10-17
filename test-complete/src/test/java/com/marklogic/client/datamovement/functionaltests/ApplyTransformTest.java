@@ -83,6 +83,9 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 	private static String[] hostNames ;
 
 
+	/**
+	 * @throws Exception
+	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		hostNames = getHosts();	    
@@ -173,7 +176,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, meta1, fileHandle);
 		}
 
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
 		for (int j =0 ;j < 2000; j++){
@@ -181,22 +184,22 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, meta2, stringHandle);
 		}
 
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4000);
 
 		ihb2.add("/local/quality", meta3, jacksonHandle);
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4001);
 
 		ihb2.add("/local/nomatch", meta4, jacksonHandle1);
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4002);
 
 		for (int j =0 ;j < 100; j++){
 			String uri ="/local/snapshot-"+ j;
 			ihb2.add(uri, meta5, fileHandle);
 		}
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4102);
 
 		for (int j =0 ;j < 2000; j++){
@@ -204,17 +207,17 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 			ihb2.add(uri, meta6, stringHandle);
 		}
 
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6102);
 
 		String uri ="/local/failed";
 		ihb2.add(uri, meta7, stringHandle);
 		ihb2.add("/local/failed-1", meta7, jacksonHandle);
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6104);
 
 		ihb2.add("/local/nonexistent-1", stringHandle);
-		ihb2.flush();
+		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6105);
 	}
 
