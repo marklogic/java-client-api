@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface NodeNullSeqExpr extends NodeSeqExpr { }
+public interface BooleanNodeSeqExpr extends NodeSeqExpr { }

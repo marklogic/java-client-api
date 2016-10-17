@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface NodeBooleanExpr extends NodeExpr, NodeBooleanSeqExpr { }
+public interface XmlContentNodeExpr extends NodeExpr, XmlContentNodeSeqExpr { }

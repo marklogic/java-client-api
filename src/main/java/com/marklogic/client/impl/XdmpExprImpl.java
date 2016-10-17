@@ -22,11 +22,11 @@ import com.marklogic.client.expression.Xdmp;
 import com.marklogic.client.type.XsStringSeqExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.NodeElementExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
  import com.marklogic.client.type.NodeExpr;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
  import com.marklogic.client.type.XsLongExpr;
  import com.marklogic.client.type.XsNumericSeqExpr;
+ import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.MapMapExpr;
  import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
@@ -128,7 +128,7 @@ public class XdmpExprImpl implements Xdmp {
         return new XsExprImpl.XsStringCallImpl("xdmp", "diacritic-less", new Object[]{ string });
     }
     @Override
-        public XsStringExpr elementContentType(NodeElementExpr element) {
+        public XsStringExpr elementContentType(ElementNodeExpr element) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "element-content-type", new Object[]{ element });
     }
     @Override

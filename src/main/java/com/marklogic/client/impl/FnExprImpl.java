@@ -23,11 +23,11 @@ import com.marklogic.client.type.XsNCNameExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
  import com.marklogic.client.type.XsTimeExpr;
  import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.NodeElementExpr;
  import com.marklogic.client.type.NodeExpr;
  import com.marklogic.client.type.XsDoubleExpr;
  import com.marklogic.client.type.XsNumericSeqExpr;
  import com.marklogic.client.type.XsDayTimeDurationExpr;
+ import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.XsDecimalExpr;
  import com.marklogic.client.type.XsDurationExpr;
  import com.marklogic.client.type.XsStringExpr;
@@ -81,20 +81,20 @@ public class FnExprImpl implements Fn {
         return new XsExprImpl.XsTimeCallImpl("fn", "adjust-time-to-timezone", new Object[]{ arg, timezone });
     }
     @Override
-        public NodeElementExpr analyzeString(String in, String regex) {
+        public ElementNodeExpr analyzeString(String in, String regex) {
         return analyzeString(xs.string(in), xs.string(regex)); 
     }
     @Override
-        public NodeElementExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
-        return new BaseTypeImpl.NodeElementCallImpl("fn", "analyze-string", new Object[]{ in, regex });
+        public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
+        return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex });
     }
     @Override
-        public NodeElementExpr analyzeString(String in, String regex, String flags) {
+        public ElementNodeExpr analyzeString(String in, String regex, String flags) {
         return analyzeString(xs.string(in), xs.string(regex), (flags == null) ? null : xs.string(flags)); 
     }
     @Override
-        public NodeElementExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
-        return new BaseTypeImpl.NodeElementCallImpl("fn", "analyze-string", new Object[]{ in, regex, flags });
+        public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
+        return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex, flags });
     }
     @Override
         public XsAnyAtomicTypeExpr avg(XsAnyAtomicTypeSeqExpr arg) {
@@ -353,7 +353,7 @@ public class FnExprImpl implements Fn {
         return new XsExprImpl.XsIntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam, collationLiteral });
     }
     @Override
-        public XsStringSeqExpr inScopePrefixes(NodeElementExpr element) {
+        public XsStringSeqExpr inScopePrefixes(ElementNodeExpr element) {
         return new XsExprImpl.XsStringSeqCallImpl("fn", "in-scope-prefixes", new Object[]{ element });
     }
     @Override
@@ -465,11 +465,11 @@ public class FnExprImpl implements Fn {
         return new XsExprImpl.XsAnyURICallImpl("fn", "namespace-uri", new Object[]{ arg });
     }
     @Override
-        public XsAnyURIExpr namespaceUriForPrefix(String prefix, NodeElementExpr element) {
+        public XsAnyURIExpr namespaceUriForPrefix(String prefix, ElementNodeExpr element) {
         return namespaceUriForPrefix(xs.string(prefix), element); 
     }
     @Override
-        public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, NodeElementExpr element) {
+        public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, ElementNodeExpr element) {
         return new XsExprImpl.XsAnyURICallImpl("fn", "namespace-uri-for-prefix", new Object[]{ prefix, element });
     }
     @Override
@@ -557,11 +557,11 @@ public class FnExprImpl implements Fn {
         return new XsExprImpl.XsStringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement, flags });
     }
     @Override
-        public XsQNameExpr resolveQName(String qname, NodeElementExpr element) {
+        public XsQNameExpr resolveQName(String qname, ElementNodeExpr element) {
         return resolveQName(xs.string(qname), element); 
     }
     @Override
-        public XsQNameExpr resolveQName(XsStringExpr qname, NodeElementExpr element) {
+        public XsQNameExpr resolveQName(XsStringExpr qname, ElementNodeExpr element) {
         return new XsExprImpl.XsQNameCallImpl("fn", "resolve-QName", new Object[]{ qname, element });
     }
     @Override

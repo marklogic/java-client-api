@@ -121,8 +121,30 @@ import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemI
  import com.marklogic.client.type.XsDateTimeExpr;
  import com.marklogic.client.type.XsGMonthDayParam;
 
+
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
+
+import com.marklogic.client.type.ArrayNodeExpr;
+import com.marklogic.client.type.AttributeNodeExpr;
+import com.marklogic.client.type.AttributeNodeSeqExpr;
+import com.marklogic.client.type.BooleanNodeExpr;
+import com.marklogic.client.type.CommentNodeExpr;
+import com.marklogic.client.type.DocumentNodeExpr;
+import com.marklogic.client.type.ElementNodeExpr;
+import com.marklogic.client.type.NullNodeExpr;
+import com.marklogic.client.type.NumberNodeExpr;
+import com.marklogic.client.type.ObjectNodeExpr;
+import com.marklogic.client.type.PINodeExpr;
+import com.marklogic.client.type.TextNodeExpr;
+
+import com.marklogic.client.type.JsonPropertyExpr;
+
+import com.marklogic.client.type.JsonRootNodeExpr;
+import com.marklogic.client.type.JsonContentNodeExpr;
+import com.marklogic.client.type.XmlRootNodeExpr;
+import com.marklogic.client.type.XmlContentNodeExpr;
+import com.marklogic.client.type.XmlContentNodeSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public abstract class PlanBuilder {
@@ -320,62 +342,40 @@ public abstract class PlanBuilder {
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
 
-    public abstract JsonDocumentExpr jsonDocument(JsonRootExpr root);
-    public abstract JsonObjectExpr   jsonObject(JsonPropertyExpr... properties);
-    public abstract JsonArrayExpr    jsonArray(JsonContentExpr... items);
-    public abstract JsonPropertyExpr prop(String key, JsonContentExpr value);
-    public abstract JsonPropertyExpr prop(XsStringExpr key, JsonContentExpr value);
-    public abstract JsonStringExpr   jsonString(String value);
-    public abstract JsonStringExpr   jsonString(XsAnySimpleTypeSeqExpr value);
-    public abstract JsonNumberExpr   jsonNumber(double value);
-    public abstract JsonNumberExpr   jsonNumber(long value);
-    public abstract JsonNumberExpr   jsonNumber(XsNumericExpr value);
-    public abstract JsonBooleanExpr  jsonBoolean(boolean value);
-    public abstract JsonBooleanExpr  jsonBoolean(XsBooleanExpr value);
-    public abstract JsonNullExpr     jsonNull();
+    public abstract DocumentNodeExpr jsonDocument(JsonRootNodeExpr root);
+    public abstract ObjectNodeExpr   jsonObject(JsonPropertyExpr... properties);
+    public abstract ArrayNodeExpr    jsonArray(JsonContentNodeExpr... items);
+    public abstract JsonPropertyExpr prop(String key, JsonContentNodeExpr value);
+    public abstract JsonPropertyExpr prop(XsStringExpr key, JsonContentNodeExpr value);
+    public abstract TextNodeExpr     jsonString(String value);
+    public abstract TextNodeExpr     jsonString(XsAnySimpleTypeSeqExpr value);
+    public abstract NumberNodeExpr   jsonNumber(double value);
+    public abstract NumberNodeExpr   jsonNumber(long value);
+    public abstract NumberNodeExpr   jsonNumber(XsNumericExpr value);
+    public abstract BooleanNodeExpr  jsonBoolean(boolean value);
+    public abstract BooleanNodeExpr  jsonBoolean(XsBooleanExpr value);
+    public abstract NullNodeExpr     jsonNull();
 
-    public abstract XmlDocumentExpr  xmlDocument(XmlRootExpr root);
-    public abstract XmlElementExpr   xmlElement(String name, XmlAttributeExpr... attributes);
-    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlAttributeExpr... attributes);
-    public abstract XmlElementExpr   xmlElement(String name, XmlContentExpr... content);
-    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlContentExpr... content);
-    public abstract XmlElementExpr   xmlElement(String name, XmlAttributeSeqExpr attributes, XmlContentExpr... content);
-    public abstract XmlElementExpr   xmlElement(XsQNameExpr name, XmlAttributeSeqExpr attributes, XmlContentExpr... content);
-    public abstract XmlAttributeExpr xmlAttribute(String name, XsAnySimpleTypeSeqExpr value);
-    public abstract XmlAttributeExpr xmlAttribute(XsQNameExpr name, XsAnySimpleTypeSeqExpr value);
-    public abstract XmlTextExpr      xmlText(String value);
-    public abstract XmlTextExpr      xmlText(XsAnySimpleTypeSeqExpr value);
-    public abstract XmlCommentExpr   xmlComment(String content);
-    public abstract XmlCommentExpr   xmlComment(XsAnySimpleTypeSeqExpr content);
-    public abstract XmlPIExpr        xmlPI(String name, String value);
-    public abstract XmlPIExpr        xmlPI(XsStringExpr name, XsAnySimpleTypeSeqExpr value);
+    public abstract DocumentNodeExpr  xmlDocument(XmlRootNodeExpr root);
+    public abstract ElementNodeExpr   xmlElement(String name, AttributeNodeExpr... attributes);
+    public abstract ElementNodeExpr   xmlElement(XsQNameExpr name, AttributeNodeExpr... attributes);
+    public abstract ElementNodeExpr   xmlElement(String name, XmlContentNodeExpr... content);
+    public abstract ElementNodeExpr   xmlElement(XsQNameExpr name, XmlContentNodeExpr... content);
+    public abstract ElementNodeExpr   xmlElement(String name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content);
+    public abstract ElementNodeExpr   xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content);
+    public abstract AttributeNodeExpr xmlAttribute(String name, XsAnySimpleTypeSeqExpr value);
+    public abstract AttributeNodeExpr xmlAttribute(XsQNameExpr name, XsAnySimpleTypeSeqExpr value);
+    public abstract TextNodeExpr      xmlText(String value);
+    public abstract TextNodeExpr      xmlText(XsAnySimpleTypeSeqExpr value);
+    public abstract CommentNodeExpr   xmlComment(String content);
+    public abstract CommentNodeExpr   xmlComment(XsAnySimpleTypeSeqExpr content);
+    public abstract PINodeExpr        xmlPI(String name, String value);
+    public abstract PINodeExpr        xmlPI(XsStringExpr name, XsAnySimpleTypeSeqExpr value);
 
-    public abstract XmlAttributeSeqExpr xmlAttributes(XmlAttributeExpr... attributes);
+    public abstract AttributeNodeSeqExpr xmlAttributes(AttributeNodeExpr... attributes);
 
     public interface Prefixer {
         public SemIriVal iri(String name);
     }
-
-    public interface JsonDocumentExpr extends ItemExpr                                {}
-    public interface JsonRootExpr                                                     {}
-    public interface JsonContentExpr                                                  {}
-    public interface JsonObjectExpr   extends JsonContentExpr, JsonRootExpr, ItemExpr {}
-    public interface JsonPropertyExpr extends ItemExpr                                {}
-    public interface JsonArrayExpr    extends JsonContentExpr, JsonRootExpr, ItemExpr {}
-    public interface JsonStringExpr   extends JsonContentExpr, ItemExpr               {}
-    public interface JsonNumberExpr   extends JsonContentExpr, ItemExpr               {}
-    public interface JsonBooleanExpr  extends JsonContentExpr, ItemExpr               {}
-    public interface JsonNullExpr     extends JsonContentExpr, ItemExpr               {}
-
-    public interface XmlAttributeSeqExpr extends ItemSeqExpr {}
-
-    public interface XmlDocumentExpr  extends ItemExpr                              {}
-    public interface XmlRootExpr                                                    {}
-    public interface XmlContentExpr                                                 {}
-    public interface XmlElementExpr   extends XmlRootExpr, XmlContentExpr, ItemExpr {}
-    public interface XmlAttributeExpr extends ItemExpr, XmlAttributeSeqExpr         {}
-    public interface XmlTextExpr      extends XmlContentExpr, ItemExpr              {}
-    public interface XmlCommentExpr   extends XmlRootExpr, XmlContentExpr, ItemExpr {}
-    public interface XmlPIExpr        extends XmlRootExpr, XmlContentExpr, ItemExpr {}
 
 }

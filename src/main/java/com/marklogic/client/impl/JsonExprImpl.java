@@ -22,10 +22,10 @@ import com.marklogic.client.expression.Json;
 import com.marklogic.client.type.JsonArrayExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.NodeElementExpr;
  import com.marklogic.client.type.JsonObjectExpr;
  import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.JsonArraySeqExpr;
+ import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
@@ -45,7 +45,7 @@ public class JsonExprImpl implements Json {
         return new JsonExprImpl.JsonArrayCallImpl("json", "array", new Object[]{  });
     }
     @Override
-        public JsonArrayExpr array(NodeElementExpr array) {
+        public JsonArrayExpr array(ElementNodeExpr array) {
         return new JsonExprImpl.JsonArrayCallImpl("json", "array", new Object[]{ array });
     }
     @Override
@@ -69,7 +69,7 @@ public class JsonExprImpl implements Json {
         return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{  });
     }
     @Override
-        public JsonObjectExpr object(NodeElementExpr map) {
+        public JsonObjectExpr object(ElementNodeExpr map) {
         return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{ map });
     }
     @Override

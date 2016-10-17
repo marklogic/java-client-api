@@ -18,10 +18,10 @@ package com.marklogic.client.expression;
 import com.marklogic.client.type.JsonArrayExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.NodeElementExpr;
  import com.marklogic.client.type.JsonObjectExpr;
  import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.JsonArraySeqExpr;
+ import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
@@ -31,13 +31,13 @@ import com.marklogic.client.type.JsonArrayExpr;
 // IMPORTANT: Do not edit. This file is generated. 
 public interface Json {
     public JsonArrayExpr array();
-    public JsonArrayExpr array(NodeElementExpr array);
+    public JsonArrayExpr array(ElementNodeExpr array);
     public XsUnsignedLongExpr arraySize(JsonArrayExpr array);
     public ItemSeqExpr arrayValues(JsonArrayExpr array);
     public ItemSeqExpr arrayValues(JsonArrayExpr array, boolean flatten);
     public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten);
     public JsonObjectExpr object();
-    public JsonObjectExpr object(NodeElementExpr map);
+    public JsonObjectExpr object(ElementNodeExpr map);
     public JsonObjectExpr objectDefine();
     public JsonObjectExpr objectDefine(String... keys);
     public JsonObjectExpr objectDefine(XsStringSeqExpr keys);

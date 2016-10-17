@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface NodeCommentSeqExpr extends NodeSeqExpr { }
+public interface NumberNodeExpr extends NodeExpr, NumberNodeSeqExpr, JsonContentNodeExpr { }

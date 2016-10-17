@@ -20,8 +20,8 @@ import java.util.Arrays;
 
 import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.NodeElementExpr;
-import com.marklogic.client.type.NodeElementSeqExpr;
+import com.marklogic.client.type.ElementNodeExpr;
+import com.marklogic.client.type.ElementNodeSeqExpr;
 import com.marklogic.client.type.NodeExpr;
 import com.marklogic.client.type.NodeSeqExpr;
 
@@ -113,8 +113,8 @@ public class BaseTypeImpl {
 	static NodeSeqExpr nodes(NodeExpr... items) {
 		return new NodeSeqListImpl(items);
 	}
-	static NodeElementSeqExpr elements(NodeElementExpr... items) {
-		return new NodeElementSeqListImpl(items);
+	static ElementNodeSeqExpr elements(ElementNodeExpr... items) {
+		return new ElementNodeSeqListImpl(items);
 	}
 
     static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements ItemSeqExpr {
@@ -142,13 +142,13 @@ public class BaseTypeImpl {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }
-    static class NodeElementSeqListImpl extends BaseListImpl<BaseArgImpl> implements NodeElementSeqExpr {
-    	NodeElementSeqListImpl(Object[] items) {
+    static class ElementNodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements ElementNodeSeqExpr {
+    	ElementNodeSeqListImpl(Object[] items) {
             super(convertList(items));
         }
     }
-    static class NodeElementCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeElementExpr {
-    	NodeElementCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+    static class ElementNodeCallImpl extends BaseCallImpl<BaseArgImpl> implements ElementNodeExpr {
+    	ElementNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }

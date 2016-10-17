@@ -21,10 +21,10 @@ import com.marklogic.client.expression.XsValue;
 import com.marklogic.client.expression.Map;
 import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.NodeElementExpr;
  import com.marklogic.client.type.XsUnsignedIntExpr;
  import com.marklogic.client.type.MapMapExpr;
  import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
  import com.marklogic.client.type.MapMapSeqExpr;
@@ -75,7 +75,7 @@ public class MapExprImpl implements Map {
         return new MapExprImpl.MapMapCallImpl("map", "map", new Object[]{  });
     }
     @Override
-        public MapMapExpr map(NodeElementExpr map) {
+        public MapMapExpr map(ElementNodeExpr map) {
         return new MapExprImpl.MapMapCallImpl("map", "map", new Object[]{ map });
     }     @Override
     public MapMapSeqExpr map(MapMapExpr... items) {

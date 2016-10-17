@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface NodeAttributeSeqExpr extends NodeSeqExpr { }
+public interface JsonPropertyExpr { }
