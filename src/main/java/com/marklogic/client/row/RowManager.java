@@ -20,6 +20,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 
 /* STATUS
 
@@ -187,4 +188,28 @@ public interface RowManager {
      * @return	an object of the IO class with the content of the set of rows
 	 */
 	<T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
+
+	/**
+	 * Constructs a plan for retrieving a set of database rows and returns a handle
+	 * for the explanation of the plan as a JSON or XML structure.
+	 * @param plan	the definition of a plan for database rows
+	 * @param handle	the JSON or XML handle on the explanation for the plan
+     * @return	an object of the IO class with the content of the explanation for the plan
+	 */
+	<T extends StructureReadHandle> T explain(Plan plan, T handle);
+	/**
+	 * Constructs a plan for retrieving a set of database rows and returns an explanation
+	 * of the plan in the representation specified by the IO class.
+	 * 
+     * The IO class must have been registered before creating the database client.
+     * By default, the provided handles that implement 
+     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+     * 
+     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+     * 
+	 * @param plan	the definition of a plan for database rows
+     * @param as	the IO class for reading the explanation for the plan
+     * @return	an object of the IO class with the content of the explanation for the plan
+	 */
+	<T> T explainAs(Plan plan, Class<T> as);
 }

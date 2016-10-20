@@ -55,6 +55,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.RowReadHandle;
+import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
@@ -170,6 +171,31 @@ public class RowManagerImpl
 		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
 
 		return new RowSetObject<>(rowFormat, iter, rowHandle);
+	}
+
+	@Override
+	public <T extends StructureReadHandle> T explain(Plan plan, T resultsHandle) {		
+		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
+
+		AbstractWriteHandle astHandle = requestPlan.getHandle();
+
+		if (resultsHandle == null) {
+			throw new IllegalArgumentException("Must specify a handle to read the explanation for the plan");
+		}
+
+		RequestParameters params = new RequestParameters();
+		params.add("output", "explain");
+
+		return services.postResource(requestLogger, "rows", null, params, astHandle, resultsHandle);
+	}
+	@Override
+	public <T> T explainAs(Plan plan, Class<T> as) {		
+		ContentHandle<T> handle = handleFor(as); 
+	    if (explain(plan, (StructureReadHandle) handle) == null) {
+	    	return null;
+	    }
+
+		return handle.get();
 	}
 
 	private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {

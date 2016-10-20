@@ -19,6 +19,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
@@ -49,6 +50,7 @@ import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.DOMHandle;
@@ -479,6 +481,27 @@ public class RowManagerTest {
 		assertFalse("expected one record row", recordRowItr.hasNext());
 
 		recordRowSet.close();
+	}
+	@Test
+	public void testExplain() throws IOException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan = p.fromLiterals(litRows);
+
+		JsonNode jsonRoot = rowMgr.explain(builtPlan, new JacksonHandle()).get();
+		assertNotNull(jsonRoot);
+		jsonRoot = rowMgr.explainAs(builtPlan, JsonNode.class);
+		assertNotNull(jsonRoot);
+
+		Document xmlRoot = rowMgr.explain(builtPlan, new DOMHandle()).get();
+		assertNotNull(xmlRoot);
+		xmlRoot = rowMgr.explainAs(builtPlan, Document.class);
+		assertNotNull(xmlRoot);
+
+		String stringRoot = rowMgr.explain(builtPlan, new StringHandle()).get();
+		assertNotNull(new ObjectMapper().readTree(stringRoot));
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
         EditableNamespaceContext namespaces = new EditableNamespaceContext();
