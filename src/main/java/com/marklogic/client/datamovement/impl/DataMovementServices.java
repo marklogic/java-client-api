@@ -49,13 +49,17 @@ public class DataMovementServices {
       .getResource(null, "forestinfo", null, null, new JacksonHandle())
       .get();
     for ( JsonNode forestNode : results ) {
-      String host = forestNode.get("host").asText();
-      String database = forestNode.get("database").asText();
       String id = forestNode.get("id").asText();
       String name = forestNode.get("name").asText();
+      String database = forestNode.get("database").asText();
+      String host = forestNode.get("host").asText();
+      String openReplicaHost = null;
+      if ( forestNode.get("openReplicaHost") != null ) openReplicaHost = forestNode.get("openReplicaHost").asText();
+      String alternateHost = null;
+      if ( forestNode.get("alternateHost") != null ) alternateHost = forestNode.get("alternateHost").asText();
       boolean isUpdateable = "all".equals(forestNode.get("updatesAllowed").asText());
       boolean isDeleteOnly = false; // TODO: get this for real after we start using a REST endpoint
-      forests.add(new ForestImpl(host, database, name, id, isUpdateable, isDeleteOnly));
+      forests.add(new ForestImpl(host, alternateHost, openReplicaHost, database, name, id, isUpdateable, isDeleteOnly));
     }
 
     return new ForestConfigurationImpl(forests.toArray(new ForestImpl[forests.size()]));

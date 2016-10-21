@@ -16,39 +16,63 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.QueryEvent;
 
-public class QueryEventImpl extends DataMovementEventImpl implements QueryEvent {
-  String sourceUri;
+public class QueryEventImpl implements QueryEvent {
+  QueryDefinition query;
+  long jobBatchNumber;
+  long jobResultsSoFar;
+  long forestBatchNumber;
+  long forestResultsSoFar;
   Forest forest;
-  Format format;
-  String mimeType;
+  long serverTimestamp;
 
-  public QueryEventImpl(String sourceUri, Forest forest, Format format, String mimeType) {
-    this.sourceUri = sourceUri ;
-    this.forest = forest ;
-    this.format = format ;
-    this.mimeType = mimeType ;
+  public QueryEventImpl(QueryDefinition query, long jobBatchNumber, long jobResultsSoFar,
+    long forestBatchNumber, long forestResultsSoFar, Forest forest, long serverTimestamp)
+  {
+    this.query = query;
+    this.jobBatchNumber = jobBatchNumber;
+    this.jobResultsSoFar = jobResultsSoFar;
+    this.forestBatchNumber = forestBatchNumber;
+    this.forestResultsSoFar = forestResultsSoFar;
+    this.forest = forest;
+    this.serverTimestamp = serverTimestamp;
   }
 
   @Override
-  public String getSourceUri() {
-    return sourceUri;
+  public QueryDefinition getQuery() {
+    return query;
   }
 
   @Override
-  public Forest getSourceForest() {
+  public long getJobBatchNumber() {
+    return jobBatchNumber;
+  }
+
+  @Override
+  public long getJobResultsSoFar() {
+    return jobResultsSoFar;
+  }
+
+  @Override
+  public long getForestBatchNumber() {
+    return forestBatchNumber;
+  }
+
+  @Override
+  public long getForestResultsSoFar() {
+    return forestResultsSoFar;
+  }
+
+  @Override
+  public Forest getForest() {
     return forest;
   }
 
   @Override
-  public Format getFormat() {
-    return format;
-  }
-
-  @Override
-  public String getMimetype() {
-    return mimeType;
+  public long getServerTimestamp() {
+    return serverTimestamp;
   }
 }

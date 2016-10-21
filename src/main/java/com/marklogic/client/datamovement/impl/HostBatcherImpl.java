@@ -19,7 +19,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.HostBatcher;
 import com.marklogic.client.datamovement.ForestConfiguration;
 
-public class HostBatcherImpl implements HostBatcher {
+public abstract class HostBatcherImpl implements HostBatcher {
   private String jobName = "unnamed";
   private int batchSize = 100;
   private int threadCount = 1;
@@ -65,27 +65,17 @@ public class HostBatcherImpl implements HostBatcher {
     return threadCount;
   }
 
+  @Override
   public ForestConfiguration getForestConfig() {
     return forestConfig;
   }
 
+  @Override
   public HostBatcher withForestConfig(ForestConfiguration forestConfig) {
     this.forestConfig = forestConfig;
     return this;
   }
 
-  public synchronized void setClient(DatabaseClient client) {
-    if ( client == null ) {
-      throw new IllegalStateException("client must not be null");
-    }
-    if ( this.client != null ) {
-      throw new IllegalStateException("You can only call setClient once per ImportHostBatcher instance");
-    }
-    this.client = client;
-  }
-
-  public DatabaseClient getClient() {
-    return client;
-  }
-
+  @Override
+  public abstract boolean isStopped();
 }

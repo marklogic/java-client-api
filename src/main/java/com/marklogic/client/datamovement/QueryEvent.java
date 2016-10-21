@@ -16,14 +16,14 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.query.QueryDefinition;
 
-public interface QueryEvent extends DataMovementEvent {
-  /**
-   * 
-   * @return the uri in the db
-   */
-  String getSourceUri();
-  Forest getSourceForest();
-  Format getFormat();
-  String getMimetype();
+public interface QueryEvent {
+  QueryDefinition getQuery();
+  long getJobBatchNumber();
+  long getJobResultsSoFar();
+  long getForestBatchNumber();
+  long getForestResultsSoFar();
+  Forest getForest();
+  long getServerTimestamp();
 }

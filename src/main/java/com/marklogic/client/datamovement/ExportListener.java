@@ -55,7 +55,7 @@ import java.util.Set;
  *     exportBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  */
-public class ExportListener implements BatchListener<String> {
+public class ExportListener implements QueryBatchListener {
   private ServerTransform transform;
   private QueryManager.QueryView view;
   private Set<DocumentManager.Metadata> categories = new HashSet<>();
@@ -66,7 +66,7 @@ public class ExportListener implements BatchListener<String> {
   public ExportListener() {
   }
 
-  protected DocumentPage getDocs(DatabaseClient client, Batch<String> batch) {
+  protected DocumentPage getDocs(DatabaseClient client, QueryBatch batch) {
     GenericDocumentManager docMgr = client.newDocumentManager();
     if ( view              != null ) docMgr.setSearchView(view);
     if ( categories        != null ) docMgr.setMetadataCategories(categories);
@@ -86,7 +86,7 @@ public class ExportListener implements BatchListener<String> {
    * @param batch the batch of uris and some metadata about the current status of the job
    */
   @Override
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     DocumentPage docs = getDocs(client, batch);
     while ( docs.hasNext() ) {
       for ( Consumer<DocumentRecord> listener : exportListeners ) {

@@ -135,7 +135,7 @@ public interface WriteHostBatcher extends HostBatcher {
    *        successfully
    * @return this instance for method chaining
    */
-  WriteHostBatcher onBatchSuccess(BatchListener<WriteEvent> listener);
+  WriteHostBatcher onBatchSuccess(WriteBatchListener listener);
 
   /**
    * Add a listener to run each time there is an Exception writing a batch
@@ -143,7 +143,7 @@ public interface WriteHostBatcher extends HostBatcher {
    * @param listener the action which has to be done when the batch gets failed
    * @return this instance for method chaining
    */
-  WriteHostBatcher onBatchFailure(BatchFailureListener<WriteEvent> listener);
+  WriteHostBatcher onBatchFailure(WriteFailureListener listener);
 
   /*
   public WriteHostBatcher withTransactionSize(int transactionSize);
@@ -151,42 +151,42 @@ public interface WriteHostBatcher extends HostBatcher {
   */
 
   /**
-   * Get the array of BatchListener&lt;WriteEvent&gt; instances registered via
+   * Get the array of WriteBatchListener instances registered via
    * onBatchSuccess.
    *
-   * @return the BatchListener&lt;WriteEvent&gt; instances this batcher
+   * @return the WriteBatchListener instances this batcher
    *   is using
    */
-  BatchListener<WriteEvent>[]        getBatchSuccessListeners();
+  WriteBatchListener[] getBatchSuccessListeners();
 
   /**
-   * Get the array of BatchFailureListener&lt;WriteEvent&gt; instances
+   * Get the array of WriteFailureListener instances
    * registered via onBatchFailure including the HostAvailabilityListener
    * registered by default.
    *
-   * @return the BatchFailureListener&lt;WriteEvent&gt; instances this batcher
+   * @return the WriteFailureListener instances this batcher
    *   is using
    */
-  BatchFailureListener<WriteEvent>[] getBatchFailureListeners();
+  WriteFailureListener[] getBatchFailureListeners();
 
   /**
-   * Remove any existing BatchListener&lt;WriteEvent&gt; instances registered
+   * Remove any existing WriteBatchListener instances registered
    * via onBatchSuccess and replace them with the provided listeners.
    *
-   * @param listeners the BatchListener&lt;WriteEvent&gt; instances this
+   * @param listeners the WriteBatchListener instances this
    *   batcher should use
    */
-  void setBatchSuccessListeners(BatchListener<WriteEvent>... listeners);
+  void setBatchSuccessListeners(WriteBatchListener... listeners);
 
   /**
-   * Remove any existing BatchFailureListener&lt;WriteEvent&gt; instances
+   * Remove any existing WriteFailureListener instances
    * registered via onBatchFailure including the HostAvailabilityListener
    * registered by default and replace them with the provided listeners.
    *
-   * @param listeners the BatchFailureListener&lt;WriteEvent&gt; instances this
+   * @param listeners the WriteFailureListener instances this
    *   batcher should use
    */
-  void setBatchFailureListeners(BatchFailureListener<WriteEvent>... listeners);
+  void setBatchFailureListeners(WriteFailureListener... listeners);
 
   /**
    * The temporal collection to use for a temporal document insert

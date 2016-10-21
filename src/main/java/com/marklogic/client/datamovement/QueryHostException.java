@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.io.Format;
+import com.marklogic.client.query.QueryDefinition;
 
 public class QueryHostException extends Exception implements QueryEvent {
   private QueryEvent queryEvent;
@@ -24,45 +25,46 @@ public class QueryHostException extends Exception implements QueryEvent {
     super(cause);
     this.queryEvent = queryEvent;
   }
+
   @Override
-  public long getBytesMoved() {
+  public QueryDefinition getQuery() {
+    if ( queryEvent == null ) return null;
+    return queryEvent.getQuery();
+  }
+
+  @Override
+  public long getJobBatchNumber() {
     if ( queryEvent == null ) return -1;
-    return queryEvent.getBytesMoved();
+    return queryEvent.getJobBatchNumber();
   }
 
   @Override
-  public long getJobRecordNumber() {
+  public long getJobResultsSoFar() {
     if ( queryEvent == null ) return -1;
-    return queryEvent.getJobRecordNumber();
+    return queryEvent.getJobResultsSoFar();
   }
 
   @Override
-  public long getBatchRecordNumber() {
+  public long getForestBatchNumber() {
     if ( queryEvent == null ) return -1;
-    return queryEvent.getBatchRecordNumber();
+    return queryEvent.getForestBatchNumber();
   }
 
   @Override
-  public String getSourceUri() {
-    if ( queryEvent == null ) return null;
-    return queryEvent.getSourceUri();
+  public long getForestResultsSoFar() {
+    if ( queryEvent == null ) return -1;
+    return queryEvent.getForestResultsSoFar();
   }
 
   @Override
-  public Forest getSourceForest() {
+  public Forest getForest() {
     if ( queryEvent == null ) return null;
-    return queryEvent.getSourceForest();
+    return queryEvent.getForest();
   }
 
   @Override
-  public Format getFormat() {
-    if ( queryEvent == null ) return null;
-    return queryEvent.getFormat();
-  }
-
-  @Override
-  public String getMimetype() {
-    if ( queryEvent == null ) return null;
-    return queryEvent.getMimetype();
+  public long getServerTimestamp() {
+    if ( queryEvent == null ) return -1;
+    return queryEvent.getServerTimestamp();
   }
 }

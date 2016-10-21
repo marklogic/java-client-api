@@ -109,7 +109,7 @@ public class PackageExamples {
         .withBatchSize(100)
         .withThreadCount(20)
         .onBatchSuccess((client,batch) -> {
-            logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+            logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
         })
         .onBatchFailure((client,batch,throwable) -> throwable.printStackTrace() );
     JobTicket ticket = dataMovementManager.startJob(whb);

@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.io.BufferedReader;
+import java.io.Closeable;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Iterator;
@@ -34,7 +35,7 @@ import com.marklogic.client.io.marker.OperationNotSupported;
  */
 public class UrisHandle
   extends BaseHandle<Reader, OperationNotSupported>
-  implements UrisReadHandle, Iterable<String>
+  implements UrisReadHandle, Iterable<String>, Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(UrisHandle.class);
 

@@ -23,7 +23,7 @@ import com.marklogic.client.DatabaseClient;
  *
  * @see #processEvent processEvent
  */
-public interface BatchListener<T> {
+public interface BatchListener<T extends Batch<?>> {
   /**
    * The method called by QueryHostBatcher or WriteHostBatcher to run your
    * custom code on this batch.  You usually implement this as a lambda expression.
@@ -48,5 +48,5 @@ public interface BatchListener<T> {
    * @param client the client pointed to the host containing this batch of uris
    * @param batch the batch of uris and some metadata about the current status of the job
    */
-  void processEvent(DatabaseClient client, Batch<T> batch);
+  void processEvent(DatabaseClient client, T batch);
 }

@@ -31,7 +31,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 
-public class ExportToWriterListener extends ExportListener implements BatchListener<String> {
+public class ExportToWriterListener extends ExportListener {
   private Writer writer;
   private String suffix;
   private String prefix;
@@ -42,7 +42,7 @@ public class ExportToWriterListener extends ExportListener implements BatchListe
   }
 
   @Override
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     DocumentPage docs = getDocs(client, batch);
     synchronized(writer) {
       for ( DocumentRecord doc : docs ) {

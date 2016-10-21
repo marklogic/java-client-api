@@ -24,4 +24,13 @@ public interface HostBatcher {
   int getThreadCount();
   ForestConfiguration getForestConfig();
   HostBatcher withForestConfig(ForestConfiguration forestConfig);
+
+  /**
+   * true if the job is terminated (e.g. {@link DataMovementManager#stopJob
+   * DataMovementManager.stopJob} was called), false otherwise
+   *
+   * @return true if the job is terminated (e.g. {@link
+   * DataMovementManager#stopJob DataMovementManager.stopJob} was called), false otherwise
+   */
+  boolean isStopped();
 }

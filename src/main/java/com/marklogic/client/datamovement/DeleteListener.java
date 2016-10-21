@@ -48,12 +48,12 @@ import com.marklogic.client.DatabaseClient;
  *     deleteBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  */
-public class DeleteListener implements BatchListener<String> {
+public class DeleteListener implements QueryBatchListener {
   /**
    * The standard BatchListener action called by QueryHostBatcher.
    */
   @Override
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     client.newDocumentManager().delete( batch.getItems() );
   }
 }

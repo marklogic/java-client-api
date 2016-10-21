@@ -21,6 +21,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.HostBatcher;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
@@ -52,12 +53,14 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public DataMovementManagerImpl(DatabaseClient client) {
     this.primaryClient = client;
+    clientMap.put(primaryClient.getHost(), primaryClient);
     service.setClient(primaryClient);
   }
 
   @Deprecated
   public DataMovementManager withClient(DatabaseClient client) {
     this.primaryClient = client;
+    clientMap.put(primaryClient.getHost(), primaryClient);
     service.setClient(primaryClient);
     return this;
   }
@@ -70,7 +73,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
   public void release() {
     for ( DatabaseClient client : clientMap.values() ) {
       try {
-        client.release();
+        // don't release the primaryClient because we didn't create it, it was provided to us
+        if ( primaryClient != client ) client.release();
       } catch (Throwable t) {
         logger.error("Failed to release client for host \"" + client.getHost() + "\"", t);
       }
@@ -99,21 +103,23 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public WriteHostBatcher newWriteHostBatcher() {
     verifyClientIsSet("newWriteHostBatcher");
-    WriteHostBatcherImpl batcher = new WriteHostBatcherImpl(primaryClient, this, getForestConfig());
+    WriteHostBatcherImpl batcher = new WriteHostBatcherImpl(this, getForestConfig());
+    batcher.onBatchFailure(new HostAvailabilityListener(this, batcher));
     return batcher;
   }
 
   public QueryHostBatcher newQueryHostBatcher(QueryDefinition query) {
     verifyClientIsSet("newQueryHostBatcher");
     QueryHostBatcherImpl batcher = new QueryHostBatcherImpl(query, this, getForestConfig());
-    if ( primaryClient != null ) batcher.setClient(primaryClient);
+    batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
     return batcher;
   }
 
   public QueryHostBatcher newQueryHostBatcher(Iterator<String> iterator) {
     verifyClientIsSet("newQueryHostBatcher");
     QueryHostBatcherImpl batcher = new QueryHostBatcherImpl(iterator, this, getForestConfig());
-    if ( primaryClient != null ) batcher.setClient(primaryClient);
+    // add a default listener to handle host failover scenarios
+    batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
     return batcher;
   }
 
@@ -134,7 +140,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   public DatabaseClient getForestClient(Forest forest) {
-    String key = forest.getHost() + "_" + forest.getDatabaseName();
+    String hostName = forest.getHost();
+    if ( forest.getOpenReplicaHost() != null ) {
+      hostName = forest.getOpenReplicaHost();
+    } else if ( forest.getAlternateHost() != null ) {
+      hostName = forest.getAlternateHost();
+    }
+    String key = hostName;
     DatabaseClient client = clientMap.get(key);
     if ( client != null ) return client;
     // since this is shared across threads, let's get an exclusive lock on it before updating it
@@ -144,7 +156,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
       client = clientMap.get(key);
       if ( client != null ) return client;
       client = DatabaseClientFactory.newClient(
-        forest.getHost(),
+        hostName,
         primaryClient.getPort(),
         forest.getDatabaseName(),
         primaryClient.getSecurityContext()

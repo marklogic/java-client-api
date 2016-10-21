@@ -39,7 +39,7 @@ import com.marklogic.client.datamovement.WriteHostBatcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.FailureListener;
+import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.QueryHostBatcher;
 import com.marklogic.client.datamovement.QueryHostException;
 
@@ -103,7 +103,7 @@ public class PointInTimeQueryTest {
     AtomicInteger successDocs = new AtomicInteger();
     AtomicInteger badDocs = new AtomicInteger();
     StringBuilder failures = new StringBuilder();
-    FailureListener<QueryHostException> failListener = (client, throwable) -> {
+    QueryFailureListener failListener = (client, throwable) -> {
         throwable.printStackTrace();
         logger.error("ERORR:[{}]", throwable);
         failures.append("ERORR:[" + throwable.toString() + "]");

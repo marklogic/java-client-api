@@ -52,15 +52,15 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.datamovement.Batch;
-import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.BatchListener;
 import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.HostAvailabilityListener;
+import com.marklogic.client.datamovement.WriteBatch;
+import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.WriteHostBatcher;
 
 /**
@@ -195,8 +195,8 @@ public class WriteHostBatcherImpl
   private ServerTransform transform;
   private ForestConfiguration forestConfig;
   private LinkedBlockingQueue<DocumentToWrite> queue = new LinkedBlockingQueue<>();
-  private List<BatchListener<WriteEvent>> successListeners = new ArrayList<>();
-  private List<BatchFailureListener<WriteEvent>> failureListeners = new ArrayList<>();
+  private List<WriteBatchListener> successListeners = new ArrayList<>();
+  private List<WriteFailureListener> failureListeners = new ArrayList<>();
   private AtomicLong batchNumber = new AtomicLong(0);
   private AtomicLong batchCounter = new AtomicLong(0);
   private AtomicLong itemsSoFar = new AtomicLong(0);
@@ -206,16 +206,12 @@ public class WriteHostBatcherImpl
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
 
-  public WriteHostBatcherImpl(DatabaseClient client, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public WriteHostBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
-    if (client == null)       throw new IllegalArgumentException("client must not be null");
     if (moveMgr == null)      throw new IllegalArgumentException("moveMgr must not be null");
     if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
-    super.setClient(client);
     this.moveMgr = moveMgr;
     withForestConfig( forestConfig );
-    // add a default listener to handle host failover scenarios
-    failureListeners.add(new HostAvailabilityListener(moveMgr, this));
   }
 
   public void initialize() {
@@ -374,9 +370,9 @@ public class WriteHostBatcherImpl
                 transactionInfo.transaction.commit();
                 committed = true;
                 for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-                  Batch<WriteEvent> batch = transactionWriteSet.getBatchOfWriteEvents();
+                  WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
                   //batch.setJobBatchNumber(batchNumFinished);
-                  for ( BatchListener<WriteEvent> successListener : successListeners ) {
+                  for ( WriteBatchListener successListener : successListeners ) {
                     successListener.processEvent(hostClient, batch);
                   }
                 }
@@ -399,8 +395,8 @@ public class WriteHostBatcherImpl
           committed = true;
         }
         if ( committed ) {
-          Batch<WriteEvent> batch = batchWriteSet.getBatchOfWriteEvents();
-          for ( BatchListener<WriteEvent> successListener : successListeners ) {
+          WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
+          for ( WriteBatchListener successListener : successListeners ) {
             successListener.processEvent(hostClient, batch);
           }
         }
@@ -421,9 +417,9 @@ public class WriteHostBatcherImpl
             logger.warn("Failure to rollback transaction: {}", t2.toString());
           }
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            Batch<WriteEvent> batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( BatchFailureListener<WriteEvent> failureListener : failureListeners ) {
-              failureListener.processEvent(hostClient, batch, throwable);
+            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
+            for ( WriteFailureListener failureListener : failureListeners ) {
+              failureListener.processFailure(hostClient, batch, throwable);
             }
           }
         } else {
@@ -431,9 +427,9 @@ public class WriteHostBatcherImpl
         }
         transactionInfo.inProcess.decrementAndGet();
       }
-      Batch<WriteEvent> batch = batchWriteSet.getBatchOfWriteEvents();
-      for ( BatchFailureListener<WriteEvent> failureListener : failureListeners ) {
-        failureListener.processEvent(hostClient, batch, throwable);
+      WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
+      for ( WriteFailureListener failureListener : failureListeners ) {
+        failureListener.processFailure(hostClient, batch, throwable);
       }
       logger.warn("Error writing batch: {}", throwable.toString());
     });
@@ -441,43 +437,43 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher onBatchSuccess(BatchListener<WriteEvent> listener) {
+  public WriteHostBatcher onBatchSuccess(WriteBatchListener listener) {
     successListeners.add(listener);
     return this;
   }
   @Override
-  public WriteHostBatcher onBatchFailure(BatchFailureListener<WriteEvent> listener) {
+  public WriteHostBatcher onBatchFailure(WriteFailureListener listener) {
     failureListeners.add(listener);
     return this;
   }
 
   @Override
-  public BatchListener<WriteEvent>[]        getBatchSuccessListeners() {
-    return successListeners.toArray(new BatchListener[successListeners.size()]);
+  public WriteBatchListener[]        getBatchSuccessListeners() {
+    return successListeners.toArray(new WriteBatchListener[successListeners.size()]);
   }
 
   @Override
-  public BatchFailureListener<WriteEvent>[] getBatchFailureListeners() {
-    return failureListeners.toArray(new BatchFailureListener[failureListeners.size()]);
+  public WriteFailureListener[] getBatchFailureListeners() {
+    return failureListeners.toArray(new WriteFailureListener[failureListeners.size()]);
   }
 
   @Override
-  public void setBatchSuccessListeners(BatchListener<WriteEvent>... listeners) {
+  public void setBatchSuccessListeners(WriteBatchListener... listeners) {
     requireNotInitialized();
     successListeners.clear();
     if ( listeners != null ) {
-      for ( BatchListener<WriteEvent> listener : listeners ) {
+      for ( WriteBatchListener listener : listeners ) {
         successListeners.add(listener);
       }
     }
   }
 
   @Override
-  public void setBatchFailureListeners(BatchFailureListener<WriteEvent>... listeners) {
+  public void setBatchFailureListeners(WriteFailureListener... listeners) {
     requireNotInitialized();
     failureListeners.clear();
     if ( listeners != null ) {
-      for ( BatchFailureListener<WriteEvent> listener : listeners ) {
+      for ( WriteFailureListener listener : listeners ) {
         failureListeners.add(listener);
       }
     }
@@ -541,17 +537,17 @@ public class WriteHostBatcherImpl
         if ( transactionInfo.throwable.get() != null ) {
           transactionInfo.transaction.rollback();
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            Batch<WriteEvent> batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( BatchFailureListener<WriteEvent> failureListener : failureListeners ) {
-              failureListener.processEvent(client, batch, transactionInfo.throwable.get());
+            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
+            for ( WriteFailureListener failureListener : failureListeners ) {
+              failureListener.processFailure(client, batch, transactionInfo.throwable.get());
             }
           }
           logger.warn("Failure to rollback transaction: {}", transactionInfo.throwable.get().toString());
         } else {
           transactionInfo.transaction.commit();
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            Batch<WriteEvent> batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( BatchListener<WriteEvent> successListener : successListeners ) {
+            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
+            for ( WriteBatchListener successListener : successListeners ) {
               successListener.processEvent(client, batch);
             }
           }
@@ -561,9 +557,9 @@ public class WriteHostBatcherImpl
     } catch (Throwable t) {
       transactionInfo.throwable.set(t);
       for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-        Batch<WriteEvent> batch = transactionWriteSet.getBatchOfWriteEvents();
-        for ( BatchFailureListener<WriteEvent> failureListener : failureListeners ) {
-          failureListener.processEvent(client, batch, t);
+        WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
+        for ( WriteFailureListener failureListener : failureListeners ) {
+          failureListener.processFailure(client, batch, t);
         }
       }
       logger.warn("Failure to complete transaction: {}", t.toString());
@@ -575,6 +571,12 @@ public class WriteHostBatcherImpl
     stopped.set(true);
     threadPool.shutdownNow();
   }
+
+  @Override
+  public boolean isStopped() {
+    return threadPool.isTerminated();
+  }
+
 
   @Override
   public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
@@ -651,7 +653,7 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher withForestConfig(ForestConfiguration forestConfig) {
+  public synchronized WriteHostBatcher withForestConfig(ForestConfiguration forestConfig) {
     // get the list of hosts to use
     Forest[] forests = forestConfig.listForests();
     if ( forests.length == 0 ) {
@@ -675,7 +677,6 @@ public class WriteHostBatcherImpl
     logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.size(), forests[0].getDatabaseName());
     // initialize a DatabaseClient for each host
     HostInfo[] newHostInfos = new HostInfo[hosts.size()];
-    DatabaseClient client = getClient();
     int i=0;
     for ( String host : hosts.keySet() ) {
       if ( existingHostInfos.get(host) != null ) {
@@ -684,14 +685,11 @@ public class WriteHostBatcherImpl
       } else {
         newHostInfos[i] = new HostInfo();
         newHostInfos[i].hostName = host;
-        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation", client.getPort(), host);
-        if ( host.equals(client.getHost()) ) {
-          newHostInfos[i].client = client;
-        } else {
-          Forest forest = hosts.get(host);
-          // this is a host-specific client (no DatabaseClient anywhere in datamovement is actually forest-specific)
-          newHostInfos[i].client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
-        }
+        Forest forest = hosts.get(host);
+        // this is a host-specific client (no DatabaseClient is actually forest-specific)
+        newHostInfos[i].client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
+          newHostInfos[i].client.getPort(), host);
       }
       i++;
     }

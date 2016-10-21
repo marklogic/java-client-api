@@ -49,12 +49,13 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.BatchListener;
 import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.WriteHostBatcher;
 
 public class WriteHostBatcherTest {
@@ -200,11 +201,11 @@ public class WriteHostBatcherTest {
 
   @Test
   public void testListenerManagement() {
-    BatchListener<WriteEvent> successListener = (client, batch) -> {};
-    BatchFailureListener<WriteEvent> failureListener = (client, batch, throwable) -> {};
+    WriteBatchListener successListener = (client, batch) -> {};
+    WriteFailureListener failureListener = (client, batch, throwable) -> {};
 
     WriteHostBatcher batcher = moveMgr.newWriteHostBatcher();
-    BatchListener<WriteEvent>[] successListeners = batcher.getBatchSuccessListeners();
+    WriteBatchListener[] successListeners = batcher.getBatchSuccessListeners();
     assertEquals(0, successListeners.length);
 
     batcher.onBatchSuccess(successListener);
@@ -212,7 +213,7 @@ public class WriteHostBatcherTest {
     assertEquals(1, successListeners.length);
     assertEquals(successListener, successListeners[0]);
 
-    BatchFailureListener<WriteEvent>[] failureListeners = batcher.getBatchFailureListeners();
+    WriteFailureListener[] failureListeners = batcher.getBatchFailureListeners();
     assertEquals(1, failureListeners.length);
     assertEquals(HostAvailabilityListener.class, failureListeners[0].getClass());
 

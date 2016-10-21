@@ -113,7 +113,7 @@ public interface QueryHostBatcher extends HostBatcher {
    * @param listener the action which has to be done when uris are ready
    * @return this instance for method chaining
    */
-  QueryHostBatcher onUrisReady(BatchListener<String> listener);
+  QueryHostBatcher onUrisReady(QueryBatchListener listener);
 
   /**
    * Add a listener to run each time there is an Exception retrieving a batch
@@ -121,45 +121,45 @@ public interface QueryHostBatcher extends HostBatcher {
    * @param listener the action which has to be done when the query fails
    * @return this instance for method chaining
    */
-  QueryHostBatcher onQueryFailure(FailureListener<QueryHostException> listener);
+  QueryHostBatcher onQueryFailure(QueryFailureListener listener);
 
   /**
-   * Get the array of BatchListener&lt;String&gt; instances registered via
+   * Get the array of QueryBatchListener instances registered via
    * onBatchSuccess.
    *
-   * @return the BatchListener&lt;String&gt; instances this batcher
+   * @return the QueryBatchListener instances this batcher
    *   is using
    */
-  BatchListener<String>[] getQuerySuccessListeners();
+  QueryBatchListener[] getQuerySuccessListeners();
 
   /**
-   * Get the array of FailureListener&lt;QueryHostException&gt; instances
+   * Get the array of QueryFailureListener instances
    * registered via onBatchFailure including the HostAvailabilityListener
    * registered by default.
    *
-   * @return the FailureListener&lt;QueryHostException&gt; instances this
+   * @return the QueryFailureListener instances this
    *   batcher is using
    */
-  FailureListener<QueryHostException>[] getQueryFailureListeners();
+  QueryFailureListener[] getQueryFailureListeners();
 
   /**
-   * Remove any existing BatchListener&lt;String&gt; instances registered
+   * Remove any existing QueryBatchListener instances registered
    * via onBatchSuccess and replace them with the provided listeners.
    *
-   * @param listeners the BatchListener&lt;String&gt; instances this
+   * @param listeners the QueryBatchListener instances this
    *   batcher should use
    */
-  void setBatchSuccessListeners(BatchListener<String>... listeners);
+  void setBatchSuccessListeners(QueryBatchListener... listeners);
 
   /**
-   * Remove any existing FailureListener&lt;QueryHostException&gt; instances
+   * Remove any existing QueryFailureListener instances
    * registered via onBatchFailure including the HostAvailabilityListener
    * registered by default and replace them with the provided listeners.
    *
-   * @param listeners the FailureListener&lt;QueryHostException&gt; instances this
+   * @param listeners the QueryFailureListener instances this
    *   batcher should use
    */
-  void setBatchFailureListeners(FailureListener<QueryHostException>... listeners);
+  void setBatchFailureListeners(QueryFailureListener... listeners);
 
   /**
    * Specifies that matching uris should be retrieved as they were when this
@@ -255,18 +255,12 @@ public interface QueryHostBatcher extends HostBatcher {
   boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;
 
   /**
-   * true if the job is terminated, false otherwise
+   * true if the job is terminated (last batch was finished or {@link
+   * DataMovementManager#stopJob DataMovementManager.stopJob} was called),
+   * false otherwise
    *
-   * @return true if the job is terminated, false otherwise
+   * @return true if the job is terminated (last batch was finished or {@link
+   * DataMovementManager#stopJob DataMovementManager.stopJob} was called), false otherwise
    */
-  boolean isTerminated();
-
-  /**
-   * true if the job is terminating (last batch was finished or {@link
-   * DataMovementManager#stopJob DataMovementManager.stopJob} was called)
-   *
-   * @return true if the job is terminating (last batch was finished or
-   *         {@link DataMovementManager#stopJob DataMovementManager.stopJob} was called)
-   */
-  boolean isTerminating();
+  boolean isStopped();
 }

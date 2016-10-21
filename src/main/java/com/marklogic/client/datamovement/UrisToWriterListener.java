@@ -50,7 +50,7 @@ import java.io.Writer;
  *
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  */
-public class UrisToWriterListener implements BatchListener<String> {
+public class UrisToWriterListener implements QueryBatchListener {
   private Writer writer;
   private String suffix = "\n";
   private String prefix;
@@ -61,7 +61,7 @@ public class UrisToWriterListener implements BatchListener<String> {
   }
 
   @Override
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     synchronized(writer) {
       for ( String uri : batch.getItems() ) {
         try {

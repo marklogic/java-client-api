@@ -24,13 +24,7 @@ import com.marklogic.client.datamovement.JobTicket;
 public class BatchImpl<T> implements Batch<T> {
     private T[] items;
     private long jobBatchNumber;
-    private long jobResultsSoFar;
-    private long forestBatchNumber;
-    private long forestResultsSoFar;
     private Calendar timestamp;
-    private long serverTimestamp;
-    private Forest forest;
-    private long bytesMoved;
     private JobTicket jobTicket;
 
     @Override
@@ -54,36 +48,6 @@ public class BatchImpl<T> implements Batch<T> {
     }
 
     @Override
-    public long getServerTimestamp() {
-        return serverTimestamp;
-    }
-
-    public BatchImpl<T> withServerTimestamp(long serverTimestamp) {
-        this.serverTimestamp = serverTimestamp;
-        return this;
-    }
-
-    @Override
-    public Forest getForest() {
-        return forest;
-    }
-
-    public BatchImpl<T> withForest(Forest forest) {
-        this.forest = forest;
-        return this;
-    }
-
-    @Override
-    public long getBytesMoved() {
-        return bytesMoved;
-    }
-
-    public BatchImpl<T> withBytesMoved(long bytesMoved) {
-        this.bytesMoved = bytesMoved;
-        return this;
-    }
-
-    @Override
     public JobTicket getJobTicket() {
         return jobTicket;
     }
@@ -100,36 +64,6 @@ public class BatchImpl<T> implements Batch<T> {
 
     public BatchImpl<T> withJobBatchNumber(long jobBatchNumber) {
         this.jobBatchNumber = jobBatchNumber;
-        return this;
-    }
-
-    @Override
-    public long getJobResultsSoFar() {
-        return jobResultsSoFar;
-    }
-
-    public BatchImpl<T> withJobResultsSoFar(long jobResultsSoFar) {
-        this.jobResultsSoFar = jobResultsSoFar;
-        return this;
-    }
-
-    @Override
-    public long getForestBatchNumber() {
-        return forestBatchNumber;
-    }
-
-    public BatchImpl<T> withForestBatchNumber(long forestBatchNumber) {
-        this.forestBatchNumber = forestBatchNumber;
-        return this;
-    }
-
-    @Override
-    public long getForestResultsSoFar() {
-        return forestResultsSoFar;
-    }
-
-    public BatchImpl<T> withForestResultsSoFar(long forestResultsSoFar) {
-        this.forestResultsSoFar = forestResultsSoFar;
         return this;
     }
 }
