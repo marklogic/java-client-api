@@ -1,26 +1,26 @@
 /**
  * The MarkLogic Data Movement SDK supports long-running write, read,
  * delete, or transform jobs.  Long-running write jobs are enabled by {@link
- * com.marklogic.client.datamovement.WriteHostBatcher}.
+ * com.marklogic.client.datamovement.WriteBatcher}.
  * Long-running read, delete, or transform jobs are enabled by {@link
- * com.marklogic.client.datamovement.QueryHostBatcher} which can perform actions
- * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryHostBatcher(
+ * com.marklogic.client.datamovement.QueryBatcher} which can perform actions
+ * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryBatcher(
  * com.marklogic.client.query.QueryDefinition) on all uris matching a query} or
- * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryHostBatcher(
+ * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryBatcher(
  * java.util.Iterator) on all uris provided by an Iterator&lt;String&gt;}.
  *
  * Features:
  *
- * * WriteHostBatcher
+ * * WriteBatcher
  *     * batches documents for [bulk write][] but improves on performance because it
  *         * writes with many parallel threads
  *         * writes round-robin to all hosts in the cluster with forests for
  *           the specified database
  *     * one instance safely receives calls to {@link
- *       com.marklogic.client.datamovement.WriteHostBatcher#add add} from many
+ *       com.marklogic.client.datamovement.WriteBatcher#add add} from many
  *       threads
  *     * supports transforms, metadata, and temporal collections
- * * QueryHostBatcher
+ * * QueryBatcher
  *     * offers high-performance import from sources not supported by [mlcp][]
  *     * runs provided code on a set of uris (common use cases include but
  *         are not limited to export, delete, and transform)
@@ -37,8 +37,8 @@
  * <a name="provided"></a>
  * # Using Provided Listeners
  *
- * When using QueryHostBatcher, your custom listeners provided to {@link
- * com.marklogic.client.datamovement.QueryHostBatcher#onUrisReady onUrisReady} can do
+ * When using QueryBatcher, your custom listeners provided to {@link
+ * com.marklogic.client.datamovement.QueryBatcher#onUrisReady onUrisReady} can do
  * anything with each batch of uris and will usually use the [MarkLogic Java
  * Client API][] to do things. However, to simplify common use cases, the
  * following listeners are also provided:
@@ -52,7 +52,7 @@
  * [MarkLogic Java Client API]: http://docs.marklogic.com/guide/java
  *
  *
- * # Using QueryHostBatcher
+ * # Using QueryBatcher
  *
  * When you need to perform actions on server documents beyond what can be
  * done with the [provided listeners](#provided), register your
@@ -62,7 +62,7 @@
  *
  * For Example:
  * ```java
- *     QueryHostBatcher qhb = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withBatchSize(1000)
  *         .withThreadCount(20)
            .withConsistentSnapshot()
@@ -83,16 +83,16 @@
  *
  *
  *
- * # Using WriteHostBatcher
+ * # Using WriteBatcher
  *
  * When you need to write a very large volume of documents and
  * [mlcp][] cannot meet
- * your requirements, use WriteHostBatcher.
+ * your requirements, use WriteBatcher.
  *
  * For Example:
  *
  * ```java
- *     WriteHostBatcher whb = dataMovementManager.newWriteHostBatcher()
+ *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
  *         .onBatchSuccess((client,batch) -&gt; {

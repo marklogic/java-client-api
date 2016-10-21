@@ -35,12 +35,12 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.QueryHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryHostException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
@@ -71,7 +71,7 @@ public class PointInTimeQueryTest {
 
   public static void setup() throws Exception {
     StringBuffer failures = new StringBuffer();
-    WriteHostBatcher writeBatcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(10)
       .onBatchFailure((client, event, throwable) -> {
         throwable.printStackTrace();
@@ -108,7 +108,7 @@ public class PointInTimeQueryTest {
         logger.error("ERORR:[{}]", throwable);
         failures.append("ERORR:[" + throwable.toString() + "]");
     };
-    QueryHostBatcher exportBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
       .withThreadCount(1)
       .withBatchSize(30)
       .withConsistentSnapshot()
@@ -134,7 +134,7 @@ public class PointInTimeQueryTest {
     moveMgr.startJob(exportBatcher);
 
     // while the exportBatcher is still running, let's delete the docs out from under it
-    QueryHostBatcher deleteBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(10)
       .withConsistentSnapshot()
       .onUrisReady(new DeleteListener())

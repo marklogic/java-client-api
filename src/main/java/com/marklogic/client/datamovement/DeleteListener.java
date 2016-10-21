@@ -23,16 +23,16 @@ import com.marklogic.client.DatabaseClient;
  * documents, it should only be used when:
  *
  * 1. [merge timestamp][] is enabled and
- * {@link QueryHostBatcher#withConsistentSnapshot} is called, or
- * 2. {@link DataMovementManager#newQueryHostBatcher(Iterator)
- * newQueryHostBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
+ * {@link QueryBatcher#withConsistentSnapshot} is called, or
+ * 2. {@link DataMovementManager#newQueryBatcher(Iterator)
+ * newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
  *
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  *
  * When merge timestamp is enabled, pass a DeleteListener instance to
- * QueryHostBatcher onUrisReady like so:
+ * QueryBatcher onUrisReady like so:
  *
- *     QueryHostBatcher deleteBatcher = moveMgr.newQueryHostBatcher(query)
+ *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
  *       .onUrisReady(new DeleteListener())
  *       .withConsistentSnapshot();
  *     JobTicket ticket = moveMgr.startJob(deleteBatcher);
@@ -40,9 +40,9 @@ import com.marklogic.client.DatabaseClient;
  *     moveMgr.stopJob(ticket);
  *
  * With Iterator&lt;String&gt;, pass a DeleteListener instance to
- * QueryHostBatcher onUrisReady like so:
+ * QueryBatcher onUrisReady like so:
  *
- *     QueryHostBatcher deleteBatcher = moveMgr.newQueryHostBatcher(query)
+ *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
  *       .onUrisReady(new DeleteListener());
  *     JobTicket ticket = moveMgr.startJob(deleteBatcher);
  *     deleteBatcher.awaitCompletion();
@@ -50,7 +50,7 @@ import com.marklogic.client.DatabaseClient;
  */
 public class DeleteListener implements QueryBatchListener {
   /**
-   * The standard BatchListener action called by QueryHostBatcher.
+   * The standard BatchListener action called by QueryBatcher.
    */
   @Override
   public void processEvent(DatabaseClient client, QueryBatch batch) {

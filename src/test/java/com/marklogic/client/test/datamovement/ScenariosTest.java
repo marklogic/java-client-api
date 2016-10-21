@@ -35,7 +35,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import java.util.List;
 
 
@@ -98,12 +98,12 @@ public class ScenariosTest {
     private int BATCH_SIZE = 1;
     private DataMovementManager moveMgr = DataMovementManager.newInstance();
     private JobTicket ticket;
-    private WriteHostBatcher batcher;
+    private WriteBatcher batcher;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public OurJbossESBPlugin(DatabaseClient client) {
       moveMgr.withClient(client);
-      batcher = moveMgr.newWriteHostBatcher()
+      batcher = moveMgr.newWriteBatcher()
         .withJobName("OurJbossESBPlugin")
         .withBatchSize(BATCH_SIZE)
         // every time a batch is full, write it to the database via mlcp

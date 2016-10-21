@@ -16,10 +16,10 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.datamovement.HostBatcher;
+import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.ForestConfiguration;
 
-public abstract class HostBatcherImpl implements HostBatcher {
+public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
   private int batchSize = 100;
   private int threadCount = 1;
@@ -27,7 +27,7 @@ public abstract class HostBatcherImpl implements HostBatcher {
   private DatabaseClient client;
 
   @Override
-  public HostBatcher withJobName(String jobName) {
+  public Batcher withJobName(String jobName) {
     this.jobName = jobName;
     return this;
   }
@@ -38,7 +38,7 @@ public abstract class HostBatcherImpl implements HostBatcher {
   }
 
   @Override
-  public HostBatcher withBatchSize(int batchSize) {
+  public Batcher withBatchSize(int batchSize) {
     if ( batchSize <= 0 ) {
       throw new IllegalArgumentException("batchSize must be 1 or greater");
     }
@@ -52,7 +52,7 @@ public abstract class HostBatcherImpl implements HostBatcher {
   }
 
   @Override
-  public HostBatcher withThreadCount(int threadCount) {
+  public Batcher withThreadCount(int threadCount) {
     if ( threadCount <= 0 ) {
       throw new IllegalArgumentException("threadCount must be 1 or greater");
     }
@@ -71,7 +71,7 @@ public abstract class HostBatcherImpl implements HostBatcher {
   }
 
   @Override
-  public HostBatcher withForestConfig(ForestConfiguration forestConfig) {
+  public Batcher withForestConfig(ForestConfiguration forestConfig) {
     this.forestConfig = forestConfig;
     return this;
   }

@@ -44,12 +44,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
-public class QueryHostBatcherIteratorTest {
-  Logger logger = LoggerFactory.getLogger(QueryHostBatcherIteratorTest.class);
+public class QueryBatcherIteratorTest {
+  Logger logger = LoggerFactory.getLogger(QueryBatcherIteratorTest.class);
   private static int numDocs = 500;
   private static DataMovementManager moveMgr = DataMovementManager.newInstance();
-  private static String collection = "QueryHostBatcherIteratorTest";
-  private static String qhbTestCollection = "QueryHostBatcherIteratorTest_" +
+  private static String collection = "QueryBatcherIteratorTest";
+  private static String qhbTestCollection = "QueryBatcherIteratorTest_" +
     new Random().nextInt(10000);
 
   @BeforeClass
@@ -75,7 +75,7 @@ public class QueryHostBatcherIteratorTest {
     assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
       null, Common.client.newDocumentManager().exists(collection + "/doc_1.json") );
 
-    WriteHostBatcher writeBatcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(100);
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
@@ -101,7 +101,7 @@ public class QueryHostBatcherIteratorTest {
       query.setCollections(qhbTestCollection);
       successDocs1 = new AtomicInteger(0);
       failures = new StringBuilder();
-      QueryHostBatcher getUris = moveMgr.newQueryHostBatcher(query)
+      QueryBatcher getUris = moveMgr.newQueryBatcher(query)
               .withThreadCount(5)
               .withBatchSize(100)
               .onUrisReady( new UrisToWriterListener(writer) )
@@ -122,7 +122,7 @@ public class QueryHostBatcherIteratorTest {
     AtomicInteger successDocs2 = new AtomicInteger(0);
     BufferedReader reader = new BufferedReader(new FileReader(tempFile));
     StringBuffer failures2 = new StringBuffer();
-    QueryHostBatcher doNothing = moveMgr.newQueryHostBatcher(reader.lines().iterator())
+    QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
       .withThreadCount(6)
       .withBatchSize(19)
       .onUrisReady((client, batch) -> successDocs2.addAndGet(batch.getItems().length))
@@ -144,7 +144,7 @@ public class QueryHostBatcherIteratorTest {
     query.setCollections(qhbTestCollection);
     Set<String> uris = new HashSet<>();
     StringBuilder failures = new StringBuilder();
-    QueryHostBatcher getUris = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher getUris = moveMgr.newQueryBatcher(query)
       .withThreadCount(6)
       .withBatchSize(5000)
       .onUrisReady( (client, batch) -> uris.addAll(Arrays.asList(batch.getItems())) )
@@ -162,7 +162,7 @@ public class QueryHostBatcherIteratorTest {
     AtomicInteger successDocs = new AtomicInteger();
     Set<String> uris2 = new HashSet<>();
     StringBuilder failures2 = new StringBuilder();
-    QueryHostBatcher performDelete = moveMgr.newQueryHostBatcher(uris.iterator())
+    QueryBatcher performDelete = moveMgr.newQueryBatcher(uris.iterator())
       .withThreadCount(2)
       .withBatchSize(99)
       .onUrisReady(new DeleteListener())

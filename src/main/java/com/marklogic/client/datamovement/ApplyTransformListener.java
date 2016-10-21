@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
  * ApplyTransformListener should only be used when:
  *
  * 1. [merge timestamp][] is enabled and
- * {@link QueryHostBatcher#withConsistentSnapshot} is called, or
- * 2. {@link DataMovementManager#newQueryHostBatcher(Iterator)
- * newQueryHostBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
+ * {@link QueryBatcher#withConsistentSnapshot} is called, or
+ * 2. {@link DataMovementManager#newQueryBatcher(Iterator)
+ * newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
  *
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  *
@@ -62,7 +62,7 @@ import java.util.stream.Collectors;
  *     ApplyTransformListener listener = new ApplyTransformListener()
  *       .withTransform(transform)
  *       .withApplyResult(ApplyResult.REPLACE);
- *     QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query)
+ *     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
  *         .onUrisReady(listener);
  *     JobTicket ticket = moveMgr.startJob( batcher );
  *     batcher.awaitCompletion();
@@ -76,7 +76,7 @@ public class ApplyTransformListener implements QueryBatchListener {
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
   /**
-   * The standard BatchListener action called by QueryHostBatcher.
+   * The standard BatchListener action called by QueryBatcher.
    */
   public void processEvent(DatabaseClient client, QueryBatch batch) {
     if ( ! (client instanceof DatabaseClientImpl) ) {

@@ -40,7 +40,7 @@ import java.util.Set;
  *
  * For example:
  *
- *     QueryHostBatcher exportBatcher = moveMgr.newQueryHostBatcher(query)
+ *     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady(
  *           new ExportListener()
@@ -79,7 +79,7 @@ public class ExportListener implements QueryBatchListener {
   }
 
   /**
-   * This is the method QueryHostBatcher calls for ExportListener to do its
+   * This is the method QueryBatcher calls for ExportListener to do its
    * thing.  You should not need to call it.
    *
    * @param client the client pointed to the host containing this batch of uris
@@ -96,18 +96,18 @@ public class ExportListener implements QueryBatchListener {
   }
 
   /**
-   * Specifies that documents should be retrieved as they were when this QueryHostBatcher job started.
+   * Specifies that documents should be retrieved as they were when this QueryBatcher job started.
    * This enables a point-in-time export so that all documents are as they were at that point in time.
    * This requires that the server be configured to allow such queries by setting the
    * [merge timestamp](https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468) to a timestamp
    * before the job starts or a sufficiently large negative value.  This should
-   * only be used when the QueryHostBatcher is constructed with a {@link
-   * DataMovementManager#newQueryHostBatcher(QueryDefinition) query}, not with
-   * an {@link DataMovementManager#newQueryHostBatcher(Iterator) Iterator}.
+   * only be used when the QueryBatcher is constructed with a {@link
+   * DataMovementManager#newQueryBatcher(QueryDefinition) query}, not with
+   * an {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}.
    *
    * @return this instance for method chaining
    *
-   * @see QueryHostBatcher#withConsistentSnapshot
+   * @see QueryBatcher#withConsistentSnapshot
    */
   public ExportListener withConsistentSnapshot() {
     consistentSnapshot = true;
@@ -172,8 +172,8 @@ public class ExportListener implements QueryBatchListener {
    * custom code could write the document or a portion of the document to the
    * file system, a REST service, or any target supported by Java.  If further
    * information is required about the document beyond what DocumentRecord can
-   * provide, register a listener with {@link QueryHostBatcher#onUrisReady
-   * QueryHostBatcher.onUrisReady} instead.
+   * provide, register a listener with {@link QueryBatcher#onUrisReady
+   * QueryBatcher.onUrisReady} instead.
    *
    * @param listener the code which will process each document
    * @return this instance for method chaining

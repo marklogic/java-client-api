@@ -21,8 +21,8 @@ import com.marklogic.client.datamovement.JobTicket.JobType;
 public class JobTicketImpl implements JobTicket {
   private String jobId;
   private JobType jobType;
-  private QueryHostBatcherImpl queryHostBatcher;
-  private WriteHostBatcherImpl writeHostBatcher;
+  private QueryBatcherImpl queryBatcher;
+  private WriteBatcherImpl writeBatcher;
 
   public JobTicketImpl(String jobId, JobType jobType) {
     this.jobId = jobId;
@@ -39,21 +39,21 @@ public class JobTicketImpl implements JobTicket {
     return jobType;
   }
 
-  public WriteHostBatcherImpl getWriteHostBatcher() {
-    return writeHostBatcher;
+  public WriteBatcherImpl getWriteBatcher() {
+    return writeBatcher;
   }
 
-  public JobTicketImpl withWriteHostBatcher(WriteHostBatcherImpl writeHostBatcher) {
-    this.writeHostBatcher = writeHostBatcher;
+  public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
+    this.writeBatcher = writeBatcher;
     return this;
   }
 
-  public QueryHostBatcherImpl getQueryHostBatcher() {
-    return queryHostBatcher;
+  public QueryBatcherImpl getQueryBatcher() {
+    return queryBatcher;
   }
 
-  public JobTicketImpl withQueryHostBatcher(QueryHostBatcherImpl queryHostBatcher) {
-    this.queryHostBatcher = queryHostBatcher;
+  public JobTicketImpl withQueryBatcher(QueryBatcherImpl queryBatcher) {
+    this.queryBatcher = queryBatcher;
     return this;
   }
 }

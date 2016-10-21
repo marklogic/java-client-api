@@ -22,14 +22,14 @@ import java.io.Writer;
 
 /**
  * Facilitates writing uris to a file when necessary because setting [merge
- * timestamp][] and {@link QueryHostBatcher#withConsistentSnapshot
+ * timestamp][] and {@link QueryBatcher#withConsistentSnapshot
  * withConsistentSnapshot} is not an option, but you need to run DeleteListener
  * or ApplyTransformListener.
  *
  * Example writing uris to disk then running a delete:
  *
  *     FileWriter writer = new FileWriter("uriCache.txt");
- *     QueryHostBatcher getUris = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( new UrisToWriterListener(writer) )
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
@@ -41,7 +41,7 @@ import java.io.Writer;
  *
  *     // now we have the uris, let's step through them
  *     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
- *     QueryHostBatcher performDelete = dataMovementManager.newQueryHostBatcher(reader.lines().iterator())
+ *     QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
  *       .onUrisReady(new DeleteListener())
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);

@@ -34,8 +34,8 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 
 public class ExportToWriterListenerTest {
   private static DataMovementManager moveMgr = DataMovementManager.newInstance();
@@ -60,7 +60,7 @@ public class ExportToWriterListenerTest {
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher();
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(batcher);
     String[] uris = new String[100];
     for ( int i=0; i < 100; i++ ) {
@@ -88,8 +88,8 @@ public class ExportToWriterListenerTest {
           }
         );
 
-      QueryHostBatcher queryJob =
-        moveMgr.newQueryHostBatcher(query)
+      QueryBatcher queryJob =
+        moveMgr.newQueryBatcher(query)
           .withThreadCount(5)
           .withBatchSize(10)
           .onUrisReady(exportListener)

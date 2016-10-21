@@ -21,7 +21,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.QueryHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,8 +49,8 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBatcher {
-  private static Logger logger = LoggerFactory.getLogger(QueryHostBatcherImpl.class);
+public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
+  private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private QueryDefinition query;
   private Iterator<String> iterator;
   private DataMovementManager moveMgr;
@@ -68,7 +68,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
 
-  public QueryHostBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     this.moveMgr = moveMgr;
     this.query = query;
@@ -76,7 +76,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     withBatchSize(1000);
   }
 
-  public QueryHostBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     this.moveMgr = moveMgr;
     this.iterator = iterator;
@@ -85,13 +85,13 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public QueryHostBatcherImpl onUrisReady(QueryBatchListener listener) {
+  public QueryBatcherImpl onUrisReady(QueryBatchListener listener) {
     urisReadyListeners.add(listener);
     return this;
   }
 
   @Override
-  public QueryHostBatcherImpl onQueryFailure(QueryFailureListener listener) {
+  public QueryBatcherImpl onQueryFailure(QueryFailureListener listener) {
     failureListeners.add(listener);
     return this;
   }
@@ -129,21 +129,21 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public QueryHostBatcher withJobName(String jobName) {
+  public QueryBatcher withJobName(String jobName) {
     requireNotStarted();
     super.withJobName(jobName);
     return this;
   }
 
   @Override
-  public QueryHostBatcher withBatchSize(int batchSize) {
+  public QueryBatcher withBatchSize(int batchSize) {
     requireNotStarted();
     super.withBatchSize(batchSize);
     return this;
   }
 
   @Override
-  public QueryHostBatcher withThreadCount(int threadCount) {
+  public QueryBatcher withThreadCount(int threadCount) {
     requireNotStarted();
     if ( getThreadCount() <= 0 ) {
       throw new IllegalArgumentException("threadCount must be 1 or greater");
@@ -154,7 +154,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public QueryHostBatcher withConsistentSnapshot() {
+  public QueryBatcher withConsistentSnapshot() {
     requireNotStarted();
     consistentSnapshot = true;
     return this;
@@ -187,7 +187,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
 
   private void requireJobStarted() {
     if ( threadPool == null ) {
-      throw new IllegalStateException("Job not started. First call DataMovementManager.startJob(QueryHostBatcher)");
+      throw new IllegalStateException("Job not started. First call DataMovementManager.startJob(QueryBatcher)");
     }
   }
 
@@ -233,7 +233,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public synchronized QueryHostBatcher withForestConfig(ForestConfiguration forestConfig) {
+  public synchronized QueryBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
     Forest[] forests = forestConfig.listForests();
     Set<Forest> oldForests = new HashSet<>(forestResults.keySet());

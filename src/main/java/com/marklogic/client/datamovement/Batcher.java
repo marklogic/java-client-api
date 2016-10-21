@@ -15,15 +15,15 @@
  */
 package com.marklogic.client.datamovement;
 
-public interface HostBatcher {
-  HostBatcher withJobName(String jobName);
+public interface Batcher {
+  Batcher withJobName(String jobName);
   String getJobName();
-  HostBatcher withBatchSize(int batchSize);
+  Batcher withBatchSize(int batchSize);
   int getBatchSize();
-  HostBatcher withThreadCount(int threadCount);
+  Batcher withThreadCount(int threadCount);
   int getThreadCount();
   ForestConfiguration getForestConfig();
-  HostBatcher withForestConfig(ForestConfiguration forestConfig);
+  Batcher withForestConfig(ForestConfiguration forestConfig);
 
   /**
    * true if the job is terminated (e.g. {@link DataMovementManager#stopJob

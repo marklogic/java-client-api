@@ -26,8 +26,8 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.test.datamovement.Common;
 
 import org.slf4j.Logger;
@@ -66,7 +66,7 @@ public class PackageExamples {
   }
 
   @Test
-  public void testQueryHostBatcher() {
+  public void testQueryBatcher() {
     client.newDocumentManager().writeAs(collection + "/test1.json", meta, "[true]");
     client.newDocumentManager().writeAs(collection + "/test1.xml",  meta, "<xml/>");
     client.newDocumentManager().writeAs(collection + "/test1.txt",  meta, "text");
@@ -74,8 +74,8 @@ public class PackageExamples {
 
     QueryDefinition query = collectionQuery;
 
-    // begin copy from "Using QueryHostBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    QueryHostBatcher qhb = dataMovementManager.newQueryHostBatcher(query)
+    // begin copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
+    QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
         .withBatchSize(1000)
         .withThreadCount(20)
         .withConsistentSnapshot()
@@ -90,7 +90,7 @@ public class PackageExamples {
     JobTicket ticket = dataMovementManager.startJob(qhb);
     qhb.awaitCompletion();
     dataMovementManager.stopJob(ticket);
-    // end copy from "Using QueryHostBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
+    // end copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
 
     SearchHandle results = client.newQueryManager().search(collectionQuery, new SearchHandle());
     assertEquals(2, results.getTotalResults());
@@ -100,12 +100,12 @@ public class PackageExamples {
   }
 
   @Test
-  public void testWriteHostBatcher() {
+  public void testWriteBatcher() {
     assertEquals(null, client.newDocumentManager().exists("doc1.txt"));
     assertEquals(null, client.newDocumentManager().exists("doc2.txt"));
 
-    // begin copy from "Using WriteHostBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    WriteHostBatcher whb = dataMovementManager.newWriteHostBatcher()
+    // begin copy from "Using WriteBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
+    WriteBatcher whb = dataMovementManager.newWriteBatcher()
         .withBatchSize(100)
         .withThreadCount(20)
         .onBatchSuccess((client,batch) -> {
@@ -120,7 +120,7 @@ public class PackageExamples {
 
     whb.flushAndWait(); // send the two docs even though they're not a full batch
     dataMovementManager.stopJob(ticket);
-    // end copy from "Using WriteHostBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
+    // end copy from "Using WriteBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
 
     assertTrue(null != client.newDocumentManager().exists("doc1.txt"));
     assertTrue(null != client.newDocumentManager().exists("doc2.txt"));

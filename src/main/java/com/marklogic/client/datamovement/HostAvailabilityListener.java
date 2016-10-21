@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
   private static Logger logger = LoggerFactory.getLogger(HostAvailabilityListener.class);
   private DataMovementManager moveMgr;
-  private HostBatcher batcher;
+  private Batcher batcher;
   private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
@@ -54,9 +54,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
 
   /**
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
-   * @param batcher the WriteHostBatcher or QueryHostBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
+   * @param batcher the WriteBatcher or QueryBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
    */
-  public HostAvailabilityListener(DataMovementManager moveMgr, HostBatcher batcher) {
+  public HostAvailabilityListener(DataMovementManager moveMgr, Batcher batcher) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
     if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
     this.moveMgr = moveMgr;
@@ -163,9 +163,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         logger.error("ERROR: host unavailable \"" + host + "\", black-listing it for " +
           suspendTimeForHostUnavailable.toString(), throwable);
         FilteredForestConfiguration filteredForestConfig = new FilteredForestConfiguration(existingForestConfig);
-        if ( batcher instanceof WriteHostBatcher ) {
+        if ( batcher instanceof WriteBatcher ) {
           filteredForestConfig = filteredForestConfig.withBlackList(host);
-        } else if ( batcher instanceof QueryHostBatcher ) {
+        } else if ( batcher instanceof QueryBatcher ) {
           List<String> availableHosts = Stream.of(preferredHosts)
             .filter( (availableHost) -> ! availableHost.equals(host) )
             .collect(Collectors.toList());

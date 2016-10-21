@@ -18,19 +18,19 @@ package com.marklogic.client.datamovement;
 import com.marklogic.client.DatabaseClient;
 
 /**
- * Runs processEvent on each batch as it is ready during a WriteHostBatcher
+ * Runs processEvent on each batch as it is ready during a WriteBatcher
  * job.
  *
  * @see #processEvent processEvent
  */
 public interface WriteBatchListener extends BatchListener<WriteBatch> {
   /**
-   * The method called by WriteHostBatcher to run your
+   * The method called by WriteBatcher to run your
    * custom code on this batch.  You usually implement this as a lambda expression.
    *
    * For example, see the lambda expression passed to onBatchSuccess:
    *
-   *     WriteHostBatcher wb = dataMovementManager.newWriteHostBatcher(query)
+   *     WriteBatcher wb = dataMovementManager.newWriteBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
    *         .onBatchSuccess((client, batch) -&gt; {

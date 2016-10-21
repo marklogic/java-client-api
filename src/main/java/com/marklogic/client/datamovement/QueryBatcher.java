@@ -27,8 +27,8 @@ import java.util.concurrent.TimeUnit;
  * provided to DataMovementManager.  The end goal of each job is determined by
  * the listeners registered with onUrisReady.  The data set from which batches
  * are made and on which processing is performed is determined by the
- * {@link DataMovementManager#newQueryHostBatcher(QueryDefinition) query} or
- * {@link DataMovementManager#newQueryHostBatcher(Iterator) Iterator} used to
+ * {@link DataMovementManager#newQueryBatcher(QueryDefinition) query} or
+ * {@link DataMovementManager#newQueryBatcher(Iterator) Iterator} used to
  * construct this instance.
  *
  * While the most custom use cases will be addressed by custom listeners, the
@@ -39,7 +39,7 @@ import java.util.concurrent.TimeUnit;
  * {@link com.marklogic.client.datamovement.ExportToWriterListener}.  The provided
  * listeners are used by adding an instance via onUrisReady like so:
  *
- *     QueryHostBatcher qhb = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady( new DeleteListener() )
  *         .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
@@ -50,10 +50,10 @@ import java.util.concurrent.TimeUnit;
  * Custom listeners will generally use the [MarkLogic Java Client API][] to
  * manipulate the documents for the uris in each batch.
  *
- * QueryHostBatcher is designed to be highly scalable and performant.  To
- * accommodate the largest result sets, QueryHostBatcher paginates through
+ * QueryBatcher is designed to be highly scalable and performant.  To
+ * accommodate the largest result sets, QueryBatcher paginates through
  * matches rather than loading matches into memory.  To prevent queueing too
- * many tasks when running a query, QueryHostBatcher only adds another task
+ * many tasks when running a query, QueryBatcher only adds another task
  * when one completes the query and is about to send the matching uris to the
  * onUrisReady listeners.
  *
@@ -62,7 +62,7 @@ import java.util.concurrent.TimeUnit;
  * 1. perform a read-only operation, or
  * 2. make sure modifications do not modify the result set by deleting matches or modifying them to no longer match, or
  * 3. set a [merge timestamp][] and use {@link #withConsistentSnapshot}, or
- * 4. use {@link DataMovementManager#newQueryHostBatcher(Iterator) Iterator} instead of a {@link DataMovementManager#newQueryHostBatcher(QueryDefinition) query}.
+ * 4. use {@link DataMovementManager#newQueryBatcher(Iterator) Iterator} instead of a {@link DataMovementManager#newQueryBatcher(QueryDefinition) query}.
  *
  * [MarkLogic Java Client API]: http://docs.marklogic.com/guide/java
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
@@ -70,7 +70,7 @@ import java.util.concurrent.TimeUnit;
  * Sample usage using withConsistentSnapshot():
  *
  *     QueryDefinition query = new StructuredQueryBuilder().collection("myCollection");
- *     QueryHostBatcher qhb = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withBatchSize(1000)
  *         .withThreadCount(20)
  *         .withConsistentSnapshot()
@@ -89,7 +89,7 @@ import java.util.concurrent.TimeUnit;
  * Example of queueing uris in memory instead of using withConsistentSnapshot():
  *
  *     ArrayList&lt;String&gt; uris = new ArrayList&lt;&gt;();
- *     QueryHostBatcher getUris = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( (client, batch) -&gt; uris.addAll(Arrays.asList(batch.getItems())) )
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
@@ -98,7 +98,7 @@ import java.util.concurrent.TimeUnit;
  *     dataMovementManager.stopJob(getUrisTicket);
  *
  *     // now we have the uris, let's step through them
- *     QueryHostBatcher performDelete = moveMgr.newQueryHostBatcher(uris.iterator())
+ *     QueryBatcher performDelete = moveMgr.newQueryBatcher(uris.iterator())
  *       .onUrisReady(new DeleteListener())
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
@@ -107,13 +107,13 @@ import java.util.concurrent.TimeUnit;
  *
  * To queue uris to disk (if not enough memory is available) see {@link UrisToWriterListener}.
  */
-public interface QueryHostBatcher extends HostBatcher {
+public interface QueryBatcher extends Batcher {
   /**
    * Add a listener to run each time a batch of uris is ready.
    * @param listener the action which has to be done when uris are ready
    * @return this instance for method chaining
    */
-  QueryHostBatcher onUrisReady(QueryBatchListener listener);
+  QueryBatcher onUrisReady(QueryBatchListener listener);
 
   /**
    * Add a listener to run each time there is an Exception retrieving a batch
@@ -121,7 +121,7 @@ public interface QueryHostBatcher extends HostBatcher {
    * @param listener the action which has to be done when the query fails
    * @return this instance for method chaining
    */
-  QueryHostBatcher onQueryFailure(QueryFailureListener listener);
+  QueryBatcher onQueryFailure(QueryFailureListener listener);
 
   /**
    * Get the array of QueryBatchListener instances registered via
@@ -163,14 +163,14 @@ public interface QueryHostBatcher extends HostBatcher {
 
   /**
    * Specifies that matching uris should be retrieved as they were when this
-   * QueryHostBatcher job started.  This enables a point-in-time query so that
+   * QueryBatcher job started.  This enables a point-in-time query so that
    * the set of uri matches is as it was at that point in time.  This requires
    * that the server be configured to allow such queries by setting the [merge
    * timestamp][] to a timestamp before the job starts or a sufficiently large
-   * negative value.  This should only be used when the QueryHostBatcher is
+   * negative value.  This should only be used when the QueryBatcher is
    * constructed with a {@link
-   * DataMovementManager#newQueryHostBatcher(QueryDefinition) query}, not with
-   * an {@link DataMovementManager#newQueryHostBatcher(Iterator) Iterator}.
+   * DataMovementManager#newQueryBatcher(QueryDefinition) query}, not with
+   * an {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}.
    * This is required when performing a delete of documents matching the query
    * or any modification (including ApplyTransformListener) of matching
    * documents which would cause them to no longer match the query (otherwise
@@ -181,7 +181,7 @@ public interface QueryHostBatcher extends HostBatcher {
    *
    * @return this instance for method chaining
    */
-  QueryHostBatcher withConsistentSnapshot();
+  QueryBatcher withConsistentSnapshot();
 
   /**
    * Sets the job name.  Eventually, this may become useful for seeing named
@@ -190,17 +190,17 @@ public interface QueryHostBatcher extends HostBatcher {
    * @return this instance for method chaining
    */
   @Override
-  public QueryHostBatcher withJobName(String jobName);
+  public QueryBatcher withJobName(String jobName);
 
   /**
    * Sets the number of uris to retrieve per batch.  Since uris are small
    * relative to full documents, this number should be much higher than the
-   * batch size for WriteHostBatcher.  The default batch size is 1000.
+   * batch size for WriteBatcher.  The default batch size is 1000.
    *
    * @return this instance for method chaining
    */
   @Override
-  public QueryHostBatcher withBatchSize(int batchSize);
+  public QueryBatcher withBatchSize(int batchSize);
 
   /**
    * Sets the number of threads added to the internal thread pool for this
@@ -222,7 +222,7 @@ public interface QueryHostBatcher extends HostBatcher {
    * @return this instance for method chaining
    */
   @Override
-  public QueryHostBatcher withThreadCount(int threadCount);
+  public QueryBatcher withThreadCount(int threadCount);
 
   /**
    * Blocks until the job is complete.

@@ -27,8 +27,8 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * round-robin to all appropriate hosts in the cluster.  Appropriate hosts are
  * those containing a forest associated with the database for the
  * DatabaseClient provided to DataMovementManager.  Many external threads
- * (threads not managed by WriteHostBatcher) can concurrently add documents by
- * calling WriteHostBatcher {@link #add add} or {@link #addAs addAs}.  Each
+ * (threads not managed by WriteBatcher) can concurrently add documents by
+ * calling WriteBatcher {@link #add add} or {@link #addAs addAs}.  Each
  * time enough documents are added to make a batch, the batch is added to an
  * internal queue where the first available internal thread will pick it up and
  * write it to the server.  Since batches are not written until they are full,
@@ -37,7 +37,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *
  * Sample Usage:
  *
- *     WriteHostBatcher whb = dataMovementManager.newWriteHostBatcher()
+ *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
  *         .onBatchSuccess((client,batch) -&gt; {
@@ -54,14 +54,14 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * Note: All Closeable content or metadata handles passed to {@link #add add}
  * methods will be closed as soon as possible (after the batch is written).
  * This is to avoid IO resource leakage.  This differs from the normal usage of
- * the Java Client API because WriteHostBatcher is asynchronous so there's no
+ * the Java Client API because WriteBatcher is asynchronous so there's no
  * easy way to know which handles have finished writing and can therefore be
  * closed.  So to save confusion we close all handles for you.  If you have a
  * resource that must be closed after a batch is written, but is not closed by
  * your handle, override the close method of any Closeable handle and close
  * your resource there.
  */
-public interface WriteHostBatcher extends HostBatcher {
+public interface WriteBatcher extends Batcher {
   /**
    * Add a document to be batched then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.
@@ -71,9 +71,9 @@ public interface WriteHostBatcher extends HostBatcher {
    *
    * @param uri the document uri
    * @param contentHandle the document contents
-   * @return WriteHostBatcher the batcher containing the documents added
+   * @return WriteBatcher the batcher containing the documents added
    */
-  WriteHostBatcher add(String uri, AbstractWriteHandle contentHandle);
+  WriteBatcher add(String uri, AbstractWriteHandle contentHandle);
 
   /**
    * Add a document to be batched then written to the server when a batch is full
@@ -85,9 +85,9 @@ public interface WriteHostBatcher extends HostBatcher {
    *
    * @param uri the document uri
    * @param content the document contents
-   * @return WriteHostBatcher the batcher containing the documents added
+   * @return WriteBatcher the batcher containing the documents added
    */
-  WriteHostBatcher addAs(String uri, Object content);
+  WriteBatcher addAs(String uri, Object content);
 
   /**
    * Add a document to be batched then written to the server when a batch is full
@@ -99,9 +99,9 @@ public interface WriteHostBatcher extends HostBatcher {
    * @param uri the document uri
    * @param metadataHandle the metadata (collection, permissions, metdata values, properties, quality)
    * @param contentHandle the document contents
-   * @return WriteHostBatcher the batcher containing the documents added
+   * @return WriteBatcher the batcher containing the documents added
    */
-  WriteHostBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
+  WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
       AbstractWriteHandle contentHandle);
 
   /**
@@ -115,9 +115,9 @@ public interface WriteHostBatcher extends HostBatcher {
    * @param uri the document uri
    * @param metadataHandle the metadata (collection, permissions, metdata values, properties, quality)
    * @param content the document contents
-   * @return WriteHostBatcher the batcher containing the documents added
+   * @return WriteBatcher the batcher containing the documents added
    */
-  WriteHostBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
+  WriteBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
       Object content);
 
   /**
@@ -125,9 +125,9 @@ public interface WriteHostBatcher extends HostBatcher {
    * documents from failed batches.
    *
    * @param docs the batch of WriteEvents where each WriteEvent represents one document
-   * @return WriteHostBatcher the batcher containing the documents added
+   * @return WriteBatcher the batcher containing the documents added
    */
-  WriteHostBatcher add(WriteEvent... docs);
+  WriteBatcher add(WriteEvent... docs);
 
   /**
    * Add a listener to run each time a batch is successfully written.
@@ -135,7 +135,7 @@ public interface WriteHostBatcher extends HostBatcher {
    *        successfully
    * @return this instance for method chaining
    */
-  WriteHostBatcher onBatchSuccess(WriteBatchListener listener);
+  WriteBatcher onBatchSuccess(WriteBatchListener listener);
 
   /**
    * Add a listener to run each time there is an Exception writing a batch
@@ -143,10 +143,10 @@ public interface WriteHostBatcher extends HostBatcher {
    * @param listener the action which has to be done when the batch gets failed
    * @return this instance for method chaining
    */
-  WriteHostBatcher onBatchFailure(WriteFailureListener listener);
+  WriteBatcher onBatchFailure(WriteFailureListener listener);
 
   /*
-  public WriteHostBatcher withTransactionSize(int transactionSize);
+  public WriteBatcher withTransactionSize(int transactionSize);
   public int getTransactionSize();
   */
 
@@ -195,7 +195,7 @@ public interface WriteHostBatcher extends HostBatcher {
    *
    * @return this instance for method chaining
    */
-  WriteHostBatcher withTemporalCollection(String collection);
+  WriteBatcher withTemporalCollection(String collection);
 
   /**
    * The temporal collection configured for temporal document inserts
@@ -212,7 +212,7 @@ public interface WriteHostBatcher extends HostBatcher {
    *
    * @return this instance for method chaining
    */
-  WriteHostBatcher withTransform(ServerTransform transform);
+  WriteBatcher withTransform(ServerTransform transform);
   ServerTransform getTransform();
 
   /**
@@ -224,7 +224,7 @@ public interface WriteHostBatcher extends HostBatcher {
    *
    * @return this instance for method chaining
    */
-  WriteHostBatcher withForestConfig(ForestConfiguration forestConfig);
+  WriteBatcher withForestConfig(ForestConfiguration forestConfig);
 
   /**
    * Gets the current ForestConfiguration
@@ -240,17 +240,17 @@ public interface WriteHostBatcher extends HostBatcher {
    * @return this instance for method chaining
    */
   @Override
-  WriteHostBatcher withJobName(String jobName);
+  WriteBatcher withJobName(String jobName);
 
   /**
    * Sets the number of documents to send per batch.  Since documents are large
    * relative to uris, this number should be much lower than the
-   * batch size for QueryHostBatcher.  The default batch size is 100.
+   * batch size for QueryBatcher.  The default batch size is 100.
    *
    * @return this instance for method chaining
    */
   @Override
-  WriteHostBatcher withBatchSize(int batchSize);
+  WriteBatcher withBatchSize(int batchSize);
 
   /**
    * Sets the number of threads added to the internal thread pool for this
@@ -266,7 +266,7 @@ public interface WriteHostBatcher extends HostBatcher {
    * @return this instance for method chaining
    */
   @Override
-  WriteHostBatcher withThreadCount(int threadCount);
+  WriteBatcher withThreadCount(int threadCount);
 
   /** Create a batch from any unbatched documents and write that batch
    * asynchronously.

@@ -61,10 +61,10 @@ import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 
 /**
- * The implementation of WriteHostBatcher.
+ * The implementation of WriteBatcher.
  * Features
  *   - multiple threads can concurrently call add/addAs
  *     - we don't manage these threads, they're outside this
@@ -100,7 +100,7 @@ import com.marklogic.client.datamovement.WriteHostBatcher;
  *     - and finishes any unfinished transactions
  *       - those without error are committed
  *       - those with error are made to rollback
- *   - awaitCompletion allows the calling thread to block until all WriteHostBatcher threads are finished
+ *   - awaitCompletion allows the calling thread to block until all WriteBatcher threads are finished
  *     writing batches or committing transactions (or calling rollback)
  *
  * Design
@@ -184,11 +184,11 @@ import com.marklogic.client.datamovement.WriteHostBatcher;
  *       the rollback whether it fails or not
  *     - however, any subsequent batches that attempt to write will be in a new transaction
  */
-public class WriteHostBatcherImpl
-  extends HostBatcherImpl
-  implements WriteHostBatcher
+public class WriteBatcherImpl
+  extends BatcherImpl
+  implements WriteBatcher
 {
-  private static Logger logger = LoggerFactory.getLogger(WriteHostBatcherImpl.class);
+  private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
   private DataMovementManager moveMgr;
   private int transactionSize;
   private String temporalCollection;
@@ -206,7 +206,7 @@ public class WriteHostBatcherImpl
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
 
-  public WriteHostBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     if (moveMgr == null)      throw new IllegalArgumentException("moveMgr must not be null");
     if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
@@ -241,18 +241,18 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher add(String uri, AbstractWriteHandle contentHandle) {
+  public WriteBatcher add(String uri, AbstractWriteHandle contentHandle) {
     add(uri, null, contentHandle);
     return this;
   }
 
   @Override
-  public WriteHostBatcher addAs(String uri, Object content) {
+  public WriteBatcher addAs(String uri, Object content) {
     return addAs(uri, null, content);
   }
 
   @Override
-  public WriteHostBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
+  public WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
       AbstractWriteHandle contentHandle)
   {
     initialize();
@@ -283,7 +283,7 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher add(WriteEvent... docs) {
+  public WriteBatcher add(WriteEvent... docs) {
     for ( WriteEvent doc : docs ) {
       add( doc.getTargetUri(), doc.getMetadata(), doc.getContent() );
     }
@@ -291,7 +291,7 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
+  public WriteBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
       Object content) {
     if (content == null) throw new IllegalArgumentException("content must not be null");
 
@@ -437,12 +437,12 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher onBatchSuccess(WriteBatchListener listener) {
+  public WriteBatcher onBatchSuccess(WriteBatchListener listener) {
     successListeners.add(listener);
     return this;
   }
   @Override
-  public WriteHostBatcher onBatchFailure(WriteFailureListener listener) {
+  public WriteBatcher onBatchFailure(WriteFailureListener listener) {
     failureListeners.add(listener);
     return this;
   }
@@ -598,27 +598,27 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher withJobName(String jobName) {
+  public WriteBatcher withJobName(String jobName) {
     requireNotInitialized();
     super.withJobName(jobName);
     return this;
   }
 
   @Override
-  public WriteHostBatcher withBatchSize(int batchSize) {
+  public WriteBatcher withBatchSize(int batchSize) {
     requireNotInitialized();
     super.withBatchSize(batchSize);
     return this;
   }
 
   @Override
-  public WriteHostBatcher withThreadCount(int threadCount) {
+  public WriteBatcher withThreadCount(int threadCount) {
     requireNotInitialized();
     super.withThreadCount(threadCount);
     return this;
   }
 
-  public WriteHostBatcher withTransactionSize(int transactionSize) {
+  public WriteBatcher withTransactionSize(int transactionSize) {
     requireNotInitialized();
     this.transactionSize = transactionSize;
     return this;
@@ -629,7 +629,7 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher withTemporalCollection(String collection) {
+  public WriteBatcher withTemporalCollection(String collection) {
     requireNotInitialized();
     this.temporalCollection = collection;
     return this;
@@ -641,7 +641,7 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public WriteHostBatcher withTransform(ServerTransform transform) {
+  public WriteBatcher withTransform(ServerTransform transform) {
     requireNotInitialized();
     this.transform = transform;
     return this;
@@ -653,11 +653,11 @@ public class WriteHostBatcherImpl
   }
 
   @Override
-  public synchronized WriteHostBatcher withForestConfig(ForestConfiguration forestConfig) {
+  public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
     // get the list of hosts to use
     Forest[] forests = forestConfig.listForests();
     if ( forests.length == 0 ) {
-      throw new IllegalStateException("WriteHostBatcher requires at least one writeable forest");
+      throw new IllegalStateException("WriteBatcher requires at least one writeable forest");
     }
     Map<String,Forest> hosts = new HashMap<>();
     for ( Forest forest : forests ) {

@@ -22,7 +22,7 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.impl.WriteHostBatcherImpl.TransactionInfo;
+import com.marklogic.client.datamovement.impl.WriteBatcherImpl.TransactionInfo;
 
 public class BatchWriteSet {
   private DocumentWriteSet writeSet;

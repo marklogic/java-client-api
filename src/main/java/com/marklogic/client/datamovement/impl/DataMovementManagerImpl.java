@@ -22,14 +22,14 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
-import com.marklogic.client.datamovement.HostBatcher;
+import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
-import com.marklogic.client.datamovement.impl.QueryHostBatcherImpl;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.datamovement.impl.DataMovementServices;
-import com.marklogic.client.datamovement.impl.WriteHostBatcherImpl;
+import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -81,11 +81,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
     }
   }
 
-  public JobTicket startJob(WriteHostBatcher batcher) {
+  public JobTicket startJob(WriteBatcher batcher) {
     return service.startJob(batcher);
   }
 
-  public JobTicket startJob(QueryHostBatcher batcher) {
+  public JobTicket startJob(QueryBatcher batcher) {
     return service.startJob(batcher);
   }
 
@@ -97,27 +97,27 @@ public class DataMovementManagerImpl implements DataMovementManager {
     service.stopJob(ticket);
   }
 
-  public void stopJob(HostBatcher batcher) {
+  public void stopJob(Batcher batcher) {
     service.stopJob(batcher);
   }
 
-  public WriteHostBatcher newWriteHostBatcher() {
-    verifyClientIsSet("newWriteHostBatcher");
-    WriteHostBatcherImpl batcher = new WriteHostBatcherImpl(this, getForestConfig());
+  public WriteBatcher newWriteBatcher() {
+    verifyClientIsSet("newWriteBatcher");
+    WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
     batcher.onBatchFailure(new HostAvailabilityListener(this, batcher));
     return batcher;
   }
 
-  public QueryHostBatcher newQueryHostBatcher(QueryDefinition query) {
-    verifyClientIsSet("newQueryHostBatcher");
-    QueryHostBatcherImpl batcher = new QueryHostBatcherImpl(query, this, getForestConfig());
+  public QueryBatcher newQueryBatcher(QueryDefinition query) {
+    verifyClientIsSet("newQueryBatcher");
+    QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
     return batcher;
   }
 
-  public QueryHostBatcher newQueryHostBatcher(Iterator<String> iterator) {
-    verifyClientIsSet("newQueryHostBatcher");
-    QueryHostBatcherImpl batcher = new QueryHostBatcherImpl(iterator, this, getForestConfig());
+  public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
+    verifyClientIsSet("newQueryBatcher");
+    QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
     return batcher;

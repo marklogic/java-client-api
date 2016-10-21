@@ -56,19 +56,19 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 
-public class WriteHostBatcherTest {
-  private Logger logger = LoggerFactory.getLogger(WriteHostBatcherTest.class);
+public class WriteBatcherTest {
+  private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
   private static DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client;
   private static DocumentManager<?,?> docMgr;
-  private static String uri1 = "WriteHostBatcherTest_content_1.txt";
-  private static String uri2 = "WriteHostBatcherTest_content_2.txt";
-  private static String uri3 = "WriteHostBatcherTest_content_3.txt";
-  private static String uri4 = "WriteHostBatcherTest_content_4.txt";
-  private static String transform = "WriteHostBatcherTest_transform.sjs";
-  private static String whbTestCollection = "WriteHostBatcherTest_" +
+  private static String uri1 = "WriteBatcherTest_content_1.txt";
+  private static String uri2 = "WriteBatcherTest_content_2.txt";
+  private static String uri3 = "WriteBatcherTest_content_3.txt";
+  private static String uri4 = "WriteBatcherTest_content_4.txt";
+  private static String transform = "WriteBatcherTest_transform.sjs";
+  private static String whbTestCollection = "WriteBatcherTest_" +
     new Random().nextInt(10000);
 
 
@@ -103,7 +103,7 @@ public class WriteHostBatcherTest {
 
     StringBuilder successBatch = new StringBuilder();
     StringBuilder failureBatch = new StringBuilder();
-    WriteHostBatcher ihb1 =  moveMgr.newWriteHostBatcher()
+    WriteBatcher ihb1 =  moveMgr.newWriteBatcher()
       .withBatchSize(1)
       .onBatchSuccess(
         (client, batch) -> {
@@ -143,7 +143,7 @@ public class WriteHostBatcherTest {
     final StringBuffer successListenerWasRun = new StringBuffer();
     final StringBuffer failListenerWasRun = new StringBuffer();
     final StringBuffer failures = new StringBuffer();
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(2)
       .withTransform(
         new ServerTransform(transform)
@@ -204,7 +204,7 @@ public class WriteHostBatcherTest {
     WriteBatchListener successListener = (client, batch) -> {};
     WriteFailureListener failureListener = (client, batch, throwable) -> {};
 
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher();
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     WriteBatchListener[] successListeners = batcher.getBatchSuccessListeners();
     assertEquals(0, successListeners.length);
 
@@ -257,7 +257,7 @@ public class WriteHostBatcherTest {
     final StringBuffer successListenerWasRun = new StringBuffer();
     final StringBuffer failListenerWasRun = new StringBuffer();
     final StringBuffer failures = new StringBuffer();
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(2)
       .withTransactionSize(2)
       .withThreadCount(1)
@@ -334,12 +334,12 @@ public class WriteHostBatcherTest {
   @Test
   public void testZeros() throws Exception {
     try {
-      WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+      WriteBatcher batcher = moveMgr.newWriteBatcher()
         .withBatchSize(0);
       fail("should have thrown IllegalArgumentException because batchSize must be > 1");
     } catch(IllegalArgumentException e) {}
     try {
-      WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+      WriteBatcher batcher = moveMgr.newWriteBatcher()
         .withThreadCount(0);
       fail("should have thrown IllegalArgumentException because threadCount must be > 1");
     } catch(IllegalArgumentException e) {}
@@ -382,7 +382,7 @@ public class WriteHostBatcherTest {
     final AtomicInteger successfulCount = new AtomicInteger(0);
     final StringBuffer failures = new StringBuffer();
     final int expectedBatches = (int) Math.ceil(totalDocCount / expectedBatchSize);
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(batchSize)
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
@@ -471,7 +471,7 @@ public class WriteHostBatcherTest {
   public void testAddMultiThreadedSuccess_Issue61() throws Exception{
     String collection = whbTestCollection + ".testAddMultiThreadedSuccess_Issue61";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    WriteHostBatcher batcher =  moveMgr.newWriteHostBatcher();
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(100);
     batcher.onBatchSuccess(
         (client, batch) -> {
@@ -534,7 +534,7 @@ public class WriteHostBatcherTest {
   public void testAddMultiThreadedSuccess_Issue48() throws Exception{
     String collection = whbTestCollection + ".testAddMultiThreadedSuccess_Issue48";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    WriteHostBatcher batcher =  moveMgr.newWriteHostBatcher();
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(120);
     batcher
       .onBatchSuccess( (client, batch) -> {
@@ -592,7 +592,7 @@ public class WriteHostBatcherTest {
   @Test
   public void testUndeclaredFormat_Issue60() {
     String collection = whbTestCollection + ".testUndeclaredFormat_Issue60";
-    WriteHostBatcher batcher =  moveMgr.newWriteHostBatcher();
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(1);
     final AtomicInteger successfulCount = new AtomicInteger(0);
     batcher.onBatchSuccess(
@@ -631,7 +631,7 @@ public class WriteHostBatcherTest {
 
 
     final AtomicInteger failCount = new AtomicInteger(0);
-    WriteHostBatcher batcher =  moveMgr.newWriteHostBatcher()
+    WriteBatcher batcher =  moveMgr.newWriteBatcher()
       .onBatchFailure(
         (client, batch, throwable) -> {
           throwable.printStackTrace();
@@ -650,7 +650,7 @@ public class WriteHostBatcherTest {
 
     batcher.add("test.xml", meta, new InputStreamHandle(fileStream));
 
-    // when we call flushAndWait, the WriteHostBatcher should write the batch the close all the handles
+    // when we call flushAndWait, the WriteBatcher should write the batch the close all the handles
     batcher.flushAndWait();
     assertEquals(true, closed.get());
 
@@ -666,7 +666,7 @@ public class WriteHostBatcherTest {
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection, whbTestCollection);
     assertTrue(client.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
-    WriteHostBatcher ihbMT =  moveMgr.newWriteHostBatcher();
+    WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(11);
     ihbMT.onBatchSuccess(
         (client, batch) -> {
