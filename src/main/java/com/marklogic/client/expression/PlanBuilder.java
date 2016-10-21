@@ -336,6 +336,10 @@ public abstract class PlanBuilder {
     public abstract PlanTripleIriSeq      predicates(PlanTripleIri... predicates);
     public abstract PlanTripleValSeq      objects(PlanTripleVal...    objects);
 
+    public abstract ItemExpr caseExpr(CaseExpr... cases);
+    public abstract CaseExpr when(XsBooleanExpr condition, ItemSeqExpr value);
+    public abstract CaseExpr elseExpr(ItemSeqExpr value);
+
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols);
@@ -379,5 +383,6 @@ public abstract class PlanBuilder {
     public interface Prefixer {
         public SemIriVal iri(String name);
     }
+    public interface CaseExpr {}
 
 }

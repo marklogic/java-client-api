@@ -58,6 +58,8 @@ import com.marklogic.client.type.BooleanNodeExpr;
 import com.marklogic.client.type.CommentNodeExpr;
 import com.marklogic.client.type.DocumentNodeExpr;
 import com.marklogic.client.type.ElementNodeExpr;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.NullNodeExpr;
 import com.marklogic.client.type.NumberNodeExpr;
 import com.marklogic.client.type.ObjectNodeExpr;
@@ -100,6 +102,45 @@ abstract class PlanBuilderBase extends PlanBuilder {
 
 		return new PrefixerImpl(sem, prefix);
 	}
+
+	@Override
+	public ItemExpr caseExpr(CaseExpr... cases) {
+		int lastPos = cases.length - 1;
+		if (lastPos < 1) {
+			throw new IllegalArgumentException("cannot specify caseExpr() without when() and elseExpr()");
+		}
+
+		BaseTypeImpl.BaseArgImpl[] whenList = new BaseTypeImpl.BaseArgImpl[lastPos];
+		for (int i=0; i < lastPos; i++) {
+			CaseExpr currCase = cases[i];
+			if (!(currCase instanceof CaseWhenCallImpl)) {
+				throw new IllegalArgumentException(
+						"caseExpr() can only have when() cases and final elseExpr(): "+currCase.getClass().getName()
+						);
+			}
+			whenList[i] = (CaseWhenCallImpl) currCase;
+		}
+
+		CaseExpr lastCase = cases[lastPos];
+		if (!(lastCase instanceof CaseElseImpl)) {
+			throw new IllegalArgumentException(
+					"caseExpr() must have a last case of elseExpr(): "+lastCase.getClass().getName()
+					);
+		}
+		
+		return new CaseCallImpl(whenList, ((CaseElseImpl) lastCase).getArg());
+	}
+	@Override
+    public CaseExpr when(XsBooleanExpr condition, ItemSeqExpr value) {
+    	return new CaseWhenCallImpl(new Object[]{condition, value});
+    }
+	@Override
+    public CaseExpr elseExpr(ItemSeqExpr value) {
+		if (!(value instanceof BaseTypeImpl.BaseArgImpl)) {
+			throw new IllegalArgumentException("invalid value for elseExpr(): "+value.getClass().getName());
+		}
+    	return new CaseElseImpl((BaseTypeImpl.BaseArgImpl) value);
+    }
 
 	@Override
     public DocumentNodeExpr jsonDocument(JsonRootNodeExpr root) {
@@ -417,6 +458,28 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		}
 		void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
 			this.handleRegistry = handleRegistry;
+		}
+    }
+
+	static class CaseCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ItemExpr {
+		CaseCallImpl(BaseTypeImpl.BaseArgImpl[] whenList, BaseTypeImpl.BaseArgImpl otherwise) {
+            super("op", "case", new BaseTypeImpl.BaseArgImpl[]{
+            		new BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl>(whenList), otherwise
+            		});
+        }
+    }
+	static class CaseWhenCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CaseExpr {
+		CaseWhenCallImpl(Object[] args) {
+            super("op", "when", BaseTypeImpl.convertList(args));
+        }
+    }
+	static class CaseElseImpl implements CaseExpr {
+		private BaseTypeImpl.BaseArgImpl arg = null;
+		CaseElseImpl(BaseTypeImpl.BaseArgImpl arg) {
+            this.arg = arg;
+        }
+		BaseTypeImpl.BaseArgImpl getArg() {
+			return arg;
 		}
     }
 

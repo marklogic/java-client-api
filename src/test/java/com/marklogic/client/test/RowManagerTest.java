@@ -64,6 +64,7 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsReferenceExpr;
+import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.util.EditableNamespaceContext;
 
@@ -438,6 +439,45 @@ public class RowManagerTest {
 		RowRecord recordRow = recordRowItr.next();
 		checkSingleRow(recordRow);
         assertFalse("expected one record row", recordRowItr.hasNext());
+
+        recordRowSet.close();
+	}
+	@Test
+	public void testCaseWhenElse() throws IOException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanColumn rowNum = p.col("rowNum");
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(litRows)
+				 .select(rowNum, p.as("cased", p.caseExpr(
+						 p.when(p.eq(p.col("rowNum"), p.xs.intVal(2)), p.xs.string("second")),
+						 p.when(p.eq(p.col("rowNum"), p.xs.intVal(3)), p.xs.string("third")),
+						 p.elseExpr(p.xs.string("otherwise")
+						 ))))
+				 .orderBy(rowNum);
+
+		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
+
+		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+		assertTrue("no first node row", recordRowItr.hasNext());
+		RowRecord recordRow = recordRowItr.next();
+        assertEquals("first row num", 1,           recordRow.getInt("rowNum"));
+        assertEquals("first cased",   "otherwise", recordRow.getString("cased"));
+
+        assertTrue("no second node row", recordRowItr.hasNext());
+		recordRow = recordRowItr.next();
+        assertEquals("second row num", 2,        recordRow.getInt("rowNum"));
+        assertEquals("second cased",   "second", recordRow.getString("cased"));
+
+        assertTrue("no third node row", recordRowItr.hasNext());
+		recordRow = recordRowItr.next();
+        assertEquals("third row num", 3,       recordRow.getInt("rowNum"));
+        assertEquals("third cased",   "third", recordRow.getString("cased"));
+
+        assertFalse("expected three record rows", recordRowItr.hasNext());
 
         recordRowSet.close();
 	}
