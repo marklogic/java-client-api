@@ -19,16 +19,17 @@ import java.util.Map;
 import com.marklogic.client.io.marker.JSONReadHandle;
 
 
-import com.marklogic.client.expression.Cts; 
-import com.marklogic.client.expression.Fn; 
-import com.marklogic.client.expression.Json; 
-import com.marklogic.client.expression.Math; 
-import com.marklogic.client.expression.Rdf; 
-import com.marklogic.client.expression.Sem; 
-import com.marklogic.client.expression.Spell; 
-import com.marklogic.client.expression.Sql; 
-import com.marklogic.client.expression.Xdmp; 
-import com.marklogic.client.expression.Xs; import com.marklogic.client.type.SemIriExpr;
+import com.marklogic.client.expression.CtsExpr; 
+import com.marklogic.client.expression.FnExpr; 
+import com.marklogic.client.expression.JsonExpr; 
+import com.marklogic.client.expression.MapExpr; 
+import com.marklogic.client.expression.MathExpr; 
+import com.marklogic.client.expression.RdfExpr; 
+import com.marklogic.client.expression.SemExpr; 
+import com.marklogic.client.expression.SpellExpr; 
+import com.marklogic.client.expression.SqlExpr; 
+import com.marklogic.client.expression.XdmpExpr; 
+import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.SemIriExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsGMonthDayExpr;
  import com.marklogic.client.type.XsDoubleExpr;
@@ -144,16 +145,16 @@ import com.marklogic.client.type.JsonRootNodeExpr;
 import com.marklogic.client.type.JsonContentNodeExpr;
 import com.marklogic.client.type.XmlRootNodeExpr;
 import com.marklogic.client.type.XmlContentNodeExpr;
-import com.marklogic.client.type.XmlContentNodeSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public abstract class PlanBuilder {
     protected PlanBuilder(
-        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
+        CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
         ) {
         this.cts = cts;
          this.fn = fn;
          this.json = json;
+         this.map = map;
          this.math = math;
          this.rdf = rdf;
          this.sem = sem;
@@ -163,16 +164,17 @@ public abstract class PlanBuilder {
          this.xs = xs;
 
     }
-    public final Cts cts;
-     public final Fn fn;
-     public final Json json;
-     public final Math math;
-     public final Rdf rdf;
-     public final Sem sem;
-     public final Spell spell;
-     public final Sql sql;
-     public final Xdmp xdmp;
-     public final Xs xs;
+    public final CtsExpr cts;
+     public final FnExpr fn;
+     public final JsonExpr json;
+     public final MapExpr map;
+     public final MathExpr math;
+     public final RdfExpr rdf;
+     public final SemExpr sem;
+     public final SpellExpr spell;
+     public final SqlExpr sql;
+     public final XdmpExpr xdmp;
+     public final XsExpr xs;
      public abstract XsNumericExpr add(XsNumericExpr... list);
     public abstract PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate);
     public abstract XsBooleanExpr and(XsBooleanExpr... list);

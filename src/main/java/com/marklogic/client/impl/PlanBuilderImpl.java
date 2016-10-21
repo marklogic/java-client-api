@@ -21,25 +21,27 @@ import java.util.Map;
 
 import com.marklogic.client.expression.PlanBuilder;
 
-import com.marklogic.client.expression.Cts;
+import com.marklogic.client.expression.CtsExpr;
 import com.marklogic.client.impl.CtsExprImpl; 
-import com.marklogic.client.expression.Fn;
+import com.marklogic.client.expression.FnExpr;
 import com.marklogic.client.impl.FnExprImpl; 
-import com.marklogic.client.expression.Json;
+import com.marklogic.client.expression.JsonExpr;
 import com.marklogic.client.impl.JsonExprImpl; 
-import com.marklogic.client.expression.Math;
+import com.marklogic.client.expression.MapExpr;
+import com.marklogic.client.impl.MapExprImpl; 
+import com.marklogic.client.expression.MathExpr;
 import com.marklogic.client.impl.MathExprImpl; 
-import com.marklogic.client.expression.Rdf;
+import com.marklogic.client.expression.RdfExpr;
 import com.marklogic.client.impl.RdfExprImpl; 
-import com.marklogic.client.expression.Sem;
+import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.impl.SemExprImpl; 
-import com.marklogic.client.expression.Spell;
+import com.marklogic.client.expression.SpellExpr;
 import com.marklogic.client.impl.SpellExprImpl; 
-import com.marklogic.client.expression.Sql;
+import com.marklogic.client.expression.SqlExpr;
 import com.marklogic.client.impl.SqlExprImpl; 
-import com.marklogic.client.expression.Xdmp;
+import com.marklogic.client.expression.XdmpExpr;
 import com.marklogic.client.impl.XdmpExprImpl; 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.SemIriExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsGMonthDayExpr;
@@ -137,10 +139,10 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
 // IMPORTANT: Do not edit. This file is generated. 
 public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanBuilderImpl(
-        Cts cts, Fn fn, Json json, Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
+        CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
         ) {
         super(
-            cts, fn, json, math, rdf, sem, spell, sql, xdmp, xs
+            cts, fn, json, map, math, rdf, sem, spell, sql, xdmp, xs
             );
     }
 

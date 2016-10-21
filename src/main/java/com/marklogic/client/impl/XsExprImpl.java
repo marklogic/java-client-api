@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.type.XsLongSeqExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsDoubleSeqExpr;
@@ -110,7 +110,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-public class XsExprImpl extends XsValueImpl implements Xs {
+public class XsExprImpl extends XsValueImpl implements XsExpr {
      @Override
         public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1) {
         return new XsExprImpl.XsAnyURICallImpl("xs", "anyURI", new Object[]{ arg1 });

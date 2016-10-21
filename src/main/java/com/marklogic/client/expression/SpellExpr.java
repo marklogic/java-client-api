@@ -21,7 +21,7 @@ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Spell {
+public interface SpellExpr {
     public XsStringSeqExpr doubleMetaphone(String word);
     public XsStringSeqExpr doubleMetaphone(XsStringExpr word);
     public XsIntegerExpr levenshteinDistance(String str1, String str2);

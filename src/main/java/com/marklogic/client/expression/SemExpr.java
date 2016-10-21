@@ -34,7 +34,7 @@ import com.marklogic.client.type.SemInvalidExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Sem extends SemValue {
+public interface SemExpr extends SemValue {
     public SemBlankExpr bnode();
     public SemBlankExpr bnode(XsAnyAtomicTypeExpr value);
     public ItemSeqExpr coalesce(ItemExpr... parameter1);

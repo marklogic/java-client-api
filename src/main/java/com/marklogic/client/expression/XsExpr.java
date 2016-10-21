@@ -104,7 +104,7 @@ import com.marklogic.client.type.XsLongSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Xs extends XsValue {
+public interface XsExpr extends XsValue {
     public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1);
     public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1);
     public XsBooleanExpr booleanExpr(XsAnyAtomicTypeExpr arg1);

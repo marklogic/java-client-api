@@ -54,7 +54,6 @@ import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.RowReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
@@ -88,10 +87,10 @@ public class RowManagerImpl
 		XsExprImpl xs = new XsExprImpl();
 
 		PlanBuilderImpl planBuilder = new PlanBuilderImpl(
-				new CtsExprImpl(xs), new FnExprImpl(xs), new JsonExprImpl(xs),
-				new MathExprImpl(xs), new RdfExprImpl(xs), new SemExprImpl(xs),
-				new SpellExprImpl(xs), new SqlExprImpl(xs), new XdmpExprImpl(xs),
-				xs
+				new CtsExprImpl(xs),  new FnExprImpl(xs),    new JsonExprImpl(xs),
+				new MapExprImpl(xs),  new MathExprImpl(xs),  new RdfExprImpl(xs),
+				new SemExprImpl(xs),  new SpellExprImpl(xs), new SqlExprImpl(xs),
+				new XdmpExprImpl(xs), xs
 				);
 
 		planBuilder.setHandleRegistry(getHandleRegistry());
@@ -111,18 +110,18 @@ public class RowManagerImpl
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction) {
 		ContentHandle<T> handle = handleFor(as); 
-	    if (resultDoc(plan, (RowReadHandle) handle, transaction) == null) {
+	    if (resultDoc(plan, (StructureReadHandle) handle, transaction) == null) {
 	    	return null;
 	    }
 
 		return handle.get();
 	}
 	@Override
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T resultsHandle) {
+	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle) {
 		return resultDoc(plan, resultsHandle, null);
 	}
 	@Override
-	public <T extends RowReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
+	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
 		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
@@ -147,11 +146,11 @@ public class RowManagerImpl
 		return new RowSetRecord("sparql-json", iter, getHandleRegistry());
 	}
 	@Override
-	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
+	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
 		return resultRows(plan, rowHandle, (Transaction) null);
 	}
 	@Override
-	public <T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
+	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
 		String rowFormat = getRowFormat(rowHandle);
 
 		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
@@ -266,12 +265,12 @@ public class RowManagerImpl
 		}
 
 		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		if (!(handle instanceof RowReadHandle)) {
+		if (!(handle instanceof StructureReadHandle)) {
 			if (handle == null) {
 		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registered handle");
 			} else {
 		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" uses handle " +
-						handle.getClass().getName() + " which is not a RowReadHandle");
+						handle.getClass().getName() + " which is not a StructureReadHandle");
 			}
 	    }
 
@@ -549,7 +548,7 @@ public class RowManagerImpl
 			}
 		}
 	}
-	static class RowSetHandle<T extends RowReadHandle> extends RowSetHandleBase<T, T> {
+	static class RowSetHandle<T extends StructureReadHandle> extends RowSetHandleBase<T, T> {
 		RowSetHandle(String rowFormat, RESTServiceResultIterator results, T rowHandle) {
 			super(rowFormat, results, rowHandle);
 		}

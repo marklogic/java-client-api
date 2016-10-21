@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
-import com.marklogic.client.expression.Json;
+import com.marklogic.client.expression.JsonExpr;
 import com.marklogic.client.type.JsonArrayExpr;
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
@@ -35,7 +35,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-public class JsonExprImpl implements Json {
+public class JsonExprImpl implements JsonExpr {
     private XsExprImpl xs = null;
     public JsonExprImpl(XsExprImpl xs) {
         this.xs = xs;

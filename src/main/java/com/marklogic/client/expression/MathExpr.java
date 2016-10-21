@@ -29,7 +29,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Math {
+public interface MathExpr {
     public XsDoubleExpr acos(double x);
     public XsDoubleExpr acos(XsDoubleExpr x);
     public XsDoubleExpr asin(double x);

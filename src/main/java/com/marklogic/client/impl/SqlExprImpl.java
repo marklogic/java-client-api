@@ -15,10 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
-import com.marklogic.client.expression.Sql;
+import com.marklogic.client.expression.SqlExpr;
 import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.SqlCollatedStringExpr;
  import com.marklogic.client.type.XsIntegerExpr;
@@ -36,7 +36,7 @@ import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-public class SqlExprImpl implements Sql {
+public class SqlExprImpl implements SqlExpr {
     private XsExprImpl xs = null;
     public SqlExprImpl(XsExprImpl xs) {
         this.xs = xs;

@@ -19,7 +19,6 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.marker.JSONWriteHandle;
-import com.marklogic.client.io.marker.RowReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
 /* STATUS
@@ -85,7 +84,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	an iterable over the result rows
 	 */
-	<T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
+	<T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a JSON or XML handle for each row and reflecting documents written or 
@@ -96,7 +95,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	an iterable over the result rows
 	 */
-	<T extends RowReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
+	<T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
 
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
@@ -142,7 +141,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	the JSON or XML handle populated with the set of rows
 	 */
-	<T extends RowReadHandle> T resultDoc(Plan plan, T handle);
+	<T extends StructureReadHandle> T resultDoc(Plan plan, T handle);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
 	 * a handle to get the set of rows as a single JSON or XML structure
@@ -153,7 +152,7 @@ public interface RowManager {
      * @param <T> the type of the row handle
 	 * @return	the JSON or XML handle populated with the set of rows
 	 */
-	<T extends RowReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
+	<T extends StructureReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan
 	 * in the representation specified by the IO class.

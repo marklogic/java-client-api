@@ -13,12 +13,17 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.io.marker;
+package com.marklogic.client.expression;
 
-/**
- * A Row Read Handle can represent rows read from the
- * database.
- * 
- */
-public interface RowReadHandle extends AbstractReadHandle {
+import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.RdfLangStringExpr;
+ import com.marklogic.client.type.RdfLangStringSeqExpr;
+
+
+// IMPORTANT: Do not edit. This file is generated. 
+public interface RdfExpr extends RdfValue {
+    public RdfLangStringExpr langString(XsStringExpr string, String lang);
+    public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
+    public XsStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
+
 }

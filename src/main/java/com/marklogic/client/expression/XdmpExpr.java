@@ -36,7 +36,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Xdmp {
+public interface XdmpExpr {
     public XsUnsignedLongExpr add64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
     public XsUnsignedLongExpr and64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
     public XsStringExpr base64Decode(String encoded);

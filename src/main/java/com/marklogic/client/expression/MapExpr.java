@@ -27,7 +27,7 @@ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Map {
+public interface MapExpr {
     public XsBooleanExpr contains(MapMapExpr map, String key);
     public XsBooleanExpr contains(MapMapExpr map, XsStringExpr key);
     public XsUnsignedIntExpr count(MapMapExpr map);

@@ -24,17 +24,18 @@ import java.util.HashMap;
 import java.util.Map;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
-import com.marklogic.client.expression.Cts;
-import com.marklogic.client.expression.Fn;
-import com.marklogic.client.expression.Json;
-import com.marklogic.client.expression.Math;
+import com.marklogic.client.expression.CtsExpr;
+import com.marklogic.client.expression.FnExpr;
+import com.marklogic.client.expression.JsonExpr;
+import com.marklogic.client.expression.MapExpr;
+import com.marklogic.client.expression.MathExpr;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.Rdf;
-import com.marklogic.client.expression.Sem;
-import com.marklogic.client.expression.Spell;
-import com.marklogic.client.expression.Sql;
-import com.marklogic.client.expression.Xdmp;
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.RdfExpr;
+import com.marklogic.client.expression.SemExpr;
+import com.marklogic.client.expression.SpellExpr;
+import com.marklogic.client.expression.SqlExpr;
+import com.marklogic.client.expression.XdmpExpr;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -74,10 +75,10 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	private HandleFactoryRegistry handleRegistry;
 
 	PlanBuilderBase(
-        Cts cts, Fn fn, Json json,
-        Math math, Rdf rdf, Sem sem, Spell spell, Sql sql, Xdmp xdmp, Xs xs
+        CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map,
+        MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
     ) {
-        super(cts, fn, json, math, rdf, sem, spell, sql, xdmp, xs);
+        super(cts, fn, json, map, math, rdf, sem, spell, sql, xdmp, xs);
     }
 
 	HandleFactoryRegistry getHandleRegistry() {
@@ -220,9 +221,9 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	}
 
 	static public class PrefixerImpl implements Prefixer {
-		private Sem    sem;
+		private SemExpr sem;
 		private String prefix;
-		private PrefixerImpl(Sem sem, String prefix) {
+		private PrefixerImpl(SemExpr sem, String prefix) {
 			this.prefix = prefix;
 			this.sem    = sem;
 		}

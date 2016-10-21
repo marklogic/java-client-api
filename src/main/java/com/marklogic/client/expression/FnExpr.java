@@ -41,7 +41,7 @@ import com.marklogic.client.type.XsNCNameExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Fn {
+public interface FnExpr {
     public XsNumericExpr abs(XsNumericExpr arg);
     public XsDateExpr adjustDateToTimezone(XsDateExpr arg);
     public XsDateExpr adjustDateToTimezone(XsDateExpr arg, XsDayTimeDurationExpr timezone);

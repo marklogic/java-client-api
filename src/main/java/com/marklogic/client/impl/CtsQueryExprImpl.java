@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.Xs;
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.CtsQuery;

@@ -30,7 +30,7 @@ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Sql {
+public interface SqlExpr {
     public XsIntegerExpr bitLength();
     public XsIntegerExpr bitLength(String arg1);
     public XsIntegerExpr bitLength(XsStringExpr arg1);

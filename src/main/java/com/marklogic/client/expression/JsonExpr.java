@@ -29,7 +29,7 @@ import com.marklogic.client.type.JsonArrayExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
-public interface Json {
+public interface JsonExpr {
     public JsonArrayExpr array();
     public JsonArrayExpr array(ElementNodeExpr array);
     public XsUnsignedLongExpr arraySize(JsonArrayExpr array);
