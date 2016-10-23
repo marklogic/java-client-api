@@ -60,7 +60,7 @@ public class CtsQueryExprImpl implements CtsQuery {
     }
     @Override
         public CtsQueryExpr andQuery(CtsQueryExpr... queries) {
-        return andQuery(queries); 
+        return andQuery(query(queries)); 
     }
     @Override
         public CtsQueryExpr andQuery(CtsQuerySeqExpr queries) {
@@ -596,7 +596,7 @@ public class CtsQueryExprImpl implements CtsQuery {
     }
     @Override
         public CtsQueryExpr nearQuery(CtsQueryExpr... queries) {
-        return nearQuery(queries); 
+        return nearQuery(query(queries)); 
     }
     @Override
         public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries) {
@@ -636,7 +636,7 @@ public class CtsQueryExprImpl implements CtsQuery {
     }
     @Override
         public CtsQueryExpr orQuery(CtsQueryExpr... queries) {
-        return orQuery(queries); 
+        return orQuery(query(queries)); 
     }
     @Override
         public CtsQueryExpr orQuery(CtsQuerySeqExpr queries) {

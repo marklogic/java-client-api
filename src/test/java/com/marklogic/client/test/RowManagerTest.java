@@ -318,7 +318,10 @@ public class RowManagerTest {
 
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromView("opticUnitTest", "musician", null, null,
-						p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet"))
+						p.cts.andQuery(
+								p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet")),
+								p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.strings("Armstrong", "Davis"))
+								)
 						)
 				  .select(null, "") 
 				  .orderBy("lastName");
