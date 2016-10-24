@@ -28,6 +28,14 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.datamovement.ApplyTransformListener;
+import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;
@@ -39,14 +47,6 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
 
 public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
@@ -157,7 +157,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		FileHandle transformHandle1 = new FileHandle(transformFile1);
 		transMgr.writeJavascriptTransform("jsTransform", transformHandle1);
 
-		WriteHostBatcher ihb2 =  dmManager.newWriteHostBatcher();
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
 				(client, batch) -> {
@@ -269,7 +269,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 				});
 
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -322,7 +322,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		Set<String> urisList = new HashSet<>(); 
 		urisList.add("/local/nonexistent");
 		urisList.add("/local/nonexistent-1");
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(urisList.iterator()).withBatchSize(2)
+		QueryBatcher batcher = dmManager.newQueryBatcher(urisList.iterator()).withBatchSize(2)
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -352,7 +352,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -384,7 +384,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
 				.onUrisReady((client,batch)->{
 				});
@@ -426,7 +426,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(null);
 
 
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
 				.onUrisReady((client,batch)->{
 					System.out.println("notransformTest: URI "+batch.getItems()[0]);
@@ -471,7 +471,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.IGNORE);
 
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
 				.onUrisReady((client,batch)->{
 					System.out.println("ignoreTransformTest: URI "+batch.getItems()[0]);
@@ -538,7 +538,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					failedBatch.addAll(batchList);
 				});
 
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("FailTransform"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("FailTransform"))
 				.withBatchSize(2)
 				.onUrisReady(listener)
 				.onUrisReady((client,batch)->{
@@ -604,7 +604,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				.withTransform(transform);
 
 		//Query collection "Replace Snapshot", a listener forTransform and another for Deletion are attached	    
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("Replace Snapshot"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Replace Snapshot"))
 				.onUrisReady(listener)
 				.onUrisReady(new DeleteListener())
 				.onQueryFailure( (client, throwable) -> {
@@ -620,7 +620,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		assertTrue(flag.get());
 
 		List<String> urisList = new ArrayList<>();
-		QueryHostBatcher queryBatcher = dmManager.newQueryHostBatcher(
+		QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 				new StructuredQueryBuilder().collection("Replace Snapshot"))
 				.withBatchSize(11)
 				.onUrisReady((client, batch)->{
@@ -649,7 +649,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		.onSkipped((client, batch) -> {
 			System.out.println("noMatchReplace: Skipped "+batch.getItems()[0]);
 		});
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("No Match"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("No Match"))
 				.onUrisReady(listener)
 				.onUrisReady((client, batch)-> {
 					Assert.assertEquals(1, batch.getItems().length);
@@ -708,7 +708,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					System.out.println("stopTransformJobTest: Failed: "+batch.getItems()[0]);
 
 				});
-		QueryHostBatcher batcher = dmManager.newQueryHostBatcher(new StructuredQueryBuilder().collection("Skipped"))
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
 				.onUrisReady(listener)
 				.withBatchSize(1)
 				.withThreadCount(1);

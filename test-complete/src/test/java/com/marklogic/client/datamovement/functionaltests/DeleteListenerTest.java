@@ -26,6 +26,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.impl.DatabaseClientImpl;
@@ -35,12 +41,6 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 
 public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	
@@ -128,7 +128,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	@Before
 	public void setUp() throws Exception {
 		Thread.currentThread().sleep(1000L);
-		WriteHostBatcher ihb2 =  dmManager.newWriteHostBatcher();
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
 		        (client, batch) -> {
@@ -164,7 +164,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		Assert.assertTrue(uriSet.isEmpty());
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 		
-	    QueryHostBatcher queryBatcher = dmManager.newQueryHostBatcher(
+	    QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(11)
 	    .withThreadCount(1)
@@ -191,7 +191,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    HashSet<String> uris2 = new HashSet<>();
 	    StringBuffer failures2 = new StringBuffer();
 	
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(uriSet.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(uriSet.iterator())
 	    .withBatchSize(23)
 	    .withThreadCount(1)
 	    .onUrisReady(new DeleteListener())
@@ -215,7 +215,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		
 		HashSet<String> urisList = new HashSet<>();
 
-    	QueryHostBatcher queryBatcher = dmManager.newQueryHostBatcher(
+		QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(11)
 	    .withThreadCount(11)
@@ -242,7 +242,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    HashSet<String> uris2 = new HashSet<>();
 	    StringBuffer failures2 = new StringBuffer();
 	
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(119)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
@@ -268,7 +268,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
  		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
  		Thread.currentThread().sleep(5000L);
  		
-		QueryHostBatcher queryBatcher = dmManager.newQueryHostBatcher(
+ 		QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(7)
 	    .withConsistentSnapshot()
@@ -303,7 +303,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    StringBuffer failures2 = new StringBuffer();
 	    
 	
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(11)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
@@ -344,7 +344,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
        	
     	HashSet<String> urisList = new HashSet<>();
 				
-	    QueryHostBatcher queryBatcher = dmManager.newQueryHostBatcher(
+    	QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(11)
 	    .withThreadCount(4)
@@ -372,7 +372,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    HashSet<String> uris2 = new HashSet<>();
 	    StringBuffer failures2 = new StringBuffer();
 	
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(13)
 	    .onUrisReady(new DeleteListener())
 	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
@@ -413,7 +413,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    StringBuffer failures2 = new StringBuffer();
 	    
 	
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(11)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
@@ -493,7 +493,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    t1.start();
 	    Thread.currentThread().sleep(10L);
 	       
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .onUrisReady(new DeleteListener())
 	    .onUrisReady((client, batch) ->{
 	    	System.out.println("Items in batch "+batch.getItems().length);
@@ -572,7 +572,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    
 	   
 	          
-	    QueryHostBatcher deleteBatcher = dmManager.newQueryHostBatcher(urisList.iterator())
+	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .onUrisReady(new DeleteListener())
 	    .onUrisReady((client, batch) ->{
 	    	System.out.println("Items in batch "+batch.getItems().length);
