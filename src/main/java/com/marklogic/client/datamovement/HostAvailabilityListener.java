@@ -27,6 +27,7 @@ import java.net.UnknownHostException;
 import javax.net.ssl.SSLException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -36,10 +37,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-public class HostAvailabilityListener implements FailureListener<QueryHostException>, BatchFailureListener<WriteEvent> {
+public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
   private static Logger logger = LoggerFactory.getLogger(HostAvailabilityListener.class);
   private DataMovementManager moveMgr;
-  private HostBatcher batcher;
+  private Batcher batcher;
   private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
@@ -53,9 +54,9 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
 
   /**
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
-   * @param batcher the WriteHostBatcher or QueryHostBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
+   * @param batcher the WriteBatcher or QueryBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
    */
-  public HostAvailabilityListener(DataMovementManager moveMgr, HostBatcher batcher) {
+  public HostAvailabilityListener(DataMovementManager moveMgr, Batcher batcher) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
     if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
     this.moveMgr = moveMgr;
@@ -129,8 +130,12 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
    * @param batch the batch of WriteEvents
    * @param throwable the exception
    */
-  public void processEvent(DatabaseClient hostClient, Batch<WriteEvent> batch, Throwable throwable) {
-    processException(throwable, hostClient.getHost());
+  public void processFailure(DatabaseClient hostClient, WriteBatch batch, Throwable throwable) {
+    boolean isHostUnavailableException = processException(throwable, hostClient.getHost());
+    if ( isHostUnavailableException == true ) {
+      // TODO: resubmit the batch
+      //batch.getBatcher().retry(batch);
+    }
   }
 
   /**
@@ -139,36 +144,51 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
    * @param client the host-specific client
    * @param throwable the exception with information about the status of the job
    */
-  public void processFailure(DatabaseClient client, QueryHostException throwable) {
-    processException(throwable, client.getHost());
+  public void processFailure(DatabaseClient client, QueryHostException queryBatch) {
+    boolean isHostUnavailableException = processException(queryBatch, client.getHost());
+    if ( isHostUnavailableException == true ) {
+      // TODO: resubmit the batch
+      //batch.getBatcher().retry(queryBatch);
+    }
   }
 
-  private void processException(Throwable throwable, String host) {
+  private boolean processException(Throwable throwable, String host) {
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
-    if ( isHostUnavailableException(throwable, new HashSet<>()) ) {
+    boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());
+    if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
-      if ( existingForestConfig.getHosts().length > minHosts ) {
+      String[] preferredHosts = existingForestConfig.getPreferredHosts();
+      if ( preferredHosts.length > minHosts ) {
         logger.error("ERROR: host unavailable \"" + host + "\", black-listing it for " +
           suspendTimeForHostUnavailable.toString(), throwable);
-        ForestConfiguration filteredForestConfig =
-          new FilteredForestConfiguration(existingForestConfig)
-            .withBlackList(host);
+        FilteredForestConfiguration filteredForestConfig = new FilteredForestConfiguration(existingForestConfig);
+        if ( batcher instanceof WriteBatcher ) {
+          filteredForestConfig = filteredForestConfig.withBlackList(host);
+        } else if ( batcher instanceof QueryBatcher ) {
+          List<String> availableHosts = Stream.of(preferredHosts)
+            .filter( (availableHost) -> ! availableHost.equals(host) )
+            .collect(Collectors.toList());
+          int randomPos = Math.abs(host.hashCode()) % availableHosts.size();
+          String randomAvailableHost = availableHosts.get(randomPos);
+          filteredForestConfig = filteredForestConfig.withRenamedHost(host, randomAvailableHost);
+        }
         batcher.withForestConfig(filteredForestConfig);
         // cancel any previously scheduled re-sync
         if ( future != null ) future.cancel(false);
         // schedule a re-sync with the server forest config
         future = Executors.newScheduledThreadPool(1)
           .schedule( () -> {
-              ForestConfiguration currentForestConfig = moveMgr.readForestConfig();
-              // set the forestConfig back to whatever the server says it is
-              batcher.withForestConfig(currentForestConfig);
-              String hosts = Stream.of(currentForestConfig.listForests())
-                .map((forest) -> forest.getHost())
-                .distinct()
-                .collect(Collectors.joining(", "));
-              logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
-                suspendTimeForHostUnavailable.toString(), host, hosts);
+              if ( batcher.isStopped() ) {
+                logger.debug("Job \"{}\" is stopped, so cancelling re-sync with the server forest config",
+                  batcher.getJobName());
+              } else {
+                ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
+                logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
+                  suspendTimeForHostUnavailable.toString(), host, Arrays.asList(updatedForestConfig.getPreferredHosts()));
+                // set the forestConfig back to whatever the server says it is
+                batcher.withForestConfig(updatedForestConfig);
+              }
             }
             , suspendTimeForHostUnavailable.toMillis(), TimeUnit.MILLISECONDS);
       } else {
@@ -180,6 +200,7 @@ public class HostAvailabilityListener implements FailureListener<QueryHostExcept
         moveMgr.stopJob(batcher);
       }
     }
+    return isHostUnavailableException;
   }
 
   private boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {

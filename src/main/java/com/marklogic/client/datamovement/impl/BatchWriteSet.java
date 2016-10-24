@@ -20,9 +20,9 @@ import java.util.function.Consumer;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
-import com.marklogic.client.datamovement.Batch;
+import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.impl.WriteHostBatcherImpl.TransactionInfo;
+import com.marklogic.client.datamovement.impl.WriteBatcherImpl.TransactionInfo;
 
 public class BatchWriteSet {
   private DocumentWriteSet writeSet;
@@ -121,10 +121,10 @@ public class BatchWriteSet {
     this.onBeforeWrite = onBeforeWrite;
   }
 
-  public Batch<WriteEvent> getBatchOfWriteEvents() {
-    BatchImpl<WriteEvent> batch = new BatchImpl<WriteEvent>()
+  public WriteBatch getBatchOfWriteEvents() {
+    WriteBatchImpl batch = new WriteBatchImpl()
       .withJobBatchNumber(batchNumber)
-      .withJobResultsSoFar(itemsSoFar);
+      .withJobWritesSoFar(itemsSoFar);
     WriteEvent[] writeEvents = getWriteSet().stream()
             .map(writeOperation ->
               new WriteEventImpl()

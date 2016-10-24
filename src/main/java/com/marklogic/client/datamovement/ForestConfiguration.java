@@ -22,7 +22,7 @@ import java.util.stream.Stream;
 public interface ForestConfiguration {
   Forest[] listForests();
 
-  public default String[] getHosts() {
-    return Stream.of(listForests()).map((forest) -> forest.getHost()).toArray(String[]::new);
+  public default String[] getPreferredHosts() {
+    return Stream.of(listForests()).map( (forest) -> forest.getPreferredHost()).distinct().toArray(String[]::new);
   }
 }

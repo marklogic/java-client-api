@@ -49,7 +49,7 @@ public class ApplyTransformTest {
   private static String collection = "ApplyTransformTest_" +
     new Random().nextInt(10000);
   private static String docContents = "";
-  private static String transformName1 = "WriteHostBatcherTest_transform.sjs";
+  private static String transformName1 = "WriteBatcherTest_transform.sjs";
   private static String transformName2 = "ApplyTransformTest_result_ignore_transform.sjs";
 
   @BeforeClass
@@ -86,7 +86,7 @@ public class ApplyTransformTest {
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE);
-    QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
         .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
@@ -109,7 +109,7 @@ public class ApplyTransformTest {
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.IGNORE);
-    QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
         .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
@@ -125,7 +125,7 @@ public class ApplyTransformTest {
     DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
     int numDocs = 1000;
     // write the documents
-    WriteHostBatcher batcher1 = moveMgr.newWriteHostBatcher().withBatchSize(100)
+    WriteBatcher batcher1 = moveMgr.newWriteBatcher().withBatchSize(100)
       .onBatchFailure((client, batch, throwable) -> throwable.printStackTrace());
     JobTicket ticket1 = moveMgr.startJob( batcher1 );
     for ( int i=0; i < numDocs; i++) {
@@ -145,7 +145,7 @@ public class ApplyTransformTest {
       .withApplyResult(ApplyResult.REPLACE)
       .onSuccess((client, batch) -> count2.addAndGet(batch.getItems().length))
       .onBatchFailure((client, batch, throwable) -> throwable.printStackTrace());
-    QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query2)
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query2)
       .onUrisReady(listener)
       .withConsistentSnapshot();
     JobTicket ticket2 = moveMgr.startJob( batcher );
@@ -157,7 +157,7 @@ public class ApplyTransformTest {
     QueryDefinition query3 = sqb.value(sqb.jsonProperty("testProperty"), "test3a");
     query3.setCollections(collection);
     final AtomicInteger count3 = new AtomicInteger(0);
-    QueryHostBatcher batcher3 = moveMgr.newQueryHostBatcher(query3)
+    QueryBatcher batcher3 = moveMgr.newQueryBatcher(query3)
       .withBatchSize(100)
       .onUrisReady((client, batch) -> count3.addAndGet(batch.getItems().length))
       .onQueryFailure((client, throwable) -> throwable.printStackTrace());
@@ -183,7 +183,7 @@ public class ApplyTransformTest {
     ServerTransform transform = new ServerTransform(transformName1);
     List skippedUris = new ArrayList<>();
     StringBuilder failures = new StringBuilder();
-    QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(uris.iterator())
+    QueryBatcher batcher = moveMgr.newQueryBatcher(uris.iterator())
       .withBatchSize(1)
       .onUrisReady(
         new ApplyTransformListener()

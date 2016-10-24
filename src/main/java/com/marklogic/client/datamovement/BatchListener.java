@@ -18,19 +18,19 @@ package com.marklogic.client.datamovement;
 import com.marklogic.client.DatabaseClient;
 
 /**
- * Runs processEvent on each batch as it is ready during a QueryHostBatcher or
- * WriteHostBatcher job.
+ * Runs processEvent on each batch as it is ready during a QueryBatcher or
+ * WriteBatcher job.
  *
  * @see #processEvent processEvent
  */
-public interface BatchListener<T> {
+public interface BatchListener<T extends Batch<?>> {
   /**
-   * The method called by QueryHostBatcher or WriteHostBatcher to run your
+   * The method called by QueryBatcher or WriteBatcher to run your
    * custom code on this batch.  You usually implement this as a lambda expression.
    *
    * For example, see the lambda expression passed to onUrisReady:
    *
-   *     QueryHostBatcher qhb = dataMovementManager.newQueryHostBatcher(query)
+   *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
    *         .onUrisReady((client, batch) -&gt; {
@@ -48,5 +48,5 @@ public interface BatchListener<T> {
    * @param client the client pointed to the host containing this batch of uris
    * @param batch the batch of uris and some metadata about the current status of the job
    */
-  void processEvent(DatabaseClient client, Batch<T> batch);
+  void processEvent(DatabaseClient client, T batch);
 }

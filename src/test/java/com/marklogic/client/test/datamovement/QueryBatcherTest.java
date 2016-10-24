@@ -37,23 +37,23 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class QueryHostBatcherTest {
-  private Logger logger = LoggerFactory.getLogger(QueryHostBatcherTest.class);
+public class QueryBatcherTest {
+  private Logger logger = LoggerFactory.getLogger(QueryBatcherTest.class);
   private static DataMovementManager moveMgr = DataMovementManager.newInstance();
-  private static String uri1 = "/QueryHostBatcherTest/content_1.json";
-  private static String uri2 = "/QueryHostBatcherTest/content_2.json";
-  private static String uri3 = "/QueryHostBatcherTest/content_3.json";
-  private static String uri4 = "/QueryHostBatcherTest/content_4.json";
-  private static String collection = "QueryHostBatcherTest";
-  private static String qhbTestCollection = "QueryHostBatcherTest_" +
+  private static String uri1 = "/QueryBatcherTest/content_1.json";
+  private static String uri2 = "/QueryBatcherTest/content_2.json";
+  private static String uri3 = "/QueryBatcherTest/content_3.json";
+  private static String uri4 = "/QueryBatcherTest/content_4.json";
+  private static String collection = "QueryBatcherTest";
+  private static String qhbTestCollection = "QueryBatcherTest_" +
     new Random().nextInt(10000);
 
   @BeforeClass
@@ -79,7 +79,7 @@ public class QueryHostBatcherTest {
     assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
       null, Common.client.newDocumentManager().exists(uri1) );
 
-    WriteHostBatcher writeBatcher = moveMgr.newWriteHostBatcher();
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
@@ -100,7 +100,7 @@ public class QueryHostBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri2});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
-    runQueryHostBatcher(query, matchesByForest, 1, 2);
+    runQueryBatcher(query, matchesByForest, 1, 2);
   }
 
   @Test
@@ -111,19 +111,19 @@ public class QueryHostBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri2});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
-    runQueryHostBatcher(query, matchesByForest, 2, 1);
+    runQueryBatcher(query, matchesByForest, 2, 1);
   }
 
   @Test
   public void testDirectoryQuery() throws Exception {
     QueryDefinition query = new StructuredQueryBuilder().and();
-    query.setDirectory("/QueryHostBatcherTest");
+    query.setDirectory("/QueryBatcherTest");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri2});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
-    runQueryHostBatcher(query, matchesByForest, 3, 2);
+    runQueryBatcher(query, matchesByForest, 3, 2);
   }
 
   @Test
@@ -134,7 +134,7 @@ public class QueryHostBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
-    runQueryHostBatcher(query, matchesByForest, 99, 17);
+    runQueryBatcher(query, matchesByForest, 99, 17);
   }
 
   @Test
@@ -155,7 +155,7 @@ public class QueryHostBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri2});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
-    runQueryHostBatcher(query, matchesByForest, 17, 99);
+    runQueryBatcher(query, matchesByForest, 17, 99);
   }
 
 
@@ -165,7 +165,7 @@ public class QueryHostBatcherTest {
       "{ dept: \"HR\" }").withFormat(JSON);
     QueryDefinition query = Common.client.newQueryManager().newRawQueryByExampleDefinition(qbe);
     AtomicReference<Throwable> error = new AtomicReference<>();
-    QueryHostBatcher queryBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
       .onQueryFailure(
         (client, throwable) -> error.set(throwable.getCause())
       );
@@ -177,7 +177,7 @@ public class QueryHostBatcherTest {
     }
   }
 
-  public void runQueryHostBatcher(QueryDefinition query, Map<String,String[]> matchesByForest,
+  public void runQueryBatcher(QueryDefinition query, Map<String,String[]> matchesByForest,
       int batchSize, int threadCount)
     throws Exception
   {
@@ -191,7 +191,7 @@ public class QueryHostBatcherTest {
     final StringBuffer databaseName = new StringBuffer();
     final Map<String, Set<String>> results = new HashMap<>();
     final StringBuffer failures = new StringBuffer();
-    QueryHostBatcher queryBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onUrisReady(

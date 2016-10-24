@@ -17,6 +17,6 @@ package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 
-public interface BatchFailureListener<T> {
-  void processEvent(DatabaseClient forestClient, Batch<T> batch, Throwable throwable);
+public interface BatchFailureListener<T extends Batch<?>> {
+  void processFailure(DatabaseClient forestClient, T batch, Throwable throwable);
 }

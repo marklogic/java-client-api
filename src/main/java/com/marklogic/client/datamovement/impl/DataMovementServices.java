@@ -22,12 +22,12 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.datamovement.HostBatcher;
+import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
 import java.util.List;
 
@@ -49,29 +49,33 @@ public class DataMovementServices {
       .getResource(null, "forestinfo", null, null, new JacksonHandle())
       .get();
     for ( JsonNode forestNode : results ) {
-      String host = forestNode.get("host").asText();
-      String database = forestNode.get("database").asText();
       String id = forestNode.get("id").asText();
       String name = forestNode.get("name").asText();
+      String database = forestNode.get("database").asText();
+      String host = forestNode.get("host").asText();
+      String openReplicaHost = null;
+      if ( forestNode.get("openReplicaHost") != null ) openReplicaHost = forestNode.get("openReplicaHost").asText();
+      String alternateHost = null;
+      if ( forestNode.get("alternateHost") != null ) alternateHost = forestNode.get("alternateHost").asText();
       boolean isUpdateable = "all".equals(forestNode.get("updatesAllowed").asText());
       boolean isDeleteOnly = false; // TODO: get this for real after we start using a REST endpoint
-      forests.add(new ForestImpl(host, database, name, id, isUpdateable, isDeleteOnly));
+      forests.add(new ForestImpl(host, alternateHost, openReplicaHost, database, name, id, isUpdateable, isDeleteOnly));
     }
 
     return new ForestConfigurationImpl(forests.toArray(new ForestImpl[forests.size()]));
   }
 
-  public JobTicket startJob(WriteHostBatcher batcher) {
+  public JobTicket startJob(WriteBatcher batcher) {
     // TODO: implement job tracking
     return new JobTicketImpl(generateJobId(), JobTicket.JobType.IMPORT_HOST_BATCHER)
-        .withWriteHostBatcher((WriteHostBatcherImpl) batcher);
+        .withWriteBatcher((WriteBatcherImpl) batcher);
   }
 
-  public JobTicket startJob(QueryHostBatcher batcher) {
+  public JobTicket startJob(QueryBatcher batcher) {
     // TODO: implement job tracking
-    ((QueryHostBatcherImpl) batcher).start();
+    ((QueryBatcherImpl) batcher).start();
     return new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_HOST_BATCHER)
-        .withQueryHostBatcher((QueryHostBatcherImpl) batcher);
+        .withQueryBatcher((QueryBatcherImpl) batcher);
   }
 
   public JobReport getJobReport(JobTicket ticket) {
@@ -83,18 +87,18 @@ public class DataMovementServices {
     if ( ticket instanceof JobTicketImpl ) {
       JobTicketImpl ticketImpl = (JobTicketImpl) ticket;
       if ( ticketImpl.getJobType() == JobType.IMPORT_HOST_BATCHER ) {
-        ticketImpl.getWriteHostBatcher().stop();
+        ticketImpl.getWriteBatcher().stop();
       } else if ( ticketImpl.getJobType() == JobType.QUERY_HOST_BATCHER ) {
-        ticketImpl.getQueryHostBatcher().stop();
+        ticketImpl.getQueryBatcher().stop();
       }
     }
   }
 
-  public void stopJob(HostBatcher batcher) {
-    if ( batcher instanceof QueryHostBatcherImpl ) {
-      ((QueryHostBatcherImpl) batcher).stop();
-    } else if ( batcher instanceof WriteHostBatcherImpl ) {
-      ((WriteHostBatcherImpl) batcher).stop();
+  public void stopJob(Batcher batcher) {
+    if ( batcher instanceof QueryBatcherImpl ) {
+      ((QueryBatcherImpl) batcher).stop();
+    } else if ( batcher instanceof WriteBatcherImpl ) {
+      ((WriteBatcherImpl) batcher).stop();
     }
   }
 

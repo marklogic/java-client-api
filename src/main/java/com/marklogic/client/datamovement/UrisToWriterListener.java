@@ -22,14 +22,14 @@ import java.io.Writer;
 
 /**
  * Facilitates writing uris to a file when necessary because setting [merge
- * timestamp][] and {@link QueryHostBatcher#withConsistentSnapshot
+ * timestamp][] and {@link QueryBatcher#withConsistentSnapshot
  * withConsistentSnapshot} is not an option, but you need to run DeleteListener
  * or ApplyTransformListener.
  *
  * Example writing uris to disk then running a delete:
  *
  *     FileWriter writer = new FileWriter("uriCache.txt");
- *     QueryHostBatcher getUris = dataMovementManager.newQueryHostBatcher(query)
+ *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( new UrisToWriterListener(writer) )
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
@@ -41,7 +41,7 @@ import java.io.Writer;
  *
  *     // now we have the uris, let's step through them
  *     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
- *     QueryHostBatcher performDelete = dataMovementManager.newQueryHostBatcher(reader.lines().iterator())
+ *     QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
  *       .onUrisReady(new DeleteListener())
  *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
@@ -50,7 +50,7 @@ import java.io.Writer;
  *
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  */
-public class UrisToWriterListener implements BatchListener<String> {
+public class UrisToWriterListener implements QueryBatchListener {
   private Writer writer;
   private String suffix = "\n";
   private String prefix;
@@ -61,7 +61,7 @@ public class UrisToWriterListener implements BatchListener<String> {
   }
 
   @Override
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     synchronized(writer) {
       for ( String uri : batch.getItems() ) {
         try {

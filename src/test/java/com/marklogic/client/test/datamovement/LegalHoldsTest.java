@@ -25,7 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.QueryHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.DatabaseClient;
 
 import com.marklogic.client.ResourceNotFoundException;
@@ -127,7 +127,7 @@ public class LegalHoldsTest {
     DataMovementManager moveMgr = DataMovementManager.newInstance().withClient(evalClient);
     StringBuilder anyFailure = new StringBuilder();
     Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
-    QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(1)
       .withConsistentSnapshot()
       .onUrisReady(

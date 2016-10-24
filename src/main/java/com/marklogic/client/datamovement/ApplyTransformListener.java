@@ -22,7 +22,7 @@ import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.RequestParameters;
-import com.marklogic.client.datamovement.impl.BatchImpl;
+import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
 import java.io.BufferedReader;
 import java.util.*;
@@ -35,9 +35,9 @@ import java.util.stream.Collectors;
  * ApplyTransformListener should only be used when:
  *
  * 1. [merge timestamp][] is enabled and
- * {@link QueryHostBatcher#withConsistentSnapshot} is called, or
- * 2. {@link DataMovementManager#newQueryHostBatcher(Iterator)
- * newQueryHostBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
+ * {@link QueryBatcher#withConsistentSnapshot} is called, or
+ * 2. {@link DataMovementManager#newQueryBatcher(Iterator)
+ * newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
  *
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  *
@@ -62,23 +62,23 @@ import java.util.stream.Collectors;
  *     ApplyTransformListener listener = new ApplyTransformListener()
  *       .withTransform(transform)
  *       .withApplyResult(ApplyResult.REPLACE);
- *     QueryHostBatcher batcher = moveMgr.newQueryHostBatcher(query)
+ *     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
  *         .onUrisReady(listener);
  *     JobTicket ticket = moveMgr.startJob( batcher );
  *     batcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  */
-public class ApplyTransformListener implements BatchListener<String> {
+public class ApplyTransformListener implements QueryBatchListener {
   private ServerTransform transform;
   private ApplyResult applyResult = ApplyResult.REPLACE;
-  private List<BatchListener<String>> successListeners = new ArrayList<>();
-  private List<BatchListener<String>> skippedListeners = new ArrayList<>();
-  private List<BatchFailureListener<String>> failureListeners = new ArrayList<>();
+  private List<QueryBatchListener> successListeners = new ArrayList<>();
+  private List<QueryBatchListener> skippedListeners = new ArrayList<>();
+  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
   /**
-   * The standard BatchListener action called by QueryHostBatcher.
+   * The standard BatchListener action called by QueryBatcher.
    */
-  public void processEvent(DatabaseClient client, Batch<String> batch) {
+  public void processEvent(DatabaseClient client, QueryBatch batch) {
     if ( ! (client instanceof DatabaseClientImpl) ) {
       throw new IllegalStateException("DatabaseClient must be instanceof DatabaseClientImpl");
     }
@@ -92,7 +92,7 @@ public class ApplyTransformListener implements BatchListener<String> {
       List<String> responseUris = new BufferedReader(
         services.postResource(null, "internal/apply-transform", null, params, uris, new ReaderHandle()).get()
       ).lines().collect(Collectors.toList());
-      BatchImpl<String> processedBatch = new BatchImpl<String>()
+      QueryBatchImpl processedBatch = new QueryBatchImpl()
         .withItems( responseUris.toArray(new String[responseUris.size()]) )
         .withTimestamp( batch.getTimestamp() )
         .withJobBatchNumber( batch.getJobBatchNumber() )
@@ -100,24 +100,24 @@ public class ApplyTransformListener implements BatchListener<String> {
         .withForestBatchNumber( batch.getForestBatchNumber() )
         .withForestResultsSoFar( batch.getForestResultsSoFar() )
         .withForest( batch.getForest() )
-        .withBytesMoved( batch.getBytesMoved() )
+        .withServerTimestamp( batch.getServerTimestamp() )
         .withJobTicket( batch.getJobTicket() );
-      for ( BatchListener<String> listener : successListeners ) {
+      for ( QueryBatchListener listener : successListeners ) {
         listener.processEvent(client, processedBatch);
       }
 
       List<String> skippedRequestUris = new ArrayList<>(Arrays.asList(batch.getItems()));
       skippedRequestUris.removeAll( responseUris );
       if ( skippedRequestUris.size() > 0 ) {
-        BatchImpl<String> skippedBatch = processedBatch
+        QueryBatchImpl skippedBatch = processedBatch
           .withItems( skippedRequestUris.toArray(new String[0]) );
-        for ( BatchListener<String> listener : skippedListeners ) {
+        for ( QueryBatchListener listener : skippedListeners ) {
           listener.processEvent(client, skippedBatch);
         }
       }
     } catch (Throwable t) {
-      for ( BatchFailureListener<String> listener : failureListeners ) {
-        listener.processEvent(client, batch, t);
+      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
+        listener.processFailure(client, batch, t);
       }
     }
   }
@@ -130,7 +130,7 @@ public class ApplyTransformListener implements BatchListener<String> {
    *
    * @return this instance for method chaining
    */
-  public ApplyTransformListener onSuccess(BatchListener<String> listener) {
+  public ApplyTransformListener onSuccess(QueryBatchListener listener) {
     successListeners.add(listener);
     return this;
   }
@@ -143,7 +143,7 @@ public class ApplyTransformListener implements BatchListener<String> {
    *
    * @return this instance for method chaining
    */
-  public ApplyTransformListener onSkipped(BatchListener<String> listener) {
+  public ApplyTransformListener onSkipped(QueryBatchListener listener) {
     skippedListeners.add(listener);
     return this;
   }
@@ -156,7 +156,7 @@ public class ApplyTransformListener implements BatchListener<String> {
    *
    * @return this instance for method chaining
    */
-  public ApplyTransformListener onBatchFailure(BatchFailureListener<String> listener) {
+  public ApplyTransformListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
     failureListeners.add(listener);
     return this;
   }

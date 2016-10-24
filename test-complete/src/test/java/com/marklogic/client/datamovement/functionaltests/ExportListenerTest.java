@@ -39,6 +39,12 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.ExportListener;
+import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -49,12 +55,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 
 public class ExportListenerTest extends  DmsdkJavaClientREST {
 	
@@ -138,7 +138,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 	@Before
 	public void setUp() throws Exception {
 		Thread.currentThread().sleep(1000L);
-		WriteHostBatcher ihb2 =  dmManager.newWriteHostBatcher();
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
 		        (client, batch) -> {	        	
@@ -216,7 +216,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 			                   expListenHandle.append(handle.getServerTimestamp());
 			                   });
 			               
-		 QueryHostBatcher exportBatcher = dmManager.newQueryHostBatcher(querydef)
+			 QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
 			    .withConsistentSnapshot()
 			    .onUrisReady(exportListener)
 		        .onQueryFailure((client, exception) -> {

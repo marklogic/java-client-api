@@ -20,17 +20,7 @@ import java.util.Calendar;
 public interface Batch<T> {
   T[] getItems();
   Calendar getTimestamp();
-  long getServerTimestamp();
   long getJobBatchNumber();
-  // TODO: should this be getJobItemsSoFar to apply to both QHB and WHB?
-  long getJobResultsSoFar();
-  // TODO: are these next two helpful for WHB?
-  long getForestBatchNumber();
-  long getForestResultsSoFar();
-  // note that this is only populated by QHB
-  Forest getForest();
-  // TOOD: implement
-  long getBytesMoved();
   // TOOD: implement
   JobTicket getJobTicket();
 }

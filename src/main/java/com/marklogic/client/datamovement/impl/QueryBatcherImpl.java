@@ -15,23 +15,13 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicLong;
-
-import com.marklogic.client.datamovement.Batch;
-import com.marklogic.client.datamovement.BatchListener;
+import com.marklogic.client.datamovement.QueryBatch;
+import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.FailureListener;
+import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
-import com.marklogic.client.datamovement.QueryHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryHostException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,105 +31,119 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.impl.QueryManagerImpl;
 import com.marklogic.client.impl.UrisHandle;
+
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
-public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBatcher {
-  private static Logger logger = LoggerFactory.getLogger(QueryHostBatcherImpl.class);
+public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
+  private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private QueryDefinition query;
   private Iterator<String> iterator;
   private DataMovementManager moveMgr;
   private boolean threadCountSet = false;
-  private ForestConfiguration forestConfig;
-  private List<BatchListener<String>> urisReadyListeners = new ArrayList<>();
-  private List<FailureListener<QueryHostException>> failureListeners = new ArrayList<>();
+  private List<QueryBatchListener> urisReadyListeners = new ArrayList<>();
+  private List<QueryFailureListener> failureListeners = new ArrayList<>();
   private QueryThreadPoolExecutor threadPool;
   private boolean consistentSnapshot = false;
   private final AtomicLong batchNumber = new AtomicLong(0);
   private final AtomicLong resultsSoFar = new AtomicLong(0);
-  private Forest[] forests;
   private final AtomicLong serverTimestamp = new AtomicLong(-1);
-  private List<DatabaseClient> clientList = new ArrayList<>();
+  private final AtomicReference<List<DatabaseClient>> clientList = new AtomicReference<>();
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
+  private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
 
-  public QueryHostBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     this.moveMgr = moveMgr;
     this.query = query;
-    this.forestConfig = forestConfig;
+    withForestConfig(forestConfig);
     withBatchSize(1000);
   }
 
-  public QueryHostBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
+  public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
     this.moveMgr = moveMgr;
     this.iterator = iterator;
-    this.forestConfig = forestConfig;
+    withForestConfig(forestConfig);
     withBatchSize(1000);
   }
 
   @Override
-  public QueryHostBatcherImpl onUrisReady(BatchListener<String> listener) {
+  public QueryBatcherImpl onUrisReady(QueryBatchListener listener) {
     urisReadyListeners.add(listener);
     return this;
   }
 
   @Override
-  public QueryHostBatcherImpl onQueryFailure(FailureListener<QueryHostException> listener) {
+  public QueryBatcherImpl onQueryFailure(QueryFailureListener listener) {
     failureListeners.add(listener);
     return this;
   }
 
   @Override
-  public BatchListener<String>[]               getQuerySuccessListeners() {
-    return urisReadyListeners.toArray(new BatchListener[urisReadyListeners.size()]);
+  public QueryBatchListener[]               getQuerySuccessListeners() {
+    return urisReadyListeners.toArray(new QueryBatchListener[urisReadyListeners.size()]);
   }
 
   @Override
-  public FailureListener<QueryHostException>[] getQueryFailureListeners() {
-    return failureListeners.toArray(new FailureListener[failureListeners.size()]);
+  public QueryFailureListener[] getQueryFailureListeners() {
+    return failureListeners.toArray(new QueryFailureListener[failureListeners.size()]);
   }
 
   @Override
-  public void setBatchSuccessListeners(BatchListener<String>... listeners) {
+  public void setBatchSuccessListeners(QueryBatchListener... listeners) {
     requireNotStarted();
     urisReadyListeners.clear();
     if ( listeners != null ) {
-      for ( BatchListener<String> listener : listeners ) {
+      for ( QueryBatchListener listener : listeners ) {
         urisReadyListeners.add(listener);
       }
     }
   }
 
   @Override
-  public void setBatchFailureListeners(FailureListener<QueryHostException>... listeners) {
+  public void setBatchFailureListeners(QueryFailureListener... listeners) {
     requireNotStarted();
     failureListeners.clear();
     if ( listeners != null ) {
-      for ( FailureListener<QueryHostException> listener : listeners ) {
+      for ( QueryFailureListener listener : listeners ) {
         failureListeners.add(listener);
       }
     }
   }
 
   @Override
-  public QueryHostBatcher withJobName(String jobName) {
+  public QueryBatcher withJobName(String jobName) {
     requireNotStarted();
     super.withJobName(jobName);
     return this;
   }
 
   @Override
-  public QueryHostBatcher withBatchSize(int batchSize) {
+  public QueryBatcher withBatchSize(int batchSize) {
     requireNotStarted();
     super.withBatchSize(batchSize);
     return this;
   }
 
   @Override
-  public QueryHostBatcher withThreadCount(int threadCount) {
+  public QueryBatcher withThreadCount(int threadCount) {
     requireNotStarted();
     if ( getThreadCount() <= 0 ) {
       throw new IllegalArgumentException("threadCount must be 1 or greater");
@@ -150,7 +154,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public QueryHostBatcher withConsistentSnapshot() {
+  public QueryBatcher withConsistentSnapshot() {
     requireNotStarted();
     consistentSnapshot = true;
     return this;
@@ -177,20 +181,13 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
   }
 
   @Override
-  public boolean isTerminated() {
-    requireJobStarted();
+  public boolean isStopped() {
     return threadPool.isTerminated();
-  }
-
-  @Override
-  public boolean isTerminating() {
-    requireJobStarted();
-    return threadPool.isTerminating();
   }
 
   private void requireJobStarted() {
     if ( threadPool == null ) {
-      throw new IllegalStateException("Job not started. First call DataMovementManager.startJob(QueryHostBatcher)");
+      throw new IllegalStateException("Job not started. First call DataMovementManager.startJob(QueryBatcher)");
     }
   }
 
@@ -200,7 +197,8 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     }
   }
 
-  void start() {
+  synchronized void start() {
+    if ( threadPool != null ) logger.warn("startJob called more than once");
     if ( getBatchSize() <= 0 ) {
       withBatchSize(1);
       logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
@@ -213,28 +211,19 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     }
   }
 
-  private void initialize() {
-    forests = forestConfig.listForests();
-    Map<String,Forest> hosts = new HashMap<>();
-    for ( Forest forest : forests ) {
-      if ( forest.getHost() == null ) throw new IllegalStateException("Hostname must not be null for any forest");
-      hosts.put(forest.getHost(), forest);
-      forestResults.put(forest, new AtomicLong());
-      forestIsDone.put(forest, new AtomicBoolean(false));
-    }
-    for ( String host : hosts.keySet() ) {
-      Forest forest = hosts.get(host);
-      DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
-      clientList.add(client);
-    }
+  private synchronized void initialize() {
     if ( threadCountSet == false ) {
       if ( query != null ) {
+        Forest[] forests = getForestConfig().listForests();
         logger.warn("threadCount not set--defaulting to number of forests ({})", forests.length);
         withThreadCount(forests.length);
       } else {
-        logger.warn("threadCount not set--defaulting to number of hosts ({})", hosts.size());
-        withThreadCount( hosts.size() );
+        int hostCount = clientList.get().size();
+        logger.warn("threadCount not set--defaulting to number of hosts ({})", hostCount);
+        withThreadCount( hostCount );
       }
+      // now we've set the threadCount
+      threadCountSet = true;
     }
     logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
         getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
@@ -243,9 +232,112 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     threadPool.setMaximumPoolSize(getThreadCount());
   }
 
-  private void startQuerying() {
+  @Override
+  public synchronized QueryBatcher withForestConfig(ForestConfiguration forestConfig) {
+    super.withForestConfig(forestConfig);
+    Forest[] forests = forestConfig.listForests();
+    Set<Forest> oldForests = new HashSet<>(forestResults.keySet());
+    Map<String,Forest> hosts = new HashMap<>();
+    for ( Forest forest : forests ) {
+      if ( forest.getPreferredHost() == null ) throw new IllegalStateException("Hostname must not be null for any forest");
+      hosts.put(forest.getPreferredHost(), forest);
+      if ( forestResults.get(forest) == null ) forestResults.put(forest, new AtomicLong());
+      if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
+    }
+    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
+    List<DatabaseClient> newClientList = new ArrayList<>();
+    for ( String host : hosts.keySet() ) {
+      Forest forest = hosts.get(host);
+      DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+      newClientList.add(client);
+    }
+    clientList.set(newClientList);
+    boolean started = (threadPool != null);
+    if ( started == true && oldForests.size() > 0 ) calucluateDeltas(oldForests, forests);
+    return this;
+  }
+
+  private synchronized void calucluateDeltas(Set<Forest> oldForests, Forest[] forests) {
+    // the forests we haven't known about yet
+    Set<Forest> addedForests = new HashSet<>();
+    // the forests that we knew about but they were black-listed and are no longer black-listed
+    Set<Forest> restartedForests = new HashSet<>();
+    // any known forest might now be black-listed
+    Set<Forest> blackListedForests = new HashSet<>(oldForests);
+    for ( Forest forest : forests ) {
+      if ( ! oldForests.contains(forest) ) {
+        // we need to do special handling since we're adding this new forest after we're started
+        addedForests.add(forest);
+      }
+      // if we have blackListedTasks for this forest, let's restart them
+      if ( blackListedTasks.get(forest) != null ) restartedForests.add(forest);
+      // this forest is not black-listed
+      blackListedForests.remove(forest);
+    }
+    cleanupExistingTasks(addedForests, restartedForests, blackListedForests);
+  }
+
+  private synchronized void cleanupExistingTasks(Set<Forest> addedForests, Set<Forest> restartedForests, Set<Forest> blackListedForests) {
+    if ( blackListedForests.size() > 0 ) {
+      logger.warn("removing jobs related to hosts [{}] from the queue", getHostNames(blackListedForests));
+      // since some forests have been removed, let's remove from the queue any jobs that were targeting that forest
+      List<Runnable> tasks = new ArrayList<>();
+      threadPool.getQueue().drainTo(tasks);
+      for ( Runnable task : tasks ) {
+        if ( task instanceof QueryTask ) {
+          QueryTask queryTask = (QueryTask) task;
+          if ( blackListedForests.contains(queryTask.forest) ) {
+            // this batch was targeting a forest that's no longer on the list
+            // so keep track of it in case this forest comes back on-line
+            List<QueryTask> blackListedTaskList = blackListedTasks.get(queryTask.forest);
+            if ( blackListedTaskList == null ) {
+              blackListedTaskList = new ArrayList<QueryTask>();
+              blackListedTasks.put(queryTask.forest, blackListedTaskList);
+            }
+            blackListedTaskList.add(queryTask);
+            // jump to the next task
+            continue;
+          }
+        }
+        // this task is still valid so add it back to the queue
+        threadPool.execute(task);
+      }
+    }
+    if ( addedForests.size() > 0 ) {
+      logger.warn("adding jobs for forests [{}] to the queue", getForestNames(addedForests));
+    }
+    for ( Forest forest : addedForests ) {
+        // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
+        // or we wouldn't be here because we wouldn't have a synchronized lock on this
+        threadPool.execute(new QueryTask(moveMgr, forest, query, 1, 1));
+    }
+    if ( restartedForests.size() > 0 ) {
+      logger.warn("re-adding jobs related to forests [{}] to the queue", getForestNames(restartedForests));
+    }
+    for ( Forest forest : restartedForests ) {
+      List<QueryTask> blackListedTaskList = blackListedTasks.get(forest);
+      if ( blackListedTaskList != null ) {
+        // let's start back up where we left off
+        for ( QueryTask task : blackListedTaskList ) {
+          threadPool.execute(task);
+        }
+      }
+      // we can clear blackListedTaskList because we have a synchronized lock
+      blackListedTaskList.clear();
+    }
+  }
+
+  private List<String> getForestNames(Collection<Forest> forests) {
+    return forests.stream().map((forest)->forest.getForestName()).collect(Collectors.toList());
+  }
+
+  private List<String> getHostNames(Collection<Forest> forests) {
+    return forests.stream().map((forest)->forest.getPreferredHost()).distinct().collect(Collectors.toList());
+  }
+
+  private synchronized void startQuerying() {
     boolean consistentSnapshotFirstQueryHasRun = false;
-    for ( final Forest forest : forests ) {
+    for ( Forest forest : getForestConfig().listForests() ) {
       QueryTask runnable = new QueryTask(moveMgr, forest, query, 1, 1);
       if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
         // let's run this first time in-line so we'll have the serverTimestamp set
@@ -286,8 +378,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
         if ( consistentSnapshot == true && serverTimestamp.get() > -1 ) {
           handle.setPointInTimeQueryTimestamp(serverTimestamp.get());
         }
-        UrisHandle results = queryMgr.uris(query, handle, start, null, forest.getForestName());
-        try {
+        try ( UrisHandle results = queryMgr.uris(query, handle, start, null, forest.getForestName()) ) {
           if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
             serverTimestamp.set(results.getServerTimestamp());
             logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
@@ -304,7 +395,7 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
             isDone.set(true);
             shutdownIfAllForestsAreDone();
           }
-          Batch<String> batch = new BatchImpl<String>()
+          QueryBatch batch = new QueryBatchImpl()
             .withItems(uris.toArray(new String[uris.size()]))
             .withTimestamp(queryStart)
             .withServerTimestamp(serverTimestamp.get())
@@ -317,23 +408,22 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
               batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
           // let's handle errors from listeners specially
           try {
-            for (BatchListener<String> listener : urisReadyListeners) {
+            for (QueryBatchListener listener : urisReadyListeners) {
               listener.processEvent(client, batch);
             }
           } catch (Throwable t) {
-            for ( FailureListener<QueryHostException> listener : failureListeners ) {
+            for ( QueryFailureListener listener : failureListeners ) {
               listener.processFailure(client, new QueryHostException(null, t));
             }
+            logger.warn("Error querying: {}", t.toString());
           }
-        } finally {
-          results.close();
         }
       } catch (ResourceNotFoundException e) {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
         isDone.set(true);
         shutdownIfAllForestsAreDone();
       } catch (Throwable t) {
-        for ( FailureListener<QueryHostException> listener : failureListeners ) {
+        for ( QueryFailureListener listener : failureListeners ) {
           listener.processFailure(client, new QueryHostException(null, t));
         }
         // any error outside listeners is grounds for stopping this job
@@ -379,23 +469,25 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
           public void run() {
             long currentBatchNumber = batchNumber.incrementAndGet();
             // round-robin from client 0 to (clientList.size() - 1);
-            int clientIndex = (int) (currentBatchNumber % clientList.size());
-            DatabaseClient client = clientList.get(clientIndex);
+            List<DatabaseClient> currentClientList = clientList.get();
+            int clientIndex = (int) (currentBatchNumber % currentClientList.size());
+            DatabaseClient client = currentClientList.get(clientIndex);
             try {
-              Batch<String> batch = new BatchImpl<String>()
+              QueryBatch batch = new QueryBatchImpl()
                   .withItems(uris.toArray(new String[uris.size()]))
                   .withTimestamp(Calendar.getInstance())
                   .withJobBatchNumber(currentBatchNumber)
                   .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
               logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
                   batch.getJobBatchNumber(), batch.getJobResultsSoFar());
-              for (BatchListener<String> listener : urisReadyListeners) {
+              for (QueryBatchListener listener : urisReadyListeners) {
                 listener.processEvent(client, batch);
               }
             } catch (Throwable t) {
-              for ( FailureListener<QueryHostException> listener : failureListeners ) {
+              for ( QueryFailureListener listener : failureListeners ) {
                 listener.processFailure(client, new QueryHostException(null, t));
               }
+              logger.warn("Error iterating on batch with uris [{}]: {}", uris, t.toString());
             }
           }
         };
@@ -414,7 +506,8 @@ public class QueryHostBatcherImpl extends HostBatcherImpl implements QueryHostBa
     private Object objectToNotifyFrom;
 
     QueryThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
-      super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS, new LinkedBlockingQueue<Runnable>());
+      super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
+        new LinkedBlockingQueue<Runnable>(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 

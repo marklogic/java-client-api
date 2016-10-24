@@ -49,7 +49,7 @@ public class DeleteListenerTest {
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
-    WriteHostBatcher writeBatcher = moveMgr.newWriteHostBatcher();
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(writeBatcher);
     String[] uris = new String[100];
     for ( int i=0; i < 100; i++ ) {
@@ -62,7 +62,7 @@ public class DeleteListenerTest {
     assertEquals( "There should be 100 documents in the db",
       100, client.newDocumentManager().read(uris).size() );
 
-    QueryHostBatcher queryBatcher = moveMgr.newQueryHostBatcher(
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
         new StructuredQueryBuilder().collection(collection)
       )
       .withBatchSize(10)

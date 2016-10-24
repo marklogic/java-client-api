@@ -61,7 +61,6 @@ public class ForestConfigTest {
       assertEquals(defaultDatabase, forest.getDatabaseName());
       assertEquals(defaultAuthContext, forestClient.getSecurityContext().getClass());
       assertEquals(true, forest.isUpdateable());
-      assertEquals(false, forest.isDeleteOnly());
       if ( ! "java-unittest-1".equals(forest.getForestName()) &&
            ! "java-unittest-2".equals(forest.getForestName()) &&
            ! "java-unittest-3".equals(forest.getForestName()) ) {

@@ -16,10 +16,21 @@
 package com.marklogic.client.datamovement;
 
 public interface Forest {
-  String getHost();
-  String getDatabaseName();
-  String getForestName();
   String getForestId();
+  String getForestName();
+  String getDatabaseName();
+  String getHost();
+  String getOpenReplicaHost();
+  String getAlternateHost();
   boolean isUpdateable();
-  boolean isDeleteOnly();
+
+  public default String getPreferredHost() {
+    if ( getOpenReplicaHost() != null ) {
+      return getOpenReplicaHost();
+    } else if ( getAlternateHost() != null ) {
+      return getAlternateHost();
+    } else {
+      return getHost();
+    }
+  }
 }

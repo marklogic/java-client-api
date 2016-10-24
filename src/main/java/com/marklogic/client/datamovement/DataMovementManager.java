@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 /**
  * DataMovementManager is the starting point for getting new instances of
- * QueryHostBatcher and WriteHostBatcher, configured with a DatabaseClient and
+ * QueryBatcher and WriteBatcher, configured with a DatabaseClient and
  * ForestConfiguration.  On instantiation, it will immediately call
  * readForestConfig to obtain the ForestConfiguration from which it can create
  * host-specific DatabaseClient instances for each applicable host.  Applicable
@@ -37,7 +37,7 @@ import java.util.Iterator;
  * Sample Usage:
  *
  *     DataMovementManager dataMovementManager = databaseClient.newDataMovementManager();
- *     WriteHostBatcher batcher = dataMovementManager.newWriteHostBatcher();
+ *     WriteBatcher batcher = dataMovementManager.newWriteBatcher();
  *     dataMovementManager.startJob(batcher);
  *     . . .
  *     dataMovementManager.stopJob(batcher);
@@ -82,20 +82,20 @@ public interface DataMovementManager {
   public void release();
 
   /**
-   * Begins job tracking on the WriteHostBatcher.  Calling startJob is not
-   * required on a WriteHostBatcher if you don't intend to ever call stopJob or
+   * Begins job tracking on the WriteBatcher.  Calling startJob is not
+   * required on a WriteBatcher if you don't intend to ever call stopJob or
    * look at the JobReport.
-   * @param batcher the WriteHostBatcher instance which has to be started
+   * @param batcher the WriteBatcher instance which has to be started
    * @return a JobTicket which can be used to track the job
    */
-  public JobTicket startJob(WriteHostBatcher batcher);
+  public JobTicket startJob(WriteBatcher batcher);
 
   /**
-   * Starts the QueryHostBatcher job.
-   * @param batcher the QueryHostBatcher instance which has to be started
+   * Starts the QueryBatcher job.
+   * @param batcher the QueryBatcher instance which has to be started
    * @return a JobTicket which can be used to track the job
    */
-  public JobTicket startJob(QueryHostBatcher batcher);
+  public JobTicket startJob(QueryBatcher batcher);
 
   /**
    * Not yet implemented 
@@ -120,17 +120,17 @@ public interface DataMovementManager {
    * mechanism.
    * @param batcher the batcher instance to stop
    */
-  public void stopJob(HostBatcher batcher);
+  public void stopJob(Batcher batcher);
 
   /**
-   * Create a new WriteHostBatcher instance.
+   * Create a new WriteBatcher instance.
    *
-   * @return the new WriteHostBatcher instance
+   * @return the new WriteBatcher instance
    */
-  public WriteHostBatcher newWriteHostBatcher();
+  public WriteBatcher newWriteBatcher();
 
   /**
-   * Create a new QueryHostBatcher instance configured to retrieve uris that
+   * Create a new QueryBatcher instance configured to retrieve uris that
    * match this query.  The query can be any StringQueryDefinition,
    * StructuredQueryDefinition, or RawCombinedQueryDifinition.  The query
    * cannot be a SPARQLQueryDefinition, RawQueryByExampleDefinition, or a
@@ -138,23 +138,23 @@ public interface DataMovementManager {
    *
    * @param query the query used to find matching uris
    *
-   * @return the new QueryHostBatcher instance
+   * @return the new QueryBatcher instance
    */
-  public QueryHostBatcher newQueryHostBatcher(QueryDefinition query);
+  public QueryBatcher newQueryBatcher(QueryDefinition query);
 
   /**
-   * Create a new QueryHostBatcher instance configured to retrieve uris from
+   * Create a new QueryBatcher instance configured to retrieve uris from
    * this Iterator.  This is helpful when deleting documents when one cannot
    * set the server's [merge timestamp][].  For more discussion, see {@link
-   * QueryHostBatcher}.
+   * QueryBatcher}.
    *
    * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
    *
    * @param iterator the provider of uris
    *
-   * @return the new QueryHostBatcher instance
+   * @return the new QueryBatcher instance
    */
-  public QueryHostBatcher newQueryHostBatcher(Iterator<String> iterator);
+  public QueryBatcher newQueryBatcher(Iterator<String> iterator);
 
   /**
    * Update the ForestConfiguration with the latest from the server.

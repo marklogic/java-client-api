@@ -25,7 +25,7 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryHostBatcher;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.test.datamovement.Common;
 
@@ -76,7 +76,7 @@ public class UrisToWriterListenerExamples {
 
     // begin copy fromclass javadoc in src/main/java/com/marklogic/datamovement/UrisToWriterListener.java
     FileWriter writer = new FileWriter("uriCache.txt");
-    QueryHostBatcher getUris = dataMovementManager.newQueryHostBatcher(query)
+    QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
       .withBatchSize(5000)
       .onUrisReady( new UrisToWriterListener(writer) )
       .onQueryFailure((client, exception) -> exception.printStackTrace());
@@ -93,7 +93,7 @@ public class UrisToWriterListenerExamples {
 
     // now we have the uris, let's step through them
     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
-    QueryHostBatcher performDelete = dataMovementManager.newQueryHostBatcher(reader.lines().iterator())
+    QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
       .onUrisReady(new DeleteListener())
       .onQueryFailure((client, exception) -> exception.printStackTrace());
     JobTicket ticket = dataMovementManager.startJob(performDelete);

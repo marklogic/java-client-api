@@ -32,19 +32,31 @@ public class FilteredForestConfiguration implements ForestConfiguration {
     this.wrappedForestConfig = forestConfig;
   }
 
+  /** Must be called after configuration methods (withBlackList, withWhiteList, withRenamedHost).
+   */
   public Forest[] listForests() {
     Stream<Forest> stream = Stream.of(wrappedForestConfig.listForests());
     if ( blackList.size() > 0 ) {
-      stream = stream.filter((forest) -> ! blackList.contains(forest.getHost()));
+      stream = stream.filter((forest) -> ! blackList.contains(forest.getPreferredHost()));
     } else if ( whiteList.size() > 0 ) {
-      stream = stream.filter((forest) -> whiteList.contains(forest.getHost()));
+      stream = stream.filter((forest) -> whiteList.contains(forest.getPreferredHost()));
     }
-    // apply renames
+    // apply renames to all fields containing host names
     stream = stream.map((forest) -> {
-      if ( renames.containsKey(forest.getHost()) ) {
-        ((ForestImpl) forest).setHost(renames.get(forest.getHost()));
+      String openReplicaHost = forest.getOpenReplicaHost();
+      if ( renames.containsKey(openReplicaHost) ) {
+        openReplicaHost = renames.get(openReplicaHost);
       }
-      return forest;
+      String alternateHost = forest.getAlternateHost();
+      if ( renames.containsKey(alternateHost) ) {
+        alternateHost = renames.get(alternateHost);
+      }
+      String host = forest.getHost();
+      if ( renames.containsKey(host) ) {
+        host = renames.get(host);
+      }
+      return new ForestImpl(host, openReplicaHost, alternateHost, forest.getDatabaseName(),
+        forest.getForestName(), forest.getForestId(), forest.isUpdateable(), false);
     });
     return stream.toArray(Forest[]::new);
   }
