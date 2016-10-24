@@ -7,17 +7,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.ExportListener;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.QueryHostBatcher;
-import com.marklogic.client.datamovement.WriteHostBatcher;
 
 /**
  * WriteandReadPOJOS illustrates how to write bulk POJOs into the database
@@ -78,7 +78,7 @@ public class WriteandReadPOJOs {
   }
 
   public void writeBulkPOJOS() throws JAXBException {
-    WriteHostBatcher batcher = moveMgr.newWriteHostBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
         // normally a batch would be at least 100 docs at a time. We're
         // making this number small in order to demonstrate this example.
         .withBatchSize(batchSize)
@@ -88,7 +88,7 @@ public class WriteandReadPOJOs {
         // create an action you want to do once a batch is successfully
         // written here. It will be called for each successful batch.
         .onBatchSuccess((dbclient, batch) -> {
-          logger.info("Batch {} wrote, {} so far", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+          logger.info("Batch {} wrote, {} so far", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
         })
         // create an action you want to do when the batch fails. It will
         // be called for every batch that fails.
@@ -127,7 +127,7 @@ public class WriteandReadPOJOs {
 
     // Create a QueryHostBatcher in order to retrieve bulk POJOs 
     // from the database matching the query definition
-    QueryHostBatcher queryBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
         .withBatchSize(batchSize)
         .withThreadCount(threadCount)
         // You can configure to do some action whenever a batch 
@@ -160,7 +160,7 @@ public class WriteandReadPOJOs {
     // and process each document retrieved using the Export Listener and
     // all documents are exported at a consistent point-in-time using
     // withConsistentSnapshot.
-    QueryHostBatcher exportBatcher = moveMgr.newQueryHostBatcher(query)
+    QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
         .withBatchSize(batchSize)
         .withThreadCount(threadCount)
         .onUrisReady(
@@ -182,7 +182,7 @@ public class WriteandReadPOJOs {
   }
 
   public void deleteDocuments() {
-    QueryHostBatcher queryBatcher = moveMgr.newQueryHostBatcher(
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
         new StructuredQueryBuilder().collection("products-collection1", "products-collection2")
       )
       .withBatchSize(batchSize)
