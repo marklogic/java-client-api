@@ -142,7 +142,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * This implements the FailureListener interface
    *
    * @param client the host-specific client
-   * @param throwable the exception with information about the status of the job
+   * @param queryBatch the exception with information about the status of the job
    */
   public void processFailure(DatabaseClient client, QueryHostException queryBatch) {
     boolean isHostUnavailableException = processException(queryBatch, client.getHost());
