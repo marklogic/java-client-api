@@ -193,6 +193,7 @@ public interface RowManager {
 	 * for the explanation of the plan as a JSON or XML structure.
 	 * @param plan	the definition of a plan for database rows
 	 * @param handle	the JSON or XML handle on the explanation for the plan
+     * @param <T> the type of the explanation handle
      * @return	an object of the IO class with the content of the explanation for the plan
 	 */
 	<T extends StructureReadHandle> T explain(Plan plan, T handle);
@@ -208,6 +209,7 @@ public interface RowManager {
      * 
 	 * @param plan	the definition of a plan for database rows
      * @param as	the IO class for reading the explanation for the plan
+     * @param <T> the type of the IO object for reading the explanation
      * @return	an object of the IO class with the content of the explanation for the plan
 	 */
 	<T> T explainAs(Plan plan, Class<T> as);
