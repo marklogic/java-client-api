@@ -17,8 +17,8 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -36,6 +36,7 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.XsStringExpr;
 
 public class PlanGeneratedBase {
@@ -51,7 +52,10 @@ public class PlanGeneratedBase {
 	protected static Pattern trimmedGMonth   = null;
 	protected static Pattern deconstNumeric  = null;
 	protected static Pattern deconstString   = null;
+	protected static Pattern deconstBoolean  = null;
 	protected static Pattern normalDate      = null;
+
+	protected static Pattern normalPrefix    = null;
 
 	protected static Pattern normalTimeZone       = null;
 	protected static Pattern normalDateTimeFormat = null;
@@ -71,8 +75,9 @@ public class PlanGeneratedBase {
 		lit = p.fromLiterals(new Map[]{row});
 
 		// insignificant variations in the serialization
+		normalPrefix    = Pattern.compile("^(cts|fn|json|map|math|rdf|sem|spell|sql|xdmp|xs)\\.");
 		quotedNonstring = Pattern.compile("\"(-?\\d+(?:\\.\\d+)?|true|false)\"");
-		integerDecimal  = Pattern.compile("\"(-?\\d+)\\.0+\"");
+		integerDecimal  = Pattern.compile("^\"?(\\d+)\\.0+\"?$");
 		arraySequence   = Pattern.compile("(\\[|\\s+)\\[(\\{[^}]+\\})\\]([,}\\]])");
 		trimmedDate     = Pattern.compile(
 "(\\{\"ns\":\"xs\", \"fn\":\"date\", \"args\":\\[\"\\d\\d\\d\\d-\\d\\d-\\d\\d)(?:-\\d\\d:\\d\\d|Z)(\"\\]\\})"
@@ -84,8 +89,9 @@ public class PlanGeneratedBase {
 "(\\{\"ns\":\"xs\", \"fn\":\"gMonth\", \"args\":\\[\"--\\d\\d)--(\"\\]\\})"
 				);
 
-		deconstNumeric  = Pattern.compile("xs:(?:byte|decimal|double|float|int|long|numeric|short|unsigned\\w+)\\(\"([^\"]*)\"\\)");
+		deconstNumeric  = Pattern.compile("xs:(?:byte|decimal|double|float|int|long|negativeInteger|nonNegativeInteger|nonPositiveInteger|numeric|positiveInteger|short|unsigned\\w+)\\(\"([^\"]*)\"\\)");
 		deconstString   = Pattern.compile("xs:(?:anyURI|untypedAtomic)\\((\"[^\"]*\")\\)");
+		deconstBoolean  = Pattern.compile("fn:(true|false)\\(\\)");
 		normalDate      = Pattern.compile("(xs:date\\(\"\\d\\d\\d\\d-\\d\\d-\\d\\d)(?:-\\d\\d:\\d\\d|Z)(\"\\))");
 
 		normalTimeZone       = Pattern.compile("(\\d\\d\\d\\d-)\\d\\d-\\d\\dT\\d\\d(\\:\\d\\d\\:\\d\\d\\.?\\d*-)\\d\\d(\\:\\d\\d)");
@@ -99,6 +105,34 @@ public class PlanGeneratedBase {
 		rowMgr = null;
 
 		Common.release();
+	}
+
+	private PlanBuilder.ModifyPlan makePlan(Object[] literals, ItemSeqExpr[] expressions) {
+		PlanBuilder.ModifyPlan plan = null;
+
+		if (literals == null || literals.length == 0) {
+			plan = lit;
+		} else {
+			Map<String,Object> row = new HashMap<String,Object>();
+			for (int i=0; i < literals.length; i++) {
+				row.put(String.valueOf(i + 1), literals[i]);
+			}
+
+			@SuppressWarnings("unchecked")
+			PlanBuilder.ModifyPlan literalsPlan = p.fromLiterals(row);
+
+			plan = literalsPlan;
+		}
+
+		if (expressions != null && expressions.length > 0) {
+			PlanExprCol[] bindings = new PlanExprCol[expressions.length];
+			for (int i=0; i < expressions.length; i++) {
+				bindings[i] = p.as(String.valueOf(i + 1), expressions[i]);
+			}
+			plan = plan.select(bindings);
+		}
+
+		return plan;
 	}
 
 	protected void exportTester(String testName, ItemSeqExpr expression, String expected) {
@@ -116,15 +150,12 @@ public class PlanGeneratedBase {
 
 		assertEquals(testName, expected, actual);
 	}
-	protected void executeTester(String testName, ItemSeqExpr expression) {
-		executeTester(testName, expression, null);
-	}
-	protected void executeTester(String testName, ItemSeqExpr expression, String expected) {
+	protected void executeTester(String testName, ItemSeqExpr expression, String expected, Object[] literals, ItemSeqExpr[] expressions) {
 		boolean withCompare = (expected != null);
 
 		XsStringExpr testExpr = p.xdmp.describe(expression, null, null);
 
-		PlanBuilder.ModifyPlan plan = lit.select(p.as("t", testExpr));
+		PlanBuilder.ModifyPlan plan = makePlan(literals, expressions).select(p.as("t", testExpr));
 
 		RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
 		Iterator<RowRecord> rowItr = rowSet.iterator();
@@ -147,11 +178,16 @@ public class PlanGeneratedBase {
 			break;
 		default:
 			if (withCompare) {
+				expected =   normalPrefix.matcher(expected).replaceAll("$1:");
 				expected = deconstNumeric.matcher(expected).replaceAll("$1");
 				expected =  deconstString.matcher(expected).replaceAll("$1");
+				expected = deconstBoolean.matcher(expected).replaceAll("$1");
 				expected =     normalDate.matcher(expected).replaceAll("$1$2");
+				actual   =   normalPrefix.matcher(actual).replaceAll("$1:");
 				actual   = deconstNumeric.matcher(actual).replaceAll("$1");
+				actual   = integerDecimal.matcher(actual).replaceAll("$1");
 				actual   =  deconstString.matcher(actual).replaceAll("$1");
+				actual   = deconstBoolean.matcher(actual).replaceAll("$1");
 				actual   =     normalDate.matcher(actual).replaceAll("$1$2");
 		        assertEquals("unexpected result for: "+testName, expected, actual);
 			} else {
