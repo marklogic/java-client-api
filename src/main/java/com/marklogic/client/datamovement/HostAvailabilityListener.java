@@ -84,6 +84,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
+    if (numHosts <= 0) throw new IllegalArgumentException("numHosts must be > 0");
     this.minHosts = numHosts;
     return this;
   }
