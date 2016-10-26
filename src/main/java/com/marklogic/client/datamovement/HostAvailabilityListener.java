@@ -159,6 +159,11 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
       String[] preferredHosts = existingForestConfig.getPreferredHosts();
+      if ( ! Arrays.asList(preferredHosts).contains(host) ) {
+        // skip all the logic below because the host in question here is already
+        // missing from the list of hosts for this batcher
+        return isHostUnavailableException;
+      }
       if ( preferredHosts.length > minHosts ) {
         logger.error("ERROR: host unavailable \"" + host + "\", black-listing it for " +
           suspendTimeForHostUnavailable.toString(), throwable);
