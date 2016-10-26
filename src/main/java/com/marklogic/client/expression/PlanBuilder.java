@@ -35,8 +35,8 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsDoubleExpr;
  import com.marklogic.client.type.XsDecimalExpr;
  import com.marklogic.client.type.XsYearMonthDurationParam;
- import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.PlanTriplePatternSeq;
+ import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.RdfLangStringParam;
  import com.marklogic.client.type.XsHexBinaryExpr;
  import com.marklogic.client.type.PlanSortKey;
@@ -46,8 +46,8 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsGMonthExpr;
  import com.marklogic.client.type.XsIntegerParam;
  import com.marklogic.client.type.XsUnsignedLongParam;
- import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.PlanColumnSeq;
+ import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.XsAnyURIExpr;
  import com.marklogic.client.type.XsByteExpr;
  import com.marklogic.client.type.XsGMonthParam;
@@ -90,6 +90,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsGYearExpr;
  import com.marklogic.client.type.XsUnsignedIntParam;
  import com.marklogic.client.type.XsLongExpr;
+ import com.marklogic.client.type.PlanSystemColumn;
  import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsDateParam;
@@ -101,6 +102,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.PlanSystemColumnSeq;
  import com.marklogic.client.type.XsAnyAtomicTypeParam;
  import com.marklogic.client.type.PlanParam;
  import com.marklogic.client.type.XsQNameParam;
@@ -115,8 +117,8 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.PlanParamSeq;
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanTripleIriSeq;
- import com.marklogic.client.type.PlanAggregateColSeq;
  import com.marklogic.client.type.PlanExprCol;
+ import com.marklogic.client.type.PlanAggregateColSeq;
  import com.marklogic.client.type.XsTimeParam;
  import com.marklogic.client.type.XsFloatExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
@@ -196,6 +198,8 @@ public abstract class PlanBuilder {
     public abstract PlanSortKey desc(PlanExprCol column);
     public abstract XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right);
     public abstract XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+    public abstract PlanSystemColumn fragmentIdCol(String column);
+    public abstract PlanSystemColumn fragmentIdCol(XsStringParam column);
     public abstract QualifiedPlan fromTriples(PlanTriplePattern... patterns);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName);
@@ -208,11 +212,13 @@ public abstract class PlanBuilder {
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName);
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName);
-    public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanColumn... sysCols);
-    public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols);
-    public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery);
-    public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery);
+    public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols);
+    public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols);
+    public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery);
+    public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery);
     public abstract XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+    public abstract PlanSystemColumn graphCol(String column);
+    public abstract PlanSystemColumn graphCol(XsStringParam column);
     public abstract PlanAggregateCol groupConcat(String name, String column);
     public abstract PlanAggregateCol groupConcat(PlanExprCol name, PlanExprCol column);
     public abstract XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
@@ -233,6 +239,8 @@ public abstract class PlanBuilder {
     public abstract XsBooleanExpr or(XsBooleanExpr... list);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object);
+    public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumn... sysCols);
+    public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumnSeq sysCols);
     public abstract PlanAggregateCol sample(String name, String column);
     public abstract PlanAggregateCol sample(PlanExprCol name, PlanExprCol column);
     public abstract PlanColumn schemaCol(String schema, String view, String column);
@@ -342,8 +350,8 @@ public abstract class PlanBuilder {
 
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName);
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols);
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols);
+    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery);
 
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);

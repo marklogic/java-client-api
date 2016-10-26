@@ -48,8 +48,8 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsDoubleExpr;
  import com.marklogic.client.type.XsDecimalExpr;
  import com.marklogic.client.type.XsYearMonthDurationParam;
- import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.PlanTriplePatternSeq;
+ import com.marklogic.client.type.XsNumericExpr;
  import com.marklogic.client.type.RdfLangStringParam;
  import com.marklogic.client.type.XsHexBinaryExpr;
  import com.marklogic.client.type.PlanSortKey;
@@ -59,8 +59,8 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsGMonthExpr;
  import com.marklogic.client.type.XsIntegerParam;
  import com.marklogic.client.type.XsUnsignedLongParam;
- import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.PlanColumnSeq;
+ import com.marklogic.client.type.XsShortParam;
  import com.marklogic.client.type.XsAnyURIExpr;
  import com.marklogic.client.type.XsByteExpr;
  import com.marklogic.client.type.XsGMonthParam;
@@ -103,6 +103,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsGYearExpr;
  import com.marklogic.client.type.XsUnsignedIntParam;
  import com.marklogic.client.type.XsLongExpr;
+ import com.marklogic.client.type.PlanSystemColumn;
  import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsDateParam;
@@ -114,6 +115,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsHexBinaryParam;
  import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.PlanSystemColumnSeq;
  import com.marklogic.client.type.XsAnyAtomicTypeParam;
  import com.marklogic.client.type.PlanParam;
  import com.marklogic.client.type.XsQNameParam;
@@ -128,8 +130,8 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.PlanParamSeq;
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanTripleIriSeq;
- import com.marklogic.client.type.PlanAggregateColSeq;
  import com.marklogic.client.type.PlanExprCol;
+ import com.marklogic.client.type.PlanAggregateColSeq;
  import com.marklogic.client.type.XsTimeParam;
  import com.marklogic.client.type.XsFloatExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
@@ -233,6 +235,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new XsExprImpl.XsBooleanCallImpl("op", "eq", new Object[]{ left, right });
     }
     @Override
+        public PlanSystemColumn fragmentIdCol(String column) {
+        return fragmentIdCol(xs.string(column)); 
+    }
+    @Override
+        public PlanSystemColumn fragmentIdCol(XsStringParam column) {
+        return new PlanSystemColumnCallImpl("op", "fragment-id-col", new Object[]{ column });
+    }
+    @Override
         public QualifiedPlan fromTriples(PlanTriplePattern... patterns) {
         return fromTriples(new PlanTriplePatternSeqListImpl(patterns)); 
     }
@@ -281,24 +291,32 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName });
     }
     @Override
-        public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumn... sysCols) {
-        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), (sysCols == null || sysCols.length == 0) ? null : new PlanColumnSeqListImpl(sysCols)); 
+        public ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols) {
+        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), sysCols); 
     }
     @Override
-        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols) {
         return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
     }
     @Override
-        public ViewPlan fromView(String schema, String view, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
+        public ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery) {
         return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery); 
     }
     @Override
-        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
+        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery) {
         return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
     }
     @Override
         public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
         return new XsExprImpl.XsBooleanCallImpl("op", "ge", new Object[]{ left, right });
+    }
+    @Override
+        public PlanSystemColumn graphCol(String column) {
+        return graphCol(xs.string(column)); 
+    }
+    @Override
+        public PlanSystemColumn graphCol(XsStringParam column) {
+        return new PlanSystemColumnCallImpl("op", "graph-col", new Object[]{ column });
     }
     @Override
         public PlanAggregateCol groupConcat(String name, String column) {
@@ -379,6 +397,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object) {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
+    }
+    @Override
+        public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumn... sysCols) {
+        return pattern(subject, predicate, object, (sysCols == null || sysCols.length == 0) ? null : new PlanSystemColumnSeqListImpl(sysCols)); 
+    }
+    @Override
+        public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumnSeq sysCols) {
+        return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object, sysCols });
     }
     @Override
         public PlanAggregateCol sample(String name, String column) {
@@ -465,13 +491,13 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
     }
     @Override
-    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumn... sysCols) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols) {
         return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
             literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols
             });
     }
     @Override
-    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
         return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
             literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery
             });
@@ -819,6 +845,16 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
  static class PlanSortKeySeqListImpl extends PlanListImpl implements PlanSortKeySeq {
         PlanSortKeySeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanSystemColumnCallImpl extends PlanBaseImpl implements PlanSystemColumn {
+        PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanSystemColumnSeqListImpl extends PlanListImpl implements PlanSystemColumnSeq {
+        PlanSystemColumnSeqListImpl(Object[] items) {
             super(items);
         }
     }
