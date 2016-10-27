@@ -2876,7 +2876,7 @@ public class JerseyServices implements RESTServices {
 		} else {
 			if (qdef instanceof StringQueryDefinition) {
 				String text = ((StringQueryDefinition) qdef).getCriteria();
-				logger.debug("Query uris with {}", text);
+				logger.debug("Query uris with string query \"{}\"", text);
 
 				if (text != null) {
 					params.add("q", text);
@@ -2884,7 +2884,7 @@ public class JerseyServices implements RESTServices {
 			} else if (qdef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) qdef).serialize();
 
-				logger.debug("Query uris with structure {}", structure);
+				logger.debug("Query uris with structured query {}", structure);
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
