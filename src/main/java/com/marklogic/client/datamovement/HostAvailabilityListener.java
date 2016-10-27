@@ -122,9 +122,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * This implements the BatchFailureListener interface
+   * This implements the WriteFailureListener interface
    *
-   * @param hostClient the host-specific client
+   * @param hostClient the database client
    * @param batch the batch of WriteEvents
    * @param throwable the exception
    */
@@ -143,10 +143,10 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * This implements the FailureListener interface
+   * This implements the QueryFailureListener interface
    *
    * @param client the host-specific client
-   * @param queryBatch the exception with information about the status of the job
+   * @param queryBatch the exception with information about the failed query attempt
    */
   public void processFailure(DatabaseClient client, QueryHostException queryBatch) {
     boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, client.getHost());
