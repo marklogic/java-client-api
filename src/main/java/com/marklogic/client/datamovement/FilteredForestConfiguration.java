@@ -28,7 +28,7 @@ public class FilteredForestConfiguration implements ForestConfiguration {
   Set<String> whiteList = new HashSet<>();
   Map<String,String> renames = new HashMap<>();
 
-  FilteredForestConfiguration(ForestConfiguration forestConfig) {
+  public FilteredForestConfiguration(ForestConfiguration forestConfig) {
     this.wrappedForestConfig = forestConfig;
   }
 
