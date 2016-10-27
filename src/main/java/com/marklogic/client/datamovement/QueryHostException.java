@@ -16,7 +16,6 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.io.Format;
-import com.marklogic.client.query.QueryDefinition;
 
 public class QueryHostException extends Exception implements QueryEvent {
   private QueryEvent queryEvent;
@@ -27,9 +26,9 @@ public class QueryHostException extends Exception implements QueryEvent {
   }
 
   @Override
-  public QueryDefinition getQuery() {
+  public QueryBatcher getBatcher() {
     if ( queryEvent == null ) return null;
-    return queryEvent.getQuery();
+    return queryEvent.getBatcher();
   }
 
   @Override

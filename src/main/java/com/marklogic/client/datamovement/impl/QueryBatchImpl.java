@@ -21,15 +21,26 @@ import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatch;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.query.QueryDefinition;
 
 public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
-  private QueryDefinition query;
+  private QueryBatcher batcher;
   private long jobResultsSoFar;
   private long forestBatchNumber;
   private long forestResultsSoFar;
   private Forest forest;
   private long serverTimestamp;
+
+  @Override
+  public QueryBatcher getBatcher() {
+    return batcher;
+  }
+
+  public QueryBatchImpl withBatcher(QueryBatcher batcher) {
+    this.batcher = batcher;
+    return this;
+  }
 
   @Override
   public QueryBatchImpl withItems(String[] items) {
@@ -52,16 +63,6 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   @Override
   public QueryBatchImpl withJobTicket(JobTicket jobTicket) {
     super.withJobTicket(jobTicket);
-    return this;
-  }
-
-  @Override
-  public QueryDefinition getQuery() {
-    return query;
-  }
-
-  public QueryBatchImpl withQuery(QueryDefinition query) {
-    this.query = query;
     return this;
   }
 

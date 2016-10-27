@@ -40,7 +40,6 @@ import java.util.concurrent.TimeUnit;
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
   private static Logger logger = LoggerFactory.getLogger(HostAvailabilityListener.class);
   private DataMovementManager moveMgr;
-  private Batcher batcher;
   private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
@@ -56,11 +55,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
    * @param batcher the WriteBatcher or QueryBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
    */
-  public HostAvailabilityListener(DataMovementManager moveMgr, Batcher batcher) {
+  public HostAvailabilityListener(DataMovementManager moveMgr) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
-    if (batcher == null) throw new IllegalArgumentException("batcher must not be null");
     this.moveMgr = moveMgr;
-    this.batcher = batcher;
   }
 
   /** If a host becomes unavailable (NoHttpResponseException, SocketException, SSLException,
@@ -132,10 +129,16 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @param throwable the exception
    */
   public void processFailure(DatabaseClient hostClient, WriteBatch batch, Throwable throwable) {
-    boolean isHostUnavailableException = processException(throwable, hostClient.getHost());
+    boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, hostClient.getHost());
     if ( isHostUnavailableException == true ) {
-      // TODO: resubmit the batch
-      //batch.getBatcher().retry(batch);
+      try {
+        logger.warn("Retrying failed batch: {}, results so far: {}, uris: {}",
+          batch.getJobBatchNumber(), batch.getJobWritesSoFar(),
+          Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList());
+        batch.getBatcher().retry(batch);
+      } catch (RuntimeException e) {
+        logger.error("Exception during retry", e);
+      }
     }
   }
 
@@ -146,14 +149,20 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @param queryBatch the exception with information about the status of the job
    */
   public void processFailure(DatabaseClient client, QueryHostException queryBatch) {
-    boolean isHostUnavailableException = processException(queryBatch, client.getHost());
+    boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, client.getHost());
     if ( isHostUnavailableException == true ) {
-      // TODO: resubmit the batch
-      //batch.getBatcher().retry(queryBatch);
+      try {
+        logger.warn("Retrying failed batch: {}, results so far: {}, forest: {}, forestBatch: {}, forest results so far: {}",
+          queryBatch.getJobBatchNumber(), queryBatch.getJobResultsSoFar(), queryBatch.getForest().getForestName(),
+          queryBatch.getForestBatchNumber(), queryBatch.getForestResultsSoFar());
+        queryBatch.getBatcher().retry(queryBatch);
+      } catch (RuntimeException e) {
+        logger.error("Exception during retry", e);
+      }
     }
   }
 
-  private boolean processException(Throwable throwable, String host) {
+  private boolean processException(Batcher batcher, Throwable throwable, String host) {
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
     boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());

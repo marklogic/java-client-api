@@ -16,12 +16,12 @@
 package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.io.Format;
-import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.datamovement.Forest;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryEvent;
 
 public class QueryEventImpl implements QueryEvent {
-  QueryDefinition query;
+  QueryBatcher batcher;
   long jobBatchNumber;
   long jobResultsSoFar;
   long forestBatchNumber;
@@ -29,10 +29,10 @@ public class QueryEventImpl implements QueryEvent {
   Forest forest;
   long serverTimestamp;
 
-  public QueryEventImpl(QueryDefinition query, long jobBatchNumber, long jobResultsSoFar,
+  public QueryEventImpl(QueryBatcher batcher, long jobBatchNumber, long jobResultsSoFar,
     long forestBatchNumber, long forestResultsSoFar, Forest forest, long serverTimestamp)
   {
-    this.query = query;
+    this.batcher = batcher;
     this.jobBatchNumber = jobBatchNumber;
     this.jobResultsSoFar = jobResultsSoFar;
     this.forestBatchNumber = forestBatchNumber;
@@ -42,8 +42,8 @@ public class QueryEventImpl implements QueryEvent {
   }
 
   @Override
-  public QueryDefinition getQuery() {
-    return query;
+  public QueryBatcher getBatcher() {
+    return batcher;
   }
 
   @Override

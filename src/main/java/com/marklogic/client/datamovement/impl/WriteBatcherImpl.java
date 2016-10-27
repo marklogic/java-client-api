@@ -325,10 +325,14 @@ public class WriteBatcherImpl
 
   private BatchWriteSet newBatchWriteSet(boolean forceNewTransaction) {
     long batchNum = batchNumber.incrementAndGet();
+    return newBatchWriteSet(forceNewTransaction, batchNum);
+  }
+
+  private BatchWriteSet newBatchWriteSet(boolean forceNewTransaction, long batchNum) {
     int hostToUse = (int) (batchNum % hostInfos.length);
     HostInfo host = hostInfos[hostToUse];
     DatabaseClient hostClient = host.client;
-    BatchWriteSet batchWriteSet = new BatchWriteSet( hostClient.newDocumentManager().newWriteSet(),
+    BatchWriteSet batchWriteSet = new BatchWriteSet(this, hostClient.newDocumentManager().newWriteSet(),
       hostClient, getTransform(), getTemporalCollection());
     batchWriteSet.setBatchNumber(batchNum);
     if ( usingTransactions ) {
@@ -445,6 +449,18 @@ public class WriteBatcherImpl
   public WriteBatcher onBatchFailure(WriteFailureListener listener) {
     failureListeners.add(listener);
     return this;
+  }
+
+  @Override
+  public void retry(WriteBatch batch) {
+    boolean forceNewTransaction = true;
+    BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());
+    writeSet.setItemsSoFar(itemsSoFar.get());
+    for ( WriteEvent doc : batch.getItems() ) {
+      writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+    }
+    BatchWriter runnable = new BatchWriter(writeSet);
+    runnable.run();
   }
 
   @Override

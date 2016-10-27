@@ -21,11 +21,23 @@ import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatch;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
 
 public class WriteBatchImpl extends BatchImpl<WriteEvent> implements WriteBatch {
+  private WriteBatcher batcher;
   private long bytesMoved;
   private long jobWritesSoFar;
+
+  @Override
+  public WriteBatcher getBatcher() {
+    return batcher;
+  }
+
+  public WriteBatchImpl withBatcher(WriteBatcher batcher) {
+    this.batcher = batcher;
+    return this;
+  }
 
   @Override
   public WriteBatchImpl withItems(WriteEvent[] items) {
@@ -51,8 +63,6 @@ public class WriteBatchImpl extends BatchImpl<WriteEvent> implements WriteBatch 
     return this;
   }
 
-
-  @Override
   public long getBytesMoved() {
     return bytesMoved;
   }

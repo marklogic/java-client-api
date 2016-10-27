@@ -124,6 +124,14 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher onQueryFailure(QueryFailureListener listener);
 
   /**
+   * Retry in the same thread to query a batch that failed. This method will
+   * throw an Exception if it fails again, so it can be wrapped in a try-catch
+   * block.
+   * @param queryEvent the information about the batch that failed
+   */
+  public void retry(QueryEvent queryEvent);
+
+  /**
    * Get the array of QueryBatchListener instances registered via
    * onBatchSuccess.
    *
@@ -149,7 +157,7 @@ public interface QueryBatcher extends Batcher {
    * @param listeners the QueryBatchListener instances this
    *   batcher should use
    */
-  void setBatchSuccessListeners(QueryBatchListener... listeners);
+  void setUrisReadyListeners(QueryBatchListener... listeners);
 
   /**
    * Remove any existing QueryFailureListener instances
@@ -159,7 +167,7 @@ public interface QueryBatcher extends Batcher {
    * @param listeners the QueryFailureListener instances this
    *   batcher should use
    */
-  void setBatchFailureListeners(QueryFailureListener... listeners);
+  void setQueryFailureListeners(QueryFailureListener... listeners);
 
   /**
    * Specifies that matching uris should be retrieved as they were when this

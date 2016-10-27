@@ -19,7 +19,7 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.query.QueryDefinition;
 
 public interface QueryEvent {
-  QueryDefinition getQuery();
+  QueryBatcher getBatcher();
   long getJobBatchNumber();
   long getJobResultsSoFar();
   long getForestBatchNumber();

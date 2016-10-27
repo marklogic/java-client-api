@@ -21,10 +21,12 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.datamovement.WriteBatch;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.impl.WriteBatcherImpl.TransactionInfo;
 
 public class BatchWriteSet {
+  private WriteBatcher batcher;
   private DocumentWriteSet writeSet;
   private long batchNumber;
   private long itemsSoFar;
@@ -36,9 +38,10 @@ public class BatchWriteSet {
   private Consumer<Throwable> onFailure;
   private Runnable onBeforeWrite;
 
-  public BatchWriteSet(DocumentWriteSet writeSet, DatabaseClient client,
+  public BatchWriteSet(WriteBatcher batcher, DocumentWriteSet writeSet, DatabaseClient client,
     ServerTransform transform, String temporalCollection)
   {
+    this.batcher = batcher;
     this.writeSet = writeSet;
     this.client = client;
     this.transform = transform;
@@ -123,6 +126,7 @@ public class BatchWriteSet {
 
   public WriteBatch getBatchOfWriteEvents() {
     WriteBatchImpl batch = new WriteBatchImpl()
+      .withBatcher(batcher)
       .withJobBatchNumber(batchNumber)
       .withJobWritesSoFar(itemsSoFar);
     WriteEvent[] writeEvents = getWriteSet().stream()

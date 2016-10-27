@@ -145,6 +145,14 @@ public interface WriteBatcher extends Batcher {
    */
   WriteBatcher onBatchFailure(WriteFailureListener listener);
 
+   /**
+    * Retry in the same thread to send a batch that failed. This method will
+    * throw an Exception if it fails again, so it can be wrapped in a try-catch
+    * block.
+    * @param queryEvent the information about the batch that failed
+    */
+  public void retry(WriteBatch queryEvent);
+
   /*
   public WriteBatcher withTransactionSize(int transactionSize);
   public int getTransactionSize();

@@ -104,14 +104,14 @@ public class DataMovementManagerImpl implements DataMovementManager {
   public WriteBatcher newWriteBatcher() {
     verifyClientIsSet("newWriteBatcher");
     WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
-    batcher.onBatchFailure(new HostAvailabilityListener(this, batcher));
+    batcher.onBatchFailure(new HostAvailabilityListener(this));
     return batcher;
   }
 
   public QueryBatcher newQueryBatcher(QueryDefinition query) {
     verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
-    batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
+    batcher.onQueryFailure(new HostAvailabilityListener(this));
     return batcher;
   }
 
@@ -119,7 +119,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
-    batcher.onQueryFailure(new HostAvailabilityListener(this, batcher));
+    batcher.onQueryFailure(new HostAvailabilityListener(this));
     return batcher;
   }
 

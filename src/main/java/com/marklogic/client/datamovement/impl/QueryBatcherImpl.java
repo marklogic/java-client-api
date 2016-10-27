@@ -23,6 +23,7 @@ import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryHostException;
+import com.marklogic.client.datamovement.QueryEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +98,32 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public QueryBatchListener[]               getQuerySuccessListeners() {
+  public void retry(QueryEvent queryEvent) {
+    boolean callFailListeners = false;
+    Forest retryForest = null;
+    for ( Forest forest : getForestConfig().listForests() ) {
+      if ( forest.equals(queryEvent.getForest()) ) {
+        // while forest and queryEvent.getForest() have equivalent forest id,
+        // we expect forest to have the currently available host info
+        retryForest = forest;
+        break;
+      }
+    }
+    if ( retryForest == null ) {
+      throw new IllegalStateException("Forest for queryEvent (" + queryEvent.getForest().getForestName() +
+        ") is not in current getForestConfig()");
+    }
+    logger.trace("retryForest: {}, forestBatchNum: {}, forestResultsSoFar: {}",
+      retryForest.getForestName(), queryEvent.getForestBatchNumber(), queryEvent.getForestResultsSoFar());
+    QueryTask runnable = new QueryTask(moveMgr, this, retryForest, query,
+      queryEvent.getForestBatchNumber(), queryEvent.getForestResultsSoFar() + 1,
+      queryEvent.getJobBatchNumber(), callFailListeners);
+    runnable.run();
+  }
+
+
+  @Override
+  public QueryBatchListener[]   getQuerySuccessListeners() {
     return urisReadyListeners.toArray(new QueryBatchListener[urisReadyListeners.size()]);
   }
 
@@ -107,7 +133,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public void setBatchSuccessListeners(QueryBatchListener... listeners) {
+  public void setUrisReadyListeners(QueryBatchListener... listeners) {
     requireNotStarted();
     urisReadyListeners.clear();
     if ( listeners != null ) {
@@ -118,7 +144,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public void setBatchFailureListeners(QueryFailureListener... listeners) {
+  public void setQueryFailureListeners(QueryFailureListener... listeners) {
     requireNotStarted();
     failureListeners.clear();
     if ( listeners != null ) {
@@ -309,7 +335,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     for ( Forest forest : addedForests ) {
         // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
         // or we wouldn't be here because we wouldn't have a synchronized lock on this
-        threadPool.execute(new QueryTask(moveMgr, forest, query, 1, 1));
+        threadPool.execute(new QueryTask(moveMgr, this, forest, query, 1, 1));
     }
     if ( restartedForests.size() > 0 ) {
       logger.warn("re-adding jobs related to forests [{}] to the queue", getForestNames(restartedForests));
@@ -338,7 +364,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private synchronized void startQuerying() {
     boolean consistentSnapshotFirstQueryHasRun = false;
     for ( Forest forest : getForestConfig().listForests() ) {
-      QueryTask runnable = new QueryTask(moveMgr, forest, query, 1, 1);
+      QueryTask runnable = new QueryTask(moveMgr, this, forest, query, 1, 1);
       if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
         // let's run this first time in-line so we'll have the serverTimestamp set
         // before we launch all the parallel threads
@@ -352,27 +378,52 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   private class QueryTask implements Runnable {
     private DataMovementManager moveMgr;
+    private QueryBatcher batcher;
     private Forest forest;
     private QueryDefinition query;
     private long forestBatchNum;
     private long start;
+    private long retryBatchNumber;
+    private boolean callFailListeners;
 
-    QueryTask(DataMovementManager moveMgr, Forest forest, QueryDefinition query, long forestBatchNum, long start) {
+    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+      QueryDefinition query, long forestBatchNum, long start)
+    {
+      this(moveMgr, batcher, forest, query, forestBatchNum, start, -1, true);
+    }
+
+    QueryTask(DataMovementManager moveMgr, QueryBatcher batcher, Forest forest,
+      QueryDefinition query, long forestBatchNum, long start, long retryBatchNumber, boolean callFailListeners)
+    {
       this.moveMgr = moveMgr;
+      this.batcher = batcher;
       this.forest = forest;
       this.query = query;
       this.forestBatchNum = forestBatchNum;
       this.start = start;
+      this.retryBatchNumber = retryBatchNumber;
+      this.callFailListeners = callFailListeners;
     }
 
     public void run() {
       AtomicBoolean isDone = forestIsDone.get(forest);
       if ( isDone.get() == true ) return;
+      if ( stopped.get() == true ) return;
       DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+      Calendar queryStart = Calendar.getInstance();
+      QueryBatchImpl batch = new QueryBatchImpl()
+        .withBatcher(batcher)
+        .withTimestamp(queryStart)
+        .withForestBatchNumber(forestBatchNum)
+        .withForest(forest);
+      if ( retryBatchNumber != -1 ) {
+        batch = batch.withJobBatchNumber(retryBatchNumber);
+      } else {
+        batch = batch.withJobBatchNumber(batchNumber.incrementAndGet());
+      }
       try {
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
         queryMgr.setPageLength(getBatchSize());
-        Calendar queryStart = Calendar.getInstance();
         List<String> uris = new ArrayList<>();
         UrisHandle handle = new UrisHandle();
         if ( consistentSnapshot == true && serverTimestamp.get() > -1 ) {
@@ -395,39 +446,41 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             isDone.set(true);
             shutdownIfAllForestsAreDone();
           }
-          QueryBatch batch = new QueryBatchImpl()
+          batch = batch
             .withItems(uris.toArray(new String[uris.size()]))
-            .withTimestamp(queryStart)
             .withServerTimestamp(serverTimestamp.get())
-            .withJobBatchNumber(batchNumber.incrementAndGet())
             .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
-            .withForestBatchNumber(forestBatchNum)
-            .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()))
-            .withForest(forest);
+            .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
               batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
           // let's handle errors from listeners specially
-          try {
-            for (QueryBatchListener listener : urisReadyListeners) {
+          for (QueryBatchListener listener : urisReadyListeners) {
+            try {
               listener.processEvent(client, batch);
+            } catch (Exception e) {
+              logger.error("Exception thrown by an onUrisReady listener", e);
             }
-          } catch (Throwable t) {
-            for ( QueryFailureListener listener : failureListeners ) {
-              listener.processFailure(client, new QueryHostException(null, t));
-            }
-            logger.warn("Error querying: {}", t.toString());
           }
         }
       } catch (ResourceNotFoundException e) {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
         isDone.set(true);
         shutdownIfAllForestsAreDone();
-      } catch (Throwable t) {
-        for ( QueryFailureListener listener : failureListeners ) {
-          listener.processFailure(client, new QueryHostException(null, t));
+      } catch (RuntimeException e) {
+        if ( callFailListeners == true ) {
+          batch = batch
+            .withJobResultsSoFar(resultsSoFar.get())
+            .withForestResultsSoFar(forestResults.get(forest).get());
+          for ( QueryFailureListener listener : failureListeners ) {
+            try {
+              listener.processFailure(client, new QueryHostException(batch, e));
+            } catch (Exception e2) {
+              logger.error("Exception thrown by an onQueryFailure listener", e2);
+            }
+          }
+        } else {
+          throw e;
         }
-        // any error outside listeners is grounds for stopping this job
-        isDone.set(true);
         shutdownIfAllForestsAreDone();
       }
     }
@@ -441,7 +494,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // we made it to the end, so don't launch anymore tasks
       if ( isDone.get() == true ) return;
       long nextStart = start + getBatchSize();
-      threadPool.execute(new QueryTask(moveMgr, forest, query, forestBatchNum + 1, nextStart));
+      threadPool.execute(new QueryTask(moveMgr, batcher, forest, query, forestBatchNum + 1, nextStart));
     }
   };
 
@@ -458,6 +511,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private void startIterating() {
     final AtomicLong batchNumber = new AtomicLong(0);
     final AtomicLong resultsSoFar = new AtomicLong(0);
+    final QueryBatcher batcher = this;
     List<String> uriQueue = new ArrayList<>(getBatchSize());
     while ( iterator.hasNext() ) {
       uriQueue.add(iterator.next());
@@ -472,20 +526,29 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             List<DatabaseClient> currentClientList = clientList.get();
             int clientIndex = (int) (currentBatchNumber % currentClientList.size());
             DatabaseClient client = currentClientList.get(clientIndex);
+            QueryBatchImpl batch = new QueryBatchImpl()
+              .withBatcher(batcher)
+              .withTimestamp(Calendar.getInstance())
+              .withJobBatchNumber(currentBatchNumber)
+              .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
             try {
-              QueryBatch batch = new QueryBatchImpl()
-                  .withItems(uris.toArray(new String[uris.size()]))
-                  .withTimestamp(Calendar.getInstance())
-                  .withJobBatchNumber(currentBatchNumber)
-                  .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
+              batch = batch.withItems(uris.toArray(new String[uris.size()]));
               logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
                   batch.getJobBatchNumber(), batch.getJobResultsSoFar());
               for (QueryBatchListener listener : urisReadyListeners) {
-                listener.processEvent(client, batch);
+                try {
+                  listener.processEvent(client, batch);
+                } catch (Exception e) {
+                  logger.error("Exception thrown by an onUrisReady listener", e);
+                }
               }
             } catch (Throwable t) {
               for ( QueryFailureListener listener : failureListeners ) {
-                listener.processFailure(client, new QueryHostException(null, t));
+                try {
+                  listener.processFailure(client, new QueryHostException(batch, t));
+                } catch (Exception e) {
+                  logger.error("Exception thrown by an onQueryFailure listener", e);
+                }
               }
               logger.warn("Error iterating on batch with uris [{}]: {}", uris, t.toString());
             }

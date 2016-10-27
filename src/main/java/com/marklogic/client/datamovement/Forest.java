@@ -25,10 +25,10 @@ public interface Forest {
   boolean isUpdateable();
 
   public default String getPreferredHost() {
-    if ( getOpenReplicaHost() != null ) {
-      return getOpenReplicaHost();
-    } else if ( getAlternateHost() != null ) {
+    if ( getAlternateHost() != null ) {
       return getAlternateHost();
+    } else if ( getOpenReplicaHost() != null ) {
+      return getOpenReplicaHost();
     } else {
       return getHost();
     }
