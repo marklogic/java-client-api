@@ -67,11 +67,8 @@ public class TestXMLEventReaderHandle extends BasicJavaClientREST {
 		// read the document
 		XMLEventReaderHandle readHandle = readDocumentUsingXMLEventReaderHandle(client, uri + filename, "XML");
 
-		// access the document content
-		XMLEventReader fileRead = readHandle.get();
-
-		String readContent = convertXMLEventReaderToString(fileRead);
-		String readContentCrop = readContent.substring(0, readContent.length()-11);  
+		// access the document content		
+		String readContentCrop = readHandle.toString();  
 		System.out.println(readContentCrop);
 
 		// get xml document for expected result
@@ -93,10 +90,7 @@ public class TestXMLEventReaderHandle extends BasicJavaClientREST {
 		XMLEventReaderHandle updateHandle = readDocumentUsingXMLEventReaderHandle(client, uri + filename, "XML");
 
 		// access the document content
-		XMLEventReader fileReadUpdate = updateHandle.get();
-
-		String readContentUpdate = convertXMLEventReaderToString(fileReadUpdate);
-		String readContentUpdateCrop = readContentUpdate.substring(0,readContentUpdate.length()-11);
+		String readContentUpdateCrop = updateHandle.toString();
 		// get xml document for expected result
 		Document expectedDocUpdate = expectedXMLDocument(updateFilename);
 

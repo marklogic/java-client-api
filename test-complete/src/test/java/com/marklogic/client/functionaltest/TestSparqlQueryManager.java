@@ -2206,7 +2206,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
 			
 			// Should have 0 nodes returned.
-			assertEquals("No result should have returned from testNamedExecuteSelectQuery method on read client", 0, jsonBindingsNodes.size());
+			assertEquals("No result should have returned from testExecuteUpdateInTransactions method on read client", 0, jsonBindingsNodes.size());
 			jsonResults = null;
 			jsonBindingsNodes = null;
 			
@@ -2216,7 +2216,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
 			// Should have 1 nodes returned.
-			assertEquals("Result should have been returned from testNamedExecuteSelectQuery method ", 1, jsonBindingsNodes.size());
+			assertEquals("Result should have been returned from testExecuteUpdateInTransactions method ", 1, jsonBindingsNodes.size());
 			jsonResults = null;
 			jsonBindingsNodes = null;
 			
@@ -2225,7 +2225,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
 			// Should have 0 nodes returned.
-			assertEquals("No result should have returned from testNamedExecuteSelectQuery method ", 0, jsonBindingsNodes.size());
+			assertEquals("No result should have returned from testExecuteUpdateInTransactions method ", 0, jsonBindingsNodes.size());
 			jsonResults = null;
 			jsonBindingsNodes = null;
 						
@@ -2237,7 +2237,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
 			// Should have 0 nodes returned.
-			assertEquals("No result should have returned from testNamedExecuteSelectQuery method ", 0, jsonBindingsNodes.size());
+			assertEquals("No result should have returned from testExecuteUpdateInTransactions method ", 0, jsonBindingsNodes.size());
 			jsonResults = null;
 			jsonBindingsNodes = null;
 			tWrite = writeclient.openTransaction();
@@ -2253,7 +2253,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			 jsonBindingsNodes = jsonResults.path("results").path("bindings");
 			
 			// Should have 1 nodes returned.
-			assertEquals("Result should have returned from testNamedExecuteSelectQuery method after commit for read client", 1, jsonBindingsNodes.size());
+			assertEquals("Result should have returned from testExecuteUpdateInTransactions method after commit for read client", 1, jsonBindingsNodes.size());
 			assertEquals("Value Data from read client is incorrect", "Bob",jsonBindingsNodes.get(0).path("s").path("value").asText());
 			assertEquals("Value Data from read client is incorrect", "LivesIn",jsonBindingsNodes.get(0).path("p").path("value").asText());
 			assertEquals("Value Data from read client is incorrect", "London",jsonBindingsNodes.get(0).path("o").path("value").asText());
@@ -2266,7 +2266,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 			jsonBindingsNodes = jsonResults.path("results").path("bindings");
 
 			// Should have 1 nodes returned.
-			assertEquals("Result should have been returned from testNamedExecuteSelectQuery method after commit for write client", 1, jsonBindingsNodes.size());
+			assertEquals("Result should have been returned from testExecuteUpdateInTransactions method after commit for write client", 1, jsonBindingsNodes.size());
 			assertEquals("Value Data from read client is incorrect", "Bob",jsonBindingsNodes.get(0).path("s").path("value").asText());
 			assertEquals("Value Data from read client is incorrect", "LivesIn",jsonBindingsNodes.get(0).path("p").path("value").asText());
 			assertEquals("Value Data from read client is incorrect", "London",jsonBindingsNodes.get(0).path("o").path("value").asText());
@@ -2286,8 +2286,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 				exception = e.toString();
 			}
 			System.out.println(exception);
-			assertTrue("Test testExecuteEmptySelectQuery method exception is not thrown", exception.contains(expectedException));
-			assertTrue("Test testExecuteEmptySelectQuery method exception is not thrown", exception.contains(localMessage));
+			assertTrue("Test testExecuteUpdateInTransactions method exception is not thrown", exception.contains(expectedException));
+			assertTrue("Test testExecuteUpdateInTransactions method exception is not thrown", exception.contains(localMessage));
 		}
 		catch(Exception ex) {
 			tWrite=null;
