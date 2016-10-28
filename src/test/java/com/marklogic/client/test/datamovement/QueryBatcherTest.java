@@ -59,6 +59,7 @@ public class QueryBatcherTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     Common.connect();
+    //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     moveMgr.withClient(Common.client);
     setup();
@@ -75,10 +76,6 @@ public class QueryBatcherTest {
   }
 
   public static void setup() throws Exception {
-
-    assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
-      null, Common.client.newDocumentManager().exists(uri1) );
-
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
@@ -97,9 +94,9 @@ public class QueryBatcherTest {
   public void testStructuredQuery() throws Exception {
     QueryDefinition query = new StructuredQueryBuilder().collection(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-1", new String[] {uri2});
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
-    matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 1, 2);
   }
 
@@ -108,9 +105,9 @@ public class QueryBatcherTest {
     QueryDefinition query = new StructuredQueryBuilder().and();
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-1", new String[] {uri2});
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
-    matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 2, 1);
   }
 
@@ -120,9 +117,9 @@ public class QueryBatcherTest {
     query.setDirectory("/QueryBatcherTest");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-1", new String[] {uri2});
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
-    matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 3, 2);
   }
 
@@ -131,9 +128,9 @@ public class QueryBatcherTest {
     QueryDefinition query = Common.client.newQueryManager().newStringDefinition().withCriteria("John");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-1", new String[] {});
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
-    matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-3", new String[] {});
     runQueryBatcher(query, matchesByForest, 99, 17);
   }
 
@@ -152,9 +149,9 @@ public class QueryBatcherTest {
     QueryDefinition query = Common.client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-1", new String[] {uri2});
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
-    matchesByForest.put("java-unittest-3", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 17, 99);
   }
 
@@ -164,6 +161,7 @@ public class QueryBatcherTest {
     StringHandle qbe = new StringHandle(
       "{ dept: \"HR\" }").withFormat(JSON);
     QueryDefinition query = Common.client.newQueryManager().newRawQueryByExampleDefinition(qbe);
+    query.setCollections(qhbTestCollection);
     AtomicReference<Throwable> error = new AtomicReference<>();
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
       .onQueryFailure(
@@ -244,11 +242,11 @@ public class QueryBatcherTest {
     for ( String forest : matchesByForest.keySet() ) {
       String[] expected = matchesByForest.get(forest);
       for ( String uri : expected ) {
-        if ( ! results.get(forest).contains(uri) ) {
+        if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
           for ( String resultsForest : results.keySet() ) {
             logger.error("Results found for forest {}: {}", resultsForest, results.get(resultsForest));
           }
-          fail("Missing uri=[" + uri + "]");
+          fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
         }
       }
     }
