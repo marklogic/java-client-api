@@ -562,7 +562,29 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   public void stop() {
     stopped.set(true);
-    threadPool.shutdownNow();
+    if ( threadPool != null ) threadPool.shutdownNow();
+    if ( query != null ) {
+      for ( AtomicBoolean isDone : forestIsDone.values() ) {
+        // if even one isn't done, log a warning
+        if ( isDone.get() == false ) {
+          logger.warn("QueryBatcher instance \"{}\" stopped before all results were retrieved",
+            getJobName());
+          break;
+        }
+      }
+    } else {
+      if ( iterator != null && iterator.hasNext() ) {
+        logger.warn("QueryBatcher instance \"{}\" stopped before all results were processed",
+          getJobName());
+      }
+    }
+  }
+
+  protected void finalize() {
+    if ( stopped.get() == false ) {
+      logger.warn("QueryBatcher instance \"{}\" was never cleanly stopped.  You should call dataMovementManager.stopJob.",
+        getJobName());
+    }
   }
 
   private class QueryThreadPoolExecutor extends ThreadPoolExecutor {
