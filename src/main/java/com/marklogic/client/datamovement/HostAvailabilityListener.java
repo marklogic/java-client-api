@@ -53,7 +53,6 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
 
   /**
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
-   * @param batcher the WriteBatcher or QueryBatcher instance this will listen to (used to call withForestConfig to black-list an unavailable host)
    */
   public HostAvailabilityListener(DataMovementManager moveMgr) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
