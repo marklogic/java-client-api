@@ -134,7 +134,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       try {
         logger.warn("Retrying failed batch: {}, results so far: {}, uris: {}",
           batch.getJobBatchNumber(), batch.getJobWritesSoFar(),
-          Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList());
+          Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList()));
         batch.getBatcher().retry(batch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
