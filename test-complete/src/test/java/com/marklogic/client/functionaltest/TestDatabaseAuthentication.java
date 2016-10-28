@@ -70,43 +70,29 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 		System.out.println("Running clear script");
 	}
 
+	 // Should throw exceptions when none specified. 
 	 @Test 
 	 public void testAuthenticationNone() throws KeyManagementException, NoSuchAlgorithmException, IOException
 	 {
+		 System.out.println("Running testAuthenticationNone");
+		 DatabaseClient client = null;
 		 if (!IsSecurityEnabled()) {
 		 setAuthentication("application-level",restServerName);
 		 setDefaultUser("rest-admin",restServerName);
-
-		 System.out.println("Running testAuthenticationNone");
-
-		 String filename = "text-original.txt";
-
-		 // connect the client		 
-		 DatabaseClient client = DatabaseClientFactory.newClient(hostName, restPort);
-
-		 // write doc
-		 writeDocumentUsingStringHandle(client, filename, "/write-text-doc-app-level/", "Text");
-
-		 // read docs
-		 InputStreamHandle contentHandle = readDocumentUsingInputStreamHandle(client, "/write-text-doc-app-level/" + filename, "Text");
-
-		 // get the contents
-		 InputStream fileRead = contentHandle.get();
-
-		 String readContent = convertInputStreamToString(fileRead);
-
-		 String expectedContent = "hello world, welcome to java API";
-
-		 assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
-
-		 // release client
-		 client.release();
-
+		 // connect the client
+		 StringBuilder str = new StringBuilder();
+		 try {
+			 client = DatabaseClientFactory.newClient(hostName, restPort);	 
+		 }
+		 catch(Exception ex) {
+			 str.append(ex.getMessage());
+		 }
+		 assertEquals("Write Text difference", "makeSecurityContext should only be called with BASIC or DIGEST Authentication",
+				       str.toString().trim());
 		 setAuthentication("digest",restServerName);
 		 setDefaultUser("nobody",restServerName);
 		 }
 	 }
-		
 	
     @Test
     public void testAuthenticationBasic() throws KeyManagementException, NoSuchAlgorithmException, IOException
@@ -156,4 +142,3 @@ public class TestDatabaseAuthentication extends BasicJavaClientREST {
 		tearDownJavaRESTServer(dbName, fNames, restServerName);	
 	}
 }
-
