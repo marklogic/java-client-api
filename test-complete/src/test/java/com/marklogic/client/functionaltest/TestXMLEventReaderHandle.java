@@ -102,9 +102,6 @@ public class TestXMLEventReaderHandle extends BasicJavaClientREST {
 		// delete the document
 		deleteDocument(client, uri + filename, "XML");
 
-		// read the deleted document
-		//assertFalse("Document is not deleted", isDocumentExist(client, "/write-xml-readerhandle/" + filename, "XML"));
-
 		String exception = "";
 		try
 		{
