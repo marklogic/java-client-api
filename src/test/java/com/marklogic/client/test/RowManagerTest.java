@@ -508,7 +508,9 @@ public class RowManagerTest {
 								p.xmlText(p.col("city"))
 								)
 							)
-						 )));
+						 )),
+					p.as("jxpath", p.xpath("node", "/p2")),
+					p.as("xxpath", p.xpath("node", "/e/text()")));
 
 		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
@@ -522,6 +524,9 @@ public class RowManagerTest {
 		JsonNode jsonRoot = jsonNode.get();
         assertEquals("constructed JSON property p1", "s", jsonRoot.findValue("p1").asText());
         assertEquals("constructed JSON property p2", "New York", jsonRoot.findValue("p2").get(0).asText());
+		assertTrue("no JSON XPath value", recordRow.containsKey("jxpath"));
+        assertEquals("wrong JSON XPathValue", "New York", recordRow.getContentAs("jxpath", String.class));
+		assertEquals("wrong XML XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("xxpath"));
 
         assertTrue("no XML node row", recordRowItr.hasNext());
 		recordRow = recordRowItr.next();
@@ -533,6 +538,9 @@ public class RowManagerTest {
         assertEquals("constructed XML element name", "e", xmlRoot.getLocalName());
         assertEquals("constructed XML attribute", "s", xmlRoot.getAttribute("a"));
         assertEquals("constructed XML text", "Seattle", xmlRoot.getTextContent());
+		assertEquals("wrong JSON XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("jxpath"));
+		assertTrue("no XML XPath value", recordRow.containsKey("xxpath"));
+        assertEquals("wrong XML XPathValue", "Seattle", recordRow.getContentAs("xxpath", String.class));
 
 		assertFalse("expected one record row", recordRowItr.hasNext());
 
