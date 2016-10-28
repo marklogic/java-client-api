@@ -64,6 +64,7 @@ import com.marklogic.client.type.NullNodeExpr;
 import com.marklogic.client.type.NumberNodeExpr;
 import com.marklogic.client.type.ObjectNodeExpr;
 import com.marklogic.client.type.PINodeExpr;
+import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.TextNodeExpr;
 
 import com.marklogic.client.type.JsonPropertyExpr;
@@ -140,6 +141,15 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			throw new IllegalArgumentException("invalid value for elseExpr(): "+value.getClass().getName());
 		}
     	return new CaseElseImpl((BaseTypeImpl.BaseArgImpl) value);
+    }
+
+	@Override
+    public ItemSeqExpr xpath(String inCol, String path) {
+	       return xpath(col(inCol), xs.string(path)); 
+    }
+	@Override
+    public ItemSeqExpr xpath(PlanExprCol inCol, XsStringExpr path) {
+        return new BaseTypeImpl.ItemSeqCallImpl("op", "xpath", new Object[]{ inCol, path });
     }
 
 	@Override
@@ -482,7 +492,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			return arg;
 		}
     }
-
+	
     static interface JsonContentCallImpl extends JsonContentNodeExpr, BaseTypeImpl.BaseArgImpl {}
     static class JsonContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
     	JsonContentSeqListImpl(JsonContentNodeExpr[] items) {

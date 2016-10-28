@@ -348,6 +348,9 @@ public abstract class PlanBuilder {
     public abstract CaseExpr when(XsBooleanExpr condition, ItemSeqExpr value);
     public abstract CaseExpr elseExpr(ItemSeqExpr value);
 
+    public abstract ItemSeqExpr xpath(String inCol, String path);
+    public abstract ItemSeqExpr xpath(PlanExprCol inCol, XsStringExpr path);
+
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName);
     public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols);
