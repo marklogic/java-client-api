@@ -113,11 +113,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       throw new IllegalStateException("Forest for queryEvent (" + queryEvent.getForest().getForestName() +
         ") is not in current getForestConfig()");
     }
-    logger.trace("retryForest: {}, forestBatchNum: {}, forestResultsSoFar: {}",
-      retryForest.getForestName(), queryEvent.getForestBatchNumber(), queryEvent.getForestResultsSoFar());
+    // we're obviously not done with this forest
+    forestIsDone.get(retryForest).set(false);
+    long start = queryEvent.getForestResultsSoFar() + 1;
+    logger.trace("retryForest: {}, retryHost: {}, start: {}",
+      retryForest.getForestName(), retryForest.getPreferredHost(), start);
     QueryTask runnable = new QueryTask(moveMgr, this, retryForest, query,
-      queryEvent.getForestBatchNumber(), queryEvent.getForestResultsSoFar() + 1,
-      queryEvent.getJobBatchNumber(), callFailListeners);
+      queryEvent.getForestBatchNumber(), start, queryEvent.getJobBatchNumber(), callFailListeners);
     runnable.run();
   }
 
@@ -467,6 +469,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         isDone.set(true);
         shutdownIfAllForestsAreDone();
       } catch (RuntimeException e) {
+        // any error outside listeners is grounds for stopping queries to this forest
+        isDone.set(true);
         if ( callFailListeners == true ) {
           batch = batch
             .withJobResultsSoFar(resultsSoFar.get())
@@ -478,10 +482,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
+          shutdownIfAllForestsAreDone();
         } else {
           throw e;
         }
-        shutdownIfAllForestsAreDone();
       }
     }
 
