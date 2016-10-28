@@ -29,11 +29,11 @@ import com.marklogic.client.type.XsAnyAtomicTypeVal;
  */
 public interface RowRecord extends Map<String, Object> {
 	/**
-	 * Distinguishes an atomic value, a document or other content structure,
-	 * a uri, a blank node for a triple, or a null.
+	 * Distinguishes an atomic value, a content structure such as a document or other node,
+	 * and a null value.
 	 */
 	enum ColumnKind {
-        ATOMIC_VALUE, CONTENT, URI, BNODE, NULL;
+        ATOMIC_VALUE, CONTENT, NULL;
     }
 
 	/**
@@ -125,9 +125,6 @@ public interface RowRecord extends Map<String, Object> {
 	 * @return	an object of the class with the value of the data type
 	 */
 	<T extends XsAnyAtomicTypeVal> T getValueAs(String columnName,  Class<T> as);
-/* TODO:
-	<T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as);
-*/
 
     /**
      * Identifies the format where a column has a document or

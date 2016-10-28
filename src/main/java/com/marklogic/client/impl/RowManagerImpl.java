@@ -41,6 +41,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
 import com.marklogic.client.MarkLogicBindingException;
 import com.marklogic.client.MarkLogicIOException;
+import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.Plan;
@@ -105,12 +106,16 @@ public class RowManagerImpl
 
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as) {
-		return resultDocAs(plan, as, null);
+		return resultDocAs(plan, as, null, ColumnTypes.ROWS);
 	}
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction) {
+		return resultDocAs(plan, as, transaction, ColumnTypes.ROWS);
+	}
+	@Override
+	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation) {
 		ContentHandle<T> handle = handleFor(as); 
-	    if (resultDoc(plan, (StructureReadHandle) handle, transaction) == null) {
+	    if (resultDoc(plan, (StructureReadHandle) handle, transaction, typeLocation) == null) {
 	    	return null;
 	    }
 
@@ -118,10 +123,14 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle) {
-		return resultDoc(plan, resultsHandle, null);
+		return resultDoc(plan, resultsHandle, null, ColumnTypes.ROWS);
 	}
 	@Override
 	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
+		return resultDoc(plan, resultsHandle, transaction, ColumnTypes.ROWS);
+	}
+	@Override
+	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction, ColumnTypes typeLocation) {
 		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
@@ -131,6 +140,9 @@ public class RowManagerImpl
 		}
 
 		RequestParameters params = getParamBindings(requestPlan);
+		if (ColumnTypes.HEADER == typeLocation) {
+			params.add("column-types", "header");
+		}
 
 		return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
 	}
@@ -141,33 +153,41 @@ public class RowManagerImpl
 	}
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-		RESTServiceResultIterator iter = makeRequest(plan, "sparql-json", "reference", transaction);
+		RESTServiceResultIterator iter = makeRequest(plan, "json", "reference", transaction, ColumnTypes.ROWS);
 
-		return new RowSetRecord("sparql-json", iter, getHandleRegistry());
+		return new RowSetRecord("json", iter, getHandleRegistry());
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
-		return resultRows(plan, rowHandle, (Transaction) null);
+		return resultRows(plan, rowHandle, (Transaction) null, ColumnTypes.ROWS);
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
+		return resultRows(plan, rowHandle, transaction, ColumnTypes.ROWS);
+	}
+	@Override
+	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction, ColumnTypes typeLocation) {
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
+		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction, typeLocation);
 
 		return new RowSetHandle<>(rowFormat, iter, rowHandle);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
-		return resultRowsAs(plan, as, (Transaction) null);
+		return resultRowsAs(plan, as, (Transaction) null, ColumnTypes.ROWS);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
+		return resultRowsAs(plan, as, transaction, ColumnTypes.ROWS);
+	}
+	@Override
+	public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation) {
 		ContentHandle<T> rowHandle = handleFor(as); 
 
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
+		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction, typeLocation);
 
 		return new RowSetObject<>(rowFormat, iter, rowHandle);
 	}
@@ -212,22 +232,26 @@ public class RowManagerImpl
 		switch (handleFormat) {
 		case JSON:
 		case UNKNOWN:
-			return "sparql-json";
+			return "json";
 		case XML:
-			return "sparql-xml";
+			return "xml";
 		default:
 			throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
 		}
 	}
-	private RESTServiceResultIterator makeRequest(Plan plan, String rowFormat, String docCols, Transaction transaction) {
+	private RESTServiceResultIterator makeRequest(
+			Plan plan, String rowFormat, String nodeCols, Transaction transaction, ColumnTypes typeLocation
+			) {
 		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
 
 		RequestParameters params = getParamBindings(requestPlan);
-		params.add("row-format",       rowFormat);
-		params.add("header-row",       "columns");
-		params.add("document-columns", docCols);
+		params.add("row-format",   rowFormat);
+		params.add("node-columns", nodeCols);
+		if (ColumnTypes.HEADER == typeLocation) {
+			params.add("column-types", "header");
+		}
 
 // QUESTION: outputMimetypes a noop?
 		return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
@@ -298,21 +322,22 @@ public class RowManagerImpl
 			}
 			RESTServiceResult headerRow = results.next();
 			switch(rowFormat) {
-			case "sparql-json":
+			case "json":
 				try {
 					@SuppressWarnings("unchecked")
-					Map<String, Object> headObj = (Map<String, Object>) new ObjectMapper().readValue(
+					Map<String, Object> headerObj = (Map<String, Object>) new ObjectMapper().readValue(
 					        headerRow.getContent(new InputStreamHandle()).get(), Map.class
 					        );
-					if (headObj != null) {
+					if (headerObj != null) {
 						@SuppressWarnings("unchecked")
-						Map<String, Object> varsObj = (Map<String, Object>) headObj.get("head");
-						if (varsObj != null) {
-							@SuppressWarnings("unchecked")
-							List<String> cols = (List<String>) varsObj.get("vars");
-							int colSize = (cols == null) ? 0 : cols.size();
-							if (colSize > 0) {
-								columns = cols.toArray(new String[colSize]);
+						List<Map<String, String>> cols = (List<Map<String, String>>) headerObj.get("columns");
+						int colSize = (cols == null) ? 0 : cols.size();
+						if (colSize > 0) {
+							columns = new String[colSize];
+							int i=0;
+							for (Map<String, String> col: cols) {
+								columns[i] = col.get("name");
+								i++;
 							}
 						}
 					}
@@ -324,14 +349,14 @@ public class RowManagerImpl
 					throw new MarkLogicIOException("could not read JSON header", e);
 				}
 				break;
-			case "sparql-xml":
+			case "xml":
 				try {
 					List<String> cols = new ArrayList<>();
 					XMLStreamReader headerReader = headerRow.getContent(new XMLStreamReaderHandle()).get();
 					while (headerReader.hasNext()) {
 						switch(headerReader.next()) {
 						case XMLStreamConstants.START_ELEMENT:
-							if ("variable".equals(headerReader.getLocalName())) {
+							if ("column".equals(headerReader.getLocalName())) {
 								cols.add(headerReader.getAttributeValue(null, "name"));
 								headerReader.nextTag();
 							}
@@ -405,8 +430,8 @@ public class RowManagerImpl
 			boolean hasMoreRows = results.hasNext();
 
 			try {
-				Map<String, String> kinds     = new HashMap<>();
-				Map<String, String> datatypes = new HashMap<>();
+				Map<String, RowRecord.ColumnKind> kinds     = new HashMap<>();
+				Map<String, String>               datatypes = new HashMap<>();
 
 				// TODO: replace Jackson mapper with binding-sensitive mapper?
 				@SuppressWarnings("unchecked")
@@ -416,19 +441,23 @@ public class RowManagerImpl
 				row.replaceAll((key, rawBinding) -> {
 					@SuppressWarnings("unchecked")
 					Map<String,Object> binding = (Map<String,Object>) rawBinding;
-					String kind = (String) binding.get("type");
-					if (kind != null) {
-						kinds.put(key, kind);
-						if ("literal".equals(kind)) {
-							String datatype = (String) binding.get("datatype");
-							if (datatype != null) {
-								datatypes.put(key, datatype);
-							} else {
-								datatypes.put(key, "http://www.w3.org/2001/XMLSchema#string");
-							}
-						}
+					String datatype  = (String) binding.get("type");
+					Object value = null;
+					if ("cid".equals(datatype)) {
+// TODO: increment the count of expected nodes and list the column names expecting values
+						kinds.put(key, RowRecord.ColumnKind.CONTENT);
+						datatypes.put(key, null);
+					} else if ("null".equals(datatype)) {
+						kinds.put(key, RowRecord.ColumnKind.NULL);
+						datatypes.put(key, null);
+					} else if (datatype.contains(":")) {
+						kinds.put(key, RowRecord.ColumnKind.ATOMIC_VALUE);
+						datatypes.put(key, datatype);
+						value = binding.get("value");
+					} else {
+// TODO: standalone inline nodes such as processing instructions and comments?
+throw new MarkLogicInternalException("Column value with unsupported datatype: "+datatype);
 					}
-					Object value = binding.get("value");
 					return value;
 				});
 
@@ -437,13 +466,12 @@ public class RowManagerImpl
 					currentRow = results.next();
 
 					Map<String,List<String>> headers = currentRow.getHeaders();
-
 					List<String> headerList = headers.get("Content-Disposition");
 					if (headerList == null || headerList.isEmpty()) {
 						break;
 					}
 					String headerValue = headerList.get(0);
-					if (headerValue == null || !headerValue.startsWith("attachment;")) {
+					if (headerValue == null || !headerValue.startsWith("inline; kind=row-attachment")) {
 						break;
 					}
 
@@ -452,17 +480,20 @@ public class RowManagerImpl
 						break;
 					}
 					headerValue = headerList.get(0);
-					if (headerValue == null || !(headerValue.startsWith("<") && headerValue.endsWith(">"))) {
+// TODO: uncomment when fixed
+//					if (headerValue == null || !(headerValue.startsWith("<") && headerValue.endsWith(">"))) {
+					if (headerValue == null) {
 						break;
 					}
 					int pos = headerValue.indexOf("[",1);
 					if (pos == -1) {
 						break;
 					}
-					String colName = headerValue.substring(1, pos);
+// TODO: uncomment when fixed
+//					String colName = headerValue.substring(1, pos);
+					String colName = headerValue.substring(0, pos);
 
-					kinds.put(colName, "content");
-
+// TODO: check column name
 					row.put(colName, currentRow);
 
 					hasMoreRows = results.hasNext();
@@ -574,8 +605,8 @@ public class RowManagerImpl
 
 		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors = new HashMap<>();
 
-		private Map<String, String> kinds     = null;
-		private Map<String, String> datatypes = null;
+		private Map<String, ColumnKind> kinds     = null;
+		private Map<String, String>     datatypes = null;
 
 		private Map<String, Object> row = null;
 
@@ -590,7 +621,7 @@ public class RowManagerImpl
 		}
 
 // QUESTION:  threading guarantees - multiple handles? precedent?
-		void init(Map<String, String> kinds, Map<String, String> datatypes, Map<String, Object> row) {
+		void init(Map<String, ColumnKind> kinds, Map<String, String> datatypes, Map<String, Object> row) {
 			this.kinds     = kinds;
 			this.datatypes = datatypes;
 			this.row       = row;
@@ -598,17 +629,11 @@ public class RowManagerImpl
 
 		@Override
 		public ColumnKind getKind(String columnName) {
-			switch(kinds.get(columnName)) {
-			case "literal":
-				return ColumnKind.ATOMIC_VALUE;
-			case "content":
-				return ColumnKind.CONTENT;
-			case "uri":
-				return ColumnKind.URI;
-			case "bnode":
-				return ColumnKind.BNODE;
+			if (columnName == null) {
+				throw new IllegalArgumentException("cannot get column kind with null name");
 			}
-			return ColumnKind.NULL;
+			ColumnKind kind = kinds.get(columnName);
+			return (kind == null) ? ColumnKind.NULL : kind;
 		}
 
 		@Override
@@ -620,11 +645,27 @@ public class RowManagerImpl
 			if (datatype == null) {
 				return null;
 			}
-			int pos = datatype.indexOf("#");
+			int pos = datatype.indexOf(":");
 			if (pos == -1) {
-				return new QName(datatype);
+				throw new MarkLogicInternalException("datatype "+datatype+" without prefix");
 			}
-			return new QName(datatype.substring(0, pos), datatype.substring(pos + 1));
+
+			String uri = null;
+			String prefix = datatype.substring(0, pos);
+			switch(prefix) {
+			case "rdf":
+				uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+				break;
+			case "sem":
+				uri = "http://marklogic.com/semantics";
+				break;
+			case "xs":
+				uri = "http://www.w3.org/2001/XMLSchema";
+				break;
+			default:
+				throw new MarkLogicInternalException("datatype "+datatype+" with unknown prefix: "+prefix);
+			}
+			return new QName(uri, datatype.substring(pos + 1));
 		}
 
 		// supported operations for unmodifiable map
@@ -645,6 +686,9 @@ public class RowManagerImpl
 			if (key == null) {
 				throw new IllegalArgumentException("cannot get column value with null name");
 			}
+// TODO: get ColumnKind.NULL as null
+// TODO: get ColumnKind.CONTENT of binary as byte[] - getKind()?
+// TODO: get ColumnKind.CONTENT if not binary as String - getKind()?
 			return row.get(key);
 		}
 		@Override
@@ -889,36 +933,45 @@ public class RowManagerImpl
 			return factory;
 		}
 
-// TODO: 
-//		@Override
-		public <T extends XsAnyAtomicTypeVal> T[] getValuesAs(String columnName, Class<T> as) {
-// TODO: constructor array for sequence
-			throw new UnsupportedOperationException("sequence of values not supported");
-		}
-
 		@Override
 		public Format getContentFormat(String columnName) {
-			RESTServiceResult docResult = getServiceResult(columnName);
-			if (docResult == null) {
-				return null;
+			String mimetype = getContentMimetype(columnName);
+			if (mimetype == null) {
+				return Format.BINARY;
 			}
-			return docResult.getFormat();
+			switch(mimetype) {
+			case "application/json":
+				return Format.JSON;
+			case "text/plain":
+				return Format.TEXT;
+			case "application/xml":
+			case "application/xml-external-parsed-entity":
+				return Format.XML;
+			default:
+				return Format.BINARY;
+			}
 		}
 		@Override
 		public String getContentMimetype(String columnName) {
-			RESTServiceResult docResult = getServiceResult(columnName);
-			if (docResult == null) {
+			if (columnName == null) {
+				throw new IllegalArgumentException("cannot get column mime type with null name");
+			}
+			RESTServiceResult nodeResult = getServiceResult(columnName);
+			if (nodeResult == null) {
 				return null;
 			}
-			return docResult.getMimetype();
+			return nodeResult.getMimetype();
 		}
 		@Override
 		public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle) {
-			RESTServiceResult docResult = getServiceResult(columnName);
-			if (docResult == null) {
+			if (columnName == null) {
+				throw new IllegalArgumentException("cannot get column node with null name");
+			}
+			RESTServiceResult nodeResult = getServiceResult(columnName);
+			if (nodeResult == null) {
 				return null;
 			}
-			return docResult.getContent(contentHandle);
+			return nodeResult.getContent(contentHandle);
 		}
 		@Override
 		public <T> T getContentAs(String columnName, Class<T> as) {

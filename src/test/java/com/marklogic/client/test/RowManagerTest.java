@@ -174,29 +174,29 @@ public class RowManagerTest {
 
 	        DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
 
-	        NodeList testList = domHandle.evaluateXPath("/sp:sparql/sp:head/sp:variable", NodeList.class);
+	        NodeList testList = domHandle.evaluateXPath("/table:table/table:columns/table:column", NodeList.class);
 	        assertEquals("unexpected header count in XML", 2, testList.getLength());
 	        Element testElement = (Element) testList.item(0);
 	        assertEquals("unexpected first header name in XML", "rowNum", testElement.getAttribute("name"));
 	        testElement = (Element) testList.item(1);
 	        assertEquals("unexpected second header name in XML", "temp", testElement.getAttribute("name"));
 
-	        testList = domHandle.evaluateXPath("/sp:sparql/sp:results/sp:result", NodeList.class);
+	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row", NodeList.class);
 	        assertEquals("unexpected row count in XML", 1, testList.getLength());
 
-	        testList = domHandle.evaluateXPath("/sp:sparql/sp:results/sp:result[1]/sp:binding", NodeList.class);
+	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
 	        checkSingleRow(testList);
 
 	        JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
 
-	        JsonNode arrayNode = testNode.findValue("vars");
+	        JsonNode arrayNode = testNode.findValue("columns");
 	        assertEquals("unexpected header count in JSON", 2, arrayNode.size());
 	        
-	        assertEquals("unexpected first header name in JSON",  "rowNum", arrayNode.get(0).asText());
-	        assertEquals("unexpected second header name in JSON", "temp",   arrayNode.get(1).asText());
+	        assertEquals("unexpected first header name in JSON",  "rowNum", arrayNode.get(0).get("name").asText());
+	        assertEquals("unexpected second header name in JSON", "temp",   arrayNode.get(1).get("name").asText());
 	        
 
-	        arrayNode = testNode.findValue("bindings");
+	        arrayNode = testNode.findValue("rows");
 	        assertEquals("unexpected row count in JSON", 1, arrayNode.size());
 
 	        checkSingleRow(arrayNode.get(0));
@@ -223,7 +223,7 @@ public class RowManagerTest {
 				Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
 				assertTrue("no XML row to iterate", xmlRowItr.hasNext());
 				DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
-		        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
+				checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class));
 		        assertFalse("expected one XML row", xmlRowItr.hasNext());
 	
 		        xmlRowSet.close();
@@ -235,7 +235,7 @@ public class RowManagerTest {
 				Iterator<Document> xmlRowItrAs = xmlRowSetAs.iterator();
 				assertTrue("no XML rows as to iterate", xmlRowItrAs.hasNext());
 				DOMHandle xmlRow = initNamespaces(new DOMHandle().with(xmlRowItrAs.next()));
-		        checkSingleRow(xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class));
+		        checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class));
 		        assertFalse("expected one XML row", xmlRowItrAs.hasNext());
 
 		        xmlRowSetAs.close();
@@ -498,7 +498,7 @@ public class RowManagerTest {
 							p.jsonObject(
 								p.prop("p1", p.jsonString("s")),
 								p.prop("p2", p.jsonArray(
-									p.jsonNumber(p.col("city"))
+									p.jsonString(p.col("city"))
 									))
 								)
 							),
@@ -516,11 +516,24 @@ public class RowManagerTest {
 		assertTrue("no JSON node row", recordRowItr.hasNext());
 		RowRecord recordRow = recordRowItr.next();
 		assertTrue("no JSON node value", recordRow.containsKey("node"));
-// TODO: get node value as JSON after fix to REST API serialization
-		assertTrue("no XML node row", recordRowItr.hasNext());
+		assertEquals("wrong JSON kind", RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
+		assertEquals("no JSON mime type", "application/json", recordRow.getContentMimetype("node"));
+		JacksonHandle jsonNode = recordRow.getContent("node", new JacksonHandle());
+		JsonNode jsonRoot = jsonNode.get();
+        assertEquals("constructed JSON property p1", "s", jsonRoot.findValue("p1").asText());
+        assertEquals("constructed JSON property p2", "New York", jsonRoot.findValue("p2").get(0).asText());
+
+        assertTrue("no XML node row", recordRowItr.hasNext());
 		recordRow = recordRowItr.next();
 		assertTrue("no XML node value", recordRow.containsKey("node"));
-// TODO: inspect node value as XML after fix to REST API serialization
+		assertEquals("wrong XML kind", RowRecord.ColumnKind.CONTENT, recordRow.getKind("node"));
+		assertEquals("no XML mime type", "application/xml", recordRow.getContentMimetype("node"));
+		DOMHandle xmlNode = recordRow.getContent("node", new DOMHandle());
+		Element xmlRoot = xmlNode.get().getDocumentElement();
+        assertEquals("constructed XML element name", "e", xmlRoot.getLocalName());
+        assertEquals("constructed XML attribute", "s", xmlRoot.getAttribute("a"));
+        assertEquals("constructed XML text", "Seattle", xmlRoot.getTextContent());
+
 		assertFalse("expected one record row", recordRowItr.hasNext());
 
 		recordRowSet.close();
@@ -548,7 +561,7 @@ public class RowManagerTest {
 	}
 	private DOMHandle initNamespaces(DOMHandle handle) {
         EditableNamespaceContext namespaces = new EditableNamespaceContext();
-        namespaces.setNamespaceURI("sp", "http://www.w3.org/2005/sparql-results#");
+        namespaces.setNamespaceURI("table", "http://marklogic.com/table");
 
         handle.getXPathProcessor().setNamespaceContext(namespaces);
 
@@ -584,7 +597,7 @@ public class RowManagerTest {
 		for (DOMHandle xmlRow: rowSet) {
 			xmlRow = initNamespaces(xmlRow);
 
-			NodeList row = xmlRow.evaluateXPath("/sp:result/sp:binding", NodeList.class);
+			NodeList row = xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class);
 
 	        rowCount++;
 
