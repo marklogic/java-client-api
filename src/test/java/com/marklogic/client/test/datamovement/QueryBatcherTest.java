@@ -28,6 +28,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -49,7 +50,8 @@ import org.slf4j.LoggerFactory;
 
 public class QueryBatcherTest {
   private Logger logger = LoggerFactory.getLogger(QueryBatcherTest.class);
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
+  private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String uri1 = "/QueryBatcherTest/content_1.json";
   private static String uri2 = "/QueryBatcherTest/content_2.json";
   private static String uri3 = "/QueryBatcherTest/content_3.json";
@@ -60,16 +62,14 @@ public class QueryBatcherTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Common.connect();
     //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(Common.client);
     setup();
   }
 
   @AfterClass
   public static void afterClass() {
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
@@ -127,7 +127,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testStringQuery() throws Exception {
-    StringQueryDefinition query = Common.client.newQueryManager().newStringDefinition().withCriteria("John");
+    StringQueryDefinition query = client.newQueryManager().newStringDefinition().withCriteria("John");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -148,7 +148,7 @@ public class QueryBatcherTest {
           "}" +
         "]}" +
       "}").withFormat(JSON);
-    StructuredQueryDefinition query = Common.client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
+    StructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -232,7 +232,7 @@ public class QueryBatcherTest {
     assertEquals(numExpected, totalResults.get());
 
     // make sure we get the same number of results via search for the same query
-    SearchHandle searchResults = Common.client.newQueryManager().search(query, new SearchHandle());
+    SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
     assertEquals(numExpected, searchResults.getTotalResults());
 
     // make sure we got the expected results per forest

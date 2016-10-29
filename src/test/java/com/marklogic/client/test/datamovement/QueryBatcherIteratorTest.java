@@ -33,6 +33,7 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
@@ -47,22 +48,21 @@ import org.slf4j.LoggerFactory;
 public class QueryBatcherIteratorTest {
   Logger logger = LoggerFactory.getLogger(QueryBatcherIteratorTest.class);
   private static int numDocs = 500;
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
+  private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "QueryBatcherIteratorTest";
   private static String qhbTestCollection = "QueryBatcherIteratorTest_" +
     new Random().nextInt(10000);
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Common.connect();
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(Common.client);
     setup();
   }
 
   @AfterClass
   public static void afterClass() {
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
@@ -73,7 +73,7 @@ public class QueryBatcherIteratorTest {
   public static void setup() throws Exception {
 
     assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
-      null, Common.client.newDocumentManager().exists(collection + "/doc_1.json") );
+      null, client.newDocumentManager().exists(collection + "/doc_1.json") );
 
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(100);
@@ -180,7 +180,7 @@ public class QueryBatcherIteratorTest {
     assertEquals(numDocs, uris2.size());
     assertEquals(numDocs, successDocs.get());
 
-    SearchHandle results = Common.client.newQueryManager().search(query, new SearchHandle());
+    SearchHandle results = client.newQueryManager().search(query, new SearchHandle());
     assertEquals(0, results.getTotalResults());
   }
 }

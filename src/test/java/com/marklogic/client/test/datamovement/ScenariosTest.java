@@ -96,13 +96,13 @@ public class ScenariosTest {
   private class OurJbossESBPlugin {
 
     private int BATCH_SIZE = 1;
-    private DataMovementManager moveMgr = DataMovementManager.newInstance();
+    private DataMovementManager moveMgr;
     private JobTicket ticket;
     private WriteBatcher batcher;
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public OurJbossESBPlugin(DatabaseClient client) {
-      moveMgr.withClient(client);
+      moveMgr = client.newDataMovementManager();
       batcher = moveMgr.newWriteBatcher()
         .withJobName("OurJbossESBPlugin")
         .withBatchSize(BATCH_SIZE)

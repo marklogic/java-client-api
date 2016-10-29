@@ -60,8 +60,8 @@ import com.marklogic.client.datamovement.WriteBatcher;
 
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
-  private static DatabaseClient client;
+  private static DatabaseClient client = Common.connectEval();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static DocumentManager<?,?> docMgr;
   private static String uri1 = "WriteBatcherTest_content_1.txt";
   private static String uri2 = "WriteBatcherTest_content_2.txt";
@@ -74,9 +74,7 @@ public class WriteBatcherTest {
 
   @BeforeClass
   public static void beforeClass() {
-    client = Common.connectEval();
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(client);
     docMgr = client.newDocumentManager();
     installModule();
   }

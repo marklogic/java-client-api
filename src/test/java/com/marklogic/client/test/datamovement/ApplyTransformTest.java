@@ -41,8 +41,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplyTransformTest {
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static GenericDocumentManager docMgr = client.newDocumentManager();
   private static QueryManager queryMgr = client.newQueryManager();
   private static StructuredQueryBuilder sqb = new StructuredQueryBuilder();
@@ -54,7 +54,6 @@ public class ApplyTransformTest {
 
   @BeforeClass
   public static void beforeClass() {
-    moveMgr.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     installModule();
   }

@@ -43,8 +43,8 @@ import java.util.Random;
 
 public class PackageExamples {
   private static Logger logger = LoggerFactory.getLogger(PackageExamples.class);
-  private static DataMovementManager dataMovementManager = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "PackageExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
@@ -52,7 +52,6 @@ public class PackageExamples {
 
   @BeforeClass
   public static void beforeClass() {
-    dataMovementManager.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 

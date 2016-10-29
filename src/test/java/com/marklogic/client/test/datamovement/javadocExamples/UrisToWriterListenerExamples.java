@@ -45,8 +45,8 @@ import java.io.FileWriter;
 
 public class UrisToWriterListenerExamples {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamples.class);
-  private static DataMovementManager dataMovementManager = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "UrisToWriterListenerExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
@@ -54,7 +54,6 @@ public class UrisToWriterListenerExamples {
 
   @BeforeClass
   public static void beforeClass() {
-    dataMovementManager.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 

@@ -38,8 +38,8 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 public class ExportToWriterListenerTest {
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "ExportToWriterListenerTest_" +
     new Random().nextInt(10000);
   private static String docContents = "doc contents";
@@ -47,8 +47,7 @@ public class ExportToWriterListenerTest {
 
   @BeforeClass
   public static void beforeClass() {
-    moveMgr.withClient(client);
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
   @AfterClass

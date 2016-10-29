@@ -28,15 +28,13 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 
 
 public class DeleteListenerTest {
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
-  private static DatabaseClient client;
+  private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "DeleteListenerTest";
   private static String docContents = "doc contents";
 
   @BeforeClass
   public static void beforeClass() {
-    client = Common.connect();
-    moveMgr.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 

@@ -51,26 +51,10 @@ public class DataMovementManagerImpl implements DataMovementManager {
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
-  public DataMovementManagerImpl() {
-  }
-
   public DataMovementManagerImpl(DatabaseClient client) {
     this.primaryClient = client;
     clientMap.put(primaryClient.getHost(), primaryClient);
     service.setClient(primaryClient);
-  }
-
-  @Deprecated
-  public DataMovementManager withClient(DatabaseClient client) {
-    this.primaryClient = client;
-    clientMap.put(primaryClient.getHost(), primaryClient);
-    service.setClient(primaryClient);
-    return this;
-  }
-
-  @Deprecated
-  public DatabaseClient getClient() {
-    return primaryClient;
   }
 
   @Override
@@ -112,7 +96,6 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public WriteBatcher newWriteBatcher() {
-    verifyClientIsSet("newWriteBatcher");
     WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
     batcher.onBatchFailure(new HostAvailabilityListener(this));
     return batcher;
@@ -134,7 +117,6 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
-    verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     return batcher;
@@ -142,7 +124,6 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
-    verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
@@ -156,14 +137,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public ForestConfiguration readForestConfig() {
-    verifyClientIsSet("readForestConfig");
     forestConfig = service.readForestConfig();
     return forestConfig;
-  }
-
-  private void verifyClientIsSet(String method) {
-    if ( primaryClient == null ) throw new IllegalStateException("The method " + method +
-      " cannot be called without first calling withClient()");
   }
 
   public DatabaseClient getForestClient(Forest forest) {

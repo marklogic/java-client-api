@@ -47,37 +47,6 @@ import java.util.Iterator;
  *     dataMovementManager.release();
  */
 public interface DataMovementManager {
-  /**
-   * Instantiate a new instance.  Generally only one DataMovementManager
-   * instance is needed per database.
-   *
-   * @return a new DataMovementManager instance
-   * @deprecated use databaseClient.newDataMovementManager() instead
-   */
-  @Deprecated
-  public static DataMovementManager newInstance() {
-    return new DataMovementManagerImpl();
-  }
-
-  /**
-   * Set the default DatabaseClient instance that is used to retrieve the
-   * ForestConfiguration and as the template for host-specific DatabaseClient
-   * instances.  Host-specific DatabaseClient instances will have everything
-   * the same as this instance except the hostname.
-   * @param client the DatabaseClient instance
-   * @return this instance for method chaining
-   */
-  @Deprecated
-  public DataMovementManager withClient(DatabaseClient client);
-
-  /**
-   * get the current DatabaseClient
-   *
-   * @return the current DatabaseClient
-   */
-  @Deprecated
-  public DatabaseClient getClient();
-
   /** Calls release() on all host-specific DatabaseClient instances (but not on
    * the DatabaseClient instance used to create this DataMovementManager
    * instance).
