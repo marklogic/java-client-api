@@ -19,5 +19,5 @@ public interface JobTicket {
   String getJobId();
   JobType getJobType();
 
-  enum JobType { IMPORT_HOST_BATCHER, QUERY_HOST_BATCHER };
+  enum JobType { WRITE_BATCHER, QUERY_BATCHER };
 }

@@ -23,11 +23,11 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
 import java.util.List;
 
@@ -67,28 +67,35 @@ public class DataMovementServices {
 
   public JobTicket startJob(WriteBatcher batcher) {
     // TODO: implement job tracking
-    return new JobTicketImpl(generateJobId(), JobTicket.JobType.IMPORT_HOST_BATCHER)
+    return new JobTicketImpl(generateJobId(), JobTicket.JobType.WRITE_BATCHER)
         .withWriteBatcher((WriteBatcherImpl) batcher);
   }
 
   public JobTicket startJob(QueryBatcher batcher) {
     // TODO: implement job tracking
     ((QueryBatcherImpl) batcher).start();
-    return new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_HOST_BATCHER)
+    return new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_BATCHER)
         .withQueryBatcher((QueryBatcherImpl) batcher);
   }
 
   public JobReport getJobReport(JobTicket ticket) {
-    // TODO: implement
+    if ( ticket instanceof JobTicketImpl ) {
+      JobTicketImpl ticketImpl = (JobTicketImpl) ticket;
+      if ( ticketImpl.getJobType() == JobType.WRITE_BATCHER ) {
+        return new JobReportImpl(ticketImpl.getWriteBatcher());
+      } else if ( ticketImpl.getJobType() == JobType.QUERY_BATCHER ) {
+        return new JobReportImpl(ticketImpl.getQueryBatcher());
+      }
+    }
     return null;
   }
 
   public void stopJob(JobTicket ticket) {
     if ( ticket instanceof JobTicketImpl ) {
       JobTicketImpl ticketImpl = (JobTicketImpl) ticket;
-      if ( ticketImpl.getJobType() == JobType.IMPORT_HOST_BATCHER ) {
+      if ( ticketImpl.getJobType() == JobType.WRITE_BATCHER ) {
         ticketImpl.getWriteBatcher().stop();
-      } else if ( ticketImpl.getJobType() == JobType.QUERY_HOST_BATCHER ) {
+      } else if ( ticketImpl.getJobType() == JobType.QUERY_BATCHER ) {
         ticketImpl.getQueryBatcher().stop();
       }
     }
