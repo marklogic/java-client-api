@@ -31,7 +31,7 @@ import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
@@ -99,7 +99,7 @@ public class PointInTimeQueryTest {
    */
   @Test
   public void test_A_DeleteSomeMatchesDuringJob() throws Exception {
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     AtomicInteger successDocs = new AtomicInteger();
     AtomicInteger badDocs = new AtomicInteger();
     StringBuilder failures = new StringBuilder();

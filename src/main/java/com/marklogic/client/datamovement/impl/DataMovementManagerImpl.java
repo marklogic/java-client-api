@@ -18,6 +18,9 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
@@ -70,6 +73,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return primaryClient;
   }
 
+  @Override
   public void release() {
     for ( DatabaseClient client : clientMap.values() ) {
       try {
@@ -81,26 +85,32 @@ public class DataMovementManagerImpl implements DataMovementManager {
     }
   }
 
+  @Override
   public JobTicket startJob(WriteBatcher batcher) {
     return service.startJob(batcher);
   }
 
+  @Override
   public JobTicket startJob(QueryBatcher batcher) {
     return service.startJob(batcher);
   }
 
+  @Override
   public JobReport getJobReport(JobTicket ticket) {
     return service.getJobReport(ticket);
   }
 
+  @Override
   public void stopJob(JobTicket ticket) {
     service.stopJob(ticket);
   }
 
+  @Override
   public void stopJob(Batcher batcher) {
     service.stopJob(batcher);
   }
 
+  @Override
   public WriteBatcher newWriteBatcher() {
     verifyClientIsSet("newWriteBatcher");
     WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
@@ -108,13 +118,29 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return batcher;
   }
 
-  public QueryBatcher newQueryBatcher(QueryDefinition query) {
+  @Override
+  public QueryBatcher newQueryBatcher(StructuredQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
+  public QueryBatcher newQueryBatcher(StringQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
+  public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     return batcher;
   }
 
+  @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
     verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
@@ -128,6 +154,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return readForestConfig();
   }
 
+  @Override
   public ForestConfiguration readForestConfig() {
     verifyClientIsSet("readForestConfig");
     forestConfig = service.readForestConfig();

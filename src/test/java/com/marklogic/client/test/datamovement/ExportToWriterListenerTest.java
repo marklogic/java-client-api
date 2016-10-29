@@ -30,7 +30,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportToWriterListener;
@@ -74,7 +74,7 @@ public class ExportToWriterListenerTest {
       100, client.newDocumentManager().read(uris).size() );
 
     // export to a csv with uri, collection, and contents columns
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     try (FileWriter writer = new FileWriter(outputFile)) {
       ExportToWriterListener exportListener = new ExportToWriterListener(writer)
         .withRecordSuffix("\n")

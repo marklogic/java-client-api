@@ -37,7 +37,7 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import org.slf4j.Logger;
@@ -97,7 +97,7 @@ public class QueryBatcherIteratorTest {
     StringBuilder failures;
     try (FileWriter writer = new FileWriter(tempFile)) {
       StructuredQueryBuilder sqb = new StructuredQueryBuilder();
-      QueryDefinition query = sqb.value(sqb.jsonProperty("dept"), "HR");
+      StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("dept"), "HR");
       query.setCollections(qhbTestCollection);
       successDocs1 = new AtomicInteger(0);
       failures = new StringBuilder();
@@ -140,7 +140,7 @@ public class QueryBatcherIteratorTest {
   @Test
   public void test_B_InMemoryIterator() throws Exception {
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
-    QueryDefinition query = sqb.value(sqb.jsonProperty("dept"), "HR");
+    StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("dept"), "HR");
     query.setCollections(qhbTestCollection);
     Set<String> uris = new HashSet<>();
     StringBuilder failures = new StringBuilder();
