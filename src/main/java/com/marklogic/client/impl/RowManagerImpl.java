@@ -480,18 +480,14 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 						break;
 					}
 					headerValue = headerList.get(0);
-// TODO: uncomment when fixed
-//					if (headerValue == null || !(headerValue.startsWith("<") && headerValue.endsWith(">"))) {
-					if (headerValue == null) {
+					if (headerValue == null || !(headerValue.startsWith("<") && headerValue.endsWith(">"))) {
 						break;
 					}
 					int pos = headerValue.indexOf("[",1);
 					if (pos == -1) {
 						break;
 					}
-// TODO: uncomment when fixed
-//					String colName = headerValue.substring(1, pos);
-					String colName = headerValue.substring(0, pos);
+					String colName = headerValue.substring(1, pos);
 
 // TODO: check column name
 					row.put(colName, currentRow);
