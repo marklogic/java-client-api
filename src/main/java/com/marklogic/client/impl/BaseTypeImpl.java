@@ -17,11 +17,13 @@ package com.marklogic.client.impl;
 
 import java.lang.reflect.Array;
 import java.util.Arrays;
+import java.util.Map;
+import java.util.regex.Pattern;
 
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.ElementNodeExpr;
 import com.marklogic.client.type.ElementNodeSeqExpr;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.NodeExpr;
 import com.marklogic.client.type.NodeSeqExpr;
 
@@ -29,6 +31,50 @@ public class BaseTypeImpl {
 	public static interface BaseArgImpl {
 		public StringBuilder exportAst(StringBuilder strb);
     }
+
+	static class BaseMapImpl implements BaseArgImpl {
+		private Map<String, ?> arg;
+		private Pattern quote = Pattern.compile("(\"|\\\\)");
+		BaseMapImpl(Map<String, ?> arg) {
+			this.arg = arg;
+		}
+		@Override
+		public StringBuilder exportAst(StringBuilder strb) {
+			strb.append("{");
+			boolean isFirst = true;
+			for (Map.Entry<String, ?> entry: arg.entrySet()) {
+				if (isFirst) {
+					isFirst = false;
+				} else {
+					strb.append(", ");
+				}
+				strb.append("\"");
+				strb.append(quote.matcher(entry.getKey()).replaceAll("\\$1"));
+				strb.append("\":");
+				Object value = entry.getValue();
+				if (value == null) {
+					strb.append("null");
+				} else if (value instanceof BaseArgImpl) {
+					((BaseArgImpl) value).exportAst(strb);
+				} else if (value instanceof Boolean) {
+					strb.append(((Boolean) value).toString());
+// TODO: cases unsupported in JSON as strings
+				} else if (value instanceof Number) {
+					strb.append(((Number) value).toString());
+				} else {
+					String valStr = (value instanceof String) ? (String) value : value.toString();
+					strb.append("\"");
+					strb.append(quote.matcher(valStr).replaceAll("\\$1"));
+					strb.append("\"");
+				}
+			}
+			strb.append("}");
+			return strb;
+		}
+		Map<String, ?> getMap() {
+			return arg;
+		}
+	}
 
 	static BaseListImpl<BaseArgImpl> baseListImpl(Object[] items) {
 		return new BaseListImpl<>(convertList(items));
