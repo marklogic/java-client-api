@@ -624,6 +624,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         }
     }
 }
+ public class PlanSystemColumnCallImpl  extends PlanExprColCallImpl  implements PlanSystemColumn {
+        PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+         }
+
+}
  public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanColumn {
         PlanColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
@@ -950,11 +956,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
  static class PlanSortKeySeqListImpl extends PlanListImpl implements PlanSortKeySeq {
         PlanSortKeySeqListImpl(Object[] items) {
             super(items);
-        }
-    }
- static class PlanSystemColumnCallImpl extends PlanBaseImpl implements PlanSystemColumn {
-        PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
         }
     }
  static class PlanSystemColumnSeqListImpl extends PlanListImpl implements PlanSystemColumnSeq {
