@@ -23,13 +23,20 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
  * Instances of this interface are produced by StructuredQueryBuilder.
  */
 public interface StructuredQueryDefinition 
-    extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition
+    extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition, StringQueryDefinition
 {
     /**
      * Returns the structured query definition as a serialized XML string.
-     * 
+     *
      * @return The serialized definition.
      */
     String serialize();
 
+    /**
+     * Sets the query criteria as a query string and returns the query
+     * definition as a fluent convenience.
+     * @param criteria The query string.
+     * @return	This query definition.
+     */
+    StructuredQueryDefinition withCriteria(String criteria);
 }

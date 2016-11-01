@@ -25,7 +25,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.*;
@@ -41,8 +41,8 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplyTransformTest {
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static GenericDocumentManager docMgr = client.newDocumentManager();
   private static QueryManager queryMgr = client.newQueryManager();
   private static StructuredQueryBuilder sqb = new StructuredQueryBuilder();
@@ -54,7 +54,6 @@ public class ApplyTransformTest {
 
   @BeforeClass
   public static void beforeClass() {
-    moveMgr.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     installModule();
   }
@@ -79,7 +78,7 @@ public class ApplyTransformTest {
     // write the document
     client.newDocumentManager().writeAs(collection + "/test1.json", meta, "{ \"testProperty\": \"test1\" }");
 
-    QueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test1");
+    StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test1");
 
     ServerTransform transform = new ServerTransform(transformName1)
         .addParameter("newValue", "test1a");
@@ -103,7 +102,7 @@ public class ApplyTransformTest {
     // write the document
     client.newDocumentManager().writeAs(collection + "/test2.json", meta, "{ \"testProperty\": \"test2\" }");
 
-    QueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test2");
+    StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test2");
     ServerTransform transform = new ServerTransform(transformName2)
         .addParameter("newValue", "test2a");
     ApplyTransformListener listener = new ApplyTransformListener()
@@ -135,7 +134,7 @@ public class ApplyTransformTest {
     moveMgr.stopJob(ticket1);
 
 
-    QueryDefinition query2 = sqb.value(sqb.jsonProperty("testProperty"), "test3");
+    StructuredQueryDefinition query2 = sqb.value(sqb.jsonProperty("testProperty"), "test3");
     query2.setCollections(collection);
     final AtomicInteger count2 = new AtomicInteger(0);
     ServerTransform transform = new ServerTransform(transformName1)
@@ -154,7 +153,7 @@ public class ApplyTransformTest {
     System.out.println("DEBUG: count2=[" + count2 + "]");
     assertEquals( "exactly " + numDocs + " docs should have been transformed", numDocs, count2.get());
 
-    QueryDefinition query3 = sqb.value(sqb.jsonProperty("testProperty"), "test3a");
+    StructuredQueryDefinition query3 = sqb.value(sqb.jsonProperty("testProperty"), "test3a");
     query3.setCollections(collection);
     final AtomicInteger count3 = new AtomicInteger(0);
     QueryBatcher batcher3 = moveMgr.newQueryBatcher(query3)

@@ -45,6 +45,8 @@ implements RawQueryDefinition
 	static public class Structured
 	extends RawQueryDefinitionImpl
 	implements RawStructuredQueryDefinition {
+		private String criteria = null;
+
 		public Structured(StructureWriteHandle handle) {
 			super(handle);
 		}
@@ -57,6 +59,28 @@ implements RawQueryDefinition
 			setHandle(handle);
 			return this;
 		}		
+
+		@Override
+		public String serialize() {
+			if (getHandle() == null) return "";
+			return getHandle().toString();
+		}
+
+		@Override
+		public String getCriteria() {
+			return criteria;
+		}
+
+		@Override
+		public void setCriteria(String criteria) {
+			this.criteria = criteria;
+		}
+
+		@Override
+		public RawStructuredQueryDefinition withCriteria(String criteria) {
+			setCriteria(criteria);
+			return this;
+		}
 	}
 
 	static public class ByExample

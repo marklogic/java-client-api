@@ -29,9 +29,10 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
@@ -47,21 +48,20 @@ import com.marklogic.client.datamovement.QueryHostException;
 public class PointInTimeQueryTest {
   private static Logger logger = LoggerFactory.getLogger(PointInTimeQueryTest.class);
   private static int numDocs = 50;
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
+  private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "PointInTimeQueryTest_" +
     new Random().nextInt(10000);
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Common.connect();
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(Common.client);
     setup();
   }
 
   @AfterClass
   public static void afterClass() {
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     //queryMgr.delete(deleteQuery);
@@ -99,7 +99,7 @@ public class PointInTimeQueryTest {
    */
   @Test
   public void test_A_DeleteSomeMatchesDuringJob() throws Exception {
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     AtomicInteger successDocs = new AtomicInteger();
     AtomicInteger badDocs = new AtomicInteger();
     StringBuilder failures = new StringBuilder();

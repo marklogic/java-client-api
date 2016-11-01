@@ -47,7 +47,7 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.BatchFailureListener;
@@ -62,8 +62,8 @@ import com.marklogic.client.datamovement.WriteBatcher;
 
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
-  private static DatabaseClient client;
+  private static DatabaseClient client = Common.connectEval();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static DocumentManager<?,?> docMgr;
   private static String uri1 = "WriteBatcherTest_content_1.txt";
   private static String uri2 = "WriteBatcherTest_content_2.txt";
@@ -76,9 +76,7 @@ public class WriteBatcherTest {
 
   @BeforeClass
   public static void beforeClass() {
-    client = Common.connectEval();
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(client);
     docMgr = client.newDocumentManager();
     installModule();
   }
@@ -188,7 +186,7 @@ public class WriteBatcherTest {
     assertEquals("The success listener should have run", "true", successListenerWasRun.toString());
     assertEquals("The failure listener should have run", "true", failListenerWasRun.toString());
 
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
     // only doc1 and doc2 wrote successfully, doc3 failed
     assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
@@ -318,7 +316,7 @@ public class WriteBatcherTest {
     assertEquals("The success listener should have run", "truetrue", successListenerWasRun.toString());
     assertEquals("The failure listener should have run", "truetrue", failListenerWasRun.toString());
 
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
     // only docs 5, 7, 8, and 8 wrote successfully, docs 1, 2, 3, and 4 failed in the same
     // transaction as doc 1
@@ -468,7 +466,7 @@ public class WriteBatcherTest {
     logger.debug("expectedSuccess=[{}] successfulCount.get()=[{}]", totalDocCount, successfulCount.get());
     assertEquals("The success listener ran wrong number of times", totalDocCount, successfulCount.get());
 
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
     assertEquals("there should be " + successfulCount + " docs in the collection", successfulCount.get(), docs.getTotalSize());
 

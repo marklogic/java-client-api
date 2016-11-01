@@ -16,7 +16,7 @@ import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 /**
@@ -123,7 +123,7 @@ public class WriteandReadPOJOs {
 
   public void readBulkPOJOS() throws JAXBException {
     // Create a query definition in order to use it with QueryHostBatcher
-    QueryDefinition query = new StructuredQueryBuilder().collection("products-collection1");
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection1");
 
     // Create a QueryHostBatcher in order to retrieve bulk POJOs 
     // from the database matching the query definition
@@ -154,7 +154,7 @@ public class WriteandReadPOJOs {
   }
 
   public void readPOJOsWithExportListener() throws JAXBException {
-    QueryDefinition query = new StructuredQueryBuilder().collection("products-collection2");
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection2");
 
     // Create a QueryHostBatcher to get the documents from the database
     // and process each document retrieved using the Export Listener and

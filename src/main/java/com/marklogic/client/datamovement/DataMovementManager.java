@@ -17,6 +17,9 @@ package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 
 import java.util.Iterator;
@@ -44,37 +47,6 @@ import java.util.Iterator;
  *     dataMovementManager.release();
  */
 public interface DataMovementManager {
-  /**
-   * Instantiate a new instance.  Generally only one DataMovementManager
-   * instance is needed per database.
-   *
-   * @return a new DataMovementManager instance
-   * @deprecated use databaseClient.newDataMovementManager() instead
-   */
-  @Deprecated
-  public static DataMovementManager newInstance() {
-    return new DataMovementManagerImpl();
-  }
-
-  /**
-   * Set the default DatabaseClient instance that is used to retrieve the
-   * ForestConfiguration and as the template for host-specific DatabaseClient
-   * instances.  Host-specific DatabaseClient instances will have everything
-   * the same as this instance except the hostname.
-   * @param client the DatabaseClient instance
-   * @return this instance for method chaining
-   */
-  @Deprecated
-  public DataMovementManager withClient(DatabaseClient client);
-
-  /**
-   * get the current DatabaseClient
-   *
-   * @return the current DatabaseClient
-   */
-  @Deprecated
-  public DatabaseClient getClient();
-
   /** Calls release() on all host-specific DatabaseClient instances (but not on
    * the DatabaseClient instance used to create this DataMovementManager
    * instance).
@@ -131,16 +103,33 @@ public interface DataMovementManager {
 
   /**
    * Create a new QueryBatcher instance configured to retrieve uris that
-   * match this query.  The query can be any StringQueryDefinition,
-   * StructuredQueryDefinition, or RawCombinedQueryDifinition.  The query
-   * cannot be a SPARQLQueryDefinition, RawQueryByExampleDefinition, or a
-   * cts:query.
+   * match this query.
    *
    * @param query the query used to find matching uris
    *
    * @return the new QueryBatcher instance
    */
-  public QueryBatcher newQueryBatcher(QueryDefinition query);
+  public QueryBatcher newQueryBatcher(StructuredQueryDefinition query);
+
+  /**
+   * Create a new QueryBatcher instance configured to retrieve uris that
+   * match this query.
+   *
+   * @param query the query used to find matching uris
+   *
+   * @return the new QueryBatcher instance
+   */
+  public QueryBatcher newQueryBatcher(StringQueryDefinition query);
+
+  /**
+   * Create a new QueryBatcher instance configured to retrieve uris that
+   * match this query.
+   *
+   * @param query the query used to find matching uris
+   *
+   * @return the new QueryBatcher instance
+   */
+  public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query);
 
   /**
    * Create a new QueryBatcher instance configured to retrieve uris from

@@ -30,7 +30,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ExportToWriterListener;
@@ -38,8 +38,8 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 public class ExportToWriterListenerTest {
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "ExportToWriterListenerTest_" +
     new Random().nextInt(10000);
   private static String docContents = "doc contents";
@@ -47,8 +47,7 @@ public class ExportToWriterListenerTest {
 
   @BeforeClass
   public static void beforeClass() {
-    moveMgr.withClient(client);
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
   @AfterClass
@@ -74,7 +73,7 @@ public class ExportToWriterListenerTest {
       100, client.newDocumentManager().read(uris).size() );
 
     // export to a csv with uri, collection, and contents columns
-    QueryDefinition query = new StructuredQueryBuilder().collection(collection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     try (FileWriter writer = new FileWriter(outputFile)) {
       ExportToWriterListener exportListener = new ExportToWriterListener(writer)
         .withRecordSuffix("\n")

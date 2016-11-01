@@ -2087,6 +2087,13 @@ public class JerseyServices implements RESTServices {
         }
 
         void init() {
+            if (queryDef instanceof StringQueryDefinition) {
+                String text = ((StringQueryDefinition) queryDef).getCriteria();
+
+                if (text != null) {
+                    addEncodedParam(params, "q", text);
+                }
+            }
             if (queryDef instanceof RawQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Raw search");
@@ -2118,17 +2125,6 @@ public class JerseyServices implements RESTServices {
                 builder = (payloadMimetype != null) ?
                     webResource.type(payloadMimetype).accept(mimetype) :
                     webResource.accept(mimetype);
-            } else if (queryDef instanceof StringQueryDefinition) {
-                String text = ((StringQueryDefinition) queryDef).getCriteria();
-                if (logger.isDebugEnabled())
-                    logger.debug("Searching for {}", text);
-
-                if (text != null) {
-                    addEncodedParam(params, "q", text);
-                }
-
-                webResource = getConnection().path("search").queryParams(params);
-                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof KeyValueQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for keys/values");
@@ -2166,6 +2162,13 @@ public class JerseyServices implements RESTServices {
 
                 webResource = getConnection().path("search").queryParams(params);
                 builder = webResource.type("application/xml").accept(mimetype);
+            } else if (queryDef instanceof StringQueryDefinition) {
+                String text = ((StringQueryDefinition) queryDef).getCriteria();
+                if (logger.isDebugEnabled())
+                    logger.debug("Searching for string [{}]", text);
+
+                webResource = getConnection().path("search").queryParams(params);
+                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof DeleteQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for deletes");
@@ -2194,9 +2197,7 @@ public class JerseyServices implements RESTServices {
                     }
                 }
 
-                if (queryDef instanceof StringQueryDefinition) {
-                    response = doGet(builder);
-                } else if (queryDef instanceof KeyValueQueryDefinition) {
+                if (queryDef instanceof KeyValueQueryDefinition) {
                     response = doGet(builder);
                 } else if (queryDef instanceof StructuredQueryDefinition) {
                     response = doPost(reqlog, builder, structure, true);
@@ -2206,6 +2207,8 @@ public class JerseyServices implements RESTServices {
                     response = doGet(builder);
                 } else if (queryDef instanceof RawQueryDefinition) {
                     response = doPost(reqlog, builder, baseHandle.sendContent(), true);
+                } else if (queryDef instanceof StringQueryDefinition) {
+                    response = doGet(builder);
                 } else {
                     throw new UnsupportedOperationException("Cannot search with "
                             + queryDef.getClass().getName());
@@ -2384,16 +2387,17 @@ public class JerseyServices implements RESTServices {
 				if (text != null) {
 					addEncodedParam(docParams, "q", text);
 				}
-			} else if (queryDef instanceof StructuredQueryDefinition) {
+			}
+			if (queryDef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) queryDef)
 						.serialize();
 				if (structure != null) {
 					addEncodedParam(docParams, "structuredQuery", structure);
 				}
 			} else if (queryDef instanceof RawQueryDefinition) {
-                StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
-                baseHandle = HandleAccessor.checkHandle(handle, "values");
-            } else {
+				StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+				baseHandle = HandleAccessor.checkHandle(handle, "values");
+			} else {
 				if (logger.isWarnEnabled())
 					logger.warn("unsupported query definition: "
 							+ queryDef.getClass().getName());
@@ -2876,12 +2880,11 @@ public class JerseyServices implements RESTServices {
 		} else {
 			if (qdef instanceof StringQueryDefinition) {
 				String text = ((StringQueryDefinition) qdef).getCriteria();
-				logger.debug("Query uris with string query \"{}\"", text);
-
 				if (text != null) {
 					params.add("q", text);
 				}
-			} else if (qdef instanceof StructuredQueryDefinition) {
+			}
+			if (qdef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) qdef).serialize();
 
 				logger.debug("Query uris with structured query {}", structure);
@@ -2895,6 +2898,9 @@ public class JerseyServices implements RESTServices {
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
+			} else if (qdef instanceof StringQueryDefinition) {
+				String text = ((StringQueryDefinition) qdef).getCriteria();
+				logger.debug("Query uris with string query \"{}\"", text);
 			} else {
 				throw new UnsupportedOperationException("Cannot query uris with " +
 						qdef.getClass().getName());
@@ -4762,6 +4768,12 @@ public class JerseyServices implements RESTServices {
 		String structure = null;
 		HandleImplementation baseHandle = null;
 
+		if (queryDef instanceof StringQueryDefinition) {
+			String text = ((StringQueryDefinition) queryDef).getCriteria();
+			if (text != null) {
+				addEncodedParam(params, "q", text);
+			}
+		}
 		if (queryDef instanceof RawQueryDefinition) {
 			StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
 			baseHandle = HandleAccessor.checkHandle(handle, "match");
@@ -4770,28 +4782,25 @@ public class JerseyServices implements RESTServices {
 				logger.debug("Searching for structure {}", structure);
 
 			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
-		} else if (queryDef instanceof StringQueryDefinition) {
-			String text = ((StringQueryDefinition) queryDef).getCriteria();
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for {} in transaction {}", text);
-
-			if (text != null) {
-				addEncodedParam(params, "q", text);
-			}
-
-			builder = makeBuilder("alert/match", params, null, "application/xml"); 
 		} else if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
 			if (logger.isDebugEnabled())
-				logger.debug("Searching for structure {} in transaction {}",
+				logger.debug("Searching for structure {}",
 						structure);
 
 			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
+		} else if (queryDef instanceof StringQueryDefinition) {
+			String text = ((StringQueryDefinition) queryDef).getCriteria();
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for string [{}]", text);
+
+			builder = makeBuilder("alert/match", params, null, "application/xml"); 
 		} else {
 			throw new UnsupportedOperationException("Cannot match with "
 					+ queryDef.getClass().getName());
 		}
+
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
 		long startTime = System.currentTimeMillis();
@@ -4805,12 +4814,12 @@ public class JerseyServices implements RESTServices {
 				}
 			}
 
-			if (queryDef instanceof StringQueryDefinition) {
-				response = builder.get(ClientResponse.class);
-			} else if (queryDef instanceof StructuredQueryDefinition) {
+			if (queryDef instanceof StructuredQueryDefinition) {
 				response = builder.post(ClientResponse.class, structure);
 			} else if (queryDef instanceof RawQueryDefinition) {
 				response = doPost(null, builder, baseHandle.sendContent(), false);
+			} else if (queryDef instanceof StringQueryDefinition) {
+				response = builder.get(ClientResponse.class);
 			} else {
 				throw new UnsupportedOperationException("Cannot match with "
 						+ queryDef.getClass().getName());

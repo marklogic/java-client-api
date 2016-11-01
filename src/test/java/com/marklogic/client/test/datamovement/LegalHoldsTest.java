@@ -35,7 +35,7 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 import static com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -109,7 +109,7 @@ public class LegalHoldsTest {
     date.roll(Calendar.YEAR, -7);
     String sevenYearsAgo = DatatypeConverter.printDateTime(date);
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
-    QueryDefinition query =
+    StructuredQueryDefinition query =
       sqb.and(
           sqb.collection(collection),
           sqb.value(sqb.jsonProperty("type"), "X"),
@@ -124,7 +124,7 @@ public class LegalHoldsTest {
           );
 
     // walk through all batches of docs matching our query
-    DataMovementManager moveMgr = DataMovementManager.newInstance().withClient(evalClient);
+    DataMovementManager moveMgr = evalClient.newDataMovementManager();
     StringBuilder anyFailure = new StringBuilder();
     Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
     QueryBatcher batcher = moveMgr.newQueryBatcher(query)

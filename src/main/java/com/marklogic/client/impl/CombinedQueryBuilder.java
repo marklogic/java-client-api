@@ -28,13 +28,6 @@ public interface CombinedQueryBuilder {
         QueryOptionsWriteHandle options, String qtext);
     CombinedQueryDefinition combine(StructuredQueryDefinition structuredQuery,
         QueryOptionsWriteHandle options, String qtext, String sparql);
-    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery, String qtext);
-    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
-        QueryOptionsWriteHandle options);
-    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
-        QueryOptionsWriteHandle options, String qtext);
-    CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
-        QueryOptionsWriteHandle options, String qtext, String sparql);
     CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext);
     CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery,
         QueryOptionsWriteHandle options);

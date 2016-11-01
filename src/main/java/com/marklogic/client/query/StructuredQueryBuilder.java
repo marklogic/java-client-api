@@ -1038,8 +1038,26 @@ public class StructuredQueryBuilder {
     protected abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
+        private String criteria = null;
+
         public AbstractStructuredQuery() {
             optionsUri = builderOptionsURI;
+        }
+
+        @Override
+        public String getCriteria() {
+            return criteria;
+        }
+
+        @Override
+        public void setCriteria(String criteria) {
+            this.criteria = criteria;
+        }
+
+        @Override
+        public AbstractStructuredQuery withCriteria(String criteria) {
+            setCriteria(criteria);
+            return this;
         }
 
         @Override

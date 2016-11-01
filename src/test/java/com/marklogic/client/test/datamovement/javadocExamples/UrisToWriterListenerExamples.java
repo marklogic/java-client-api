@@ -19,7 +19,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -45,16 +45,15 @@ import java.io.FileWriter;
 
 public class UrisToWriterListenerExamples {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamples.class);
-  private static DataMovementManager dataMovementManager = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "UrisToWriterListenerExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
-  private static QueryDefinition collectionQuery = new StructuredQueryBuilder().collection(collection);
+  private static StructuredQueryDefinition collectionQuery = new StructuredQueryBuilder().collection(collection);
 
   @BeforeClass
   public static void beforeClass() {
-    dataMovementManager.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
@@ -72,7 +71,7 @@ public class UrisToWriterListenerExamples {
     client.newDocumentManager().writeAs(collection + "/test3.txt", meta, "text");
     assertEquals(3, client.newQueryManager().search(collectionQuery, new SearchHandle()).getTotalResults());
 
-    QueryDefinition query = collectionQuery;
+    StructuredQueryDefinition query = collectionQuery;
 
     // begin copy fromclass javadoc in src/main/java/com/marklogic/datamovement/UrisToWriterListener.java
     FileWriter writer = new FileWriter("uriCache.txt");

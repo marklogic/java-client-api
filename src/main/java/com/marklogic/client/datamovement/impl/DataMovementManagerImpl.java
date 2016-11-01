@@ -18,6 +18,9 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
@@ -50,28 +53,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
-  public DataMovementManagerImpl() {
-  }
-
   public DataMovementManagerImpl(DatabaseClient client) {
     this.primaryClient = client;
     clientMap.put(primaryClient.getHost(), primaryClient);
     service.setClient(primaryClient);
   }
 
-  @Deprecated
-  public DataMovementManager withClient(DatabaseClient client) {
-    this.primaryClient = client;
-    clientMap.put(primaryClient.getHost(), primaryClient);
-    service.setClient(primaryClient);
-    return this;
-  }
-
-  @Deprecated
-  public DatabaseClient getClient() {
-    return primaryClient;
-  }
-
+  @Override
   public void release() {
     for ( DatabaseClient client : clientMap.values() ) {
       try {
@@ -83,28 +71,33 @@ public class DataMovementManagerImpl implements DataMovementManager {
     }
   }
 
+  @Override
   public JobTicket startJob(WriteBatcher batcher) {
     return service.startJob(batcher);
   }
 
+  @Override
   public JobTicket startJob(QueryBatcher batcher) {
     return service.startJob(batcher);
   }
 
+  @Override
   public JobReport getJobReport(JobTicket ticket) {
     return service.getJobReport(ticket);
   }
 
+  @Override
   public void stopJob(JobTicket ticket) {
     service.stopJob(ticket);
   }
 
+  @Override
   public void stopJob(Batcher batcher) {
     service.stopJob(batcher);
   }
 
+  @Override
   public WriteBatcher newWriteBatcher() {
-    verifyClientIsSet("newWriteBatcher");
     WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
     batcher.onBatchFailure(new HostAvailabilityListener(this));
     WriteJobReportListener writeJobListener = new WriteJobReportListener();
@@ -113,8 +106,22 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return batcher;
   }
 
-  public QueryBatcher newQueryBatcher(QueryDefinition query) {
-    verifyClientIsSet("newQueryBatcher");
+  @Override
+  public QueryBatcher newQueryBatcher(StructuredQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
+  public QueryBatcher newQueryBatcher(StringQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
+  public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
@@ -123,8 +130,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return batcher;
   }
 
+  @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
-    verifyClientIsSet("newQueryBatcher");
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
@@ -139,15 +146,10 @@ public class DataMovementManagerImpl implements DataMovementManager {
     return readForestConfig();
   }
 
+  @Override
   public ForestConfiguration readForestConfig() {
-    verifyClientIsSet("readForestConfig");
     forestConfig = service.readForestConfig();
     return forestConfig;
-  }
-
-  private void verifyClientIsSet(String method) {
-    if ( primaryClient == null ) throw new IllegalStateException("The method " + method +
-      " cannot be called without first calling withClient()");
   }
 
   public DatabaseClient getForestClient(Forest forest) {

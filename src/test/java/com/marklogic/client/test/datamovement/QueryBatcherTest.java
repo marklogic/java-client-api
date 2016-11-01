@@ -30,12 +30,15 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -51,7 +54,8 @@ import org.slf4j.LoggerFactory;
 
 public class QueryBatcherTest {
   private Logger logger = LoggerFactory.getLogger(QueryBatcherTest.class);
-  private static DataMovementManager moveMgr = DataMovementManager.newInstance();
+  private static DatabaseClient client = Common.connect();
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String uri1 = "/QueryBatcherTest/content_1.json";
   private static String uri2 = "/QueryBatcherTest/content_2.json";
   private static String uri3 = "/QueryBatcherTest/content_3.json";
@@ -62,16 +66,14 @@ public class QueryBatcherTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    Common.connect();
     //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-    moveMgr.withClient(Common.client);
     setup();
   }
 
   @AfterClass
   public static void afterClass() {
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
@@ -96,7 +98,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testStructuredQuery() throws Exception {
-    QueryDefinition query = new StructuredQueryBuilder().collection(qhbTestCollection);
+    StructuredQueryDefinition query = new StructuredQueryBuilder().collection(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
@@ -106,7 +108,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testCollectionQuery() throws Exception {
-    QueryDefinition query = new StructuredQueryBuilder().and();
+    StructuredQueryDefinition query = new StructuredQueryBuilder().and();
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -117,7 +119,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testDirectoryQuery() throws Exception {
-    QueryDefinition query = new StructuredQueryBuilder().and();
+    StructuredQueryDefinition query = new StructuredQueryBuilder().and();
     query.setDirectory("/QueryBatcherTest");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
@@ -129,7 +131,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testStringQuery() throws Exception {
-    QueryDefinition query = Common.client.newQueryManager().newStringDefinition().withCriteria("John");
+    StringQueryDefinition query = client.newQueryManager().newStringDefinition().withCriteria("John");
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -150,7 +152,7 @@ public class QueryBatcherTest {
           "}" +
         "]}" +
       "}").withFormat(JSON);
-    QueryDefinition query = Common.client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
+    StructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
@@ -160,26 +162,21 @@ public class QueryBatcherTest {
   }
 
 
-  @Test
-  public void testQBE() throws Exception {
-    StringHandle qbe = new StringHandle(
-      "{ dept: \"HR\" }").withFormat(JSON);
-    QueryDefinition query = Common.client.newQueryManager().newRawQueryByExampleDefinition(qbe);
-    query.setCollections(qhbTestCollection);
-    AtomicReference<Throwable> error = new AtomicReference<>();
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
-      .onQueryFailure(
-        (client, throwable) -> error.set(throwable.getCause())
-      );
-    moveMgr.startJob(queryBatcher);
-    queryBatcher.awaitCompletion();
-    logger.debug("error.get()=[{}]", error.get());
-    if ( ! (error.get() instanceof UnsupportedOperationException) ) {
-      fail("The QBE should have thrown UnsupportedOperationException");
-    }
+  public void runQueryBatcher(StructuredQueryDefinition query, Map<String,String[]> matchesByForest,
+      int batchSize, int threadCount)
+    throws Exception
+  {
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
   }
 
-  public void runQueryBatcher(QueryDefinition query, Map<String,String[]> matchesByForest,
+  public void runQueryBatcher(StringQueryDefinition query, Map<String,String[]> matchesByForest,
+      int batchSize, int threadCount)
+    throws Exception
+  {
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
+  }
+
+  public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
       int batchSize, int threadCount)
     throws Exception
   {
@@ -195,7 +192,7 @@ public class QueryBatcherTest {
     final StringBuffer databaseName = new StringBuffer();
     final Map<String, Set<String>> results = new HashMap<>();
     final StringBuffer failures = new StringBuffer();
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+    queryBatcher
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onUrisReady(
@@ -256,7 +253,7 @@ public class QueryBatcherTest {
     assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
 
     // make sure we get the same number of results via search for the same query
-    SearchHandle searchResults = Common.client.newQueryManager().search(query, new SearchHandle());
+    SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
     assertEquals(numExpected, searchResults.getTotalResults());
 
     // make sure we got the expected results per forest

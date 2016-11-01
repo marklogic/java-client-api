@@ -21,7 +21,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -43,16 +43,15 @@ import java.util.Random;
 
 public class PackageExamples {
   private static Logger logger = LoggerFactory.getLogger(PackageExamples.class);
-  private static DataMovementManager dataMovementManager = DataMovementManager.newInstance();
   private static DatabaseClient client = Common.connect();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "PackageExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
-  private static QueryDefinition collectionQuery = new StructuredQueryBuilder().collection(collection);
+  private static StructuredQueryDefinition collectionQuery = new StructuredQueryBuilder().collection(collection);
 
   @BeforeClass
   public static void beforeClass() {
-    dataMovementManager.withClient(client);
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
@@ -72,7 +71,7 @@ public class PackageExamples {
     client.newDocumentManager().writeAs(collection + "/test1.txt",  meta, "text");
     assertEquals(3, client.newQueryManager().search(collectionQuery, new SearchHandle()).getTotalResults());
 
-    QueryDefinition query = collectionQuery;
+    StructuredQueryDefinition query = collectionQuery;
 
     // begin copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)

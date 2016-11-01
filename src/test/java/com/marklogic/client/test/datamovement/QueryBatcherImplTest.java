@@ -33,7 +33,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -77,7 +77,7 @@ public class QueryBatcherImplTest {
     // must check the logging output
     // Expected something like: 
     //   18:20:33.607 [main] WARN  c.m.c.d.impl.QueryBatcherImpl - QueryBatcher instance "unnamed" stopped before all results were retrieved
-    QueryDefinition query = new StructuredQueryBuilder().and();
+    StructuredQueryDefinition query = new StructuredQueryBuilder().and();
     QueryBatcher batcher = moveMgr.newQueryBatcher(query);
     moveMgr.stopJob(batcher);
   }

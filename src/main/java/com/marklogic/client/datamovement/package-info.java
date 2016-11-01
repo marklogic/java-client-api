@@ -5,7 +5,7 @@
  * Long-running read, delete, or transform jobs are enabled by {@link
  * com.marklogic.client.datamovement.QueryBatcher} which can perform actions
  * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryBatcher(
- * com.marklogic.client.query.QueryDefinition) on all uris matching a query} or
+ * com.marklogic.client.query.StructuredQueryDefinition) on all uris matching a query} or
  * {@link com.marklogic.client.datamovement.DataMovementManager#newQueryBatcher(
  * java.util.Iterator) on all uris provided by an Iterator&lt;String&gt;}.
  *

@@ -275,6 +275,17 @@ public class PojoFacadeTest {
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
         }
 
+
+        query = cities.getQueryBuilder()
+            .term("Tungi", "Dalatando", "Chittagong")
+            .withCriteria("Chittagong");
+        try ( PojoPage<City> page = cities.search(query, 1) ) {
+            int numRead = 0;
+            for ( City city : page ) numRead++;
+            assertEquals("Failed to find number of records expected", 1, numRead);
+            assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+        }
+
         // the default options are unfiltered, which only produce accurate results
         // when all necessary indexes are in place and we avoid queries that can't resolve directly from indexes
         // wildcarded queries will produce inaccurate results without a wildcard index in place
