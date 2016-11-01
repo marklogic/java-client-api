@@ -455,6 +455,10 @@ public class WriteBatcherImpl
   public void retry(WriteBatch batch) {
     boolean forceNewTransaction = true;
     BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());
+    writeSet.onFailure(throwable -> {
+      if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
+      else throw new DataMovementException("Failed to retry batch", throwable);
+    });
     writeSet.setItemsSoFar(itemsSoFar.get());
     for ( WriteEvent doc : batch.getItems() ) {
       writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
@@ -690,7 +694,7 @@ public class WriteBatcherImpl
         removedHostInfos.put(hostInfo.hostName, hostInfo);
       }
     }
-    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.size(), forests[0].getDatabaseName());
+    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     // initialize a DatabaseClient for each host
     HostInfo[] newHostInfos = new HostInfo[hosts.size()];
     int i=0;
