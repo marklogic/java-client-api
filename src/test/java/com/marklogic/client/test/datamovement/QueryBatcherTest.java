@@ -16,8 +16,10 @@
 package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Random;
@@ -40,6 +42,8 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.JobReport;
+import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import java.util.Map;
@@ -183,6 +187,8 @@ public class QueryBatcherTest {
 
     final AtomicInteger urisReadyListenerWasRun = new AtomicInteger();
     final AtomicInteger totalResults = new AtomicInteger();
+    final AtomicInteger successfulBatchCount = new AtomicInteger();
+    final AtomicInteger failureBatchCount = new AtomicInteger();
     final StringBuffer databaseName = new StringBuffer();
     final Map<String, Set<String>> results = new HashMap<>();
     final StringBuffer failures = new StringBuffer();
@@ -191,6 +197,7 @@ public class QueryBatcherTest {
       .withThreadCount(threadCount)
       .onUrisReady(
         (client, batch) -> {
+          successfulBatchCount.incrementAndGet();
           // append one period for each run.  This should run three times because
           // there are three forests setup for the database java-unittest
           urisReadyListenerWasRun.incrementAndGet();
@@ -209,6 +216,7 @@ public class QueryBatcherTest {
       )
       .onQueryFailure(
         (client, throwable) -> {
+          failureBatchCount.incrementAndGet();
           throwable.printStackTrace();
           failures.append("ERROR:[" + throwable + "]\n");
         }
@@ -216,7 +224,9 @@ public class QueryBatcherTest {
 
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
-    moveMgr.startJob(queryBatcher);
+    JobTicket ticket = moveMgr.startJob(queryBatcher);
+    JobReport report = moveMgr.getJobReport(ticket);
+    assertEquals("Job Report has incorrect job completion information", false, report.isJobComplete());
     boolean finished = queryBatcher.awaitCompletion();
     if ( finished == false ) {
       fail("Job did not finish, it was interrupted");
@@ -230,6 +240,17 @@ public class QueryBatcherTest {
 
     // make sure we got the right number of results
     assertEquals(numExpected, totalResults.get());
+
+    report = moveMgr.getJobReport(ticket);
+    long maxTime = new Date().getTime()+200;
+    long minTime = new Date().getTime()-200;
+    Date reportDate = report.getReportTimestamp().getTime();
+    assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
+    assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
+    assertEquals("Job Report has incorrect successful event counts", totalResults.get(),report.getSuccessEventsCount());
+    assertEquals("Job Report has incorrect failure batch counts", failureBatchCount.get(), report.getFailureBatchesCount());
+    assertEquals("Job Report has incorrect failure events counts", failureBatchCount.get(), report.getFailureEventsCount());
+    assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
 
     // make sure we get the same number of results via search for the same query
     SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());

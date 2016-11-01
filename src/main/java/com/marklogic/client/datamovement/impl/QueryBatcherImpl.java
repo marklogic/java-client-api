@@ -18,6 +18,7 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
@@ -468,7 +469,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
         isDone.set(true);
         shutdownIfAllForestsAreDone();
-      } catch (RuntimeException e) {
+      } catch (Throwable e) {
         // any error outside listeners is grounds for stopping queries to this forest
         isDone.set(true);
         if ( callFailListeners == true ) {
@@ -483,8 +484,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             }
           }
           shutdownIfAllForestsAreDone();
+        } else if ( e instanceof RuntimeException ) {
+          throw (RuntimeException) e;
         } else {
-          throw e;
+          throw new DataMovementException("Failed to retry batch", e);
         }
       }
     }

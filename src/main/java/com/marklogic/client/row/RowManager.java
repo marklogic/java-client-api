@@ -265,5 +265,5 @@ public interface RowManager {
 	 * if each column has a consistent data type or if the data type of the columns
 	 * doesn't matter.
 	 */
-	public enum ColumnTypes{HEADER, ROWS};
+	public enum ColumnTypes{HEADER, ROWS}
 }

@@ -26,10 +26,12 @@ import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.Batcher;
-import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.impl.QueryJobReportListener;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.JobReport;
+import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.datamovement.impl.DataMovementServices;
 import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
@@ -98,6 +100,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
   public WriteBatcher newWriteBatcher() {
     WriteBatcherImpl batcher = new WriteBatcherImpl(this, getForestConfig());
     batcher.onBatchFailure(new HostAvailabilityListener(this));
+    WriteJobReportListener writeJobListener = new WriteJobReportListener();
+    batcher.onBatchFailure(writeJobListener);
+    batcher.onBatchSuccess(writeJobListener);
     return batcher;
   }
 
@@ -119,6 +124,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this));
+    QueryJobReportListener queryJobListener = new QueryJobReportListener();
+    batcher.onQueryFailure(queryJobListener);
+    batcher.onUrisReady(queryJobListener);
     return batcher;
   }
 
@@ -127,6 +135,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
+    QueryJobReportListener queryJobListener = new QueryJobReportListener();
+    batcher.onQueryFailure(queryJobListener);
+    batcher.onUrisReady(queryJobListener);
     return batcher;
   }
 

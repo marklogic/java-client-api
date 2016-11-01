@@ -53,6 +53,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.PlanValues;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -508,7 +509,9 @@ public class RowManagerTest {
 								p.xmlText(p.col("city"))
 								)
 							)
-						 )));
+						 )),
+					p.as("jxpath", p.xpath("node", "/p2")),
+					p.as("xxpath", p.xpath("node", "/e/text()")));
 
 		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
@@ -522,6 +525,9 @@ public class RowManagerTest {
 		JsonNode jsonRoot = jsonNode.get();
         assertEquals("constructed JSON property p1", "s", jsonRoot.findValue("p1").asText());
         assertEquals("constructed JSON property p2", "New York", jsonRoot.findValue("p2").get(0).asText());
+		assertTrue("no JSON XPath value", recordRow.containsKey("jxpath"));
+        assertEquals("wrong JSON XPathValue", "New York", recordRow.getContentAs("jxpath", String.class));
+		assertEquals("wrong XML XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("xxpath"));
 
         assertTrue("no XML node row", recordRowItr.hasNext());
 		recordRow = recordRowItr.next();
@@ -533,8 +539,70 @@ public class RowManagerTest {
         assertEquals("constructed XML element name", "e", xmlRoot.getLocalName());
         assertEquals("constructed XML attribute", "s", xmlRoot.getAttribute("a"));
         assertEquals("constructed XML text", "Seattle", xmlRoot.getTextContent());
+		assertEquals("wrong JSON XPathValue", RowRecord.ColumnKind.NULL, recordRow.getKind("jxpath"));
+		assertTrue("no XML XPath value", recordRow.containsKey("xxpath"));
+        assertEquals("wrong XML XPathValue", "Seattle", recordRow.getContentAs("xxpath", String.class));
 
-		assertFalse("expected one record row", recordRowItr.hasNext());
+		assertFalse("expected two rows", recordRowItr.hasNext());
+
+		recordRowSet.close();
+	}
+	@Test
+	public void testAggregates() throws IOException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		Map<String,Object>[] testRows = new Map[5];
+
+		Map<String,Object> row = new HashMap<>();
+		row.put("rowNum", 1);
+		row.put("group",  1);
+		row.put("val",    "a");
+		testRows[0] = row;
+
+        row = new HashMap<>();
+		row.put("rowNum", 2);
+		row.put("group",  1);
+		row.put("val",    "b");
+		testRows[1] = row;
+
+        row = new HashMap<>();
+		row.put("rowNum", 3);
+		row.put("group",  1);
+		row.put("val",    "a");
+		testRows[2] = row;
+
+        row = new HashMap<>();
+		row.put("rowNum", 4);
+		row.put("group",  2);
+		row.put("val",    "c");
+		testRows[3] = row;
+
+        row = new HashMap<>();
+		row.put("rowNum", 5);
+		row.put("group",  2);
+		row.put("val",    "d");
+		testRows[4] = row;
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(testRows)
+				 .groupBy(p.col("group"), p.groupConcat("vals", "val", p.groupConcatOptions("-", PlanValues.DISTINCT)))
+				 .orderBy("group");
+
+		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
+
+		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+		assertTrue("no first group row", recordRowItr.hasNext());
+		RowRecord recordRow = recordRowItr.next();
+        assertEquals("first group", 1,     recordRow.getInt("group"));
+        assertEquals("first vals",  "a-b", recordRow.getString("vals"));
+
+		recordRow = recordRowItr.next();
+        assertEquals("second group", 2,     recordRow.getInt("group"));
+        assertEquals("second vals",  "c-d", recordRow.getString("vals"));
+
+		assertFalse("expected two rows", recordRowItr.hasNext());
 
 		recordRowSet.close();
 	}

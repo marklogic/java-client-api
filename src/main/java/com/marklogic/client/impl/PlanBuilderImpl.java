@@ -46,6 +46,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsUnsignedLongExpr;
  import com.marklogic.client.type.XsGMonthDayExpr;
  import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.PlanAggregateOptionsSeq;
  import com.marklogic.client.type.XsDecimalExpr;
  import com.marklogic.client.type.XsYearMonthDurationParam;
  import com.marklogic.client.type.PlanTriplePatternSeq;
@@ -65,14 +66,15 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsByteExpr;
  import com.marklogic.client.type.XsGMonthParam;
  import com.marklogic.client.type.PlanAggregateCol;
- import com.marklogic.client.type.PlanJoinKey;
- import com.marklogic.client.type.XsDateTimeParam;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.XsDateTimeParam;
  import com.marklogic.client.type.XsByteParam;
  import com.marklogic.client.type.XsGYearMonthExpr;
  import com.marklogic.client.type.PlanColumn;
  import com.marklogic.client.type.XsDayTimeDurationExpr;
+ import com.marklogic.client.type.PlanAggregateOptions;
  import com.marklogic.client.type.XsIntExpr;
  import com.marklogic.client.type.PlanTriplePattern;
  import com.marklogic.client.type.XsDoubleParam;
@@ -80,6 +82,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsQNameExpr;
  import com.marklogic.client.type.XsAnyURIParam;
  import com.marklogic.client.type.XsGDayParam;
+ import com.marklogic.client.type.PlanGroupConcatOptionsSeq;
  import com.marklogic.client.type.CtsQueryExpr;
  import com.marklogic.client.type.PlanTripleIri;
  import com.marklogic.client.type.XsBooleanSeqExpr;
@@ -99,6 +102,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.XsGDayExpr;
  import com.marklogic.client.type.XsLongParam;
+ import com.marklogic.client.type.PlanGroupConcatOptions;
  import com.marklogic.client.type.PlanJoinKeySeq;
  import com.marklogic.client.type.XsGYearExpr;
  import com.marklogic.client.type.XsUnsignedIntParam;
@@ -130,8 +134,8 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.PlanParamSeq;
  import com.marklogic.client.type.XsUnsignedByteExpr;
  import com.marklogic.client.type.PlanTripleIriSeq;
- import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.PlanAggregateColSeq;
+ import com.marklogic.client.type.PlanExprCol;
  import com.marklogic.client.type.XsTimeParam;
  import com.marklogic.client.type.XsFloatExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
@@ -169,6 +173,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "array-aggregate", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol arrayAggregate(String name, String column, PlanAggregateOptions options) {
+        return arrayAggregate(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol arrayAggregate(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "array-aggregate", new Object[]{ name, column, options });
+    }
+    @Override
         public PlanExprCol as(String column, ItemSeqExpr expression) {
         return as(col(column), expression); 
     }
@@ -193,6 +205,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "avg", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol avg(String name, String column, PlanAggregateOptions options) {
+        return avg(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol avg(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "avg", new Object[]{ name, column, options });
+    }
+    @Override
         public PlanColumn col(String column) {
         return col(xs.string(column)); 
     }
@@ -211,12 +231,28 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanExprColSeqListImpl(col);
     }
     @Override
+        public PlanAggregateCol count(String name) {
+        return count(col(name)); 
+    }
+    @Override
+        public PlanAggregateCol count(PlanExprCol name) {
+        return new PlanAggregateColCallImpl("op", "count", new Object[]{ name });
+    }
+    @Override
         public PlanAggregateCol count(String name, String column) {
-        return count(col(name), col(column)); 
+        return count(col(name), (column == null) ? null : col(column)); 
     }
     @Override
         public PlanAggregateCol count(PlanExprCol name, PlanExprCol column) {
         return new PlanAggregateColCallImpl("op", "count", new Object[]{ name, column });
+    }
+    @Override
+        public PlanAggregateCol count(String name, String column, PlanAggregateOptions options) {
+        return count(col(name), (column == null) ? null : col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol count(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "count", new Object[]{ name, column, options });
     }
     @Override
         public PlanSortKey desc(String column) {
@@ -327,6 +363,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "group-concat", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol groupConcat(String name, String column, PlanGroupConcatOptions options) {
+        return groupConcat(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol groupConcat(PlanExprCol name, PlanExprCol column, PlanGroupConcatOptions options) {
+        return new PlanAggregateColCallImpl("op", "group-concat", new Object[]{ name, column, options });
+    }
+    @Override
         public XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
         return new XsExprImpl.XsBooleanCallImpl("op", "gt", new Object[]{ left, right });
     }
@@ -355,12 +399,28 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "max", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol max(String name, String column, PlanAggregateOptions options) {
+        return max(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol max(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "max", new Object[]{ name, column, options });
+    }
+    @Override
         public PlanAggregateCol min(String name, String column) {
         return min(col(name), col(column)); 
     }
     @Override
         public PlanAggregateCol min(PlanExprCol name, PlanExprCol column) {
         return new PlanAggregateColCallImpl("op", "min", new Object[]{ name, column });
+    }
+    @Override
+        public PlanAggregateCol min(String name, String column, PlanAggregateOptions options) {
+        return min(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol min(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "min", new Object[]{ name, column, options });
     }
     @Override
         public XsNumericExpr modulo(XsNumericExpr left, XsNumericExpr right) {
@@ -431,6 +491,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "sequence-aggregate", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol sequenceAggregate(String name, String column, PlanAggregateOptions options) {
+        return sequenceAggregate(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol sequenceAggregate(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "sequence-aggregate", new Object[]{ name, column, options });
+    }
+    @Override
         public PlanSortKeySeq sortKeys(String... key) {
         return sortKeys((PlanSortKey[]) Arrays.stream(key)
             .map(item -> col(item))
@@ -453,12 +521,28 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanAggregateColCallImpl("op", "sum", new Object[]{ name, column });
     }
     @Override
+        public PlanAggregateCol sum(String name, String column, PlanAggregateOptions options) {
+        return sum(col(name), col(column), options); 
+    }
+    @Override
+        public PlanAggregateCol sum(PlanExprCol name, PlanExprCol column, PlanAggregateOptions options) {
+        return new PlanAggregateColCallImpl("op", "sum", new Object[]{ name, column, options });
+    }
+    @Override
         public PlanAggregateCol uda(String name, String column, String module, String function) {
         return uda(col(name), col(column), xs.string(module), xs.string(function)); 
     }
     @Override
         public PlanAggregateCol uda(PlanExprCol name, PlanExprCol column, XsStringParam module, XsStringParam function) {
         return new PlanAggregateColCallImpl("op", "uda", new Object[]{ name, column, module, function });
+    }
+    @Override
+        public PlanAggregateCol uda(String name, String column, String module, String function, XsAnyAtomicTypeParam arg) {
+        return uda(col(name), col(column), xs.string(module), xs.string(function), arg); 
+    }
+    @Override
+        public PlanAggregateCol uda(PlanExprCol name, PlanExprCol column, XsStringParam module, XsStringParam function, XsAnyAtomicTypeParam arg) {
+        return new PlanAggregateColCallImpl("op", "uda", new Object[]{ name, column, module, function, arg });
     }
     @Override
         public PlanColumn viewCol(String view, String column) {
@@ -539,6 +623,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return schemaCol(this.schema, this.view, column);
         }
     }
+}
+ public class PlanSystemColumnCallImpl  extends PlanExprColCallImpl  implements PlanSystemColumn {
+        PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+         }
+
 }
  public class PlanColumnCallImpl  extends PlanExprColCallImpl  implements PlanColumn {
         PlanColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
@@ -808,6 +898,16 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             super(items);
         }
     }
+ static class PlanAggregateOptionsCallImpl extends PlanBaseImpl implements PlanAggregateOptions {
+        PlanAggregateOptionsCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanAggregateOptionsSeqListImpl extends PlanListImpl implements PlanAggregateOptionsSeq {
+        PlanAggregateOptionsSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
  static class PlanColumnSeqListImpl extends PlanListImpl implements PlanColumnSeq {
         PlanColumnSeqListImpl(Object[] items) {
             super(items);
@@ -825,6 +925,16 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
  static class PlanFunctionSeqListImpl extends PlanListImpl implements PlanFunctionSeq {
         PlanFunctionSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanGroupConcatOptionsCallImpl extends PlanBaseImpl implements PlanGroupConcatOptions {
+        PlanGroupConcatOptionsCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanGroupConcatOptionsSeqListImpl extends PlanListImpl implements PlanGroupConcatOptionsSeq {
+        PlanGroupConcatOptionsSeqListImpl(Object[] items) {
             super(items);
         }
     }
@@ -846,11 +956,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
  static class PlanSortKeySeqListImpl extends PlanListImpl implements PlanSortKeySeq {
         PlanSortKeySeqListImpl(Object[] items) {
             super(items);
-        }
-    }
- static class PlanSystemColumnCallImpl extends PlanBaseImpl implements PlanSystemColumn {
-        PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
         }
     }
  static class PlanSystemColumnSeqListImpl extends PlanListImpl implements PlanSystemColumnSeq {

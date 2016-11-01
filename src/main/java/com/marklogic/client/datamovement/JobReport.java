@@ -15,17 +15,15 @@
  */
 package com.marklogic.client.datamovement;
 
-import java.util.Date;
+import java.util.Calendar;
 
-/** Not yet implemented */
 public interface JobReport {
   long getSuccessEventsCount();
   long getFailureEventsCount();
-  long getTotalEventsEstimate();
   long getFragmentCount();
   long getSuccessBatchesCount();
   long getFailureBatchesCount();
   long getBytesMoved();
   boolean isJobComplete();
-  Date getReportTimestamp();
+  Calendar getReportTimestamp();
 }

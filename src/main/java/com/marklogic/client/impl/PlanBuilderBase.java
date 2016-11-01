@@ -42,15 +42,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.type.PlanParam;
-import com.marklogic.client.type.SemIriVal;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsNumericExpr;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsStringExpr;
-
 import com.marklogic.client.type.ArrayNodeExpr;
 import com.marklogic.client.type.AttributeNodeExpr;
 import com.marklogic.client.type.AttributeNodeSeqExpr;
@@ -60,18 +51,27 @@ import com.marklogic.client.type.DocumentNodeExpr;
 import com.marklogic.client.type.ElementNodeExpr;
 import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.JsonContentNodeExpr;
+import com.marklogic.client.type.JsonPropertyExpr;
+import com.marklogic.client.type.JsonRootNodeExpr;
 import com.marklogic.client.type.NullNodeExpr;
 import com.marklogic.client.type.NumberNodeExpr;
 import com.marklogic.client.type.ObjectNodeExpr;
 import com.marklogic.client.type.PINodeExpr;
+import com.marklogic.client.type.PlanAggregateOptions;
+import com.marklogic.client.type.PlanExprCol;
+import com.marklogic.client.type.PlanGroupConcatOptions;
+import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.TextNodeExpr;
-
-import com.marklogic.client.type.JsonPropertyExpr;
-
-import com.marklogic.client.type.JsonRootNodeExpr;
-import com.marklogic.client.type.JsonContentNodeExpr;
-import com.marklogic.client.type.XmlRootNodeExpr;
 import com.marklogic.client.type.XmlContentNodeExpr;
+import com.marklogic.client.type.XmlRootNodeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsStringExpr;
 
 abstract class PlanBuilderBase extends PlanBuilder {
 	private HandleFactoryRegistry handleRegistry;
@@ -140,6 +140,34 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			throw new IllegalArgumentException("invalid value for elseExpr(): "+value.getClass().getName());
 		}
     	return new CaseElseImpl((BaseTypeImpl.BaseArgImpl) value);
+    }
+
+	@Override
+    public ItemSeqExpr xpath(String inCol, String path) {
+	       return xpath(col(inCol), xs.string(path)); 
+    }
+	@Override
+    public ItemSeqExpr xpath(PlanExprCol inCol, XsStringExpr path) {
+        return new BaseTypeImpl.ItemSeqCallImpl("op", "xpath", new Object[]{ inCol, path });
+    }
+
+	@Override
+    public PlanAggregateOptions aggregateOptions(PlanValues values) {
+		return new PlanAggregateOptionsImpl(makeMap(values));
+    }
+	@Override
+    public PlanGroupConcatOptions groupConcatOptions(String separator) {
+		return new PlanGroupConcatOptionsImpl(makeMap("separator", separator));
+    }
+	@Override
+    public PlanGroupConcatOptions groupConcatOptions(PlanValues values) {
+		return new PlanGroupConcatOptionsImpl(makeMap(values));
+    }
+	@Override
+    public PlanGroupConcatOptions groupConcatOptions(String separator, PlanValues values) {
+		Map<String,String> map = makeMap(values);
+		map.put("separator", separator);
+		return new PlanGroupConcatOptionsImpl(map);
     }
 
 	@Override
@@ -482,6 +510,28 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			return arg;
 		}
     }
+
+	static class PlanAggregateOptionsImpl extends BaseTypeImpl.BaseMapImpl implements PlanAggregateOptions {
+		PlanAggregateOptionsImpl(Map<String,?> map) {
+			super(map);
+		}
+	}
+	static class PlanGroupConcatOptionsImpl extends BaseTypeImpl.BaseMapImpl implements PlanGroupConcatOptions {
+		PlanGroupConcatOptionsImpl(Map<String,?> map) {
+			super(map);
+		}
+	}
+
+	static Map<String,String> makeMap(PlanValues values) {
+		return (values == PlanValues.DISTINCT) ? makeMap("values", "distinct") : new HashMap<String, String>();
+	}
+	static Map<String,String> makeMap(String key, String value) {
+		Map<String, String> map = new HashMap<String, String>();
+		if (key != null) {
+			map.put(key, value);
+		}
+		return map;
+	}
 
     static interface JsonContentCallImpl extends JsonContentNodeExpr, BaseTypeImpl.BaseArgImpl {}
     static class JsonContentSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {

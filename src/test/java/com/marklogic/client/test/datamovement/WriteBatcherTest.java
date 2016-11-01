@@ -27,6 +27,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.Date;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -52,6 +53,7 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
+import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -204,21 +206,21 @@ public class WriteBatcherTest {
 
     WriteBatcher batcher = moveMgr.newWriteBatcher();
     WriteBatchListener[] successListeners = batcher.getBatchSuccessListeners();
-    assertEquals(0, successListeners.length);
+    assertEquals(1, successListeners.length);
 
     batcher.onBatchSuccess(successListener);
     successListeners = batcher.getBatchSuccessListeners();
-    assertEquals(1, successListeners.length);
-    assertEquals(successListener, successListeners[0]);
+    assertEquals(2, successListeners.length);
+    assertEquals(successListener, successListeners[1]);
 
     WriteFailureListener[] failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(1, failureListeners.length);
+    assertEquals(2, failureListeners.length);
     assertEquals(HostAvailabilityListener.class, failureListeners[0].getClass());
 
     batcher.onBatchFailure(failureListener);
     failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(2, failureListeners.length);
-    assertEquals(failureListener, failureListeners[1]);
+    assertEquals(3, failureListeners.length);
+    assertEquals(failureListener, failureListeners[2]);
 
     batcher.setBatchSuccessListeners();
     successListeners = batcher.getBatchSuccessListeners();
@@ -378,6 +380,9 @@ public class WriteBatcherTest {
     int docsPerExternalThread = Math.floorDiv(totalDocCount, externalThreadCount);
     final int expectedBatchSize = (batchSize > 0) ? batchSize : 1;
     final AtomicInteger successfulCount = new AtomicInteger(0);
+    final AtomicInteger failureCount = new AtomicInteger(0);
+    final AtomicInteger failureBatchCount = new AtomicInteger(0);
+    final AtomicInteger successfulBatchCount = new AtomicInteger(0);
     final StringBuffer failures = new StringBuffer();
     final int expectedBatches = (int) Math.ceil(totalDocCount / expectedBatchSize);
     WriteBatcher batcher = moveMgr.newWriteBatcher()
@@ -385,6 +390,7 @@ public class WriteBatcherTest {
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
         (client, batch) -> {
+          successfulBatchCount.incrementAndGet();
           for ( WriteEvent event : batch.getItems() ) {
             successfulCount.incrementAndGet();
             logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
@@ -400,6 +406,8 @@ public class WriteBatcherTest {
       )
       .onBatchFailure(
         (client, batch, throwable) -> {
+          failureBatchCount.incrementAndGet();
+          failureCount.addAndGet(batch.getItems().length);
           throwable.printStackTrace();
           for ( WriteEvent event : batch.getItems() ) {
             logger.debug("failure event.getTargetUri()=[{}]", event.getTargetUri());
@@ -414,7 +422,6 @@ public class WriteBatcherTest {
         }
       );
     JobTicket ticket = moveMgr.startJob(batcher);
-
     assertEquals(batchSize, batcher.getBatchSize());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
 
@@ -450,6 +457,8 @@ public class WriteBatcherTest {
       batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
     }
     batcher.flushAndWait();
+    JobReport report = moveMgr.getJobReport(ticket);
+    assertEquals("Job Report has incorrect completion information", false, report.isJobComplete());
     moveMgr.stopJob(ticket);
 
     if ( failures.length() > 0 ) fail(failures.toString());
@@ -461,6 +470,16 @@ public class WriteBatcherTest {
     DocumentPage docs = docMgr.search(query, 1);
     assertEquals("there should be " + successfulCount + " docs in the collection", successfulCount.get(), docs.getTotalSize());
 
+    report = moveMgr.getJobReport(ticket);
+    long maxTime = new Date().getTime()+200;
+    long minTime = new Date().getTime()-200;
+    Date reportDate = report.getReportTimestamp().getTime();
+    assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
+    assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
+    assertEquals("Job Report has incorrect successful event counts", successfulCount.get(),report.getSuccessEventsCount());
+    assertEquals("Job Report has incorrect failure batch counts", failureBatchCount.get(), report.getFailureBatchesCount());
+    assertEquals("Job Report has incorrect failure events counts", failureCount.get(), report.getFailureEventsCount());
+    assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
     long duration = System.currentTimeMillis() - start;
     System.out.println("Completed test " + testName + " in " + duration + " millis");
   }

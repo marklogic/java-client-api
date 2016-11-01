@@ -15,52 +15,132 @@
  */
 package com.marklogic.client.datamovement.impl;
 
-import java.util.Date;
+import java.util.Calendar;
 
-public class JobReportImpl {
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.QueryFailureListener;
+import com.marklogic.client.datamovement.impl.QueryJobReportListener;
+import com.marklogic.client.datamovement.WriteBatchListener;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.WriteFailureListener;
+import com.marklogic.client.datamovement.JobReport;
+import com.marklogic.client.datamovement.QueryBatchListener;
+import com.marklogic.client.datamovement.impl.WriteJobReportListener;
+
+public class JobReportImpl implements JobReport {
+
+  private long successEventsCount = 0;
+  private long failureEventsCount = 0;
+  private long successBatchesCount = 0;
+  private long failureBatchesCount = 0;
+  private boolean isJobComplete;
+  private Calendar reportTimestamp;
+
+  public JobReportImpl(WriteBatcher batcher) {
+    WriteJobReportListener writeJobSuccessListener = null;
+    WriteJobReportListener writeJobFailureListener = null;
+    WriteBatchListener[] batchListeners = batcher.getBatchSuccessListeners();
+    for(WriteBatchListener batchListener : batchListeners) {
+      if(batchListener instanceof WriteJobReportListener) {
+        writeJobSuccessListener = (WriteJobReportListener) batchListener;
+        break;
+      }
+    }
+    WriteFailureListener[] failureListeners = batcher.getBatchFailureListeners();
+    for(WriteFailureListener failureListener : failureListeners) {
+      if(failureListener instanceof WriteJobReportListener) {
+        writeJobFailureListener = (WriteJobReportListener) failureListener;
+        break;
+      }
+    }
+    if(writeJobSuccessListener == null || writeJobFailureListener == null) {
+      throw new IllegalStateException("WriteJobReportListener should be registered "
+          + "in both the Success and Failure Listeners");
+    }
+    if(writeJobSuccessListener != writeJobFailureListener) {
+      throw new IllegalStateException("The same WriteJobReportListener should be registered "
+          + "in both the Success and Failure Listeners");
+    }
+    successBatchesCount = writeJobSuccessListener.getSuccessBatchesCount();
+    failureBatchesCount = writeJobSuccessListener.getFailureBatchesCount();
+    successEventsCount = writeJobSuccessListener.getSuccessEventsCount();
+    failureEventsCount = writeJobSuccessListener.getFailureEventsCount();
+    isJobComplete = batcher.isStopped();
+    reportTimestamp = Calendar.getInstance();
+  }
+
+  public JobReportImpl(QueryBatcher batcher) {
+    QueryJobReportListener queryJobSuccessListener = null;
+    QueryJobReportListener queryJobFailureListener = null;
+    QueryBatchListener[] batchListeners = batcher.getQuerySuccessListeners();
+    for(QueryBatchListener batchListener : batchListeners) {
+      if(batchListener instanceof QueryJobReportListener) {
+        queryJobSuccessListener = (QueryJobReportListener) batchListener;
+        break;
+      }
+    }
+    QueryFailureListener[] failureListeners = batcher.getQueryFailureListeners();
+    for(QueryFailureListener failureListener : failureListeners) {
+      if(failureListener instanceof QueryJobReportListener) {
+        queryJobFailureListener = (QueryJobReportListener) failureListener;
+        break;
+      }
+    }
+    if(queryJobSuccessListener == null || queryJobFailureListener == null) {
+      throw new IllegalStateException("QueryJobReportListener should be registered "
+          + "in both the Success and Failure Listeners");
+    }
+    if(queryJobSuccessListener != queryJobFailureListener) {
+      throw new IllegalStateException("The same QueryJobReportListener should be registered "
+          + "in both the Success and Failure Listeners");
+    }
+    successBatchesCount = queryJobSuccessListener.getSuccessBatchesCount();
+    failureBatchesCount = queryJobSuccessListener.getFailureBatchesCount();
+    failureEventsCount = failureBatchesCount;
+    successEventsCount = queryJobSuccessListener.getSuccessEventsCount();
+    isJobComplete = batcher.isStopped();
+    reportTimestamp = Calendar.getInstance();
+  }
+
+  @Override
   public long getSuccessEventsCount() {
-    // TODO: implement
-    return 0;
+    return successEventsCount;
   }
 
+  @Override
   public long getFailureEventsCount() {
-    // TODO: implement
-    return 0;
+    return failureEventsCount;
   }
 
-  public long getTotalEventsEstimate() {
-    // TODO: implement
-    return 0;
-  }
-
-  public long getFragmentCount() {
-    // TODO: implement
-    return 0;
-  }
-
+  @Override
   public long getSuccessBatchesCount() {
-    // TODO: implement
-    return 0;
+    return successBatchesCount;
   }
 
+  @Override
   public long getFailureBatchesCount() {
-    // TODO: implement
-    return 0;
+    return failureBatchesCount;
   }
 
-  public long getBytesMoved() {
-    // TODO: implement
-    return 0;
-  }
-
+  @Override
   public boolean isJobComplete() {
-    // TODO: implement
-    return true;
+    return isJobComplete;
   }
 
-  public Date getReportTimestamp() {
-    // TODO: implement
-    return null;
+  @Override
+  public Calendar getReportTimestamp() {
+    return reportTimestamp;
   }
 
+  @Override
+  public long getBytesMoved() {
+    // TODO Implement in the future
+    return 0;
+  }
+
+  @Override
+  public long getFragmentCount() {
+    // TODO Implement in the future
+    return 0;
+  }
 }
