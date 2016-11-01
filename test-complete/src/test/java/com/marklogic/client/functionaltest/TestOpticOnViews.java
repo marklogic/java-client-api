@@ -16,10 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -51,10 +48,12 @@ import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.XsStringVal;
 
 public class TestOpticOnViews extends BasicJavaClientREST {
@@ -77,7 +76,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		newline = System.getProperty("line.separator");
 		
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		configureRESTServer(dbName, fNames);
 		
 		// Add new range elements into this array
@@ -157,6 +156,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		Thread.sleep(10000);
+		
 	}
 	
 	/**
@@ -248,36 +248,33 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		
 		// Should have 6 nodes returned.
 		assertEquals("Six nodes not returned from testnamedSchemaAndView method ", 6, jsonBindingsNodes.size());
 						
-			// Verify result 1's values.
-			assertEquals("Element 1 opticFunctionalTest.detail.id datatype value incorrect", "http://www.w3.org/2001/XMLSchema#int", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("datatype").asText());
-			assertEquals("Element 1 opticFunctionalTest.detail.id type is incorrect", "literal", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("type").asText());		
-			assertEquals("Element 1 opticFunctionalTest.detail.id value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
-				
-			assertEquals("Element 1 opticFunctionalTest.detail.name type is incorrect", "literal", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("type").asText());		
-			assertEquals("Element 1 opticFunctionalTest.detail.name value is incorrect", "Detail 1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
-			
-			assertEquals("Element 1 opticFunctionalTest.detail.masterId datatype value incorrect", "http://www.w3.org/2001/XMLSchema#int", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("datatype").asText());
-			assertEquals("Element 1 opticFunctionalTest.detail.masterId type is incorrect", "literal", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("type").asText());		
-			assertEquals("Element 1 opticFunctionalTest.detail.masterId value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("value").asText());
-			
-			assertEquals("Element 1 opticFunctionalTest.detail.amount datatype value incorrect", "http://www.w3.org/2001/XMLSchema#double", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("datatype").asText());
-			assertEquals("Element 1 opticFunctionalTest.detail.amount type is incorrect", "literal", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("type").asText());		
-			assertEquals("Element 1 opticFunctionalTest.detail.amount value is incorrect", "10.01", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
-			
-			assertEquals("Element 1 opticFunctionalTest.detail.color type is incorrect", "literal", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("type").asText());		
-			assertEquals("Element 1 opticFunctionalTest.detail.color value is incorrect", "blue", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
-			// Verify only the name value of other nodes in the array results.
-			
-			assertEquals("Element 2 opticFunctionalTest.detail.name value is incorrect", "Detail 2", jsonBindingsNodes.path(1).path("opticFunctionalTest.detail.name").path("value").asText());
-			assertEquals("Element 3 opticFunctionalTest.detail.name value is incorrect", "Detail 3", jsonBindingsNodes.path(2).path("opticFunctionalTest.detail.name").path("value").asText());
-			assertEquals("Element 4 opticFunctionalTest.detail.name value is incorrect", "Detail 4", jsonBindingsNodes.path(3).path("opticFunctionalTest.detail.name").path("value").asText());
-			assertEquals("Element 5 opticFunctionalTest.detail.name value is incorrect", "Detail 5", jsonBindingsNodes.path(4).path("opticFunctionalTest.detail.name").path("value").asText());
-			assertEquals("Element 6 opticFunctionalTest.detail.name value is incorrect", "Detail 6", jsonBindingsNodes.path(5).path("opticFunctionalTest.detail.name").path("value").asText());
+		// Verify result 1's values.
+		assertEquals("Element 1 opticFunctionalTest.detail.id type value incorrect", "xs:integer", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("type").asText());				
+		assertEquals("Element 1 opticFunctionalTest.detail.id value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.id").path("value").asText());
+
+		assertEquals("Element 1 opticFunctionalTest.detail.name type is incorrect", "xs:string", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("type").asText());		
+		assertEquals("Element 1 opticFunctionalTest.detail.name value is incorrect", "Detail 1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.name").path("value").asText());
+
+		assertEquals("Element 1 opticFunctionalTest.detail.masterId type value incorrect", "xs:integer", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("type").asText());			
+		assertEquals("Element 1 opticFunctionalTest.detail.masterId value is incorrect", "1", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.masterId").path("value").asText());
+		
+		assertEquals("Element 1 opticFunctionalTest.detail.amount type is incorrect", "xs:double", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("type").asText());		
+		assertEquals("Element 1 opticFunctionalTest.detail.amount value is incorrect", "10.01", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+
+		assertEquals("Element 1 opticFunctionalTest.detail.color type is incorrect", "xs:string", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("type").asText());		
+		assertEquals("Element 1 opticFunctionalTest.detail.color value is incorrect", "blue", jsonBindingsNodes.path(0).path("opticFunctionalTest.detail.color").path("value").asText());
+		// Verify only the name value of other nodes in the array results.
+
+		assertEquals("Element 2 opticFunctionalTest.detail.name value is incorrect", "Detail 2", jsonBindingsNodes.path(1).path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 3 opticFunctionalTest.detail.name value is incorrect", "Detail 3", jsonBindingsNodes.path(2).path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 4 opticFunctionalTest.detail.name value is incorrect", "Detail 4", jsonBindingsNodes.path(3).path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 5 opticFunctionalTest.detail.name value is incorrect", "Detail 5", jsonBindingsNodes.path(4).path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 6 opticFunctionalTest.detail.name value is incorrect", "Detail 6", jsonBindingsNodes.path(5).path("opticFunctionalTest.detail.name").path("value").asText());
 	}
 	
 	/* This test checks a simple Schema and view with a qualifier ordered by id.
@@ -303,7 +300,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		
 		// Should have 6 nodes returned.
 		assertEquals("Six nodes not returned from testnamedSchemaViewWithQualifier method ", 6, jsonBindingsNodes.size());
@@ -342,7 +339,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testgroupBy method ", 3, jsonBindingsNodes.size());
@@ -383,7 +380,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 6 nodes returned.
 		assertEquals("Six nodes not returned from testjoinInnerKeyMatch method ", 6, jsonBindingsNodes.size());
 		// Verify first node.
@@ -399,9 +396,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Element 6 opticFunctionalTest.detail.id value incorrect", "6", sixth.path("opticFunctionalTest.detail.id").path("value").asText());
 		assertEquals("Element 6 opticFunctionalTest.master.id value incorrect", "2", sixth.path("opticFunctionalTest.master.id").path("value").asText());
 		assertEquals("Element 6 opticFunctionalTest.detail.masterId value incorrect", "2", sixth.path("opticFunctionalTest.detail.masterId").path("value").asText());
-		assertEquals("Element 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());		
-		
-		//TODO when Git#491 is resolved add checks for rowId and docId.
+		assertEquals("Element 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());
 	}
 	
 	/* This test checks join inner with keymatch with select.
@@ -438,7 +433,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 6 nodes returned.
 		assertEquals("Three nodes not returned from testjoinInnerOffsetAndLimit method ", 6, jsonBindingsNodes.size());
 		// Verify first node.
@@ -482,7 +477,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 2 nodes returned.
 		assertEquals("Two nodes not returned from testjoinInnerGroupBy method ", 2, jsonBindingsNodes.size());
 		// Verify first node.
@@ -524,23 +519,23 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 12 nodes returned.
 		assertEquals("Twelve nodes not returned from testjoinLeftOuterWithSelect method ", 12, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
 //Ask Aries about this assert
-		assertEquals("Element 1 MasterName value incorrect", "Master 1", first.path("MasterName").path("value").asText());
+		assertEquals("Element 1 MasterName value incorrect", "Master 2", first.path("MasterName").path("value").asText());
 		assertEquals("Element 1 DetailName value incorrect", "Detail 6", first.path("DetailName").path("value").asText());
 		
 		// Verify second node.
 		JsonNode second = jsonBindingsNodes.path(1);
-		assertEquals("Element 2 MasterName value incorrect", "Master 2", second.path("MasterName").path("value").asText());
+		assertEquals("Element 2 MasterName value incorrect", "Master 1", second.path("MasterName").path("value").asText());
 		assertEquals("Element 2 DetailName value incorrect", "Detail 6", second.path("DetailName").path("value").asText());
 		
 		// Verify twelveth node.
 		JsonNode twelve = jsonBindingsNodes.path(11);
-		assertEquals("Element 12 MasterName value incorrect", "Master 2", twelve.path("MasterName").path("value").asText());
+		assertEquals("Element 12 MasterName value incorrect", "Master 1", twelve.path("MasterName").path("value").asText());
 		assertEquals("Element 12 DetailName value incorrect", "Detail 1", twelve.path("DetailName").path("value").asText());
 	}
 	
@@ -573,7 +568,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 12 nodes returned.
 		assertEquals("Twelve nodes not returned from testjoinCrossProduct method ", 12, jsonBindingsNodes.size());
 		// Verify first node.
@@ -586,8 +581,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Element 2 DetailName value incorrect", "Detail 5", second.path("DetailName").path("value").asText());
 		// Verify second node.
 		JsonNode twelve = jsonBindingsNodes.path(11);
-		assertEquals("Element 3 MasterName value incorrect", "Master 2", twelve.path("MasterName").path("value").asText());
-		assertEquals("Element 3 DetailName value incorrect", "Detail 1", twelve.path("DetailName").path("value").asText());
+		assertEquals("Element 12 MasterName value incorrect", "Master 2", twelve.path("MasterName").path("value").asText());
+		assertEquals("Element 12 DetailName value incorrect", "Detail 1", twelve.path("DetailName").path("value").asText());
 	}
 	
 	/* This test checks inner join with accessor plan and on.
@@ -604,11 +599,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");
 		                 
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
-		PlanColumn masterIdCol1 = p.viewCol("detail", "masterId");
-		PlanColumn masterIdCol2 = p.viewCol("master", "id"); 
-		PlanColumn detailIdCol =  p.viewCol("detail", "id");
-		PlanColumn detailNameCol = p.viewCol("detail", "name");
-		PlanColumn masterNameCol = p.viewCol("master", "name");
+		PlanColumn masterIdCol1 = p.viewCol("myDetail", "masterId");
+		PlanColumn masterIdCol2 = p.viewCol("myMaster", "id"); 
+		PlanColumn detailIdCol =  p.viewCol("myDetail", "id");
+		PlanColumn detailNameCol = p.viewCol("myDetail", "name");
+		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 		                    
 		ModifyPlan plan3 =  plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.intVal(3)))
 		        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
@@ -620,34 +615,34 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testjoinInnerAccessorPlanAndOn method ", 3, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
-		assertEquals("Element 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.master.name value incorrect", "Master 1", first.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.id value incorrect", "5", first.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.name value incorrect", "Detail 5", first.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 1 myMaster.id value incorrect", "1", first.path("myMaster.id").path("value").asText());
+		assertEquals("Element 1 myMaster.name value incorrect", "Master 1", first.path("myMaster.name").path("value").asText());
+		assertEquals("Element 1 myDetail.id value incorrect", "5", first.path("myDetail.id").path("value").asText());
+		assertEquals("Element 1 myDetail.name value incorrect", "Detail 5", first.path("myDetail.name").path("value").asText());
 		// Verify second node.
 		JsonNode second = jsonBindingsNodes.path(1);
-		assertEquals("Element 2 opticFunctionalTest.master.id value incorrect", "2", second.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.master.name value incorrect", "Master 2", second.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.id value incorrect", "4", second.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.name value incorrect", "Detail 4", second.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 2 myMaster.id value incorrect", "2", second.path("myMaster.id").path("value").asText());
+		assertEquals("Element 2 myMaster.name value incorrect", "Master 2", second.path("myMaster.name").path("value").asText());
+		assertEquals("Element 2 myDetail.id value incorrect", "4", second.path("myDetail.id").path("value").asText());
+		assertEquals("Element 2 myDetail.name value incorrect", "Detail 4", second.path("myDetail.name").path("value").asText());
 		// Verify third node.
 		JsonNode third = jsonBindingsNodes.path(2);
-		assertEquals("Element 3 opticFunctionalTest.master.id value incorrect", "1", third.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.master.name value incorrect", "Master 1", third.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.id value incorrect", "3", third.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.name value incorrect", "Detail 3", third.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 3 myMaster.id value incorrect", "1", third.path("myMaster.id").path("value").asText());
+		assertEquals("Element 3 myMaster.name value incorrect", "Master 1", third.path("myMaster.name").path("value").asText());
+		assertEquals("Element 3 myDetail.id value incorrect", "3", third.path("myDetail.id").path("value").asText());
+		assertEquals("Element 3 myDetail.name value incorrect", "Detail 3", third.path("myDetail.name").path("value").asText());
 		
 		// Verify RowSet and RowRecord.		
 		RowSet<RowRecord> rowSet = rowMgr.resultRows(plan3);
 		String[] colNames = rowSet.getColumnNames();
 		Arrays.sort(colNames);
 		
-		String[] exptdColumnNames = {"opticFunctionalTest.master.id", "opticFunctionalTest.master.name", "opticFunctionalTest.detail.id", "opticFunctionalTest.detail.name"};
+		String[] exptdColumnNames = {"myMaster.id", "myMaster.name", "myDetail.id", "myDetail.name"};
 		Arrays.sort(exptdColumnNames);
 		// Verify if all columns are available.
 		assertTrue(Arrays.equals(colNames, exptdColumnNames));
@@ -658,12 +653,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		RowRecord record = null;
 		if(rowItr.hasNext()) {			
 			record = rowItr.next();				
-			assertEquals("Element 1 RowSet Iterator value incorrect", 1, record.getInt("opticFunctionalTest.master.id"));
-			assertEquals("Element 1 RowSet Iterator value incorrect", 5, record.getInt("opticFunctionalTest.detail.id"));
-			assertEquals("Element 1 RowSet Iterator value incorrect", "Detail 5", record.getString("opticFunctionalTest.detail.name"));
-			assertEquals("Element 1 RowSet Iterator value incorrect", "Master 1", record.getString("opticFunctionalTest.master.name"));
+			assertEquals("Element 1 RowSet Iterator value incorrect", 1, record.getInt("myMaster.id"));
+			assertEquals("Element 1 RowSet Iterator value incorrect", 5, record.getInt("myDetail.id"));
+			assertEquals("Element 1 RowSet Iterator value incorrect", "Detail 5", record.getString("myDetail.name"));
+			assertEquals("Element 1 RowSet Iterator value incorrect", "Master 1", record.getString("myMaster.name"));
 
-			XsStringVal str = record.getValueAs("opticFunctionalTest.master.name", XsStringVal.class);
+			XsStringVal str = record.getValueAs("myMaster.name", XsStringVal.class);
 			assertEquals("Element 1 RowSet Iterator value incorrect", "Master 1", str.getString());
 		}
 		else {
@@ -699,7 +694,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 	} 
 	catch(Exception ex) {
 		str.append(ex.getMessage());
@@ -707,42 +702,43 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	assertTrue("Exception Message incorrect", str.toString().contains("cannot take null value"));
 	}
 	
-	/* This test checks when we export and import plan.
+	/* This test checks when we export plan.
 	 * Should return 1 item.
 	 * 
 	 */
 	@Test
-	public void testExportAndImportPlan() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	public void testExportPlanWithPlanCol() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{	
-		System.out.println("In testExportAndImportPlan method");
+		System.out.println("In testExportPlanWithPlanCol method");
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		JacksonHandle exportHandle = new JacksonHandle();
 		
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");
-		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
+		ViewPlan plan1 = p.fromView("opticFunctionalTest", "detail");
+		ViewPlan plan2 = p.fromView("opticFunctionalTest", "master");
 		
-		PlanColumn masterIdCol1 = p.viewCol("detail", "masterId");
-		PlanColumn masterIdCol2 = p.viewCol("master", "id");
-		PlanColumn idCol1 = p.viewCol("master", "id");
-		PlanColumn idCol2 = p.viewCol("detail", "id");
-		PlanColumn detailNameCol = p.viewCol("detail", "name");
-		PlanColumn masterNameCol = p.viewCol("master", "name");
+		PlanColumn masterIdCol1 = plan1.col("masterId");
+		PlanColumn masterIdCol2 = plan2.col("id");
+		PlanColumn idCol1 = plan2.col("id");
+		PlanColumn idCol2 = plan1.col("id");
+		PlanColumn detailNameCol = plan1.col("name");
+		PlanColumn masterNameCol = plan2.col("name");
 		
-		ExportablePlan exportedPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
+		ModifyPlan exportedPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
 		                                   .orderBy(p.desc(detailNameCol))
 		                                   .offsetLimit(1, 100);
-		//Export the Plan to a handle.
-		exportedPlan.export(exportHandle);
+		ModifyPlan exportedPlan2 = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
+                .orderBy(p.desc(detailNameCol))
+                .offsetLimit(1, 100);	
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
 		rowMgr.resultDoc(exportedPlan, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 1 node returned.
-		assertEquals("One node not returned from testExportAndImportPlan method ", 1, jsonBindingsNodes.size());
+		assertEquals("One node not returned from testExportPlan method ", 1, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
 		assertEquals("Element 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
@@ -754,22 +750,48 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Element 1 opticFunctionalTest.detail.amount value incorrect", "10.01", first.path("opticFunctionalTest.detail.amount").path("value").asText());
 		assertEquals("Element 1 opticFunctionalTest.detail.color value incorrect", "blue", first.path("opticFunctionalTest.detail.color").path("value").asText());
 		
+		//Export the Plan to a handle.
+		exportedPlan.export(exportHandle);
+		JsonNode exportNode = exportHandle.get();
+		// verify parts of the Exported Plan String.
+		assertEquals("Plan export incorrect", "from-view", exportNode.path("$optic").path("args").get(0).path("fn").asText());
+		assertEquals("Plan export incorrect", "join-inner", exportNode.path("$optic").path("args").get(1).path("fn").asText());
+		assertEquals("Plan export incorrect", "from-view", exportNode.path("$optic").path("args").get(1).path("args").get(0).path("args").get(0).path("fn").asText());
+		assertEquals("Plan export incorrect", "order-by", exportNode.path("$optic").path("args").get(2).path("fn").asText());
+		assertEquals("Plan export incorrect", "offset-limit", exportNode.path("$optic").path("args").get(3).path("fn").asText());
+				
 		// ExportAs the Plan to a handle.
-		//StringHandle strHandle = exportedPlan.exportAs(StringHandle.class);
+		String strJackHandleAs = exportedPlan.exportAs(String.class);
+		JsonNode JsonNodeAs = exportedPlan2.exportAs(JsonNode.class);
 		
-		// Import the exported plan JacksonHandle. And validate the results.
+		// verify parts of the Exported Plan String.
+		ObjectMapper mapper = new ObjectMapper();
+		JsonNode exportedAs = mapper.readTree(strJackHandleAs);
+		assertEquals("Plan exportAs incorrect", "from-view", exportedAs.path("$optic").path("args").get(0).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "join-inner", exportedAs.path("$optic").path("args").get(1).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "from-view", exportedAs.path("$optic").path("args").get(1).path("args").get(0).path("args").get(0).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "order-by", exportedAs.path("$optic").path("args").get(2).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "offset-limit", exportedAs.path("$optic").path("args").get(3).path("fn").asText());
 		
-		
-		// Import the exported plan StringHandle. And validate the results.
+		// Verify with exportAs to JsonNode
+		assertEquals("Plan exportAs incorrect", "from-view", JsonNodeAs.path("$optic").path("args").get(0).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "join-inner", JsonNodeAs.path("$optic").path("args").get(1).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "from-view", JsonNodeAs.path("$optic").path("args").get(1).path("args").get(0).path("args").get(0).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "order-by", JsonNodeAs.path("$optic").path("args").get(2).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "offset-limit", JsonNodeAs.path("$optic").path("args").get(3).path("fn").asText());
 		
 		// Export a plan with error / incorrect column
 		PlanColumn masterIdCol1AA = p.viewCol("detail", "masterIdAA");
 		ExportablePlan exportedErrorPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol1AA), p.on(idCol1, idCol2))
                                                 .orderBy(p.desc(detailNameCol))
                                                 .offsetLimit(1, 100);
-		// Now import the plan and validate results.
-	
-		//TODO When Git Issue 492 and 493 is resolved. 
+		exportHandle = new JacksonHandle();
+		exportedPlan.export(exportHandle);
+		JsonNode exportNodedAA = exportHandle.get();
+		
+		assertEquals("Plan exportAs incorrect", "from-view", exportNodedAA.path("$optic").path("args").get(0).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "join-inner", exportedAs.path("$optic").path("args").get(1).path("fn").asText());
+		assertEquals("Plan exportAs incorrect", "order-by", exportedAs.path("$optic").path("args").get(2).path("fn").asText());
 	}
 	
 	/* This test checks group by with uda.
@@ -803,7 +825,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 2 node returned.
 		assertEquals("Two nodes not returned from testgroupByWithUda method ", 2, jsonBindingsNodes.size());
 		// Verify first node.
@@ -828,11 +850,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");		                    
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
-		PlanColumn masterIdCol1 = p.viewCol("detail", "masterId");
-		PlanColumn masterIdCol2 = p.viewCol("master", "id");
-		PlanColumn detailIdCol = p.viewCol("detail", "id");
-		PlanColumn detailNameCol = p.viewCol("detail", "name");
-		PlanColumn masterNameCol = p.viewCol("master", "name");
+		PlanColumn masterIdCol1 = p.viewCol("myDetail", "masterId");
+		PlanColumn masterIdCol2 = p.viewCol("myMaster", "id");
+		PlanColumn detailIdCol = p.viewCol("myDetail", "id");
+		PlanColumn detailNameCol = p.viewCol("myDetail", "name");
+		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 		        .where(p.eq(masterIdCol1, masterIdCol2))
 		        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
@@ -845,26 +867,26 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 3 node returned.
 		assertEquals("Three nodes not returned from testoffsetVales method ", 3, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
-		assertEquals("Element 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.master.name value incorrect", "Master 1", first.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.id value incorrect", "5", first.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.name value incorrect", "Detail 5", first.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 1 myMaster.id value incorrect", "1", first.path("myMaster.id").path("value").asText());
+		assertEquals("Element 1 myMaster.name value incorrect", "Master 1", first.path("myMaster.name").path("value").asText());
+		assertEquals("Element 1 myDetail.id value incorrect", "5", first.path("myDetail.id").path("value").asText());
+		assertEquals("Element 1 myDetail.name value incorrect", "Detail 5", first.path("myDetail.name").path("value").asText());
 		JsonNode second = jsonBindingsNodes.path(1);
-		assertEquals("Element 2 opticFunctionalTest.master.id value incorrect", "2", second.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.master.name value incorrect", "Master 2", second.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.id value incorrect", "4", second.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.name value incorrect", "Detail 4", second.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 2 myMaster.id value incorrect", "2", second.path("myMaster.id").path("value").asText());
+		assertEquals("Element 2 myMaster.name value incorrect", "Master 2", second.path("myMaster.name").path("value").asText());
+		assertEquals("Element 2 myDetail.id value incorrect", "4", second.path("myDetail.id").path("value").asText());
+		assertEquals("Element 2 myDetail.name value incorrect", "Detail 4", second.path("myDetail.name").path("value").asText());
 		
 		JsonNode third = jsonBindingsNodes.path(2);
-		assertEquals("Element 3 opticFunctionalTest.master.id value incorrect", "1", third.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.master.name value incorrect", "Master 1", third.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.id value incorrect", "3", third.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.name value incorrect", "Detail 3", third.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 3 myMaster.id value incorrect", "1", third.path("myMaster.id").path("value").asText());
+		assertEquals("Element 3 myMaster.name value incorrect", "Master 1", third.path("myMaster.name").path("value").asText());
+		assertEquals("Element 3 myDetail.id value incorrect", "3", third.path("myDetail.id").path("value").asText());
+		assertEquals("Element 3 myDetail.name value incorrect", "Detail 3", third.path("myDetail.name").path("value").asText());
 		
 		// offset with out of bound value
 		ModifyPlan plan4 = plan1.joinInner(plan2)
@@ -894,7 +916,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan5, jacksonHandleZOffset);
 		JsonNode jsonResultsZOffset = jacksonHandleZOffset.get();
-		JsonNode jsonBindingsNodesZOffset = jsonResultsZOffset.path("results").path("bindings");
+		JsonNode jsonBindingsNodesZOffset = jsonResultsZOffset.path("rows");
 		// Should have 6 node returned.
 		assertEquals("Six nodes not returned from testoffsetVales method ", 6, jsonBindingsNodesZOffset.size());
 		
@@ -931,11 +953,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");		                    
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
-		PlanColumn masterIdCol1 = p.viewCol("detail", "masterId");
-		PlanColumn masterIdCol2 = p.viewCol("master", "id");
-		PlanColumn detailIdCol = p.viewCol("detail", "id");
-		PlanColumn detailNameCol = p.viewCol("detail", "name");
-		PlanColumn masterNameCol = p.viewCol("master", "name");
+		PlanColumn masterIdCol1 = p.viewCol("myDetail", "masterId");
+		PlanColumn masterIdCol2 = p.viewCol("myMaster", "id");
+		PlanColumn detailIdCol = p.viewCol("myDetail", "id");
+		PlanColumn detailNameCol = p.viewCol("myDetail", "name");
+		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 		                        .where(
 		                        		p.eq(masterIdCol1, masterIdCol2)
@@ -950,26 +972,26 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 3 node returned.
 		assertEquals("Three nodes not returned from testlimitValues method ", 3, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
-		assertEquals("Element 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.master.name value incorrect", "Master 1", first.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.id value incorrect", "5", first.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.name value incorrect", "Detail 5", first.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 1 myMaster.id value incorrect", "1", first.path("myMaster.id").path("value").asText());
+		assertEquals("Element 1 myMaster.name value incorrect", "Master 1", first.path("myMaster.name").path("value").asText());
+		assertEquals("Element 1 myDetail.id value incorrect", "5", first.path("myDetail.id").path("value").asText());
+		assertEquals("Element 1 myDetail.name value incorrect", "Detail 5", first.path("myDetail.name").path("value").asText());
 		JsonNode second = jsonBindingsNodes.path(1);
-		assertEquals("Element 2 opticFunctionalTest.master.id value incorrect", "2", second.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.master.name value incorrect", "Master 2", second.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.id value incorrect", "4", second.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 2 opticFunctionalTest.detail.name value incorrect", "Detail 4", second.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 2 myMaster.id value incorrect", "2", second.path("myMaster.id").path("value").asText());
+		assertEquals("Element 2 myMaster.name value incorrect", "Master 2", second.path("myMaster.name").path("value").asText());
+		assertEquals("Element 2 myDetail.id value incorrect", "4", second.path("myDetail.id").path("value").asText());
+		assertEquals("Element 2 myDetail.name value incorrect", "Detail 4", second.path("myDetail.name").path("value").asText());
 		
 		JsonNode third = jsonBindingsNodes.path(2);
-		assertEquals("Element 3 opticFunctionalTest.master.id value incorrect", "1", third.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.master.name value incorrect", "Master 1", third.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.id value incorrect", "3", third.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Element 3 opticFunctionalTest.detail.name value incorrect", "Detail 3", third.path("opticFunctionalTest.detail.name").path("value").asText());
+		assertEquals("Element 3 myMaster.id value incorrect", "1", third.path("myMaster.id").path("value").asText());
+		assertEquals("Element 3 myMaster.name value incorrect", "Master 1", third.path("myMaster.name").path("value").asText());
+		assertEquals("Element 3 myDetail.id value incorrect", "3", third.path("myDetail.id").path("value").asText());
+		assertEquals("Element 3 myDetail.name value incorrect", "Detail 3", third.path("myDetail.name").path("value").asText());
 		
 		// Limit with large value
 		ModifyPlan plan4 = plan1.joinInner(plan2)
@@ -985,7 +1007,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan4, jacksonHandleLarge);
 		JsonNode jsonResultsLarge = jacksonHandleLarge.get();
-		JsonNode jsonBindingsNodesLarge = jsonResultsLarge.path("results").path("bindings");
+		JsonNode jsonBindingsNodesLarge = jsonResultsLarge.path("rows");
 		// Should have 6 node returned.
 		assertEquals("Six nodes not returned from testlimitValues method ", 6, jsonBindingsNodesLarge.size());
 		
@@ -1006,7 +1028,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 			rowMgr.resultDoc(plan5, jacksonHandleZ);
 			JsonNode jsonResultsZ = jacksonHandleLarge.get();
-			JsonNode jsonBindingsNodesZ = jsonResultsZ.path("results").path("bindings");
+			JsonNode jsonBindingsNodesZ = jsonResultsZ.path("rows");
 		}
 		catch(Exception ex) {
 			strZ.append(ex.getMessage());
@@ -1028,7 +1050,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 			rowMgr.resultDoc(plan6, jacksonHandleNeg);
 			JsonNode jsonResultsNeg = jacksonHandleNeg.get();
-			JsonNode jsonBindingsNodesNeg = jsonResultsNeg.path("results").path("bindings");
+			JsonNode jsonBindingsNodesNeg = jsonResultsNeg.path("rows");
 		}
 		catch(Exception ex) {
 			strNeg.append(ex.getMessage());
@@ -1069,7 +1091,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 
 		// Should have 2 nodes returned.
 		assertEquals("Twelve nodes not returned from testjoinInnerWhereDisctinct method ", 2, jsonBindingsNodes.size());
@@ -1130,7 +1152,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 12 nodes returned.
 		assertEquals("Twelve nodes not returned from testJoinLeftOuter method ", 12, jsonBindingsNodes.size());
@@ -1183,7 +1205,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 8 nodes returned.
 		assertEquals("Eight nodes not returned from testUnion method ", 8, jsonBindingsNodes.size());
@@ -1226,7 +1248,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan4, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testIntersectDiffSchemas method ", 4, jsonBindingsNodes.size());
@@ -1270,7 +1292,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 6 nodes returned.
 		assertEquals("Six nodes not returned from testArithmeticOperations method ", 6, jsonBindingsNodes.size());
@@ -1319,7 +1341,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testBuiltinFuncs method ", 3, jsonBindingsNodes.size());
@@ -1344,11 +1366,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");
 		                 
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
-		PlanColumn masterIdCol1 = p.viewCol("detail", "masterId");
-		PlanColumn masterIdCol2 = p.viewCol("master", "id"); 
-		PlanColumn detailIdCol =  p.viewCol("detail", "id");
-		PlanColumn detailNameCol = p.viewCol("detail", "name");
-		PlanColumn masterNameCol = p.viewCol("master", "name");
+		PlanColumn masterIdCol1 = p.viewCol("myDetail", "masterId");
+		PlanColumn masterIdCol2 = p.viewCol("myMaster", "id"); 
+		PlanColumn detailIdCol =  p.viewCol("myDetail", "id");
+		PlanColumn detailNameCol = p.viewCol("myDetail", "name");
+		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 		// Pass a double                    
 		ModifyPlan plan3 =  plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.doubleVal(3.0)))
 		        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
@@ -1360,7 +1382,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testjoinInnerWithDataTypes method ", 3, jsonBindingsNodes.size());
 		
@@ -1375,7 +1397,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(plan4, jacksonHandleStr);
 		JsonNode jsonResultsStr = jacksonHandleStr.get();
-		JsonNode jsonBindingsNodesStr = jsonResultsStr.path("results").path("bindings");
+		JsonNode jsonBindingsNodesStr = jsonResultsStr.path("rows");
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testjoinInnerWithDataTypes method ", 3, jsonBindingsNodesStr.size());
 		
@@ -1409,7 +1431,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(plan6, jacksonHandleDecimal);
 		JsonNode jsonResultsDecimal = jacksonHandleDecimal.get();
-		JsonNode jsonBindingsNodesDecimal = jsonResultsDecimal.path("results").path("bindings");
+		JsonNode jsonBindingsNodesDecimal = jsonResultsDecimal.path("rows");
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testjoinInnerWithDataTypes method ", 3, jsonBindingsNodesDecimal.size());
 	}
@@ -1436,8 +1458,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch (Exception ex) {
 			exceptionSch = ex.getMessage();
+			System.out.println("Exception message is " + exceptionSch.toString());
 		}
-		assertTrue("Exception not thrown or invalid message", exceptionSch.contains("Internal Server Error. Server Message: SQL-TABLENOTFOUND") &&
+		assertTrue("Exception not thrown or invalid message", exceptionSch.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTestInvalid\", \"detail\", null, \"MarkLogicQAQualifier\")") &&
 				exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
 		
 		// Verify for invalid view name
@@ -1452,8 +1475,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch (Exception ex) {
 			exceptionVw = ex.getMessage();
+			System.out.println("Exception message is " + exceptionVw.toString());
 		}
-		assertTrue("Exception not thrown or invalid message", exceptionVw.contains("Internal Server Error. Server Message: SQL-TABLENOTFOUND") &&
+		assertTrue("Exception not thrown or invalid message", exceptionVw.contains("SQL-TABLENOTFOUND: plan.view(\"opticFunctionalTest\", \"detailInvalid\", null, \"MarkLogicQAQualifier\")") &&
 				exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
 		
 		// Verify for empty view name
@@ -1468,6 +1492,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch (Exception ex) {
 			exceptionNoView = ex.getMessage();
+			System.out.println("Exception message is " + exceptionNoView.toString());
 		}
 		assertTrue("Exception not thrown or invalid message", exceptionNoView.contains("OPTIC-INVALARGS") &&
 				exceptionNoView.contains("Invalid arguments: cannot specify fromView() without view name"));
@@ -1484,6 +1509,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch (Exception ex) {
 			exceptionNoySch = ex.getMessage();
+			System.out.println("Exception message is " + exceptionNoySch.toString());
 		}
 		assertTrue("Exception not thrown or invalid message", exceptionNoySch.contains("OPTIC-INVALARGS") &&
 				exceptionNoySch.contains("Invalid arguments: cannot specify fromView() with invalid schema name"));
@@ -1520,10 +1546,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}		
 		// Should have SQL-AMBCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-AMBCOLUMN: return plan.execute(query, bindings);"));
-		assertTrue("Exceptions not found", str.toString().contains("Ambiguous column reference: found opticFunctionalTest.master.id and opticFunctionalTest.detail.id"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-AMBCOLUMN: Ambiguous column reference: found opticFunctionalTest.master.id and opticFunctionalTest.detail.id"));
 	}
 	
 	/* This test checks invalid schema name, view name and column name on schemaCol.
@@ -1557,10 +1583,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			strSchema.append(ex.getMessage());
+			System.out.println("Exception message is " + strSchema.toString());
 		}		
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", strSchema.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings);"));
-		assertTrue("Exception message not found", strSchema.toString().contains("Column not found: opticFunctionalTest_invalid.detail.id"));
+		assertTrue("Exceptions not found", strSchema.toString().contains("QL-NOCOLUMN: Column not found: opticFunctionalTest_invalid.detail.id"));
 		
 		// Invalid View name on schemaCol
 		StringBuilder strView = new StringBuilder();
@@ -1581,10 +1607,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 	catch(Exception ex) {
 		strView.append(ex.getMessage());
+		System.out.println("Exception message is " + strView.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strView.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings);"));
-	assertTrue("Exception message not found", strView.toString().contains("Column not found: opticFunctionalTest.detail_invalid.id"));
+	assertTrue("Exceptions not found", strView.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.detail_invalid.id"));
 	
 	// Invalid Column name on schemaCol
 	StringBuilder strCol = new StringBuilder();
@@ -1605,11 +1631,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	}
 	catch(Exception ex) {
 		strCol.append(ex.getMessage());
+		System.out.println("Exception message is " + strCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strCol.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings);"));
-	assertTrue("Exception message not found", strCol.toString().contains("Column not found: opticFunctionalTest.detail.id_invalid"));
-	
+	assertTrue("Exceptions not found", strCol.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.detail.id_invalid"));
+
 	//Invalid column in where
 	StringBuilder strWhereCol = new StringBuilder();
 	try {		
@@ -1629,10 +1655,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	}
 	catch(Exception ex) {
 		strWhereCol.append(ex.getMessage());
+		System.out.println("Exception message is " + strWhereCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strWhereCol.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings);"));
-	assertTrue("Exception message not found", strWhereCol.toString().contains("Column not found: opticFunctionalTest.master.id_invalid"));
+	assertTrue("Exceptions not found", strWhereCol.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.master.id_invalid"));
 	
 	//Invalid column in viewCol
 	StringBuilder strViewCol = new StringBuilder();
@@ -1651,10 +1677,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	}
 	catch(Exception ex) {
 		strViewCol.append(ex.getMessage());
+		System.out.println("Exception message is " + strViewCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strViewCol.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings);"));
-	assertTrue("Exception message not found", strViewCol.toString().contains("Column not found: detail_invalid.id"));
+	assertTrue("Exceptions not found", strViewCol.toString().contains("SQL-NOCOLUMN: Column not found: detail_invalid.id"));
 	}
 	
 	/* This test checks different number of columns.
@@ -1693,10 +1719,10 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			strIntersect.append(ex.getMessage());
+			System.out.println("Exception message is " + strIntersect.toString());
 		}		
 		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strIntersect.toString().contains("SQL-NUMBERCOLUMNS: return plan.execute(query, bindings);"));
-		assertTrue("Exceptions not found", strIntersect.toString().contains("Number of columns not matched: SELECTs to the left and right of INTERSECT do not have the same number of result columns"));
+		assertTrue("Exceptions not found", strIntersect.toString().contains("SQL-NUMBERCOLUMNS: Number of columns not matched: SELECTs to the left and right of INTERSECT do not have the same number of result columns"));
 		
 		//except with different number of columns
 		StringBuilder strExcept = new StringBuilder();
@@ -1718,13 +1744,134 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			strExcept.append(ex.getMessage());
+			System.out.println("Exception message is " + strExcept.toString());
 		}		
 		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strExcept.toString().contains("SQL-NUMBERCOLUMNS: return plan.execute(query, bindings);"));
-		assertTrue("Exceptions not found", strExcept.toString().contains("Number of columns not matched: SELECTs to the left and right of EXCEPT do not have the same number of result columns"));        
+		assertTrue("Exceptions not found", strExcept.toString().contains("SQL-NUMBERCOLUMNS: Number of columns not matched: SELECTs to the left and right of EXCEPT do not have the same number of result columns"));
 	}
 	
-	// Test for valid and inValid CTS Query - TODO
+	/*
+	 * Test explain plan on / with
+	 * 1) Valid plan
+	 * 2) Use of StringHandle
+	 * 3) Invalid plan
+	 */
+	@Test
+	public void testExplainPlan() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testExplainPlan method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+		PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
+		
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
+				            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		
+		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
+				            .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
+				
+		ModifyPlan output = plan1.joinInner(plan2)
+				                 .where(
+						                p.eq(
+								              p.schemaCol("opticFunctionalTest", "master" , "id"), 
+								              p.schemaCol("opticFunctionalTest", "detail", "masterId")
+								            )
+						               )
+						         .select(
+                                          p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                                          p.schemaCol("opticFunctionalTest", "master", "date"),
+                                          p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                                          p.schemaCol("opticFunctionalTest", "detail", "amount"),
+                                          p.schemaCol("opticFunctionalTest", "detail", "color"),
+                                          fIdCol1,
+                                          fIdCol2
+                                        )
+								 .orderBy(p.desc(p.col("DetailName")));
+		JsonNode explainNode = rowMgr.explain(output, new JacksonHandle()).get();
+		// Making sure explain() does not blow up for a valid plan.
+		assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");
+		assertTrue("Explain of plan incorrect", explainNode.path("expr").path("sortNeeded").asBoolean());
+		assertEquals("Explain of plan incorrect", explainNode.path("expr").path("columns").get(0).path("column").asText(), "DetailName");
+		// Invalid string - Use txt instead of json or xml
+		String explainNodetxt = rowMgr.explain(output, new StringHandle()).get();
+		System.out.println(explainNodetxt);
+		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"plan\""));
+		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"orderBy\", \"sortNeeded\":true, \"numSorted\":0"));
+		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"columns\":[{\"node\":\"orderSpec\", \"descending\":true, \"column\":\"DetailName\""));
+		
+		// Invalid Plan		
+		ModifyPlan plan3 = p.fromView("opticFunctionalTest", "master")
+		          .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
+		ModifyPlan plan4 = p.fromView("opticFunctionalTest", "detail")
+		          .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		// intersect with different number of columns
+		JsonNode explainNodeInv = null;
+		try {
+			ModifyPlan outputInv = plan3.select(p.schemaCol("opticFunctionalTest", "master" , "id"))
+					.intersect(
+							plan4.select(
+									p.schemaCol("opticFunctionalTest", "detail" , "id"), 
+									p.schemaCol("opticFunctionalTest", "detail", "masterId")
+									)
+							)
+							.orderBy(p.asc(p.col("id")));
+
+			explainNodeInv = rowMgr.explain(outputInv, new JacksonHandle()).get();
+			assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("node").asText(), "plan");
+			assertTrue("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("sortNeeded").asBoolean());
+			assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("expr").path("node").asText(), "intersect");
+		}
+		catch(Exception ex) {
+			System.out.println(ex.getMessage());
+			fail("Explain of Invalid plan has Exceptions");
+		}		
+	}
+	
+	/*
+	 * Test on fromViews when fragment id is used
+	 */
+	@Test
+	public void testFragmentId() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testFragmentId method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		
+		PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
+		PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
+		
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, p.fragmentIdCol("fragIdCol1"))
+                            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
+                            .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
+		
+		ModifyPlan output = plan1.joinInner(plan2).where(
+                                                         p.eq(
+                                                               p.schemaCol("opticFunctionalTest", "master" , "id"), 
+                                                               p.schemaCol("opticFunctionalTest", "detail", "masterId")
+                                                             )
+                                                        )
+                                                  .select(
+                                                		  p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
+                                                		  p.schemaCol("opticFunctionalTest", "master", "date"),
+                                                		  p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
+                                                		  p.schemaCol("opticFunctionalTest", "detail", "amount"),
+                                                		  p.schemaCol("opticFunctionalTest", "detail", "color"),
+                                                		  fIdCol1,
+                                                		  fIdCol2
+                                                		  )
+                                                  .orderBy(p.desc(p.col("DetailName")));
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		
+		rowMgr.resultDoc(output, jacksonHandle);
+	}
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception
