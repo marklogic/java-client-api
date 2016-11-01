@@ -33,12 +33,13 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 public class ExportToWriterListenerTest extends com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST {
 	
 	private static String dbName = "ExportToWriterListener";
-	private static DataMovementManager dmManager = DataMovementManager.newInstance();
+	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
@@ -78,7 +79,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 		associateRESTServerWithDB(server,dbName);
 		
 		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager.withClient(dbClient);
+		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
 			      .getResource(null, "forestinfo", null, null, new JacksonHandle())
@@ -163,7 +164,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testMassExportJSON() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-	    QueryDefinition query = new StructuredQueryBuilder().collection("ExportListener");
+		StringQueryDefinition query = new StructuredQueryBuilder().collection("ExportListener");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")
@@ -206,7 +207,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testMassExportXML() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-	    QueryDefinition query = new StructuredQueryBuilder().collection("XML");
+		StringQueryDefinition query = new StructuredQueryBuilder().collection("XML");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")
@@ -249,7 +250,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testExportXMLJSON() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-	    QueryDefinition query = new StructuredQueryBuilder().document("/local/xml-1","/local/jsonA-1");
+		StringQueryDefinition query = new StructuredQueryBuilder().document("/local/xml-1","/local/jsonA-1");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")

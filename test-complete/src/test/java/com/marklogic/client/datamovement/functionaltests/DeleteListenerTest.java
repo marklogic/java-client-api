@@ -45,7 +45,7 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	
 	private static String dbName = "DeleteListener";
-	private static DataMovementManager dmManager = DataMovementManager.newInstance();
+	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
@@ -84,7 +84,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		associateRESTServerWithDB(server,dbName);
 		
 		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager.withClient(dbClient);
+		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
 			      .getResource(null, "forestinfo", null, null, new JacksonHandle())

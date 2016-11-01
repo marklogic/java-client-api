@@ -61,7 +61,7 @@ import com.marklogic.client.io.StringHandle;
 public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	
 	private static String dbName = "WriteHostBatcher";
-	private static DataMovementManager dmManager = DataMovementManager.newInstance();
+	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
@@ -115,7 +115,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		associateRESTServerWithDB(server,dbName);
 		
 		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager.withClient(dbClient);
+		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
 			      .getResource(null, "forestinfo", null, null, new JacksonHandle())

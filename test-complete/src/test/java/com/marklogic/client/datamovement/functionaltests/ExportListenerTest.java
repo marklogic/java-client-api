@@ -59,7 +59,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 public class ExportListenerTest extends  DmsdkJavaClientREST {
 	
 	private static String dbName = "ExportListener";
-	private static DataMovementManager dmManager = DataMovementManager.newInstance();
+	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "src/test/resources/QueryHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
@@ -99,7 +99,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 		associateRESTServerWithDB(server,dbName);
 		
 		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager.withClient(dbClient);
+		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
 			      .getResource(null, "forestinfo", null, null, new JacksonHandle())

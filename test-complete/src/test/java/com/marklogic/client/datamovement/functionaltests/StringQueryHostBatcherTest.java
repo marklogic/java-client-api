@@ -83,7 +83,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	private static String dbName = "StringQueryHostBatcherDB";
 	private static String [] fNames = {"StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3"};
 	private static DataMovementManager dmManager = null;
-	private static DataMovementManager moveMgr = DataMovementManager.newInstance();
+	private static DataMovementManager moveMgr = null;
 	private static String restServerHost = null;
 	private static String restServerName = null;
 	private static int restServerPort = 0;
@@ -101,7 +101,6 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		restServerHost = getRestAppServerHostName();
 		
 		restServerName = getRestAppServerName();
-		dmManager = DataMovementManager.newInstance();
 		dataConfigDirPath = getDataConfigDirPath();
 		
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restServerPort);
@@ -112,9 +111,10 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	    
 	    // For use with Java/REST Client API
 	    client = DatabaseClientFactory.newClient(restServerHost, restServerPort, "admin", "admin", Authentication.DIGEST);
+	    dmManager = client.newDataMovementManager();
 	    // For use with QueryHostBatcher
-	    clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
-	    moveMgr.withClient(clientQHB);
+	    clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);	   
+	    moveMgr = clientQHB.newDataMovementManager();
 	}
 
 	/**
@@ -196,7 +196,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			clearDB(8000);
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -225,7 +225,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
 			queryBatcher1.onUrisReady((client1, batch) -> {
 				for (String str : batch.getItems()) {
@@ -245,7 +245,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("Test has Exceptions");
 			});
 
-			JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
 
 			if (queryBatcher1.isStopped()) {
@@ -303,7 +303,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			querydef.setCriteria("0012");
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -332,7 +332,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
 			queryBatcher1.onUrisReady((client1, batch)-> {
 				for (String str : batch.getItems()) {
@@ -346,7 +346,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("Test has Exceptions");          	
 			} );
 
-			JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);		
 
 			if (queryBatcher1.isStopped()) {
@@ -382,13 +382,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test
-	public void testQueryByExample() throws IOException, InterruptedException
+	
+	/*public void testQueryByExample() throws IOException, InterruptedException
 	{	
 		System.out.println("Running testQueryByExample");
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};				
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
 	
@@ -422,9 +422,9 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 		QueryManager queryMgr = client.newQueryManager();
 		RawQueryByExampleDefinition qbyexDef = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.JSON));
-
+		
 		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(qbyexDef);
+		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(qbyexDef);
 		queryBatcher1.onUrisReady((client1, batch)-> {
 
 			for (String str : batch.getItems()) {
@@ -445,7 +445,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			throwable.printStackTrace();
 			querybatchFailResults.append("Test has Exceptions");          	
 		} );
-		JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 		boolean bJobFinished = queryBatcher1.awaitTermination(30, TimeUnit.SECONDS);
 		
 		if (queryBatcher1.isStopped()) {
@@ -461,7 +461,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			assertEquals("Bytes Moved","0", res[1]);
 			assertEquals("Batch Number","0", res[3]);
 		}	
-	}
+	}*/
 		
 	/*
 	 * To test query by example with WriteBatcher and QueryBatcher 
@@ -477,7 +477,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		System.out.println("Running testQueryBatcherQueryFailures");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};				
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
 	
@@ -520,7 +520,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 		
 		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 		queryBatcher1.onUrisReady((client1, batch)-> {
 
 			for (String str : batch.getItems()) {
@@ -560,7 +560,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append('|')*/
 					.append(forest.isUpdateable());
 		} );
-		JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 		queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
 		
 		if (queryBatcher1.isStopped()) {
@@ -587,7 +587,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		System.out.println("Running testQueryBatcherCallbackClient");
 
 		String[] filenames = {"constraint1.json"};				
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
 	
@@ -609,7 +609,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		querydef.setCriteria("Vannevar");
 
 		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 				
 		queryBatcher1.withBatchSize(1000);
 		//Hold for contents read back from callback client.
@@ -631,7 +631,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			
 			batchFailResults.append("Test has Exceptions").append('|');
 		} );
-		JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 		queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
 							
 		if (queryBatcher1.isStopped()) {
@@ -670,7 +670,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		querydef.setCriteria("John AND Bob");	
 		
 		// Run a QueryBatcher when no results are returned.
-		QueryBatcher queryBatcherNoResult = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcherNoResult = dmManager.newQueryBatcher(querydef);
 
 		StringBuilder batchNoResults = new StringBuilder();
 		StringBuilder batchNoFailResults = new StringBuilder();
@@ -686,7 +686,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchNoFailResults.append("Test has Exceptions");
 			batchNoFailResults.append("|");
 		});
-		JobTicket jobTicketNoRes = moveMgr.startJob(queryBatcherNoResult);
+		JobTicket jobTicketNoRes = dmManager.startJob(queryBatcherNoResult);
 		queryBatcherNoResult.awaitTermination(30, TimeUnit.SECONDS);
 		
 		if (queryBatcherNoResult.isStopped()) {
@@ -719,7 +719,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
 		querydef.setCriteria("John AND Bob");	
 		
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 		batcher.withBatchSize(1000);
 		StringHandle handle = new StringHandle();
 		handle.set(jsonDoc);
@@ -737,7 +737,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringBuffer batchFailResults  = new StringBuffer();
 			
 		// Run a QueryBatcher with a large AwaitTermination.
-		QueryBatcher queryBatcherbatchSize = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcherbatchSize = dmManager.newQueryBatcher(querydef);
 		queryBatcherbatchSize.withBatchSize(20);
 		
 		Calendar  calBef = Calendar.getInstance();
@@ -754,7 +754,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchFailResults.append("Test has Exceptions")
 					.append('|');
 		});
-		JobTicket jobTicket = moveMgr.startJob(queryBatcherbatchSize);
+		JobTicket jobTicket = dmManager.startJob(queryBatcherbatchSize);
 		// Make sure to modify TimeUnit.TIMEUNIT.Method(duration) below before the assert
 		queryBatcherbatchSize.awaitTermination(3, TimeUnit.MINUTES);
 			
@@ -782,7 +782,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batchResults.delete(0, (batchResults.capacity() -1));
 		batchFailResults.delete(0, (batchFailResults.capacity() -1));
 		// Run a QueryBatcher with a small AwaitTermination.
-		QueryBatcher queryBatcherSmallTimeout = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcherSmallTimeout = dmManager.newQueryBatcher(querydef);
 		queryBatcherSmallTimeout.withBatchSize(1000);
 		
 		queryBatcherSmallTimeout.onUrisReady((client1, batch)-> {
@@ -796,7 +796,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchFailResults.append("Test has Exceptions").append('|');
 			batchFailResults.append(throwable.getJobBatchNumber());
 		});
-		JobTicket jobTicketTimeout = moveMgr.startJob(queryBatcherSmallTimeout);
+		JobTicket jobTicketTimeout = dmManager.startJob(queryBatcherSmallTimeout);
 		queryBatcherSmallTimeout.awaitTermination(5, TimeUnit.MILLISECONDS);
 		if (queryBatcherSmallTimeout.isStopped()) {					
 	        System.out.println(batchResults.toString());	        
@@ -833,7 +833,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
 		querydef.setCriteria("John AND Bob");	
 		
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 		batcher.withBatchSize(1000);
 		StringHandle handle = new StringHandle();
 		handle.set(jsonDoc);
@@ -851,12 +851,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringBuilder batchFailResults = new StringBuilder();
 
 		// Run a QueryBatcher with AwaitTermination.
-		QueryBatcher queryBatcherAwait = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcherAwait = dmManager.newQueryBatcher(querydef);
 		
 		Calendar  calBef = Calendar.getInstance();
 		long before = calBef.getTimeInMillis();
 		
-		JobTicket jobTicket = moveMgr.startJob(queryBatcherAwait);
+		JobTicket jobTicket = dmManager.startJob(queryBatcherAwait);
 		// Make sure to modify TimeUnit.MILLISECONDS.Method(duration) below before the assert
 		queryBatcherAwait.awaitTermination(30, TimeUnit.SECONDS);
 		
@@ -922,7 +922,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		String xmlStr2 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so bar</foo>";
 			
 		//Use WriteBatcher to write the same files.				
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(5);
 		batcher.withTransform(transform);
@@ -955,7 +955,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		querydef.setCriteria("foo OR bar");	
 						
 		// Run a QueryBatcher on the new URIs.
-		QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 		queryBatcher1.withBatchSize(5);
 						
 		queryBatcher1.onUrisReady((client1, batch)-> {
@@ -969,7 +969,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			throwable.printStackTrace();
 			batchFailResults.append("Test has Exceptions");          	
 		} );
-		JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 		
 		if (queryBatcher1.isStopped()) {
 			// Verify the batch results now.
@@ -1024,7 +1024,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringQueryDefinition querydef = queryMgr.newStringDefinition();
 			querydef.setCriteria("John AND Bob");	
 
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 			batcher.withBatchSize(1000);
 			StringHandle handle = new StringHandle();
 			handle.set(jsonDoc);
@@ -1042,7 +1042,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuffer batchFailResults  = new StringBuffer();
 
 			// Run a QueryBatcher with AwaitTermination.
-			QueryBatcher queryBatcherAddForest = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherAddForest.withBatchSize(2000);
 
 			queryBatcherAddForest.onUrisReady((client1, batch)-> {
@@ -1058,7 +1058,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 						.append(throwable.getMessage());
 			});
 
-			JobTicket jobTicket = moveMgr.startJob(queryBatcherAddForest);
+			JobTicket jobTicket = dmManager.startJob(queryBatcherAddForest);
 			queryBatcherAddForest.awaitTermination(3, TimeUnit.MINUTES);
 
 			// Now add a Forests to the database.
@@ -1087,7 +1087,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuffer batchFailResultsRem  = new StringBuffer();
 			
 			// Run a QueryBatcher with AwaitTermination.
-			QueryBatcher queryBatcherRemoveForest = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcherRemoveForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherRemoveForest.withBatchSize(2000);
 
 			queryBatcherRemoveForest.onUrisReady((client1, batch)-> {
@@ -1103,7 +1103,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResultsRem.append(throwable.getMessage());
 			});
 
-			JobTicket jobTicketRem = moveMgr.startJob(queryBatcherRemoveForest);
+			JobTicket jobTicketRem = dmManager.startJob(queryBatcherRemoveForest);
 			queryBatcherRemoveForest.awaitTermination(3, TimeUnit.MINUTES);
 
 			// Now remove a Forest from the database.
@@ -1187,7 +1187,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringQueryDefinition querydef = queryMgr.newStringDefinition();
 			querydef.setCriteria("John AND Bob");	
 
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 			batcher.withBatchSize(1000);
 			StringHandle handle = new StringHandle();
 			handle.set(jsonDoc);
@@ -1206,7 +1206,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder ccBuf = new StringBuilder();
 
 			// Run a QueryBatcher with AwaitTermination.
-			QueryBatcher queryBatcherAddForest = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherAddForest.withBatchSize(200);
 
 			queryBatcherAddForest.onUrisReady((client1, batch)-> {
@@ -1241,7 +1241,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append(throwable.getMessage());
 			});
 			// Have a small awaitTerminatio timeout for the batcher.
-			JobTicket jobTicket = moveMgr.startJob(queryBatcherAddForest);
+			JobTicket jobTicket = dmManager.startJob(queryBatcherAddForest);
 			queryBatcherAddForest.awaitTermination(30, TimeUnit.SECONDS);
 	
 			if (queryBatcherAddForest.isStopped()) {					
@@ -1276,14 +1276,14 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	 * @throws IOException
 	 * @throws InterruptedException
 	 */
-	@Test
-	public void testSimultaneousBothBatcherAccess() throws IOException, InterruptedException
+	
+	/*public void testSimultaneousBothBatcherAccess() throws IOException, InterruptedException
 	{	
 		System.out.println("Running testSimultaneousBothBatcherAccess");
 		clearDB(restServerPort);
 
 		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};				
-		WriteBatcher batcher = moveMgr.newWriteBatcher();
+		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
 	
@@ -1319,7 +1319,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		RawQueryByExampleDefinition qbyexDef = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.JSON));
 
 		// Run a QueryBatcher.
-		QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(qbyexDef);
+		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(qbyexDef);
 		queryBatcher1.onUrisReady((client1, batch)-> {
 						
 			for (String str : batch.getItems()) {
@@ -1343,7 +1343,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		} );
 		
 		// Trying to use a WriteBatcher on the same docId.
-		WriteBatcher batcherTwo = moveMgr.newWriteBatcher();
+		WriteBatcher batcherTwo = dmManager.newWriteBatcher();
 		String jsonDoc = "{" +
 				"\"employees\": [" +
 				"{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
@@ -1358,9 +1358,9 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcherTwo.add("/batcher-contraints11.json", handle);
 		batcherTwo.flushAndWait();
 		
-		JobTicket jobTicketWriteTwo = moveMgr.startJob(batcherTwo);
+		JobTicket jobTicketWriteTwo = dmManager.startJob(batcherTwo);
 		
-		JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 		queryBatcher1.awaitTermination(1, TimeUnit.MINUTES);
 			
 		if (queryBatcher1.isStopped()) {
@@ -1379,7 +1379,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			assertEquals("Batch Number","0", res[3]);
 			}
 		}	
-	}
+	}*/
 	
 	@Test
 	public void testQueryBatcherJobDetails() throws Exception
@@ -1408,7 +1408,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			querydef.setCriteria("0012");
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -1438,7 +1438,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(querydef);
+			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
 			queryBatcher1.onUrisReady((client1, batch)-> {
 				for (String str : batch.getItems()) {
@@ -1471,7 +1471,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("Test has Exceptions");          	
 			} );
 
-			JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 			String jobId = jobTicket.getJobId();
 			String jobName = jobTicket.getJobType().name();
 						
@@ -1559,7 +1559,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StructuredQueryDefinition queryWorddef = qb.word(qb.element("id"), "0026");
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = moveMgr.newWriteBatcher();
+			WriteBatcher batcher = dmManager.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -1586,7 +1586,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchWordFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = moveMgr.newQueryBatcher(queryWorddef);
+			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(queryWorddef);
 
 			queryBatcher1.onUrisReady((client1, batch)-> {
 				for (String str : batch.getItems()) {
@@ -1599,7 +1599,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchWordFailResults.append("Test has Exceptions");          	
 			} );
-			JobTicket jobTicket = moveMgr.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
 			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher1.isStopped()) {
 				// do nothing.
@@ -1620,7 +1620,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a range query.
 			
 			StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:integer", Operator.GE, 4);
-			QueryBatcher queryBatcher2 = moveMgr.newQueryBatcher(queryRangedef);
+			QueryBatcher queryBatcher2 = dmManager.newQueryBatcher(queryRangedef);
 			//StringBuilder batchRangeResults = new StringBuilder();
 			List<String> batchRangeResults = new ArrayList<String>();
 			StringBuilder batchRangeFailResults = new StringBuilder();
@@ -1637,7 +1637,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchRangeFailResults.append("Test has Exceptions");          	
 			} );
-			jobTicket = moveMgr.startJob(queryBatcher2);
+			jobTicket = dmManager.startJob(queryBatcher2);
 			bJobFinished = queryBatcher2.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher2.isStopped()) {
 				// do nothing.
@@ -1660,7 +1660,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a ValueQueryOnAttribute query.
 			
 			StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
-			QueryBatcher queryBatcher3 = moveMgr.newQueryBatcher(valuequeyDef);
+			QueryBatcher queryBatcher3 = dmManager.newQueryBatcher(valuequeyDef);
 			//StringBuilder batchRangeResults = new StringBuilder();
 			List<String> batchValueResults = new ArrayList<String>();
 			StringBuilder batchvalueFailResults = new StringBuilder();
@@ -1675,7 +1675,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchvalueFailResults.append("Test has Exceptions");          	
 			} );
-			jobTicket = moveMgr.startJob(queryBatcher3);
+			jobTicket = dmManager.startJob(queryBatcher3);
 			bJobFinished = queryBatcher3.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher3.isStopped()) {
 				// do nothing.

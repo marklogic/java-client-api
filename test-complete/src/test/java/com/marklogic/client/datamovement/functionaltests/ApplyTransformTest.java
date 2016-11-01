@@ -51,7 +51,7 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 	private static String dbName = "ApplyTransform";
-	private static DataMovementManager dmManager = DataMovementManager.newInstance();
+	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
@@ -100,8 +100,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		associateRESTServerWithDB(server,dbName);
 
-		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager.withClient(dbClient);
+		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);		
+		dmManager = dbClient.newDataMovementManager();
 
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
 				.getResource(null, "forestinfo", null, null, new JacksonHandle())
