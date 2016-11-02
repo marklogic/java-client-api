@@ -102,7 +102,7 @@ public class ExportListener implements QueryBatchListener {
    * [merge timestamp](https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468) to a timestamp
    * before the job starts or a sufficiently large negative value.  This should
    * only be used when the QueryBatcher is constructed with a {@link
-   * DataMovementManager#newQueryBatcher(QueryDefinition) query}, not with
+   * DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query}, not with
    * an {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}.
    *
    * @return this instance for method chaining

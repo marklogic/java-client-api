@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
  * provided to DataMovementManager.  The end goal of each job is determined by
  * the listeners registered with onUrisReady.  The data set from which batches
  * are made and on which processing is performed is determined by the
- * {@link DataMovementManager#newQueryBatcher(QueryDefinition) query} or
+ * {@link DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query} or
  * {@link DataMovementManager#newQueryBatcher(Iterator) Iterator} used to
  * construct this instance.
  *
@@ -57,12 +57,16 @@ import java.util.concurrent.TimeUnit;
  * when one completes the query and is about to send the matching uris to the
  * onUrisReady listeners.
  *
- * For pagination to succeed, you must not modify the result set during pagination. This means you must
+ * For pagination to succeed, you must not modify the result set during
+ * pagination. This means you must
  *
  * 1. perform a read-only operation, or
- * 2. make sure modifications do not modify the result set by deleting matches or modifying them to no longer match, or
+ * 2. make sure modifications do not modify the result set by deleting matches
+ *    or modifying them to no longer match, or
  * 3. set a [merge timestamp][] and use {@link #withConsistentSnapshot}, or
- * 4. use {@link DataMovementManager#newQueryBatcher(Iterator) Iterator} instead of a {@link DataMovementManager#newQueryBatcher(QueryDefinition) query}.
+ * 4. use {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}
+ *    instead of a {@link
+ *    DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query}.
  *
  * [MarkLogic Java Client API]: http://docs.marklogic.com/guide/java
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
@@ -177,7 +181,7 @@ public interface QueryBatcher extends Batcher {
    * timestamp][] to a timestamp before the job starts or a sufficiently large
    * negative value.  This should only be used when the QueryBatcher is
    * constructed with a {@link
-   * DataMovementManager#newQueryBatcher(QueryDefinition) query}, not with
+   * DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query}, not with
    * an {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}.
    * This is required when performing a delete of documents matching the query
    * or any modification (including ApplyTransformListener) of matching
