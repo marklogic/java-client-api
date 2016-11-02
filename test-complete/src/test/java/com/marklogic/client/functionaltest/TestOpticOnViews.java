@@ -1871,6 +1871,23 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 		
 		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+		JsonNode node = jsonBindingsNodes.get(0);
+			
+		// Should have 6 nodes returned.
+		assertEquals("Six nodes not returned from testFragmentId method ", 6, jsonBindingsNodes.size());
+		// Verify nodes
+		assertEquals("Element 1 MasterName value incorrect", "Master 2", node.path("MasterName").path("value").asText());
+		assertEquals("Element 1 DetailName value incorrect", "Detail 6", node.path("DetailName").path("value").asText());
+		assertEquals("Element 1 opticFunctionalTest.detail.fragIdCol1 type incorrect", "sem:iri", node.path("opticFunctionalTest.detail.fragIdCol1").path("type").asText());
+		assertEquals("Element 1 opticFunctionalTest.master.fragIdCol2 type incorrect", "sem:iri", node.path("opticFunctionalTest.master.fragIdCol2").path("type").asText());
+		assertEquals("Element 1 opticFunctionalTest.detail.amount value incorrect", "60.06", node.path("opticFunctionalTest.detail.amount").path("value").asText());
+		node = jsonBindingsNodes.get(5);
+		assertEquals("Element 6 MasterName value incorrect", "Master 1", node.path("MasterName").path("value").asText());
+		assertEquals("Element 6 DetailName value incorrect", "Detail 1", node.path("DetailName").path("value").asText());
+		assertEquals("Element 6 opticFunctionalTest.detail.fragIdCol1 type incorrect", "sem:iri", node.path("opticFunctionalTest.detail.fragIdCol1").path("type").asText());
+		assertEquals("Element 6 opticFunctionalTest.master.fragIdCol2 type incorrect", "sem:iri", node.path("opticFunctionalTest.master.fragIdCol2").path("type").asText());
+		assertEquals("Element 6 opticFunctionalTest.detail.amount value incorrect", "10.01", node.path("opticFunctionalTest.detail.amount").path("value").asText());
 	}
 	
 	@AfterClass
