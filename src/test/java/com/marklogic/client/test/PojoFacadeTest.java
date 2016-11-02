@@ -254,6 +254,8 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 0, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count failed to find number of records expected",
+                numRead, cities.count(stringQuery));
         }
 
         stringQuery = Common.client.newQueryManager().newStringDefinition();
@@ -263,6 +265,8 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 3, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count failed to find number of records expected",
+                numRead, cities.count(stringQuery));
         }
 
 
@@ -273,6 +277,8 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 3, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count failed to find number of records expected",
+                numRead, cities.count(query));
         }
 
 
@@ -284,6 +290,8 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 1, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count failed to find number of records expected",
+                numRead, cities.count(query));
         }
 
         // the default options are unfiltered, which only produce accurate results
@@ -293,6 +301,8 @@ public class PojoFacadeTest {
         query = qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*");
         try ( PojoPage<City> page = cities.search(query, 1) ) {
             assertEquals("The estimate number should match everything", 101, page.getTotalSize());
+            assertEquals("PojoRepository.count should match everything",
+                101, cities.count(query));
         }
 
         // - the recommended way to deal with it is to enable indexes
@@ -306,7 +316,19 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 1, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("The estimate number is no longer an estimate, it knows there's only 1 match",
+                1, page.getTotalSize());
+            assertEquals("PojoRepository.count should still match everything",
+                101, cities.count(query));
         }
+
+        long defaultPageLength = cities.getPageLength();
+        cities.setPageLength(0);
+        try ( PojoPage<City> page = cities.search(query, 1) ) {
+            assertEquals("With pageLength 0, the estimate number should again match everything",
+                101, page.getTotalSize());
+        }
+        cities.setPageLength(defaultPageLength);
 
         // - then let's show the old work-around using stored options
         QueryOptionsManager queryOptionsMgr =
@@ -320,6 +342,8 @@ public class PojoFacadeTest {
             for ( City city : page ) numRead++;
             assertEquals("Failed to find number of records expected", 1, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count should still match everything",
+                101, cities.count(query));
         }
 
         query = qb.value("continent", "AF");
@@ -343,6 +367,8 @@ public class PojoFacadeTest {
             }
             assertEquals("Failed to find number of records expected", 11, numRead);
             assertEquals("PojoPage failed to report number of records expected", numRead, page.size());
+            assertEquals("PojoRepository.count failed to find number of records expected",
+                numRead, cities.count(query));
         }
 
 
