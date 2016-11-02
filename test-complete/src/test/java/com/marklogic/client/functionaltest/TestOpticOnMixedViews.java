@@ -287,9 +287,6 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
-		assertEquals("Row 1 myCity.city value incorrect", "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
-		assertEquals("Row 2 myCity.city value incorrect", "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
-		assertEquals("Row 3 myCity.city value incorrect", "london", jsonBindingsNodes.path(2).path("myCity.city").path("value").asText());
 	}
 	
 	/*
