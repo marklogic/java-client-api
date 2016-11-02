@@ -29,6 +29,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -44,11 +45,15 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.type.PlanAggregateColSeq;
+import com.marklogic.client.type.PlanAggregateOptions;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanExprColSeq;
 import com.marklogic.client.type.SqlGenericDateTimeExpr;
 import com.marklogic.client.type.XsDateExpr;
 import com.marklogic.client.type.XsIntegerExpr;
@@ -128,7 +133,37 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.
 		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin") );
-		
+		// Install the TDE templates
+		// loadFileToDB(client, filename, docURI, collection, document format)
+		loadFileToDB(client, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(client, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(client, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(client, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+
+		// Load XML data files.
+		loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML",  new String[] {"/optic/view/test"});
+		loadFileToDB(client, "playerTripleSet.xml", "/optic/triple/test/playerTripleSet.xml", "XML",  new String[] {"/optic/player/triple/test"});
+		loadFileToDB(client, "teamTripleSet.xml", "/optic/triple/test/teamTripleSet.xml", "XML",  new String[] {"/optic/team/triple/test"});
+		loadFileToDB(client, "otherPlayerTripleSet.xml", "/optic/triple/test/otherPlayerTripleSet.xml", "XML",  new String[] {"/optic/other/player/triple/test"});
+		loadFileToDB(client, "doc4.xml", "/optic/lexicon/test/doc4.xml", "XML",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "doc5.xml", "/optic/lexicon/test/doc5.xml", "XML",  new String[] {"/optic/lexicon/test"});
+
+		// Load JSON data files.
+		loadFileToDB(client, "masterDetail2.json", "/optic/view/test/masterDetail2.json", "JSON",  new String[] {"/optic/view/test"});
+		loadFileToDB(client, "masterDetail3.json", "/optic/view/test/masterDetail3.json", "JSON",  new String[] {"/optic/view/test"});
+		loadFileToDB(client, "masterDetail4.json", "/optic/view/test/masterDetail4.json", "JSON",  new String[] {"/optic/view/test"});
+		loadFileToDB(client, "masterDetail5.json", "/optic/view/test/masterDetail5.json", "JSON",  new String[] {"/optic/view/test"});
+
+		loadFileToDB(client, "doc1.json", "/optic/lexicon/test/doc1.json", "JSON",  new String[] {"/other/coll1", "/other/coll2"});
+		loadFileToDB(client, "doc2.json", "/optic/lexicon/test/doc2.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "doc3.json", "/optic/lexicon/test/doc3.json", "JSON",  new String[] {"/optic/lexicon/test"});
+
+		loadFileToDB(client, "city1.json", "/optic/lexicon/test/city1.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "city2.json", "/optic/lexicon/test/city2.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON",  new String[] {"/optic/lexicon/test"});	
+
 		Map<String, Object> row = new HashMap<>();			
 		row.put("rowId", 1); row.put("colorId", 1); row.put("desc", "ball");
 		literals1[0] = row;
@@ -289,7 +324,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testJoinInner method", 4, jsonBindingsNodes.size());
@@ -313,7 +348,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputQualifier, jacksonHandle);
-		jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		node = jsonBindingsNodes.path(3);
 		assertEquals("Row 1 table1.rowId value incorrect", "1", node.path("table1.rowId").path("value").asText());
 		assertEquals("Row 1 table1.desc value incorrect", "ball", node.path("table1.desc").path("value").asText());
@@ -338,7 +373,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputMultiOrder, jacksonHandle);
-		jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testJoinInner method - multiple order by", 4, jsonBindingsNodes.size());
 		node = jsonBindingsNodes.path(0);
@@ -385,7 +420,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputMultiJoin, jacksonHandle);
-		jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testJoinInner method - multiple joins", 4, jsonBindingsNodes.size());
 		node = jsonBindingsNodes.path(0);
@@ -429,7 +464,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 5 nodes returned.
 		assertEquals("Five nodes not returned from testJoinLeftOuter method", 5, jsonBindingsNodes.size());
@@ -469,7 +504,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testJoinLeftOuter method", 3, jsonBindingsNodes.size());
@@ -510,7 +545,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 2 nodes returned.
 		assertEquals("Two nodes not returned from testOffsetAndLimit method", 2, jsonBindingsNodes.size());
@@ -538,10 +573,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: limit must be a positive number: 0"));
-		assertTrue("Exceptions not found", str.toString().contains("Server Message: OPTIC-INVALARGS"));
+		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS: Invalid arguments: limit must be a positive number: 0"));
 	}
 	
 	/* 
@@ -560,13 +595,13 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(literals1);
 		ModifyPlan plan2 = p.fromLiterals(literals2);
 		
-/*		ModifyPlan output  =
+		ModifyPlan output  =
 		        plan1.joinInner(plan2)
 		        .select(
-		          "rowId", 
-		          "desc", 
-		          "colorId", 
-		          "colorDesc",
+		          p.col("rowId"), 
+		          p.col("desc"), 
+		          p.col("colorId"), 
+		          p.col("colorDesc"),
 		          p.as("added", p.add(p.col("rowId"), p.col("colorId"), p.xs.intVal(10))),
 		          p.as("subtracted", p.subtract(p.col("colorId"), p.col("rowId"))),
 		          p.as("negSubtracted", p.subtract(p.col("colorId"), p.col("desc"))),
@@ -576,11 +611,11 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		          p.as("colNotDefined", p.isDefined(p.col("negSubtracted"))),
 		          p.as("colNotDefinedNegate", p.not(p.isDefined(p.col("negSubtracted")))),
 		          p.as("caseExpr", 
-		            p.case(
-		              p.when(p.eq(p.col("rowId"), p.xs.intVal(1)), "foo"), 
-		              p.when(p.eq(p.col("rowId"),  p.xs.intVal(2)), "baz"),
-		              p.when(p.eq(p.col("rowId"),  p.xs.intVal(3)), "rat"),
-		              "bar"
+		            p.caseExpr(
+		              p.when(p.eq(p.col("rowId"), p.xs.intVal(1)), p.xs.string("foo")), 
+		              p.when(p.eq(p.col("rowId"),  p.xs.intVal(2)), p.xs.string("baz")),
+		              p.when(p.eq(p.col("rowId"),  p.xs.intVal(3)), p.xs.string("rat")),
+		              p.elseExpr(p.xs.string("bar"))
 		            )
 		          )
 		        );
@@ -589,12 +624,36 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testArithmeticExpression method", 4, jsonBindingsNodes.size());
-		JsonNode node = jsonBindingsNodes.path(0);*/
-		// TODO when Git Issue 505 is fixed/resolved.
+		JsonNode node = jsonBindingsNodes.path(0);
+		
+		assertEquals("Row 1 rowId value incorrect", "1", node.path("rowId").path("value").asText());
+		assertEquals("Row 1 colorDesc value incorrect", "red", node.path("colorDesc").path("value").asText());
+		
+		assertEquals("Row 1 added value incorrect", "12", node.path("added").path("value").asText());
+		assertEquals("Row 1 subtracted value incorrect", "0", node.path("subtracted").path("value").asText());
+		assertEquals("Row 1 divided value incorrect", "1", node.path("divided").path("value").asText());
+		assertEquals("Row 1 multiplied value incorrect", "0.6", node.path("multiplied").path("value").asText());
+		assertEquals("Row 1 caseExpr value incorrect", "foo", node.path("caseExpr").path("value").asText());
+		
+		node = jsonBindingsNodes.path(1);
+		assertEquals("Row 2 caseExpr value incorrect", "baz", node.path("caseExpr").path("value").asText());
+		
+		node = jsonBindingsNodes.path(2);
+		assertEquals("Row 3 caseExpr value incorrect", "rat", node.path("caseExpr").path("value").asText());
+		
+		node = jsonBindingsNodes.path(3);
+		assertEquals("Row 4 rowId value incorrect", "4", node.path("rowId").path("value").asText());
+		assertEquals("Row 4 colorDesc value incorrect", "red", node.path("colorDesc").path("value").asText());
+		
+		assertEquals("Row 4 added value incorrect", "15", node.path("added").path("value").asText());
+		assertEquals("Row 4 subtracted value incorrect", "-3", node.path("subtracted").path("value").asText());
+		assertEquals("Row 4 divided value incorrect", "0.25", node.path("divided").path("value").asText());
+		assertEquals("Row 4 multiplied value incorrect", "2.4", node.path("multiplied").path("value").asText());
+		assertEquals("Row 4 caseExpr value incorrect", "bar", node.path("caseExpr").path("value").asText());
 	}
 	
 	/* 
@@ -628,17 +687,12 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		// plans from literals
 		ModifyPlan output = p.fromLiterals(literals3).orderBy(p.asc("id"))
-		                                            .joinInnerDoc("uri", "doc");
+		                                            .joinInnerDoc("doc", "uri" );
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
-		try {
 		rowMgr.resultDoc(output, jacksonHandle);
-		}
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
-	catch(Exception ex) {
-		System.out.println(ex.toString());
-		}
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testJoinInnerDocOnJson method", 3, jsonBindingsNodes.size());
 		JsonNode node = jsonBindingsNodes.path(0);
@@ -682,7 +736,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testGroupbyWithoutAggregate method", 3, jsonBindingsNodes.size());
@@ -713,7 +767,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 9 nodes returned.
 		assertEquals("Nine nodes not returned from testUnionWithWhereDistinct method", 9, jsonBindingsNodes.size());
@@ -751,7 +805,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 1 node returned.
 		assertEquals("One node not returned from testIntersect method", 1, jsonBindingsNodes.size());		
@@ -781,7 +835,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 3 nodes returned.
 		assertEquals("Three nodes not returned from testExcept method", 3, jsonBindingsNodes.size());		
@@ -791,7 +845,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	}
 	
 	/* 
-	 * Test arrayAggregate, sequenceAggregate and aggregate with distinct option
+	 * Test arrayAggregate, sequenceAggregate and aggregate with distinct and duplicate options
 	*/
 	@Test
 	public void testAggregates() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
@@ -852,26 +906,28 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
         row.put("colorId", 4); row.put("colorDesc", "yellow");
         purpleLiteral[5] = row;
         
-       row = new HashMap<>();			
+        row = new HashMap<>();			
 		row.put("rowId", 1); row.put("colorId", 1); row.put("desc", "ball");
 		ballLiteral[0] = row;
+		row = new HashMap<>();			
+		row.put("rowId", 1); row.put("colorId", 3); row.put("desc", "ball");
 		ballLiteral[1] = row;
 		
 		row = new HashMap<>();
         row.put("rowId", 2); row.put("colorId", 2); row.put("desc", "square");
-        ballLiteral[1] = row;
-        
-        row = new HashMap<>();
-        row.put("rowId", 3); row.put("colorId", 1); row.put("desc", "box");
         ballLiteral[2] = row;
         
         row = new HashMap<>();
-        row.put("rowId", 4); row.put("colorId", 1); row.put("desc", "hoop");
+        row.put("rowId", 3); row.put("colorId", 1); row.put("desc", "box");
         ballLiteral[3] = row;
         
         row = new HashMap<>();
-        row.put("rowId", 5); row.put("colorId", 5); row.put("desc", "circle");
+        row.put("rowId", 4); row.put("colorId", 1); row.put("desc", "hoop");
         ballLiteral[4] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 5); row.put("colorId", 5); row.put("desc", "circle");
+        ballLiteral[5] = row;
         
         
 		// plans from literals
@@ -890,7 +946,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputAgg, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testAggregates method", 4, jsonBindingsNodes.size());		
@@ -908,7 +964,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputSeqAgg, jacksonHandle);
-		jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testAggregates method", 4, jsonBindingsNodes.size());
@@ -916,27 +972,63 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		assertEquals("Row 1 colorIdArray length value incorrect", 4, jsonBindingsNodes.path(0).path("colorIdArray").path("value").size());
 		assertEquals("Row 2 colorIdArray array 1 value incorrect", "blue", jsonBindingsNodes.path(1).path("colorIdArray").path("value").asText());
 		
-		//TEST 37 - aggregate with distinct option TODO Remove the comments once Git Issue 507 is resolved.
+		//TEST 37 - aggregate with distinct option
 		// plans from literals
 		ModifyPlan plan3 = p.fromLiterals(ballLiteral);
 		ModifyPlan plan4 = p.fromLiterals(literals2);
 		
-		/*ModifyPlan outputCountDist = plan1.joinInner(plan2)
-		                                  .groupBy("rowId", p.count("descAgg", "desc", "{values: \"distinct\"}"));
+		// Verify DISTINCT
+		PlanAggregateOptions options = p.aggregateOptions(PlanBuilder.PlanValues.DISTINCT);
+		
+		PlanAggregateColSeq aggColSeq = p.aggregates(p.count("descAgg", "desc", options));
+		PlanExprColSeq colSeq = p.cols("rowId");
+		
+		ModifyPlan outputCountDist = plan3.joinInner(plan4)
+		                                  .groupBy(colSeq, aggColSeq)
+		                                  .orderBy("rowId");
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputCountDist, jacksonHandle);
-		jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
-		// Should have 1 nodes returned.
-		assertEquals("One node not returned from testAggregates method", 1, jsonBindingsNodes.size());*/
+		// Should have 4 nodes returned.
+		assertEquals("Four node not returned from testAggregates method", 4, jsonBindingsNodes.size());
+		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodes.path(0).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", 1, jsonBindingsNodes.path(0).path("descAgg").path("value").asInt());
+		
+		assertEquals("Row 1 rowId value incorrect", "4", jsonBindingsNodes.path(3).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", 1, jsonBindingsNodes.path(3).path("descAgg").path("value").asInt());
+		
+		// aggregate with duplicate option
+		
+		PlanAggregateOptions optionsDup = p.aggregateOptions(PlanBuilder.PlanValues.DUPLICATE);
+		
+		PlanAggregateColSeq aggColSeqDup = p.aggregates(p.count("descAgg", "desc", optionsDup));
+		PlanExprColSeq colSeqDup = p.cols("rowId");
+		
+		ModifyPlan outputCountDup = plan3.joinInner(plan4)
+		                                  .groupBy(colSeqDup, aggColSeqDup)
+		                                  .orderBy("rowId");
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(outputCountDup, jacksonHandle);
+		JsonNode jsonBindingsNodesDup = jacksonHandle.get().path("rows");
+		
+		// Should have 4 nodes returned. Duplicate values are included.
+		assertEquals("Four node not returned from testAggregates method", 4, jsonBindingsNodesDup.size());
+		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodesDup.path(0).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", 2, jsonBindingsNodesDup.path(0).path("descAgg").path("value").asInt());
+		
+		assertEquals("Row 1 rowId value incorrect", "4", jsonBindingsNodesDup.path(3).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", 1, jsonBindingsNodesDup.path(3).path("descAgg").path("value").asInt());
 	}
 	
 	/* 
 	 * Test date time builtin functions
 	*/
-	@Test
+	@Ignore
 	public void testBuiltInFns() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
 		System.out.println("In testBuiltInFns method");
@@ -980,7 +1072,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 
 		//rowMgr.resultDoc(output, jacksonHandle);
-		JsonNode jsonBindingsNodes = jacksonHandle.get().path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 2 nodes returned.
 		assertEquals("Two nodes not returned from testExcept method", 3, jsonBindingsNodes.size());
@@ -1014,9 +1106,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: rowIdRef"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: rowIdRef"));
 		
 		// invalid viewCol
 		ModifyPlan outputExtCol = plan1.joinInner(plan2)
@@ -1030,7 +1123,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: invalid_view.colorId"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: invalid_view.colorId"));
 		
 	}
 	
@@ -1063,10 +1156,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS: fn.error(null, 'OPTIC-INVALARGS'"));
-		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: offset must be a non-negative number: -1"));
+		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS: Invalid arguments: offset must be a non-negative number: -1"));
 	}
 	
 	/* 
@@ -1097,9 +1190,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: table1_Invalid.colorId"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: table1_Invalid.colorId"));
 	}
 	
 	@AfterClass
