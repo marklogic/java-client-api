@@ -285,7 +285,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes.size());
 		assertEquals("Row 1 myCity.city value incorrect", "beijing", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
 		assertEquals("Row 2 myCity.city value incorrect", "cape town", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
@@ -351,7 +351,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonBindingsNodes.size());
 	}
 	
@@ -389,7 +389,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());
 	}
 	
@@ -456,7 +456,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());
 		assertEquals("Row 1 player_name value incorrect", "Matt Rose", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
 		assertEquals("Row 1 colorDesc value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
