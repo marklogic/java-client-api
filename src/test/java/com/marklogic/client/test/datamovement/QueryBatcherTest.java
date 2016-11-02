@@ -185,7 +185,6 @@ public class QueryBatcherTest {
       numExpected += matchesByForest.get(forest).length;
     }
 
-    final AtomicInteger urisReadyListenerWasRun = new AtomicInteger();
     final AtomicInteger totalResults = new AtomicInteger();
     final AtomicInteger successfulBatchCount = new AtomicInteger();
     final AtomicInteger failureBatchCount = new AtomicInteger();
@@ -198,9 +197,6 @@ public class QueryBatcherTest {
       .onUrisReady(
         (client, batch) -> {
           successfulBatchCount.incrementAndGet();
-          // append one period for each run.  This should run three times because
-          // there are three forests setup for the database java-unittest
-          urisReadyListenerWasRun.incrementAndGet();
           totalResults.addAndGet(batch.getItems().length);
           String forestName = batch.getForest().getForestName();
           Set<String> matches = results.get(forestName);
