@@ -1,0 +1,53 @@
+{
+  "template": {
+    "context": "/sets4",
+    "templates": [{
+      "context": "masterSet4/master4",
+      "rows": [{
+        "schemaName": "opticFunctionalTest4",
+        "viewName": "master4",
+        "columns": [{
+          "name": "id",
+          "scalarType": "int",
+          "val": "id"
+        }, {
+          "name": "name",
+          "scalarType": "string",
+          "val": "name"
+        }, {
+          "name": "date",
+          "scalarType": "date",
+          "val": "date"
+        }]
+      }]
+    }, {
+      "context": "detailSet4/detail4",
+      "rows": [{
+        "schemaName": "opticFunctionalTest4",
+        "viewName": "detail4",
+        "columns": [{
+          "name": "id",
+          "scalarType": "int",
+          "val": "id"
+        }, {
+          "name": "name",
+          "scalarType": "string",
+          "val": "name"
+        }, {
+          "name": "masterId",
+          "scalarType": "int",
+          "val": "masterId"
+        }, {
+          "name": "amount",
+          "scalarType": "double",
+          "val": "amount"
+        }, {
+          "name": "color",
+          "scalarType": "string",
+          "val": "color"
+        }]
+      }]
+    }]
+  }
+}
+

@@ -1,0 +1,29 @@
+{
+  "sets4": {
+    "detailSet4": {
+      "detail4": [
+        {
+          "id": "400",
+          "name": "Detail 400",
+          "masterId": "200",
+          "amount": "164.33",
+          "color": "purple"
+        },
+        {
+          "id": "500",
+          "name": "Detail 500",
+          "masterId": "100",
+          "amount": "189.36",
+          "color": "gold"
+        },
+        {
+          "id": "600",
+          "name": "Detail 600",
+          "masterId": "100",
+          "amount": "172.90",
+          "color": "white"
+        }
+      ]
+    }
+  }
+}
