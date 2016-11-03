@@ -245,7 +245,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		
 		// Verify first node.
 		Iterator<JsonNode>  nameNodesItr = jsonBindingsNodes.elements();
@@ -282,7 +282,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		
 		// Verify first node.
 		Iterator<JsonNode>  nameNodesItr = jsonBindingsNodes.elements();
@@ -338,7 +338,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 8 nodes returned.
 		assertEquals("Eight nodes not returned from testAccessWithSelectAlias method ", 8, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -398,7 +398,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 2 nodes returned.
 		assertEquals("Two nodes not returned from testJoinInnerWithCondition method ", 2, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -450,7 +450,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 13 nodes returned.
 		assertEquals("Thirteen nodes not returned from testUnionWithWhereDistinct method ", 13, jsonBindingsNodes.size());
 	}
@@ -495,7 +495,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(outputAvg, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testGroupBys method - Average ", 4, jsonBindingsNodes.size());
 		JsonNode fourth = jsonBindingsNodes.path(3);
@@ -511,7 +511,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(outputMax, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		JsonNode first = jsonBindingsNodes.path(0);
 		assertEquals("Four nodes not returned from testGroupBys method - Max", 4, jsonBindingsNodes.size());
@@ -563,7 +563,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(outputCnt, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.		
 		assertEquals("Four nodes not returned from testGroupByCountAndSum method - Count", 4, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -582,7 +582,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(outputMin, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.		
 		assertEquals("Four nodes not returned from testGroupByCountAndSum method - Min", 4, jsonBindingsNodes.size());
 		JsonNode third = jsonBindingsNodes.path(3);
@@ -598,7 +598,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		rowMgr.resultDoc(outputSum, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 1 nodes returned.		
 		assertEquals("Node not returned from testGroupByCountAndSum method - Sum", 1, jsonBindingsNodes.size());
 		third = jsonBindingsNodes.path(0);
@@ -686,7 +686,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 8 nodes returned.		
 		assertEquals("Eight nodes not returned from testAccessWithQualifier method", 8, jsonBindingsNodes.size());
@@ -710,7 +710,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output1, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		nodeVal = jsonBindingsNodes.path(0);
 		
 		// Should have 3 nodes returned.		
@@ -730,7 +730,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(outputNoSubject, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		nodeVal = jsonBindingsNodes.path(0);
 		
 		// Should have 8 nodes returned.		
@@ -747,7 +747,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(outputNoObject, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		assertEquals("Eight nodes not returned from testAccessWithQualifier method", 8, jsonBindingsNodes.size());
 		
 		nodeVal = jsonBindingsNodes.path(0); 
@@ -798,7 +798,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 8 nodes returned.		
 		assertEquals("Eight nodes not returned from testSemIRI method", 8, jsonBindingsNodes.size());
@@ -813,7 +813,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output1, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		nodeVal = jsonBindingsNodes.path(0);
 		// Should have 1 nodes returned.		
 		assertEquals("One node not returned from testSemIRI method", 1, jsonBindingsNodes.size());
@@ -860,7 +860,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 1 nodes returned.		Ask Aries why there are more results here than JavaScript result?
 		assertEquals("One node not returned from testJoinLeftWithMultipleKeyMatch method", 1, jsonBindingsNodes.size());
@@ -912,7 +912,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 8 nodes returned.
 		assertEquals("Eight nodes not returned from testJoinWhereDistinct method", 8, jsonBindingsNodes.size());  
@@ -975,7 +975,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 8 nodes returned.
 		assertEquals("Eight nodes not returned from testProcessingFunctions method", 8, jsonBindingsNodes.size());
@@ -1096,7 +1096,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		JsonNode nodeVal = jsonBindingsNodes.path(0);
 		// Should have 8 nodes returned.
 		assertEquals("Eight nodes not returned from testProcessingFunctions method", 8, jsonBindingsNodes.size());
@@ -1157,7 +1157,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: myPlayer_Invalid.age"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: myPlayer_Invalid.age"));
 	}
 	
 	/* This test checks triples with invalid patterndef.
@@ -1198,7 +1198,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: name"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: name"));
 	}
 	
 	/* This test checks null value in avg function.
