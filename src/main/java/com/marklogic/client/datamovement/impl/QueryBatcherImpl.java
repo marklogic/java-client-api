@@ -211,7 +211,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public boolean isStopped() {
-    return threadPool.isTerminated();
+    return threadPool != null && threadPool.isTerminated();
   }
 
   private void requireJobStarted() {
@@ -460,8 +460,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           for (QueryBatchListener listener : urisReadyListeners) {
             try {
               listener.processEvent(client, batch);
-            } catch (Exception e) {
-              logger.error("Exception thrown by an onUrisReady listener", e);
+            } catch (Throwable t) {
+              logger.error("Exception thrown by an onUrisReady listener", t);
             }
           }
         }
@@ -469,7 +469,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
         isDone.set(true);
         shutdownIfAllForestsAreDone();
-      } catch (Throwable e) {
+      } catch (Throwable t) {
         // any error outside listeners is grounds for stopping queries to this forest
         isDone.set(true);
         if ( callFailListeners == true ) {
@@ -478,16 +478,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withForestResultsSoFar(forestResults.get(forest).get());
           for ( QueryFailureListener listener : failureListeners ) {
             try {
-              listener.processFailure(client, new QueryHostException(batch, e));
-            } catch (Exception e2) {
+              listener.processFailure(client, new QueryHostException(batch, t));
+            } catch (Throwable e2) {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
           shutdownIfAllForestsAreDone();
-        } else if ( e instanceof RuntimeException ) {
-          throw (RuntimeException) e;
+        } else if ( t instanceof RuntimeException ) {
+          throw (RuntimeException) t;
         } else {
-          throw new DataMovementException("Failed to retry batch", e);
+          throw new DataMovementException("Failed to retry batch", t);
         }
       }
     }
@@ -516,55 +516,81 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
 
   private void startIterating() {
-    final AtomicLong batchNumber = new AtomicLong(0);
-    final AtomicLong resultsSoFar = new AtomicLong(0);
     final QueryBatcher batcher = this;
-    List<String> uriQueue = new ArrayList<>(getBatchSize());
-    while ( iterator.hasNext() ) {
-      uriQueue.add(iterator.next());
-      // if we've hit batchSize or the end of the iterator
-      if ( uriQueue.size() == getBatchSize() || ! iterator.hasNext() ) {
-        final List<String> uris = uriQueue;
-        uriQueue = new ArrayList<>(getBatchSize());
-        Runnable runnable = new Runnable() {
-          public void run() {
-            long currentBatchNumber = batchNumber.incrementAndGet();
-            // round-robin from client 0 to (clientList.size() - 1);
-            List<DatabaseClient> currentClientList = clientList.get();
-            int clientIndex = (int) (currentBatchNumber % currentClientList.size());
-            DatabaseClient client = currentClientList.get(clientIndex);
-            QueryBatchImpl batch = new QueryBatchImpl()
-              .withBatcher(batcher)
-              .withTimestamp(Calendar.getInstance())
-              .withJobBatchNumber(currentBatchNumber)
-              .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
+    Runnable queueUris = new Runnable() {
+      public void run() {
+        try {
+          final AtomicLong batchNumber = new AtomicLong(0);
+          final AtomicLong resultsSoFar = new AtomicLong(0);
+          List<String> uriQueue = new ArrayList<>(getBatchSize());
+          while ( iterator.hasNext() ) {
             try {
-              batch = batch.withItems(uris.toArray(new String[uris.size()]));
-              logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
-                  batch.getJobBatchNumber(), batch.getJobResultsSoFar());
-              for (QueryBatchListener listener : urisReadyListeners) {
-                try {
-                  listener.processEvent(client, batch);
-                } catch (Exception e) {
-                  logger.error("Exception thrown by an onUrisReady listener", e);
-                }
+              uriQueue.add(iterator.next());
+              // if we've hit batchSize or the end of the iterator
+              if ( uriQueue.size() == getBatchSize() || ! iterator.hasNext() ) {
+                final List<String> uris = uriQueue;
+                uriQueue = new ArrayList<>(getBatchSize());
+                Runnable processBatch = new Runnable() {
+                  public void run() {
+                    long currentBatchNumber = batchNumber.incrementAndGet();
+                    // round-robin from client 0 to (clientList.size() - 1);
+                    List<DatabaseClient> currentClientList = clientList.get();
+                    int clientIndex = (int) (currentBatchNumber % currentClientList.size());
+                    DatabaseClient client = currentClientList.get(clientIndex);
+                    QueryBatchImpl batch = new QueryBatchImpl()
+                      .withBatcher(batcher)
+                      .withTimestamp(Calendar.getInstance())
+                      .withJobBatchNumber(currentBatchNumber)
+                      .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
+                      batch = batch.withItems(uris.toArray(new String[uris.size()]));
+                      logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
+                          batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+                      for (QueryBatchListener listener : urisReadyListeners) {
+                        try {
+                          listener.processEvent(client, batch);
+                        } catch (Throwable e) {
+                          logger.error("Exception thrown by an onUrisReady listener", e);
+                        }
+                      }
+                  }
+                };
+                threadPool.execute(processBatch);
               }
             } catch (Throwable t) {
               for ( QueryFailureListener listener : failureListeners ) {
                 try {
-                  listener.processFailure(client, new QueryHostException(batch, t));
-                } catch (Exception e) {
+                  QueryBatchImpl batch = new QueryBatchImpl()
+                    .withItems(new String[0])
+                    .withBatcher(batcher)
+                    .withTimestamp(Calendar.getInstance())
+                    .withJobResultsSoFar(0);
+                  listener.processFailure(clientList.get().get(0), new QueryHostException(batch, t));
+                } catch (Throwable e) {
                   logger.error("Exception thrown by an onQueryFailure listener", e);
                 }
               }
-              logger.warn("Error iterating on batch with uris [{}]: {}", uris, t.toString());
+              logger.warn("Error iterating to queue uris", t.toString());
             }
           }
-        };
-        threadPool.execute(runnable);
+        } catch (Throwable t) {
+          for ( QueryFailureListener listener : failureListeners ) {
+            try {
+              QueryBatchImpl batch = new QueryBatchImpl()
+                .withItems(new String[0])
+                .withBatcher(batcher)
+                .withTimestamp(Calendar.getInstance())
+                .withJobResultsSoFar(0);
+              listener.processFailure(clientList.get().get(0), new QueryHostException(batch, t));
+            } catch (Throwable e) {
+              logger.error("Exception thrown by an onQueryFailure listener", e);
+            }
+          }
+          logger.warn("Error iterating to queue uris", t.toString());
+        }
+        threadPool.shutdown();
       }
-    }
-    threadPool.shutdown();
+    };
+    threadPool.execute(queueUris);
   }
 
   public void stop() {

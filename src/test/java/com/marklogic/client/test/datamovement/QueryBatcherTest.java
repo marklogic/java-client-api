@@ -17,11 +17,17 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -220,13 +226,18 @@ public class QueryBatcherTest {
 
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
+    assertFalse("Job should not be stopped yet", queryBatcher.isStopped());
+
     JobTicket ticket = moveMgr.startJob(queryBatcher);
     JobReport report = moveMgr.getJobReport(ticket);
-    assertEquals("Job Report has incorrect job completion information", false, report.isJobComplete());
+    assertFalse("Job Report has incorrect job completion information", report.isJobComplete());
     boolean finished = queryBatcher.awaitCompletion();
     if ( finished == false ) {
       fail("Job did not finish, it was interrupted");
     }
+
+    moveMgr.stopJob(ticket);
+    assertTrue("Job should be stopped now", queryBatcher.isStopped());
 
     if ( failures.length() > 0 ) {
       fail(failures.toString());
@@ -264,5 +275,91 @@ public class QueryBatcherTest {
         }
       }
     }
+  }
+
+  @Test
+  public void testMatchOneAndThrowException() {
+    StructuredQueryDefinition query = new StructuredQueryBuilder().document(uri1);
+    List<String> urisIterator = testQueryExceptions(query, 1, 0);
+    testIteratorExceptions(urisIterator, 1, 0);
+  }
+
+  @Test
+  public void testMatchNoneAndThrowException() {
+    StructuredQueryDefinition query = new StructuredQueryBuilder().document("nonExistentUri");
+    List<String> urisIterator = testQueryExceptions(query, 0, 0);
+    testIteratorExceptions(urisIterator, 0, 0);
+  }
+
+  @Test
+  public void testBadQueryAndThrowException() {
+    StructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(
+      new StringHandle("<this is not a valid structured query>").withFormat(JSON));
+    // we'll see one failure per forest
+    List<String> urisIterator = testQueryExceptions(query, 0, 3);
+    // without any matching uris, there will be no success or failure batches
+    testIteratorExceptions(urisIterator, 0, 0);
+  }
+
+  @Test
+  public void testBadIteratorAndThrowException() {
+    // On second uri let's throw an error in the iterator to trigger onQueryFailure
+    List<String> urisIterator = new ArrayList<String>() {
+      public Iterator<String> iterator() {
+        AtomicInteger steps = new AtomicInteger(0);
+        return new Iterator<String>() {
+          public boolean hasNext() { return steps.incrementAndGet() <= 2; }
+          public String next() {
+            if ( steps.get() == 1 ) return "some uri.txt";
+            else throw new InternalError(errorMessage);
+          }
+        };
+      }
+    };
+    testIteratorExceptions(urisIterator, 1, 1);
+  }
+
+  private String errorMessage = "This is an expected exception used for a negative test";
+
+  public List<String> testQueryExceptions(StructuredQueryDefinition query, int expectedSuccesses, int expectedFailures) {
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+      .onUrisReady( (client, batch) -> { throw new InternalError(errorMessage); } )
+      .onQueryFailure( (client, queryThrowable) -> { throw new InternalError(errorMessage); } );
+    testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
+
+    // collect the uris this time
+    List<String> matchingUris = Collections.synchronizedList(new ArrayList<>());
+    queryBatcher = moveMgr.newQueryBatcher(query)
+      .onUrisReady( (client, batch) -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
+      .onUrisReady( (client, batch) -> { throw new RuntimeException(errorMessage); } )
+      .onQueryFailure( (client, queryThrowable) -> { throw new RuntimeException(errorMessage); } );
+    testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
+    return matchingUris;
+  }
+
+  public void testIteratorExceptions(List<String> uris, int expectedSuccesses, int expectedFailures) {
+    QueryBatcher uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
+      .onUrisReady( (client, batch) -> { throw new InternalError(errorMessage); } )
+      .onQueryFailure( (client, queryThrowable) -> { throw new InternalError(errorMessage); } );
+    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
+
+    uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
+      .onUrisReady( (client, batch) -> { throw new RuntimeException(errorMessage); } )
+      .onQueryFailure( (client, queryThrowable) -> { throw new RuntimeException(errorMessage); } );
+    testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
+  }
+
+  public void testExceptions(QueryBatcher queryBatcher, int expectedSuccesses, int expectedFailures) {
+    final AtomicInteger successfulBatchCount = new AtomicInteger();
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    queryBatcher
+      .withBatchSize(1)
+      .onUrisReady( (client, batch) -> successfulBatchCount.incrementAndGet() )
+      .onQueryFailure( (client, queryThrowable) -> failureBatchCount.incrementAndGet() );
+    moveMgr.startJob(queryBatcher);
+    queryBatcher.awaitCompletion();
+    moveMgr.stopJob(queryBatcher);
+    assertEquals(expectedSuccesses, successfulBatchCount.get());
+    assertEquals(expectedFailures, failureBatchCount.get());
   }
 }
