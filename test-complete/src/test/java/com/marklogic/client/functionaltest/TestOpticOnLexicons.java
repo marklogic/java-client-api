@@ -57,6 +57,7 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanSystemColumn;
 
 public class TestOpticOnLexicons extends BasicJavaClientREST {
 	
@@ -243,9 +244,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		Map<String, CtsReferenceExpr>indexes = new HashMap<String, CtsReferenceExpr>();
 		indexes.put("uri", p.cts.uriReference());
-		indexes.put("city",  p.cts.jsonPropertyReference("city"));
+		indexes.put("city", p.cts.jsonPropertyReference("city"));
 		indexes.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		indexes.put("date",  p.cts.jsonPropertyReference("date"));
+		indexes.put("date", p.cts.jsonPropertyReference("date"));
 		indexes.put("distance", p.cts.jsonPropertyReference("distance"));
 		indexes.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -261,7 +262,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		rowMgr.resultDoc(plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 		
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 4", 4 == jsonBindingsNodes.size());
 		  // Verify first node.
 		Iterator<JsonNode>  nameNodesItr = jsonBindingsNodes.elements();
@@ -311,7 +312,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		rowMgr.resultDoc(plan2, jacksonHandle2);
 		JsonNode jsonResults2 = jacksonHandle2.get();
 		
-		JsonNode jsonBindingsNodes2 = jsonResults2.path("results").path("bindings");
+		JsonNode jsonBindingsNodes2 = jsonResults2.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes2.size());
 		
 		//use strings on select
@@ -326,7 +327,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		rowMgr.resultDoc(plan3, jacksonHandle3);
 		JsonNode jsonResults3 = jacksonHandle3.get();
 
-		JsonNode jsonBindingsNodes3 = jsonResults3.path("results").path("bindings");
+		JsonNode jsonBindingsNodes3 = jsonResults3.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 3", 3 == jsonBindingsNodes3.size());	
 	}
 	
@@ -344,16 +345,16 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri1", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 	
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
@@ -378,7 +379,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		rowMgr.resultDoc(plan3, strHandle);
 		String strContent = strHandle.get();
 		
-		JsonNode jsonInnerDocNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonInnerDocNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonInnerDocNodes.size());
 		//Verify first result
 		assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", jsonInnerDocNodes.get(0).path("myCity.date").path("value").asText());
@@ -460,16 +461,16 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
@@ -483,7 +484,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 5 nodes returned.
 		assertEquals("Five nodes not returned from testJoinInnerKeymatchDateSort method ", 5, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -514,7 +515,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(outputNullVname, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testJoinInnerKeymatchDateSort method ", 4, jsonBindingsNodes.size());
 		first = jsonBindingsNodes.path(0);
@@ -544,7 +545,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(outputCondXpath, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 1 node returned.
 		assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
 		first = jsonBindingsNodes.path(0);
@@ -563,7 +564,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(outputStrCondXPath, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 1 node returned.
 		assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
 		first = jsonBindingsNodes.path(0);
@@ -585,9 +586,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -605,7 +606,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 		rowMgr.resultDoc(output1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -625,7 +626,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 		rowMgr.resultDoc(output2, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
 		first = jsonBindingsNodes.path(0);
@@ -645,7 +646,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		jacksonHandle.setMimetype("application/json");
 		rowMgr.resultDoc(output3, jacksonHandle);
 		jsonResults = jacksonHandle.get();
-		jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testPreparePlan method ", 4, jsonBindingsNodes.size());
 		first = jsonBindingsNodes.path(0);
@@ -669,9 +670,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}		
 		// Should have XDMP-OPTION exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("Server Message: XDMP-OPTION"));
+		assertTrue("Exceptions not found", str.toString().contains("Error running JavaScript request: XDMP-OPTION"));
 		assertTrue("Exceptions not found", str.toString().contains("Invalid option \"optimize=-3\""));
 	}
 	
@@ -689,16 +691,16 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri1", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 		// TODO when BT 41983 is implemented.
 		/*PlanColumn fragIdCol1 = p.col("fragId1");
 		PlanColumn fragIdCol2 = p.col("fragId2");
@@ -717,7 +719,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 5 nodes returned.
 		assertEquals("Five nodes not returned from testJoinInnerWithSystemCol method ", 5, jsonBindingsNodes.size());
 		JsonNode first = jsonBindingsNodes.path(0);
@@ -754,9 +756,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri1", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -772,7 +774,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(preparedPlan, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("results").path("bindings");
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 4 nodes returned.
 		assertEquals("Four nodes not returned from testPreparedPlanMultipleOrderBy method", 4, jsonBindingsNodes.size());
 		JsonNode node = jsonBindingsNodes.path(0);
@@ -793,8 +795,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	
 	/*
 	 * Test False entry in where clause
-	 */
-	
+	 */	
 	@Test
 	public void testFalseWhereClause() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
@@ -808,9 +809,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -836,8 +837,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	/*
 	 * Test Invalid range index- date
 	 * 
-	 */
-	
+	 */	
 	@Test
 	public void testInvalidRangeIndexDate() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
@@ -850,9 +850,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -870,15 +870,15 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: date_invalid"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: date_invalid"));
 	}
 	
 	/*
 	 * Test Invalid refferance- city
 	 */
-	
 	@Test
 	public void testInvalidRefferance() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
@@ -891,9 +891,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city_invalid"));
+		index1.put("city", p.cts.jsonPropertyReference("city_invalid"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
@@ -911,6 +911,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
 		assertTrue("Exceptions not found", str.toString().contains("XDMP-ELEMRIDXNOTFOUND: cts.jsonPropertyReference(\"city_invalid\") -- No  element range index for city_invalid collation"));
@@ -919,8 +920,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	/*
 	 * Test Invalid refferance- qualifier
 	 * 
-	 */
-	
+	 */	
 	@Test
 	public void testInvalidRefferanceQualifier() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
@@ -933,16 +933,16 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri1", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 		
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
@@ -960,20 +960,20 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: myCity_invalid.city"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: myCity_invalid.city"));
 	}
 	
 	/*
 	 * Test Invalid viewCol
 	 * 
-	 */
-	
+	 */	
 	@Test
-	public void testInvalidInvalidViewCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	public void testInvalidViewCol() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
-		System.out.println("In testInvalidInvalidViewCol method");
+		System.out.println("In testInvalidViewCol method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
@@ -982,16 +982,16 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri1", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 		
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
@@ -1010,18 +1010,19 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: invalid_view.city"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: invalid_view.city"));
 	}
+	
 	/*
 	 * Test
 	 * 1) invalid uri on join inner doc - TEST 10
 	 * 2) null uri on join inner doc - TEST 11
 	 * 3) invalid doc on join inner doc
 	 * 
-	 */
-	
+	 */	
 	@Test
 	public void testInvalidInnerDocElements() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
@@ -1033,20 +1034,14 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
 		index1.put("uri", p.cts.uriReference());
-		index1.put("city",  p.cts.jsonPropertyReference("city"));
+		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
-		index1.put("date",  p.cts.jsonPropertyReference("date"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
-		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
-		index2.put("uri2", p.cts.uriReference());
-		index2.put("cityName",  p.cts.jsonPropertyReference("cityName"));
-		index2.put("cityTeam",  p.cts.jsonPropertyReference("cityTeam"));
-		
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
-		//ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
 		
 		//invalid uri on join inner doc
 		ModifyPlan outputInvalidURI = plan1.joinInnerDoc("doc", "/foo/bar").orderBy(p.asc("uri"));
@@ -1060,9 +1055,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: /foo/bar"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: /foo/bar"));
 		
 		//null uri on join inner doc
 		try {
@@ -1086,10 +1082,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: return plan.execute(query, bindings); -- Column not found: {foo: bar}"));
-		
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: {foo: bar}"));		
 	}
-	
+		
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception
 	{
