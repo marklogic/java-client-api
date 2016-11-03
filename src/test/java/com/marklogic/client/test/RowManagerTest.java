@@ -121,6 +121,7 @@ public class RowManagerTest {
 
         String triplesXML =
         	"<sem:triples xmlns:sem=\"http://marklogic.com/semantics\">\n"+
+            "<metadata xmlns=\"\" name=\"key\">value</metadata>\n"+
         	String.join("\n", (String[]) Arrays
         		.stream(triples)
         		.map(triple ->
@@ -188,7 +189,10 @@ public class RowManagerTest {
 	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
 	        checkSingleRow(testList);
 
-	        JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
+//	        JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
+	        JacksonHandle handle = rowMgr.resultDoc(plan, new JacksonHandle());
+	        handle.write(System.out);
+	        JsonNode testNode = handle.get();
 
 	        JsonNode arrayNode = testNode.findValue("columns");
 	        assertEquals("unexpected header count in JSON", 2, arrayNode.size());
@@ -352,10 +356,11 @@ public class RowManagerTest {
 			p.fromTriples(
 				p.pattern(
 						p.col("subject"),
-						rowGraph.iri("p1"),
-//						p.sem.iri("http://example.org/rowgraph/p1"),
+						rowGraph.iri("p1"), // equivalent to: p.sem.iri("http://example.org/rowgraph/p1")
 						p.col("object")
-						)
+						),
+				(String) null,
+				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.qname("metadata"), "value"))
 				)
 			 .orderBy("subject", "object");
 

@@ -96,6 +96,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsYearMonthDurationExpr;
  import com.marklogic.client.type.SemIriParam;
  import com.marklogic.client.type.XsDecimalParam;
+ import com.marklogic.client.type.PlanTripleOptions;
  import com.marklogic.client.type.PlanFunction;
  import com.marklogic.client.type.XsGYearMonthParam;
  import com.marklogic.client.type.XsUnsignedShortParam;
@@ -115,6 +116,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.XsStringParam;
+ import com.marklogic.client.type.PlanTripleOptionsSeq;
  import com.marklogic.client.type.PlanTripleValSeq;
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsHexBinaryParam;
@@ -141,6 +143,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Se
  import com.marklogic.client.type.XsDateTimeExpr;
  import com.marklogic.client.type.XsGMonthDayParam;
 
+import com.marklogic.client.type.SemStoreExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public class PlanBuilderImpl extends PlanBuilderBase {
@@ -309,6 +312,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery) {
         return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
+    }
+    @Override
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), constrainingQuery, options); 
+    }
+    @Override
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options) {
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery, options });
     }
     @Override
         public ViewPlan fromView(String schema, String view) {
@@ -560,11 +571,29 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     public PlanTripleIriSeq subjects(PlanTripleIri...   subjects) {
         return new PlanTripleIriSeqListImpl(subjects);
     }
+    @Override
     public PlanTripleIriSeq predicates(PlanTripleIri... predicates) {
         return new PlanTripleIriSeqListImpl(predicates);
     }
+    @Override
     public PlanTripleValSeq objects(PlanTripleVal...    objects) {
         return new PlanTripleValSeqListImpl(objects);
+    }
+    @Override
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), store); 
+    }
+    @Override
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store) {
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{patterns, qualifierName, null, store});
+    }
+    @Override
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store, PlanTripleOptions options) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), store, options); 
+    }
+    @Override
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store, PlanTripleOptions options) {
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{patterns, qualifierName, null, store, options});
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
@@ -970,6 +999,16 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
  static class PlanTripleIriSeqListImpl extends PlanListImpl implements PlanTripleIriSeq {
         PlanTripleIriSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+ static class PlanTripleOptionsCallImpl extends PlanBaseImpl implements PlanTripleOptions {
+        PlanTripleOptionsCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+ static class PlanTripleOptionsSeqListImpl extends PlanListImpl implements PlanTripleOptionsSeq {
+        PlanTripleOptionsSeqListImpl(Object[] items) {
             super(items);
         }
     }

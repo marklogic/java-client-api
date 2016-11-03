@@ -83,6 +83,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsYearMonthDurationExpr;
  import com.marklogic.client.type.SemIriParam;
  import com.marklogic.client.type.XsDecimalParam;
+ import com.marklogic.client.type.PlanTripleOptions;
  import com.marklogic.client.type.PlanFunction;
  import com.marklogic.client.type.XsGYearMonthParam;
  import com.marklogic.client.type.XsUnsignedShortParam;
@@ -102,6 +103,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsUnsignedShortExpr;
  import com.marklogic.client.type.XsBooleanExpr;
  import com.marklogic.client.type.XsStringParam;
+ import com.marklogic.client.type.PlanTripleOptionsSeq;
  import com.marklogic.client.type.PlanTripleValSeq;
  import com.marklogic.client.type.XsBooleanParam;
  import com.marklogic.client.type.XsHexBinaryParam;
@@ -130,6 +132,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
 
 
 import com.marklogic.client.type.SemIriVal;
+import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
 
 import com.marklogic.client.type.ArrayNodeExpr;
@@ -220,6 +223,8 @@ public abstract class PlanBuilder {
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options);
     public abstract ViewPlan fromView(String schema, String view);
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName);
@@ -380,10 +385,17 @@ public abstract class PlanBuilder {
     public abstract PlanGroupConcatOptions groupConcatOptions(PlanValues values);
     public abstract PlanGroupConcatOptions groupConcatOptions(String separator, PlanValues values);
 
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes);
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName);
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols);
-    public abstract QualifiedPlan fromLexicons(java.util.Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery);
+    public abstract PlanTripleOptions tripleOptions(PlanTriples values);
+
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store, PlanTripleOptions options);
+
+    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes);
+    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName);
+    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols);
+    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery);
 
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
@@ -425,5 +437,6 @@ public abstract class PlanBuilder {
     }
     public interface CaseExpr {}
     public enum PlanValues {DISTINCT, DUPLICATE}
+    public enum PlanTriples {DEDUPLICATED, UNCHECKED}
 
 }

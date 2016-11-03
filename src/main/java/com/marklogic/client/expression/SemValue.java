@@ -15,8 +15,12 @@
  */
 package com.marklogic.client.expression;
 
+import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemIriVal;
+import com.marklogic.client.type.SemStoreExpr;
+import com.marklogic.client.type.SemStoreSeqExpr;
+import com.marklogic.client.type.XsStringSeqVal;
 
 /**
  * SemValue takes Java values and constructs atomic values and
@@ -38,5 +42,18 @@ public interface SemValue {
 	 * @return	a value sequence with an sem:iri data type
 	 */
     public SemIriSeqVal iris(String... stringIris);
+	/**
+	 * Takes any number of iris as semtyped :iri values and constructs an sem:iri sequence
+	 * @param iris	the iris as strings
+	 * @return	a value sequence with an sem:iri data type
+	 */
     public SemIriSeqVal iris(SemIriVal... iris);
+
+    public SemStoreExpr store(String... options);
+    public SemStoreExpr store(XsStringSeqVal options, CtsQueryExpr query);
+    public SemStoreExpr rulesetStore(String... locations);
+    public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreExpr... stores);
+    public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr stores, String... options);
+
+    public SemStoreSeqExpr stores(SemStoreExpr... stores);
 }

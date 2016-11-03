@@ -28,7 +28,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import javax.xml.namespace.QName;
 
 import com.marklogic.client.expression.XsValue;
-import com.marklogic.client.impl.SemValueImpl.SemIriValImpl;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsAnySimpleTypeSeqVal;
