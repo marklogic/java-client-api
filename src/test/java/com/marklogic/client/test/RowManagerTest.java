@@ -360,7 +360,8 @@ public class RowManagerTest {
 						p.col("object")
 						),
 				(String) null,
-				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.qname("metadata"), "value"))
+				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.qname("metadata"), "value")),
+				p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
 				)
 			 .orderBy("subject", "object");
 
