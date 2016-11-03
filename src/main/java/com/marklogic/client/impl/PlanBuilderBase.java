@@ -36,6 +36,7 @@ import com.marklogic.client.expression.SpellExpr;
 import com.marklogic.client.expression.SqlExpr;
 import com.marklogic.client.expression.XdmpExpr;
 import com.marklogic.client.expression.XsExpr;
+import com.marklogic.client.expression.PlanBuilder.PlanTriples;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -62,6 +63,7 @@ import com.marklogic.client.type.PlanAggregateOptions;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanGroupConcatOptions;
 import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.PlanTripleOptions;
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.TextNodeExpr;
 import com.marklogic.client.type.XmlContentNodeExpr;
@@ -169,6 +171,11 @@ abstract class PlanBuilderBase extends PlanBuilder {
 		map.put("separator", separator);
 		return new PlanGroupConcatOptionsImpl(map);
     }
+
+	@Override
+	public PlanTripleOptions tripleOptions(PlanTriples values) {
+		return new PlanTripleOptionsImpl(makeMap(values));
+	}
 
 	@Override
     public DocumentNodeExpr jsonDocument(JsonRootNodeExpr root) {
@@ -521,9 +528,17 @@ abstract class PlanBuilderBase extends PlanBuilder {
 			super(map);
 		}
 	}
+	static class PlanTripleOptionsImpl extends BaseTypeImpl.BaseMapImpl implements PlanTripleOptions {
+		PlanTripleOptionsImpl(Map<String,?> map) {
+			super(map);
+		}
+	}
 
 	static Map<String,String> makeMap(PlanValues values) {
 		return (values == PlanValues.DISTINCT) ? makeMap("values", "distinct") : new HashMap<String, String>();
+	}
+	static Map<String,String> makeMap(PlanTriples values) {
+		return makeMap("dedup", (values == PlanTriples.DEDUPLICATED) ? "on" : "off");
 	}
 	static Map<String,String> makeMap(String key, String value) {
 		Map<String, String> map = new HashMap<String, String>();
