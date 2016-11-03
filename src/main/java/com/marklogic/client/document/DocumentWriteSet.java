@@ -22,7 +22,8 @@ import java.util.Set;
 
 /**
  * Builds a set of {@link DocumentWriteOperation DocumentWriteOperations} to be sent
- * to the server through the REST API as a bulk write request.
+ * to the server through the REST API as a bulk write request.  Instantiate with {@link
+ * DocumentManager#newWriteSet()}.
  * @see DocumentManager#write(DocumentWriteSet)
  * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54649">
  *     REST API Guide -&gt; Writing Multiple Documents</a>
