@@ -23,6 +23,7 @@ test {
 }
 
 /* The minimal number of tests that run in a sandbox environment */
+
 task testSandbox(type:Test) {
 
     include 'com/marklogic/client/functionaltest/TestAggregates.class'
