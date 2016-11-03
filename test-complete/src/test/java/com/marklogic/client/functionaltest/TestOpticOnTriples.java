@@ -56,6 +56,7 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.PlanTriplePatternSeq;
 import com.marklogic.client.type.PlanTripleVal;
 import com.marklogic.client.type.XsStringVal;
@@ -630,30 +631,30 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn teamIdCol = p.col("player_team");
 		PlanColumn teamNameCol = p.col("team_name");
 		PlanColumn teamCityCol = p.col("team_city");
+		PlanSystemColumn graphCol = p.graphCol("graphUri");
 		
-		/*op.fromTriples([
-        op.pattern(playerIdCol, bb('age'), playerAgeCol, op.graphCol('graphUri')),
-        op.pattern(playerIdCol, bb('name'), playerNameCol),
-        op.pattern(playerIdCol, bb('team'), playerTeamCol)
-      ],
-      null, sem.iri('/optic/player/triple/test'), null, {dedup: 'on'}
-    );*/    
-		ModifyPlan team_plan =
-	        p.fromTriples(
+		
+		
+		PlanTriplePatternSeq patSeq = p.patterns(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol, p.graphCol("graphUri")),
+                                                 p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
+                                                 p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
+                                                 );
+		ModifyPlan player_plan = p.fromTriples(patSeq, null, "/optic/player/triple/test", null);    
+		ModifyPlan team_plan = p.fromTriples(
 	          p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 	          p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 	        );
-	        
-		/*const output = 
+	        // TODO 525
+		ModifyPlan output = 
 		        player_plan.joinInner(team_plan)
-		        .where(op.eq(teamNameCol, 'Giants'))
-		        .orderBy(op.asc(playerAgeCol))
-		        .select([
-		          op.as('PlayerName', playerNameCol), 
-		          op.as('PlayerAge', playerAgeCol), 
-		          op.as('TeamName', op.fn.concat(teamCityCol, ' ', teamNameCol)),
-		      op.as('GraphName', graphCol)
-		        ])*/
+		        .where(p.eq(teamNameCol, p.xs.string("Giants")))
+		        .orderBy(p.asc(playerAgeCol))
+		        .select(
+		          p.as("PlayerName", playerNameCol), 
+		          p.as("PlayerAge", playerAgeCol), 
+		          p.as("TeamName", p.fn.concat(teamCityCol, p.xs.string(" "), teamNameCol))
+		      //,p.as("GraphName", graphCol)
+		        );
 		
 		//TEST 14 - join inner with non matching graph iri'
 		//TEST 15 - join inner with array of graph iris
@@ -755,17 +756,37 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		nodeVal = jsonBindingsNodes.path(7); 
 		assertEquals("Row 8 myPlayer.id value incorrect", "http://marklogic.com/baseball/id#008", nodeVal.path("myPlayer.id").path("value").asText());
 		
-		// access with qualifier and fragment id column TODO
-		// Refer to TEST 21 once fromTriples() options is fixed.
-		/*const output =
-		        op.fromTriples([
-		          op.pattern(idCol, bb('age'), ageCol, op.fragmentIdCol('fragId')),
-		          op.pattern(idCol, bb('name'), nameCol),
-		          op.pattern(idCol, bb('team'), teamCol)
-		        ], 'myPlayer', null, null, {dedup: 'on'})
-		        .where(op.le(op.viewCol('myPlayer', 'age'), 25))
-		        .orderBy(op.desc(op.viewCol('myPlayer', 'name')))*/
+		// access with qualifier and fragment id column
 		
+		PlanSystemColumn fragIdCol = p.fragmentIdCol("fragId");
+		PlanTriplePatternSeq patSeq1 = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol, fragIdCol),
+				p.pattern(idCol, bb.iri("name"), nameCol),
+				p.pattern(idCol, bb.iri("team"), teamCol));
+				
+		ModifyPlan outputFragId =
+		        p.fromTriples(patSeq1, "myPlayer", null, null)
+		        .where(p.le(p.viewCol("myPlayer", "age"), p.xs.intVal(25)))
+		        .orderBy(p.desc(p.viewCol("myPlayer", "name")));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+			
+		rowMgr.resultDoc(outputFragId, jacksonHandle);
+		jsonResults = jacksonHandle.get();
+		jsonBindingsNodes = jsonResults.path("rows");
+		// Should return 3 nodes.
+		assertEquals("Three nodes not returned from testAccessWithQualifier method", 3, jsonBindingsNodes.size());
+		
+		assertEquals("Row 1 myPlayer.name value incorrect", "Pedro Barrozo", jsonBindingsNodes.get(0).path("myPlayer.name").path("value").asText());
+		assertEquals("Row 1 myPlayer.age value incorrect", "19", jsonBindingsNodes.get(0).path("myPlayer.age").path("value").asText());
+		assertTrue(jsonBindingsNodes.get(0).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
+		
+		assertEquals("Row 1 myPlayer.name value incorrect", "Pat Crenshaw", jsonBindingsNodes.get(1).path("myPlayer.name").path("value").asText());
+		assertEquals("Row 1 myPlayer.age value incorrect", "25", jsonBindingsNodes.get(1).path("myPlayer.age").path("value").asText());
+		assertTrue(jsonBindingsNodes.get(1).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
+		
+		assertEquals("Row 1 myPlayer.name value incorrect", "Bob Brian", jsonBindingsNodes.get(2).path("myPlayer.name").path("value").asText());
+		assertEquals("Row 1 myPlayer.age value incorrect", "23", jsonBindingsNodes.get(2).path("myPlayer.age").path("value").asText());
+		assertTrue(jsonBindingsNodes.get(2).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
 	}
 	
 	/* This test checks access with iri predicate.
