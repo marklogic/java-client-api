@@ -460,7 +460,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
-		index1.put("uri", p.cts.uriReference());
+		index1.put("uri1", p.cts.uriReference());
 		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
 		index1.put("date", p.cts.jsonPropertyReference("date"));
@@ -499,78 +499,135 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Row 5 myTeam.cityName value incorrect", "london", five.path("myTeam.cityName").path("value").asText());
 		assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", five.path("myTeam.cityTeam").path("value").asText());
 		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", five.path("myTeam.uri2").path("value").asText());
+ 
+		PlanColumn uriCol1 = p.col("uri1");
+		PlanColumn cityCol = p.col("city");
+		PlanColumn popCol = p.col("popularity");
+		PlanColumn dateCol = p.col("date");
+		PlanColumn distCol = p.col("distance");
+		PlanColumn pointCol = p.col("point");
+		PlanColumn uriCol2 = p.col("uri2");
 		
-		//TODO Uncomment the select below here when https://github.com/marklogic/java-client-api/issues/501 is fixed.
- /*
-
-		//using element reference and null viewname
-		ExportablePlan outputNullVname =
-			        plan1.joinInner(plan2, p.on(p.viewCol(null, "city"), p.viewCol(null, "cityName")))
-			        .orderBy(p.desc("uri2"))
-			        .joinInnerDoc("doc", "uri1")
-			        .select("uri1", "city", "popularity", "date", "distance", "point", p.as("nodes", p.("doc", "//city")), "uri2", "cityName", "cityTeam")
-			        .where(p.isDefined(p.col("nodes")));
+		PlanColumn cityNameCol = p.col("cityName");
+		PlanColumn cityTeamCol = p.col("cityTeam");
+		//using element reference and viewname
+		ModifyPlan outputNullVname = plan1.joinInner(plan2, p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")))
+			                              .orderBy(p.desc("uri2"))
+			                              .joinInnerDoc("doc", "uri1")
+			                              .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//city")), uriCol2, cityNameCol, cityTeamCol)
+			                              .where(p.isDefined(p.col("nodes")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputNullVname, jacksonHandle);
 		jsonResults = jacksonHandle.get();
 		jsonBindingsNodes = jsonResults.path("rows");
-		// Should have 4 nodes returned.
-		assertEquals("Four nodes not returned from testJoinInnerKeymatchDateSort method ", 4, jsonBindingsNodes.size());
-		first = jsonBindingsNodes.path(0);
-		assertEquals("Row 1 myCity.city value incorrect", "beijing", first.path("myCity.city").path("value").asText());
-		assertEquals("Row 1 myCity.distance value incorrect", "134.5", first.path("myCity.distance").path("value").asText());
-		assertEquals("Row 1 myTeam.cityName value incorrect", "beijing", first.path("myTeam.cityName").path("value").asText());
-		assertEquals("Row 1 myTeam.cityTeam value incorrect", "ducks", first.path("myTeam.cityTeam").path("value").asText());
-		assertEquals("Row 1 myCity.popularity value incorrect", "5", first.path("myCity.popularity").path("value").asText());
-		JsonNode four = jsonBindingsNodes.path(3);
-		assertEquals("Row 3 myCity.city value incorrect", "new jersey", four.path("myCity.city").path("value").asText());
-		assertEquals("Row 3 myCity.distance value incorrect", "12.9", four.path("myCity.distance").path("value").asText());
-		assertEquals("Row 3 myTeam.cityName value incorrect", "new jersey", four.path("myTeam.cityName").path("value").asText());
-		assertEquals("Row 3 myTeam.cityTeam value incorrect", "new jersey", four.path("myTeam.cityTeam").path("value").asText());
-		assertEquals("Row 3 myCity.popularity value incorrect", "2", four.path("myCity.popularity").path("value").asText());
+		// Should have 5 nodes returned.
+		assertEquals("Five nodes not returned from testJoinInnerKeymatchDateSort method ", 5, jsonBindingsNodes.size());
+		JsonNode node = jsonBindingsNodes.path(0);
+		assertEquals("Row 1 myCity.city value incorrect", "cape town", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.distance value incorrect", "377.9", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 1 myTeam.cityName value incorrect", "cape town", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 1 myTeam.cityTeam value incorrect", "pirates", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 1 myCity.popularity value incorrect", "3", node.path("myCity.popularity").path("value").asText());
 		
-		//TEST 8 - join inner with plan accessor and conditional xpath
-		PlanColumn cityCol = p.col("city");
-		PlanColumn cityNameCol = p.col("cityName");
-		ExportablePlan outputCondXpath =
-		        plan1.joinInner(plan2, p.on(cityCol, cityNameCol))
-		        .orderBy(p.asc("uri1"))
+		node = jsonBindingsNodes.path(1);
+		assertEquals("Row 2 myCity.city value incorrect", "beijing", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 2 myCity.distance value incorrect", "134.5", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 2 myTeam.cityName value incorrect", "beijing", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 2 myTeam.cityTeam value incorrect", "ducks", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 2 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
+		node = jsonBindingsNodes.path(4);
+		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 5 myCity.distance value incorrect", "50.4", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 5 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
+		
+		//TEST 4 - join inner with condition, joinInnerDoc and xpath
+		
+		ExportablePlan outputCondXpath = plan1.joinInner(plan2, 
+		          p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
+		          p.ne(p.col("popularity"), p.xs.intVal(3))
+		        )
 		        .joinInnerDoc("doc", "uri1")
-		        .select("uri1", "city", "popularity", "date", "distance", "point", p.as("nodes", p.xpath("doc", "/location[latLonPair/lat = 40.72]")), "uri2", "cityName", "cityTeam")
-		        .where(p.isDefined(p.col("nodes")));
+		        .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//latLonPair/lat/number()")), uriCol2, cityNameCol, cityTeamCol)
+		        .where(p.isDefined(p.col("nodes")))
+		        .orderBy(p.desc(p.col("distance")));
+		        
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(outputCondXpath, jacksonHandle);
 		jsonResults = jacksonHandle.get();
 		jsonBindingsNodes = jsonResults.path("rows");
-		// Should have 1 node returned.
-		assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
-		first = jsonBindingsNodes.path(0);
-		assertEquals("Row 1 myCity.city value incorrect", "new jersey", first.path("myCity.city").path("value").asText());
-		assertEquals("Row 1 latLonPair.lat value incorrect", "40.72", first.path("latLonPair.lat").path("value").asText());
+		// Should have 4 nodes returned.
+		assertEquals("Four nodes not returned from testJoinInnerKeymatchDateSort method ", 4, jsonBindingsNodes.size());
+		node = jsonBindingsNodes.path(0);
+		assertEquals("Row 1 myCity.city value incorrect", "beijing", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.distance value incorrect", "134.5", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 1 myTeam.cityName value incorrect", "beijing", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 1 myTeam.cityTeam value incorrect", "ducks", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 1 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 1 myCity.point value incorrect", "39.900002,116.4", node.path("myCity.point").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "39.9", node.path("nodes").path("value").asText());
 		
-		//TEST 9 - join inner with string conditional xpath
-		ExportablePlan outputStrCondXPath =
-		        plan1.joinInner(plan2, p.on(cityCol, cityNameCol))
-		        .orderBy(p.asc("uri1"))
-		        .joinInnerDoc("doc", "uri1")
-		        .select("uri1", "city", "popularity", "date", "distance", "point", p.as("nodes", p.xpath("doc", "/location[latLonPoint =  \\"51.50, -0.12\\"]")), "uri2", "cityName", "cityTeam")
-		        .where(p.isDefined(p.col("nodes")));
+		node = jsonBindingsNodes.path(3);
+		assertEquals("Row 4 myCity.city value incorrect", "new jersey", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 4 myCity.distance value incorrect", "12.9", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 4 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 4 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 4 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 4 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());
+		assertEquals("Row 4 nodes value incorrect", "40.72", node.path("nodes").path("value").asText());
+		
+		// TEST 20 - join inner with joinInnerDoc and xpath
+		ExportablePlan innerJoinInnerDocXPath = plan1.joinInner(plan2)
+                                                     .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+                                                     .orderBy(p.asc(p.col("date")))
+                                                     .joinInnerDoc("doc", "uri2")
+                                                     .select(
+                                                    		 uriCol1, cityCol, popCol, dateCol, distCol, pointCol, 
+                                                    		 p.viewCol("myCity", "__docId"), 
+                                                    		 uriCol2, cityNameCol, cityTeamCol, 
+                                                    		 p.viewCol("myTeam", "__docId"), 
+                                                    		 p.as("nodes", p.xpath("doc", "/cityTeam"))
+                                                    		)
+                                                     .where(p.isDefined(p.col("nodes")));
+        
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		rowMgr.resultDoc(outputStrCondXPath, jacksonHandle);
+		rowMgr.resultDoc(innerJoinInnerDocXPath, jacksonHandle);
 		jsonResults = jacksonHandle.get();
 		jsonBindingsNodes = jsonResults.path("rows");
-		// Should have 1 node returned.
-		assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
-		first = jsonBindingsNodes.path(0);
-		assertEquals("Row 1 myCity.city value incorrect", "london", first.path("myCity.city").path("value").asText());
-		assertEquals("Row 1 latLonPoint value incorrect", "51.50, -0.12", first.path("latLonPoint").path("value").asText());
-	*/
+		
+		// Should have 5 nodes returned.
+		assertEquals("Five nodes not returned from testJoinInnerKeymatchDateSort method ", 5, jsonBindingsNodes.size());
+
+		node = jsonBindingsNodes.path(0);
+		assertEquals("Row 1 myCity.city value incorrect", "new jersey", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.distance value incorrect", "12.9", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 1 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 1 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 1 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());	
+		assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
+		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
+		assertTrue("Row 1 myCity.__docid value incorrect", node.path("myCity.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertTrue("Row 1 myTeam.__docid value incorrect", node.path("myTeam.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		
+		node = jsonBindingsNodes.path(4);
+		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 5 myCity.distance value incorrect", "50.4", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 5 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
+		assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
+		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
+		assertTrue("Row 5 myCity.__docid value incorrect", node.path("myCity.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertTrue("Row 5 myTeam.__docid value incorrect", node.path("myTeam.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
 	}
 	
 	/*
@@ -701,19 +758,19 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		index2.put("uri2", p.cts.uriReference());
 		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
 		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
-		// TODO when BT 41983 is implemented.
-		/*PlanColumn fragIdCol1 = p.col("fragId1");
-		PlanColumn fragIdCol2 = p.col("fragId2");
+		
+		PlanSystemColumn fragIdCol1 = p.fragmentIdCol("fragId1");
+		PlanSystemColumn fragIdCol2 = p.fragmentIdCol("fragId2");
 	
 		// plan1
-		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", fragIdCol1);
+		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", fragIdCol1, null);
 		// plan2
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", fragIdCol2);
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", fragIdCol2, null);
 		
 		// plan3
 		ModifyPlan plan3 =  plan1.joinInner(plan2)
-		        .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-		        .orderBy(p.asc(p.col("date")));
+		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+		                         .orderBy(p.asc(p.col("date")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -722,22 +779,30 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 5 nodes returned.
 		assertEquals("Five nodes not returned from testJoinInnerWithSystemCol method ", 5, jsonBindingsNodes.size());
-		JsonNode first = jsonBindingsNodes.path(0);
-		assertEquals("Row 1 myCity.city value incorrect", "new jersey", first.path("myCity.city").path("value").asText());
-		assertEquals("Row 1 myCity.date value incorrect", "1971-12-23", first.path("myCity.date").path("value").asText());
-		assertEquals("Row 1 myTeam.cityName value incorrect", "new jersey", first.path("myTeam.cityName").path("value").asText());
-		assertEquals("Row 1 myTeam.cityTeam value incorrect", "nets", first.path("myTeam.cityTeam").path("value").asText());
-		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", first.path("myTeam.uri2").path("value").asText());
-		assertNotNull("myCity.fragId1");
-		assertNotNull("myTeam.fragId2");
-		JsonNode five = jsonBindingsNodes.path(4);
-		assertEquals("Row 5 myCity.city value incorrect", "london", five.path("myCity.city").path("value").asText());
-		assertEquals("Row 5 myCity.date value incorrect", "2007-01-01", five.path("myCity.date").path("value").asText());
-		assertEquals("Row 5 myTeam.cityName value incorrect", "london", five.path("myTeam.cityName").path("value").asText());
-		assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", five.path("myTeam.cityTeam").path("value").asText());
-		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", five.path("myTeam.uri2").path("value").asText());
+		JsonNode node = jsonBindingsNodes.path(0);
 		
-		*/
+		assertEquals("Row 1 myCity.city value incorrect", "new jersey", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.distance value incorrect", "12.9", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 1 myTeam.cityName value incorrect", "new jersey", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 1 myTeam.cityTeam value incorrect", "nets", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 1 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());	
+		assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
+		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
+		assertTrue("Row 1 myCity.fragId1 value incorrect", node.path("myCity.fragId1").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertTrue("Row 1 myTeam.fragId2 value incorrect", node.path("myTeam.fragId2").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		
+		node = jsonBindingsNodes.path(4);
+		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 5 myCity.distance value incorrect", "50.4", node.path("myCity.distance").path("value").asText());
+		assertEquals("Row 5 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 5 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
+		assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
+		assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
+		assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
+		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
+		assertTrue("Row 5 myCity.fragId1 value incorrect", node.path("myCity.fragId1").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertTrue("Row 5 myTeam.fragId2 value incorrect", node.path("myTeam.fragId2").path("value").asText().startsWith("http://marklogic.com/fragment/"));		
 	}
 	
 	/*
@@ -995,8 +1060,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam"); // TODO op.fragmentIdCol('fragId2') when BT41983 is fixed.
-		// Rewrite this test for plan2 - TEST 8 - Invalid viewCol
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam"); 
 		ModifyPlan output = plan1.joinInner(plan2)
 		        .where(p.eq(p.viewCol("invalid_view", "city"), p.col("cityName")))
 		        .orderBy(p.asc(p.col("date")));
