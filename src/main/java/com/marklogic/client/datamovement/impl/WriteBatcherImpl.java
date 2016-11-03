@@ -377,7 +377,11 @@ public class WriteBatcherImpl
                   WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
                   //batch.setJobBatchNumber(batchNumFinished);
                   for ( WriteBatchListener successListener : successListeners ) {
-                    successListener.processEvent(hostClient, batch);
+                    try {
+                      successListener.processEvent(hostClient, batch);
+                    } catch (Throwable t) {
+                      logger.error("Exception thrown by an onBatchSuccess listener", t);
+                    }
                   }
                 }
               } else {
@@ -401,7 +405,11 @@ public class WriteBatcherImpl
         if ( committed ) {
           WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
           for ( WriteBatchListener successListener : successListeners ) {
-            successListener.processEvent(hostClient, batch);
+            try {
+              successListener.processEvent(hostClient, batch);
+            } catch (Throwable t) {
+              logger.error("Exception thrown by an onBatchSuccess listener", t);
+            }
           }
         }
     });
@@ -423,7 +431,11 @@ public class WriteBatcherImpl
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteFailureListener failureListener : failureListeners ) {
-              failureListener.processFailure(hostClient, batch, throwable);
+              try {
+                failureListener.processFailure(hostClient, batch, throwable);
+              } catch (Throwable t) {
+                logger.error("Exception thrown by an onBatchFailure listener", t);
+              }
             }
           }
         } else {
@@ -433,7 +445,11 @@ public class WriteBatcherImpl
       }
       WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
       for ( WriteFailureListener failureListener : failureListeners ) {
-        failureListener.processFailure(hostClient, batch, throwable);
+        try {
+          failureListener.processFailure(hostClient, batch, throwable);
+        } catch (Throwable t) {
+          logger.error("Exception thrown by an onBatchFailure listener", t);
+        }
       }
       logger.warn("Error writing batch: {}", throwable.toString());
     });
@@ -559,7 +575,11 @@ public class WriteBatcherImpl
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteFailureListener failureListener : failureListeners ) {
-              failureListener.processFailure(client, batch, transactionInfo.throwable.get());
+              try {
+                failureListener.processFailure(client, batch, transactionInfo.throwable.get());
+              } catch (Throwable t) {
+                logger.error("Exception thrown by an onBatchFailure listener", t);
+              }
             }
           }
           logger.warn("Failure to rollback transaction: {}", transactionInfo.throwable.get().toString());
@@ -568,7 +588,11 @@ public class WriteBatcherImpl
           for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteBatchListener successListener : successListeners ) {
-              successListener.processEvent(client, batch);
+              try {
+                successListener.processEvent(client, batch);
+              } catch (Throwable t) {
+                logger.error("Exception thrown by an onBatchSuccess listener", t);
+              }
             }
           }
         }
@@ -579,7 +603,11 @@ public class WriteBatcherImpl
       for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
         WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
         for ( WriteFailureListener failureListener : failureListeners ) {
-          failureListener.processFailure(client, batch, t);
+          try {
+            failureListener.processFailure(client, batch, t);
+          } catch (Throwable t2) {
+            logger.error("Exception thrown by an onBatchFailure listener", t2);
+          }
         }
       }
       logger.warn("Failure to complete transaction: {}", t.toString());
@@ -681,10 +709,10 @@ public class WriteBatcherImpl
     }
     Map<String,Forest> hosts = new HashMap<>();
     for ( Forest forest : forests ) {
-      if ( forest.getHost() == null ) {
+      if ( forest.getPreferredHost() == null ) {
         throw new IllegalStateException("Hostname must not be null for any forest");
       }
-      hosts.put(forest.getHost(), forest);
+      hosts.put(forest.getPreferredHost(), forest);
     }
     Map<String,HostInfo> existingHostInfos = new HashMap<>();
     Map<String,HostInfo> removedHostInfos = new HashMap<>();

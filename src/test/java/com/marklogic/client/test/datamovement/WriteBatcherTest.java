@@ -38,6 +38,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteSet;
+import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.BytesHandle;
@@ -69,6 +71,7 @@ public class WriteBatcherTest {
   private static String uri2 = "WriteBatcherTest_content_2.txt";
   private static String uri3 = "WriteBatcherTest_content_3.txt";
   private static String uri4 = "WriteBatcherTest_content_4.txt";
+  private static String uri5 = "invalidXML.xml";
   private static String transform = "WriteBatcherTest_transform.sjs";
   private static String whbTestCollection = "WriteBatcherTest_" +
     new Random().nextInt(10000);
@@ -482,6 +485,72 @@ public class WriteBatcherTest {
     assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
     long duration = System.currentTimeMillis() - start;
     System.out.println("Completed test " + testName + " in " + duration + " millis");
+  }
+
+  @Test
+  public void testWriteOneAndThrowException() {
+    String directory = "/WriteBatcherTest/testWriteOneAndThrowException/";
+    DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
+    writeSet.add(directory + uri1, new StringHandle("test"));
+    testExceptions(writeSet, 1, 0);
+  }
+
+  @Test
+  public void testWriteInvalidXMLAndThrowException() {
+    String directory = "/WriteBatcherTest/testWriteInvalidXMLAndThrowException/";
+    DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
+    writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
+    testExceptions(writeSet, 0, 1);
+  }
+
+  @Test
+  public void testWriteValidAndInvalidDocsAndThrowException() {
+    String directory = "/WriteBatcherTest/testWriteValidAndInvalidDocsAndThrowException/";
+    DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
+    writeSet.add(directory + uri1, new StringHandle("test"));
+    writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
+    writeSet.add(directory + uri2, new StringHandle("test"));
+    writeSet.add(directory + uri5, new StringHandle("this is not valid XML").withFormat(Format.XML));
+    writeSet.add(directory + uri3, new StringHandle("test"));
+    testExceptions(writeSet, 3, 2);
+  }
+
+  private String errorMessage = "This is an expected exception used for a negative test";
+
+  public void testExceptions(DocumentWriteSet docs, int expectedSuccesses, int expectedFailures) {
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
+      .onBatchSuccess( (client, batch) -> { throw new InternalError(errorMessage); } )
+      .onBatchFailure( (client, batch, throwable) -> { throw new InternalError(errorMessage); } );
+    testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
+
+    batcher = moveMgr.newWriteBatcher()
+      .onBatchSuccess( (client, batch) -> { throw new RuntimeException(errorMessage); } )
+      .onBatchFailure( (client, batch, throwable) -> { throw new RuntimeException(errorMessage); } );
+    testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
+
+    cleanupDocs(docs);
+  }
+
+  public void testExceptions(WriteBatcher writeBatcher, DocumentWriteSet docs, int expectedSuccesses, int expectedFailures) {
+    final AtomicInteger successfulBatchCount = new AtomicInteger(0);
+    final AtomicInteger failureBatchCount = new AtomicInteger(0);
+    writeBatcher
+      .withBatchSize(1)
+      .onBatchSuccess( (client, batch) -> successfulBatchCount.incrementAndGet() )
+      .onBatchFailure( (client, batch, throwable) -> failureBatchCount.incrementAndGet() );
+    moveMgr.startJob(writeBatcher);
+    for ( DocumentWriteOperation doc : docs ) {
+      writeBatcher.add(doc.getUri(), doc.getContent());
+    }
+    // while batchSize=1 means all batches are queued, we still need to wait for them to finish
+    writeBatcher.flushAndWait();
+    moveMgr.stopJob(writeBatcher);
+    assertEquals(expectedSuccesses, successfulBatchCount.get());
+    assertEquals(expectedFailures,  failureBatchCount.get());
+  }
+
+  public void cleanupDocs(DocumentWriteSet docs) {
+    client.newDocumentManager().delete(docs.stream().map(doc -> doc.getUri()).toArray(String[]::new));
   }
 
   @Test
