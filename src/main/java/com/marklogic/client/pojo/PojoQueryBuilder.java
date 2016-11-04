@@ -108,8 +108,8 @@ import com.marklogic.client.pojo.util.GenerateIndexConfig;
  * Country, you could query properties on the nested country thusly:</p>
  * <pre>{@code    PojoRepository<City, Integer> cities = 
  *      databaseClient.newPojoRepository(City.class, Integer.class);
- *    PojoQueryBuilder citiesQb = cities.getQueryBuilder();
- *    PojoQueryBuilder countriesQb = citiesQb.containerQueryBuilder("country");
+ *    PojoQueryBuilder<City> citiesQb = cities.getQueryBuilder();
+ *    PojoQueryBuilder<Country> countriesQb = citiesQb.containerQueryBuilder("country", Country.class);
  *    QueryDefinition query = countriesQb.value("continent", "EU"); }</pre>
  */
 public interface PojoQueryBuilder<T> {
