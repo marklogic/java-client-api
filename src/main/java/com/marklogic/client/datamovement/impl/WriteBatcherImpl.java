@@ -309,13 +309,13 @@ public class WriteBatcherImpl
 
   private void requireInitialized() {
     if ( initialized == false ) {
-      throw new IllegalStateException("This operation must be called after calling add or addAs");
+      throw new IllegalStateException("This operation must be called after starting this job");
     }
   }
 
   private void requireNotInitialized() {
     if ( initialized == true ) {
-      throw new IllegalStateException("Configuration cannot be changed after calling add or addAs");
+      throw new IllegalStateException("Configuration cannot be changed after starting this job or calling add or addAs");
     }
   }
 
@@ -615,6 +615,10 @@ public class WriteBatcherImpl
     return completed;
   }
 
+  public void start() {
+    initialize();
+  }
+
   public void stop() {
     stopped.set(true);
     threadPool.shutdownNow();
@@ -622,7 +626,7 @@ public class WriteBatcherImpl
 
   @Override
   public boolean isStopped() {
-    return threadPool.isTerminated();
+    return threadPool != null && threadPool.isTerminated();
   }
 
 

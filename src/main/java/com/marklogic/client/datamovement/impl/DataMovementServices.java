@@ -66,13 +66,12 @@ public class DataMovementServices {
   }
 
   public JobTicket startJob(WriteBatcher batcher) {
-    // TODO: implement job tracking
+    ((WriteBatcherImpl) batcher).start();
     return new JobTicketImpl(generateJobId(), JobTicket.JobType.WRITE_BATCHER)
         .withWriteBatcher((WriteBatcherImpl) batcher);
   }
 
   public JobTicket startJob(QueryBatcher batcher) {
-    // TODO: implement job tracking
     ((QueryBatcherImpl) batcher).start();
     return new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_BATCHER)
         .withQueryBatcher((QueryBatcherImpl) batcher);
