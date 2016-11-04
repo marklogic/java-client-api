@@ -133,7 +133,6 @@ public class ScenariosTest {
       JobReport report = moveMgr.getJobReport(ticket);
       return "batches: " + report.getSuccessBatchesCount() +
         ", docs: "       + report.getSuccessEventsCount() +
-        ", bytes: "      + report.getBytesMoved() +
         ", failures: "   + report.getFailureEventsCount();
     }
   }

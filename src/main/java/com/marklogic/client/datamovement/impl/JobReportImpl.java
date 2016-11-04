@@ -131,16 +131,4 @@ public class JobReportImpl implements JobReport {
   public Calendar getReportTimestamp() {
     return reportTimestamp;
   }
-
-  @Override
-  public long getBytesMoved() {
-    // TODO Implement in the future
-    return 0;
-  }
-
-  @Override
-  public long getFragmentCount() {
-    // TODO Implement in the future
-    return 0;
-  }
 }

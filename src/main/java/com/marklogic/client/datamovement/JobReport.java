@@ -17,13 +17,44 @@ package com.marklogic.client.datamovement;
 
 import java.util.Calendar;
 
+/**
+ * A Job report is used to report status on a {@link WriteBatcher} or a {@link QueryBatcher}
+ * job at any point of time after it is started and provide a
+ * snapshot of the job's status at that time.
+ */
 public interface JobReport {
+  /**
+   * {@link WriteBatcher} : gets the number of documents written to the database<br>
+   * {@link QueryBatcher} : gets the number of uris read from the database 
+   * @return the number of events that succeeded
+   */
   long getSuccessEventsCount();
+  /**
+   * {@link WriteBatcher} : gets the number of documents that were sent but failed to write<br>
+   * {@link QueryBatcher} : gets the number of query attempts that failed
+   * @return the number of events that failed
+   */
   long getFailureEventsCount();
-  long getFragmentCount();
+  /**
+   * {@link WriteBatcher} : gets the number of batches written to the database<br>
+   * {@link QueryBatcher} : gets the number of batches of URIs read from the database
+   * @return the number of batches that succeeded
+   */
   long getSuccessBatchesCount();
+  /**
+   * {@link WriteBatcher} : gets the number of batches that the job failed to write<br>
+   * {@link QueryBatcher} : gets the number of batches of URIs that the job failed to retrieve
+   * @return the number of batches that failed
+   */
   long getFailureBatchesCount();
-  long getBytesMoved();
+  /**
+   * Gets the status of the job whether it has been completed or not
+   * @return the completion status of the job
+   */
   boolean isJobComplete();
+  /**
+   * Gets the timestamp at which this instance of JobReport was created
+   * @return the timestamp of the JobReport
+   */
   Calendar getReportTimestamp();
 }
