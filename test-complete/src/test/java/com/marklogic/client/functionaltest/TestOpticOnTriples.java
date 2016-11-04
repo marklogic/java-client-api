@@ -680,7 +680,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanTriplePatternSeq patSeq = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol),
 				p.pattern(idCol, bb.iri("name"), nameCol),
 				p.pattern(idCol, bb.iri("team"), teamCol));
-		ModifyPlan output = p.fromTriples(patSeq, "myPlayer", null)
+		ModifyPlan output = p.fromTriples(patSeq, "myPlayer")
 				.orderBy(p.desc(ageCol));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -702,7 +702,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 8 myPlayer.team value incorrect", "http://marklogic.com/mlb/team/id/002", nodeVal.path("myPlayer.team").path("value").asText());
 		
 		//access with qualifier with where and order by
-		ModifyPlan output1 = p.fromTriples(patSeq, "myPlayer", null)
+		ModifyPlan output1 = p.fromTriples(patSeq, "myPlayer")
 				              .where(p.le(p.viewCol("myPlayer", "age"), p.xs.intVal(25)))
                               .orderBy(p.desc(p.viewCol("myPlayer", "name")));
         
@@ -724,7 +724,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 3 myPlayer.age value incorrect", "23", nodeVal.path("myPlayer.age").path("value").asText());
 	
 		//access with qualifier and no subject
-		ModifyPlan outputNoSubject = p.fromTriples(p.pattern(null, bb.iri("age"), ageCol), "myPlayer", null, null)
+		ModifyPlan outputNoSubject = p.fromTriples(p.pattern(null, bb.iri("age"), ageCol), "myPlayer")
 		                             .orderBy(p.desc(p.viewCol("myPlayer", "age")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -741,7 +741,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 8 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
 		
 		//access with qualifier and no object		
-		ModifyPlan outputNoObject = p.fromTriples(p.pattern(idCol, bb.iri("age"), (PlanTripleVal)null), "myPlayer", null, null)
+		ModifyPlan outputNoObject = p.fromTriples(p.pattern(idCol, bb.iri("age"), (PlanTripleVal)null), "myPlayer")
 		                     .orderBy(p.asc(p.viewCol("myPlayer", "id")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -764,7 +764,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(idCol, bb.iri("team"), teamCol));
 				
 		ModifyPlan outputFragId =
-		        p.fromTriples(patSeq1, "myPlayer", null, null)
+		        p.fromTriples(patSeq1, "myPlayer")
 		        .where(p.le(p.viewCol("myPlayer", "age"), p.xs.intVal(25)))
 		        .orderBy(p.desc(p.viewCol("myPlayer", "name")));
 		jacksonHandle = new JacksonHandle();
@@ -812,7 +812,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				                                            p.sem.iri("http://marklogic.com/baseball/players/age"),
 				                                            ageCol)
 				                                          );
-		ModifyPlan output = p.fromTriples(patSeq, "myPlayer", null)
+		ModifyPlan output = p.fromTriples(patSeq, "myPlayer")
 				             .orderBy(p.asc(p.viewCol("myPlayer", "id")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -828,7 +828,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 8 myPlayer.age value incorrect", "27", nodeVal.path("myPlayer.age").path("value").asText());
 		
 		//access with iri subject
-		ModifyPlan output1 = p.fromTriples(p.pattern(p.sem.iri("http://marklogic.com/baseball/id#001"), bb.iri("age"), ageCol), "myPlayer", null);
+		ModifyPlan output1 = p.fromTriples(p.pattern(p.sem.iri("http://marklogic.com/baseball/id#001"), bb.iri("age"), ageCol), "myPlayer");
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 			
@@ -867,12 +867,12 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		                                         p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 		                                         p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 		                                         );
-		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer", null);
+		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer");
 		
 		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
                                                      p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
                                                     );
-		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam", null);
+		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam");
 		
 		ModifyPlan output = player_plan.joinLeftOuter(team_plan, p.on(playerTeamCol, teamIdCol))
 	                                   .where(p.and(p.gt(playerAgeCol, p.xs.intVal(20)), p.isDefined(teamNameCol)));
@@ -1044,12 +1044,12 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				                                       p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				                                       p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				                                      );
-		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer", null);
+		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer");
 
 		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				                                     p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				                                    );
-		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam", null);
+		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam");
 		
 		//Export as StringHandle
 		StringHandle strHandle = new StringHandle();
@@ -1165,7 +1165,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(idCol, bb.iri("name"), nameCol),
 				p.pattern(idCol, bb.iri("team"), teamCol)
 				);
-		ModifyPlan output = p.fromTriples(patPlayerSeq, "myPlayer", null)
+		ModifyPlan output = p.fromTriples(patPlayerSeq, "myPlayer")
 				.where(p.le(p.viewCol("myPlayer_Invalid", "age"), p.xs.intVal(25)))
 				.orderBy(p.desc(p.viewCol("myPlayer", "name")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
@@ -1203,7 +1203,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		      	                                       p.pattern(p.col("id"), nameCol),     
 			                                           p.pattern(p.col("id"), bb.iri("position"), posCol)
 				                                      );		
-		ModifyPlan output = p.fromTriples(patPlayerSeq, "", null)
+		ModifyPlan output = p.fromTriples(patPlayerSeq, "")
 	                         .orderBy(p.desc(p.col("age")))
 	                          .select(
 	                                   p.as("PlayerName", nameCol),
