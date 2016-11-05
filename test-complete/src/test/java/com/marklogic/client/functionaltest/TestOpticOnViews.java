@@ -53,6 +53,7 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.XsStringVal;
 
@@ -1888,6 +1889,125 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Element 6 opticFunctionalTest.detail.fragIdCol1 type incorrect", "sem:iri", node.path("opticFunctionalTest.detail.fragIdCol1").path("type").asText());
 		assertEquals("Element 6 opticFunctionalTest.master.fragIdCol2 type incorrect", "sem:iri", node.path("opticFunctionalTest.master.fragIdCol2").path("type").asText());
 		assertEquals("Element 6 opticFunctionalTest.detail.amount value incorrect", "10.01", node.path("opticFunctionalTest.detail.amount").path("value").asText());
+	}
+	
+	/* This test checks the bind params on a where clause..
+	 * Should return 6 items.
+	 * 
+	 */
+	@Test
+	public void testjoinInnerWithBind() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	{	
+		System.out.println("In testjoinInnerWithBind method");
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
+				            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
+				            .orderBy(p.schemaCol("opticFunctionalTest", "master","id"));
+		PlanParam idParam  = p.param("ID");
+		ModifyPlan plan3 = plan1.joinInner(plan2)
+		                        .where(
+		                                p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
+	                                  )
+	                             .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		
+		rowMgr.resultDoc(plan3.bindParam(idParam, p.xs.intVal(1)), jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		// Should have 6 nodes returned.
+		assertEquals("Six nodes not returned from testjoinInnerWithBind method ", 6, jsonBindingsNodes.size());
+		// Verify first node.
+		JsonNode first = jsonBindingsNodes.path(0);
+
+		assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", "1", first.path("opticFunctionalTest.detail.id").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.detail.masterId value incorrect", "1", first.path("opticFunctionalTest.detail.masterId").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.detail.name value incorrect", "Detail 1", first.path("opticFunctionalTest.detail.name").path("value").asText());
+		
+		// Verify sixth node.
+		JsonNode sixth = jsonBindingsNodes.path(5);
+		assertEquals("Row 6 opticFunctionalTest.detail.id value incorrect", "6", sixth.path("opticFunctionalTest.detail.id").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.master.id value incorrect", "1", sixth.path("opticFunctionalTest.master.id").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.detail.masterId value incorrect", "2", sixth.path("opticFunctionalTest.detail.masterId").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());
+		
+		// Verify with negative value.
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		rowMgr.resultDoc(plan3.bindParam(idParam, -1), jacksonHandle);
+		jsonResults = jacksonHandle.get();
+		// Should have null returned.
+		assertTrue("No nodes should returned. But found some.", jsonResults==null);
+		
+		// Verify with string value.
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		rowMgr.resultDoc(plan3.bindParam(idParam, "1"), jacksonHandle);
+		jsonResults = jacksonHandle.get().path("rows");
+		first = jsonResults.path(0);
+
+		assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", "1", first.path("opticFunctionalTest.detail.id").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.detail.masterId value incorrect", "1", first.path("opticFunctionalTest.detail.masterId").path("value").asText());
+		assertEquals("Row 1 opticFunctionalTest.detail.name value incorrect", "Detail 1", first.path("opticFunctionalTest.detail.name").path("value").asText());
+		
+		// Verify sixth node.
+		sixth = jsonResults.path(5);
+		assertEquals("Row 6 opticFunctionalTest.detail.id value incorrect", "6", sixth.path("opticFunctionalTest.detail.id").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.master.id value incorrect", "1", sixth.path("opticFunctionalTest.master.id").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.detail.masterId value incorrect", "2", sixth.path("opticFunctionalTest.detail.masterId").path("value").asText());
+		assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());
+		
+		// Verify with double value.
+		PlanParam amtParam  = p.param("AMT");
+		ModifyPlan planAmt = p.fromView("opticFunctionalTest", "detail")
+				.where(p.gt(p.schemaCol("opticFunctionalTest", "detail", "amount"), amtParam)
+					   )
+                .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		rowMgr.resultDoc(planAmt.bindParam(amtParam, 10.1), jacksonHandle);
+		jsonResults = jacksonHandle.get().path("rows");
+		// Should have 5 rows returned.
+		assertEquals("Five rows not returned from testjoinInnerWithBind method ", 5, jsonResults.size());
+		
+		assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "20.02", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+		assertEquals("Row 2 opticFunctionalTest.detail.amount value incorrect", "30.03", jsonResults.path(1).path("opticFunctionalTest.detail.amount").path("value").asText());
+		assertEquals("Row 3 opticFunctionalTest.detail.amount value incorrect", "40.04", jsonResults.path(2).path("opticFunctionalTest.detail.amount").path("value").asText());
+		assertEquals("Row 4 opticFunctionalTest.detail.amount value incorrect", "50.05", jsonResults.path(3).path("opticFunctionalTest.detail.amount").path("value").asText());
+		assertEquals("Row 5 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(4).path("opticFunctionalTest.detail.amount").path("value").asText());
+		
+		// verify for Strings.
+		PlanParam detNameParam  = p.param("DETAILNAME");
+		ModifyPlan planStringBind = p.fromView("opticFunctionalTest", "detail")
+				                     .where(p.eq(p.schemaCol("opticFunctionalTest", "detail", "name"), detNameParam)
+						                   )
+		                              .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		rowMgr.resultDoc(planStringBind.bindParam(detNameParam, p.xs.string("Detail 6")), jacksonHandle);
+		jsonResults = jacksonHandle.get().path("rows");
+		assertEquals("One row not returned from testjoinInnerWithBind method ", 1, jsonResults.size());
+		assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+								
+		// Verify with different types in multiple places.		
+		ModifyPlan planMultiBind = p.fromView("opticFunctionalTest", "detail")
+				.where(p.and(p.eq(p.schemaCol("opticFunctionalTest", "detail", "name"), detNameParam),
+						p.eq(p.schemaCol("opticFunctionalTest", "detail", "id"), idParam)
+						)
+					   )
+                .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
+		
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		rowMgr.resultDoc(planMultiBind.bindParam(detNameParam, p.xs.string("Detail 6")).bindParam(idParam, p.xs.intVal(6)), jacksonHandle);
+		jsonResults = jacksonHandle.get().path("rows");
+		// Should have 1 node returned.
+		assertEquals("One row not returned from testjoinInnerWithBind method ", 1, jsonResults.size());
+		assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
 	}
 	
 	@AfterClass
