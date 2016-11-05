@@ -55,11 +55,13 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.ArrayNodeExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
  */
+import com.marklogic.client.type.TextNodeExpr;
 
 public class TestOpticOnMixedViews extends BasicJavaClientREST {
 	
@@ -459,6 +461,79 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		assertEquals("Row 1 colorDesc value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
 		assertEquals("Row 2 player_name value incorrect", "Matt Rose", jsonBindingsNodes.path(1).path("player_name").path("value").asText());
 		assertEquals("Row 2 colorDesc value incorrect", "yellow", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
+	}
+	
+	/*
+	 * Test basic Constructors
+	 * plan1 uses fromTriples
+	 * plan2 use fromLiterals
+	 */
+	@Test
+	public void testConstructor() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testJoinfromTriplesfromLiterals method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		
+		PlanColumn playerAgeCol = p.col("player_age");
+		PlanColumn playerIdCol = p.col("player_id");
+		PlanColumn playerNameCol = p.col("player_name");
+		PlanColumn playerTeamCol = p.col("player_team");
+		
+		Map<String, Object>[] literals2 = new HashMap[5];
+		Map<String, Object> row = new HashMap<>();			
+		row = new HashMap<>();			
+		row.put("colorId", 1); row.put("colorDesc", "red");
+		literals2[0] = row;
+		
+		row = new HashMap<>();
+        row.put("colorId", 2); row.put("colorDesc", "blue");
+        literals2[1] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 3); row.put("colorDesc", "black");
+        literals2[2] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 4); row.put("colorDesc", "yellow");
+        literals2[3] = row;
+
+		// plan1 - fromTriples
+		ModifyPlan plan1 = p.fromTriples(
+				                          p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
+		                                  p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
+		                                  p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
+		                                 );
+		// plan2 - fromLiterals
+		ModifyPlan plan2 = p.fromLiterals(literals2);
+		
+		ModifyPlan output = plan1.joinLeftOuter(plan2).where
+				                 (
+		                          p.and
+		                          (
+		                           p.eq(playerNameCol, p.xs.string("Matt Rose")),
+		                           p.or(p.gt(p.col("colorId"), p.xs.intVal(3)), p.lt(p.col("colorId"), p.xs.intVal(2)))
+		                          )
+		                         )
+		                         .orderBy(p.col("colorId"))
+		                         .select(p.as("myResults", 
+		                        		 p.jsonDocument(p.jsonObject(p.prop("myRows", p.jsonArray(p.jsonString(p.col("colorId")))))))
+                                        );
+
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		
+		assertTrue("Number of Elements after plan execution is incorrect. Should be 2", 2 == jsonBindingsNodes.size());		
+		assertEquals("Row 1 colorDesc value incorrect", "1", jsonBindingsNodes.path(0).path("myResults").path("value").path("myRows").path(0).asText());
+		assertEquals("Row 1 colorDesc value incorrect", "4", jsonBindingsNodes.path(1).path("myResults").path("value").path("myRows").path(0).asText());		
 	}
 	
 	@AfterClass
