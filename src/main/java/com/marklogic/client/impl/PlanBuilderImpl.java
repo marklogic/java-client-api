@@ -653,7 +653,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         }
     }
 }
- public class PlanSystemColumnCallImpl  extends PlanExprColCallImpl  implements PlanSystemColumn {
+ public class PlanSystemColumnCallImpl  extends PlanColumnCallImpl  implements PlanSystemColumn {
         PlanSystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
          }
