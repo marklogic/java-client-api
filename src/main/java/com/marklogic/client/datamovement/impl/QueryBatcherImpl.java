@@ -460,7 +460,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           // let's handle errors from listeners specially
           for (QueryBatchListener listener : urisReadyListeners) {
             try {
-              listener.processEvent(client, batch);
+              listener.processEvent(batch);
             } catch (Throwable t) {
               logger.error("Exception thrown by an onUrisReady listener", t);
             }
@@ -479,7 +479,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withForestResultsSoFar(forestResults.get(forest).get());
           for ( QueryFailureListener listener : failureListeners ) {
             try {
-              listener.processFailure(client, new QueryHostException(batch, t));
+              listener.processFailure(new QueryHostException(batch, t));
             } catch (Throwable e2) {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
@@ -539,6 +539,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                     int clientIndex = (int) (currentBatchNumber % currentClientList.size());
                     DatabaseClient client = currentClientList.get(clientIndex);
                     QueryBatchImpl batch = new QueryBatchImpl()
+                      .withClient(client)
                       .withBatcher(batcher)
                       .withTimestamp(Calendar.getInstance())
                       .withJobBatchNumber(currentBatchNumber)
@@ -548,7 +549,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                           batch.getJobBatchNumber(), batch.getJobResultsSoFar());
                       for (QueryBatchListener listener : urisReadyListeners) {
                         try {
-                          listener.processEvent(client, batch);
+                          listener.processEvent(batch);
                         } catch (Throwable e) {
                           logger.error("Exception thrown by an onUrisReady listener", e);
                         }
@@ -558,14 +559,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 threadPool.execute(processBatch);
               }
             } catch (Throwable t) {
+              QueryBatchImpl batch = new QueryBatchImpl()
+                .withItems(new String[0])
+                .withClient(clientList.get().get(0))
+                .withBatcher(batcher)
+                .withTimestamp(Calendar.getInstance())
+                .withJobResultsSoFar(0);
               for ( QueryFailureListener listener : failureListeners ) {
                 try {
-                  QueryBatchImpl batch = new QueryBatchImpl()
-                    .withItems(new String[0])
-                    .withBatcher(batcher)
-                    .withTimestamp(Calendar.getInstance())
-                    .withJobResultsSoFar(0);
-                  listener.processFailure(clientList.get().get(0), new QueryHostException(batch, t));
+                  listener.processFailure(new QueryHostException(batch, t));
                 } catch (Throwable e) {
                   logger.error("Exception thrown by an onQueryFailure listener", e);
                 }
@@ -578,10 +580,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             try {
               QueryBatchImpl batch = new QueryBatchImpl()
                 .withItems(new String[0])
+                .withClient(clientList.get().get(0))
                 .withBatcher(batcher)
                 .withTimestamp(Calendar.getInstance())
                 .withJobResultsSoFar(0);
-              listener.processFailure(clientList.get().get(0), new QueryHostException(batch, t));
+              listener.processFailure(new QueryHostException(batch, t));
             } catch (Throwable e) {
               logger.error("Exception thrown by an onQueryFailure listener", e);
             }

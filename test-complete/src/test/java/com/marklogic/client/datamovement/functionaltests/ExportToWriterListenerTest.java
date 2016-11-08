@@ -110,13 +110,11 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5).withThreadCount(2);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
-		        	
-		        	
-		        	}
+		        batch -> {
+		         }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	 throwable.printStackTrace();
 		          });
 		
@@ -186,7 +184,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	          .withThreadCount(5)
 	          .withBatchSize(10)
 	          .onUrisReady(exportListener)
-	          .onQueryFailure( (client, throwable) -> throwable.printStackTrace() );
+	          .onQueryFailure(throwable -> throwable.printStackTrace() );
 	      dmManager.startJob( queryJob );
 
 	      // wait for the export to finish
@@ -229,7 +227,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	          .withThreadCount(1)
 	          .withBatchSize(1)
 	          .onUrisReady(exportListener)
-	          .onQueryFailure( (client, throwable) -> throwable.printStackTrace() );
+	          .onQueryFailure(throwable -> throwable.printStackTrace() );
 	      dmManager.startJob( queryJob );
 
 	      // wait for the export to finish
@@ -272,7 +270,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	          .withThreadCount(2)
 	          .withBatchSize(2)
 	          .onUrisReady(exportListener)
-	          .onQueryFailure( (client, throwable) -> throwable.printStackTrace() );
+	          .onQueryFailure(throwable -> throwable.printStackTrace());
 	      dmManager.startJob( queryJob );
 
 	      // wait for the export to finish

@@ -141,11 +141,11 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {	        	
+		        batch -> {	        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	 throwable.printStackTrace();
 		          });
 		
@@ -219,7 +219,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 			 QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
 			    .withConsistentSnapshot()
 			    .onUrisReady(exportListener)
-		        .onQueryFailure((client, exception) -> {
+		        .onQueryFailure(exception -> {
 		        	System.out.println("Exceptions thrown from callback onQueryFailure");
 		        	exception.printStackTrace(); 
 		        });

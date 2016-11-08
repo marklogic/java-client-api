@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 /**
  * Sends a Java API bulk {@link com.marklogic.client.document.DocumentManager#delete(String...) delete}
  * request for all the documents from each batch.  Because it deletes
@@ -53,7 +51,7 @@ public class DeleteListener implements QueryBatchListener {
    * The standard BatchListener action called by QueryBatcher.
    */
   @Override
-  public void processEvent(DatabaseClient client, QueryBatch batch) {
-    client.newDocumentManager().delete( batch.getItems() );
+  public void processEvent(QueryBatch batch) {
+    batch.getClient().newDocumentManager().delete( batch.getItems() );
   }
 }

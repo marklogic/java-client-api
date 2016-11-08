@@ -227,7 +227,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a QueryBatcher on the new URIs.
 			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
-			queryBatcher1.onUrisReady((client1, batch) -> {
+			queryBatcher1.onUrisReady(batch -> {
 				for (String str : batch.getItems()) {
 					batchResults.append(str)
 							.append('|');
@@ -239,7 +239,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 						.append('|');
 
 			});
-			queryBatcher1.onQueryFailure((client1, throwable) -> {
+			queryBatcher1.onQueryFailure(throwable -> {
 				System.out.println("Exceptions thrown from callback onQueryFailure");
 				throwable.printStackTrace();
 				batchFailResults.append("Test has Exceptions");
@@ -334,13 +334,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a QueryBatcher on the new URIs.
 			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
-			queryBatcher1.onUrisReady((client1, batch)-> {
+			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
 					batchResults.append(str)
 							.append('|');
 				}     
 			});
-			queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+			queryBatcher1.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure");        	
 				throwable.printStackTrace();
 				batchFailResults.append("Test has Exceptions");          	
@@ -425,7 +425,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		// Run a QueryBatcher.
 		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(qbyexDef);
-		queryBatcher1.onUrisReady((client1, batch)-> {
+		queryBatcher1.onUrisReady(batch-> {
 
 			for (String str : batch.getItems()) {
 				querybatchResults.append(str)
@@ -440,7 +440,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append('|');
 
 		});
-		queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+		queryBatcher1.onQueryFailure(throwable-> {        	
 			System.out.println("Exceptions thrown from callback onQueryFailure");        	
 			throwable.printStackTrace();
 			querybatchFailResults.append("Test has Exceptions");          	
@@ -521,7 +521,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		// Run a QueryBatcher.
 		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
-		queryBatcher1.onUrisReady((client1, batch)-> {
+		queryBatcher1.onUrisReady(batch-> {
 
 			for (String str : batch.getItems()) {
 				batchResults.append(str).append('|');
@@ -535,7 +535,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append('|');
 
 		});
-		queryBatcher1.onQueryFailure((client1, throwable)-> {
+		queryBatcher1.onQueryFailure(throwable-> {
 			System.out.println("Exceptions thrown from callback onQueryFailure");
 			Forest forest = throwable.getForest();
 			batchFailResults.append("Test has Exceptions")
@@ -615,10 +615,10 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		//Hold for contents read back from callback client.
 		StringBuffer ccBuf = new StringBuffer();
 		
-		queryBatcher1.onUrisReady((client1, batch)-> {			
+		queryBatcher1.onUrisReady(batch-> {			
 			// Do a lookup back into the database with the client and batch content.			
 			// Want to verify if the client object can be utilized from a Callback.
-			JSONDocumentManager docMgr = client1.newJSONDocumentManager();
+			JSONDocumentManager docMgr = batch.getClient().newJSONDocumentManager();
 			JacksonHandle jh = new JacksonHandle();
 			docMgr.read(batch.getItems()[0], jh);
 			System.out.println("JH Contents is " + jh.get().toString());
@@ -626,7 +626,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			
 			ccBuf.append(jh.get().toString());
 		});
-		queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+		queryBatcher1.onQueryFailure(throwable-> {        	
 			System.out.println("Exceptions thrown from callback onQueryFailure");        	
 			
 			batchFailResults.append("Test has Exceptions").append('|');
@@ -675,12 +675,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringBuilder batchNoResults = new StringBuilder();
 		StringBuilder batchNoFailResults = new StringBuilder();
 
-		queryBatcherNoResult.onUrisReady((client1, batch) -> {
+		queryBatcherNoResult.onUrisReady(batch -> {
 			for (String str : batch.getItems()) {
 				batchNoResults.append(str).append('|');
 			}
 		});
-		queryBatcherNoResult.onQueryFailure((client1, throwable)-> {        	
+		queryBatcherNoResult.onQueryFailure(throwable-> {        	
 			System.out.println("Exceptions thrown from callback onQueryFailure when no results returned");        	
 			// Should be empty in a successful run. Else fill the buffer to report error.
 			batchNoFailResults.append("Test has Exceptions");
@@ -743,12 +743,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		Calendar  calBef = Calendar.getInstance();
 		long before = calBef.getTimeInMillis();
 		
-		queryBatcherbatchSize.onUrisReady((client1, batch)-> {
+		queryBatcherbatchSize.onUrisReady(batch-> {
 			batchResults.append(batch.getJobBatchNumber()).append('|');
 			System.out.println("Batch Numer is " + batch.getJobBatchNumber());
 
 		});
-		queryBatcherbatchSize.onQueryFailure((client1, throwable)-> {
+		queryBatcherbatchSize.onQueryFailure(throwable-> {
 			System.out.println("Exceptions thrown from callback onQueryFailure");
 
 			batchFailResults.append("Test has Exceptions")
@@ -785,12 +785,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		QueryBatcher queryBatcherSmallTimeout = dmManager.newQueryBatcher(querydef);
 		queryBatcherSmallTimeout.withBatchSize(1000);
 		
-		queryBatcherSmallTimeout.onUrisReady((client1, batch)-> {
+		queryBatcherSmallTimeout.onUrisReady(batch-> {
 			batchResults.append(batch.getJobBatchNumber()).append('|');
 			System.out.println("QueryBatcher with 1000 batch size - Batch Numer is " + batch.getJobBatchNumber());
 
 		});
-		queryBatcherSmallTimeout.onQueryFailure((client1, throwable) -> {
+		queryBatcherSmallTimeout.onQueryFailure(throwable -> {
 			System.out.println("Exceptions thrown from callback onQueryFailure");
 
 			batchFailResults.append("Test has Exceptions").append('|');
@@ -860,13 +860,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		// Make sure to modify TimeUnit.MILLISECONDS.Method(duration) below before the assert
 		queryBatcherAwait.awaitTermination(30, TimeUnit.SECONDS);
 		
-		queryBatcherAwait.onUrisReady((client1, batch)-> {
+		queryBatcherAwait.onUrisReady(batch-> {
 			for (String str : batch.getItems()) {
 				batchResults.append(str)
 						.append('|');
 			}
 		});
-		queryBatcherAwait.onQueryFailure((client1, throwable)-> {
+		queryBatcherAwait.onQueryFailure(throwable-> {
 			System.out.println("Exceptions thrown from callback onQueryFailure");
 
 			batchFailResults.append("Test has Exceptions")
@@ -958,13 +958,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 		queryBatcher1.withBatchSize(5);
 						
-		queryBatcher1.onUrisReady((client1, batch)-> {
+		queryBatcher1.onUrisReady(batch-> {
 			for (String str : batch.getItems()) {
 				batchResults.append(str);
 				batchResults.append("|");
 			}
 		});
-		queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+		queryBatcher1.onQueryFailure(throwable-> {        	
 			System.out.println("Exceptions thrown from callback onQueryFailure");        	
 			throwable.printStackTrace();
 			batchFailResults.append("Test has Exceptions");          	
@@ -1045,12 +1045,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherAddForest.withBatchSize(2000);
 
-			queryBatcherAddForest.onUrisReady((client1, batch)-> {
+			queryBatcherAddForest.onUrisReady(batch-> {
 				batchResults.append(batch.getJobBatchNumber())
 						.append('|');
 				System.out.println("Batch Numer is " + batch.getJobBatchNumber());
 			});
-			queryBatcherAddForest.onQueryFailure((client1, throwable) -> {
+			queryBatcherAddForest.onQueryFailure(throwable -> {
 				System.out.println("Exceptions thrown from callback onQueryFailure");
 
 				batchFailResults.append("Test has Exceptions")
@@ -1090,12 +1090,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			QueryBatcher queryBatcherRemoveForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherRemoveForest.withBatchSize(2000);
 
-			queryBatcherRemoveForest.onUrisReady((client1, batch)-> {
+			queryBatcherRemoveForest.onUrisReady(batch-> {
 				batchResultsRem.append(batch.getJobBatchNumber())
 						.append('|');
 				System.out.println("Batch Numer is " + batch.getJobBatchNumber());
 			});
-			queryBatcherRemoveForest.onQueryFailure((client1, throwable)-> {        	
+			queryBatcherRemoveForest.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure");        	
 
 				batchFailResultsRem.append("Test has Exceptions");
@@ -1209,11 +1209,11 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
 			queryBatcherAddForest.withBatchSize(200);
 
-			queryBatcherAddForest.onUrisReady((client1, batch)-> {
+			queryBatcherAddForest.onUrisReady(batch-> {
 				// Check only once
 				if (ccBuf.toString().isEmpty())
 				{
-					JSONDocumentManager docMgr = client1.newJSONDocumentManager();
+					JSONDocumentManager docMgr = batch.getClient().newJSONDocumentManager();
 					JacksonHandle jh = new JacksonHandle();
 					docMgr.read(batch.getItems()[0], jh);
 					try {
@@ -1233,7 +1233,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchResults.append("|");
 			System.out.println("Batch Numer is " + batch.getJobBatchNumber());
 			});
-			queryBatcherAddForest.onQueryFailure((client1, throwable) -> {
+			queryBatcherAddForest.onQueryFailure(throwable -> {
 				System.out.println("Exceptions thrown from callback onQueryFailure");
 
 				batchFailResults.append("Test has Exceptions");
@@ -1320,7 +1320,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 		// Run a QueryBatcher.
 		QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(qbyexDef);
-		queryBatcher1.onUrisReady((client1, batch)-> {
+		queryBatcher1.onUrisReady(batch-> {
 						
 			for (String str : batch.getItems()) {
 				querybatchResults.append(str)
@@ -1335,7 +1335,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append('|');
 
 		});
-		queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+		queryBatcher1.onQueryFailure(throwable-> {        	
 			System.out.println("Exceptions thrown from callback onQueryFailure");        	
 			throwable.printStackTrace();
 			querybatchFailResults.append("Test has Exceptions");
@@ -1440,7 +1440,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a QueryBatcher on the new URIs.
 			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
 
-			queryBatcher1.onUrisReady((client1, batch)-> {
+			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
 					batchResults.append(str)
 					.append('|');
@@ -1465,7 +1465,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append(batch.getJobTicket().getJobType().name());*/
 				}     
 			});
-			queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+			queryBatcher1.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure");        	
 				throwable.printStackTrace();
 				batchFailResults.append("Test has Exceptions");          	
@@ -1588,13 +1588,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a QueryBatcher on the new URIs.
 			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(queryWorddef);
 
-			queryBatcher1.onUrisReady((client1, batch)-> {
+			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
 					batchWordResults.append(str)
 							.append('|');
 				}     
 			});
-			queryBatcher1.onQueryFailure((client1, throwable)-> {        	
+			queryBatcher1.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure in testDifferentQueryTypes");        	
 				throwable.printStackTrace();
 				batchWordFailResults.append("Test has Exceptions");          	
@@ -1625,14 +1625,14 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			List<String> batchRangeResults = new ArrayList<String>();
 			StringBuilder batchRangeFailResults = new StringBuilder();
 
-			queryBatcher2.onUrisReady((client1, batch)-> {
+			queryBatcher2.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
 					batchRangeResults.add(str);
 					//batchRangeResults.append(str)
 					//.append('|');
 				}     
 			});
-			queryBatcher2.onQueryFailure((client1, throwable)-> {        	
+			queryBatcher2.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure in testDifferentQueryTypes");        	
 				throwable.printStackTrace();
 				batchRangeFailResults.append("Test has Exceptions");          	
@@ -1665,12 +1665,12 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			List<String> batchValueResults = new ArrayList<String>();
 			StringBuilder batchvalueFailResults = new StringBuilder();
 
-			queryBatcher3.onUrisReady((client1, batch)-> {
+			queryBatcher3.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
 					batchValueResults.add(str);
 				}     
 			});
-			queryBatcher3.onQueryFailure((client1, throwable)-> {        	
+			queryBatcher3.onQueryFailure(throwable-> {        	
 				System.out.println("Exceptions thrown from callback onQueryFailure in testDifferentQueryTypes");        	
 				throwable.printStackTrace();
 				batchvalueFailResults.append("Test has Exceptions");          	

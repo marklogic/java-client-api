@@ -21,7 +21,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -42,8 +41,8 @@ public class ExportToWriterListener extends ExportListener {
   }
 
   @Override
-  public void processEvent(DatabaseClient client, QueryBatch batch) {
-    DocumentPage docs = getDocs(client, batch);
+  public void processEvent(QueryBatch batch) {
+    DocumentPage docs = getDocs(batch);
     synchronized(writer) {
       for ( DocumentRecord doc : docs ) {
         Format format = doc.getFormat();

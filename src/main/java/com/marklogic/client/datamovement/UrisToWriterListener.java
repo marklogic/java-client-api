@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 import java.io.IOException;
 import java.io.Writer;
 
@@ -32,7 +30,7 @@ import java.io.Writer;
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( new UrisToWriterListener(writer) )
- *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
+ *       .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket getUrisTicket = dataMovementManager.startJob(getUris);
  *     getUris.awaitCompletion();
  *     dataMovementManager.stopJob(getUrisTicket);
@@ -43,7 +41,7 @@ import java.io.Writer;
  *     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
  *     QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
  *       .onUrisReady(new DeleteListener())
- *       .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
+ *       .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
  *     performDelete.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
@@ -61,7 +59,7 @@ public class UrisToWriterListener implements QueryBatchListener {
   }
 
   @Override
-  public void processEvent(DatabaseClient client, QueryBatch batch) {
+  public void processEvent(QueryBatch batch) {
     synchronized(writer) {
       for ( String uri : batch.getItems() ) {
         try {

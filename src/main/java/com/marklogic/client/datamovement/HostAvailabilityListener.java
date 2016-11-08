@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -123,12 +121,11 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   /**
    * This implements the WriteFailureListener interface
    *
-   * @param hostClient the database client
    * @param batch the batch of WriteEvents
    * @param throwable the exception
    */
-  public void processFailure(DatabaseClient hostClient, WriteBatch batch, Throwable throwable) {
-    boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, hostClient.getHost());
+  public void processFailure(WriteBatch batch, Throwable throwable) {
+    boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, batch.getClient().getHost());
     if ( isHostUnavailableException == true ) {
       try {
         logger.warn("Retrying failed batch: {}, results so far: {}, uris: {}",
@@ -137,7 +134,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         batch.getBatcher().retry(batch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
-        processFailure(batch.getClient(), batch, e);
+        processFailure(batch, e);
       }
     }
   }
@@ -145,11 +142,10 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   /**
    * This implements the QueryFailureListener interface
    *
-   * @param client the host-specific client
    * @param queryBatch the exception with information about the failed query attempt
    */
-  public void processFailure(DatabaseClient client, QueryHostException queryBatch) {
-    boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, client.getHost());
+  public void processFailure(QueryHostException queryBatch) {
+    boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, queryBatch.getClient().getHost());
     if ( isHostUnavailableException == true ) {
       try {
         logger.warn("Retrying failed batch: {}, results so far: {}, forest: {}, forestBatch: {}, forest results so far: {}",
@@ -158,7 +154,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         queryBatch.getBatcher().retry(queryBatch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
-        processFailure(queryBatch.getClient(), new QueryHostException(queryBatch, e));
+        processFailure(new QueryHostException(queryBatch, e));
       }
     }
   }

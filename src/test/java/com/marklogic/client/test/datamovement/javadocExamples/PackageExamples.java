@@ -78,14 +78,14 @@ public class PackageExamples {
         .withBatchSize(1000)
         .withThreadCount(20)
         .withConsistentSnapshot()
-        .onUrisReady((client, batch) -> {
+        .onUrisReady(batch -> {
             for ( String uri : batch.getItems() ) {
                 if ( uri.endsWith(".txt") ) {
                     client.newDocumentManager().delete(uri);
                 }
             }
         })
-        .onQueryFailure((client, queryHostException) -> queryHostException.printStackTrace());
+        .onQueryFailure(queryHostException -> queryHostException.printStackTrace());
     JobTicket ticket = dataMovementManager.startJob(qhb);
     qhb.awaitCompletion();
     dataMovementManager.stopJob(ticket);
@@ -107,10 +107,10 @@ public class PackageExamples {
     WriteBatcher whb = dataMovementManager.newWriteBatcher()
         .withBatchSize(100)
         .withThreadCount(20)
-        .onBatchSuccess((client,batch) -> {
+        .onBatchSuccess(batch -> {
             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
         })
-        .onBatchFailure((client,batch,throwable) -> throwable.printStackTrace() );
+        .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
     JobTicket ticket = dataMovementManager.startJob(whb);
     // the add or addAs methods could be called in separate threads on the
     // single whb instance

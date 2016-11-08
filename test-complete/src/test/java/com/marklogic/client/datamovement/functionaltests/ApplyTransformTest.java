@@ -160,13 +160,13 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
-				(client, batch) -> {
+				batch -> {
 
 
 				}
 				)
 		.onBatchFailure(
-				(client, batch, throwable) -> {
+				(batch, throwable) -> {
 					throwable.printStackTrace();
 				});
 
@@ -259,12 +259,12 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE)
-				.onSuccess((client, batch) -> {
+				.onSuccess(batch -> {
 					success.addAndGet(batch.getItems().length);
 				}). 
-				onBatchFailure((client, batch, throwable) -> {
+				onBatchFailure((batch, throwable) -> {
 					throwable.printStackTrace();
-				}).onSkipped((client, batch) -> {
+				}).onSkipped(batch -> {
 					skipped.addAndGet(batch.getItems().length);
 
 				});
@@ -309,13 +309,13 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE)
-				.onSuccess((client, batch) -> {
+				.onSuccess(batch -> {
 					success.addAndGet(batch.getItems().length);
 				}). 
-				onBatchFailure((client, batch, throwable) -> {
+				onBatchFailure((batch, throwable) -> {
 					failure.addAndGet(batch.getItems().length);
 					throwable.printStackTrace();
-				}).onSkipped((client, batch) -> {
+				}).onSkipped(batch -> {
 					skipped.addAndGet(batch.getItems().length);
 				});
 
@@ -386,7 +386,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				.withApplyResult(ApplyResult.REPLACE);
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
-				.onUrisReady((client,batch)->{
+				.onUrisReady(batch->{
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
@@ -428,7 +428,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
-				.onUrisReady((client,batch)->{
+				.onUrisReady(batch->{
 					System.out.println("notransformTest: URI "+batch.getItems()[0]);
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
@@ -473,7 +473,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener)
-				.onUrisReady((client,batch)->{
+				.onUrisReady(batch->{
 					System.out.println("ignoreTransformTest: URI "+batch.getItems()[0]);
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
@@ -516,7 +516,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE)
-				.onSuccess((client, batch) -> {
+				.onSuccess(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					successBatch.addAll(batchList);
 					System.out.println("Success batch "+batch.getItems().length);
@@ -524,7 +524,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 						System.out.println("Success URI's "+s);
 					}
 				})
-				.onBatchFailure((client, batch, throwable) -> {
+				.onBatchFailure((batch, throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					failedBatch.addAll(batchList);
 					throwable.printStackTrace();
@@ -533,7 +533,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 						System.out.println("Failure URI's "+s);
 					}
 				})
-				.onSkipped((client, batch) -> {
+				.onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					failedBatch.addAll(batchList);
 				});
@@ -541,7 +541,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("FailTransform"))
 				.withBatchSize(2)
 				.onUrisReady(listener)
-				.onUrisReady((client,batch)->{
+				.onUrisReady(batch->{
 					System.out.println(batch.getItems()[0]);
 					System.out.println(batch.getItems()[1]);
 					urisList.addAll(Arrays.asList(batch.getItems()));
@@ -587,8 +587,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withApplyResult(ApplyResult.REPLACE)
-				.onSuccess((client, batch) -> {
-					DocumentPage page = client.newDocumentManager().read(batch.getItems());
+				.onSuccess(batch -> {
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
 					JacksonHandle dh = new JacksonHandle();
 					while(page.hasNext()){
 						DocumentRecord rec = page.next();
@@ -607,7 +607,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Replace Snapshot"))
 				.onUrisReady(listener)
 				.onUrisReady(new DeleteListener())
-				.onQueryFailure( (client, throwable) -> {
+				.onQueryFailure( throwable -> {
 					throwable.printStackTrace();
 
 				});
@@ -623,7 +623,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 				new StructuredQueryBuilder().collection("Replace Snapshot"))
 				.withBatchSize(11)
-				.onUrisReady((client, batch)->{
+				.onUrisReady(batch->{
 					for(String s: batch.getItems()){
 						urisList.add(s);
 					}
@@ -643,15 +643,15 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
-		listener.onSuccess((client, batch) -> {
+		listener.onSuccess(batch -> {
 			Assert.assertEquals("/local/nomatch",batch.getItems()[0]);
 		})
-		.onSkipped((client, batch) -> {
+		.onSkipped(batch -> {
 			System.out.println("noMatchReplace: Skipped "+batch.getItems()[0]);
 		});
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("No Match"))
 				.onUrisReady(listener)
-				.onUrisReady((client, batch)-> {
+				.onUrisReady(batch-> {
 					Assert.assertEquals(1, batch.getItems().length);
 					Assert.assertEquals("/local/nomatch",batch.getItems()[0]);
 				});
@@ -690,18 +690,18 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE)
-				.onSuccess((client, batch) -> {
+				.onSuccess(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					successBatch.addAll(batchList);
 					System.out.println("stopTransformJobTest: Success: "+batch.getItems()[0]);
 
 				})
-				.onSkipped((client, batch) -> {
+				.onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					skippedBatch.addAll(batchList);
 					System.out.println("stopTransformJobTest : Skipped: "+batch.getItems()[0]);
 				})
-				.onBatchFailure((client, batch,throwable) -> {
+				.onBatchFailure((batch,throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					failedBatch.addAll(batchList);
 					throwable.printStackTrace();

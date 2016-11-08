@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.RESTServices;
@@ -78,13 +77,13 @@ public class ApplyTransformListener implements QueryBatchListener {
   /**
    * The standard BatchListener action called by QueryBatcher.
    */
-  public void processEvent(DatabaseClient client, QueryBatch batch) {
-    if ( ! (client instanceof DatabaseClientImpl) ) {
+  public void processEvent(QueryBatch batch) {
+    if ( ! (batch.getClient() instanceof DatabaseClientImpl) ) {
       throw new IllegalStateException("DatabaseClient must be instanceof DatabaseClientImpl");
     }
     StringHandle uris = new StringHandle(String.join("\n", batch.getItems()))
       .withMimetype("text/uri-list");
-    RESTServices services = ((DatabaseClientImpl) client).getServices();
+    RESTServices services = ((DatabaseClientImpl) batch.getClient()).getServices();
     try {
       RequestParameters params = new RequestParameters();
       if ( transform != null ) transform.merge(params);
@@ -103,7 +102,7 @@ public class ApplyTransformListener implements QueryBatchListener {
         .withServerTimestamp( batch.getServerTimestamp() )
         .withJobTicket( batch.getJobTicket() );
       for ( QueryBatchListener listener : successListeners ) {
-        listener.processEvent(client, processedBatch);
+        listener.processEvent(processedBatch);
       }
 
       List<String> skippedRequestUris = new ArrayList<>(Arrays.asList(batch.getItems()));
@@ -112,12 +111,12 @@ public class ApplyTransformListener implements QueryBatchListener {
         QueryBatchImpl skippedBatch = processedBatch
           .withItems( skippedRequestUris.toArray(new String[0]) );
         for ( QueryBatchListener listener : skippedListeners ) {
-          listener.processEvent(client, skippedBatch);
+          listener.processEvent(skippedBatch);
         }
       }
     } catch (Throwable t) {
       for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
-        listener.processFailure(client, batch, t);
+        listener.processFailure(batch, t);
       }
     }
   }

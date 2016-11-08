@@ -201,7 +201,7 @@ public class QueryBatcherTest {
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onUrisReady(
-        (client, batch) -> {
+        batch -> {
           successfulBatchCount.incrementAndGet();
           totalResults.addAndGet(batch.getItems().length);
           String forestName = batch.getForest().getForestName();
@@ -217,7 +217,7 @@ public class QueryBatcherTest {
         }
       )
       .onQueryFailure(
-        (client, throwable) -> {
+        throwable -> {
           failureBatchCount.incrementAndGet();
           throwable.printStackTrace();
           failures.append("ERROR:[" + throwable + "]\n");
@@ -323,29 +323,29 @@ public class QueryBatcherTest {
 
   public List<String> testQueryExceptions(StructuredQueryDefinition query, int expectedSuccesses, int expectedFailures) {
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
-      .onUrisReady( (client, batch) -> { throw new InternalError(errorMessage); } )
-      .onQueryFailure( (client, queryThrowable) -> { throw new InternalError(errorMessage); } );
+      .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
+      .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
     testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
 
     // collect the uris this time
     List<String> matchingUris = Collections.synchronizedList(new ArrayList<>());
     queryBatcher = moveMgr.newQueryBatcher(query)
-      .onUrisReady( (client, batch) -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
-      .onUrisReady( (client, batch) -> { throw new RuntimeException(errorMessage); } )
-      .onQueryFailure( (client, queryThrowable) -> { throw new RuntimeException(errorMessage); } );
+      .onUrisReady( batch -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
+      .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
+      .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
     testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
     return matchingUris;
   }
 
   public void testIteratorExceptions(List<String> uris, int expectedSuccesses, int expectedFailures) {
     QueryBatcher uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
-      .onUrisReady( (client, batch) -> { throw new InternalError(errorMessage); } )
-      .onQueryFailure( (client, queryThrowable) -> { throw new InternalError(errorMessage); } );
+      .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
+      .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
     testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
 
     uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
-      .onUrisReady( (client, batch) -> { throw new RuntimeException(errorMessage); } )
-      .onQueryFailure( (client, queryThrowable) -> { throw new RuntimeException(errorMessage); } );
+      .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
+      .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
     testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
   }
 
@@ -354,8 +354,8 @@ public class QueryBatcherTest {
     final AtomicInteger failureBatchCount = new AtomicInteger();
     queryBatcher
       .withBatchSize(1)
-      .onUrisReady( (client, batch) -> successfulBatchCount.incrementAndGet() )
-      .onQueryFailure( (client, queryThrowable) -> failureBatchCount.incrementAndGet() );
+      .onUrisReady( batch -> successfulBatchCount.incrementAndGet() )
+      .onQueryFailure( queryThrowable -> failureBatchCount.incrementAndGet() );
     moveMgr.startJob(queryBatcher);
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);

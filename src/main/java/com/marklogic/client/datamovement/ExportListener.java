@@ -19,7 +19,6 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.function.Consumer;
 
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -49,7 +48,7 @@ import java.util.Set;
  *                 logger.debug("Contents=[{}]", doc.getContentAs(String.class));
  *               })
  *         )
- *         .onQueryFailure((client, exception) -&gt; exception.printStackTrace());
+ *         .onQueryFailure(exception -&gt; exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();
@@ -66,8 +65,8 @@ public class ExportListener implements QueryBatchListener {
   public ExportListener() {
   }
 
-  protected DocumentPage getDocs(DatabaseClient client, QueryBatch batch) {
-    GenericDocumentManager docMgr = client.newDocumentManager();
+  protected DocumentPage getDocs(QueryBatch batch) {
+    GenericDocumentManager docMgr = batch.getClient().newDocumentManager();
     if ( view              != null ) docMgr.setSearchView(view);
     if ( categories        != null ) docMgr.setMetadataCategories(categories);
     if ( nonDocumentFormat != null ) docMgr.setNonDocumentFormat(nonDocumentFormat);
@@ -82,12 +81,11 @@ public class ExportListener implements QueryBatchListener {
    * This is the method QueryBatcher calls for ExportListener to do its
    * thing.  You should not need to call it.
    *
-   * @param client the client pointed to the host containing this batch of uris
    * @param batch the batch of uris and some metadata about the current status of the job
    */
   @Override
-  public void processEvent(DatabaseClient client, QueryBatch batch) {
-    DocumentPage docs = getDocs(client, batch);
+  public void processEvent(QueryBatch batch) {
+    DocumentPage docs = getDocs(batch);
     while ( docs.hasNext() ) {
       for ( Consumer<DocumentRecord> listener : exportListeners ) {
         listener.accept(docs.next());

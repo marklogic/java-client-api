@@ -282,7 +282,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(1);
 		ihb1.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        	}
@@ -290,7 +290,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        	  for(WriteEvent w: batch.getItems()){
 		        		  System.out.println("Failed URI's are"+ w.getTargetUri());
@@ -335,7 +335,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(8);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        	}
@@ -343,7 +343,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		  failureBatch.append(w.getTargetUri()+":");
 			        	}
@@ -369,7 +369,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb3 =  dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
 		ihb3.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        		 
@@ -378,7 +378,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		 
 		        		  failureBatch.append(w.getTargetUri()+":");
@@ -418,7 +418,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb4 =  dmManager.newWriteBatcher();
 		ihb4.withBatchSize(4);
 		ihb4.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        		 
@@ -427,7 +427,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		 
 		        		  failureBatch.append(w.getTargetUri()+":");
@@ -459,7 +459,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb3 =  dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
 		ihb3.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        		 
@@ -468,7 +468,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		 
 		        		  failureBatch.append(w.getTargetUri()+":");
@@ -512,7 +512,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(1);
 		ihb1.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        	}
@@ -520,7 +520,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		  failureBatch.append(w.getTargetUri()+":");
 			        	}		           
@@ -557,7 +557,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(8);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        	}
@@ -565,7 +565,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		  failureBatch.append(w.getTargetUri()+":");
 			        	}		           
@@ -588,7 +588,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb3 =  dmManager.newWriteBatcher();
 		ihb3.withBatchSize(8);
 		ihb3.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        		 
@@ -597,7 +597,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		 
 		        		  failureBatch.append(w.getTargetUri()+":");
@@ -635,7 +635,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb4 =  dmManager.newWriteBatcher();
 		ihb4.withBatchSize(4);
 		ihb4.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	for(WriteEvent w: batch.getItems()){
 		        		successBatch.append(w.getTargetUri()+":");
 		        		 
@@ -644,7 +644,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  for(WriteEvent w: batch.getItems()){
 		        		 
 		        		  failureBatch.append(w.getTargetUri()+":");
@@ -708,13 +708,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(5);
 		ihb1.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	numberOfSuccessFulBatches.add(1);
 		        	        
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	state.isFalse();
 		           
 		          });
@@ -749,17 +749,17 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(1);
 		ihb1.onBatchSuccess(
-		        (client, batch) -> {
-		        	successHost.append(client.getHost()+":");  
-		        	successPort.append(client.getPort()+":");  
+		        batch -> {
+		        	successHost.append(batch.getClient().getHost()+":");  
+		        	successPort.append(batch.getClient().getPort()+":");  
 		        	  
 		         	
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
-		        	failureHost.append(client.getHost()+":");  
-					failurePort.append(client.getPort()+":");  	           
+		          (batch, throwable) -> {
+		        	failureHost.append(batch.getClient().getHost()+":");  
+					failurePort.append(batch.getClient().getPort()+":");  	           
 		          });
 		dmManager.startJob(ihb1);
 	
@@ -801,7 +801,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Success");
 		        	System.out.println(batch.getJobBatchNumber());
 		        	//System.out.println(batch  getJobResultsSoFar());
@@ -820,7 +820,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	System.out.println("Failure");
 		        	//failureBatchNum.append(batch.getForestBatchNumber());
 		        	failureBatchNum.append(batch.getJobBatchNumber());
@@ -931,13 +931,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(25);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	
 		        	successCount.add(batch.getItems().length);
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
 		          });
@@ -998,14 +998,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb2);
 		ihb2.withBatchSize(1);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	successCount.add(batch.getItems().length);
 		        	successState.setTrue();
 		        	
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failureCount.add(batch.getItems().length);
 		        	  failState.setTrue();
 		        	  
@@ -1052,14 +1052,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 		
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	
 		        	successCount.add(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
 		          });
@@ -1114,14 +1114,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	   	   ihb1.withBatchSize(2);
 	   	   ihb1.withTransform(transform);
 	   	   ihb1.onBatchSuccess(
-	   			   (client, batch) -> {
+	   			   batch -> {
 		        	
 	   				   successCount.add(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
@@ -1182,14 +1182,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	   	   ihb1.withBatchSize(1);
 	   	   ihb1.withTransform(transform);
 	   	   ihb1.onBatchSuccess(
-	   			   (client, batch) -> {
+	   			   batch -> {
 		        	
 	   				   successCount.add(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
 		          });
@@ -1229,14 +1229,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
            ihb2.withBatchSize(1);
 	   	   ihb2.withTransform(transform1);
 	   	   ihb2.onBatchSuccess(
-	   			   (client, batch) -> {
+	   			   batch -> {
 		        	
 	   				   successCount.add(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
 		          });
@@ -1260,7 +1260,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(100);
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		//System.out.println("Success "+w.getTargetUri());
@@ -1268,7 +1268,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
@@ -1315,14 +1315,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(105);
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	synchronized(eventCount){
 		        		 eventCount.add(batch.getItems().length);
 		        	}
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  	synchronized(eventCount){
 			        		 eventCount.add(batch.getItems().length);
 			        	}
@@ -1376,7 +1376,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        //	ihbMT.withTransactionSize(3);
        	
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		//System.out.println("Success "+w.getTargetUri());
@@ -1384,7 +1384,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
@@ -1470,7 +1470,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	//ihbMT.withTransactionSize(3);
        	
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		//System.out.println("Success "+w.getTargetUri());
@@ -1478,7 +1478,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
@@ -1563,7 +1563,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
       // 	ihbMT.withTransactionSize(3);
        	
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	synchronized(eventCount){
 		        		 eventCount.add(batch.getItems().length);
 		        	}
@@ -1571,7 +1571,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        	  synchronized(eventCount){
 			        		 eventCount.add(batch.getItems().length);
@@ -1657,7 +1657,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			dmManager.startJob(ihb2);
 							
 			ihb2.onBatchSuccess(
-			        (client, batch) -> {
+			        batch -> {
 			        	
 			        	successCount.add(batch.getItems().length);
 			        	 System.out.println("Success Batch size "+batch.getItems().length);
@@ -1668,7 +1668,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			        	}
 			        )
 			        .onBatchFailure(
-			          (client, batch, throwable) -> {
+			          (batch, throwable) -> {
 			        	  throwable.printStackTrace();
 			        	  System.out.println("Failure Batch size "+batch.getItems().length);
 				        	for(WriteEvent w:batch.getItems()){
@@ -1714,13 +1714,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			dmManager.startJob(ihb2);
 						
 			ihb2.onBatchSuccess(
-			        (client, batch) -> {
+			        batch -> {
 			        	
 			        	successCount.add(batch.getItems().length);
 			          }
 			        )
 			        .onBatchFailure(
-			          (client, batch, throwable) -> {
+			          (batch, throwable) -> {
 			        	  throwable.printStackTrace();
 			        	  System.out.println("Failure Batch size "+batch.getItems().length);
 				        	for(WriteEvent w:batch.getItems()){
@@ -1813,17 +1813,17 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb2);
 		
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	String s= null;
 		        	s.length();
-		        	System.out.println("Success host : "+client.getHost());
+		        	System.out.println("Success host : "+batch.getClient().getHost());
 		        	System.out.println(batch.getItems().length);
 		        	successCount.add(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failState.setTrue();
 		        	  failCount.add(batch.getItems().length);
 		          });
@@ -1845,11 +1845,11 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(5);
 			
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		          
 		          }
 		);
@@ -1871,14 +1871,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(11);
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		System.out.println("Success "+w.getTargetUri());
 		        	}
 		        })
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
@@ -1925,14 +1925,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(11);
        	ihbMT.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	System.out.println("Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		System.out.println("Success "+w.getTargetUri());
 		        	}
 		        })
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
@@ -1984,7 +1984,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(3000);
 		
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		         	System.out.println("Success Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		System.out.println("Success "+w.getTargetUri());
@@ -1992,7 +1992,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  	throwable.printStackTrace();
 		        	 	System.out.println("Failure Batch size "+batch.getItems().length);
 			        	for(WriteEvent w:batch.getItems()){
@@ -2032,7 +2032,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(5);
 				
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		         	System.out.println("Success Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		System.out.println("Success "+w.getTargetUri());
@@ -2040,7 +2040,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  	throwable.printStackTrace();
 		        	 	System.out.println("Failure Batch size "+batch.getItems().length);
 			        	for(WriteEvent w:batch.getItems()){
@@ -2097,12 +2097,12 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(5);
 				
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	successCount.add(batch.getItems().length);		        	
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failCheck.setTrue();
 		        	  failureCount.add(batch.getItems().length);
 		        	  throwable.printStackTrace();
@@ -2169,10 +2169,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(5);
 				
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		        batch -> {
 		        	successCount.add(batch.getItems().length);
 		        	
-		        	System.out.println("Success host: "+client.getHost());
+		        	System.out.println("Success host: "+batch.getClient().getHost());
 		        	System.out.println("Success Batch size "+batch.getItems().length);
 		        	for(WriteEvent w:batch.getItems()){
 		        		System.out.println("Success "+w.getTargetUri());
@@ -2180,11 +2180,11 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          }
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	  failCheck.setTrue();
 		        	  failureCount.add(batch.getItems().length);
 		        	  throwable.printStackTrace();
-		        	  System.out.println("Failure host: "+client.getHost());
+		        	  System.out.println("Failure host: "+batch.getClient().getHost());
 		        	  System.out.println("Failure Batch size "+batch.getItems().length);
 			        	for(WriteEvent w:batch.getItems()){
 			        		System.out.println("Failure "+w.getTargetUri());

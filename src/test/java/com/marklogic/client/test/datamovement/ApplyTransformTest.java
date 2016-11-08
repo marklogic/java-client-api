@@ -125,7 +125,7 @@ public class ApplyTransformTest {
     int numDocs = 1000;
     // write the documents
     WriteBatcher batcher1 = moveMgr.newWriteBatcher().withBatchSize(100)
-      .onBatchFailure((client, batch, throwable) -> throwable.printStackTrace());
+      .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
     JobTicket ticket1 = moveMgr.startJob( batcher1 );
     for ( int i=0; i < numDocs; i++) {
       batcher1.addAs(collection + "/test_doc_" + i + ".json", meta, "{ \"testProperty\": \"test3\" }");
@@ -142,8 +142,8 @@ public class ApplyTransformTest {
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE)
-      .onSuccess((client, batch) -> count2.addAndGet(batch.getItems().length))
-      .onBatchFailure((client, batch, throwable) -> throwable.printStackTrace());
+      .onSuccess(batch -> count2.addAndGet(batch.getItems().length))
+      .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
     QueryBatcher batcher = moveMgr.newQueryBatcher(query2)
       .onUrisReady(listener)
       .withConsistentSnapshot();
@@ -158,8 +158,8 @@ public class ApplyTransformTest {
     final AtomicInteger count3 = new AtomicInteger(0);
     QueryBatcher batcher3 = moveMgr.newQueryBatcher(query3)
       .withBatchSize(100)
-      .onUrisReady((client, batch) -> count3.addAndGet(batch.getItems().length))
-      .onQueryFailure((client, throwable) -> throwable.printStackTrace());
+      .onUrisReady(batch -> count3.addAndGet(batch.getItems().length))
+      .onQueryFailure((throwable) -> throwable.printStackTrace());
     JobTicket ticket3 = moveMgr.startJob( batcher3 );
     batcher3.awaitCompletion();
     moveMgr.stopJob(ticket3);
@@ -187,15 +187,15 @@ public class ApplyTransformTest {
       .onUrisReady(
         new ApplyTransformListener()
           .withTransform(transform)
-          .onSkipped((client, batch) -> {
+          .onSkipped(batch -> {
             if ( batch.getItems().length == 0 ) failures.append("batch length should never be 0");
             for ( String uri : batch.getItems() ) {
               skippedUris.add(uri);
             }
           })
-          .onBatchFailure((client, batch, throwable) -> throwable.printStackTrace())
+          .onBatchFailure((batch, throwable) -> throwable.printStackTrace())
       )
-      .onQueryFailure((client, throwable) -> throwable.printStackTrace());
+      .onQueryFailure(throwable -> throwable.printStackTrace());
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
     moveMgr.stopJob(ticket);

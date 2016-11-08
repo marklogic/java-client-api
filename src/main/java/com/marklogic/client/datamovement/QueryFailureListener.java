@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 public interface QueryFailureListener extends FailureListener<QueryHostException> {
-  void processFailure(DatabaseClient client, QueryHostException failure);
+  void processFailure(QueryHostException failure);
 }
