@@ -131,13 +131,13 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(27).withThreadCount(10);
 		ihb2.onBatchSuccess(
-		        (client, batch) -> {
+		       batch -> {
 		        	
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
-		          (client, batch, throwable) -> {
+		          (batch, throwable) -> {
 		        	 throwable.printStackTrace();
 		          });
 		
@@ -168,13 +168,13 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(11)
 	    .withThreadCount(1)
-	     .onUrisReady((client, batch)->{
+	     .onUrisReady(batch->{
 	    	 for(String s: batch.getItems()){
 	    		uriSet.add(s);
 	    		
 	    	}
 	     })
-	    .onQueryFailure((client, throwable)-> {        	
+	    .onQueryFailure(throwable-> {        	
 	        	System.out.println("Exceptions thrown from callback onQueryFailure");        	
 	            throwable.printStackTrace();
 	          	         	
@@ -195,9 +195,9 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withBatchSize(23)
 	    .withThreadCount(1)
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-	    .onUrisReady((client, batch) -> uris2.addAll(Arrays.asList(batch.getItems())))
-	    .onQueryFailure( (client, throwable) -> {
+	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+	    .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
+	    .onQueryFailure( throwable-> {
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
 	      });
@@ -219,13 +219,13 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        new StructuredQueryBuilder().collection("DeleteListener"))
 	    .withBatchSize(11)
 	    .withThreadCount(11)
-	    .onUrisReady((client, batch)->{
+	    .onUrisReady(batch->{
 	     	synchronized(this){
 	    		urisList.addAll(Arrays.asList(batch.getItems()));
 	    	}
 	    	
 	     })
-	  	.onQueryFailure((client, throwable)-> {        	
+	  	.onQueryFailure(throwable-> {        	
 	        	System.out.println("Exceptions thrown from callback onQueryFailure");        	
 	            throwable.printStackTrace();
 	          	         	
@@ -246,9 +246,9 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withBatchSize(119)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-	    .onUrisReady((client, batch) -> uris2.addAll(Arrays.asList(batch.getItems())))
-	    .onQueryFailure( (client, throwable) -> {
+	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+	    .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
+	    .onQueryFailure( throwable-> {
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
 	      });
@@ -274,7 +274,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withConsistentSnapshot()
 	    .withThreadCount(5)
 	    .onUrisReady(new DeleteListener())
-	  	.onQueryFailure((client, throwable)-> {        	
+	  	.onQueryFailure(throwable-> {        	
 	        	System.out.println("Exceptions thrown from callback onQueryFailure");        	
 	            throwable.printStackTrace();
 	          	         	
@@ -307,9 +307,9 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withBatchSize(11)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-	    .onUrisReady((client, batch) -> uris2.addAll(Arrays.asList(batch.getItems())))
-	    .onQueryFailure( (client, throwable) -> {
+	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+	    .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
+	    .onQueryFailure( throwable-> {
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
 	      });
@@ -349,12 +349,12 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withBatchSize(11)
 	    .withThreadCount(4)
 	    .withConsistentSnapshot()
-	    .onUrisReady((client, batch)->{
+	    .onUrisReady(batch->{
 	    	for(String s: batch.getItems()){
 	    		urisList.add(s);
 	    	}
 	     })
-	   	.onQueryFailure((client, throwable)-> {        	
+	   	.onQueryFailure(throwable-> {        	
 	        	System.out.println("Exceptions thrown from callback onQueryFailure");        	
 	            throwable.printStackTrace();
 	          	         	
@@ -375,9 +375,9 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(13)
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-	    .onUrisReady((client, batch) -> uris2.addAll(Arrays.asList(batch.getItems())))
-	    .onQueryFailure( (client, throwable) -> {
+	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+	    .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
+	    .onQueryFailure( throwable-> {
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
 	      });
@@ -417,8 +417,8 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    .withBatchSize(11)
 	    .withThreadCount(11)
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-	    .onQueryFailure( (client, throwable) -> {
+	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+	    .onQueryFailure( throwable-> {
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
 	      });
@@ -495,11 +495,11 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	       
 	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) ->{
+	    .onUrisReady(batch ->{
 	    	System.out.println("Items in batch "+batch.getItems().length);
 	    	successDocs.addAndGet(batch.getItems().length);}
 	    )
-	    .onQueryFailure( (client, throwable) -> {
+	    .onQueryFailure( throwable-> {
 	    	System.out.println("Query Failed");
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
@@ -574,11 +574,11 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	          
 	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .onUrisReady(new DeleteListener())
-	    .onUrisReady((client, batch) ->{
+	    .onUrisReady(batch ->{
 	    	System.out.println("Items in batch "+batch.getItems().length);
 	    	successDocs.addAndGet(batch.getItems().length);}
 	    )
-	    .onQueryFailure( (client, throwable) -> {
+	    .onQueryFailure( throwable-> {
 	    	System.out.println("Query Failed");
 	        throwable.printStackTrace();
 	        failures2.append("ERROR:[" + throwable + "]\n");
