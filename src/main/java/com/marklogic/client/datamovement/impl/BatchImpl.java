@@ -17,12 +17,14 @@ package com.marklogic.client.datamovement.impl;
 
 import java.util.Calendar;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 
 public class BatchImpl<T> implements Batch<T> {
     private T[] items;
+    private DatabaseClient client;
     private long jobBatchNumber;
     private Calendar timestamp;
     private JobTicket jobTicket;
@@ -34,6 +36,16 @@ public class BatchImpl<T> implements Batch<T> {
 
     public BatchImpl<T> withItems(T[] items) {
         this.items = items;
+        return this;
+    }
+
+    @Override
+    public DatabaseClient getClient() {
+        return client;
+    }
+
+    public BatchImpl<T> withClient(DatabaseClient client) {
+        this.client = client;
         return this;
     }
 

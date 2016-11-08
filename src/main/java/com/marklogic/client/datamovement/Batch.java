@@ -17,10 +17,13 @@ package com.marklogic.client.datamovement;
 
 import java.util.Calendar;
 
+import com.marklogic.client.DatabaseClient;
+
 public interface Batch<T> {
   T[] getItems();
   Calendar getTimestamp();
   long getJobBatchNumber();
   // TOOD: implement
   JobTicket getJobTicket();
+  DatabaseClient getClient();
 }

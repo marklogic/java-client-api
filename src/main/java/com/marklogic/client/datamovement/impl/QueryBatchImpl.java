@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import java.util.Calendar;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
@@ -45,6 +46,12 @@ public class QueryBatchImpl extends BatchImpl<String> implements QueryBatch {
   @Override
   public QueryBatchImpl withItems(String[] items) {
     super.withItems(items);
+    return this;
+  }
+
+  @Override
+  public QueryBatchImpl withClient(DatabaseClient client) {
+    super.withClient(client);
     return this;
   }
 

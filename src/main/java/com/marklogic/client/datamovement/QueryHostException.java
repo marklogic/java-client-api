@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.Format;
 
 public class QueryHostException extends Exception implements QueryEvent {
@@ -27,43 +28,49 @@ public class QueryHostException extends Exception implements QueryEvent {
 
   @Override
   public QueryBatcher getBatcher() {
-    if ( queryEvent == null ) return null;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getBatcher();
   }
 
   @Override
+  public DatabaseClient getClient() {
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
+    return queryEvent.getClient();
+  }
+
+  @Override
   public long getJobBatchNumber() {
-    if ( queryEvent == null ) return -1;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getJobBatchNumber();
   }
 
   @Override
   public long getJobResultsSoFar() {
-    if ( queryEvent == null ) return -1;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getJobResultsSoFar();
   }
 
   @Override
   public long getForestBatchNumber() {
-    if ( queryEvent == null ) return -1;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getForestBatchNumber();
   }
 
   @Override
   public long getForestResultsSoFar() {
-    if ( queryEvent == null ) return -1;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getForestResultsSoFar();
   }
 
   @Override
   public Forest getForest() {
-    if ( queryEvent == null ) return null;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getForest();
   }
 
   @Override
   public long getServerTimestamp() {
-    if ( queryEvent == null ) return -1;
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getServerTimestamp();
   }
 }

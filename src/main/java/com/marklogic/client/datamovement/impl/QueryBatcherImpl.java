@@ -416,6 +416,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       Calendar queryStart = Calendar.getInstance();
       QueryBatchImpl batch = new QueryBatchImpl()
         .withBatcher(batcher)
+        .withClient(client)
         .withTimestamp(queryStart)
         .withForestBatchNumber(forestBatchNum)
         .withForest(forest);

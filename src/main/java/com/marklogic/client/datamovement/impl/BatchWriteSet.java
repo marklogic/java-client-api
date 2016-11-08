@@ -127,6 +127,7 @@ public class BatchWriteSet {
   public WriteBatch getBatchOfWriteEvents() {
     WriteBatchImpl batch = new WriteBatchImpl()
       .withBatcher(batcher)
+      .withClient(client)
       .withJobBatchNumber(batchNumber)
       .withJobWritesSoFar(itemsSoFar);
     WriteEvent[] writeEvents = getWriteSet().stream()

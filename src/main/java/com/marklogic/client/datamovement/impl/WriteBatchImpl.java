@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import java.util.Calendar;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.Batch;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
@@ -42,6 +43,12 @@ public class WriteBatchImpl extends BatchImpl<WriteEvent> implements WriteBatch 
   @Override
   public WriteBatchImpl withItems(WriteEvent[] items) {
     super.withItems(items);
+    return this;
+  }
+
+  @Override
+  public WriteBatchImpl withClient(DatabaseClient client) {
+    super.withClient(client);
     return this;
   }
 

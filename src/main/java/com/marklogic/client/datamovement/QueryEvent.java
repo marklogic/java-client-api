@@ -15,11 +15,13 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.QueryDefinition;
 
 public interface QueryEvent {
   QueryBatcher getBatcher();
+  DatabaseClient getClient();
   long getJobBatchNumber();
   long getJobResultsSoFar();
   long getForestBatchNumber();

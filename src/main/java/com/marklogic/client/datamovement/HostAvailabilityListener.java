@@ -137,6 +137,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         batch.getBatcher().retry(batch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
+        processFailure(batch.getClient(), batch, e);
       }
     }
   }
@@ -157,11 +158,12 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         queryBatch.getBatcher().retry(queryBatch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
+        processFailure(queryBatch.getClient(), new QueryHostException(queryBatch, e));
       }
     }
   }
 
-  private boolean processException(Batcher batcher, Throwable throwable, String host) {
+  private synchronized boolean processException(Batcher batcher, Throwable throwable, String host) {
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
     boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());
