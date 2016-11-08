@@ -73,7 +73,7 @@ public class PointInTimeQueryTest {
     StringBuffer failures = new StringBuffer();
     WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(10)
-      .onBatchFailure((client, event, throwable) -> {
+      .onBatchFailure((event, throwable) -> {
         throwable.printStackTrace();
         failures.append("ERORR:[" + throwable.toString() + "]");
       });
@@ -103,7 +103,7 @@ public class PointInTimeQueryTest {
     AtomicInteger successDocs = new AtomicInteger();
     AtomicInteger badDocs = new AtomicInteger();
     StringBuilder failures = new StringBuilder();
-    QueryFailureListener failListener = (client, throwable) -> {
+    QueryFailureListener failListener = throwable -> {
         throwable.printStackTrace();
         logger.error("ERORR:[{}]", throwable);
         failures.append("ERORR:[" + throwable.toString() + "]");
@@ -124,7 +124,7 @@ public class PointInTimeQueryTest {
             }
           })
       )
-      .onUrisReady((client, batch) -> {
+      .onUrisReady(batch -> {
         successDocs.addAndGet(batch.getItems().length);
         logger.info("Retrieved {} docs, sleeping for 1 second", batch.getItems().length);
         // sleep for a second to give us time to delete some of the batches we were going to get
@@ -138,7 +138,7 @@ public class PointInTimeQueryTest {
       .withBatchSize(10)
       .withConsistentSnapshot()
       .onUrisReady(new DeleteListener())
-      .onUrisReady((client, batch) -> logger.info("Deleting {} docs", batch.getItems().length) )
+      .onUrisReady(batch -> logger.info("Deleting {} docs", batch.getItems().length) )
       .onQueryFailure(failListener);
     moveMgr.startJob(deleteBatcher);
     deleteBatcher.awaitCompletion();

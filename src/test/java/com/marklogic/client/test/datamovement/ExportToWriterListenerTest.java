@@ -92,7 +92,7 @@ public class ExportToWriterListenerTest {
           .withThreadCount(5)
           .withBatchSize(10)
           .onUrisReady(exportListener)
-          .onQueryFailure( (client, throwable) -> throwable.printStackTrace() );
+          .onQueryFailure( throwable -> throwable.printStackTrace() );
       moveMgr.startJob( queryJob );
 
       // wait for the export to finish

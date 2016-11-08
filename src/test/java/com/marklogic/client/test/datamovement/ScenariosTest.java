@@ -110,8 +110,8 @@ public class ScenariosTest {
         // this is the default, only included here to make it obvious
         //.onBatchFull( new MlcpBatchFullListener() )
         // log a summary report after each successful batch
-        .onBatchSuccess( (hostClient, batch) ->  logger.info(getSummaryReport()) )
-        .onBatchFailure( (hostClient, batch, throwable) -> {
+        .onBatchSuccess( batch ->  logger.info(getSummaryReport()) )
+        .onBatchFailure( (batch, throwable) -> {
           List<String> uris = new ArrayList<>();
           for ( WriteEvent event : batch.getItems() ) {
             uris.add(event.getTargetUri());

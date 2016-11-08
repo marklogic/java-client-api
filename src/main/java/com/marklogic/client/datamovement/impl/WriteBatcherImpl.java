@@ -378,7 +378,7 @@ public class WriteBatcherImpl
                   //batch.setJobBatchNumber(batchNumFinished);
                   for ( WriteBatchListener successListener : successListeners ) {
                     try {
-                      successListener.processEvent(hostClient, batch);
+                      successListener.processEvent(batch);
                     } catch (Throwable t) {
                       logger.error("Exception thrown by an onBatchSuccess listener", t);
                     }
@@ -406,7 +406,7 @@ public class WriteBatcherImpl
           WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
           for ( WriteBatchListener successListener : successListeners ) {
             try {
-              successListener.processEvent(hostClient, batch);
+              successListener.processEvent(batch);
             } catch (Throwable t) {
               logger.error("Exception thrown by an onBatchSuccess listener", t);
             }
@@ -432,7 +432,7 @@ public class WriteBatcherImpl
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteFailureListener failureListener : failureListeners ) {
               try {
-                failureListener.processFailure(hostClient, batch, throwable);
+                failureListener.processFailure(batch, throwable);
               } catch (Throwable t) {
                 logger.error("Exception thrown by an onBatchFailure listener", t);
               }
@@ -446,7 +446,7 @@ public class WriteBatcherImpl
       WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
       for ( WriteFailureListener failureListener : failureListeners ) {
         try {
-          failureListener.processFailure(hostClient, batch, throwable);
+          failureListener.processFailure(batch, throwable);
         } catch (Throwable t) {
           logger.error("Exception thrown by an onBatchFailure listener", t);
         }
@@ -558,13 +558,13 @@ public class WriteBatcherImpl
         TransactionInfo transactionInfo;
         while ( (transactionInfo = host.getTransactionInfoAndDrainPermits()) != null ) {
           TransactionInfo transactionInfoCopy = transactionInfo;
-          completeTransaction(host.client, transactionInfoCopy);
+          completeTransaction(transactionInfoCopy);
         }
       }
     }
   }
 
-  public boolean completeTransaction(DatabaseClient client, TransactionInfo transactionInfo) {
+  public boolean completeTransaction(TransactionInfo transactionInfo) {
     boolean completed = false;
     try {
       if ( transactionInfo.alive.get() == true && 
@@ -576,7 +576,7 @@ public class WriteBatcherImpl
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteFailureListener failureListener : failureListeners ) {
               try {
-                failureListener.processFailure(client, batch, transactionInfo.throwable.get());
+                failureListener.processFailure(batch, transactionInfo.throwable.get());
               } catch (Throwable t) {
                 logger.error("Exception thrown by an onBatchFailure listener", t);
               }
@@ -589,7 +589,7 @@ public class WriteBatcherImpl
             WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
             for ( WriteBatchListener successListener : successListeners ) {
               try {
-                successListener.processEvent(client, batch);
+                successListener.processEvent(batch);
               } catch (Throwable t) {
                 logger.error("Exception thrown by an onBatchSuccess listener", t);
               }
@@ -604,7 +604,7 @@ public class WriteBatcherImpl
         WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
         for ( WriteFailureListener failureListener : failureListeners ) {
           try {
-            failureListener.processFailure(client, batch, t);
+            failureListener.processFailure(batch, t);
           } catch (Throwable t2) {
             logger.error("Exception thrown by an onBatchFailure listener", t2);
           }
@@ -882,7 +882,7 @@ public class WriteBatcherImpl
           if ( transactionInfo.written.get() == true ) {
             transactionInfo.queuedForCleanup.set(true);
             threadPool.submit( () -> {
-              if ( completeTransaction(host.client, transactionInfo) ) {
+              if ( completeTransaction(transactionInfo) ) {
                 host.unfinishedTransactions.remove(transactionInfo);
               } else {
                 // let's try again next cleanup

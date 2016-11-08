@@ -109,13 +109,13 @@ public class WriteBatcherTest {
     WriteBatcher ihb1 =  moveMgr.newWriteBatcher()
       .withBatchSize(1)
       .onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
           for(WriteEvent w: batch.getItems()){
             successBatch.append(w.getTargetUri()+":");
           }
       })
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           for(WriteEvent w: batch.getItems()){
             failureBatch.append(w.getTargetUri()+":");
           }
@@ -153,7 +153,7 @@ public class WriteBatcherTest {
           .addParameter("newValue", "test1a")
       )
       .onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
           successListenerWasRun.append("true");
           if ( 2 != batch.getItems().length) {
             failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
@@ -162,7 +162,7 @@ public class WriteBatcherTest {
         }
       )
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           failListenerWasRun.append("true");
           if ( 2 != batch.getItems().length) {
             failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
@@ -204,8 +204,8 @@ public class WriteBatcherTest {
 
   @Test
   public void testListenerManagement() {
-    WriteBatchListener successListener = (client, batch) -> {};
-    WriteFailureListener failureListener = (client, batch, throwable) -> {};
+    WriteBatchListener successListener = batch -> {};
+    WriteFailureListener failureListener = (batch, throwable) -> {};
 
     WriteBatcher batcher = moveMgr.newWriteBatcher();
     WriteBatchListener[] successListeners = batcher.getBatchSuccessListeners();
@@ -269,7 +269,7 @@ public class WriteBatcherTest {
           .addParameter("newValue", "test1a")
       )
       .onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
           successListenerWasRun.append("true");
           logger.debug("[testWritesWithTransactions.onBatchSuccess] batch.getJobBatchNumber()=[" + batch.getJobBatchNumber() + "]");
           if ( 2 != batch.getItems().length) {
@@ -279,7 +279,7 @@ public class WriteBatcherTest {
         }
       )
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           failListenerWasRun.append("true");
           throwable.printStackTrace();
           logger.debug("[testWritesWithTransactions.onBatchFailure] batch.getJobBatchNumber()=[" + batch.getJobBatchNumber() + "]");
@@ -392,7 +392,7 @@ public class WriteBatcherTest {
       .withBatchSize(batchSize)
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
           successfulBatchCount.incrementAndGet();
           for ( WriteEvent event : batch.getItems() ) {
             successfulCount.incrementAndGet();
@@ -408,7 +408,7 @@ public class WriteBatcherTest {
         }
       )
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           failureBatchCount.incrementAndGet();
           failureCount.addAndGet(batch.getItems().length);
           throwable.printStackTrace();
@@ -519,13 +519,13 @@ public class WriteBatcherTest {
 
   public void testExceptions(DocumentWriteSet docs, int expectedSuccesses, int expectedFailures) {
     WriteBatcher batcher = moveMgr.newWriteBatcher()
-      .onBatchSuccess( (client, batch) -> { throw new InternalError(errorMessage); } )
-      .onBatchFailure( (client, batch, throwable) -> { throw new InternalError(errorMessage); } );
+      .onBatchSuccess( batch -> { throw new InternalError(errorMessage); } )
+      .onBatchFailure( (batch, throwable) -> { throw new InternalError(errorMessage); } );
     testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
 
     batcher = moveMgr.newWriteBatcher()
-      .onBatchSuccess( (client, batch) -> { throw new RuntimeException(errorMessage); } )
-      .onBatchFailure( (client, batch, throwable) -> { throw new RuntimeException(errorMessage); } );
+      .onBatchSuccess( batch -> { throw new RuntimeException(errorMessage); } )
+      .onBatchFailure( (batch, throwable) -> { throw new RuntimeException(errorMessage); } );
     testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
 
     cleanupDocs(docs);
@@ -536,8 +536,8 @@ public class WriteBatcherTest {
     final AtomicInteger failureBatchCount = new AtomicInteger(0);
     writeBatcher
       .withBatchSize(1)
-      .onBatchSuccess( (client, batch) -> successfulBatchCount.incrementAndGet() )
-      .onBatchFailure( (client, batch, throwable) -> failureBatchCount.incrementAndGet() );
+      .onBatchSuccess( batch -> successfulBatchCount.incrementAndGet() )
+      .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() );
     moveMgr.startJob(writeBatcher);
     for ( DocumentWriteOperation doc : docs ) {
       writeBatcher.add(doc.getUri(), doc.getContent());
@@ -560,7 +560,7 @@ public class WriteBatcherTest {
     WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(100);
     batcher.onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
         System.out.println("Batch size "+batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
         //System.out.println("Success "+w.getTargetUri());
@@ -571,7 +571,7 @@ public class WriteBatcherTest {
         }
         )
       .onBatchFailure(
-          (client, batch, throwable) -> {
+          (batch, throwable) -> {
           throwable.printStackTrace();
           for(WriteEvent w:batch.getItems()){
           System.out.println("Failure "+w.getTargetUri());
@@ -623,13 +623,13 @@ public class WriteBatcherTest {
     WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(120);
     batcher
-      .onBatchSuccess( (client, batch) -> {
+      .onBatchSuccess( batch -> {
         System.out.println("Success Batch size "+batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
           System.out.println("Success "+w.getTargetUri());
         }
       })
-      .onBatchFailure( (client, batch, throwable) -> {
+      .onBatchFailure( (batch, throwable) -> {
         throwable.printStackTrace();
         System.out.println("Failure Batch size "+batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
@@ -682,14 +682,14 @@ public class WriteBatcherTest {
     batcher.withBatchSize(1);
     final AtomicInteger successfulCount = new AtomicInteger(0);
     batcher.onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
           for(WriteEvent w:batch.getItems()){
             successfulCount.incrementAndGet();
           }
         }
       )
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           throwable.printStackTrace();
         }
       );
@@ -719,7 +719,7 @@ public class WriteBatcherTest {
     final AtomicInteger failCount = new AtomicInteger(0);
     WriteBatcher batcher =  moveMgr.newWriteBatcher()
       .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
           throwable.printStackTrace();
           failCount.incrementAndGet();
         }
@@ -755,14 +755,14 @@ public class WriteBatcherTest {
     WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(11);
     ihbMT.onBatchSuccess(
-        (client, batch) -> {
+        batch -> {
         System.out.println("Batch size "+batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
         System.out.println("Success "+w.getTargetUri());
         }
         })
     .onBatchFailure(
-        (client, batch, throwable) -> {
+        (batch, throwable) -> {
         throwable.printStackTrace();
         for(WriteEvent w:batch.getItems()){
         System.out.println("Failure "+w.getTargetUri());

@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 /**
  * Runs processEvent on each batch as it is ready during a WriteBatcher
  * job.
@@ -33,18 +31,17 @@ public interface WriteBatchListener extends BatchListener<WriteBatch> {
    *     WriteBatcher wb = dataMovementManager.newWriteBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
-   *         .onBatchSuccess((client, batch) -&gt; {
+   *         .onBatchSuccess(batch -&gt; {
    *             for ( WriteEvent doc : batch.getItems() ) {
    *                 if ( doc.getTargetUri().contains("/legal/") ) {
    *                     // do something
    *                 }
    *             }
    *         })
-   *         .onBatchFailure((client, throwable) -&gt; throwable.printStackTrace());
+   *         .onBatchFailure(throwable -&gt; throwable.printStackTrace());
    *
-   * @param client the client pointed to the host containing this batch of uris
    * @param batch the batch of documents written and some metadata about the current status of the job
    */
-  void processEvent(DatabaseClient client, WriteBatch batch);
+  void processEvent(WriteBatch batch);
 }
 

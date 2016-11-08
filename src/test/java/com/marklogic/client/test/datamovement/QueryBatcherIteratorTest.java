@@ -105,8 +105,8 @@ public class QueryBatcherIteratorTest {
               .withThreadCount(5)
               .withBatchSize(100)
               .onUrisReady( new UrisToWriterListener(writer) )
-              .onUrisReady((client, batch) -> successDocs1.addAndGet(batch.getItems().length))
-              .onQueryFailure( (client, throwable) -> {
+              .onUrisReady(batch -> successDocs1.addAndGet(batch.getItems().length))
+              .onQueryFailure( throwable -> {
                 throwable.printStackTrace();
                 failures.append("ERROR:[" + throwable + "]\n");
               });
@@ -125,8 +125,8 @@ public class QueryBatcherIteratorTest {
     QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
       .withThreadCount(6)
       .withBatchSize(19)
-      .onUrisReady((client, batch) -> successDocs2.addAndGet(batch.getItems().length))
-      .onQueryFailure( (client, throwable) -> {
+      .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
+      .onQueryFailure( throwable -> {
         throwable.printStackTrace();
         failures2.append("ERROR:[" + throwable + "]\n");
       });
@@ -147,8 +147,8 @@ public class QueryBatcherIteratorTest {
     QueryBatcher getUris = moveMgr.newQueryBatcher(query)
       .withThreadCount(6)
       .withBatchSize(5000)
-      .onUrisReady( (client, batch) -> uris.addAll(Arrays.asList(batch.getItems())) )
-      .onQueryFailure( (client, throwable) -> {
+      .onUrisReady( batch -> uris.addAll(Arrays.asList(batch.getItems())) )
+      .onQueryFailure( throwable -> {
         throwable.printStackTrace();
         failures.append("ERROR:[" + throwable + "]\n");
       });
@@ -166,9 +166,9 @@ public class QueryBatcherIteratorTest {
       .withThreadCount(2)
       .withBatchSize(99)
       .onUrisReady(new DeleteListener())
-      .onUrisReady((client, batch) -> successDocs.addAndGet(batch.getItems().length))
-      .onUrisReady((client, batch) -> uris2.addAll(Arrays.asList(batch.getItems())))
-      .onQueryFailure( (client, throwable) -> {
+      .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
+      .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
+      .onQueryFailure( throwable -> {
         throwable.printStackTrace();
         failures2.append("ERROR:[" + throwable + "]\n");
       });

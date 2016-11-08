@@ -131,7 +131,7 @@ public class LegalHoldsTest {
       .withBatchSize(1)
       .withConsistentSnapshot()
       .onUrisReady(
-        (forestClient, batch) -> {
+        batch -> {
           ArrayNode uris = mapper.createArrayNode();
           for ( String uri : batch.getItems() ) {
             uris.add( uri );
@@ -139,7 +139,7 @@ public class LegalHoldsTest {
           // for each batch, filter out any matches referenced by docs
           // with legal holds
           String urisToDelete =
-            forestClient.newServerEval()
+            batch.getClient().newServerEval()
               .modulePath("/ext" + directory + "filterUrisReferencedByHolds.sjs")
               .addVariable("uris", new JacksonHandle(uris))
               .evalAs(String.class);
@@ -148,7 +148,7 @@ public class LegalHoldsTest {
 
           if ( urisToDelete != null && urisToDelete.length() > 0 ) {
             // now that we have a clean list, delete them
-            forestClient.newDocumentManager().delete(urisToDelete.split(","));
+            batch.getClient().newDocumentManager().delete(urisToDelete.split(","));
             for ( String uri : urisToDelete.split(",") ) {
             logger.info("DEBUG: [LegalHoldsTest] uri =[" + uri  + "]");
               synchronized (urisDeleted) {
@@ -164,8 +164,7 @@ public class LegalHoldsTest {
           }
         }
       )
-      .onQueryFailure( 
-        (client, throwable) -> {
+      .onQueryFailure( throwable -> {
           anyFailure.append("error: " + throwable + "\n");
           throwable.printStackTrace();
       });

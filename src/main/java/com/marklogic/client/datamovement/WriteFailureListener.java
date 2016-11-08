@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.datamovement;
 
-import com.marklogic.client.DatabaseClient;
-
 public interface WriteFailureListener extends BatchFailureListener<WriteBatch> {
-  void processFailure(DatabaseClient client, WriteBatch batch, Throwable failure);
+  void processFailure(WriteBatch batch, Throwable failure);
 }

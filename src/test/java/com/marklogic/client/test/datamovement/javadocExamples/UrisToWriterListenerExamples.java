@@ -78,7 +78,7 @@ public class UrisToWriterListenerExamples {
     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
       .withBatchSize(5000)
       .onUrisReady( new UrisToWriterListener(writer) )
-      .onQueryFailure((client, exception) -> exception.printStackTrace());
+      .onQueryFailure(exception -> exception.printStackTrace());
     JobTicket getUrisTicket = dataMovementManager.startJob(getUris);
     getUris.awaitCompletion();
     dataMovementManager.stopJob(getUrisTicket);
@@ -94,7 +94,7 @@ public class UrisToWriterListenerExamples {
     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
     QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
       .onUrisReady(new DeleteListener())
-      .onQueryFailure((client, exception) -> exception.printStackTrace());
+      .onQueryFailure(exception-> exception.printStackTrace());
     JobTicket ticket = dataMovementManager.startJob(performDelete);
     performDelete.awaitCompletion();
     dataMovementManager.stopJob(ticket);
