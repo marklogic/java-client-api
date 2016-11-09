@@ -144,7 +144,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    *
    * @param queryBatch the exception with information about the failed query attempt
    */
-  public void processFailure(QueryHostException queryBatch) {
+  public void processFailure(QueryBatchException queryBatch) {
     boolean isHostUnavailableException = processException(queryBatch.getBatcher(), queryBatch, queryBatch.getClient().getHost());
     if ( isHostUnavailableException == true ) {
       try {
@@ -154,7 +154,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         queryBatch.getBatcher().retry(queryBatch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
-        processFailure(new QueryHostException(queryBatch, e));
+        processFailure(new QueryBatchException(queryBatch, e));
       }
     }
   }
