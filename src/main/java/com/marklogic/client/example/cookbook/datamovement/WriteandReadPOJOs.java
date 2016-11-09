@@ -21,8 +21,8 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 
 /**
  * WriteandReadPOJOS illustrates how to write bulk POJOs into the database
- * using WriteHostBatcher. It also demonstrates how to read POJOs from the
- * database using QueryHostBatcher with and without ExportListener
+ * using WriteBatcher. It also demonstrates how to read POJOs from the
+ * database using QueryBatcher with and without ExportListener
  */
 public class WriteandReadPOJOs {
   private int batchSize = 10;
@@ -122,10 +122,10 @@ public class WriteandReadPOJOs {
   }
 
   public void readBulkPOJOS() throws JAXBException {
-    // Create a query definition in order to use it with QueryHostBatcher
+    // Create a query definition in order to use it with QueryBatcher
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection1");
 
-    // Create a QueryHostBatcher in order to retrieve bulk POJOs 
+    // Create a QueryBatcher in order to retrieve bulk POJOs 
     // from the database matching the query definition
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
         .withBatchSize(batchSize)
@@ -156,7 +156,7 @@ public class WriteandReadPOJOs {
   public void readPOJOsWithExportListener() throws JAXBException {
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection("products-collection2");
 
-    // Create a QueryHostBatcher to get the documents from the database
+    // Create a QueryBatcher to get the documents from the database
     // and process each document retrieved using the Export Listener and
     // all documents are exported at a consistent point-in-time using
     // withConsistentSnapshot.
