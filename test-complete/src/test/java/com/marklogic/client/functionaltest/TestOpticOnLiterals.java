@@ -19,6 +19,7 @@ package com.marklogic.client.functionaltest;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
@@ -39,21 +40,31 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
+import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.MethodType;
+import com.marklogic.client.admin.ResourceExtensionsManager;
+import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
+import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.expression.PlanBuilder.QualifiedPlan;
 import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.PlanAggregateColSeq;
 import com.marklogic.client.type.PlanAggregateOptions;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanExprColSeq;
+import com.marklogic.client.type.PlanFunction;
+import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.SqlGenericDateTimeExpr;
 import com.marklogic.client.type.XsDateExpr;
 import com.marklogic.client.type.XsIntegerExpr;
@@ -74,6 +85,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	private static Map<String, Object>[] literals2 = new HashMap[4];
 	private static Map<String, Object>[] storeInformation = new HashMap[4];
 	private static Map<String, Object>[] internetSales = new HashMap[4];
+	ResourceExtensionsManager resourceMgr;
 	
 	@BeforeClass
 	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
@@ -230,6 +242,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
         row = new HashMap<>();
         row.put("txnDate", "Jan-12-1999"); row.put("sales", 750);row.put("storeName", "Boston");
         internetSales[3] = row;
+        
 	}
 	
 	/**
@@ -576,7 +589,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS: Invalid arguments: limit must be a positive number: 0"));
+		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS"));
+		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: limit must be a positive number: 0"));
 	}
 	
 	/* 
@@ -1082,9 +1096,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	 * Test invalid rowdef
 	*/
 	@Test
-	public void testInvaliddefinitions() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	public void testInvalidDefinitions() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
-		System.out.println("In testInvaliddefinitions method");
+		System.out.println("In testInvalidDefinitions method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
@@ -1109,7 +1123,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: rowIdRef"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: rowIdRef"));
 		
 		// invalid viewCol
 		ModifyPlan outputExtCol = plan1.joinInner(plan2)
@@ -1121,9 +1136,11 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: invalid_view.colorId"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: invalid_view.colorId"));
 		
 	}
 	
@@ -1159,7 +1176,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS: Invalid arguments: offset must be a non-negative number: -1"));
+		assertTrue("Exceptions not found", str.toString().contains("OPTIC-INVALARGS"));
+		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: offset must be a non-negative number: -1"));
 	}
 	
 	/* 
@@ -1193,7 +1211,127 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have OPTIC-INVALARGS exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: table1_Invalid.colorId"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: table1_Invalid.colorId"));
+	}
+	
+	/* 
+	 * Test Map function
+	*/
+	@Test
+	public void testMapFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testMapFunction method");
+		Map<String, Object>[] literalsM1 = new HashMap[5];
+		Map<String, Object>[] literalsM2 = new HashMap[4];
+	
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+
+		int restPort = getRestServerPort();
+		DatabaseClient clientRes = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
+		ExtensionMetadata resextMetadata = new ExtensionMetadata();
+		resextMetadata.setTitle("BasicJSTest");
+		resextMetadata.setDescription("Testing resource extension for java script");
+		System.out.println(resextMetadata.getScriptLanguage());
+		resextMetadata.setScriptLanguage(ScriptLanguage.JAVASCRIPT);
+		System.out.println(resextMetadata.getScriptLanguage());
+		resextMetadata.setVersion("1.0");
+		MethodParameters getParams = new MethodParameters(MethodType.GET);
+		getParams.add("rows", "xs:string?");
+		FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
+		InputStreamHandle handle = new InputStreamHandle(myStream);
+		handle.set (myStream);
+		resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata,getParams);
+		
+		Map<String, Object> row = new HashMap<>();			
+		row.put("rowId", 1); row.put("colorId_shape", 1); row.put("desc", "ball");
+		literalsM1[0] = row;
+		
+		row = new HashMap<>();
+        row.put("rowId", 2); row.put("colorId_shape", 2); row.put("desc", "square");
+        literalsM1[1] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 3); row.put("colorId_shape", 1); row.put("desc", "box");
+        literalsM1[2] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 4); row.put("colorId_shape", 1); row.put("desc", "hoop");
+        literalsM1[3] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 5); row.put("colorId_shape", 5); row.put("desc", "circle");
+        literalsM1[4] = row;
+        	
+        // Assemble literalsM2
+		row = new HashMap<>();			
+		row.put("colorId", 1); row.put("colorDesc", "red");
+		literalsM2[0] = row;
+		
+		row = new HashMap<>();
+        row.put("colorId", 2); row.put("colorDesc", "blue");
+        literalsM2[1] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 3); row.put("colorDesc", "black");
+        literalsM2[2] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 4); row.put("colorDesc", "yellow");
+        literalsM2[3] = row;
+        
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		// plans from literals
+		ModifyPlan plan1 = p.fromLiterals(literalsM1);
+		ModifyPlan plan2 = p.fromLiterals(literalsM2);
+		/*StringBuilder str = new StringBuilder();
+		str.append("function colorIdMapper(result) {");
+		str.append("switch(result.myColorId) {");
+		str.append("case 1:");
+		str.append("result.myColorId = 'RED';");
+		str.append("     break;");
+		str.append("case 2:");
+		str.append("result.myColorId = 'BLUE';");
+		str.append("break;");
+		str.append("case 3:");
+		str.append("result.myColorId = 'YELLOW';");
+		str.append("break;");
+		str.append("case 4:");
+		str.append("result.myColorId = 'BLACK';");
+		str.append("break;");
+		str.append("default:");
+		str.append("result.myColorId = 'NO COLOR';");
+		str.append("}");
+		str.append("return result;");
+		str.append("};");*/
+		
+		
+		ModifyPlan output = plan1.joinInner( plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
+		                         .select(
+		                                 "rowId", 
+		                                "desc", 
+		                                "colorId", 
+		                                "colorDesc"
+		                               )
+		        .orderBy(p.asc("rowId"));
+		
+		PlanFunction pf = output.installedFunction("/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs", "colorIdMapper");		
+		output.map(pf);
+
+JacksonHandle jacksonHandle = new JacksonHandle();
+jacksonHandle.setMimetype("application/json");
+
+rowMgr.resultDoc(output, jacksonHandle);
+JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+
+// Should have 1 node returned.
+assertEquals("One node not returned from testIntersect method", 4, jsonBindingsNodes.size());
+		
+		
+		
 	}
 	
 	@AfterClass
