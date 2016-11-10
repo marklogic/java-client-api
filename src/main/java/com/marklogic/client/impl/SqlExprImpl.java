@@ -19,18 +19,18 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.SqlExpr;
-import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.ItemSeqExpr;
  import com.marklogic.client.type.SqlCollatedStringExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsIntExpr;
- import com.marklogic.client.type.SqlGenericDateTimeExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
  import com.marklogic.client.type.SqlCollatedStringSeqExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsDecimalExpr;
+ import com.marklogic.client.type.SqlGenericDateTimeExpr;
  import com.marklogic.client.type.SqlGenericDateTimeSeqExpr;
- import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.XsDecimalExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsIntExpr;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -46,32 +46,20 @@ public class SqlExprImpl implements SqlExpr {
         return new XsExprImpl.XsIntegerCallImpl("sql", "bit-length", new Object[]{  });
     }
     @Override
-        public XsIntegerExpr bitLength(String arg1) {
-        return bitLength((arg1 == null) ? null : xs.string(arg1)); 
-    }
-    @Override
         public XsIntegerExpr bitLength(XsStringExpr arg1) {
         return new XsExprImpl.XsIntegerCallImpl("sql", "bit-length", new Object[]{ arg1 });
     }
     @Override
-        public SqlGenericDateTimeExpr dateadd(String datepart, int number, SqlGenericDateTimeExpr date) {
-        return dateadd(xs.string(datepart), xs.intVal(number), date); 
+        public SqlGenericDateTimeExpr dateadd(XsStringExpr datepart, int number, SqlGenericDateTimeExpr date) {
+        return dateadd(datepart, xs.intVal(number), date); 
     }
     @Override
         public SqlGenericDateTimeExpr dateadd(XsStringExpr datepart, XsIntExpr number, SqlGenericDateTimeExpr date) {
         return new SqlExprImpl.SqlGenericDateTimeCallImpl("sql", "dateadd", new Object[]{ datepart, number, date });
     }
     @Override
-        public XsIntegerExpr datediff(String datepart, SqlGenericDateTimeExpr startdate, SqlGenericDateTimeExpr enddate) {
-        return datediff(xs.string(datepart), startdate, enddate); 
-    }
-    @Override
         public XsIntegerExpr datediff(XsStringExpr datepart, SqlGenericDateTimeExpr startdate, SqlGenericDateTimeExpr enddate) {
         return new XsExprImpl.XsIntegerCallImpl("sql", "datediff", new Object[]{ datepart, startdate, enddate });
-    }
-    @Override
-        public XsIntegerExpr datepart(String datepart, SqlGenericDateTimeExpr date) {
-        return datepart(xs.string(datepart), date); 
     }
     @Override
         public XsIntegerExpr datepart(XsStringExpr datepart, SqlGenericDateTimeExpr date) {
@@ -90,16 +78,16 @@ public class SqlExprImpl implements SqlExpr {
         return new XsExprImpl.XsIntegerCallImpl("sql", "hours", new Object[]{ arg1 });
     }
     @Override
-        public XsStringExpr insert(String arg1, XsNumericExpr arg2, XsNumericExpr arg3, String arg4) {
-        return insert(xs.string(arg1), arg2, arg3, xs.string(arg4)); 
+        public XsStringExpr insert(XsStringExpr arg1, XsNumericExpr arg2, XsNumericExpr arg3, String arg4) {
+        return insert(arg1, arg2, arg3, xs.string(arg4)); 
     }
     @Override
         public XsStringExpr insert(XsStringExpr arg1, XsNumericExpr arg2, XsNumericExpr arg3, XsStringExpr arg4) {
         return new XsExprImpl.XsStringCallImpl("sql", "insert", new Object[]{ arg1, arg2, arg3, arg4 });
     }
     @Override
-        public XsUnsignedIntExpr instr(String arg1, String arg2) {
-        return instr(xs.string(arg1), xs.string(arg2)); 
+        public XsUnsignedIntExpr instr(XsStringExpr arg1, String arg2) {
+        return instr(arg1, xs.string(arg2)); 
     }
     @Override
         public XsUnsignedIntExpr instr(XsStringExpr arg1, XsStringExpr arg2) {
@@ -110,16 +98,12 @@ public class SqlExprImpl implements SqlExpr {
         return new XsExprImpl.XsStringCallImpl("sql", "left", new Object[]{ arg1, arg2 });
     }
     @Override
-        public XsStringExpr ltrim(String arg1) {
-        return ltrim(xs.string(arg1)); 
-    }
-    @Override
         public XsStringExpr ltrim(XsStringExpr arg1) {
         return new XsExprImpl.XsStringCallImpl("sql", "ltrim", new Object[]{ arg1 });
     }
     @Override
-        public XsStringExpr ltrim(String arg1, String arg2) {
-        return ltrim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
+        public XsStringExpr ltrim(XsStringExpr arg1, String arg2) {
+        return ltrim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr ltrim(XsStringExpr arg1, XsStringExpr arg2) {
@@ -140,10 +124,6 @@ public class SqlExprImpl implements SqlExpr {
     @Override
         public XsIntegerExpr octetLength() {
         return new XsExprImpl.XsIntegerCallImpl("sql", "octet-length", new Object[]{  });
-    }
-    @Override
-        public XsIntegerExpr octetLength(String arg1) {
-        return octetLength((arg1 == null) ? null : xs.string(arg1)); 
     }
     @Override
         public XsIntegerExpr octetLength(XsStringExpr arg1) {
@@ -170,16 +150,12 @@ public class SqlExprImpl implements SqlExpr {
         return new XsExprImpl.XsStringCallImpl("sql", "right", new Object[]{ arg1, arg2 });
     }
     @Override
-        public XsStringExpr rtrim(String arg1) {
-        return rtrim(xs.string(arg1)); 
-    }
-    @Override
         public XsStringExpr rtrim(XsStringExpr arg1) {
         return new XsExprImpl.XsStringCallImpl("sql", "rtrim", new Object[]{ arg1 });
     }
     @Override
-        public XsStringExpr rtrim(String arg1, String arg2) {
-        return rtrim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
+        public XsStringExpr rtrim(XsStringExpr arg1, String arg2) {
+        return rtrim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr rtrim(XsStringExpr arg1, XsStringExpr arg2) {
@@ -198,32 +174,24 @@ public class SqlExprImpl implements SqlExpr {
         return new XsExprImpl.XsStringCallImpl("sql", "space", new Object[]{ arg1 });
     }
     @Override
-        public SqlGenericDateTimeExpr timestampadd(String arg1, int arg2, SqlGenericDateTimeExpr arg3) {
-        return timestampadd(xs.string(arg1), xs.intVal(arg2), arg3); 
+        public SqlGenericDateTimeExpr timestampadd(XsStringExpr arg1, int arg2, SqlGenericDateTimeExpr arg3) {
+        return timestampadd(arg1, xs.intVal(arg2), arg3); 
     }
     @Override
         public SqlGenericDateTimeExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, SqlGenericDateTimeExpr arg3) {
         return new SqlExprImpl.SqlGenericDateTimeCallImpl("sql", "timestampadd", new Object[]{ arg1, arg2, arg3 });
     }
     @Override
-        public XsIntegerExpr timestampdiff(String arg1, SqlGenericDateTimeExpr arg2, SqlGenericDateTimeExpr arg3) {
-        return timestampdiff(xs.string(arg1), arg2, arg3); 
-    }
-    @Override
         public XsIntegerExpr timestampdiff(XsStringExpr arg1, SqlGenericDateTimeExpr arg2, SqlGenericDateTimeExpr arg3) {
         return new XsExprImpl.XsIntegerCallImpl("sql", "timestampdiff", new Object[]{ arg1, arg2, arg3 });
-    }
-    @Override
-        public XsStringExpr trim(String arg1) {
-        return trim(xs.string(arg1)); 
     }
     @Override
         public XsStringExpr trim(XsStringExpr arg1) {
         return new XsExprImpl.XsStringCallImpl("sql", "trim", new Object[]{ arg1 });
     }
     @Override
-        public XsStringExpr trim(String arg1, String arg2) {
-        return trim(xs.string(arg1), (arg2 == null) ? null : xs.string(arg2)); 
+        public XsStringExpr trim(XsStringExpr arg1, String arg2) {
+        return trim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
     }
     @Override
         public XsStringExpr trim(XsStringExpr arg1, XsStringExpr arg2) {

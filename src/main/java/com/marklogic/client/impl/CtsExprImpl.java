@@ -19,18 +19,18 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.CtsExpr;
-import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.CtsCircleSeqExpr;
- import com.marklogic.client.type.CtsPolygonExpr;
- import com.marklogic.client.type.CtsPolygonSeqExpr;
- import com.marklogic.client.type.CtsBoxExpr;
+import com.marklogic.client.type.CtsBoxExpr;
  import com.marklogic.client.type.CtsBoxSeqExpr;
- import com.marklogic.client.type.CtsRegionExpr;
  import com.marklogic.client.type.CtsCircleExpr;
- import com.marklogic.client.type.CtsRegionSeqExpr;
+ import com.marklogic.client.type.CtsCircleSeqExpr;
  import com.marklogic.client.type.CtsPointExpr;
  import com.marklogic.client.type.CtsPointSeqExpr;
+ import com.marklogic.client.type.CtsPolygonExpr;
+ import com.marklogic.client.type.CtsPolygonSeqExpr;
+ import com.marklogic.client.type.CtsRegionExpr;
+ import com.marklogic.client.type.CtsRegionSeqExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -43,40 +43,32 @@ public class CtsExprImpl extends CtsQueryExprImpl implements CtsExpr {
         this.xs = xs;
     }
      @Override
-        public XsStringSeqExpr stem(String text) {
-        return stem(xs.string(text)); 
-    }
-    @Override
         public XsStringSeqExpr stem(XsStringExpr text) {
         return new XsExprImpl.XsStringSeqCallImpl("cts", "stem", new Object[]{ text });
     }
     @Override
-        public XsStringSeqExpr stem(String text, String language) {
-        return stem(xs.string(text), (language == null) ? null : xs.string(language)); 
+        public XsStringSeqExpr stem(XsStringExpr text, String language) {
+        return stem(text, (language == null) ? null : xs.string(language)); 
     }
     @Override
         public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language) {
         return new XsExprImpl.XsStringSeqCallImpl("cts", "stem", new Object[]{ text, language });
     }
     @Override
-        public XsStringSeqExpr tokenize(String text) {
-        return tokenize(xs.string(text)); 
-    }
-    @Override
         public XsStringSeqExpr tokenize(XsStringExpr text) {
         return new XsExprImpl.XsStringSeqCallImpl("cts", "tokenize", new Object[]{ text });
     }
     @Override
-        public XsStringSeqExpr tokenize(String text, String language) {
-        return tokenize(xs.string(text), (language == null) ? null : xs.string(language)); 
+        public XsStringSeqExpr tokenize(XsStringExpr text, String language) {
+        return tokenize(text, (language == null) ? null : xs.string(language)); 
     }
     @Override
         public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language) {
         return new XsExprImpl.XsStringSeqCallImpl("cts", "tokenize", new Object[]{ text, language });
     }
     @Override
-        public XsStringSeqExpr tokenize(String text, String language, String field) {
-        return tokenize(xs.string(text), (language == null) ? null : xs.string(language), (field == null) ? null : xs.string(field)); 
+        public XsStringSeqExpr tokenize(XsStringExpr text, String language, String field) {
+        return tokenize(text, (language == null) ? null : xs.string(language), (field == null) ? null : xs.string(field)); 
     }
     @Override
         public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language, XsStringExpr field) {

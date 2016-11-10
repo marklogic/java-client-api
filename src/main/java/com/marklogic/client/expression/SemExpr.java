@@ -15,22 +15,22 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.SemInvalidExpr;
- import com.marklogic.client.type.SemIriExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.SemInvalidSeqExpr;
+import com.marklogic.client.type.ItemExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.SemBlankExpr;
  import com.marklogic.client.type.SemBlankSeqExpr;
+ import com.marklogic.client.type.SemInvalidExpr;
+ import com.marklogic.client.type.SemInvalidSeqExpr;
+ import com.marklogic.client.type.SemIriExpr;
+ import com.marklogic.client.type.SemIriSeqExpr;
  import com.marklogic.client.type.SemUnknownExpr;
  import com.marklogic.client.type.SemUnknownSeqExpr;
- import com.marklogic.client.type.SemIriSeqExpr;
- import com.marklogic.client.type.SemBlankExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
- import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
@@ -39,9 +39,7 @@ public interface SemExpr extends SemValue {
     public SemBlankExpr bnode(XsAnyAtomicTypeExpr value);
     public ItemSeqExpr coalesce(ItemExpr... parameter1);
     public SemIriExpr datatype(XsAnyAtomicTypeExpr value);
-    public ItemSeqExpr ifExpr(boolean condition, ItemSeqExpr then, ItemExpr... elseExpr);
     public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr);
-    public SemInvalidExpr invalid(String string, SemIriExpr datatype);
     public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype);
     public SemIriExpr invalidDatatype(SemInvalidExpr val);
     public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri);
@@ -57,9 +55,7 @@ public interface SemExpr extends SemValue {
     public XsDoubleExpr random();
     public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, XsAnyAtomicTypeExpr b);
     public XsStringExpr timezoneString(XsDateTimeExpr value);
-    public XsAnyAtomicTypeExpr typedLiteral(String value, SemIriExpr datatype);
     public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, SemIriExpr datatype);
-    public SemUnknownExpr unknown(String string, SemIriExpr datatype);
     public SemUnknownExpr unknown(XsStringExpr string, SemIriExpr datatype);
     public SemIriExpr unknownDatatype(SemUnknownExpr val);
     public SemIriExpr uuid();

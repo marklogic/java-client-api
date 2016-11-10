@@ -42,106 +42,104 @@ import com.marklogic.client.impl.SqlExprImpl;
 import com.marklogic.client.expression.XdmpExpr;
 import com.marklogic.client.impl.XdmpExprImpl; 
 import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.SemIriExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsGMonthDayExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.PlanAggregateOptionsSeq;
- import com.marklogic.client.type.XsDecimalExpr;
- import com.marklogic.client.type.XsYearMonthDurationParam;
- import com.marklogic.client.type.PlanTriplePatternSeq;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.RdfLangStringParam;
- import com.marklogic.client.type.XsHexBinaryExpr;
- import com.marklogic.client.type.PlanSortKey;
- import com.marklogic.client.type.XsBase64BinaryParam;
- import com.marklogic.client.type.PlanTripleVal;
- import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.XsGMonthExpr;
- import com.marklogic.client.type.XsIntegerParam;
- import com.marklogic.client.type.XsUnsignedLongParam;
- import com.marklogic.client.type.PlanColumnSeq;
- import com.marklogic.client.type.XsShortParam;
- import com.marklogic.client.type.XsAnyURIExpr;
- import com.marklogic.client.type.XsByteExpr;
- import com.marklogic.client.type.XsGMonthParam;
- import com.marklogic.client.type.PlanAggregateCol;
+import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.CtsQueryExpr;
+ import com.marklogic.client.type.CtsReferenceExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.PlanJoinKey;
- import com.marklogic.client.type.XsDateTimeParam;
- import com.marklogic.client.type.XsByteParam;
- import com.marklogic.client.type.XsGYearMonthExpr;
- import com.marklogic.client.type.PlanColumn;
- import com.marklogic.client.type.XsDayTimeDurationExpr;
- import com.marklogic.client.type.PlanAggregateOptions;
- import com.marklogic.client.type.XsIntExpr;
- import com.marklogic.client.type.PlanTriplePattern;
- import com.marklogic.client.type.XsDoubleParam;
- import com.marklogic.client.type.XsBase64BinaryExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.XsAnyURIParam;
- import com.marklogic.client.type.XsGDayParam;
- import com.marklogic.client.type.PlanGroupConcatOptionsSeq;
- import com.marklogic.client.type.CtsQueryExpr;
- import com.marklogic.client.type.PlanTripleIri;
- import com.marklogic.client.type.XsBooleanSeqExpr;
- import com.marklogic.client.type.XsShortExpr;
- import com.marklogic.client.type.XsNumericSeqExpr;
- import com.marklogic.client.type.XsGYearParam;
- import com.marklogic.client.type.XsUntypedAtomicParam;
- import com.marklogic.client.type.PlanFunctionSeq;
- import com.marklogic.client.type.CtsReferenceExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeVal;
- import com.marklogic.client.type.XsYearMonthDurationExpr;
- import com.marklogic.client.type.SemIriParam;
- import com.marklogic.client.type.XsDecimalParam;
- import com.marklogic.client.type.PlanTripleOptions;
- import com.marklogic.client.type.PlanFunction;
- import com.marklogic.client.type.XsGYearMonthParam;
- import com.marklogic.client.type.XsUnsignedShortParam;
- import com.marklogic.client.type.RdfLangStringExpr;
- import com.marklogic.client.type.XsGDayExpr;
- import com.marklogic.client.type.XsLongParam;
- import com.marklogic.client.type.PlanGroupConcatOptions;
- import com.marklogic.client.type.PlanJoinKeySeq;
- import com.marklogic.client.type.XsGYearExpr;
- import com.marklogic.client.type.XsUnsignedIntParam;
- import com.marklogic.client.type.XsLongExpr;
- import com.marklogic.client.type.PlanSystemColumn;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsDateParam;
- import com.marklogic.client.type.XsDateExpr;
- import com.marklogic.client.type.XsUnsignedShortExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsStringParam;
- import com.marklogic.client.type.PlanTripleOptionsSeq;
- import com.marklogic.client.type.PlanTripleValSeq;
- import com.marklogic.client.type.XsBooleanParam;
- import com.marklogic.client.type.XsHexBinaryParam;
- import com.marklogic.client.type.PlanSortKeySeq;
- import com.marklogic.client.type.PlanSystemColumnSeq;
- import com.marklogic.client.type.XsAnyAtomicTypeParam;
- import com.marklogic.client.type.PlanParam;
- import com.marklogic.client.type.XsQNameParam;
- import com.marklogic.client.type.PlanExprColSeq;
- import com.marklogic.client.type.XsUntypedAtomicExpr;
- import com.marklogic.client.type.XsUnsignedByteParam;
- import com.marklogic.client.type.XsFloatParam;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsTimeExpr;
- import com.marklogic.client.type.XsDayTimeDurationParam;
- import com.marklogic.client.type.XsIntParam;
- import com.marklogic.client.type.PlanParamSeq;
- import com.marklogic.client.type.XsUnsignedByteExpr;
- import com.marklogic.client.type.PlanTripleIriSeq;
+ import com.marklogic.client.type.PlanAggregateCol;
  import com.marklogic.client.type.PlanAggregateColSeq;
+ import com.marklogic.client.type.PlanAggregateOptions;
+ import com.marklogic.client.type.PlanAggregateOptionsSeq;
+ import com.marklogic.client.type.PlanColumn;
+ import com.marklogic.client.type.PlanColumnSeq;
  import com.marklogic.client.type.PlanExprCol;
- import com.marklogic.client.type.XsTimeParam;
- import com.marklogic.client.type.XsFloatExpr;
+ import com.marklogic.client.type.PlanExprColSeq;
+ import com.marklogic.client.type.PlanFunction;
+ import com.marklogic.client.type.PlanFunctionSeq;
+ import com.marklogic.client.type.PlanGroupConcatOptions;
+ import com.marklogic.client.type.PlanGroupConcatOptionsSeq;
+ import com.marklogic.client.type.PlanJoinKey;
+ import com.marklogic.client.type.PlanJoinKeySeq;
+ import com.marklogic.client.type.PlanParam;
+ import com.marklogic.client.type.PlanParamSeq;
+ import com.marklogic.client.type.PlanSortKey;
+ import com.marklogic.client.type.PlanSortKeySeq;
+ import com.marklogic.client.type.PlanSystemColumn;
+ import com.marklogic.client.type.PlanSystemColumnSeq;
+ import com.marklogic.client.type.PlanTripleIri;
+ import com.marklogic.client.type.PlanTripleIriSeq;
+ import com.marklogic.client.type.PlanTripleOptions;
+ import com.marklogic.client.type.PlanTripleOptionsSeq;
+ import com.marklogic.client.type.PlanTriplePattern;
+ import com.marklogic.client.type.PlanTriplePatternSeq;
+ import com.marklogic.client.type.PlanTripleVal;
+ import com.marklogic.client.type.PlanTripleValSeq;
+ import com.marklogic.client.type.RdfLangStringExpr;
+ import com.marklogic.client.type.RdfLangStringParam;
+ import com.marklogic.client.type.SemIriExpr;
+ import com.marklogic.client.type.SemIriParam;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeParam;
+ import com.marklogic.client.type.XsAnyAtomicTypeVal;
+ import com.marklogic.client.type.XsAnyURIExpr;
+ import com.marklogic.client.type.XsAnyURIParam;
+ import com.marklogic.client.type.XsBase64BinaryExpr;
+ import com.marklogic.client.type.XsBase64BinaryParam;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsBooleanParam;
+ import com.marklogic.client.type.XsByteExpr;
+ import com.marklogic.client.type.XsByteParam;
+ import com.marklogic.client.type.XsDateExpr;
+ import com.marklogic.client.type.XsDateParam;
  import com.marklogic.client.type.XsDateTimeExpr;
+ import com.marklogic.client.type.XsDateTimeParam;
+ import com.marklogic.client.type.XsDayTimeDurationExpr;
+ import com.marklogic.client.type.XsDayTimeDurationParam;
+ import com.marklogic.client.type.XsDecimalExpr;
+ import com.marklogic.client.type.XsDecimalParam;
+ import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.XsDoubleParam;
+ import com.marklogic.client.type.XsFloatExpr;
+ import com.marklogic.client.type.XsFloatParam;
+ import com.marklogic.client.type.XsGDayExpr;
+ import com.marklogic.client.type.XsGDayParam;
+ import com.marklogic.client.type.XsGMonthDayExpr;
  import com.marklogic.client.type.XsGMonthDayParam;
+ import com.marklogic.client.type.XsGMonthExpr;
+ import com.marklogic.client.type.XsGMonthParam;
+ import com.marklogic.client.type.XsGYearExpr;
+ import com.marklogic.client.type.XsGYearMonthExpr;
+ import com.marklogic.client.type.XsGYearMonthParam;
+ import com.marklogic.client.type.XsGYearParam;
+ import com.marklogic.client.type.XsHexBinaryExpr;
+ import com.marklogic.client.type.XsHexBinaryParam;
+ import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsIntegerParam;
+ import com.marklogic.client.type.XsIntExpr;
+ import com.marklogic.client.type.XsIntParam;
+ import com.marklogic.client.type.XsLongExpr;
+ import com.marklogic.client.type.XsLongParam;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.XsQNameParam;
+ import com.marklogic.client.type.XsShortExpr;
+ import com.marklogic.client.type.XsShortParam;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringParam;
+ import com.marklogic.client.type.XsTimeExpr;
+ import com.marklogic.client.type.XsTimeParam;
+ import com.marklogic.client.type.XsUnsignedByteExpr;
+ import com.marklogic.client.type.XsUnsignedByteParam;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
+ import com.marklogic.client.type.XsUnsignedIntParam;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
+ import com.marklogic.client.type.XsUnsignedLongParam;
+ import com.marklogic.client.type.XsUnsignedShortExpr;
+ import com.marklogic.client.type.XsUnsignedShortParam;
+ import com.marklogic.client.type.XsUntypedAtomicExpr;
+ import com.marklogic.client.type.XsUntypedAtomicParam;
+ import com.marklogic.client.type.XsYearMonthDurationExpr;
+ import com.marklogic.client.type.XsYearMonthDurationParam;
 
 import com.marklogic.client.type.SemStoreExpr;
 
@@ -157,7 +155,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 
     @Override
         public XsNumericExpr add(XsNumericExpr... list) {
-        return new XsExprImpl.XsNumericCallImpl("op", "add", list);
+        return new XsExprImpl.XsNumericCallImpl("op", "add", new Object[] { list });
     }
     @Override
         public PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate) {
@@ -165,7 +163,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr and(XsBooleanExpr... list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "and", list);
+        return new XsExprImpl.XsBooleanCallImpl("op", "and", new Object[] { list });
     }
     @Override
         public PlanAggregateCol arrayAggregate(String name, String column) {
@@ -439,7 +437,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsNumericExpr multiply(XsNumericExpr... list) {
-        return new XsExprImpl.XsNumericCallImpl("op", "multiply", list);
+        return new XsExprImpl.XsNumericCallImpl("op", "multiply", new Object[] { list });
     }
     @Override
         public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -459,7 +457,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr or(XsBooleanExpr... list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "or", list);
+        return new XsExprImpl.XsBooleanCallImpl("op", "or", new Object[] { list });
     }
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object) {
@@ -468,10 +466,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object) {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object });
-    }
-    @Override
-        public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumn... sysCols) {
-        return pattern(subject, predicate, object, (sysCols == null || sysCols.length == 0) ? null : new PlanSystemColumnSeqListImpl(sysCols)); 
     }
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumnSeq sysCols) {
@@ -705,10 +699,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public ModifyPlan groupBy(PlanExprColSeq keys) {
         return new ModifyPlanCallImpl(this, "op", "group-by", new Object[]{ keys });
-    }
-    @Override
-        public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateCol... aggregates) {
-        return groupBy(keys, (aggregates == null || aggregates.length == 0) ? null : new PlanAggregateColSeqListImpl(aggregates)); 
     }
     @Override
         public ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates) {

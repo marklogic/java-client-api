@@ -15,9 +15,9 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.RdfLangStringExpr;
+import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.RdfLangStringSeqExpr;
+ import com.marklogic.client.type.XsStringExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 

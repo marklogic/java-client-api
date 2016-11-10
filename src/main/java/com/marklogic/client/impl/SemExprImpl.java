@@ -19,22 +19,22 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.SemExpr;
-import com.marklogic.client.type.SemInvalidExpr;
- import com.marklogic.client.type.SemIriExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.SemInvalidSeqExpr;
+import com.marklogic.client.type.ItemExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.SemBlankExpr;
  import com.marklogic.client.type.SemBlankSeqExpr;
+ import com.marklogic.client.type.SemInvalidExpr;
+ import com.marklogic.client.type.SemInvalidSeqExpr;
+ import com.marklogic.client.type.SemIriExpr;
+ import com.marklogic.client.type.SemIriSeqExpr;
  import com.marklogic.client.type.SemUnknownExpr;
  import com.marklogic.client.type.SemUnknownSeqExpr;
- import com.marklogic.client.type.SemIriSeqExpr;
- import com.marklogic.client.type.SemBlankExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
  import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
- import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.XsDoubleExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.XsStringExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -55,23 +55,15 @@ public class SemExprImpl extends SemValueImpl implements SemExpr {
     }
     @Override
         public ItemSeqExpr coalesce(ItemExpr... parameter1) {
-        return new BaseTypeImpl.ItemSeqCallImpl("sem", "coalesce", parameter1);
+        return new BaseTypeImpl.ItemSeqCallImpl("sem", "coalesce", new Object[] { parameter1 });
     }
     @Override
         public SemIriExpr datatype(XsAnyAtomicTypeExpr value) {
         return new SemExprImpl.SemIriCallImpl("sem", "datatype", new Object[]{ value });
     }
     @Override
-        public ItemSeqExpr ifExpr(boolean condition, ItemSeqExpr then, ItemExpr... elseExpr) {
-        return ifExpr(xs.booleanVal(condition), then, BaseTypeImpl.items(elseExpr)); 
-    }
-    @Override
         public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr) {
         return new BaseTypeImpl.ItemSeqCallImpl("sem", "if", new Object[]{ condition, then, elseExpr });
-    }
-    @Override
-        public SemInvalidExpr invalid(String string, SemIriExpr datatype) {
-        return invalid(xs.string(string), datatype); 
     }
     @Override
         public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype) {
@@ -134,16 +126,8 @@ public class SemExprImpl extends SemValueImpl implements SemExpr {
         return new XsExprImpl.XsStringCallImpl("sem", "timezone-string", new Object[]{ value });
     }
     @Override
-        public XsAnyAtomicTypeExpr typedLiteral(String value, SemIriExpr datatype) {
-        return typedLiteral(xs.string(value), datatype); 
-    }
-    @Override
         public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, SemIriExpr datatype) {
         return new XsExprImpl.XsAnyAtomicTypeCallImpl("sem", "typed-literal", new Object[]{ value, datatype });
-    }
-    @Override
-        public SemUnknownExpr unknown(String string, SemIriExpr datatype) {
-        return unknown(xs.string(string), datatype); 
     }
     @Override
         public SemUnknownExpr unknown(XsStringExpr string, SemIriExpr datatype) {

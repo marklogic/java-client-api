@@ -19,9 +19,9 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.RdfExpr;
-import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.RdfLangStringExpr;
+import com.marklogic.client.type.RdfLangStringExpr;
  import com.marklogic.client.type.RdfLangStringSeqExpr;
+ import com.marklogic.client.type.XsStringExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 

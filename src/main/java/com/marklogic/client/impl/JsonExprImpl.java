@@ -19,17 +19,17 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.JsonExpr;
-import com.marklogic.client.type.JsonArrayExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.JsonObjectExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.JsonArraySeqExpr;
- import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.JsonArrayExpr;
+ import com.marklogic.client.type.JsonArraySeqExpr;
+ import com.marklogic.client.type.JsonObjectExpr;
  import com.marklogic.client.type.JsonObjectSeqExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -77,7 +77,7 @@ public class JsonExprImpl implements JsonExpr {
         return new JsonExprImpl.JsonObjectCallImpl("json", "object-define", new Object[]{  });
     }
     @Override
-        public JsonObjectExpr objectDefine(String... keys) {
+        public JsonObjectExpr objectDefine(String keys) {
         return objectDefine((keys == null) ? null : xs.strings(keys)); 
     }
     @Override

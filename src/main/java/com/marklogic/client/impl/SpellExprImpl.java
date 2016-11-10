@@ -19,9 +19,9 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.SpellExpr;
-import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsIntegerExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -33,24 +33,16 @@ public class SpellExprImpl implements SpellExpr {
         this.xs = xs;
     }
      @Override
-        public XsStringSeqExpr doubleMetaphone(String word) {
-        return doubleMetaphone(xs.string(word)); 
-    }
-    @Override
         public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
         return new XsExprImpl.XsStringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
     }
     @Override
-        public XsIntegerExpr levenshteinDistance(String str1, String str2) {
-        return levenshteinDistance(xs.string(str1), xs.string(str2)); 
+        public XsIntegerExpr levenshteinDistance(XsStringExpr str1, String str2) {
+        return levenshteinDistance(str1, xs.string(str2)); 
     }
     @Override
         public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
         return new XsExprImpl.XsIntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
-    }
-    @Override
-        public XsStringExpr romanize(String string) {
-        return romanize(xs.string(string)); 
     }
     @Override
         public XsStringExpr romanize(XsStringExpr string) {

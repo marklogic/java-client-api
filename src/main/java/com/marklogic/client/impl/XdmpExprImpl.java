@@ -19,24 +19,24 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.XdmpExpr;
-import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.NodeExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.XsLongExpr;
- import com.marklogic.client.type.XsNumericSeqExpr;
- import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.MapMapExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsAnyURIExpr;
- import com.marklogic.client.type.XsDateExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.MapMapExpr;
+ import com.marklogic.client.type.NodeExpr;
+ import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+ import com.marklogic.client.type.XsAnyURIExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsDateExpr;
  import com.marklogic.client.type.XsDateTimeExpr;
+ import com.marklogic.client.type.XsIntegerExpr;
+ import com.marklogic.client.type.XsLongExpr;
+ import com.marklogic.client.type.XsNumericSeqExpr;
+ import com.marklogic.client.type.XsQNameExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
+ import com.marklogic.client.type.XsUnsignedIntExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -56,40 +56,28 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "and64", new Object[]{ x, y });
     }
     @Override
-        public XsStringExpr base64Decode(String encoded) {
-        return base64Decode(xs.string(encoded)); 
-    }
-    @Override
         public XsStringExpr base64Decode(XsStringExpr encoded) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "base64-decode", new Object[]{ encoded });
-    }
-    @Override
-        public XsStringExpr base64Encode(String plaintext) {
-        return base64Encode(xs.string(plaintext)); 
     }
     @Override
         public XsStringExpr base64Encode(XsStringExpr plaintext) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "base64-encode", new Object[]{ plaintext });
     }
     @Override
-        public XsBooleanExpr castableAs(String namespaceUri, String localName, ItemExpr item) {
-        return castableAs(xs.string(namespaceUri), xs.string(localName), item); 
+        public XsBooleanExpr castableAs(XsStringExpr namespaceUri, String localName, ItemExpr item) {
+        return castableAs(namespaceUri, xs.string(localName), item); 
     }
     @Override
         public XsBooleanExpr castableAs(XsStringExpr namespaceUri, XsStringExpr localName, ItemExpr item) {
         return new XsExprImpl.XsBooleanCallImpl("xdmp", "castable-as", new Object[]{ namespaceUri, localName, item });
     }
     @Override
-        public XsStringExpr crypt(String password, String salt) {
-        return crypt(xs.string(password), xs.string(salt)); 
+        public XsStringExpr crypt(XsStringExpr password, String salt) {
+        return crypt(password, xs.string(salt)); 
     }
     @Override
         public XsStringExpr crypt(XsStringExpr password, XsStringExpr salt) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "crypt", new Object[]{ password, salt });
-    }
-    @Override
-        public XsStringExpr crypt2(String password) {
-        return crypt2(xs.string(password)); 
     }
     @Override
         public XsStringExpr crypt2(XsStringExpr password) {
@@ -98,10 +86,6 @@ public class XdmpExprImpl implements XdmpExpr {
     @Override
         public XsStringExpr daynameFromDate(XsDateExpr arg) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "dayname-from-date", new Object[]{ arg });
-    }
-    @Override
-        public XsStringExpr decodeFromNCName(String name) {
-        return decodeFromNCName(xs.string(name)); 
     }
     @Override
         public XsStringExpr decodeFromNCName(XsStringExpr name) {
@@ -120,20 +104,12 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsStringCallImpl("xdmp", "describe", new Object[]{ item, maxSequenceLength, maxItemLength });
     }
     @Override
-        public XsStringExpr diacriticLess(String string) {
-        return diacriticLess(xs.string(string)); 
-    }
-    @Override
         public XsStringExpr diacriticLess(XsStringExpr string) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "diacritic-less", new Object[]{ string });
     }
     @Override
         public XsStringExpr elementContentType(ElementNodeExpr element) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "element-content-type", new Object[]{ element });
-    }
-    @Override
-        public XsStringExpr encodeForNCName(String name) {
-        return encodeForNCName(xs.string(name)); 
     }
     @Override
         public XsStringExpr encodeForNCName(XsStringExpr name) {
@@ -208,24 +184,12 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsStringCallImpl("xdmp", "get-current-user", null);
     }
     @Override
-        public XsUnsignedIntExpr hash32(String string) {
-        return hash32(xs.string(string)); 
-    }
-    @Override
         public XsUnsignedIntExpr hash32(XsStringExpr string) {
         return new XsExprImpl.XsUnsignedIntCallImpl("xdmp", "hash32", new Object[]{ string });
     }
     @Override
-        public XsUnsignedLongExpr hash64(String string) {
-        return hash64(xs.string(string)); 
-    }
-    @Override
         public XsUnsignedLongExpr hash64(XsStringExpr string) {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "hash64", new Object[]{ string });
-    }
-    @Override
-        public XsIntegerExpr hexToInteger(String hex) {
-        return hexToInteger(xs.string(hex)); 
     }
     @Override
         public XsIntegerExpr hexToInteger(XsStringExpr hex) {
@@ -278,10 +242,6 @@ public class XdmpExprImpl implements XdmpExpr {
     @Override
         public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "hmac-sha512", new Object[]{ secretkey, message, encoding });
-    }
-    @Override
-        public XsStringExpr initcap(String string) {
-        return initcap(xs.string(string)); 
     }
     @Override
         public XsStringExpr initcap(XsStringExpr string) {
@@ -368,10 +328,6 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "not64", new Object[]{ x });
     }
     @Override
-        public XsIntegerExpr octalToInteger(String octal) {
-        return octalToInteger(xs.string(octal)); 
-    }
-    @Override
         public XsIntegerExpr octalToInteger(XsStringExpr octal) {
         return new XsExprImpl.XsIntegerCallImpl("xdmp", "octal-to-integer", new Object[]{ octal });
     }
@@ -380,64 +336,64 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "or64", new Object[]{ x, y });
     }
     @Override
-        public XsDateTimeExpr parseDateTime(String picture, String value) {
-        return parseDateTime(xs.string(picture), xs.string(value)); 
+        public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value) {
+        return parseDateTime(picture, xs.string(value)); 
     }
     @Override
         public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value });
     }
     @Override
-        public XsDateTimeExpr parseDateTime(String picture, String value, String language) {
-        return parseDateTime(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language)); 
+        public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language) {
+        return parseDateTime(picture, xs.string(value), (language == null) ? null : xs.string(language)); 
     }
     @Override
         public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language });
     }
     @Override
-        public XsDateTimeExpr parseDateTime(String picture, String value, String language, String calendar) {
-        return parseDateTime(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar)); 
+        public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language, String calendar) {
+        return parseDateTime(picture, xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar)); 
     }
     @Override
         public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language, calendar });
     }
     @Override
-        public XsDateTimeExpr parseDateTime(String picture, String value, String language, String calendar, String country) {
-        return parseDateTime(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar), (country == null) ? null : xs.string(country)); 
+        public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language, String calendar, String country) {
+        return parseDateTime(picture, xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar), (country == null) ? null : xs.string(country)); 
     }
     @Override
         public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language, calendar, country });
     }
     @Override
-        public XsDateTimeExpr parseYymmdd(String picture, String value) {
-        return parseYymmdd(xs.string(picture), xs.string(value)); 
+        public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value) {
+        return parseYymmdd(picture, xs.string(value)); 
     }
     @Override
         public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value });
     }
     @Override
-        public XsDateTimeExpr parseYymmdd(String picture, String value, String language) {
-        return parseYymmdd(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language)); 
+        public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language) {
+        return parseYymmdd(picture, xs.string(value), (language == null) ? null : xs.string(language)); 
     }
     @Override
         public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value, language });
     }
     @Override
-        public XsDateTimeExpr parseYymmdd(String picture, String value, String language, String calendar) {
-        return parseYymmdd(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar)); 
+        public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language, String calendar) {
+        return parseYymmdd(picture, xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar)); 
     }
     @Override
         public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar) {
         return new XsExprImpl.XsDateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value, language, calendar });
     }
     @Override
-        public XsDateTimeExpr parseYymmdd(String picture, String value, String language, String calendar, String country) {
-        return parseYymmdd(xs.string(picture), xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar), (country == null) ? null : xs.string(country)); 
+        public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language, String calendar, String country) {
+        return parseYymmdd(picture, xs.string(value), (language == null) ? null : xs.string(language), (calendar == null) ? null : xs.string(calendar), (country == null) ? null : xs.string(country)); 
     }
     @Override
         public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
@@ -456,24 +412,20 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsStringCallImpl("xdmp", "path", new Object[]{ node, includeDocument });
     }
     @Override
-        public XsIntegerExpr position(String test, String target) {
-        return position(xs.string(test), xs.string(target)); 
+        public XsIntegerExpr position(XsStringExpr test, String target) {
+        return position(test, xs.string(target)); 
     }
     @Override
         public XsIntegerExpr position(XsStringExpr test, XsStringExpr target) {
         return new XsExprImpl.XsIntegerCallImpl("xdmp", "position", new Object[]{ test, target });
     }
     @Override
-        public XsIntegerExpr position(String test, String target, String collation) {
-        return position(xs.string(test), xs.string(target), (collation == null) ? null : xs.string(collation)); 
+        public XsIntegerExpr position(XsStringExpr test, String target, String collation) {
+        return position(test, xs.string(target), (collation == null) ? null : xs.string(collation)); 
     }
     @Override
         public XsIntegerExpr position(XsStringExpr test, XsStringExpr target, XsStringExpr collation) {
         return new XsExprImpl.XsIntegerCallImpl("xdmp", "position", new Object[]{ test, target, collation });
-    }
-    @Override
-        public XsQNameExpr QNameFromKey(String key) {
-        return QNameFromKey(xs.string(key)); 
     }
     @Override
         public XsQNameExpr QNameFromKey(XsStringExpr key) {
@@ -492,8 +444,8 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "random", new Object[]{ max });
     }
     @Override
-        public XsAnyURIExpr resolveUri(String relative, String base) {
-        return resolveUri(xs.string(relative), xs.string(base)); 
+        public XsAnyURIExpr resolveUri(XsStringExpr relative, String base) {
+        return resolveUri(relative, xs.string(base)); 
     }
     @Override
         public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
@@ -560,10 +512,6 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsUnsignedLongCallImpl("xdmp", "step64", new Object[]{ initial, step });
     }
     @Override
-        public XsStringExpr strftime(String format, XsDateTimeExpr value) {
-        return strftime(xs.string(format), value); 
-    }
-    @Override
         public XsStringExpr strftime(XsStringExpr format, XsDateTimeExpr value) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "strftime", new Object[]{ format, value });
     }
@@ -580,24 +528,16 @@ public class XdmpExprImpl implements XdmpExpr {
         return new XsExprImpl.XsQNameCallImpl("xdmp", "type", new Object[]{ value });
     }
     @Override
-        public XsStringExpr urlDecode(String encoded) {
-        return urlDecode(xs.string(encoded)); 
-    }
-    @Override
         public XsStringExpr urlDecode(XsStringExpr encoded) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "url-decode", new Object[]{ encoded });
-    }
-    @Override
-        public XsStringExpr urlEncode(String plaintext) {
-        return urlEncode(xs.string(plaintext)); 
     }
     @Override
         public XsStringExpr urlEncode(XsStringExpr plaintext) {
         return new XsExprImpl.XsStringCallImpl("xdmp", "url-encode", new Object[]{ plaintext });
     }
     @Override
-        public XsStringExpr urlEncode(String plaintext, boolean noSpacePlus) {
-        return urlEncode(xs.string(plaintext), xs.booleanVal(noSpacePlus)); 
+        public XsStringExpr urlEncode(XsStringExpr plaintext, boolean noSpacePlus) {
+        return urlEncode(plaintext, xs.booleanVal(noSpacePlus)); 
     }
     @Override
         public XsStringExpr urlEncode(XsStringExpr plaintext, XsBooleanExpr noSpacePlus) {

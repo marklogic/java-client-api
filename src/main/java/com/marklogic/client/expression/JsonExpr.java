@@ -15,17 +15,17 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.JsonArrayExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.JsonObjectExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.JsonArraySeqExpr;
- import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.ElementNodeExpr;
  import com.marklogic.client.type.ItemExpr;
  import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.JsonArrayExpr;
+ import com.marklogic.client.type.JsonArraySeqExpr;
+ import com.marklogic.client.type.JsonObjectExpr;
  import com.marklogic.client.type.JsonObjectSeqExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsNumericExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
+ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
@@ -39,7 +39,7 @@ public interface JsonExpr {
     public JsonObjectExpr object();
     public JsonObjectExpr object(ElementNodeExpr map);
     public JsonObjectExpr objectDefine();
-    public JsonObjectExpr objectDefine(String... keys);
+    public JsonObjectExpr objectDefine(String keys);
     public JsonObjectExpr objectDefine(XsStringSeqExpr keys);
     public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc);
     public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length);

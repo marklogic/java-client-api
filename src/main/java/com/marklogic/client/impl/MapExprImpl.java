@@ -19,15 +19,14 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.XsValue;
 
 import com.marklogic.client.expression.MapExpr;
-import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.ElementNodeExpr;
+ import com.marklogic.client.type.ItemSeqExpr;
+ import com.marklogic.client.type.MapMapExpr;
+ import com.marklogic.client.type.MapMapSeqExpr;
+ import com.marklogic.client.type.XsBooleanExpr;
+ import com.marklogic.client.type.XsStringExpr;
  import com.marklogic.client.type.XsStringSeqExpr;
  import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.MapMapExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.ItemExpr;
- import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.MapMapSeqExpr;
 
 import com.marklogic.client.impl.BaseTypeImpl;
 
@@ -49,10 +48,6 @@ public class MapExprImpl implements MapExpr {
     @Override
         public XsUnsignedIntExpr count(MapMapExpr map) {
         return new XsExprImpl.XsUnsignedIntCallImpl("map", "count", new Object[]{ map });
-    }
-    @Override
-        public MapMapExpr entry(String key, ItemExpr... value) {
-        return entry(xs.string(key), BaseTypeImpl.items(value)); 
     }
     @Override
         public MapMapExpr entry(XsStringExpr key, ItemSeqExpr value) {

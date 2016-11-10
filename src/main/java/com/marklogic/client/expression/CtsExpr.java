@@ -15,31 +15,29 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.CtsCircleSeqExpr;
- import com.marklogic.client.type.CtsPolygonExpr;
- import com.marklogic.client.type.CtsPolygonSeqExpr;
- import com.marklogic.client.type.CtsBoxExpr;
+import com.marklogic.client.type.CtsBoxExpr;
  import com.marklogic.client.type.CtsBoxSeqExpr;
- import com.marklogic.client.type.CtsRegionExpr;
  import com.marklogic.client.type.CtsCircleExpr;
- import com.marklogic.client.type.CtsRegionSeqExpr;
+ import com.marklogic.client.type.CtsCircleSeqExpr;
  import com.marklogic.client.type.CtsPointExpr;
  import com.marklogic.client.type.CtsPointSeqExpr;
+ import com.marklogic.client.type.CtsPolygonExpr;
+ import com.marklogic.client.type.CtsPolygonSeqExpr;
+ import com.marklogic.client.type.CtsRegionExpr;
+ import com.marklogic.client.type.CtsRegionSeqExpr;
+ import com.marklogic.client.type.XsStringExpr;
+ import com.marklogic.client.type.XsStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface CtsExpr extends CtsQuery {
-    public XsStringSeqExpr stem(String text);
     public XsStringSeqExpr stem(XsStringExpr text);
-    public XsStringSeqExpr stem(String text, String language);
+    public XsStringSeqExpr stem(XsStringExpr text, String language);
     public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language);
-    public XsStringSeqExpr tokenize(String text);
     public XsStringSeqExpr tokenize(XsStringExpr text);
-    public XsStringSeqExpr tokenize(String text, String language);
+    public XsStringSeqExpr tokenize(XsStringExpr text, String language);
     public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language);
-    public XsStringSeqExpr tokenize(String text, String language, String field);
+    public XsStringSeqExpr tokenize(XsStringExpr text, String language, String field);
     public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language, XsStringExpr field);     public CtsBoxSeqExpr box(CtsBoxExpr... items);
      public CtsCircleSeqExpr circle(CtsCircleExpr... items);
      public CtsPointSeqExpr point(CtsPointExpr... items);
