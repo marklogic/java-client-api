@@ -842,28 +842,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ExportablePlanCallImpl(this, "op", "map", new Object[]{ func });
     }
     @Override
-        public PlanFunction mapFunction(String moduleName) {
-        return mapFunction(xs.string(moduleName)); 
-    }
-    @Override
-        public PlanFunction mapFunction(XsStringParam moduleName) {
-        return new PlanFunctionCallImpl("op", "map-function", new Object[]{ moduleName });
-    }
-    @Override
         public ExportablePlan reduce(PlanFunction func) {
         return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func });
     }
     @Override
         public ExportablePlan reduce(PlanFunction func, XsAnyAtomicTypeParam seed) {
         return new ExportablePlanCallImpl(this, "op", "reduce", new Object[]{ func, seed });
-    }
-    @Override
-        public PlanFunction reduceFunction(String moduleName) {
-        return reduceFunction(xs.string(moduleName)); 
-    }
-    @Override
-        public PlanFunction reduceFunction(XsStringParam moduleName) {
-        return new PlanFunctionCallImpl("op", "reduce-function", new Object[]{ moduleName });
     }
 }
  public class PlanParamCallImpl  extends PlanBaseImpl  implements PlanParam {

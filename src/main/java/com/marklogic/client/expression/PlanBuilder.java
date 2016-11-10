@@ -344,12 +344,8 @@ public abstract class PlanBuilder {
     public PlanFunction installedFunction(String modulePath, String functionName);
     public PlanFunction installedFunction(XsStringParam modulePath, XsStringParam functionName);
     public ExportablePlan map(PlanFunction func);
-    public PlanFunction mapFunction(String moduleName);
-    public PlanFunction mapFunction(XsStringParam moduleName);
     public ExportablePlan reduce(PlanFunction func);
     public ExportablePlan reduce(PlanFunction func, XsAnyAtomicTypeParam seed);
-    public PlanFunction reduceFunction(String moduleName);
-    public PlanFunction reduceFunction(XsStringParam moduleName);
 }
  public interface QualifiedPlan extends AccessPlan {
     public PlanColumn col(String column);
