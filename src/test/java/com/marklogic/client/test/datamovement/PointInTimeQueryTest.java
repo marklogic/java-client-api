@@ -42,7 +42,6 @@ import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryHostException;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PointInTimeQueryTest {

@@ -3,12 +3,12 @@ package com.marklogic.client.datamovement.impl;
 import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.QueryHostException;
+import com.marklogic.client.datamovement.QueryBatchException;
 
 public class QueryJobReportListener extends JobReportListener implements  QueryBatchListener, QueryFailureListener {
 
   @Override
-  public void processFailure(QueryHostException failure) {
+  public void processFailure(QueryBatchException failure) {
     // Increment the number of batches that failed
     failureBatchesCount.incrementAndGet();
   }

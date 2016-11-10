@@ -18,10 +18,10 @@ package com.marklogic.client.datamovement;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.Format;
 
-public class QueryHostException extends Exception implements QueryEvent {
+public class QueryBatchException extends Exception implements QueryEvent {
   private QueryEvent queryEvent;
 
-  public QueryHostException(QueryEvent queryEvent, Throwable cause) {
+  public QueryBatchException(QueryEvent queryEvent, Throwable cause) {
     super(cause);
     this.queryEvent = queryEvent;
   }

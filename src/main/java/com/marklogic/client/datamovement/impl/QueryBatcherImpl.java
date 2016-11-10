@@ -23,7 +23,7 @@ import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryHostException;
+import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -479,7 +479,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withForestResultsSoFar(forestResults.get(forest).get());
           for ( QueryFailureListener listener : failureListeners ) {
             try {
-              listener.processFailure(new QueryHostException(batch, t));
+              listener.processFailure(new QueryBatchException(batch, t));
             } catch (Throwable e2) {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
@@ -567,7 +567,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 .withJobResultsSoFar(0);
               for ( QueryFailureListener listener : failureListeners ) {
                 try {
-                  listener.processFailure(new QueryHostException(batch, t));
+                  listener.processFailure(new QueryBatchException(batch, t));
                 } catch (Throwable e) {
                   logger.error("Exception thrown by an onQueryFailure listener", e);
                 }
@@ -584,7 +584,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                 .withBatcher(batcher)
                 .withTimestamp(Calendar.getInstance())
                 .withJobResultsSoFar(0);
-              listener.processFailure(new QueryHostException(batch, t));
+              listener.processFailure(new QueryBatchException(batch, t));
             } catch (Throwable e) {
               logger.error("Exception thrown by an onQueryFailure listener", e);
             }
