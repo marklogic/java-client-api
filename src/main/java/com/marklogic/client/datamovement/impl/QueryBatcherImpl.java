@@ -572,7 +572,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                   logger.error("Exception thrown by an onQueryFailure listener", e);
                 }
               }
-              logger.warn("Error iterating to queue uris", t.toString());
+              logger.warn("Error iterating to queue uris: {}", t.toString());
             }
           }
         } catch (Throwable t) {
