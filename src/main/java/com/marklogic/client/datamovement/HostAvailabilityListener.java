@@ -35,6 +35,32 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
+/** HostAvailabilityListener is automatically registered with all QueryBatcher
+ * and WriteBatcher instances to monitor for failover scenarios.  When
+ * HostAvailabilityListener detects that a host is unavailable (matches one of
+ * {@link #getHostUnavailableExceptions()}), it black-lists the host for a
+ * period of time equal to {@link #getSuspendTimeForHostUnavailable()}.  After
+ * that time, it calls {@link DataMovementManager#readForestConfig()} then
+ * passes that updated ForestConfiguration to batcher.withForestConfig() so the
+ * batcher will fall back to using the hosts the server says are available.
+ * Directly after black-listing (and before updating the ForestConfiguration)
+ * this calls batcher.retry with the failed WriteBatch or QueryBatchException
+ * so the batch can succeed if possible.  The main objective here is to
+ * gracefully handle a failover scenario by temporarily routing requests to
+ * hosts other than the failed host(s), retry-ing requests that failed, and
+ * eventually reverting to utilizing the full cluster that's available.
+ * Nevertheless, there will definitely be failure scenarios not addressed by
+ * HostAvailabilityListener and therefore we recommend that production
+ * installations of Data Movement SDK use HostAvailabilityListener as an
+ * example and install their own failure-handling listeners complete with
+ * retry and updates to the batcher's ForestConfiguration as appropriate.
+ *
+ * If you would like to change the default settings, you can change them
+ * on the pre-registered HostAvailabilityListener which you can access via
+ * {@link WriteBatcher#getBatchFailureListeners()} or {@link
+ * QueryBatcher.getQueryFailureListeners()}.
+ *
+ */
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
   private static Logger logger = LoggerFactory.getLogger(HostAvailabilityListener.class);
   private DataMovementManager moveMgr;
@@ -163,13 +189,14 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
     boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());
+    boolean shouldWeRetry = isHostUnavailableException;
     if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
       String[] preferredHosts = existingForestConfig.getPreferredHosts();
       if ( ! Arrays.asList(preferredHosts).contains(host) ) {
         // skip all the logic below because the host in question here is already
         // missing from the list of hosts for this batcher
-        return isHostUnavailableException;
+        return shouldWeRetry;
       }
       if ( preferredHosts.length > minHosts ) {
         logger.error("ERROR: host unavailable \"" + host + "\", black-listing it for " +
@@ -206,13 +233,14 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       } else {
         // by black-listing this host we'd move below minHosts, so it's time to
         // stop this job
+        shouldWeRetry = false;
         logger.error("Encountered [" + throwable + "] on host \"" + host +
           "\" but black-listing it would drop job below minHosts (" + minHosts +
           "), so stopping job \"" + batcher.getJobName() + "\"", throwable);
         moveMgr.stopJob(batcher);
       }
     }
-    return isHostUnavailableException;
+    return shouldWeRetry;
   }
 
   private boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {

@@ -535,14 +535,18 @@ public class WriteBatcherImpl
     logger.info("flushing {} queued docs", docs.size());
     Iterator<DocumentToWrite> iter = docs.iterator();
     boolean forceNewTransaction = true;
-    while ( iter.hasNext() ) {
+    for ( int i=0; iter.hasNext(); i++ ) {
+      if ( isStopped() == true ) {
+        logger.warn("Job is now stopped, preventing the flush of {} queued docs", docs.size() - i);
+        return;
+      }
       BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
-      int i=0;
-      for ( ; i < getBatchSize() && iter.hasNext(); i++ ) {
+      int j=0;
+      for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
         DocumentToWrite doc = iter.next();
         writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
       }
-      writeSet.setItemsSoFar(itemsSoFar.addAndGet(i));
+      writeSet.setItemsSoFar(itemsSoFar.addAndGet(j));
       threadPool.submit( new BatchWriter(writeSet) );
     }
 
