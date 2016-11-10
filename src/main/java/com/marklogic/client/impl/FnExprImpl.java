@@ -142,7 +142,7 @@ public class FnExprImpl implements FnExpr {
     }
     @Override
         public XsStringExpr concat(XsAnyAtomicTypeExpr... parameter1) {
-        return new XsExprImpl.XsStringCallImpl("fn", "concat", new Object[] { parameter1 });
+        return new XsExprImpl.XsStringCallImpl("fn", "concat", parameter1);
     }
     @Override
         public XsIntegerExpr count(ItemSeqExpr arg) {

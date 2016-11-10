@@ -155,7 +155,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
 
     @Override
         public XsNumericExpr add(XsNumericExpr... list) {
-        return new XsExprImpl.XsNumericCallImpl("op", "add", new Object[] { list });
+        return new XsExprImpl.XsNumericCallImpl("op", "add", list);
     }
     @Override
         public PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate) {
@@ -163,7 +163,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr and(XsBooleanExpr... list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "and", new Object[] { list });
+        return new XsExprImpl.XsBooleanCallImpl("op", "and", list);
     }
     @Override
         public PlanAggregateCol arrayAggregate(String name, String column) {
@@ -437,7 +437,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsNumericExpr multiply(XsNumericExpr... list) {
-        return new XsExprImpl.XsNumericCallImpl("op", "multiply", new Object[] { list });
+        return new XsExprImpl.XsNumericCallImpl("op", "multiply", list);
     }
     @Override
         public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -457,7 +457,7 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     }
     @Override
         public XsBooleanExpr or(XsBooleanExpr... list) {
-        return new XsExprImpl.XsBooleanCallImpl("op", "or", new Object[] { list });
+        return new XsExprImpl.XsBooleanCallImpl("op", "or", list);
     }
     @Override
         public PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object) {

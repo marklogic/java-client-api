@@ -55,7 +55,7 @@ public class SemExprImpl extends SemValueImpl implements SemExpr {
     }
     @Override
         public ItemSeqExpr coalesce(ItemExpr... parameter1) {
-        return new BaseTypeImpl.ItemSeqCallImpl("sem", "coalesce", new Object[] { parameter1 });
+        return new BaseTypeImpl.ItemSeqCallImpl("sem", "coalesce", parameter1);
     }
     @Override
         public SemIriExpr datatype(XsAnyAtomicTypeExpr value) {
