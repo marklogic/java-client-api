@@ -1331,7 +1331,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			                .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 		     .where(p.gt(
-		    		     p.schemaCol("opticFunctionalTest", "detail", "amount"), p.math.median(numbers)
+		    		     p.schemaCol("opticFunctionalTest", "detail", "amount"), p.math.median(p.xs.doubleVals(numbers))
                         )
                     )
              .select(p.as("myAmount", p.viewCol("detail", "amount")))
@@ -1550,7 +1550,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}		
 		// Should have SQL-AMBCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-AMBCOLUMN: Ambiguous column reference: found opticFunctionalTest.master.id and opticFunctionalTest.detail.id"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-AMBCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Ambiguous column reference: found opticFunctionalTest.master.id and opticFunctionalTest.detail.id"));
 	}
 	
 	/* This test checks invalid schema name, view name and column name on schemaCol.
@@ -1587,7 +1588,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			System.out.println("Exception message is " + strSchema.toString());
 		}		
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", strSchema.toString().contains("QL-NOCOLUMN: Column not found: opticFunctionalTest_invalid.detail.id"));
+		assertTrue("Exceptions not found", strSchema.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", strSchema.toString().contains("Column not found: opticFunctionalTest_invalid.detail.id"));
 		
 		// Invalid View name on schemaCol
 		StringBuilder strView = new StringBuilder();
@@ -1611,7 +1613,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		System.out.println("Exception message is " + strView.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strView.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.detail_invalid.id"));
+	assertTrue("Exceptions not found", strView.toString().contains("SQL-NOCOLUMN"));
+	assertTrue("Exceptions not found", strView.toString().contains("Column not found: opticFunctionalTest.detail_invalid.id"));
 	
 	// Invalid Column name on schemaCol
 	StringBuilder strCol = new StringBuilder();
@@ -1723,7 +1726,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			System.out.println("Exception message is " + strIntersect.toString());
 		}		
 		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strIntersect.toString().contains("SQL-NUMBERCOLUMNS: Number of columns not matched: SELECTs to the left and right of INTERSECT do not have the same number of result columns"));
+		assertTrue("Exceptions not found", strIntersect.toString().contains("SQL-NUMBERCOLUMNS"));
+		assertTrue("Exceptions not found", strIntersect.toString().contains("Number of columns not matched: SELECTs to the left and right of INTERSECT do not have the same number of result columns"));
 		
 		//except with different number of columns
 		StringBuilder strExcept = new StringBuilder();
@@ -1748,7 +1752,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			System.out.println("Exception message is " + strExcept.toString());
 		}		
 		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strExcept.toString().contains("SQL-NUMBERCOLUMNS: Number of columns not matched: SELECTs to the left and right of EXCEPT do not have the same number of result columns"));
+		assertTrue("Exceptions not found", strExcept.toString().contains("SQL-NUMBERCOLUMNS"));
+		assertTrue("Exceptions not found", strExcept.toString().contains("Number of columns not matched: SELECTs to the left and right of EXCEPT do not have the same number of result columns"));
 	}
 	
 	/*

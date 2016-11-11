@@ -498,7 +498,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		
 		CtsQuerySeqExpr andQuery = p.cts.andQuery(p.cts.wordQuery("near"), p.cts.wordQuery("Thames"));
 		//cts.jsonPropertyWordQuery('city', '*k', ['wildcarded', 'case-sensitive'])
-		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", "case-sensitive"));
+		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", 0.0));
 		// plan2 - fromLexicons
 		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
 		
