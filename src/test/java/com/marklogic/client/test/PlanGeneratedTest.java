@@ -163,13 +163,13 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testFnDeepEqual2Exist() {
-        executeTester("testFnDeepEqual2", p.fn.deepEqual(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
+    public void testFnDeepEqual2Exec() {
+        executeTester("testFnDeepEqual2", p.fn.deepEqual(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("abc")}, new ItemSeqExpr[]{});
     }
 
     @Test
-    public void testFnDeepEqual3Exist() {
-        executeTester("testFnDeepEqual3", p.fn.deepEqual(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc"), p.xs.string("abc")});
+    public void testFnDeepEqual3Exec() {
+        executeTester("testFnDeepEqual3", p.fn.deepEqual(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("abc"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -603,33 +603,8 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testMathMode1Exist() {
-        executeTester("testMathMode1", p.math.mode(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
-    }
-
-    @Test
-    public void testMathMode2Exist() {
-        executeTester("testMathMode2", p.math.mode(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
-    }
-
-    @Test
     public void testMathModf1Exec() {
         executeTester("testMathModf1", p.math.modf(p.col("1")), "(xs:double(\"0.333\"), xs:double(\"1\"))", new Object[]{p.xs.doubleVal(1.333)}, new ItemSeqExpr[]{});
-    }
-
-    @Test
-    public void testMathPercentile2Exist() {
-        executeTester("testMathPercentile2", p.math.percentile(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2), p.xs.doubleVal(1.2)});
-    }
-
-    @Test
-    public void testMathPercentRank2Exist() {
-        executeTester("testMathPercentRank2", p.math.percentRank(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
-    }
-
-    @Test
-    public void testMathPercentRank3Exist() {
-        executeTester("testMathPercentRank3", p.math.percentRank(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc"), p.xs.string("abc")});
     }
 
     @Test
@@ -645,16 +620,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
     public void testMathRadians1Exec() {
         executeTester("testMathRadians1", p.math.radians(p.col("1")), "1.5707963267949", new Object[]{p.xs.doubleVal(90)}, new ItemSeqExpr[]{});
-    }
-
-    @Test
-    public void testMathRank2Exist() {
-        executeTester("testMathRank2", p.math.rank(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
-    }
-
-    @Test
-    public void testMathRank3Exist() {
-        executeTester("testMathRank3", p.math.rank(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc"), p.xs.string("abc")});
     }
 
     @Test
@@ -763,8 +728,8 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testSemIriToQName1Exist() {
-        executeTester("testSemIriToQName1", p.sem.iriToQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSemIriToQName1Exec() {
+        executeTester("testSemIriToQName1", p.sem.iriToQName(p.col("1")), "fn:QName(\"http://a/\",\"b\")", new Object[]{p.xs.string("http://a/b")}, new ItemSeqExpr[]{});
     }
 
     @Test
