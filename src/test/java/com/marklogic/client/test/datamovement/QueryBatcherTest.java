@@ -37,10 +37,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import static com.marklogic.client.io.Format.JSON;
+import static com.marklogic.client.io.Format.XML;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -66,6 +68,7 @@ public class QueryBatcherTest {
   private static String uri2 = "/QueryBatcherTest/content_2.json";
   private static String uri3 = "/QueryBatcherTest/content_3.json";
   private static String uri4 = "/QueryBatcherTest/content_4.json";
+  private static String uri5 = "/QueryBatcherTest/content_5.json";
   private static String collection = "QueryBatcherTest";
   private static String qhbTestCollection = "QueryBatcherTest_" +
     new Random().nextInt(10000);
@@ -79,10 +82,12 @@ public class QueryBatcherTest {
 
   @AfterClass
   public static void afterClass() {
+    /*
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
+    */
 
     Common.release();
   }
@@ -94,12 +99,26 @@ public class QueryBatcherTest {
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection, qhbTestCollection);
     // all the docs are one-word text docs
-    writeBatcher.addAs(uri1, meta, new StringHandle("{name:\"John Doe\",dept:\"HR\"}").withFormat(JSON));
-    writeBatcher.addAs(uri2, meta, new StringHandle("{name:\"Jane Doe\",dept:\"HR\"}").withFormat(JSON));
-    writeBatcher.addAs(uri3, meta, new StringHandle("{name:\"John Smith\",dept:\"HR\"}").withFormat(JSON));
-    writeBatcher.addAs(uri4, meta, new StringHandle("{name:\"John Lennon\",dept:\"HR\"}").withFormat(JSON));
+    writeBatcher.addAs(uri1, meta, new StringHandle("{name:\"John Doe\",   department:\"HR\"}").withFormat(JSON));
+    writeBatcher.addAs(uri2, meta, new StringHandle("{name:\"Jane Doe\",   department:\"HR\"}").withFormat(JSON));
+    writeBatcher.addAs(uri3, meta, new StringHandle("{name:\"John Smith\", department:\"HR\"}").withFormat(JSON));
+    writeBatcher.addAs(uri4, meta, new StringHandle("{name:\"John Lennon\",department:\"HR\"}").withFormat(JSON));
+    writeBatcher.addAs(uri5, meta, new StringHandle("{name:\"John Man\",   department:\"Engineering\"}").withFormat(JSON));
     writeBatcher.flushAsync();
     writeBatcher.awaitCompletion();
+    moveMgr.stopJob(writeBatcher);
+    StringHandle options = new StringHandle(
+      "<options xmlns='http://marklogic.com/appservices/search'>" +
+        "<constraint name='dept'>" +
+          "<value>" +
+            "<json-property>department</json-property>" +
+          "</value>" +
+        "</constraint>" +
+      "</options>")
+      .withFormat(XML);
+    QueryOptionsManager queryOptionsMgr =
+      Common.connectAdmin().newServerConfigManager().newQueryOptionsManager();
+    queryOptionsMgr.writeOptions("employees", options);
   }
 
   @Test
@@ -137,8 +156,9 @@ public class QueryBatcherTest {
 
   @Test
   public void testStringQuery() throws Exception {
-    StringQueryDefinition query = client.newQueryManager().newStringDefinition().withCriteria("John");
+    StringQueryDefinition query = client.newQueryManager().newStringDefinition().withCriteria("John AND dept:HR");
     query.setCollections(qhbTestCollection);
+    query.setOptionsName("employees");
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
