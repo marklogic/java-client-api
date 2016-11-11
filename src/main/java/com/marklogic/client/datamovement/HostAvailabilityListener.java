@@ -58,7 +58,7 @@ import java.util.concurrent.TimeUnit;
  * If you would like to change the default settings, you can change them
  * on the pre-registered HostAvailabilityListener which you can access via
  * {@link WriteBatcher#getBatchFailureListeners()} or {@link
- * QueryBatcher.getQueryFailureListeners()}.
+ * QueryBatcher#getQueryFailureListeners()}.
  *
  */
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
