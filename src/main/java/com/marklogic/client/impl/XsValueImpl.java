@@ -612,31 +612,31 @@ public class XsValueImpl implements XsValue {
 	}
 
 	@Override
-	public XsQNameVal qname(String localName) {
+	public XsQNameVal QName(String localName) {
 		return new QNameValImpl(localName);
 	}
 	@Override
-	public XsQNameVal qname(String namespace, String prefix, String localName) {
-		return new QNameValImpl(namespace, localName, prefix);
+	public XsQNameVal QName(String namespace, String localName) {
+		return new QNameValImpl(namespace, localName);
 	}
 	@Override
-	public XsQNameVal qname(QName value) {
+	public XsQNameVal QName(QName value) {
 		return new QNameValImpl(value);
 	}
 	@Override
-	public XsQNameSeqVal qnames(String... localNames) {
+	public XsQNameSeqVal QNames(String... localNames) {
 		return new QNameSeqValImpl(localNames);
 	}
 	@Override
-	public XsQNameSeqVal qnames(String namespace, String prefix, String... localNames) {
-		return new QNameSeqValImpl(namespace, prefix, localNames);
+	public XsQNameSeqVal QNames(String namespace, String... localNames) {
+		return new QNameSeqValImpl(namespace, localNames);
 	}
 	@Override
-	public XsQNameSeqVal qnames(QName... values) {
+	public XsQNameSeqVal QNames(QName... values) {
 		return new QNameSeqValImpl(values);
 	}
 	@Override
-	public XsQNameSeqVal qnames(XsQNameVal... values) {
+	public XsQNameSeqVal QNames(XsQNameVal... values) {
 		return new QNameSeqValImpl(values);
 	}
 
@@ -2510,9 +2510,9 @@ public class XsValueImpl implements XsValue {
 		               .map(val -> new QNameValImpl(val))
 		               .toArray(size -> new QNameValImpl[size]));
     	}
-    	QNameSeqValImpl(String namespace, String prefix, String[] localNames) {
+    	QNameSeqValImpl(String namespace, String[] localNames) {
 			this((QNameValImpl[]) Arrays.stream(localNames)
-		               .map(val -> new QNameValImpl(namespace, prefix, val))
+		               .map(val -> new QNameValImpl(namespace, val))
 		               .toArray(size -> new QNameValImpl[size]));
     	}
     	QNameSeqValImpl(QName[] values) {
@@ -2536,8 +2536,8 @@ public class XsValueImpl implements XsValue {
     	public QNameValImpl(String localName) {
     		this(new QName(localName));
     	}
-    	public QNameValImpl(String namespace, String prefix, String localName) {
-    		this(new QName(namespace, localName, prefix));
+    	public QNameValImpl(String namespace, String localName) {
+    		this(new QName(namespace, localName));
     	}
     	QNameValImpl(QName value) {
     		super("QName");

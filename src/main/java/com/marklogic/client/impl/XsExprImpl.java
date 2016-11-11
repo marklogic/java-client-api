@@ -403,7 +403,7 @@ public class XsExprImpl extends XsValueImpl implements XsExpr {
         return new XsPositiveIntegerSeqListImpl(items);
     }
      @Override
-    public XsQNameSeqExpr qName(XsQNameExpr... items) {
+    public XsQNameSeqExpr QName(XsQNameExpr... items) {
         return new XsQNameSeqListImpl(items);
     }
      @Override

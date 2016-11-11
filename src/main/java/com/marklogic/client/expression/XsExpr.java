@@ -177,7 +177,7 @@ public interface XsExpr extends XsValue {
      public XsNormalizedStringSeqExpr normalizedString(XsNormalizedStringExpr... items);
      public XsNumericSeqExpr numeric(XsNumericExpr... items);
      public XsPositiveIntegerSeqExpr positiveInteger(XsPositiveIntegerExpr... items);
-     public XsQNameSeqExpr qName(XsQNameExpr... items);
+     public XsQNameSeqExpr QName(XsQNameExpr... items);
      public XsShortSeqExpr shortExpr(XsShortExpr... items);
      public XsStringSeqExpr string(XsStringExpr... items);
      public XsTimeSeqExpr time(XsTimeExpr... items);

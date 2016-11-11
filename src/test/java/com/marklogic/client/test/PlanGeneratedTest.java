@@ -24,12 +24,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testCtsStem1Exec() {
-        executeTester("testCtsStem1", p.cts.stem(p.col("1")), "\"run\"", new Object[]{p.xs.string("ran")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem1", p.cts.stem(p.col("1")), "\"ran\"", new Object[]{p.xs.string("ran")}, new ItemSeqExpr[]{});
     }
 
     @Test
     public void testCtsStem2Exec() {
-        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), "\"run\"", new Object[]{p.xs.string("ran"), p.xs.string("en")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), "\"ran\"", new Object[]{p.xs.string("ran"), p.xs.string("en")}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -49,7 +49,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnAdjustDateTimeToTimezone1Exec() {
-        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), "xs:dateTime(\"2016-01-02T06:09:08-04:00\")", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), "xs:dateTime(\"2016-01-02T05:09:08-05:00\")", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -69,7 +69,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnAdjustTimeToTimezone1Exec() {
-        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), "xs:time(\"06:09:08-04:00\")", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), "xs:time(\"05:09:08-05:00\")", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -264,7 +264,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnLocalNameFromQName1Exist() {
-        executeTester("testFnLocalNameFromQName1", p.fn.localNameFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.qname("abc")});
+        executeTester("testFnLocalNameFromQName1", p.fn.localNameFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
     }
 
     @Test
@@ -314,7 +314,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnNamespaceUriFromQName1Exist() {
-        executeTester("testFnNamespaceUriFromQName1", p.fn.namespaceUriFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.qname("abc")});
+        executeTester("testFnNamespaceUriFromQName1", p.fn.namespaceUriFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
     }
 
     @Test
@@ -344,7 +344,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnPrefixFromQName1Exist() {
-        executeTester("testFnPrefixFromQName1", p.fn.prefixFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.qname("abc")});
+        executeTester("testFnPrefixFromQName1", p.fn.prefixFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
     }
 
     @Test
@@ -799,7 +799,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemQNameToIri1Exist() {
-        executeTester("testSemQNameToIri1", p.sem.QNameToIri(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.qname("abc")});
+        executeTester("testSemQNameToIri1", p.sem.QNameToIri(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
     }
 
     @Test
@@ -1134,7 +1134,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpKeyFromQName1Exist() {
-        executeTester("testXdmpKeyFromQName1", p.xdmp.keyFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.qname("abc")});
+        executeTester("testXdmpKeyFromQName1", p.xdmp.keyFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
     }
 
     @Test
@@ -1179,12 +1179,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpParseDateTime2Exec() {
-        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T21:13:50.874-04:00\")", new Object[]{p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T20:13:50.874-05:00\")", new Object[]{p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00")}, new ItemSeqExpr[]{});
     }
 
     @Test
     public void testXdmpParseYymmdd2Exec() {
-        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T21:13:50.874-04:00\")", new Object[]{p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T20:13:50.874-05:00\")", new Object[]{p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00")}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -1464,7 +1464,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXsQName1Exec() {
-        executeTester("testXsQName1", p.xs.qname("abc"), "fn:QName(\"\",\"abc\")", null, null);
+        executeTester("testXsQName1", p.xs.QName("abc"), "fn:QName(\"\",\"abc\")", null, null);
     }
 
     @Test

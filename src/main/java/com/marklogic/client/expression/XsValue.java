@@ -704,41 +704,39 @@ public interface XsValue {
      * @param localName	the local name for a qualified name
 	 * @return	a value with an xs:QName data type
 	 */
-	XsQNameVal                qname(String localName);
-    /**
-	 * Constructs a qualified name as an xs:QName schema value
-     * @param namespace	the namespace for a qualified name
-     * @param prefix	the prefix for the namespace in a qualified name
+	XsQNameVal                QName(String localName);
+	/**
+	 * Constructs a qualified name as a xs:QName schema value
+     * @param namespace	the namespace for the qualified name
      * @param localName	the local name for a qualified name
 	 * @return	a value with an xs:QName data type
-     */
-	XsQNameVal                qname(String namespace, String prefix, String localName);
+	 */
+	XsQNameVal                QName(String namespace, String localName);
 	/**
 	 * Constructs a qualified name as an xs:QName schema value
 	 * @param value	the qualified name as a QName object
 	 * @return	a value with an xs:QName data type
 	 */
-	XsQNameVal                qname(QName value);
+	XsQNameVal                QName(QName value);
 	/**
 	 * Takes any number of local names as a string and constructs an xs:QName sequence
 	 * @param localNames	the local names as strings
 	 * @return	a value sequence with an xs:QName data type
 	 */
-	XsQNameSeqVal             qnames(String... localNames);
+	XsQNameSeqVal             QNames(String... localNames);
 	/**
 	 * Takes one namespace, one prefix, and any number of local names as a string and
 	 * constructs an xs:QName sequence
      * @param namespace	the namespace for the qualified names
-     * @param prefix	the prefix for the namespace for the qualified names
 	 * @param localNames	the local names as strings
 	 * @return	a value sequence with an xs:QName data type
 	 */
-	XsQNameSeqVal             qnames(String namespace, String prefix, String... localNames);
+	XsQNameSeqVal             QNames(String namespace, String... localNames);
 	/**
 	 * Takes any number of QName values and constructs an xs:QName sequence
 	 * @param values	the qualified names as QName objects
 	 * @return	a value sequence with an xs:QName data type
 	 */
-	XsQNameSeqVal             qnames(QName... values);
-	XsQNameSeqVal             qnames(XsQNameVal... localNames);
+	XsQNameSeqVal             QNames(QName... values);
+	XsQNameSeqVal             QNames(XsQNameVal... localNames);
 }

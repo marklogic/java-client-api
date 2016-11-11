@@ -360,7 +360,7 @@ public class RowManagerTest {
 						p.col("object")
 						),
 				(String) null,
-				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.qname("metadata"), "value")),
+				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), "value")),
 				p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
 				)
 			 .orderBy("subject", "object");
@@ -386,7 +386,7 @@ public class RowManagerTest {
 
 		Map<String, CtsReferenceExpr> lexicons = new HashMap<>();
 		lexicons.put("uri", p.cts.uriReference());
-		lexicons.put("int", p.cts.elementReference(p.xs.qname("int")));
+		lexicons.put("int", p.cts.elementReference(p.xs.QName("int")));
 
 		PlanBuilder.ExportablePlan plan =
 				p.fromLexicons(lexicons)
