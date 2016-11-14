@@ -104,6 +104,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:anyURI data type
 	 */
 	XsAnyURISeqVal            anyURIs(String... values);
+	/**
+	 * Takes any number of xs:anyURI values and constructs an xs:anyURI sequence
+	 * @param values	values with an xs:anyURI data type
+	 * @return	a value sequence with an xs:anyURI data type
+	 */
 	XsAnyURISeqVal            anyURIs(XsAnyURIVal... values);
 	/**
 	 * Takes a binary value as a byte array and constructs an xs:base64Binary value
@@ -117,6 +122,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:base64Binary data type
 	 */
 	XsBase64BinarySeqVal      base64Binarys(byte[]... values);
+	/**
+	 * Takes any number of xs:base64Binary values and constructs an xs:base64Binary sequence
+	 * @param values	values with an xs:base64Binary data type
+	 * @return	a value sequence with an xs:base64Binary data type
+	 */
 	XsBase64BinarySeqVal      base64Binarys(XsBase64BinaryVal... values);
     // appending Val to avoid Java reserved word
 	/**
@@ -131,6 +141,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:boolean data type
 	 */
 	XsBooleanSeqVal           booleanVals(boolean... values);
+	/**
+	 * Takes any number of xs:boolean values and constructs an xs:boolean sequence
+	 * @param values	values with an xs:boolean data type
+	 * @return	a value sequence with an xs:boolean data type
+	 */
 	XsBooleanSeqVal           booleanVals(XsBooleanVal... values);
 	/**
 	 * Takes a byte primitive and constructs an xs:byte value
@@ -144,6 +159,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:byte data type
 	 */
 	XsByteSeqVal              byteVals(byte... values);
+	/**
+	 * Takes any number of xs:byte values and constructs an xs:byte sequence
+	 * @param values	values with an xs:byte data type
+	 * @return	a value sequence with an xs:byte data type
+	 */
 	XsByteSeqVal              byteVals(XsByteVal... values);
 	/**
 	 * Takes a date in a string format based on ISO 8601 and constructs an xs:date value
@@ -181,6 +201,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:date data type
 	 */
 	XsDateSeqVal              dates(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:date values and constructs an xs:date sequence
+	 * @param values	values with an xs:date data type
+	 * @return	a value sequence with an xs:date data type
+	 */
 	XsDateSeqVal              dates(XsDateVal... values);
 	/**
 	 * Takes a timestamp in a string format based on ISO 8601 and constructs an xs:dateTime value
@@ -230,6 +255,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:dateTime data type
 	 */
 	XsDateTimeSeqVal          dateTimes(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:dateTime values and constructs an xs:dateTime sequence
+	 * @param values	values with an xs:dateTime data type
+	 * @return	a value sequence with an xs:dateTime data type
+	 */
 	XsDateTimeSeqVal          dateTimes(XsDateTimeVal... values);
 	/**
 	 * Takes a duration of increments of a day or less in a string format based on ISO 8601 and
@@ -259,6 +289,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:dayTimeDuration data type
 	 */
 	XsDayTimeDurationSeqVal   dayTimeDurations(Duration... values);
+	/**
+	 * Takes any number of xs:dayTimeDuration values and constructs an xs:dayTimeDuration sequence
+	 * @param values	values with an xs:dayTimeDuration data type
+	 * @return	a value sequence with an xs:dayTimeDuration data type
+	 */
 	XsDayTimeDurationSeqVal   dayTimeDurations(XsDayTimeDurationVal... values);
 	/**
 	 * Takes a real number as a decimal string and constructs an xs:decimal value
@@ -308,6 +343,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:decimal data type
 	 */
 	XsDecimalSeqVal           decimals(BigDecimal... values);
+	/**
+	 * Takes any number of xs:decimal values and constructs an xs:decimal sequence
+	 * @param values	values with an xs:decimal data type
+	 * @return	a value sequence with an xs:decimal data type
+	 */
 	XsDecimalSeqVal           decimals(XsDecimalVal... values);
 	/**
 	 * Takes a double primitive and constructs an xs:double value
@@ -321,6 +361,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:double data type
 	 */
 	XsDoubleSeqVal            doubleVals(double... values);
+	/**
+	 * Takes any number of xs:double values and constructs an xs:double sequence
+	 * @param values	values with an xs:double data type
+	 * @return	a value sequence with an xs:double data type
+	 */
 	XsDoubleSeqVal            doubleVals(XsDoubleVal... values);
 	/**
 	 * Takes a float primitive and constructs an xs:float value
@@ -334,6 +379,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:float data type
 	 */
 	XsFloatSeqVal             floatVals(float... values);
+	/**
+	 * Takes any number of xs:float values and constructs an xs:float sequence
+	 * @param values	values with an xs:float data type
+	 * @return	a value sequence with an xs:float data type
+	 */
 	XsFloatSeqVal             floatVals(XsFloatVal... values);
 	/**
 	 * Takes a day as a string and constructs an xs:gDay value
@@ -359,6 +409,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:gDay data type
 	 */
 	XsGDaySeqVal              gDays(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:gDay values and constructs an xs:gDay sequence
+	 * @param values	values with an xs:gDay data type
+	 * @return	a value sequence with an xs:gDay data type
+	 */
 	XsGDaySeqVal              gDays(XsGDayVal... values);
 	/**
 	 * Takes a month as a string and constructs an xs:gMonth value
@@ -384,6 +439,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:gMonth data type
 	 */
 	XsGMonthSeqVal            gMonths(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:gMonth values and constructs an xs:gMonth sequence
+	 * @param values	values with an xs:gMonth data type
+	 * @return	a value sequence with an xs:gMonth data type
+	 */
 	XsGMonthSeqVal            gMonths(XsGMonthVal... values);
 	/**
 	 * Takes a day and month as a string and constructs an xs:gMonthDay value
@@ -409,6 +469,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:gMonthDay data type
 	 */
 	XsGMonthDaySeqVal         gMonthDays(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:gMonthDay values and constructs an xs:gMonthDay sequence
+	 * @param values	values with an xs:gMonthDay data type
+	 * @return	a value sequence with an xs:gMonthDay data type
+	 */
 	XsGMonthDaySeqVal         gMonthDays(XsGMonthDayVal... values);
 	/**
 	 * Takes a year as a string and constructs an xs:gYear value
@@ -434,6 +499,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:gYear data type
 	 */
 	XsGYearSeqVal             gYears(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:gYear values and constructs an xs:gYear sequence
+	 * @param values	values with an xs:gYear data type
+	 * @return	a value sequence with an xs:gYear data type
+	 */
 	XsGYearSeqVal             gYears(XsGYearVal... values);
 	/**
 	 * Takes a month and year as a string and constructs an xs:gYearMonth value
@@ -459,6 +529,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:gYearMonth data type
 	 */
 	XsGYearMonthSeqVal        gYearMonths(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:gYearMonth values and constructs an xs:gYearMonth sequence
+	 * @param values	values with an xs:gYearMonth data type
+	 * @return	a value sequence with an xs:gYearMonth data type
+	 */
 	XsGYearMonthSeqVal        gYearMonths(XsGYearMonthVal... values);
 	/**
 	 * Takes a binary value as a byte array and constructs an xs:hexBinary value
@@ -472,6 +547,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:hexBinary data type
 	 */
 	XsHexBinarySeqVal         hexBinarys(byte[]... values);
+	/**
+	 * Takes any number of xs:hexBinary values and constructs an xs:hexBinary sequence
+	 * @param values	values with an xs:hexBinary data type
+	 * @return	a value sequence with an xs:hexBinary data type
+	 */
 	XsHexBinarySeqVal         hexBinarys(XsHexBinaryVal... values);
 	/**
 	 * Takes an int primitive and constructs an xs:int value
@@ -485,6 +565,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:int data type
 	 */
 	XsIntSeqVal               intVals(int... values);
+	/**
+	 * Takes any number of xs:int values and constructs an xs:int sequence
+	 * @param values	values with an xs:int data type
+	 * @return	a value sequence with an xs:int data type
+	 */
 	XsIntSeqVal               intVals(XsIntVal... values);
 	/**
 	 * Takes an integer number as a string and constructs an xs:integer value
@@ -522,6 +607,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:integer data type
 	 */
 	XsIntegerSeqVal           integers(BigInteger... values);
+	/**
+	 * Takes any number of xs:integer values and constructs an xs:integer sequence
+	 * @param values	values with an xs:integer data type
+	 * @return	a value sequence with an xs:integer data type
+	 */
 	XsIntegerSeqVal           integers(XsIntegerVal... values);
 	/**
 	 * Takes a long primitive and constructs an xs:long value
@@ -535,6 +625,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:long data type
 	 */
 	XsLongSeqVal              longVals(long... values);
+	/**
+	 * Takes any number of xs:long values and constructs an xs:long sequence
+	 * @param values	values with an xs:long data type
+	 * @return	a value sequence with an xs:long data type
+	 */
 	XsLongSeqVal              longVals(XsLongVal... values);
 	/**
 	 * Takes a short primitive and constructs an xs:short value
@@ -548,6 +643,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:short data type
 	 */
 	XsShortSeqVal             shortVals(short... values);
+	/**
+	 * Takes any number of xs:short values and constructs an xs:short sequence
+	 * @param values	values with an xs:short data type
+	 * @return	a value sequence with an xs:short data type
+	 */
 	XsShortSeqVal             shortVals(XsShortVal... values);
 	/**
 	 * Takes a String literal and constructs an xs:string value
@@ -603,6 +703,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:time data type
 	 */
 	XsTimeSeqVal              times(XMLGregorianCalendar... values);
+	/**
+	 * Takes any number of xs:time values and constructs an xs:time sequence
+	 * @param values	values with an xs:time data type
+	 * @return	a value sequence with an xs:time data type
+	 */
 	XsTimeSeqVal              times(XsTimeVal... values);
 	/**
 	 * Takes an unsigned byte primitive and constructs an xs:unsignedByte value
@@ -616,6 +721,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:unsignedByte data type
 	 */
 	XsUnsignedByteSeqVal      unsignedBytes(byte... values);
+	/**
+	 * Takes any number of xs:unsignedByte values and constructs an xs:unsignedByte sequence
+	 * @param values	values with an xs:unsignedByte data type
+	 * @return	a value sequence with an xs:unsignedByte data type
+	 */
 	XsUnsignedByteSeqVal      unsignedBytes(XsUnsignedByteVal... values);
 	/**
 	 * Takes an unsigned int primitive and constructs an xs:unsignedInt value
@@ -629,6 +739,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:unsignedInt data type
 	 */
 	XsUnsignedIntSeqVal       unsignedInts(int... values);
+	/**
+	 * Takes any number of xs:unsignedInt values and constructs an xs:unsignedInt sequence
+	 * @param values	values with an xs:unsignedInt data type
+	 * @return	a value sequence with an xs:unsignedInt data type
+	 */
 	XsUnsignedIntSeqVal       unsignedInts(XsUnsignedIntVal... values);
 	/**
 	 * Takes an unsigned long primitive and constructs an xs:unsignedLong value
@@ -642,6 +757,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:unsignedLong data type
 	 */
 	XsUnsignedLongSeqVal      unsignedLongs(long... values);
+	/**
+	 * Takes any number of xs:unsignedLong values and constructs an xs:unsignedLong sequence
+	 * @param values	values with an xs:unsignedLong data type
+	 * @return	a value sequence with an xs:unsignedLong data type
+	 */
 	XsUnsignedLongSeqVal      unsignedLongs(XsUnsignedLongVal... values);
 	/**
 	 * Takes an unsigned short primitive and constructs an xs:unsignedShort value
@@ -655,6 +775,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:unsignedShort data type
 	 */
 	XsUnsignedShortSeqVal     unsignedShorts(short... values);
+	/**
+	 * Takes any number of xs:unsignedShort values and constructs an xs:unsignedShort sequence
+	 * @param values	values with an xs:unsignedShort data type
+	 * @return	a value sequence with an xs:unsignedShort data type
+	 */
 	XsUnsignedShortSeqVal     unsignedShorts(XsUnsignedShortVal... values);
 	/**
 	 * Takes a untyped atomic value as a string and constructs an xs:untypedAtomic value
@@ -668,6 +793,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:untypedAtomic data type
 	 */
 	XsUntypedAtomicSeqVal     untypedAtomics(String... values);
+	/**
+	 * Takes any number of xs:untypedAtomic values and constructs an xs:untypedAtomic sequence
+	 * @param values	values with an xs:untypedAtomic data type
+	 * @return	a value sequence with an xs:untypedAtomic data type
+	 */
 	XsUntypedAtomicSeqVal     untypedAtomics(XsUntypedAtomicVal... values);
 	/**
 	 * Takes a duration of increments of a month or more in a string format based on ISO 8601 and
@@ -697,6 +827,11 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:yearMonthDuration data type
 	 */
 	XsYearMonthDurationSeqVal yearMonthDurations(Duration... values);
+	/**
+	 * Takes any number of xs:yearMonthDuration values and constructs an xs:yearMonthDuration sequence
+	 * @param values	values with an xs:yearMonthDuration data type
+	 * @return	a value sequence with an xs:yearMonthDuration data type
+	 */
 	XsYearMonthDurationSeqVal yearMonthDurations(XsYearMonthDurationVal... values);
     // XML types
 	/**
@@ -738,5 +873,10 @@ public interface XsValue {
 	 * @return	a value sequence with an xs:QName data type
 	 */
 	XsQNameSeqVal             QNames(QName... values);
-	XsQNameSeqVal             QNames(XsQNameVal... localNames);
+	/**
+	 * Takes any number of xs:QName values and constructs an xs:QName sequence
+	 * @param values	values with an xs:QName data type
+	 * @return	a value sequence with an xs:QName data type
+	 */
+	XsQNameSeqVal             QNames(XsQNameVal... values);
 }
