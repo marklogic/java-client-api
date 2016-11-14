@@ -34,6 +34,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -439,6 +440,43 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     return handle;
   }
+  
+  private Document getXMLAsDocumentObject(String startValidTime,
+	      String endValidTime, String address, String uri) throws Exception {
+
+	    Document domDocument = DocumentBuilderFactory.newInstance()
+	        .newDocumentBuilder().newDocument();
+	    Element root = domDocument.createElement("root");
+
+	    // System start and End time
+	    Node systemNode = root.appendChild(domDocument.createElement("system"));
+	    systemNode.appendChild(domDocument.createElement(systemStartERIName));
+	    systemNode.appendChild(domDocument.createElement(systemEndERIName));
+
+	    // Valid start and End time
+	    Node validNode = root.appendChild(domDocument.createElement("valid"));
+
+	    Node validStartNode = validNode.appendChild(domDocument
+	        .createElement(validStartERIName));
+	    validStartNode.appendChild(domDocument.createTextNode(startValidTime));
+	    validNode.appendChild(validStartNode);
+
+	    Node validEndNode = validNode.appendChild(domDocument
+	        .createElement(validEndERIName));
+	    validEndNode.appendChild(domDocument.createTextNode(endValidTime));
+	    validNode.appendChild(validEndNode);
+
+	    // Address
+	    Node addressNode = root.appendChild(domDocument.createElement("Address"));
+	    addressNode.appendChild(domDocument.createTextNode(address));
+
+	    // uri
+	    Node uriNode = root.appendChild(domDocument.createElement("uri"));
+	    uriNode.appendChild(domDocument.createTextNode(uri));
+	    domDocument.appendChild(root);
+	    
+	    return domDocument;
+	  }
 
   public void insertJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
@@ -725,6 +763,175 @@ public class TestBiTemporal extends BasicJavaClientREST {
   			}
   			tx.rollback();
   			tx = null;
+  		}    
+  	}
+  	
+  	/*
+  	 * Update multiple temporal documents to test bulk write of temporal documents with logical version ids
+  	 */
+  	@Test
+  	public void testAddWithLogicalVersionDocSet() throws Exception {
+
+  		boolean tstatus = false;
+  		DocumentPage termQueryResults = null;
+
+  		Transaction tx = writerClient.openTransaction();
+  		try {
+  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+
+  			DocumentWriteSet writeset = docMgr.newWriteSet();
+  			String[] docId = new String[4];
+  			docId[0] = "1.xml";
+  			docId[1] = "2.xml";
+  			docId[2] = "3.xml";
+  			docId[3] = "4.xml";
+
+  			String[] versiondocId = new String[4];
+  			versiondocId[0] = "/version2/1.xml";
+  			versiondocId[1] = "/version2/2.xml";
+  			versiondocId[2] = "/version2/3.xml";
+  			versiondocId[3] = "/version2/4.xml";
+
+  			DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+  					"2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
+  			DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+  					"2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
+  			DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+  					"2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
+  			DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+  					"2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
+  			DocumentMetadataHandle mh = setMetadata(false);
+
+  			writeset.add(docId[0], mh, handle1);
+  			writeset.add(docId[1], mh, handle2);
+  			writeset.add(docId[2], mh, handle3);
+  			writeset.add(docId[3], mh, handle4);
+  			Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
+  			map.put(docId[0], handle1);
+  			map.put(docId[1], handle2);
+  			map.put(docId[2], handle3);
+  			map.put(docId[3], handle4);
+
+  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+
+  			// Update the docs.
+  			DocumentWriteSet writesetUpd = docMgr.newWriteSet();
+  			DOMHandle vTwohandle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+  					"2011-12-31T23:59:56", "999 Skyway Park - XML Updated", docId[0]);
+  			DOMHandle vTwohandle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+  					"2011-12-31T23:59:57", "999 Skyway Park - XML Updated", docId[1]);
+  			DOMHandle vTwohandle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+  					"2011-12-31T23:59:58", "999 Skyway Park - XML Updated", docId[2]);
+  			DOMHandle vTwohandle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+  					"2011-12-31T23:59:59", "999 Skyway Park - XML Updated", docId[3]);
+
+  			writesetUpd.add(versiondocId[0], null, vTwohandle1, docId[0]);
+  			writesetUpd.add(versiondocId[1], null, vTwohandle2, docId[1]);
+  			writesetUpd.add(versiondocId[2], null, vTwohandle3, docId[2]);
+  			writesetUpd.add(versiondocId[3], null, vTwohandle4, docId[3]);
+
+  			// Write updated version
+
+  			docMgr.write(writesetUpd, null, null, bulktemporalCollectionName);
+
+  			QueryManager queryMgr = readerClient.newQueryManager();
+  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+
+  			long start = 1;
+  			docMgr = readerClient.newXMLDocumentManager();
+  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+  			termQueryResults = docMgr.search(termQuery, start);
+  			assertEquals("Records counts is incorrect", 8, termQueryResults.size());
+  		}
+  		catch(Exception e) {
+  			System.out.println(e.getMessage());
+  			tstatus=true;
+  			throw e;
+  		}
+  		finally {
+  			if(tstatus) {
+  				if (termQueryResults != null)
+  					termQueryResults.close();  			
+  			}
+  			tx.rollback();
+  			tx = null;
+  		}    
+  	}
+
+  	/*
+  	 * Insert multiple temporal documents to test bulk write of temporal documents.
+  	 * Verify that addAs does not blow up and contents can be added.
+  	 */
+  	@Test
+  	public void testBulkWriteReadWithAddAs() throws Exception {
+
+  		boolean tstatus = false;
+  		DocumentPage termQueryResults = null;
+
+  		try {
+  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+
+  			DocumentWriteSet writeset = docMgr.newWriteSet();
+  			String[] docId = new String[4];
+  			docId[0] = "1.xml";
+  			docId[1] = "2.xml";
+  			docId[2] = "3.xml";
+  			docId[3] = "4.xml";
+
+  			Document doc1 = getXMLAsDocumentObject("2001-01-01T00:00:00",
+  					"2011-12-31T23:59:56", "999 Skyway Park - XML1", docId[0]);
+  			Document doc2 = getXMLAsDocumentObject("2001-01-02T00:00:00",
+  					"2011-12-31T23:59:57", "999 Skyway Park - XML2", docId[1]);
+  			Document doc3 = getXMLAsDocumentObject("2001-01-03T00:00:00",
+  					"2011-12-31T23:59:58", "999 Skyway Park - XML3", docId[2]);
+  			Document doc4 = getXMLAsDocumentObject("2001-01-04T00:00:00",
+  					"2011-12-31T23:59:59", "999 Skyway Park - XML4", docId[3]);
+  			DocumentMetadataHandle mh = setMetadata(false);
+
+  			writeset.addAs(docId[0], mh, doc1);
+  			writeset.addAs(docId[1], mh, doc2);
+  			writeset.addAs(docId[2], mh, doc3);
+  			writeset.addAs(docId[3], mh, doc4);
+
+  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+
+  			QueryManager queryMgr = readerClient.newQueryManager();
+  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+
+  			long start = 1;
+  			docMgr = readerClient.newXMLDocumentManager();
+  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+  			termQueryResults = docMgr.search(termQuery, start);
+  			assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+
+  			// Read one document to make sure that addAs worked.
+  			DocumentPage page = docMgr.read(docId[2]);
+  			DOMHandle dh = new DOMHandle();
+  			while(page.hasNext()){
+  				DocumentRecord rec = page.next();
+  				rec.getContent(dh);
+
+  				assertEquals("URI returned is wrong", docId[2], rec.getUri());
+  				assertEquals("URI returned is wrong", Format.XML, rec.getFormat());
+  				assertTrue("Comparing the content", convertXMLDocumentToString(dh.get()).contains("XML3"));
+  			}  		
+  		}
+  		catch(Exception e) {
+  			System.out.println(e.getMessage());
+  			tstatus=true;
+  			throw e;
+  		}
+  		finally {
+  			if(tstatus) {
+  				if (termQueryResults != null)
+  					termQueryResults.close();  			
+  			}  			
   		}    
   	}
 
