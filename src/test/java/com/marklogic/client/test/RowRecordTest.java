@@ -36,6 +36,8 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ItemVal;
 import com.marklogic.client.type.PlanExprCol;
+import com.marklogic.client.type.RdfLangStringVal;
+import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsByteVal;
@@ -76,7 +78,7 @@ public class RowRecordTest {
 		datatypedValues.put("integer",           p.xs.integer(1));
 		datatypedValues.put("long",              p.xs.longVal((long) 1));
 // TODO: incorrect QName support
-//		datatypedValues.put("qname",             p.xs.qname("http://a", "a", "b"));
+//		datatypedValues.put("QName",             p.xs.QName("http://a", "a", "b"));
 		datatypedValues.put("short",             p.xs.shortVal((short) 1));
 		datatypedValues.put("string",            p.xs.string("abc"));
 		datatypedValues.put("unsignedInt",       p.xs.unsignedInt(1));
@@ -192,23 +194,31 @@ public class RowRecordTest {
 				break;
 			}
 
-			if (expected instanceof XsAnyAtomicTypeVal) {
-				@SuppressWarnings("unchecked")
-				Class<? extends XsAnyAtomicTypeVal> expectedClass = (Class<? extends XsAnyAtomicTypeVal>) expected.getClass();
-				String name = expectedClass.getSimpleName();
-				name = name.substring(0, name.length() - "Impl".length());
-				try {
-					assertNotNull("null value for: "+key, row.getValueAs(key, expectedClass));
-
+// TODO: testing on RdfLangString and SemIri
+			switch (key) {
+	  		case "langString":
+	  		case "iri":
+	  			break;
+	  		default:
+				if (expected instanceof XsAnyAtomicTypeVal && key != "langString") {
 					@SuppressWarnings("unchecked")
-					Class<? extends XsAnyAtomicTypeVal> expectedInterface =
-							(Class<? extends XsAnyAtomicTypeVal>) Class.forName("com.marklogic.client.type.Xs"+name);
-					assertNotNull("null value for: "+key, row.getValueAs(key, expectedInterface));
-				} catch (Exception e) {
-					throw new RuntimeException(e);
+					Class<? extends XsAnyAtomicTypeVal> expectedClass = (Class<? extends XsAnyAtomicTypeVal>) expected.getClass();
+					String name = expectedClass.getSimpleName();
+					name = name.substring(0, name.length() - "Impl".length());
+					try {
+						assertNotNull("null value for: "+key, row.getValueAs(key, expectedClass));
+
+						@SuppressWarnings("unchecked")
+						Class<? extends XsAnyAtomicTypeVal> expectedInterface =
+				  			(Class<? extends XsAnyAtomicTypeVal>) Class.forName("com.marklogic.client.type.Xs"+name);
+
+						assertNotNull("null value for: "+key, row.getValueAs(key, expectedInterface));
+					} catch (Exception e) {
+						throw new RuntimeException(e);
+					}
 				}
+	  			break;
 			}
-			// TODO: sem.iri and rdf.langStr
 
 			switch(key) {
 			case "boolean":

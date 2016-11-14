@@ -32,6 +32,11 @@ public class BaseTypeImpl {
 		public StringBuilder exportAst(StringBuilder strb);
     }
 
+	public static interface ParamBinder {
+		public String getParamQualifier();
+		public String getParamValue();
+    }
+
 	static class BaseMapImpl implements BaseArgImpl {
 		private Map<String, ?> arg;
 		private Pattern quote = Pattern.compile("(\"|\\\\)");

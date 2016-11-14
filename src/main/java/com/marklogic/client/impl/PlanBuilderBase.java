@@ -36,7 +36,6 @@ import com.marklogic.client.expression.SpellExpr;
 import com.marklogic.client.expression.SqlExpr;
 import com.marklogic.client.expression.XdmpExpr;
 import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.PlanBuilder.PlanTriples;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -345,14 +344,14 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	}
 
     static interface RequestPlan {
-    	public Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams();
+    	public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
     	public AbstractWriteHandle getHandle();
     }
 
     static abstract class PlanBase
     extends PlanChainedImpl
     implements PlanBuilder.Plan, PlanBuilder.ExportablePlan, RequestPlan, BaseTypeImpl.BaseArgImpl {
-		private Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> params = null;
+		private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
 
 		PlanBase(PlanChainedImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
 			super(prior, fnPrefix, fnName, fnArgs);
@@ -409,7 +408,7 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	    }
 
 		@Override
-		public Map<PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams() {
+		public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
 	    	return params;
 	    }
 
@@ -456,13 +455,18 @@ abstract class PlanBuilderBase extends PlanBuilder {
 	    	if (!(param instanceof PlanParamBase)) {
 	    		throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
 	    	}
-	    	if (!(literal instanceof XsValueImpl.AnyAtomicTypeValImpl)) {
-	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
-	    	}
 	    	if (params == null) {
 	    		params = new HashMap<>();
 	    	}
-	    	params.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)literal);
+	    	if (literal instanceof XsValueImpl.AnyAtomicTypeValImpl) {
+		    	params.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)  literal);
+	    	} else if (literal instanceof RdfValueImpl.RdfLangStringValImpl) {
+		    	params.put((PlanParamBase) param, (RdfValueImpl.RdfLangStringValImpl) literal);
+	    	} else if (literal instanceof SemValueImpl.SemIriValImpl) {
+		    	params.put((PlanParamBase) param, (SemValueImpl.SemIriValImpl)        literal);
+	    	} else {
+	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
+	    	}
 // TODO: return clone with param for immutability
 	    	return this;
 	    }

@@ -694,7 +694,7 @@ public class XsValueImpl implements XsValue {
 			return getItems();
 		}
 	}
-	static class AnyAtomicTypeValImpl extends AnySimpleTypeValImpl implements XsAnyAtomicTypeVal {
+	static class AnyAtomicTypeValImpl extends AnySimpleTypeValImpl implements XsAnyAtomicTypeVal, BaseTypeImpl.ParamBinder {
 		AnyAtomicTypeValImpl(String typeName) {
 			super(typeName);
 		}
@@ -704,6 +704,18 @@ public class XsValueImpl implements XsValue {
 		@Override
 		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
 			return new XsAnyAtomicTypeVal[]{this};
+		}
+		@Override
+		public String getParamQualifier() {
+			String datatype = getClass().getSimpleName();
+			datatype = datatype.substring(0, datatype.length() - "ValImpl".length());
+// TODO: QNames
+			datatype = datatype.substring(0, 1).toLowerCase() + datatype.substring(1);
+			return ":"+datatype;
+		}
+		@Override
+		public String getParamValue() {
+			return toString();
 		}
 	}
 

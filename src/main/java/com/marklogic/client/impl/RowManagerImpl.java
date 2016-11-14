@@ -268,16 +268,19 @@ public class RowManagerImpl
 	}
 	private RequestParameters getParamBindings(PlanBuilderBase.RequestPlan requestPlan) {
 		RequestParameters params = new RequestParameters();
-		Map<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> planParams = requestPlan.getParams();
+		Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> planParams = requestPlan.getParams();
 		if (planParams != null) {
-			for (Map.Entry<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> entry: planParams.entrySet()) {
-				XsValueImpl.AnyAtomicTypeValImpl val = entry.getValue();
-				String datatype = val.getClass().getSimpleName();
-				datatype =
-						datatype.substring(0, 1).toLowerCase() +
-						datatype.substring(1, datatype.length() - "ValImpl".length());
-// TODO: add datatype and language qualifications
-				params.add("bind:"+entry.getKey().getName(), val.toString());
+			for (Map.Entry<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> entry: planParams.entrySet()) {
+				BaseTypeImpl.ParamBinder binder = entry.getValue();
+
+				StringBuilder nameBuf = new StringBuilder("bind:");
+				nameBuf.append(entry.getKey().getName());
+				String paramQual = binder.getParamQualifier();
+				if (paramQual != null) {
+					nameBuf.append(paramQual);
+				}
+
+				params.add(nameBuf.toString(), binder.getParamValue());
 			}
 		}
 		return params;
@@ -988,14 +991,14 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 		}
 	}
 	static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBase.RequestPlan {
-		private Map<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> params = null;
+		private Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
 		private JSONWriteHandle handle = null;
 		RawPlanDefinitionImpl(JSONWriteHandle handle) {
 			setHandle(handle);
 		}
 
 		@Override
-		public Map<PlanBuilderBase.PlanParamBase,XsValueImpl.AnyAtomicTypeValImpl> getParams() {
+		public Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
 	    	return params;
 	    }
 

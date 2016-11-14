@@ -18,9 +18,10 @@ package com.marklogic.client.impl;
 import java.util.Arrays;
 
 import com.marklogic.client.expression.RdfValue;
-import com.marklogic.client.impl.SemValueImpl.SemIriValImpl;
 import com.marklogic.client.type.RdfLangStringSeqVal;
 import com.marklogic.client.type.RdfLangStringVal;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnySimpleTypeVal;
 
 public class RdfValueImpl implements RdfValue {
 	@Override
@@ -45,7 +46,7 @@ public class RdfValueImpl implements RdfValue {
 			return getItems();
 		}
 	}
-	static class RdfLangStringValImpl implements RdfLangStringVal, BaseTypeImpl.BaseArgImpl {
+	static class RdfLangStringValImpl implements RdfLangStringVal, BaseTypeImpl.BaseArgImpl, BaseTypeImpl.ParamBinder {
     	private String string = null;
     	private String lang   = null;
     	public RdfLangStringValImpl(String string, String lang) {
@@ -58,6 +59,14 @@ public class RdfValueImpl implements RdfValue {
     		this.string = string;
     		this.lang   = lang;
     	}
+		@Override
+		public XsAnySimpleTypeVal[] getAnySimpleTypeItems() {
+			return new XsAnySimpleTypeVal[]{this};
+		}
+		@Override
+		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
+			return new XsAnyAtomicTypeVal[]{this};
+		}
 		@Override
         public String getString() {
         	return string;
@@ -77,6 +86,14 @@ public class RdfValueImpl implements RdfValue {
 		@Override
         public String toString() {
 			return getString();
+		}
+		@Override
+		public String getParamQualifier() {
+			return "@"+getLang();
+		}
+		@Override
+		public String getParamValue() {
+			return toString();
 		}
 		@Override
 		public StringBuilder exportAst(StringBuilder strb) {

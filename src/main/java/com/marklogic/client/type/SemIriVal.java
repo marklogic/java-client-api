@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface SemIriVal extends ItemVal, SemIriSeqVal, SemIriParam, PlanTripleIri, PlanTripleVal {
+public interface SemIriVal extends XsAnyAtomicTypeVal, SemIriSeqVal, SemIriParam, PlanTripleIri {
 	public String getString();
 }

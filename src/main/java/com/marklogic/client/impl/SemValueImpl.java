@@ -19,14 +19,14 @@ import java.util.Arrays;
 
 import com.marklogic.client.expression.SemValue;
 import com.marklogic.client.impl.BaseTypeImpl.BaseArgImpl;
-import com.marklogic.client.impl.BaseTypeImpl.BaseListImpl;
 import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.SemStoreSeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
+import com.marklogic.client.type.XsAnySimpleTypeVal;
 import com.marklogic.client.type.XsStringSeqVal;
-import com.marklogic.client.impl.XsValueImpl;
 
 public class SemValueImpl implements SemValue {
 	@Override
@@ -88,7 +88,7 @@ public class SemValueImpl implements SemValue {
 			return getItems();
 		}
 	}
-	static class SemIriValImpl implements SemIriVal, BaseTypeImpl.BaseArgImpl {
+	static class SemIriValImpl implements SemIriVal, BaseTypeImpl.BaseArgImpl, BaseTypeImpl.ParamBinder {
     	private String value = null;
     	public SemIriValImpl(String value) {
     		if (value == null) {
@@ -96,6 +96,14 @@ public class SemValueImpl implements SemValue {
     		}
     		this.value = value;
     	}
+		@Override
+		public XsAnySimpleTypeVal[] getAnySimpleTypeItems() {
+			return new XsAnySimpleTypeVal[]{this};
+		}
+		@Override
+		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
+			return new XsAnyAtomicTypeVal[]{this};
+		}
 		@Override
         public String getString() {
         	return value;
@@ -111,6 +119,14 @@ public class SemValueImpl implements SemValue {
 		@Override
         public String toString() {
 			return getString();
+		}
+		@Override
+		public String getParamQualifier() {
+			return null;
+		}
+		@Override
+		public String getParamValue() {
+			return toString();
 		}
 		@Override
 		public StringBuilder exportAst(StringBuilder strb) {

@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.type;
 
-public interface RdfLangStringVal extends ItemVal, RdfLangStringSeqVal, RdfLangStringParam, PlanTripleVal {
+public interface RdfLangStringVal extends XsAnyAtomicTypeVal, RdfLangStringSeqVal, RdfLangStringParam {
 	public String getString();
 	public String getLang();
 }
