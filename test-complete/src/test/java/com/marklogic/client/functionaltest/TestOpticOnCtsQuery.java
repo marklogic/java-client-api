@@ -595,7 +595,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity",
 				                          p.fragmentIdCol("fragId1"), 
-				                          p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery(p.xs.qname("metro"), "true")));
+				                          p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery(p.xs.QName("metro"), "true")));
 		// plan2 - fromLexicons
 		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
 		
