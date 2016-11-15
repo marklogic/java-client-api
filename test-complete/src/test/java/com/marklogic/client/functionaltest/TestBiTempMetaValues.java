@@ -16,25 +16,33 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
+import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.DatatypeConverter;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.Duration;
 
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
+import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -43,6 +51,9 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestBiTempMetaValues extends BasicJavaClientREST {
 
@@ -98,7 +109,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 				temporalLsqtCollectionName, axisSystemName, axisValidName);
 		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
 				temporalLsqtCollectionName, true);
-		Thread.sleep(10);
+		Thread.sleep(1000);
 	}
 
 	@AfterClass
@@ -126,7 +137,8 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 	@Before
 	public void setUp() throws Exception {
-		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time");
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time", "temporal-document-protect", "temporal-document-wipe");
+		
 		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 		int restPort = getRestServerPort();
 		writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);             
@@ -304,6 +316,66 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXMLMul.contains("<rapi:role-name>admin</rapi:role-name>"));
 		assertTrue("Patch did not succeed - Property", contentMetadataXMLMul.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
 		assertTrue("Patch did not succeed - Collection", contentMetadataXMLMul.contains("<rapi:collection>/document/collection3</rapi:collection>"));
+	}
+	
+	@Test
+	// Test bitemporal patchbuilder add Metadata Value works with a JSON document  
+	public void testPatchWithTransaction() throws Exception {
+
+		System.out.println("Inside testPatchWithTransaction");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		
+		Transaction t = writerClient.openTransaction();
+		
+		// put meta-data
+		docMgr.setMetadataCategories(Metadata.ALL);
+		DocumentMetadataHandle mh = setMetadata(false);
+		docMgr.write(docId, mh, handle, null, t, temporalLsqtCollectionName, insertTime);
+		
+		// Apply the patch
+		XMLDocumentManager xmlDocMgr = writerClient.newXMLDocumentManager();
+		t.commit();
+		
+		Transaction transPatch = writerClient.openTransaction();
+
+		DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);
+		patchBldrXML.addMetadataValue("MLVersion", "MarkLogic 9.0");
+		patchBldrXML.addCollection("/document/collection3");
+		patchBldrXML.addPermission("admin", Capability.READ);
+		patchBldrXML.addPropertyValue("Hello","Hi");
+		DocumentPatchHandle patchHandleXML = patchBldrXML.build();
+
+		xmlDocMgr.patch(docId, temporalLsqtCollectionName, patchHandleXML, transPatch);
+		
+		String contentMetadataXML = xmlDocMgr.readMetadata(docId, new StringHandle(), transPatch).get();
+		System.out.println(" After Changing "+ contentMetadataXML);
+		// Verify that patch succeeded.
+		assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
+		assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+		assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
+		assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
+				
+		// Roll back the transaction
+		transPatch.rollback();
+		
+		String contentMetadataRollXML = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
+		System.out.println(" After Changing "+ contentMetadataRollXML);
+		assertFalse("Patch should not be available - Meta data Values", contentMetadataRollXML.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
+		assertFalse("Patch should not be available - Add Permission Values", contentMetadataRollXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+		assertFalse("Patch should not be available - Property", contentMetadataRollXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
+		assertFalse("Patch should not be available - Collection", contentMetadataRollXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 	}
 
 	/* Meta Data key and value have same string.
@@ -596,7 +668,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	// Test bitemporal patchbuilder add Metadata Value works with a JSON document  
 	public void testInsertFragement() throws Exception {
 
-		// TODO Once inertFragment is implemented - write tests
+		// TODO Once inertFragment is implemented Git Issue 540 - write tests
 
 		/*System.out.println("Inside testInsertFragement");
 		 * ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
@@ -624,5 +696,418 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	  DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);*/
 
 	}
+	
+	@Test
+	// Test bitemporal protections  
+	public void testProtectDelete() throws Exception {
 
+		System.out.println("Inside testProtectDelete");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar deleteTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "admin", "x", Authentication.DIGEST);
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
+		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);		
+	    
+		//Protect document for 30 sec from delete and update. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NODELETE, DatatypeFactory.newInstance().newDuration("PT30S"));
+		
+		StringBuilder str = new StringBuilder();
+		try {
+			docMgr.delete(docId, null, temporalLsqtCollectionName, deleteTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when delete within 30 sec is " + str.toString());
+		}
+		assertTrue("Doc should not be deleted",  str.toString().contains("The document javaSingleJSONDoc.json is protected noDelete"));
+		
+		// Sleep for 40 secs and try to delete the same docId.
+		Thread.sleep(40000);
+		/*docMgr.delete(docId, null, temporalLsqtCollectionName, deleteTime);
+		Thread.sleep(5000);
+		
+		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+		DocumentPage readResults = jsonDocMgr.read(docId);
+	    System.out.println("Number of results = " + readResults.size());
+    assertEquals("Wrong number of results", 0, readResults.size());		*/
+	}
+	
+	@Test
+	/* Test bitemporal protections - NOUPDATE
+	 * Without transaction.
+	 */
+	public void testProtectUpdateNoTransaction() throws Exception {
+
+		System.out.println("Inside testProtectUpdateNoTransaction");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);		
+	    
+		//Protect document for 30 sec from delete and update. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"));
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+		        "1999 Skyway Park - Updated - JSON", docId);
+		StringBuilder str = new StringBuilder();
+		try {
+			
+			docMgr.write(docId, null, handleUpd, null, null, temporalLsqtCollectionName, updateTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when update within 30 sec is " + str.toString());
+		}
+		assertTrue("Doc should not be updated",  str.toString().contains("The document javaSingleJSONDoc.json is protected noUpdate"));
+		
+		// Sleep for 40 secs and try to update the same docId.
+		Thread.sleep(40000);
+		docMgr.write(docId, null, handleUpd, null, null, temporalLsqtCollectionName, updateTime);
+		Thread.sleep(5000);
+		
+		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+		DocumentPage readResults = jsonDocMgr.read(docId);
+	    System.out.println("Number of results = " + readResults.size());
+	    assertEquals("Wrong number of results", 1, readResults.size());
+	    
+	    QueryManager queryMgr = writerClient.newQueryManager();
+	   
+	    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+	    StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
+
+	    long start = 1;
+	    DocumentPage termQueryResults = docMgr.search(termQuery, start);
+	    System.out
+	        .println("Number of results = " + termQueryResults.getTotalSize());
+	    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());  
+	}
+	
+	@Test
+	/* Test bitemporal protections - NOUPDATE
+	 * With transaction.
+	 */
+	public void testProtectUpdateInTransaction() throws Exception {
+
+		System.out.println("Inside testProtectUpdateInTransaction");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		Transaction t1 = writerClient.openTransaction();
+		docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);		
+	    
+		//Protect document for 30 sec from delete and update. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"), t1);
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+		        "1999 Skyway Park - Updated - JSON", docId);
+		StringBuilder str = new StringBuilder();
+		try {
+			
+			docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when update within 30 sec is " + str.toString());
+		}
+		assertTrue("Doc should not be updated",  str.toString().contains("The document javaSingleJSONDoc.json is protected noUpdate"));
+		try {
+			// Sleep for 40 secs and try to update the same docId.
+			Thread.sleep(40000);
+			docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+			Thread.sleep(5000);
+
+			JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+			DocumentPage readResults = jsonDocMgr.read(t1, docId);
+			System.out.println("Number of results = " + readResults.size());
+			assertEquals("Wrong number of results", 1, readResults.size());
+
+			QueryManager queryMgr = writerClient.newQueryManager();
+
+			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+			StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
+
+			long start = 1;
+			DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
+			System.out
+			.println("Number of results = " + termQueryResults.getTotalSize());
+			assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize()); 
+		}
+		catch(Exception e) {
+			System.out.println("Exception when update within 30 sec is " + e.getMessage());
+		}
+		finally {
+			t1.rollback();
+		}
+	}
+	
+	@Ignore
+	/* Test bitemporal protections - NOUPDATE
+	 * With different transactions. 
+	 * Write doc in T1.
+	 * Protect in T2.
+	 * Update doc in T1 within 30 sec duration.
+	 *  TODO Wait for Git #542
+	 */
+	public void testProtectUpdateInDiffTransactions() throws Exception {
+
+		System.out.println("Inside testProtectUpdateInDiffTransactions");
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+		Transaction t1 = writerClient.openTransaction();
+		Transaction t2 = writerClient.openTransaction();
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		
+		docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);		
+		
+		//Protect document for 30 sec from delete and update. Use Duration. Use T2
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"), t2);
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+		        "1999 Skyway Park - Updated - JSON", docId);
+		StringBuilder str = new StringBuilder();
+		try {
+			// Use t1 to write
+			docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when update within 30 sec is " + str.toString());
+		}
+		// TODO Yet to know what exception message will be. #542
+		//assertTrue("Doc should not be updated",  str.toString().contains("The document javaSingleJSONDoc.json is protected noUpdate"));
+		
+		// Sleep for 40 secs and try to update the same docId.
+		Thread.sleep(40000);
+		docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+		Thread.sleep(5000);
+		
+		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+		DocumentPage readResults = jsonDocMgr.read(t1, docId);
+	    System.out.println("Number of results = " + readResults.size());
+	    assertEquals("Wrong number of results", 1, readResults.size());
+	    
+	    QueryManager queryMgr = writerClient.newQueryManager();
+	   
+	    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+	    StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
+
+	    long start = 1;
+	    DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
+	    System.out
+	        .println("Number of results = " + termQueryResults.getTotalSize());
+	    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize()); 
+	    t1.rollback();
+	    t2.rollback();
+	}
+	
+	@Test
+	/* Test bitemporal protections - NOUPDATE
+	 * With different transactions. 
+	 * Write doc in T1 with transaction timeout 2 minutes
+	 * Protect in T2 with transaction timeout of 30 secs and Protect duration of 30 sec.
+	 * Update doc in T1 within 30 sec duration.
+	 */
+	public void testProtectDiffTransactionsTimeouts() throws Exception {
+		Transaction t1 = null;
+		Transaction t2 = null;
+		JSONDocumentManager docMgr = null;
+		String docId = "javaSingleJSONDoc.json";
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+				"2003-01-01T00:00:00", "2008-12-31T23:59:59",
+				"1999 Skyway Park - Updated - JSON", docId);
+		try {
+
+			System.out.println("Inside testProtectDiffTransactionsTimeouts");
+			ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+					temporalLsqtCollectionName, true);
+
+			docMgr = writerClient.newJSONDocumentManager();
+			t1 = writerClient.openTransaction("T1", 120);
+			docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);		
+			t2 = writerClient.openTransaction("T2", 30);
+			//Protect document for 30 sec from delete and update. Use Duration.
+			docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOUPDATE, DatatypeFactory.newInstance().newDuration("PT30S"), t2);
+			
+			StringBuilder str = new StringBuilder();
+			try {
+				// Use t1 to write
+				docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+			}
+			catch(Exception ex) {
+				str.append(ex.getMessage());
+				System.out.println("Exception when update within 30 sec is " + str.toString());
+			}
+		}
+
+		catch(Exception ex) {
+			System.out.println("Exceptions:" + ex.getMessage());
+		}
+		finally {
+			if (t1 != null) {
+				// Try to update when T2 has timed out
+				docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+				Thread.sleep(5000);
+
+				JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+				DocumentPage readResults = jsonDocMgr.read(t1, docId);
+				System.out.println("Number of results = " + readResults.size());
+				assertEquals("Wrong number of results", 1, readResults.size());
+
+				QueryManager queryMgr = writerClient.newQueryManager();
+
+				StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+				StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
+
+				long start = 1;
+				DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
+				System.out
+				.println("Number of results = " + termQueryResults.getTotalSize());
+				assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize()); 
+			}
+			t1.rollback();
+		}
+	}
+	@Test
+	/* Test bitemporal protections - NOWIPE
+	 * With transaction.
+	 */
+	public void testProtectWipeWithoutPermission() throws Exception {
+
+		System.out.println("Inside testProtectWipe");
+		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "rest-admin", "x", Authentication.DIGEST);
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
+		
+		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
+		Thread.sleep(5000);
+		StringBuilder str = new StringBuilder();
+	    try {
+		//Protect document for 30 sec. Use Duration.
+		docMgrProtect.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT30S"));
+	    }
+	    catch(Exception ex) {
+	    	str.append(ex.getMessage());
+	    	System.out.println("Exception not thrown when user does not have permissions" + str.toString());
+	    }
+		assertTrue("Exception not thrown when user does not have permissions", str.toString().contains("User is not allowed to protect resource at documents/protection"));
+	}
+	
+	@Test
+	/* Test bitemporal protections - NOWIPE
+	 * With transaction.
+	 */
+	public void testProtectWipe() throws Exception {
+
+		System.out.println("Inside testProtectWipe");
+		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "rest-admin", "x", Authentication.DIGEST);
+		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+		        temporalLsqtCollectionName, true);
+		
+		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
+		Calendar updateTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+
+		String docId = "javaSingleJSONDoc.json";
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
+				"2011-12-31T23:59:59", 
+				"999 Skyway Park - JSON",
+				docId
+				);
+
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
+		
+		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
+		Thread.sleep(5000);
+	    
+		//Protect document for 30 sec. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT30S"));
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+		        "1999 Skyway Park - Updated - JSON", docId);
+		StringBuilder str = new StringBuilder();
+		try {
+			docMgr.delete(docId, null, temporalLsqtCollectionName, updateTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when delete within 30 sec is " + str.toString());
+		}
+				
+		// Sleep for 40 secs and try to delete the same docId.
+		Thread.sleep(40000);
+		Transaction t1 = writerClient.openTransaction();
+		// TODO Not sure why this doc is not getting deleted.
+		docMgr.delete(docId, t1, temporalLsqtCollectionName, updateTime);
+		Thread.sleep(5000);
+		t1.commit();
+		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
+		DocumentPage readResults = jsonDocMgr.read(docId);
+	    System.out.println("Number of results = " + readResults.size());
+	    assertEquals("Wrong number of results", 0, readResults.size());	    
+	}
 }
