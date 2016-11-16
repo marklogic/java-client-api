@@ -60,14 +60,25 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
         public CombinedQueryDefinitionImpl(StructuredQueryDefinition structuredQuery,
             QueryOptionsWriteHandle options, String qtext, String sparql)
         {
-            this.structuredQuery = structuredQuery;
-            this.options = options;
-            this.qtext = qtext;
-            this.sparql = sparql;
-            this.format = Format.XML;
+            if ( structuredQuery instanceof RawQueryDefinition ) {
+              init((RawQueryDefinition) structuredQuery, options, qtext, sparql);
+            } else {
+              this.structuredQuery = structuredQuery;
+              this.options = options;
+              this.qtext = qtext;
+              this.sparql = sparql;
+              this.format = Format.XML;
+            }
         }
 
         public CombinedQueryDefinitionImpl(RawQueryDefinition rawQuery,
+            QueryOptionsWriteHandle options, String qtext, String sparql)
+        {
+            init(rawQuery, options, qtext, sparql);
+        }
+
+
+        public void init(RawQueryDefinition rawQuery,
             QueryOptionsWriteHandle options, String qtext, String sparql)
         {
             this.rawQuery = rawQuery;
