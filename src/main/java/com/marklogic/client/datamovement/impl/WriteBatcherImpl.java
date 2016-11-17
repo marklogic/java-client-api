@@ -52,7 +52,6 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
-import com.marklogic.client.datamovement.BatchListener;
 import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
@@ -373,17 +372,7 @@ public class WriteBatcherImpl
                 host.transactionCounter.set(0);
                 transactionInfo.transaction.commit();
                 committed = true;
-                for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-                  WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
-                  //batch.setJobBatchNumber(batchNumFinished);
-                  for ( WriteBatchListener successListener : successListeners ) {
-                    try {
-                      successListener.processEvent(batch);
-                    } catch (Throwable t) {
-                      logger.error("Exception thrown by an onBatchSuccess listener", t);
-                    }
-                  }
-                }
+                sendSuccessToListeners(transactionInfo.batches);
               } else {
                 // we chose not to commit because another thread is still processing,
                 // so queue up this batchWriteSet
@@ -403,14 +392,7 @@ public class WriteBatcherImpl
           committed = true;
         }
         if ( committed ) {
-          WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
-          for ( WriteBatchListener successListener : successListeners ) {
-            try {
-              successListener.processEvent(batch);
-            } catch (Throwable t) {
-              logger.error("Exception thrown by an onBatchSuccess listener", t);
-            }
-          }
+          sendSuccessToListeners(batchWriteSet);
         }
     });
     batchWriteSet.onFailure( (throwable) -> {
@@ -428,30 +410,13 @@ public class WriteBatcherImpl
             throwable.addSuppressed(t2);
             logger.warn("Failure to rollback transaction: {}", t2.toString());
           }
-          for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( WriteFailureListener failureListener : failureListeners ) {
-              try {
-                failureListener.processFailure(batch, throwable);
-              } catch (Throwable t) {
-                logger.error("Exception thrown by an onBatchFailure listener", t);
-              }
-            }
-          }
+          sendThrowableToListeners(throwable, null, transactionInfo.batches);
         } else {
           host.unfinishedTransactions.add(transactionInfo);
         }
         transactionInfo.inProcess.decrementAndGet();
       }
-      WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
-      for ( WriteFailureListener failureListener : failureListeners ) {
-        try {
-          failureListener.processFailure(batch, throwable);
-        } catch (Throwable t) {
-          logger.error("Exception thrown by an onBatchFailure listener", t);
-        }
-      }
-      logger.warn("Error writing batch: {}", throwable.toString());
+      sendThrowableToListeners(throwable, "Error writing batch: {}", batchWriteSet);
     });
     return batchWriteSet;
   }
@@ -550,20 +515,27 @@ public class WriteBatcherImpl
       threadPool.submit( new BatchWriter(writeSet) );
     }
 
-    awaitCompletion();
+    if ( waitForCompletion == true ) awaitCompletion();
 
     // commit any transactions remaining open
     if ( usingTransactions == true ) {
-      // first clean up old transactions
-      cleanupUnfinishedTransactions();
+      Runnable cleanupTransactions = () -> {
+        // first clean up old transactions
+        cleanupUnfinishedTransactions();
 
-      // now commit any current transactions
-      for ( HostInfo host : hostInfos ) {
-        TransactionInfo transactionInfo;
-        while ( (transactionInfo = host.getTransactionInfoAndDrainPermits()) != null ) {
-          TransactionInfo transactionInfoCopy = transactionInfo;
-          completeTransaction(transactionInfoCopy);
+        // now commit any current transactions
+        for ( HostInfo host : hostInfos ) {
+          TransactionInfo transactionInfo;
+          while ( (transactionInfo = host.getTransactionInfoAndDrainPermits()) != null ) {
+            TransactionInfo transactionInfoCopy = transactionInfo;
+            completeTransaction(transactionInfoCopy);
+          }
         }
+      };
+      if ( waitForCompletion == true ) {
+        cleanupTransactions.run();
+      } else {
+        threadPool.submit( cleanupTransactions );
       }
     }
   }
@@ -576,47 +548,55 @@ public class WriteBatcherImpl
               transactionInfo.written.get() == true ) {
         if ( transactionInfo.throwable.get() != null ) {
           transactionInfo.transaction.rollback();
-          for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( WriteFailureListener failureListener : failureListeners ) {
-              try {
-                failureListener.processFailure(batch, transactionInfo.throwable.get());
-              } catch (Throwable t) {
-                logger.error("Exception thrown by an onBatchFailure listener", t);
-              }
-            }
-          }
-          logger.warn("Failure to rollback transaction: {}", transactionInfo.throwable.get().toString());
+          sendThrowableToListeners(transactionInfo.throwable.get(), "Failure during transaction: {}",
+            transactionInfo.batches);
         } else {
           transactionInfo.transaction.commit();
-          for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-            WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
-            for ( WriteBatchListener successListener : successListeners ) {
-              try {
-                successListener.processEvent(batch);
-              } catch (Throwable t) {
-                logger.error("Exception thrown by an onBatchSuccess listener", t);
-              }
-            }
-          }
+          sendSuccessToListeners(transactionInfo.batches);
         }
         completed = true;
       }
     } catch (Throwable t) {
       transactionInfo.throwable.set(t);
-      for ( BatchWriteSet transactionWriteSet : transactionInfo.batches ) {
-        WriteBatch batch = transactionWriteSet.getBatchOfWriteEvents();
-        for ( WriteFailureListener failureListener : failureListeners ) {
-          try {
-            failureListener.processFailure(batch, t);
-          } catch (Throwable t2) {
-            logger.error("Exception thrown by an onBatchFailure listener", t2);
-          }
-        }
-      }
-      logger.warn("Failure to complete transaction: {}", t.toString());
+      sendThrowableToListeners(t, "Failure to complete transaction: {}", transactionInfo.batches);
     }
     return completed;
+  }
+
+  private void sendSuccessToListeners(Collection<BatchWriteSet> batches) {
+    for ( BatchWriteSet batch : batches ) {
+      sendSuccessToListeners(batch);
+    }
+  }
+
+  private void sendSuccessToListeners(BatchWriteSet batchWriteSet) {
+    WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
+    for ( WriteBatchListener successListener : successListeners ) {
+      try {
+        successListener.processEvent(batch);
+      } catch (Throwable t) {
+        logger.error("Exception thrown by an onBatchSuccess listener", t);
+      }
+    }
+  }
+
+  private void sendThrowableToListeners(Throwable t, String message, Collection<BatchWriteSet> batches) {
+    for ( BatchWriteSet batchWriteSet : batches ) {
+      sendThrowableToListeners(t, null, batchWriteSet);
+    }
+    if ( message != null ) logger.warn(message, t.toString());
+  }
+
+  private void sendThrowableToListeners(Throwable t, String message, BatchWriteSet batchWriteSet) {
+    WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
+    for ( WriteFailureListener failureListener : failureListeners ) {
+      try {
+        failureListener.processFailure(batch, t);
+      } catch (Throwable t2) {
+        logger.error("Exception thrown by an onBatchFailure listener", t2);
+      }
+    }
+    if ( message != null ) logger.warn(message, t.toString());
   }
 
   public void start() {
@@ -1061,8 +1041,7 @@ public class WriteBatcherImpl
       super.afterExecute(task, t);
       futures.remove(task);
       if ( t != null ) {
-        System.err.println("Runnable threw the following:");
-        t.printStackTrace();
+        logger.error("Task threw an Exception", t);
       }
     }
 
