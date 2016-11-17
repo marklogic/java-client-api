@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,8 +22,6 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.FileUtils;
-import org.apache.commons.lang3.mutable.MutableBoolean;
-import org.apache.commons.lang3.mutable.MutableInt;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -675,9 +674,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb.withJobName(null);
 		ihb.withBatchSize(2);
 		dmManager.startJob(ihb);
-		ihb.withBatchSize(7);
-
-		ihb.withJobName("Job 1");
 		ihb.add("/local/triple", stringHandle);
 		try{
 			ihb.withJobName("Job 2");
@@ -702,20 +698,20 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	@Test
 	public void testNumberofBatches() throws Exception{
 	   
-	    final MutableInt numberOfSuccessFulBatches = new MutableInt(0);
-	    final MutableBoolean state = new MutableBoolean(true);
+	    final AtomicInteger numberOfSuccessFulBatches = new AtomicInteger(0);
+	    final AtomicBoolean state = new AtomicBoolean(true);
 	    
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
 		ihb1.withBatchSize(5);
 		ihb1.onBatchSuccess(
 		        batch -> {
-		        	numberOfSuccessFulBatches.add(1);
+		        	numberOfSuccessFulBatches.incrementAndGet();
 		        	        
 		          }
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	state.isFalse();
+		        	state.set(false);
 		           
 		          });
 		dmManager.startJob(ihb1);
@@ -726,7 +722,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 	
 		ihb1.flushAndWait();
-		Assert.assertTrue(state.booleanValue());
+		Assert.assertTrue(state.get());
 		System.out.println(numberOfSuccessFulBatches.intValue());
 		Assert.assertTrue(numberOfSuccessFulBatches.intValue()==21);
 		
@@ -781,53 +777,46 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		Assert.assertTrue(count(failurePort.toString(),String.valueOf(port))==5);
 		Assert.assertTrue(count(failureHost.toString(),String.valueOf(host))!=5);
 	}
-		
-	//not implemented ea3
+	
+	private int count(String s, String in){
+		int i = 0;
+		Pattern p = Pattern.compile(in);
+		Matcher m = p.matcher( s );
+		while (m.find()) {
+		    i++;
+		}
+		return i;
+	}
+	
+	// ISSUE 549
 	@Ignore
 	public void testBatchObject() throws Exception{
 	   	  
-	    final StringBuffer successBatchNum = new StringBuffer();
-	    final StringBuffer successBytesMoved = new StringBuffer();
-	    final StringBuffer successForestName = new StringBuffer();
-	    final StringBuffer successJobID = new StringBuffer();
-	    final StringBuffer successTime = new StringBuffer();
-	    
-	    final StringBuffer failureBatchNum = new StringBuffer();
-	    final StringBuffer failureBytesMoved = new StringBuffer();
-	    final StringBuffer failureForestName = new StringBuffer();
-	    final StringBuffer failureJobID = new StringBuffer();
-	    final StringBuffer failureTime = new StringBuffer();
-	    	    
+
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
+		
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(
 		        batch -> {
 		        	System.out.println("Success");
 		        	System.out.println(batch.getJobBatchNumber());
-		        	//System.out.println(batch  getJobResultsSoFar());
+		        	System.out.println(batch.getJobWritesSoFar());
 		        	System.out.println(batch.getBytesMoved());
 		        	//System.out.println(batch.getForest()== null);
-		        	System.out.println(batch.getJobTicket() == null);
-		        	System.out.println(batch.getTimestamp()==null);
-		        	//System.out.println(batch.getForest().getForestName()==null);
-		        	//successBatchNum.append(batch.getForestBatchNumber());
-		        	successBatchNum.append(batch.getJobBatchNumber());
-		        	successBytesMoved.append(batch.getBytesMoved());
-		        	//successForestName.append(batch.getForest().getForestName());
-		        	successJobID.append(batch.getJobTicket().getJobId());
-		        	successTime.append(batch.getTimestamp().getTime().getTime());
-		         	
+		        	System.out.println(batch.getJobTicket());
+		        	System.out.println(batch.getTimestamp());
+		
 		          }
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	System.out.println("Failure");
-		        	//failureBatchNum.append(batch.getForestBatchNumber());
-		        	failureBatchNum.append(batch.getJobBatchNumber());
-  		        	failureBytesMoved.append(batch.getBytesMoved());
-  		        	//failureForestName.append(batch.getForest().getForestName());
-  		        	failureJobID.append(batch.getJobTicket().getJobId());
-  		        	failureTime.append(batch.getTimestamp().getTime().getTime());
+		        	System.out.println(batch.getJobBatchNumber());
+		        	System.out.println(batch.getJobWritesSoFar());
+		        	System.out.println(batch.getBytesMoved());
+		        	//System.out.println(batch.getForest()== null);
+		        	System.out.println(batch.getJobTicket());
+		        	System.out.println(batch.getTimestamp());
 		      	    
 		          });
 		JobTicket jt= dmManager.startJob(ihb1);
@@ -842,29 +831,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 		ihb1.flushAndWait();
 		dmManager.stopJob(jt);
-		
-		System.out.println(successBatchNum.toString());
-		System.out.println(successBytesMoved.toString());
-		System.out.println(successForestName.toString());
-		System.out.println(successJobID.toString());
-		System.out.println(successTime.toString());
-		
-		System.out.println(failureBatchNum.toString());
-		System.out.println(failureBytesMoved.toString());
-		System.out.println(failureForestName.toString());
-		System.out.println(failureJobID.toString());
-		System.out.println(failureTime.toString());
+
 	}
 	
-	private int count(String s, String in){
-		int i = 0;
-		Pattern p = Pattern.compile(in);
-		Matcher m = p.matcher( s );
-		while (m.find()) {
-		    i++;
-		}
-		return i;
-	}
+
 	
 	//ISSUE # 28- expected to fail in ea2
 	@Test
@@ -920,10 +890,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		 	changeProperty(properties,"/manage/v2/forests/"+dbName+"-"+(i+1)+"/properties");
 		final String query1 = "fn:count(fn:doc())";
 	 	
-       	final MutableInt successCount = new MutableInt(0);
+       	final AtomicInteger successCount = new AtomicInteger(0);
        	
-       	final MutableBoolean failState = new MutableBoolean(false);
-       	final MutableInt failCount = new MutableInt(0);
+       	final AtomicBoolean failState = new AtomicBoolean(false);
+       	final AtomicInteger failCount = new AtomicInteger(0);
        	
 		for (int i =0 ; i < clusterInfo.size(); i++)
 		 	changeProperty(properties,"/manage/v2/forests/"+dbName+"-"+(i+1)+"/properties");
@@ -933,13 +903,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.onBatchSuccess(
 		        batch -> {
 		        	
-		        	successCount.add(batch.getItems().length);
+		        	successCount.addAndGet(batch.getItems().length);
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.addAndGet(batch.getItems().length);
 		          });
 		
 		dmManager.startJob(ihb2);
@@ -956,80 +926,12 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
       
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
 		
-		Assert.assertTrue(failState.booleanValue());
+		Assert.assertTrue(failState.get());
 		
 		Assert.assertTrue(successCount.intValue() == 0);
 		Assert.assertTrue(failCount.intValue() == 20);
 	}
 	
-	// Git Issue # 41
-	@Ignore
-	public void testDuplicates() throws Exception{
-		Map <String, String> properties = new HashMap<>();
-		properties.put("updates-allowed", "read-only");
-		
-		final String query1 = "fn:count(fn:doc())";
-	 	
-       	final MutableBoolean successState = new MutableBoolean(false);
-       	final MutableBoolean failState = new MutableBoolean(false);
-       	
-       	final MutableInt successCount = new MutableInt(0);
-       	final MutableInt failureCount = new MutableInt(0);
-       	      	
-		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
-		ihb1.withBatchSize(5);
-	
-		dmManager.startJob(ihb1);
-		
-		for (int i =0 ;i < 20; i++){
-			String uri ="/local/json-"+ i;
-			ihb1.add(uri, stringHandle);
-		}
-	
-		ihb1.flushAndWait();
-		
-	 	Number response = dbClient.newServerEval().xquery(query1).eval().next().getNumber();
-    	Assert.assertTrue(response.intValue()==20);
-    	
-		for (int i =0 ; i < clusterInfo.size() -1; i++)
-		 	changeProperty(properties,"/manage/v2/forests/"+dbName+"-"+(i+1)+"/properties");
-       	   	
-		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
-		dmManager.startJob(ihb2);
-		ihb2.withBatchSize(1);
-		ihb2.onBatchSuccess(
-		        batch -> {
-		        	successCount.add(batch.getItems().length);
-		        	successState.setTrue();
-		        	
-		          }
-		        )
-		        .onBatchFailure(
-		          (batch, throwable) -> {
-		        	  failureCount.add(batch.getItems().length);
-		        	  failState.setTrue();
-		        	  
-		          });
-		
-		for (int j =0 ;j < 21; j++){
-			String uri ="/local/json-"+ j;
-			ihb2.add(uri, stringHandle);
-		}
-
-		ihb2.flushAndWait();
-		
-		properties.put("updates-allowed", "all");
-		for (int i =0 ; i < clusterInfo.size(); i++)
-		 	changeProperty(properties,"/manage/v2/forests/"+dbName+"-"+(i+1)+"/properties");
-    	
-    	System.out.println("Success count: "+successCount);
-      	System.out.println("Failure count: "+failureCount);
-      	
-    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==21);
-	
-    	Assert.assertTrue(successState.booleanValue());
-		Assert.assertTrue(failState.booleanValue());
-	}
 	
 	@Test
 	public void testInsertoDisabledDB() throws Exception{
@@ -1037,10 +939,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		properties.put("enabled", "false");
 		final String query1 = "fn:count(fn:doc())";
 	 	
-       	final MutableInt successCount = new MutableInt(0);
+       	final AtomicInteger successCount = new AtomicInteger(0);
        	
-       	final MutableBoolean failState = new MutableBoolean(false);
-       	final MutableInt failCount = new MutableInt(0);
+       	final AtomicBoolean failState = new AtomicBoolean(false);
+       	final AtomicInteger failCount = new AtomicInteger(0);
        	
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(30);
@@ -1054,14 +956,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.onBatchSuccess(
 		        batch -> {
 		        	
-		        	successCount.add(batch.getItems().length);
+		        	successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
 
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
@@ -1076,7 +978,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     	System.out.println("Count : "+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
     	
     	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
-		Assert.assertTrue(failState.booleanValue());
+		Assert.assertTrue(failState.get());
 		
 		Assert.assertTrue(failCount.intValue() == 20);	
 	}
@@ -1086,10 +988,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     {      
 		   final String query1 = "fn:count(fn:doc())";
 		   Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
-		   final MutableInt successCount = new MutableInt(0);
+		   final AtomicInteger successCount = new AtomicInteger(0);
 	       	
-	       final MutableBoolean failState = new MutableBoolean(false);
-	       final MutableInt failCount = new MutableInt(0);
+	       final AtomicBoolean failState = new AtomicBoolean(false);
+	       final AtomicInteger failCount = new AtomicInteger(0);
            TransformExtensionsManager transMgr = 
                         dbClient.newServerConfigManager().newTransformExtensionsManager();
            ExtensionMetadata metadata = new ExtensionMetadata();
@@ -1116,15 +1018,15 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	   	   ihb1.onBatchSuccess(
 	   			   batch -> {
 		        	
-	   				   successCount.add(batch.getItems().length);
+	   				   successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
 	   	   dmManager.startJob(ihb1);
            StringHandle handleFoo = new StringHandle();
@@ -1145,7 +1047,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
            }
            // Flush
            ihb1.flushAndWait();
-   		   Assert.assertFalse(failState.booleanValue());
+   		   Assert.assertFalse(failState.get());
    		   Assert.assertTrue(successCount.intValue()==8);
            Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
     }
@@ -1154,10 +1056,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testServerXQueryTransformFailure() throws Exception
     {      
 		   final String query1 = "fn:count(fn:doc())";             
-		   final MutableInt successCount = new MutableInt(0);
+		   final AtomicInteger successCount = new AtomicInteger(0);
 	       	
-	       final MutableBoolean failState = new MutableBoolean(false);
-	       final MutableInt failCount = new MutableInt(0);
+	       final AtomicBoolean failState = new AtomicBoolean(false);
+	       final AtomicInteger failCount = new AtomicInteger(0);
            TransformExtensionsManager transMgr = 
                         dbClient.newServerConfigManager().newTransformExtensionsManager();
            ExtensionMetadata metadata = new ExtensionMetadata();
@@ -1184,14 +1086,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	   	   ihb1.onBatchSuccess(
 	   			   batch -> {
 		        	
-	   				   successCount.add(batch.getItems().length);
+	   				   successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
 	   	   
            StringHandle handleFoo = new StringHandle();
@@ -1213,14 +1115,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
            // Flush
            ihb1.flushAndWait();
            Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==4);
-   		   Assert.assertTrue(failState.booleanValue());
+   		   Assert.assertTrue(failState.get());
    		   Assert.assertTrue(successCount.intValue()==4);
    		   Assert.assertTrue(failCount.intValue()==4);
    		   
    		   clearDB(port);
-   		   failCount.setValue(0);
-   		   successCount.setValue(0);
-   		   failState.setFalse();
+   		   failCount.set(0);
+   		   successCount.set(0);
+   		   failState.set(false);
    		   
    		   // with non-existent transform
            
@@ -1231,14 +1133,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	   	   ihb2.onBatchSuccess(
 	   			   batch -> {
 		        	
-	   				   successCount.add(batch.getItems().length);
+	   				   successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
            for (int i = 0; i < 4; i++) {
                uri1 = "foo" + i + ".xml";
@@ -1247,7 +1149,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
         // Flush
         ihb2.flushAndWait();
         Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
-	    Assert.assertTrue(failState.booleanValue());
+	    Assert.assertTrue(failState.get());
 	    Assert.assertTrue(successCount.intValue()==0);
 	    Assert.assertTrue(failCount.intValue()==4);
     }
@@ -1311,20 +1213,20 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	@Test
 	public void testAddMultiThreadedFailureEventCount() throws Exception{
 		
-		final MutableInt eventCount = new MutableInt(0);
+		final AtomicInteger eventCount = new AtomicInteger(0);
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(105);
        	ihbMT.onBatchSuccess(
 		        batch -> {
 		        	synchronized(eventCount){
-		        		 eventCount.add(batch.getItems().length);
+		        		 eventCount.getAndAdd(batch.getItems().length);
 		        	}
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  	synchronized(eventCount){
-			        		 eventCount.add(batch.getItems().length);
+			        		 eventCount.getAndAdd(batch.getItems().length);
 			        	}
 		      
 		});
@@ -1368,7 +1270,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testAddMultiThreadedwithTransactionsizeSuccess() throws Exception{
 		
 		final String query1 = "fn:count(fn:doc())";
-		final MutableInt count = new MutableInt(0);
+		final AtomicInteger count = new AtomicInteger(0);
 		
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(99);
@@ -1423,7 +1325,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	       			  Thread t =  iter.next();
 	       			  if(t.getName().contains("pool-1-thread-"))
 	       				  System.out.println(t.getName());
-	       					  count.add(1);
+	       					  count.incrementAndGet();
 	       			  
 	       		  }
 	       		  
@@ -1462,7 +1364,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testAddMultiThreadedLessDocsSuccess() throws Exception{
 		
 		final String query1 = "fn:count(fn:doc())";
-		final MutableInt count = new MutableInt(0);
+		final AtomicInteger count = new AtomicInteger(0);
 		
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(99);
@@ -1517,7 +1419,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	       			  Thread t =  iter.next();
 	       			  if(t.getName().contains("pool-1-thread-"))
 	       				  System.out.println(t.getName());
-	       					  count.add(1);
+	       					  count.incrementAndGet();
 	       		  }
 	       		  
 	       	  }  
@@ -1554,8 +1456,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	@Ignore
 	public void testAddMultiThreadedwithThreadCountFailure() throws Exception{
 		
-		final MutableInt count = new MutableInt(0);
-		final MutableInt eventCount = new MutableInt(0);
+		final AtomicInteger count = new AtomicInteger(0);
+		final AtomicInteger eventCount = new AtomicInteger(0);
 		
 		ihbMT =  dmManager.newWriteBatcher();
        	ihbMT.withBatchSize(99);
@@ -1565,7 +1467,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	ihbMT.onBatchSuccess(
 		        batch -> {
 		        	synchronized(eventCount){
-		        		 eventCount.add(batch.getItems().length);
+		        		 eventCount.getAndAdd(batch.getItems().length);
 		        	}
 		        	
 		        	}
@@ -1574,7 +1476,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        	  synchronized(eventCount){
-			        		 eventCount.add(batch.getItems().length);
+			        		 eventCount.getAndAdd(batch.getItems().length);
 			        	}
 		       
 		          });
@@ -1609,7 +1511,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	       		  while(iter.hasNext()){
 	       			  Thread t =  iter.next();
 	       			  if(t.getName().contains("pool-1-thread-"))
-	       					  count.add(1);
+	       					  count.incrementAndGet();
 	       			  
 	       		  }
 	       		  
@@ -1646,10 +1548,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		try{
 			final String query1 = "fn:count(fn:doc())";
 		 	
-	       	final MutableInt successCount = new MutableInt(0);
+	       	final AtomicInteger successCount = new AtomicInteger(0);
 	       	
-	       	final MutableBoolean failState = new MutableBoolean(false);
-	       	final MutableInt failCount = new MutableInt(0);
+	       	final AtomicBoolean failState = new AtomicBoolean(false);
+	       	final AtomicInteger failCount = new AtomicInteger(0);
 	           	
 			WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 			ihb2.withBatchSize(480);
@@ -1659,7 +1561,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.onBatchSuccess(
 			        batch -> {
 			        	
-			        	successCount.add(batch.getItems().length);
+			        	successCount.getAndAdd(batch.getItems().length);
 			        	 System.out.println("Success Batch size "+batch.getItems().length);
 				        	for(WriteEvent w:batch.getItems()){
 				        		System.out.println("Success "+w.getTargetUri());
@@ -1674,8 +1576,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 				        	for(WriteEvent w:batch.getItems()){
 				        		System.out.println("Failure "+w.getTargetUri());
 				        	}
-			        	  failState.setTrue();
-			        	  failCount.add(batch.getItems().length);
+			        	  failState.set(true);
+			        	  failCount.getAndAdd(batch.getItems().length);
 			          });
 			for (int j =0 ;j < 500; j++){
 				String uri ="/local/ABC-"+ j;
@@ -1700,10 +1602,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		try{
 			final String query1 = "fn:count(fn:doc())";
 		 	
-	       	final MutableInt successCount = new MutableInt(0);
+	       	final AtomicInteger successCount = new AtomicInteger(0);
 	       	
-	       	final MutableBoolean failState = new MutableBoolean(false);
-	       	final MutableInt failCount = new MutableInt(0);
+	       	final AtomicBoolean failState = new AtomicBoolean(false);
+	       	final AtomicInteger failCount = new AtomicInteger(0);
 	       	final AtomicBoolean count = new AtomicBoolean(false);
 	       	
 	           	
@@ -1716,7 +1618,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb2.onBatchSuccess(
 			        batch -> {
 			        	
-			        	successCount.add(batch.getItems().length);
+			        	successCount.getAndAdd(batch.getItems().length);
 			          }
 			        )
 			        .onBatchFailure(
@@ -1726,8 +1628,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 				        	for(WriteEvent w:batch.getItems()){
 				        		System.out.println("Failure "+w.getTargetUri());
 				        	}
-			        	  failState.setTrue();
-			        	  failCount.add(batch.getItems().length);
+			        	  failState.set(true);
+			        	  failCount.getAndAdd(batch.getItems().length);
 			          });
 			
 	       	class MyRunnable implements Runnable {
@@ -1803,10 +1705,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		final String query1 = "fn:count(fn:doc())";
 	 	
-       	final MutableInt successCount = new MutableInt(0);
+       	final AtomicInteger successCount = new AtomicInteger(0);
        	
-       	final MutableBoolean failState = new MutableBoolean(false);
-       	final MutableInt failCount = new MutableInt(0);
+       	final AtomicBoolean failState = new AtomicBoolean(false);
+       	final AtomicInteger failCount = new AtomicInteger(0);
           	
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5);
@@ -1818,14 +1720,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	s.length();
 		        	System.out.println("Success host : "+batch.getClient().getHost());
 		        	System.out.println(batch.getItems().length);
-		        	successCount.add(batch.getItems().length);
+		        	successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failState.setTrue();
-		        	  failCount.add(batch.getItems().length);
+		        	  failState.set(true);
+		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
 
 
@@ -1978,6 +1880,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testInserttoDisabledAppServer() throws Exception{
 		
 		final String query1 = "fn:count(fn:doc())";
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
 	 	Map<String,String> properties = new HashMap<>();
       	
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
@@ -2010,21 +1913,23 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		properties.put("group-name", "Default");
 		properties.put("enabled", "false");
 		changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
-		Thread.currentThread().sleep(1000L);
-		ihb2.flushAndWait();
+		Thread.currentThread().sleep(2000L);
+		ihb2.flushAsync();
+		Thread.currentThread().sleep(25000L);
 		
 		properties.put("enabled", "true");
 		changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
-		
+		ihb2.awaitCompletion();
 		System.out.println("testInserttoDisabledAppServer: Size is "+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
+    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==200);
     	
 	}
 	
 	// ea3
-	@Ignore
+	@Test
 	public void testDisableAppServerDuringInsert() throws Exception{
 		
+		final String query1 = "fn:count(fn:doc())";
 		Thread t1 = new Thread(new StopServerRunnable());
      	t1.setName("Status Check");
      	  	
@@ -2057,7 +1962,9 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 				
 		ihb2.flushAndWait();
-		t1.join();   	
+		t1.join();   
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==2000);
+		
 	}
 	class StopServerRunnable implements Runnable {
 	  final String query1 = "fn:count(fn:doc())";
@@ -2079,6 +1986,16 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
    			 }
    				
    		  }
+   		try {
+			Thread.currentThread().sleep(10000L);
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+   		properties.put("server-name",server);
+		properties.put("group-name", "Default");
+		properties.put("enabled", "true");
+		changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
    	  }  
        		
   } 
@@ -2087,9 +2004,9 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testDisableDBDuringInsert() throws Exception{
 		
 	    Thread t1 = new Thread(new DisabledDBRunnable());
-		MutableBoolean failCheck = new MutableBoolean(false);
-		MutableInt successCount = new MutableInt(0);
-		MutableInt failureCount = new MutableInt(0);
+		AtomicBoolean failCheck = new AtomicBoolean(false);
+		AtomicInteger successCount = new AtomicInteger(0);
+		AtomicInteger failureCount = new AtomicInteger(0);
 		
      	t1.setName("Status Check");
      	Map<String,String> properties = new HashMap<>();  	
@@ -2098,13 +2015,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 				
 		ihb2.onBatchSuccess(
 		        batch -> {
-		        	successCount.add(batch.getItems().length);		        	
+		        	successCount.getAndAdd(batch.getItems().length);		        	
 		          }
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failCheck.setTrue();
-		        	  failureCount.add(batch.getItems().length);
+		        	  failCheck.set(true);
+		        	  failureCount.getAndAdd(batch.getItems().length);
 		        	  throwable.printStackTrace();
 		          });
 		dmManager.startJob(ihb2);
@@ -2119,7 +2036,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		t1.join();
 		properties.put("enabled", "true");
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
-		Assert.assertTrue(failCheck.booleanValue());
+		Assert.assertTrue(failCheck.get());
 		Assert.assertTrue(successCount.intValue() >= 100);
 		Assert.assertTrue(successCount.intValue() < 1000);
 		Assert.assertTrue(failureCount.intValue() <= 900);
@@ -2148,29 +2065,26 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        		
   } 
 	
-	// ea 3
-	@Ignore
+	@Test
 	public void testOfflineForestStopServerDuringInsert() throws Exception{
 		
+		final String query1 = "fn:count(fn:doc())";
 		Thread t1 = new Thread(new OffLineForestStopServerRunnable());
-		MutableBoolean failCheck = new MutableBoolean(false);
-		MutableInt successCount = new MutableInt(0);
-		MutableInt failureCount = new MutableInt(0);
+		AtomicBoolean failCheck = new AtomicBoolean(false);
+		AtomicInteger successCount = new AtomicInteger(0);
+		AtomicInteger failureCount = new AtomicInteger(0);
 		
      	t1.setName("Status Check");
      	Map<String,String> properties = new HashMap<>(); 
      	
-     	properties.put("forest-name","WriteHostBatcher-1");
-     	properties.put("availability","offline");
-     	changeProperty(properties,"/manage/v2/forests/WriteHostBatcher-1/properties");
-     	properties.clear();
+
      	
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
-		ihb2.withBatchSize(5);
+		ihb2.withBatchSize(50);
 				
 		ihb2.onBatchSuccess(
 		        batch -> {
-		        	successCount.add(batch.getItems().length);
+		        	successCount.getAndAdd(batch.getItems().length);
 		        	
 		        	System.out.println("Success host: "+batch.getClient().getHost());
 		        	System.out.println("Success Batch size "+batch.getItems().length);
@@ -2181,8 +2095,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
-		        	  failCheck.setTrue();
-		        	  failureCount.add(batch.getItems().length);
+		        	  failCheck.set(true);
+		        	  failureCount.getAndAdd(batch.getItems().length);
 		        	  throwable.printStackTrace();
 		        	  System.out.println("Failure host: "+batch.getClient().getHost());
 		        	  System.out.println("Failure Batch size "+batch.getItems().length);
@@ -2190,25 +2104,42 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			        		System.out.println("Failure "+w.getTargetUri());
 			        	}	           
 		          });
-		dmManager.startJob(ihb2);
-		t1.start();
 		
+     
+		dmManager.startJob(ihb2);
+		
+		properties.put("forest-name",dbName+"-1");
+     	properties.put("availability","offline");
+     	
+     	
+     			
 		for (int j =0 ;j < 10000; j++){
 			String uri ="/local/json-"+ j;
 			ihb2.add(uri, fileHandle);
+			if (j == 30){
+				changeProperty(properties,"/manage/v2/forests/"+dbName+"-1/properties");
+				t1.start();
+			}
+			
+			if (j == 2500){
+				properties.put("forest-name",dbName+"-3");
+				changeProperty(properties,"/manage/v2/forests/"+dbName+"-3/properties");
+				
+			}
 		}
 				
 		ihb2.flushAndWait();
 		t1.join();
-						
-     	properties.put("forest-name","WriteHostBatcher-1");
+		properties.clear();				
+     	properties.put("forest-name",dbName+"-1");
      	properties.put("availability","online");
-     	changeProperty(properties,"/manage/v2/forests/WriteHostBatcher-1/properties");
+     	changeProperty(properties,"/manage/v2/forests/"+dbName+"-1/properties");
      	
-		Assert.assertTrue(failCheck.booleanValue());
-		Assert.assertTrue(successCount.intValue() >= 100);
-		Assert.assertTrue(failureCount.intValue() <= 900);
-    	
+     	properties.put("forest-name",dbName+"-3");
+     	changeProperty(properties,"/manage/v2/forests/"+dbName+"-3/properties");
+		Assert.assertTrue(successCount.intValue() == 10000);
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==10000);
+		    	
 	}
 	
 	class OffLineForestStopServerRunnable implements Runnable {
@@ -2217,36 +2148,27 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	
    	  @Override
    	  public void run() {
-  		properties.put("host-name", hostNames[0]);
-  		properties.put("group", "default");
-  		properties.put("state", "shutdown");
+   		String stopHost;
+		if(hostNames.length >= 1){
+   			stopHost =  hostNames[1];
+   		}
+   		else{
+   			stopHost = hostNames[0];
+   			
+   		}
+		int  count = 0;
+		while (count < 5){
 			
-   		  boolean state = true;
-   		  while (state){
-   			 int count =dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-   			 System.out.println("Count is "+count);
-   			 if(count >= 100){
-   				changeProperty(properties,"/manage/v2/hosts/"+hostNames[0]+"/properties");
-     			
-     			state=false;
-   			 }
-   				
-   		  }
-   		try {
-			Thread.currentThread().sleep(35000L);
-			properties.clear();
-			properties.put("host-name", hostNames[0]);
-			properties.put("group", "default");
-			properties.put("state", "restart");
-			changeProperty(properties,"/manage/v2/hosts/"+hostNames[0]+"/properties");
-			
-			Thread.currentThread().sleep(5000L);
-	     	System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-	     	
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+			changeServer(stopHost,"restart");
+			try {
+				Thread.currentThread().sleep(6000L);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			count++;
+				
+		  }
+   		
    	  }  
        		
   } 

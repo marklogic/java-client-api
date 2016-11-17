@@ -281,6 +281,36 @@ public abstract class DmsdkConnectedRESTQA {
 		return null;
 	}
 	
+	public static void changeServer(String servername, String state)	{
+		try{
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope(host, 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			HttpPost post = new HttpPost("http://"+host+":8002"+ "/manage/v2/hosts/"+servername+"?format=json");
+//			System.out.println( getBootStrapHostFromML());
+			
+			List<NameValuePair> params = new ArrayList<NameValuePair>(1);
+			params.add(new BasicNameValuePair("state", state));
+			
+			
+			post.addHeader("Content-type", "application/x-www-form-urlencoded");
+			post.setEntity(new UrlEncodedFormEntity(params, "UTF-8"));
+	
+			HttpResponse response = client.execute(post);
+			HttpEntity respEntity = response.getEntity();
+
+			if (respEntity != null) {
+				// EntityUtils to get the response content
+				String content =  EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+	}
+	
 	public static JsonNode getState(Map<String, String> properties, String endpoint)	{
 		try{
 			
