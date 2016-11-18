@@ -24,6 +24,8 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.DatatypeConverter;
@@ -119,6 +121,86 @@ public class StructuredQueryBuilder {
      */
     public enum FragmentScope {
         @Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
+    }
+
+    /**
+     * CoordinateSystem provides a list of all known coordinate systems and it
+     * also provides a capability to add new CoordinateSystems in the future
+     */
+    public static final class CoordinateSystem {
+        private static ConcurrentMap<String, CoordinateSystem> coordMap = new ConcurrentHashMap<String, CoordinateSystem>();
+        private String coordinateSystem;
+        private boolean doublePrecision = false;
+
+        /**
+         * Coordinate System mapping to "wgs84"
+         */
+        public static final CoordinateSystem WGS84 = new CoordinateSystem("wgs84");
+        /**
+         * Coordinate System mapping to "wgs84/double"
+         */
+        public static final CoordinateSystem WGS84DOUBLE = new CoordinateSystem("wgs84", true);
+        /**
+         * Coordinate System mapping to "etrs89"
+         */
+        public static final CoordinateSystem ETRS89 = new CoordinateSystem("etrs89");
+        /**
+         * Coordinate System mapping to "etrs89/double"
+         */
+        public static final CoordinateSystem ETRS89DOUBLE = new CoordinateSystem("etrs89", true);
+        /**
+         * Coordinate System mapping to "raw"
+         */
+        public static final CoordinateSystem RAW = new CoordinateSystem("raw");
+        /**
+         * Coordinate System mapping to "raw/double"
+         */
+        public static final CoordinateSystem RAWDOUBLE = new CoordinateSystem("raw", true);
+
+        private CoordinateSystem(String coordinateSystem) {
+            this.coordinateSystem = coordinateSystem;
+        }
+        private CoordinateSystem(String coordinateSystem, boolean isDoublePrecision) {
+            this(coordinateSystem);
+            this.doublePrecision = isDoublePrecision;
+        }
+
+        /**
+         * This method creates a CoordinateSystem with the specified string
+         * and sets doublePrecision to false
+         * @param coordinateSystem the name of the CoordinateSystem like wgs84, etrs89
+         * @return the instance of CoordinateSystem created/already present
+         */
+        public static CoordinateSystem getOther(String coordinateSystem) {
+            return getOther(coordinateSystem, false);
+        }
+
+        /**
+         * This method creates a CoordinateSystem with the specified string
+         * and sets doublePrecision to the specified isDoublePrecision boolean
+         * @param coordinateSystem the name of the CoordinateSystem like wgs84, etrs89
+         * @param isDoublePrecision the value that should be set for doublePrecision
+         * @return the instance of CoordinateSystem created/already present
+         */
+        public static CoordinateSystem getOther(String coordinateSystem, boolean isDoublePrecision) {
+            String key = coordinateSystem+isDoublePrecision;
+            coordMap.putIfAbsent(key, new CoordinateSystem(coordinateSystem, isDoublePrecision));
+            return coordMap.get(key);
+        }
+
+        public String getCoordinateSystem() {
+            return coordinateSystem;
+        }
+
+        public boolean getDoublePrecision() {
+            return doublePrecision;
+        }
+
+        public String toString() {
+            if(doublePrecision) {
+                return coordinateSystem+"/double";
+            } else return coordinateSystem;
+        }
     }
 
     /**
@@ -829,6 +911,18 @@ public class StructuredQueryBuilder {
      */
     public GeospatialRegionIndex geoRegionPath(PathIndex pathIndex) {
         return new GeoRegionPathImpl(pathIndex);
+    }
+
+    /**
+     * Identifies a path with regions to match
+     * with a geospatial query.
+     * @param pathIndex    the indexed path
+     * @param coordinateSystem  the coordinate system used along with precision info
+     *                          used for the index
+     * @return    the specification for the index on the geospatial region
+     */
+    public GeospatialRegionIndex geoRegionPath(PathIndex pathIndex , CoordinateSystem coordinateSystem) {
+        return new GeoRegionPathImpl(pathIndex, coordinateSystem);
     }
 
     /**
@@ -2093,6 +2187,9 @@ public class StructuredQueryBuilder {
         public void innerSerialize(XMLStreamWriter serializer) throws Exception {
             String elemName = "geo-region-path-query";
             serializer.writeStartElement(elemName);
+            if(index.coordinateSystem != null) {
+                serializer.writeAttribute("coord", index.coordinateSystem.toString());
+            }
             ((IndexImpl) index).innerSerialize(serializer);
             writeText(serializer, "geospatial-operator", operator.toString());
             if (scope != null) {
@@ -2418,8 +2515,15 @@ public class StructuredQueryBuilder {
     }
 
     private class GeoRegionPathImpl extends GeoBasePathImpl implements GeospatialRegionIndex {
+        CoordinateSystem coordinateSystem = null;
+
         GeoRegionPathImpl(PathIndex pathIndex) {
             super(pathIndex);
+        }
+
+        GeoRegionPathImpl(PathIndex pathIndex, CoordinateSystem coordinateSystem) {
+            super(pathIndex);
+            this.coordinateSystem = coordinateSystem;
         }
     }
 

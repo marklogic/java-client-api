@@ -21,6 +21,7 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
 import com.marklogic.client.query.StructuredQueryBuilder.GeoSpatialOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
@@ -34,7 +35,7 @@ public class GeoSpatialRegionQueriesTest {
 
     private static void deleteEnvironment() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
-        docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml");
+        docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml","newpolygon.xml");
         Common.client.newServerConfigManager().setQueryValidation(false);
     }
 
@@ -75,6 +76,18 @@ public class GeoSpatialRegionQueriesTest {
         domDocument.appendChild(root);
         writeset.add("cuba.xml", new DOMHandle().with(domDocument));
 
+        domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+        root = domDocument.createElement("country");
+        name = domDocument.createElement("name");
+        name.appendChild(domDocument.createTextNode("Mexico"));
+        root.appendChild(name);
+        region = domDocument.createElement("region");
+        region.appendChild(domDocument.createTextNode(
+                "POLYGON((0 0,0 10,10.00000001 10.00000001,10 0))"));
+        root.appendChild(region);
+        domDocument.appendChild(root);
+        writeset.add("newpolygon.xml", new DOMHandle().with(domDocument));
+        
         domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
         root = domDocument.createElement("country");
         name = domDocument.createElement("name");
@@ -160,6 +173,46 @@ public class GeoSpatialRegionQueriesTest {
     }
 
     @Test
+    public void testGeoSpatialRegionDoubleQuery() {
+        String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
+                       + "    <search-option>filtered</search-option>"
+                       + "    <debug>true</debug>"
+                       + "</options>";
+        StringHandle writeHandle = new StringHandle(options);
+
+        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        optionsMgr.writeOptions("geodoubleoptions", writeHandle);
+        QueryManager queryMgr = Common.client.newQueryManager();
+        StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
+
+        StructuredQueryDefinition qdef;
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84DOUBLE), GeoSpatialOperator.COVERS,
+            qb.point(10.00000003, 10.00000003));
+        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+        MatchDocumentSummary[] summaries = results.getMatchResults();
+        assertEquals(0, summaries.length);
+        
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84), GeoSpatialOperator.COVERS,
+            qb.point(10.00000003, 10.00000003));
+        results = queryMgr.search(qdef, new SearchHandle());
+        summaries = results.getMatchResults();
+        assertEquals(1, summaries.length);
+
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84", true)), GeoSpatialOperator.COVERS,
+            qb.point(10.00000003, 10.00000003));
+        results = queryMgr.search(qdef, new SearchHandle());
+        summaries = results.getMatchResults();
+        assertEquals(0, summaries.length);
+        
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84")), GeoSpatialOperator.COVERS,
+            qb.point(10.00000003, 10.00000003));
+        results = queryMgr.search(qdef, new SearchHandle());
+        summaries = results.getMatchResults();
+        assertEquals(1, summaries.length);
+        optionsMgr.deleteOptions("geodoubleoptions");
+    }
+
+    @Test
     public void testFloatPrecisionCoordinateSystem() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -241,8 +294,7 @@ public class GeoSpatialRegionQueriesTest {
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertEquals(2, summaries.length);
-
+        assertEquals(3, summaries.length);
         qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.CONTAINS, 
                 qb.point(21.884239, -78.164978));
         results = queryMgr.search(qdef, new SearchHandle());
