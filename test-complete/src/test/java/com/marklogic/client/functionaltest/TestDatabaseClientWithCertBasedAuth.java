@@ -59,7 +59,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-	//	createRESTServerWithDB(server, port);
+		createRESTServerWithDB(server, port);
 		createRESTUser("portal", "seekrit", "admin","rest-admin","rest-writer","rest-reader" );
 		associateRESTServerWithDB(server,"Security");
 		createCACert();
