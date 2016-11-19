@@ -29,6 +29,10 @@ public class BatchImpl<T> implements Batch<T> {
     private Calendar timestamp;
     private JobTicket jobTicket;
 
+    public BatchImpl() {
+      timestamp = Calendar.getInstance();
+    }
+
     @Override
     public T[] getItems() {
         return items;

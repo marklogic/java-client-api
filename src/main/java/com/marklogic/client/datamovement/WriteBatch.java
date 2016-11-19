@@ -20,6 +20,4 @@ import java.util.Calendar;
 public interface WriteBatch extends Batch<WriteEvent> {
   WriteBatcher getBatcher();
   long getJobWritesSoFar();
-  // TOOD: implement
-  long getBytesMoved();
 }

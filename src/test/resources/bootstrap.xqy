@@ -341,25 +341,28 @@ declare function bootstrap:create-geospatial-region-path-indexes(
     let $index-specs :=
         let $curr-idx := admin:database-get-geospatial-region-path-indexes($c, $dbid)
         let $new-idx  := (
-            "/country/region"
+            "/country/region", "wgs84", 3, "ignore",
+            "/country/region", "wgs84/double", 3, "ignore"
             )
-        (: no offset necessary now since each new-idx only has one item, but that may change :)
-        let $n := 1
+        let $n := 4
         for $i in 1 to (count($new-idx) idiv $n)
-        let $offset    := ($i * $n) - ($n - 1)
-        let $path      := subsequence($new-idx, $offset, 1)
-        let $curr      := $curr-idx[
+        let $offset     := ($i * $n) - ($n - 1)
+        let $path       := subsequence($new-idx, $offset, 1)
+        let $coordsys   := subsequence($new-idx, $offset + 1, 1)
+        let $precision  := subsequence($new-idx, $offset + 2, 1)
+        let $invalidval := subsequence($new-idx, $offset + 3, 1)
+        let $curr       := $curr-idx[
             string(dbx:path-expression) eq $path and
-            string(dbx:coordinate-system) eq "wgs84" and
-            string(dbx:geohash-precision) eq 3 and
-            string(dbx:invalid-values) eq "ignore"
+            string(dbx:coordinate-system) eq $coordsys and
+            string(dbx:geohash-precision) eq $precision and
+            string(dbx:invalid-values) eq $invalidval
             ]
         return
             if (exists($curr)) then (
                 xdmp:log(concat("Geospatial-region-path-index already exists:", $path))
             ) else (
                 admin:database-geospatial-region-path-index(
-                    $path, "wgs84", 3, "ignore"
+                    $path, $coordsys, $precision, $invalidval
                 ),
                 xdmp:log(concat("Creating geospatial-region-path-index:", $path))
             )
