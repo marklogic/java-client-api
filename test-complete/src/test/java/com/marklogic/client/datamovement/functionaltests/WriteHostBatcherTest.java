@@ -801,7 +801,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	System.out.println("Success");
 		        	System.out.println(batch.getJobBatchNumber());
 		        	System.out.println(batch.getJobWritesSoFar());
-		        	System.out.println(batch.getBytesMoved());
+		        	//System.out.println(batch.getBytesMoved());
 		        	//System.out.println(batch.getForest()== null);
 		        	System.out.println(batch.getJobTicket());
 		        	System.out.println(batch.getTimestamp());
@@ -813,7 +813,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        	System.out.println("Failure");
 		        	System.out.println(batch.getJobBatchNumber());
 		        	System.out.println(batch.getJobWritesSoFar());
-		        	System.out.println(batch.getBytesMoved());
+		        	//System.out.println(batch.getBytesMoved());
 		        	//System.out.println(batch.getForest()== null);
 		        	System.out.println(batch.getJobTicket());
 		        	System.out.println(batch.getTimestamp());

@@ -485,7 +485,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 		DefaultHttpClient client = null;
 		try {
 			InputStream jsonstream=null;
-			// In case of SSL use 8002 port to clear DB contents.
+			 // In case of SSL use 8002 port to clear DB contents.
 			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope(host, 8002),
