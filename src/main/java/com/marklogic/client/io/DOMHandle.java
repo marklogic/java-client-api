@@ -381,8 +381,8 @@ public class DOMHandle
 		}
 
 		try {
-			if (logger.isInfoEnabled())
-				logger.info("Parsing DOM document from input stream");
+			if (logger.isDebugEnabled())
+				logger.debug("Parsing DOM document from input stream");
 
 			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
@@ -424,8 +424,8 @@ public class DOMHandle
 	@Override
 	public void write(OutputStream out) throws IOException {
 		try {
-			if (logger.isInfoEnabled())
-				logger.info("Serializing DOM document to output stream");
+			if (logger.isDebugEnabled())
+				logger.debug("Serializing DOM document to output stream");
 
 			DocumentBuilderFactory factory = getFactory();
 			if (factory == null) {
