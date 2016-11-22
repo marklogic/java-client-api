@@ -73,4 +73,10 @@ public class QueryBatchException extends Exception implements QueryEvent {
     if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
     return queryEvent.getServerTimestamp();
   }
+
+  @Override
+  public JobTicket getJobTicket() {
+    if ( queryEvent == null ) throw new IllegalStateException("QueryEvent is null");
+    return queryEvent.getJobTicket();
+  }
 }

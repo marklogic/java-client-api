@@ -23,7 +23,6 @@ public interface Batch<T> {
   T[] getItems();
   Calendar getTimestamp();
   long getJobBatchNumber();
-  // TOOD: implement
   JobTicket getJobTicket();
   DatabaseClient getClient();
 }

@@ -22,15 +22,18 @@ import static org.junit.Assert.fail;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Set;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -54,8 +57,6 @@ import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -214,7 +215,9 @@ public class QueryBatcherTest {
     final AtomicInteger totalResults = new AtomicInteger();
     final AtomicInteger successfulBatchCount = new AtomicInteger();
     final AtomicInteger failureBatchCount = new AtomicInteger();
-    final AtomicReference<String> databaseName = new AtomicReference<>();
+    final AtomicReference<String> batchDatabaseName = new AtomicReference<>();
+    final AtomicReference<JobTicket> batchTicket = new AtomicReference<>();
+    final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
     final Map<String, Set<String>> results = new HashMap<>();
     final StringBuffer failures = new StringBuffer();
     queryBatcher
@@ -233,7 +236,9 @@ public class QueryBatcherTest {
           for ( String uri : batch.getItems() ) {
             matches.add(uri);
           }
-          databaseName.set(batch.getForest().getDatabaseName());
+          batchDatabaseName.set(batch.getForest().getDatabaseName());
+          batchTicket.set(batch.getJobTicket());
+          batchTimestamp.set(batch.getTimestamp());
         }
       )
       .onQueryFailure(
@@ -258,19 +263,22 @@ public class QueryBatcherTest {
 
     moveMgr.stopJob(ticket);
     assertTrue("Job should be stopped now", queryBatcher.isStopped());
+    assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
 
     if ( failures.length() > 0 ) {
       fail(failures.toString());
     }
 
-    assertEquals("java-unittest", databaseName.get());
+    assertEquals("java-unittest", batchDatabaseName.get());
 
     // make sure we got the right number of results
     assertEquals(numExpected, totalResults.get());
 
     report = moveMgr.getJobReport(ticket);
-    long maxTime = new Date().getTime()+200;
-    long minTime = new Date().getTime()-200;
+    long maxTime = new Date().getTime()+500;
+    long minTime = new Date().getTime()-500;
+    Date batchDate = batchTimestamp.get().getTime();
+    assertTrue("Batch has incorrect timestamp", batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
     assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());

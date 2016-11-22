@@ -56,6 +56,7 @@ import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -204,6 +205,7 @@ public class WriteBatcherImpl
   private WriteThreadPoolExecutor threadPool;
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
+  private JobTicket jobTicket;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
@@ -599,13 +601,15 @@ public class WriteBatcherImpl
     if ( message != null ) logger.warn(message, t.toString());
   }
 
-  public void start() {
+  public void start(JobTicket ticket) {
+    jobTicket = ticket;
     initialize();
   }
 
   public void stop() {
     stopped.set(true);
     threadPool.shutdownNow();
+    awaitCompletion();
   }
 
   @Override
@@ -613,6 +617,11 @@ public class WriteBatcherImpl
     return threadPool != null && threadPool.isTerminated();
   }
 
+  @Override
+  public JobTicket getJobTicket() {
+    requireInitialized();
+    return jobTicket;
+  }
 
   @Override
   public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {

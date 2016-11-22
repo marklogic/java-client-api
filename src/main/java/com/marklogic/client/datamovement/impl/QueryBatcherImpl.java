@@ -22,6 +22,7 @@ import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
@@ -69,6 +70,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
+  private JobTicket jobTicket;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
@@ -214,6 +216,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     return threadPool != null && threadPool.isTerminated();
   }
 
+  @Override
+  public JobTicket getJobTicket() {
+    requireJobStarted();
+    return jobTicket;
+  }
+
   private void requireJobStarted() {
     if ( threadPool == null ) {
       throw new IllegalStateException("Job not started. First call DataMovementManager.startJob(QueryBatcher)");
@@ -226,12 +234,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
-  synchronized void start() {
+  synchronized void start(JobTicket ticket) {
     if ( threadPool != null ) logger.warn("startJob called more than once");
     if ( getBatchSize() <= 0 ) {
       withBatchSize(1);
       logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
     }
+    jobTicket = ticket;
     initialize();
     if ( query != null ) {
       startQuerying();
@@ -418,6 +427,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         .withBatcher(batcher)
         .withClient(client)
         .withTimestamp(queryStart)
+        .withJobTicket(getJobTicket())
         .withForestBatchNumber(forestBatchNum)
         .withForest(forest);
       if ( retryBatchNumber != -1 ) {
@@ -542,6 +552,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                       .withClient(client)
                       .withBatcher(batcher)
                       .withTimestamp(Calendar.getInstance())
+                      .withJobTicket(getJobTicket())
                       .withJobBatchNumber(currentBatchNumber)
                       .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
                       batch = batch.withItems(uris.toArray(new String[uris.size()]));

@@ -275,4 +275,14 @@ public interface QueryBatcher extends Batcher {
    * DataMovementManager#stopJob DataMovementManager.stopJob} was called), false otherwise
    */
   boolean isStopped();
+
+  /**
+   * After the job has been started, returns the JobTicket generated when the
+   * job was started.
+   *
+   * @return the JobTicket generated when this job was started
+   *
+   * @throws IllegalStateException if this job has not yet been started
+   */
+  JobTicket getJobTicket();
 }

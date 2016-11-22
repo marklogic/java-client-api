@@ -28,4 +28,5 @@ public interface QueryEvent {
   long getForestResultsSoFar();
   Forest getForest();
   long getServerTimestamp();
+  JobTicket getJobTicket();
 }

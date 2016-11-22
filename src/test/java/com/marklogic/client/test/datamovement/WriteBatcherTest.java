@@ -16,6 +16,7 @@
 package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import org.junit.AfterClass;
@@ -27,6 +28,8 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
 
@@ -386,6 +389,8 @@ public class WriteBatcherTest {
     final AtomicInteger failureCount = new AtomicInteger(0);
     final AtomicInteger failureBatchCount = new AtomicInteger(0);
     final AtomicInteger successfulBatchCount = new AtomicInteger(0);
+    final AtomicReference<JobTicket> batchTicket = new AtomicReference<>();
+    final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
     final StringBuffer failures = new StringBuffer();
     final int expectedBatches = (int) Math.ceil(totalDocCount / expectedBatchSize);
     WriteBatcher batcher = moveMgr.newWriteBatcher()
@@ -405,6 +410,8 @@ public class WriteBatcherTest {
                 " items in batch " + batch.getJobBatchNumber() + " but there are " + batch.getItems().length);
             }
           }
+          batchTicket.set(batch.getJobTicket());
+          batchTimestamp.set(batch.getTimestamp());
         }
       )
       .onBatchFailure(
@@ -424,6 +431,7 @@ public class WriteBatcherTest {
           }
         }
       );
+    long batchMinTime = new Date().getTime();
     JobTicket ticket = moveMgr.startJob(batcher);
     assertEquals(batchSize, batcher.getBatchSize());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
@@ -462,19 +470,27 @@ public class WriteBatcherTest {
     batcher.flushAndWait();
     JobReport report = moveMgr.getJobReport(ticket);
     assertEquals("Job Report has incorrect completion information", false, report.isJobComplete());
+
+    assertFalse("Job should not be stopped yet", batcher.isStopped());
     moveMgr.stopJob(ticket);
+    //assertTrue("Job should be stopped now", batcher.isStopped());
 
     if ( failures.length() > 0 ) fail(failures.toString());
 
     logger.debug("expectedSuccess=[{}] successfulCount.get()=[{}]", totalDocCount, successfulCount.get());
     assertEquals("The success listener ran wrong number of times", totalDocCount, successfulCount.get());
 
+    assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
+
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
     DocumentPage docs = docMgr.search(query, 1);
     assertEquals("there should be " + successfulCount + " docs in the collection", successfulCount.get(), docs.getTotalSize());
 
     report = moveMgr.getJobReport(ticket);
-    long maxTime = new Date().getTime()+200;
+    long maxTime = new Date().getTime();
+    Date batchDate = batchTimestamp.get().getTime();
+    assertTrue("Batch has incorrect timestamp", batchDate.getTime() >= batchMinTime && batchDate.getTime() <= maxTime);
+
     long minTime = new Date().getTime()-200;
     Date reportDate = report.getReportTimestamp().getTime();
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);

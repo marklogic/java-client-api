@@ -66,15 +66,17 @@ public class DataMovementServices {
   }
 
   public JobTicket startJob(WriteBatcher batcher) {
-    ((WriteBatcherImpl) batcher).start();
-    return new JobTicketImpl(generateJobId(), JobTicket.JobType.WRITE_BATCHER)
+    JobTicket jobTicket = new JobTicketImpl(generateJobId(), JobTicket.JobType.WRITE_BATCHER)
         .withWriteBatcher((WriteBatcherImpl) batcher);
+    ((WriteBatcherImpl) batcher).start(jobTicket);
+    return jobTicket;
   }
 
   public JobTicket startJob(QueryBatcher batcher) {
-    ((QueryBatcherImpl) batcher).start();
-    return new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_BATCHER)
+    JobTicket jobTicket = new JobTicketImpl(generateJobId(), JobTicket.JobType.QUERY_BATCHER)
         .withQueryBatcher((QueryBatcherImpl) batcher);
+    ((QueryBatcherImpl) batcher).start(jobTicket);
+    return jobTicket;
   }
 
   public JobReport getJobReport(JobTicket ticket) {

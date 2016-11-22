@@ -315,4 +315,14 @@ public interface WriteBatcher extends Batcher {
    * @throws InterruptedException if interrupted while waiting
    */
   boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;
+
+  /**
+   * After the job has been started, returns the JobTicket generated when the
+   * job was started.
+   *
+   * @return the JobTicket generated when this job was started
+   *
+   * @throws IllegalStateException if this job has not yet been started
+   */
+  JobTicket getJobTicket();
 }
