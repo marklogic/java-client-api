@@ -126,7 +126,7 @@ public class QueryBatcherTest {
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
-    matchesByForest.put("java-unittest-2", new String[] {});
+    matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 1, 2);
   }
@@ -137,7 +137,7 @@ public class QueryBatcherTest {
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
-    matchesByForest.put("java-unittest-2", new String[] {});
+    matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 2, 1);
   }
@@ -149,7 +149,7 @@ public class QueryBatcherTest {
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
-    matchesByForest.put("java-unittest-2", new String[] {});
+    matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(query, matchesByForest, 3, 2);
   }
@@ -172,8 +172,8 @@ public class QueryBatcherTest {
       "{ \"query\": " +
         "{ \"queries\": [" +
           "{ \"value-query\": " +
-            "{  \"json-property\": \"dept\"," +
-            "  \"text\": \"HR\"" +
+            "{  \"json-property\": \"department\"," +
+            "  \"text\": [\"HR\"]" +
             "}" +
           "}" +
         "]}" +
@@ -214,7 +214,7 @@ public class QueryBatcherTest {
     final AtomicInteger totalResults = new AtomicInteger();
     final AtomicInteger successfulBatchCount = new AtomicInteger();
     final AtomicInteger failureBatchCount = new AtomicInteger();
-    final StringBuffer databaseName = new StringBuffer();
+    final AtomicReference<String> databaseName = new AtomicReference<>();
     final Map<String, Set<String>> results = new HashMap<>();
     final StringBuffer failures = new StringBuffer();
     queryBatcher
@@ -233,7 +233,7 @@ public class QueryBatcherTest {
           for ( String uri : batch.getItems() ) {
             matches.add(uri);
           }
-          if ( databaseName.length() == 0 ) databaseName.append(batch.getForest().getDatabaseName());
+          databaseName.set(batch.getForest().getDatabaseName());
         }
       )
       .onQueryFailure(
@@ -263,7 +263,7 @@ public class QueryBatcherTest {
       fail(failures.toString());
     }
 
-    assertEquals("java-unittest", databaseName.toString());
+    assertEquals("java-unittest", databaseName.get());
 
     // make sure we got the right number of results
     assertEquals(numExpected, totalResults.get());
