@@ -24,12 +24,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testCtsStem1Exec() {
-        executeTester("testCtsStem1", p.cts.stem(p.col("1")), "\"run\"", new Object[]{p.xs.string("running")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem1", p.cts.stem(p.col("1")), "\"run\"", new Object[]{p.xs.string("ran")}, new ItemSeqExpr[]{});
     }
 
     @Test
     public void testCtsStem2Exec() {
-        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), "\"run\"", new Object[]{p.xs.string("running"), p.xs.string("en")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), "\"run\"", new Object[]{p.xs.string("ran"), p.xs.string("en")}, new ItemSeqExpr[]{});
     }
 
     @Test
