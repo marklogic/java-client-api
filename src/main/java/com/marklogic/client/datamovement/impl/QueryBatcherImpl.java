@@ -52,6 +52,9 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
+/* For implementation explanation, see the comments below above startQuerying,
+ * startIterating, withForestConfig, and retry.
+ */
 public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private QueryDefinition query;
@@ -100,6 +103,22 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     return this;
   }
 
+  /* Accepts a QueryEvent (usually a QueryBatchException sent to a
+   * onQueryFailure listener) and retries that task.  If the task succeeds, it
+   * will spawn the task for the next page in the result set, which will spawn
+   * the task for the next page, etc.  A failure in this attempt will not call
+   * onQueryFailure listeners (as that might lead to infinite recursion since
+   * this is usually called by an onQueryFailure listener), but instead will
+   * directly throw the Exception.  In order to use the latest
+   * ForestConfiguration yet still query the correct forest for this
+   * QueryEvent, we look for a forest from the current ForestConfiguration
+   * which has the same forest id, then we use the preferred host for the
+   * forest from the current ForestConfiguration.  If the current
+   * ForestConfiguration does not have a matching forest, this method throws
+   * IllegalStateException.  This works perfectly with the approach used by
+   * HostAvailabilityListener of black-listing unavailable hosts then retrying
+   * the QueryEvent that failed.
+   */
   @Override
   public void retry(QueryEvent queryEvent) {
     boolean callFailListeners = false;
@@ -265,6 +284,36 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool.setMaximumPoolSize(getThreadCount());
   }
 
+  /* When withForestConfig is called before the job starts, it just provides
+   * the list of forests (and thus hosts) to talk to.  When withForestConfig is
+   * called mid-job, every attempt is made to switch any queued or future task
+   * to use the new ForestConfiguration.  This allows monitoring listeners like
+   * HostAvailabilityListener to black-list hosts immediately when a host is
+   * detected to be unavailable.  In theory customer listeners could do even
+   * more advanced monitoring.  By decoupling the monitoring from the task
+   * management, all a listener has to do is inform us what forests and what
+   * hosts to talk to (by calling withForestConfig), and we'll manage ensuring
+   * any queued or future tasks only talk to those forests and hosts.  We
+   * update clientList with a DatabaseClient per host which is used for
+   * round-robin communication by startIterating (the version of QueryBatcher
+   * that accepts an Iterator<String>).  We also loop through any queued tasks
+   * and point them to hosts and forests that are in the new
+   * ForestConfiguration.  If any queued tasks point to forests that are
+   * missing from the new ForestConfiguration, those tasks are held in
+   * blackListedTasks on the assumption that those tasks can be restarted once
+   * those forests come back online.  If withForestConfig is called later with
+   * those forests back online, those tasks will be restarted.  If the job
+   * finishes before those forests come back online (and are provided this job
+   * by a call to withForestConfig), then any blackListedTasks are left
+   * unfinished and it's likely that not all documents that should have matched
+   * the query will be processed.  The only solution to this is to have a
+   * cluster that is available during the job run (or if there's an outage, it
+   * gets resolved during the job run).  Simply put, there's no way for a job to
+   * get documents from unavailable forests.
+   *
+   * If the ForestConfiguration provides new forests, jobs will be started to
+   * get documenst from those forests (the code is in cleanupExistingTasks).
+   */
   @Override
   public synchronized QueryBatcher withForestConfig(ForestConfiguration forestConfig) {
     super.withForestConfig(forestConfig);
@@ -368,6 +417,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     return forests.stream().map((forest)->forest.getPreferredHost()).distinct().collect(Collectors.toList());
   }
 
+  /* All we do to startQuerying is create a task per forest that queries that
+   * forest for the first page of results, then spawns a new task to query for
+   * the next page of results, etc.  Tasks are handled by threadPool which is a
+   * slightly modified ThreadPoolExecutor with threadCount threads.  We don't
+   * know whether we're at the end of the result set from a forest until we get
+   * the last batch that isn't full (batch size != batchSize).  Therefore, any
+   * error to retrieve a batch might prevent us from getting the next batch and
+   * all remaining batches.  To mitigate the risk of one error effectively
+   * cancelling the rest of the pagination for that forest,
+   * HostAvailabilityListener is configured to retry any batch that encounters
+   * a "host unavailable" error (see HostAvailabilityListener for more
+   * details).  HostAvailabilityListener is also intended to act as an example
+   * so comparable client-specific listeners can be built to handle other
+   * failure scenarios and retry those batches.
+   */
   private synchronized void startQuerying() {
     boolean consistentSnapshotFirstQueryHasRun = false;
     for ( Forest forest : getForestConfig().listForests() ) {
@@ -413,9 +477,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     public void run() {
+      // don't proceed if this forest is marked as done (because we already got the last batch)
       AtomicBoolean isDone = forestIsDone.get(forest);
-      if ( isDone.get() == true ) return;
-      if ( stopped.get() == true ) return;
+      if ( isDone.get() == true ) {
+        logger.error("Attempt to query forest '{}' forestBatchNum {} with start {} after the last batch " +
+          "for that forest has already been retrieved", forest.getForestName(), forestBatchNum, start);
+        return;
+      }
+      // don't proceed if this job is stopped (because dataMovementManager.stopJob was called)
+      if ( stopped.get() == true ) {
+        logger.warn("Cancelling task to query forest '{}' forestBatchNum {} with start {} after the job is stopped",
+          forest.getForestName(), forestBatchNum, start);
+        return;
+      }
       DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
       Calendar queryStart = Calendar.getInstance();
       QueryBatchImpl batch = new QueryBatchImpl()
@@ -433,17 +507,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       try {
         QueryManagerImpl queryMgr = (QueryManagerImpl) client.newQueryManager();
         queryMgr.setPageLength(getBatchSize());
-        List<String> uris = new ArrayList<>();
         UrisHandle handle = new UrisHandle();
         if ( consistentSnapshot == true && serverTimestamp.get() > -1 ) {
           handle.setPointInTimeQueryTimestamp(serverTimestamp.get());
         }
+        // this try-with-resources block will call results.close() once the block is done
+        // here we call the /v1/internal/uris endpoint to get the text/uri-list of documents
+        // matching this structured or string query
         try ( UrisHandle results = queryMgr.uris(query, handle, start, null, forest.getForestName()) ) {
+          // if we're doing consistentSnapshot and this is the first result set, let's capture the
+          // serverTimestamp so we can use it for all future queries
           if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
             serverTimestamp.set(results.getServerTimestamp());
             logger.info("Consistent snapshot timestamp=[{}]", serverTimestamp);
           }
-          uris = new ArrayList<>();
+          List<String> uris = new ArrayList<>();
           for ( String uri : results ) {
             uris.add( uri );
           }
@@ -462,7 +540,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
               batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
-          // let's handle errors from listeners specially
+          // now that we have the QueryBatch, let's send it to each onUrisReady listener
           for (QueryBatchListener listener : urisReadyListeners) {
             try {
               listener.processEvent(batch);
@@ -473,6 +551,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         }
       } catch (ResourceNotFoundException e) {
         // we're done if we get a 404 NOT FOUND which throws ResourceNotFoundException
+        // this should only happen if the last query retrieved a full batch so it thought
+        // there would be more and queued this task which retrieved 0 results
         isDone.set(true);
         shutdownIfAllForestsAreDone();
       } catch (Throwable t) {
@@ -521,6 +601,20 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
 
+  /* startIterating launches in a separate thread (actually a task handled by
+   * threadPool) and just loops through the Iterator<String>, batching uris of
+   * batchSize, and queueing tasks to process each batch via onUrisReady
+   * listeners.  Therefore, this method doesn't talk directly to MarkLogic
+   * Server.  Only the registered onUrisReady listeners can talk to the server,
+   * using the DatabaseClient provided by QueryBatch.getClient().  In order to
+   * fully utilize the cluster, we provide DatabaseClient instances to batches
+   * in round-robin fashion, looping through the hosts provided to
+   * withForestConfig and cached in clientList.  Errors calling
+   * iterator.hasNext() or iterator.next() are handled by onQueryFailure
+   * listeners.  Errors calling listeners (onUrisReady or onQueryFailure) are
+   * logged by our slf4j lgoger at level "error".  If customers want errors in
+   * their listeners handled, they should use try-catch and handle them.
+   */
   private void startIterating() {
     final QueryBatcher batcher = this;
     Runnable queueUris = new Runnable() {
@@ -550,16 +644,16 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                       .withJobTicket(getJobTicket())
                       .withJobBatchNumber(currentBatchNumber)
                       .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
-                      batch = batch.withItems(uris.toArray(new String[uris.size()]));
-                      logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
-                          batch.getJobBatchNumber(), batch.getJobResultsSoFar());
-                      for (QueryBatchListener listener : urisReadyListeners) {
-                        try {
-                          listener.processEvent(batch);
-                        } catch (Throwable e) {
-                          logger.error("Exception thrown by an onUrisReady listener", e);
-                        }
+                    batch = batch.withItems(uris.toArray(new String[uris.size()]));
+                    logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
+                        batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+                    for (QueryBatchListener listener : urisReadyListeners) {
+                      try {
+                        listener.processEvent(batch);
+                      } catch (Throwable e) {
+                        logger.error("Exception thrown by an onUrisReady listener", e);
                       }
+                    }
                   }
                 };
                 threadPool.execute(processBatch);
