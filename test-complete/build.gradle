@@ -55,7 +55,7 @@ jacocoTestReport {
 				}
 
 dependencies {	
-	compile('com.marklogic:java-client-api:4.0-SNAPSHOT')
+	compile('com.marklogic:marklogic-client-api:4.0-SNAPSHOT')
 	compile('com.marklogic:marklogic-xcc:8.0.6')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
