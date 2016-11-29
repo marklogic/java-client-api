@@ -8,6 +8,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -98,6 +99,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     private static byte[] bytesJson;
 	private static JsonNode jsonNode;
 	private static JobTicket writeTicket;
+	private static JobTicket testBatchJobTicket;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -789,38 +791,80 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	}
 	
 	// ISSUE 549
-	@Ignore
+	@Test
 	public void testBatchObject() throws Exception{
 	   	  
 
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
+
+		AtomicBoolean succObj = new AtomicBoolean(false);
+		AtomicBoolean failObj = new AtomicBoolean(false);
 		
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(
 		        batch -> {
 		        	System.out.println("Success");
-		        	System.out.println(batch.getJobBatchNumber());
-		        	System.out.println(batch.getJobWritesSoFar());
-		        	//System.out.println(batch.getBytesMoved());
-		        	//System.out.println(batch.getForest()== null);
-		        	System.out.println(batch.getJobTicket());
-		        	System.out.println(batch.getTimestamp());
+		        	if (batch.getJobTicket() == testBatchJobTicket){
+		        		succObj.set(true);
+		        	}
+		        	if (batch.getJobBatchNumber() == 1 && succObj.get()){
+		        		System.out.println(batch.getJobBatchNumber());
+		        		succObj.set(true);
+		        	}
+		        	else{
+		        		succObj.set(false);
+		        	}
+		           	if (batch.getJobWritesSoFar() == 10 && succObj.get()){
+		        		System.out.println(batch.getJobWritesSoFar());
+		        		succObj.set(true);
+		        	}
+		        	else{
+		        		succObj.set(false);
+		        	}
+		           	//assuming that comparison takes place on the same day as document write
+		           
+		            if(Math.abs(batch.getTimestamp().get(Calendar.DAY_OF_MONTH)-	Calendar.getInstance().get(Calendar.DAY_OF_MONTH)) == 0 && succObj.get()){
+		            	succObj.set(true);
+		        	}
+		        	else{
+		        		succObj.set(false);
+		        	}
+		         
 		
 		          }
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	System.out.println("Failure");
-		        	System.out.println(batch.getJobBatchNumber());
-		        	System.out.println(batch.getJobWritesSoFar());
-		        	//System.out.println(batch.getBytesMoved());
-		        	//System.out.println(batch.getForest()== null);
-		        	System.out.println(batch.getJobTicket());
-		        	System.out.println(batch.getTimestamp());
-		      	    
+		        	if (batch.getJobTicket() == testBatchJobTicket){
+		        		failObj.set(true);
+		        	}
+		        	if (batch.getJobBatchNumber() == 2 && failObj.get()){
+		        		System.out.println(batch.getJobBatchNumber());
+		        		failObj.set(true);
+		        	}
+		        	else{
+		        		failObj.set(false);
+		        	}
+		        	if (batch.getJobWritesSoFar() == 15 && failObj.get()){
+		        		System.out.println(batch.getJobWritesSoFar());
+		        		failObj.set(true);
+		        	}
+		        	else{
+		        		failObj.set(false);
+		        	}
+		        	//assuming that comparison takes place on the same day as document write
+		        	if(Math.abs(batch.getTimestamp().get(Calendar.DAY_OF_MONTH)-	Calendar.getInstance().get(Calendar.DAY_OF_MONTH)) == 0  && failObj.get()){
+		        		failObj.set(true);
+		        	}
+		        	else{
+		        		failObj.set(false);
+		        	}
+
+		
 		          });
-		JobTicket jt= dmManager.startJob(ihb1);
-	
+		testBatchJobTicket = dmManager.startJob(ihb1);
+		
 		for (int i =0 ;i < 10; i++){
 			String uri ="/local/json-"+ i;
 			ihb1.add(uri, stringHandle);
@@ -830,7 +874,9 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb1.add("", stringHandle);
 		}
 		ihb1.flushAndWait();
-		dmManager.stopJob(jt);
+		dmManager.stopJob(testBatchJobTicket);
+		Assert.assertTrue(succObj.get());
+		Assert.assertTrue(failObj.get());
 
 	}
 	
