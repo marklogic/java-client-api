@@ -588,17 +588,23 @@ public class JerseyServices implements RESTServices {
 				.delete(ClientResponse.class);
 		ClientResponse response = makeRequest(builder, doDeleteFunction, null);
 		ClientResponse.Status status = response.getClientResponseStatus();
+		int statusCode = response.getStatus();
 
 		if (status == ClientResponse.Status.NOT_FOUND) {
 			response.close();
 			throw new ResourceNotFoundException(
 					"Could not delete non-existent document");
 		}
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		if (statusCode == 428) {
 			FailedRequest failure = extractErrorFields(response);
-			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
 				throw new FailedRequestException(
 						"Content version required to delete document", failure);
+			}
+			throw new FailedRequestException(
+					"Precondition required to delete document", failure);
+		} else if (status == ClientResponse.Status.FORBIDDEN) {
+			FailedRequest failure = extractErrorFields(response);
 			throw new ForbiddenUserException(
 					"User is not allowed to delete documents", failure);
 		}
@@ -1298,6 +1304,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		int statusCode = -1;
 		MultivaluedMap<String, String> responseHeaders = null;
 		long startTime = System.currentTimeMillis();
 		int nextDelay = 0;
@@ -1339,6 +1346,7 @@ public class JerseyServices implements RESTServices {
 			}
 
 			status = response.getClientResponseStatus();
+			statusCode = response.getStatus();
 
 			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -1368,15 +1376,21 @@ public class JerseyServices implements RESTServices {
 						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
 						    " seconds after "+retry+" retries");
 		}
-		if (status == ClientResponse.Status.NOT_FOUND)
+		if (status == ClientResponse.Status.NOT_FOUND) {
 			throw new ResourceNotFoundException(
 					"Could not write non-existent document",
 					extractErrorFields(response));
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		}
+		if (statusCode == 428) {
 			FailedRequest failure = extractErrorFields(response);
-			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
 				throw new FailedRequestException(
 						"Content version required to write document", failure);
+			}
+			throw new FailedRequestException(
+					"Precondition required to write document", failure);
+		} else if (status == ClientResponse.Status.FORBIDDEN) {
+			FailedRequest failure = extractErrorFields(response);
 			throw new ForbiddenUserException(
 					"User is not allowed to write documents", failure);
 		}
@@ -1453,6 +1467,7 @@ public class JerseyServices implements RESTServices {
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
+		int statusCode = -1;
 		MultivaluedMap<String, String> responseHeaders = null;
 		long startTime = System.currentTimeMillis();
 		int nextDelay = 0;
@@ -1485,6 +1500,7 @@ public class JerseyServices implements RESTServices {
 				requestBlder.put(ClientResponse.class,  multiPart) :
 				requestBlder.post(ClientResponse.class, multiPart);
 			status = response.getClientResponseStatus();
+			statusCode = response.getStatus();
 
 			responseHeaders = response.getHeaders();
 			if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
@@ -1517,11 +1533,16 @@ public class JerseyServices implements RESTServices {
 			throw new ResourceNotFoundException(
 					"Could not write non-existent document");
 		}
-		if (status == ClientResponse.Status.FORBIDDEN) {
+		if (statusCode == 428) {
 			FailedRequest failure = extractErrorFields(response);
-			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION"))
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
 				throw new FailedRequestException(
 						"Content version required to write document", failure);
+			}
+			throw new FailedRequestException(
+					"Precondition required to write document", failure);
+		} else if (status == ClientResponse.Status.FORBIDDEN) {
+			FailedRequest failure = extractErrorFields(response);
 			throw new ForbiddenUserException(
 					"User is not allowed to write documents", failure);
 		}
@@ -4223,11 +4244,10 @@ public class JerseyServices implements RESTServices {
 						+ " " + entityType + " at " + path,
 						failure);
 			}
-			if (status == ClientResponse.Status.FORBIDDEN) {
-				if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
-					throw new FailedRequestException("Content version required to " +
-						operation + " " + entityType + " at " + path, failure);
-				}
+			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
+				throw new FailedRequestException("Content version required to " +
+					operation + " " + entityType + " at " + path, failure);
+			} else if (status == ClientResponse.Status.FORBIDDEN) {
 				throw new ForbiddenUserException("User is not allowed to "
 						+ operation + " " + entityType + " at " + path,
 						failure);

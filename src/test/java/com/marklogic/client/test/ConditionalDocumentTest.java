@@ -127,9 +127,9 @@ public class ConditionalDocumentTest {
 			ex = e;
 		}
 		assertTrue("Overwrite without version succeeded", ex != null);
-		assertTrue("Write with no version had wrong error", statusCode == 403);
+		assertEquals("Write with no version had wrong error", 428, statusCode);
 		assertEquals("Write with no version had misleading message", 
-				"Local message: Content version required to write document. Server Message: You do not have permission to this method and URL.",
+				"Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /test/conditional1.xml",
 				ex.getMessage());
 		
 		ex = null;
@@ -144,7 +144,7 @@ public class ConditionalDocumentTest {
 			ex = e;
 		}
 		assertTrue("Overwrite with bad version succeeded", ex != null);
-		assertTrue("Write with bad version had wrong error", statusCode == 412);
+		assertEquals("Write with bad version had wrong error", 412, statusCode);
 		assertTrue("Write with no version had misleading message", 
 				ex.getMessage().contains("Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /test/conditional1.xml has current version"));
 
@@ -168,7 +168,7 @@ public class ConditionalDocumentTest {
 			ex = e;
 		}
 		assertTrue("Delete without version succeeded", ex != null);
-		assertTrue("Write with bad version had wrong error", statusCode == 403);
+		assertEquals("Delete without version had wrong error", 428, statusCode);
 
 		ex = null;
 		// TODO: statusCode
@@ -187,7 +187,7 @@ public class ConditionalDocumentTest {
 		}
 		assertTrue("Delete with no version succeeded", ex != null);
 		assertEquals("Delete with no version had misleading message", 
-				"Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL.",
+				"Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /test/conditional1.xml",
 				ex.getMessage());
 
 		
