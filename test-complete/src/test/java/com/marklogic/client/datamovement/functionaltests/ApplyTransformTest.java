@@ -1,9 +1,11 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,6 +34,7 @@ import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -209,18 +212,29 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6102);
-
-		String uri ="/local/failed";
-		ihb2.add(uri, meta7, stringHandle);
-		ihb2.add("/local/failed-1", meta7, jacksonHandle);
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6104);
-
+		
 		ihb2.add("/local/nonexistent-1", stringHandle);
 		ihb2.flushAndWait();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6103);
+		
+		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
+		ihb1.withBatchSize(2);
+		ihb1.onBatchSuccess(
+				batch -> {
+						System.out.println("Written to "+batch.getClient().getHost());
+				}
+		)
+		.onBatchFailure(
+				(batch, throwable) -> {
+					throwable.printStackTrace();
+				});
+
+		String uri ="/local/failed";
+		ihb1.add(uri, meta7, stringHandle);
+		ihb1.add("/local/failed-1", meta7, jacksonHandle);
+		ihb1.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6105);
 	}
-
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
@@ -535,15 +549,16 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				})
 				.onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
-					failedBatch.addAll(batchList);
+					skippedBatch.addAll(batchList);
 				});
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("FailTransform"))
 				.withBatchSize(2)
 				.onUrisReady(listener)
 				.onUrisReady(batch->{
-					System.out.println(batch.getItems()[0]);
-					System.out.println(batch.getItems()[1]);
+				
+					System.out.println(batch.getClient().getHost());
+					System.out.println(batch.getForest().getHost());
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
@@ -568,8 +583,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 
 		}
-		assertEquals("Size should be 1", 2,urisList.size());
-		assertEquals("Size should be 0", 2,failedBatch.size());
+		assertEquals("Size should be 2", 2,urisList.size());
+		assertEquals("Size should be 2", 2,failedBatch.size());
 		assertEquals("Size should be 0", 0,successBatch.size());
 		assertEquals("Size should be 0", 0,skippedBatch.size());
 
@@ -584,15 +599,34 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		AtomicInteger count = new AtomicInteger();
 		AtomicBoolean flag = new AtomicBoolean(true);
-
+		AtomicBoolean isClientNull = new AtomicBoolean(false);
+	 	
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withApplyResult(ApplyResult.REPLACE)
 				.onSuccess(batch -> {
+					System.out.println("Success: ");
+					System.out.println("Forest : "+batch.getForest().getDatabaseName());
+					System.out.println("Forest id : "+batch.getForest().getForestId());
+					System.out.println("Alternate : "+batch.getForest().getAlternateHost());
+					System.out.println("open replica host : "+batch.getForest().getOpenReplicaHost());
+					System.out.println("Host : "+batch.getForest().getHost());
+					System.out.println("Preferred : "+batch.getForest().getPreferredHost());
+					System.out.println("JobBatchNumber : "+batch.getJobBatchNumber());
+					System.out.println("ServerTimestamp : "+batch.getServerTimestamp());
+					System.out.println("Timestamp : "+batch.getTimestamp());
+					for (String successuri: batch.getItems()){
+						System.out.println("Succeeded : "+successuri);
+						
+					}
+					if(batch.getClient() == null){
+						isClientNull.set(true);
+					}
 					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
 					JacksonHandle dh = new JacksonHandle();
 					while(page.hasNext()){
 						DocumentRecord rec = page.next();
 						rec.getContent(dh);
+						System.out.println(dh.get().get("c").asText().trim());
 						if(! dh.get().get("c").asText().trim().equals("Value")){
 							flag.set(false);
 						}
@@ -601,21 +635,38 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					}
 
 				})
+				.onBatchFailure((batch, throwable)->{
+					System.out.println("Failure: ");
+					System.out.println("JobBatchNumber : "+batch.getJobBatchNumber());
+					System.out.println("Timestamp : "+batch.getTimestamp());
+					for (String faileduri: batch.getItems()){
+						System.out.println("Failed : "+faileduri);
+					}
+					throwable.printStackTrace();
+					System.out.println(throwable.getMessage());
+				})
 				.withTransform(transform);
 
 		//Query collection "Replace Snapshot", a listener forTransform and another for Deletion are attached	    
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Replace Snapshot"))
+				.withBatchSize(1)
+				.withConsistentSnapshot()
 				.onUrisReady(listener)
 				.onUrisReady(new DeleteListener())
 				.onQueryFailure( throwable -> {
 					throwable.printStackTrace();
 
 				});
-
+		batcher.setQueryFailureListeners(
+		  new HostAvailabilityListener(dmManager)
+		    .withSuspendTimeForHostUnavailable(Duration.ofSeconds(30))
+		    .withMinHosts(2)
+		);	
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
+		assertFalse(isClientNull.get());
 		assertEquals("document count", 100,count.intValue());
 		assertTrue(flag.get());
 
@@ -627,9 +678,14 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					for(String s: batch.getItems()){
 						urisList.add(s);
 					}
+				})
+				.onQueryFailure( throwable -> {
+					throwable.printStackTrace();
+
 				});
+
 		JobTicket ticket1 = dmManager.startJob( queryBatcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket1);
 		assertTrue(urisList.isEmpty());
 	}

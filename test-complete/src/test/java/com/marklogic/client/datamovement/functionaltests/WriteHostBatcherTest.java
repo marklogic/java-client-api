@@ -1755,6 +1755,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	
        	final AtomicBoolean failState = new AtomicBoolean(false);
        	final AtomicInteger failCount = new AtomicInteger(0);
+       	final AtomicBoolean failureListenerNpe = new AtomicBoolean(false);
           	
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5);
@@ -1762,16 +1763,22 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		ihb2.onBatchSuccess(
 		        batch -> {
-		        	String s= null;
-		        	s.length();
+		        
 		        	System.out.println("Success host : "+batch.getClient().getHost());
 		        	System.out.println(batch.getItems().length);
+		        	System.out.println("Job writes "+batch.getJobWritesSoFar());
 		        	successCount.getAndAdd(batch.getItems().length);
+		        	String s= null;
+		        	s.length();
 		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		        	  if (throwable.getMessage().contains("java.lang.NullPointerException")){
+		        		  failureListenerNpe.set(true); 
+		        	  }
 		        	  failState.set(true);
 		        	  failCount.getAndAdd(batch.getItems().length);
 		          });
@@ -1781,10 +1788,15 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			String uri ="/local/json-"+ j;
 			ihb2.add(uri, stringHandle);
 		}
-							
-    	System.out.println("Fail : "+failCount.intValue());
-    	System.out.println("Success : "+successCount.intValue());
-    	System.out.println("Count : "+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		for (int i =0 ;i < 5; i++){
+			ihb2.add("", stringHandle);
+		}
+		ihb2.flushAndWait();
+		Assert.assertTrue(failState.get());
+		Assert.assertFalse(failureListenerNpe.get());
+		Assert.assertEquals(5,failCount.get());
+		Assert.assertEquals(30, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		
 	}
 	
 	@Test
@@ -2213,10 +2225,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			}
 			count++;
 				
-		  }
-   		
-   	  }  
-       		
+		  }   		
+   	  }  	
   } 
-	
 }
