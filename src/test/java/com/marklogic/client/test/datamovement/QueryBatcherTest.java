@@ -83,12 +83,10 @@ public class QueryBatcherTest {
 
   @AfterClass
   public static void afterClass() {
-    /*
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
-    */
 
     Common.release();
   }
@@ -275,8 +273,8 @@ public class QueryBatcherTest {
     assertEquals(numExpected, totalResults.get());
 
     report = moveMgr.getJobReport(ticket);
-    long maxTime = new Date().getTime()+500;
-    long minTime = new Date().getTime()-500;
+    long maxTime = new Date().getTime()+1000;
+    long minTime = new Date().getTime()-1000;
     Date batchDate = batchTimestamp.get().getTime();
     assertTrue("Batch has incorrect timestamp", batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();

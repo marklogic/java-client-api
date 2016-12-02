@@ -24,6 +24,7 @@ declare function bootstrap:database-configure(
     let $c := bootstrap:create-geospatial-element-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-element-child-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-element-pair-indexes($c, $dbid)
+    let $c := bootstrap:create-path-namespaces($c, $dbid)
     let $c := bootstrap:create-geospatial-path-indexes($c, $dbid)
     let $c := bootstrap:create-geospatial-region-path-indexes($c, $dbid)
     let $c := bootstrap:create-path-range-indexes($c, $dbid)
@@ -298,6 +299,38 @@ declare function bootstrap:create-geospatial-element-pair-indexes(
         else admin:database-add-geospatial-element-pair-index($c, $dbid, $index-specs)
 };
 
+declare function bootstrap:create-path-namespaces(
+    $c as element(configuration),
+    $dbid as xs:unsignedLong
+) as element(configuration)
+{
+    let $index-specs :=
+        let $curr-idx := admin:database-get-path-namespaces($c, $dbid)
+        let $new-idx  := (
+            "rootOrg", "root.org",
+            "targetOrg", "target.org"
+            )
+        let $n := 2
+        for $i in 1 to (count($new-idx) idiv $n)
+        let $offset    := ($i * $n) - ($n - 1)
+        let $prefix    := subsequence($new-idx, $offset, 1)
+        let $namespace := subsequence($new-idx, $offset + 1, 1)
+        let $curr      := $curr-idx[
+            string(dbx:prefix) eq $prefix and
+            string(dbx:namespace-uri) eq $namespace
+            ]
+        return
+            if (exists($curr)) then (
+                xdmp:log(concat("Namespace already exists:", $prefix))
+            ) else (
+                admin:database-path-namespace( $prefix, $namespace ),
+                xdmp:log(concat("Creating path-namespace:", $prefix))
+            )
+    return
+        if (empty($index-specs)) then $c
+        else admin:database-add-path-namespace($c, $dbid, $index-specs)
+};
+
 declare function bootstrap:create-geospatial-path-indexes(
     $c as element(configuration),
     $dbid as xs:unsignedLong
@@ -306,9 +339,9 @@ declare function bootstrap:create-geospatial-path-indexes(
     let $index-specs := 
         let $curr-idx := admin:database-get-geospatial-path-indexes($c, $dbid)
         let $new-idx  := (
-            "com.marklogic.client.test.City/latLong"
+            "com.marklogic.client.test.City/latLong",
+            "/rootOrg:geo/targetOrg:path"
             )
-        (: no offset necessary now since each new-idx only has one item, but that may change :)
         let $n := 1
         for $i in 1 to (count($new-idx) idiv $n)
         let $offset    := ($i * $n) - ($n - 1) 

@@ -2115,29 +2115,37 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "q", text);
                 }
             }
-            if (queryDef instanceof RawQueryDefinition) {
+            if (queryDef instanceof StructuredQueryDefinition) {
+                structure = ((StructuredQueryDefinition) queryDef).serialize();
+
+                if (logger.isDebugEnabled()) {
+                    String text = ((StringQueryDefinition) queryDef).getCriteria();
+                    String qtextMessage = text == null ? "" : " and string query \"" + text + "\"";
+                    logger.debug("Searching for structure {}{}", structure, qtextMessage);
+                }
+
+                String payloadMimetype = "application/xml";
+                if (queryDef instanceof RawQueryDefinition) {
+                    StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+                    baseHandle = HandleAccessor.checkHandle(handle, "search");
+
+                    Format payloadFormat = getStructuredQueryFormat(baseHandle);
+                    payloadMimetype = getMimetypeWithDefaultXML(payloadFormat, baseHandle);
+                }
+
+                webResource = getConnection().path("search").queryParams(params);
+                builder = (payloadMimetype != null) ?
+                    webResource.type(payloadMimetype).accept(mimetype) :
+                    webResource.accept(mimetype);
+            } else if (queryDef instanceof RawQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Raw search");
 
-                StructureWriteHandle handle =
-                    ((RawQueryDefinition) queryDef).getHandle();
-
+                StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
                 baseHandle = HandleAccessor.checkHandle(handle, "search");
 
-                Format payloadFormat = baseHandle.getFormat();
-                if (payloadFormat == Format.UNKNOWN)
-                    payloadFormat = null;
-                else if (payloadFormat != Format.XML && payloadFormat != Format.JSON)
-                    throw new IllegalArgumentException(
-                            "Cannot perform raw search for "+payloadFormat.name());
-
-                String payloadMimetype = baseHandle.getMimetype();
-                if (payloadFormat != null) {
-                    if (payloadMimetype == null)
-                        payloadMimetype = payloadFormat.getDefaultMimetype();
-                } else if (payloadMimetype == null) {
-                    payloadMimetype = "application/xml";
-                }
+                Format payloadFormat = getStructuredQueryFormat(baseHandle);
+                String payloadMimetype = getMimetypeWithDefaultXML(payloadFormat, baseHandle);
 
                 String path = (queryDef instanceof RawQueryByExampleDefinition) ?
                     "qbe" : "search";
@@ -2167,14 +2175,6 @@ public class JerseyServices implements RESTServices {
 
                 webResource = getConnection().path("keyvalue").queryParams(params);
                 builder = webResource.accept(mimetype);
-            } else if (queryDef instanceof StructuredQueryDefinition) {
-                structure = ((StructuredQueryDefinition) queryDef).serialize();
-
-                if (logger.isDebugEnabled())
-                    logger.debug("Searching for structure {}", structure);
-
-                webResource = getConnection().path("search").queryParams(params);
-                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof CombinedQueryDefinition) {
                 structure = ((CombinedQueryDefinition) queryDef).serialize();
 
@@ -2273,6 +2273,28 @@ public class JerseyServices implements RESTServices {
             }
             return response;
         }
+    }
+
+    private Format getStructuredQueryFormat(HandleImplementation baseHandle) {
+        Format payloadFormat = baseHandle.getFormat();
+        if (payloadFormat == Format.UNKNOWN) {
+            payloadFormat = null;
+        } else if (payloadFormat != Format.XML && payloadFormat != Format.JSON) {
+            throw new IllegalArgumentException(
+                    "Cannot perform raw search for format "+payloadFormat.name());
+        }
+        return payloadFormat;
+    }
+
+    private String getMimetypeWithDefaultXML(Format payloadFormat, HandleImplementation baseHandle) {
+        String payloadMimetype = baseHandle.getMimetype();
+        if (payloadFormat != null) {
+            if (payloadMimetype == null)
+                payloadMimetype = payloadFormat.getDefaultMimetype();
+        } else if (payloadMimetype == null) {
+            payloadMimetype = "application/xml";
+        }
+        return payloadMimetype;
     }
 
 	@Override
@@ -2908,7 +2930,9 @@ public class JerseyServices implements RESTServices {
 			if (qdef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) qdef).serialize();
 
-				logger.debug("Query uris with structured query {}", structure);
+				String text = ((StringQueryDefinition) qdef).getCriteria();
+				String qtextMessage = text == null ? "" : " and string query \"" + text + "\"";
+				logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
@@ -4794,20 +4818,20 @@ public class JerseyServices implements RESTServices {
 				addEncodedParam(params, "q", text);
 			}
 		}
-		if (queryDef instanceof RawQueryDefinition) {
-			StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
-			baseHandle = HandleAccessor.checkHandle(handle, "match");
-
-			if (logger.isDebugEnabled())
-				logger.debug("Searching for structure {}", structure);
-
-			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
-		} else if (queryDef instanceof StructuredQueryDefinition) {
+		if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
 
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for structure {}",
 						structure);
+
+			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
+		} else if (queryDef instanceof RawQueryDefinition) {
+			StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+			baseHandle = HandleAccessor.checkHandle(handle, "match");
+
+			if (logger.isDebugEnabled())
+				logger.debug("Searching for structure {}", structure);
 
 			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
