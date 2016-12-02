@@ -85,7 +85,7 @@ public class PackageExamples {
                 }
             }
         })
-        .onQueryFailure(queryHostException -> queryHostException.printStackTrace());
+        .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
     JobTicket ticket = dataMovementManager.startJob(qhb);
     qhb.awaitCompletion();
     dataMovementManager.stopJob(ticket);

@@ -38,7 +38,7 @@ public interface BatchListener<T extends Batch<?>> {
    *                 }
    *             }
    *         })
-   *         .onQueryFailure(queryHostException -&gt; queryHostException.printStackTrace());
+   *         .onQueryFailure(queryBatchException -&gt; queryBatchException.printStackTrace());
    *     JobTicket ticket = dataMovementManager.startJob(qhb);
    *     qhb.awaitCompletion();
    *     dataMovementManager.stopJob(ticket);
