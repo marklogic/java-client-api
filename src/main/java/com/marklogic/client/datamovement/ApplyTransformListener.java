@@ -92,6 +92,7 @@ public class ApplyTransformListener implements QueryBatchListener {
         services.postResource(null, "internal/apply-transform", null, params, uris, new ReaderHandle()).get()
       ).lines().collect(Collectors.toList());
       QueryBatchImpl processedBatch = new QueryBatchImpl()
+        .withClient( batch.getClient() )
         .withItems( responseUris.toArray(new String[responseUris.size()]) )
         .withTimestamp( batch.getTimestamp() )
         .withJobBatchNumber( batch.getJobBatchNumber() )
