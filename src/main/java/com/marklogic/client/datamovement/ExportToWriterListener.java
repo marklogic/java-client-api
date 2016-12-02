@@ -30,6 +30,9 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
  * An extension of ExportListener which facilitates writing all documents to a
  * single Writer output stream.  The Writer could be a FileWriter, for example,
@@ -43,6 +46,7 @@ import com.marklogic.client.query.QueryManager;
  * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportToWriterListener.java
  */
 public class ExportToWriterListener extends ExportListener {
+  private static Logger logger = LoggerFactory.getLogger(ExportToWriterListener.class);
   private Writer writer;
   private String suffix;
   private String prefix;
@@ -66,14 +70,22 @@ public class ExportToWriterListener extends ExportListener {
             if ( prefix != null ) writer.write( prefix );
             if ( outputListeners.size() > 0 ) {
               for ( OutputListener listener : outputListeners ) {
-                writer.write( listener.generateOutput(doc) );
+                String output = null;
+                try {
+                  output = listener.generateOutput(doc);
+                } catch (Throwable t) {
+                  logger.error("Exception thrown by an onGenerateOutput listener", t);
+                }
+                if ( output != null ) {
+                  writer.write( output );
+                }
               }
             } else {
               writer.write( doc.getContent(new StringHandle()).get() );
             }
             if ( suffix != null ) writer.write( suffix );
           } catch (IOException e) {
-              throw new DataMovementException("Failed to write document \"" + doc.getUri() + "\"", e);
+            throw new DataMovementException("Failed to write document \"" + doc.getUri() + "\"", e);
           }
         }
       }

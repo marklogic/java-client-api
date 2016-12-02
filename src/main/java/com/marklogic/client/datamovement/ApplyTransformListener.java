@@ -23,6 +23,9 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.BufferedReader;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -74,6 +77,7 @@ import java.util.stream.Collectors;
  * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java
  */
 public class ApplyTransformListener implements QueryBatchListener {
+  private static Logger logger = LoggerFactory.getLogger(ApplyTransformListener.class);
   private ServerTransform transform;
   private ApplyResult applyResult = ApplyResult.REPLACE;
   private List<QueryBatchListener> successListeners = new ArrayList<>();
@@ -109,7 +113,11 @@ public class ApplyTransformListener implements QueryBatchListener {
         .withServerTimestamp( batch.getServerTimestamp() )
         .withJobTicket( batch.getJobTicket() );
       for ( QueryBatchListener listener : successListeners ) {
-        listener.processEvent(processedBatch);
+        try {
+          listener.processEvent(processedBatch);
+        } catch (Throwable t) {
+          logger.error("Exception thrown by an onSuccess listener", t);
+        }
       }
 
       List<String> skippedRequestUris = new ArrayList<>(Arrays.asList(batch.getItems()));
@@ -118,12 +126,20 @@ public class ApplyTransformListener implements QueryBatchListener {
         QueryBatchImpl skippedBatch = processedBatch
           .withItems( skippedRequestUris.toArray(new String[0]) );
         for ( QueryBatchListener listener : skippedListeners ) {
-          listener.processEvent(skippedBatch);
+          try {
+            listener.processEvent(skippedBatch);
+          } catch (Throwable t) {
+            logger.error("Exception thrown by an onSkipped listener", t);
+          }
         }
       }
     } catch (Throwable t) {
       for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
-        listener.processFailure(batch, t);
+        try {
+          listener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onBatchFailure listener", t2);
+        }
       }
     }
   }

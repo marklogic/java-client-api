@@ -15,8 +15,13 @@
  */
 package com.marklogic.client.datamovement;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.io.Writer;
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * Facilitates writing uris to a file when necessary because setting [merge
@@ -49,10 +54,11 @@ import java.io.Writer;
  * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
  */
 public class UrisToWriterListener implements QueryBatchListener {
+  private static Logger logger = LoggerFactory.getLogger(UrisToWriterListener.class);
   private Writer writer;
   private String suffix = "\n";
   private String prefix;
-  private OutputListener outputListener;
+  private List<OutputListener> outputListeners = new ArrayList<>();
 
   public UrisToWriterListener(Writer writer) {
     this.writer = writer;
@@ -64,8 +70,18 @@ public class UrisToWriterListener implements QueryBatchListener {
       for ( String uri : batch.getItems() ) {
         try {
           if (prefix != null) writer.write(prefix);
-          if (outputListener != null) {
-            writer.write(outputListener.generateOutput(uri));
+          if ( outputListeners.size() > 0 ) {
+            for ( OutputListener listener : outputListeners ) {
+              String output = null;
+              try {
+                output = listener.generateOutput(uri);
+              } catch (Throwable t) {
+                logger.error("Exception thrown by an onGenerateOutput listener", t);
+              }
+              if ( output != null ) {
+                writer.write( output );
+              }
+            }
           } else {
             writer.write(uri);
           }
@@ -88,7 +104,7 @@ public class UrisToWriterListener implements QueryBatchListener {
   }
 
   public UrisToWriterListener onGenerateOutput(OutputListener listener) {
-    this.outputListener = listener;
+    outputListeners.add(listener);
     return this;
   }
 
