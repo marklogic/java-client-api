@@ -111,7 +111,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		desc.setVersion(badVersion);
 
 		String exception = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml doesn't match if-match: 1111";
 
 		// CREATE
 		// write document with bad version
@@ -122,6 +122,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 		boolean isExceptionThrown = exception.contains(expectedException);
 		assertTrue("Exception is not thrown", isExceptionThrown);
+		System.out.println(exception);
 
 		// write document with unknown version
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
@@ -148,21 +149,22 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		desc.setVersion(badVersion);
 
 		String updateException = "";
-		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
 
 		try
 		{
 			docMgr.write(desc, updateHandle);
 		} catch (FailedRequestException e) { updateException = e.toString(); }
-
+		System.out.println(updateException);
 		boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
 		assertTrue("Exception is not thrown", isUpdateExceptionThrown);
 
+		
 		// update with unknown version
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 
 		String updateUnknownException = "";
-		String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: You do not have permission to this method and URL";
+		String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
 
 		try
 		{
@@ -170,6 +172,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		} catch (FailedRequestException e) { updateUnknownException = e.toString(); }
 
 		boolean isUpdateUnknownExceptionThrown = updateUnknownException.contains(expectedUpdateUnknownException);
+		System.out.println(updateUnknownException);
 		assertTrue("Exception is not thrown", isUpdateUnknownExceptionThrown);
 
 		desc = docMgr.exists(docId);
@@ -191,7 +194,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		desc.setVersion(badVersion);
 
 		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
+		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
 
 		try
 		{
@@ -199,13 +202,14 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		} catch (FailedRequestException e) { deleteException = e.toString(); }
 
 		boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
+		System.out.println("Delete exception" +deleteException);
 		assertTrue("Exception is not thrown", isDeleteExceptionThrown);
 
 		// delete using unknown version
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 
 		String deleteUnknownException = "";
-		String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: You do not have permission to this method and URL";
+		String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
 
 		try
 		{
@@ -213,6 +217,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		} catch (FailedRequestException e) { deleteUnknownException = e.toString(); }
 
 		boolean isDeleteUnknownExceptionThrown = deleteUnknownException.contains(expectedDeleteUnknownException);
+		System.out.println("Delete exception" +deleteUnknownException);
 		assertTrue("Exception is not thrown", isDeleteUnknownExceptionThrown);
 
 		// delete using good version
@@ -224,7 +229,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		docMgr.delete(desc);
 
 		String verifyDeleteException = "";
-		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
+		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /optimistic-locking/xml-original.xml";
 
 		StringHandle deleteHandle = new StringHandle();
 		try
@@ -234,7 +239,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 		boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
 		assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
-
+		System.out.println("Delete exception" +verifyDeleteException);
 		// release client
 		client.release();
 

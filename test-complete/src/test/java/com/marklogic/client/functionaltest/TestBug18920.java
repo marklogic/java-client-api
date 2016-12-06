@@ -97,7 +97,7 @@ public class TestBug18920 extends BasicJavaClientREST{
 		System.out.println(docUri);
 		
 		String exception = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: You do not have permission to this method and URL";
+		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
 		
 		// update document with no content version
 		try 
