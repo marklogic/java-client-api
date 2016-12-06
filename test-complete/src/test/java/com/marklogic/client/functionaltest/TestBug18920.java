@@ -39,16 +39,33 @@ import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
+
 public class TestBug18920 extends BasicJavaClientREST{
 
 	private static String dbName = "Test18920DB";
 	private static String [] fNames = {"Test18920DB-1"};
+	private static DatabaseClient client ;
+	private static ServerConfigurationManager configMgr;
 	
 	@BeforeClass
 	public static void setUp() throws Exception
 	{
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		// create a manager for the server configuration
+		configMgr = client.newServerConfigManager();
+
+		// read the server configuration from the database
+		configMgr.readConfiguration();
+
+		// require content versions for updates and deletes
+		// use Policy.OPTIONAL to allow but not require versions
+		configMgr.setContentVersionRequests(Policy.REQUIRED);
+		System.out.println("set optimistic locking to required");
+
+		// write the server configuration to the database
+		configMgr.writeConfiguration();
 	}
 
 	@SuppressWarnings("deprecation")
@@ -61,24 +78,6 @@ public class TestBug18920 extends BasicJavaClientREST{
 		String uri = "/bug18920/";
 		String docId = uri + filename;
 				
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		
-		// create a manager for the server configuration
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
-
-		// read the server configuration from the database
-		configMgr.readConfiguration();
-
-		// require content versions for updates and deletes
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.REQUIRED);
-
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
-
-		System.out.println("set optimistic locking to required");
-		
 		// create document manager
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		
@@ -105,24 +104,26 @@ public class TestBug18920 extends BasicJavaClientREST{
 		{
 			docMgr.write(docUri, handle);
 		} catch (FailedRequestException e) { exception = e.toString(); }
-		
+		System.out.println("Exception is"+ exception);
 		boolean isExceptionThrown = exception.contains(expectedException);
 		assertTrue("Exception is not thrown", isExceptionThrown);
+		
+	}
+	
+	@AfterClass
+	public static void tearDown() throws Exception
+	{
+		System.out.println("In tear down");
 		
 		// set content version back to none
 		configMgr.setContentVersionRequests(Policy.NONE);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
-
-				
+		
 		// release client
 		client.release();
-	}
-		@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
+
 		cleanupRESTServer(dbName, fNames);
 		
 	}
