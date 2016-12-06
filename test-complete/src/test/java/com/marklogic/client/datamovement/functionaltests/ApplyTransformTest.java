@@ -600,6 +600,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		AtomicInteger count = new AtomicInteger();
 		AtomicBoolean flag = new AtomicBoolean(true);
 		AtomicBoolean isClientNull = new AtomicBoolean(false);
+		AtomicBoolean isFailureCalled = new AtomicBoolean(false);
 	 	
 		ApplyTransformListener listener = new ApplyTransformListener()
 				.withApplyResult(ApplyResult.REPLACE)
@@ -621,6 +622,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					if(batch.getClient() == null){
 						isClientNull.set(true);
 					}
+					
 					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
 					JacksonHandle dh = new JacksonHandle();
 					while(page.hasNext()){
@@ -633,9 +635,12 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 						count.incrementAndGet();
 					}
+					String s = null;
+					s.charAt(0);
 
 				})
 				.onBatchFailure((batch, throwable)->{
+					isFailureCalled.set(true);
 					System.out.println("Failure: ");
 					System.out.println("JobBatchNumber : "+batch.getJobBatchNumber());
 					System.out.println("Timestamp : "+batch.getTimestamp());
@@ -668,6 +673,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 
 		assertFalse(isClientNull.get());
 		assertEquals("document count", 100,count.intValue());
+		assertFalse(isFailureCalled.get());
 		assertTrue(flag.get());
 
 		List<String> urisList = new ArrayList<>();
