@@ -17,11 +17,13 @@
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -97,24 +99,25 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
 	}
 	//issue 141 user with no privileges for eval
 	/*
-	 * If ssl is enabled, then there throw an exception, since the test is expecting it, with BASIC
+	 * If ssl is enabled, then there throw an exception
 	 */
-	@Test(expected=FailedRequestException.class)
+	@Test
 	public void testRuntimeDBclientWithNoPrivUser() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		int restPort = getRestServerPort();
 		if 	(IsSecurityEnabled()) throw new FailedRequestException("Illegal");
 		else
-			client = DatabaseClientFactory.newClient("localhost", restPort, dbName,"rest-admin","x",Authentication.BASIC);
+			client = DatabaseClientFactory.newClient("localhost", restPort, dbName,"rest-admin","x",Authentication.DIGEST);
 		String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
-		client.newServerEval().xquery(insertJSON).eval();
-		String query1 = "fn:count(fn:doc())";
-		int response = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-		assertEquals("count of documents ",1,response);
-		String query2 ="declareUpdate();xdmp.documentDelete(\"test2.json\");";
-		client.newServerEval().javascript(query2).eval();
-		int response2 = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-		assertEquals("count of documents ",0,response2);
+		try{
+			client.newServerEval().xquery(insertJSON).eval();
+			fail("Exception should have been thrown");
+		}
+		catch(Exception e){
+			e.printStackTrace();
+			Assert.assertTrue(e instanceof  com.marklogic.client.FailedRequestException);
+			Assert.assertTrue(e.getMessage().contains("SEC-PRIV"));
+			
+		}
 		client.release();
-		
 	}
 }
