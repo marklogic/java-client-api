@@ -17,6 +17,8 @@ package com.marklogic.client.test;
 
 import static org.junit.Assert.assertArrayEquals;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.math.BigInteger;
@@ -44,6 +46,7 @@ import com.fasterxml.jackson.databind.node.NullNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -67,11 +70,11 @@ import java.util.Map;
 public class EvalTest {
     private static GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
     private static ExtensionLibrariesManager libMgr;
+    private static DatabaseClient adminClient = Common.newAdminClient();
 
     @BeforeClass
     public static void beforeClass() {
-        Common.connectAdmin();
-        libMgr = Common.client.newServerConfigManager().newExtensionLibrariesManager();
+        libMgr = adminClient.newServerConfigManager().newExtensionLibrariesManager();
         Common.connectEval();
 
         septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
@@ -80,6 +83,7 @@ public class EvalTest {
     }
     @AfterClass
     public static void afterClass() {
+        adminClient.release();
         Common.release();
     }
 
@@ -449,5 +453,16 @@ public class EvalTest {
                 t1.rollback();
             }
         }
-    } 
+    }
+
+    @Test
+    public void test_582_need_privilege() throws Exception{
+      try {
+        assertEquals("hello", adminClient.newServerEval()
+          .xquery("'hello'").eval().next().getString());
+        fail("a FailedRequestException should have been thrown since rest_admin doesn't have eval privileges");
+      } catch (FailedRequestException fre) {
+        assertTrue(fre.getMessage().contains("SEC-PRIV: Need privilege: http://marklogic.com/xdmp/privileges/xdbc-eval"));
+      }
+    }
 }

@@ -4268,7 +4268,7 @@ public class JerseyServices implements RESTServices {
 						+ " " + entityType + " at " + path,
 						failure);
 			}
-			if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
+			if ("RESTAPI-CONTENTNOVERSION".equals(failure.getMessageCode())) {
 				throw new FailedRequestException("Content version required to " +
 					operation + " " + entityType + " at " + path, failure);
 			} else if (status == ClientResponse.Status.FORBIDDEN) {
