@@ -2115,7 +2115,7 @@ public class JerseyServices implements RESTServices {
                     addEncodedParam(params, "q", text);
                 }
             }
-            if (queryDef instanceof StructuredQueryDefinition) {
+            if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
                 structure = ((StructuredQueryDefinition) queryDef).serialize();
 
                 if (logger.isDebugEnabled()) {
@@ -2124,19 +2124,8 @@ public class JerseyServices implements RESTServices {
                     logger.debug("Searching for structure {}{}", structure, qtextMessage);
                 }
 
-                String payloadMimetype = "application/xml";
-                if (queryDef instanceof RawQueryDefinition) {
-                    StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
-                    baseHandle = HandleAccessor.checkHandle(handle, "search");
-
-                    Format payloadFormat = getStructuredQueryFormat(baseHandle);
-                    payloadMimetype = getMimetypeWithDefaultXML(payloadFormat, baseHandle);
-                }
-
                 webResource = getConnection().path("search").queryParams(params);
-                builder = (payloadMimetype != null) ?
-                    webResource.type(payloadMimetype).accept(mimetype) :
-                    webResource.accept(mimetype);
+                builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof RawQueryDefinition) {
                 if (logger.isDebugEnabled())
                     logger.debug("Raw search");
@@ -2220,7 +2209,7 @@ public class JerseyServices implements RESTServices {
 
                 if (queryDef instanceof KeyValueQueryDefinition) {
                     response = doGet(builder);
-                } else if (queryDef instanceof StructuredQueryDefinition) {
+                } else if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
                     response = doPost(reqlog, builder, structure, true);
                 } else if (queryDef instanceof CombinedQueryDefinition) {
                     response = doPost(reqlog, builder, structure, true);
@@ -2431,7 +2420,7 @@ public class JerseyServices implements RESTServices {
 					addEncodedParam(docParams, "q", text);
 				}
 			}
-			if (queryDef instanceof StructuredQueryDefinition) {
+			if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
 				String structure = ((StructuredQueryDefinition) queryDef)
 						.serialize();
 				if (structure != null) {
