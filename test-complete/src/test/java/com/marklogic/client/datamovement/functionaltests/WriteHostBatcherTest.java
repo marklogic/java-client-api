@@ -1,5 +1,7 @@
 package com.marklogic.client.datamovement.functionaltests;
 
+import static org.junit.Assert.fail;
+
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -14,6 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -1747,7 +1750,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	}
 	
 	@Test
-	public void testNPECallBack() throws Exception{
+	public void testNPESuccessCallBack() throws Exception{
 		
 		final String query1 = "fn:count(fn:doc())";
 	 	
@@ -1800,6 +1803,58 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	}
 	
 	@Test
+	public void testNPEFailureCallBack() throws Exception{
+		
+		final String query1 = "fn:count(fn:doc())";
+	 	
+       	final AtomicInteger successCount = new AtomicInteger(0);
+       	
+       	final AtomicBoolean failState = new AtomicBoolean(false);
+       	final AtomicInteger failCount = new AtomicInteger(0);
+       	final AtomicBoolean failureListenerNpe = new AtomicBoolean(false);
+          	
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		ihb2.withBatchSize(6);
+		dmManager.startJob(ihb2);
+		
+		ihb2.onBatchSuccess(
+		        batch -> {
+		        
+		        	System.out.println("Success host : "+batch.getClient().getHost());
+		        	System.out.println(batch.getItems().length);
+		        	System.out.println("Job writes "+batch.getJobWritesSoFar());
+		        	successCount.getAndAdd(batch.getItems().length);
+		        	
+		        	
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  System.out.println("Failure:  "+batch.getJobWritesSoFar());
+		        	  System.out.println("Failure: "+throwable.getMessage());
+		          	  if (throwable.getMessage().contains("java.lang.NullPointerException")){
+		          		  failureListenerNpe.set(true); 
+		        	  }
+		        	  failState.set(true); 
+		        	  failCount.getAndAdd(batch.getItems().length);
+		        	  String s= null;
+			          s.length();
+		          });
+
+
+	
+		for (int i =0 ;i < 5; i++){
+			ihb2.add("", stringHandle);
+		}
+		ihb2.flushAndWait();
+		Assert.assertTrue(failState.get());
+	    Assert.assertFalse(failureListenerNpe.get());
+		Assert.assertEquals(5,failCount.get());
+		Assert.assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		
+	}
+	
+	@Test
 	public void testEmptyFlush() throws Exception{
 		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5);
@@ -1828,53 +1883,82 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
+		AtomicInteger successCount =  new AtomicInteger(0);
 		ihbMT =  dmManager.newWriteBatcher();
-       	ihbMT.withBatchSize(11);
+		ihbMT.withBatchSize(11).withThreadCount(5);
        	ihbMT.onBatchSuccess(
 		        batch -> {
-		        	System.out.println("Batch size "+batch.getItems().length);
-		        	for(WriteEvent w:batch.getItems()){
-		        		System.out.println("Success "+w.getTargetUri());
-		        	}
+		        	successCount.addAndGet(batch.getItems().length);
+		        	if(successCount.get() > 80){
+		    			dmManager.stopJob(writeTicket);
+	    				System.out.println("Job stopped");
+		    		}
 		        })
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
+		        	   
 		        		for(WriteEvent w:batch.getItems()){
 		        			System.out.println("Failure "+w.getTargetUri());
 		        		}		       
 		});
 		writeTicket = dmManager.startJob(ihbMT);
-				   		
-       	class MyRunnable implements Runnable {
+				
+		class MyRunnable implements Runnable {
        	  
        	  @Override
        	  public void run() {
          		
-           		for (int j =0 ;j < 100; j++){
+           		for (int j =0 ;j < 200; j++){
     				String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
-    				System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
     				ihbMT.add(uri, fileHandle);
-    				if(j ==80){
-    					ihbMT.flushAndWait();
-    					dmManager.stopJob(writeTicket);
-    				}		
-           		}           		
+    				System.out.println(uri);
+    				
+           		}        
+           		ihbMT.flushAndWait();
        	  }  
            		
        	} 
        	Thread t1,t2;
        	t1 = new Thread(new MyRunnable());
        	t2 = new Thread(new MyRunnable());
+       	t1.setName("First Thread");
+       	t2.setName("Second Thread");
       
        	t1.start();
        	t2.start();
-             	
+       	ihbMT.awaitCompletion();
+       	
+            	
        	t1.join();
        	t2.join();
-               	
-       	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() >=80);
-       	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() <=160);
+       	try{
+       		ihbMT.add("/new", fileHandle);
+       		fail("Exception should have been thrown");
+       	}
+       	catch(IllegalStateException e){
+       		System.out.println(e.getMessage());
+       		Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+       		
+       	}
+      	try{
+      		ihbMT.flushAndWait();
+       		fail("Exception should have been thrown");
+       	}
+       	catch(IllegalStateException e){
+       		System.out.println(e.getMessage());
+       		Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+       		
+       	}
+      	
+       	ihbMT.awaitCompletion();
+       	ihbMT.awaitTermination(10L,TimeUnit.MILLISECONDS);
+		
+       	int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+       	System.out.println(count);
+       	Assert.assertTrue(count >=80);
+       	// This is a random number less than 500. it ensures that writing of docs stopped quickly after reaching 80 doc writes.
+       	Assert.assertTrue(count <=250);
 	}
 	
 	@Test
