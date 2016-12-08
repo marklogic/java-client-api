@@ -749,18 +749,16 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		
 	}
 	
-	// ISSUE # 39, 40
+	// ISSUE # 39, 40, 589
 	@Test
 	public void testClientObject() throws Exception {
 		
 	    final StringBuffer successHost = new StringBuffer();
-	    final StringBuffer successUser = new StringBuffer();
-	    final StringBuffer successPassword = new StringBuffer();
+	    final StringBuffer successDb = new StringBuffer();
 	    final StringBuffer successPort = new StringBuffer();
 	    	    
 	    final StringBuffer failureHost = new StringBuffer();
-	    final StringBuffer failureUser = new StringBuffer();
-	    final StringBuffer failurePassword = new StringBuffer();
+	    final StringBuffer failureDb = new StringBuffer();
 	    final StringBuffer failurePort = new StringBuffer();
 	    
 		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
@@ -769,7 +767,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		        batch -> {
 		        	successHost.append(batch.getClient().getHost()+":");  
 		        	successPort.append(batch.getClient().getPort()+":");  
-		        	  
+		        	successDb.append(batch.getClient().getDatabase()+":");    
 		         	
 		          }
 		        )
@@ -777,6 +775,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          (batch, throwable) -> {
 		        	failureHost.append(batch.getClient().getHost()+":");  
 					failurePort.append(batch.getClient().getPort()+":");  	           
+					failureDb.append(batch.getClient().getDatabase()+":");
 		          });
 		dmManager.startJob(ihb1);
 	
@@ -789,14 +788,17 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			ihb1.add("", stringHandle);
 		}
 		ihb1.flushAndWait();
-
-		System.out.println(successUser.toString());
-		System.out.println(count(successUser.toString(),user));
+		System.out.println(successHost.toString());
+		System.out.println(successPort.toString());
+		System.out.println(successDb.toString());
+		
 		Assert.assertTrue(count(successPort.toString(),String.valueOf(port))==10);
 		Assert.assertTrue(count(successHost.toString(),String.valueOf(host))!=10);
+		Assert.assertTrue(count(successDb.toString(),String.valueOf(dbName))==10);
 				
 		Assert.assertTrue(count(failurePort.toString(),String.valueOf(port))==5);
 		Assert.assertTrue(count(failureHost.toString(),String.valueOf(host))!=5);
+		Assert.assertTrue(count(failureDb.toString(),String.valueOf(dbName))==5);
 	}
 	
 	private int count(String s, String in){
@@ -943,10 +945,46 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		catch (Exception e){
 			Assert.assertTrue(e instanceof IllegalArgumentException);
 		}
-
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);		
 	}
+
+	
+	@Test
+	public void testflushAsync() throws Exception {
 		
+		final String query1 = "fn:count(fn:doc())";
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);	
+		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
+		ihb1.withBatchSize(25);
+		ihb1.onBatchSuccess(
+		        batch -> {
+		        			         	
+		          }
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	throwable.printStackTrace();
+		          });
+			
+		for (int i =0 ; i < 1000; i++){
+			String uri ="/local/json-"+ i;
+			ihb1.add(uri, stringHandle);
+		}
+		
+		ihb1.flushAndWait();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);	
+		clearDB(port);
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);	
+		for (int i =0 ; i < 1500; i++){
+			String uri ="/local/json-"+ i;
+			ihb1.add(uri, stringHandle);
+		}
+		ihb1.flushAsync();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() < 1500);
+		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		ihb1.awaitCompletion();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1500);	
+	}
+	
 	@Test
 	public void testInsertoReadOnlyForest() throws Exception{
 		Map <String, String> properties = new HashMap<>();
@@ -1892,6 +1930,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			e.printStackTrace();
 			Assert.assertTrue(e instanceof IllegalStateException);
 		}
+		
+		JobTicket job = dmManager.startJob(ihb2);
+		ihb2.flushAsync();
+		ihb2.flushAndWait();
+		ihb2.add("/new", fileHandle);
+		dmManager.stopJob(job);
+		final String query1 = "fn:count(fn:doc())";
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
 	}
 	
 	@Test
@@ -2034,6 +2080,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	dmManager.stopJob(writeTicket);
 	}
 
+	//test flushAsync()
 	@Test
 	public void testInserttoDisabledAppServer() throws Exception{
 		
@@ -2083,6 +2130,61 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
     	
 	}
 	
+	//ISSUE 588
+	@Test
+	public void testRetry() throws Exception{
+		
+		final String query1 = "fn:count(fn:doc())";
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
+		AtomicBoolean successCalled = new AtomicBoolean(false);
+	 	Map<String,String> properties = new HashMap<>();
+      	
+	 	ihbMT =  dmManager.newWriteBatcher();
+	 	ihbMT.withBatchSize(3000);
+		
+	 	ihbMT.onBatchSuccess(
+		        batch -> {
+		        	successCalled.set(true);
+		         	System.out.println("Success Batch size "+batch.getItems().length);
+		        	for(WriteEvent w:batch.getItems()){
+		        		System.out.println("Success "+w.getTargetUri());
+		        	}
+		        })
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  	throwable.printStackTrace();
+		        	 	System.out.println("Failure Batch size "+batch.getItems().length);
+			        	for(WriteEvent w:batch.getItems()){
+			        		System.out.println("Failure "+w.getTargetUri());
+			        	}
+			        	try {
+							Thread.currentThread().sleep(20000L);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+			        	ihbMT.retry(batch);
+		          });
+		
+		dmManager.startJob(ihbMT);
+		for (int j =0 ;j < 200; j++){
+			String uri ="/local/json-"+ j;
+			ihbMT.add(uri, stringHandle);
+		}
+
+		properties.put("enabled", "false");
+		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(2000L);
+		ihbMT.flushAsync();
+		Thread.currentThread().sleep(10000L);
+		
+		properties.put("enabled", "true");
+		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
+		ihbMT.awaitCompletion();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==200);
+		Assert.assertFalse(successCalled.get());
+    }
+	
 	// ea3
 	@Test
 	public void testDisableAppServerDuringInsert() throws Exception{
@@ -2114,14 +2216,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb2);
 		t1.start();
 		
-		for (int j =0 ;j < 2000; j++){
+		for (int j =0 ;j < 10000; j++){
 			String uri ="/local/json-"+ j;
 			ihb2.add(uri, fileHandle);
 		}
 				
 		ihb2.flushAndWait();
 		t1.join();   
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==2000);
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==10000);
 		
 	}
 	class StopServerRunnable implements Runnable {
@@ -2140,6 +2242,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
    			 if(count >= 100){
    				
      			changeProperty(properties,"/manage/v2/servers/"+server+"/properties");
+     			System.out.println("Server disabled");
      			state=false;
    			 }
    				
