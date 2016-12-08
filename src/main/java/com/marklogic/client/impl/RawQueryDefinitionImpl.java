@@ -63,7 +63,7 @@ implements RawQueryDefinition
 		@Override
 		public String serialize() {
 			if (getHandle() == null) return "";
-			return getHandle().toString();
+			return HandleAccessor.contentAsString(getHandle());
 		}
 
 		@Override

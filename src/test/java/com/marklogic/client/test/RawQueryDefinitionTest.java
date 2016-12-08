@@ -49,6 +49,7 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -65,6 +66,7 @@ import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.Tuple;
@@ -545,6 +547,33 @@ public class RawQueryDefinitionTest {
 			assertNotNull(extractedNone);
 			assertEquals(0, extractedNone.size());
 		}
+	}
+
+	@Test
+	public void test_issue581_RawStructuredQueryFromFileHandle() throws Exception {
+		Common.client.newDocumentManager().write("test_issue581_RawStructuredQueryFromFileHandle.xml",
+			new FileHandle(new File("src/test/resources/constraint5.xml")));
+
+		// get the combined query
+		File file = new File("src/test/resources/combinedQueryOption.xml");
+
+		// create a handle for the search criteria
+		FileHandle rawHandle = new FileHandle(file);
+
+		QueryManager queryMgr = Common.client.newQueryManager();
+
+		// create a search definition based on the handle
+		RawStructuredQueryDefinition querydef = queryMgr.newRawStructuredQueryDefinition(rawHandle);
+
+		// create result handle
+		DOMHandle resultsHandle = new DOMHandle();
+		queryMgr.search(querydef, resultsHandle);
+
+		// get the result
+		Document resultDoc = resultsHandle.get();
+
+		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 	}
 
 	private static Document parseXml(String xml) throws Exception {
