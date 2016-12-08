@@ -671,14 +671,30 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		return s.contains(in);
 	}
 	
-	//Immutability of WriteBatcher- ISSUE # 26 ea 3
+	//Immutability of WriteBatcher- ISSUE # 26
 	@Test
 	public void testHostBatcherImmutability() throws Exception{
 		
 		WriteBatcher ihb = dmManager.newWriteBatcher();
 		ihb.withJobName(null);
 		ihb.withBatchSize(2);
+		ihb.withBatchSize(5);
 		dmManager.startJob(ihb);
+		try{
+			ihb.withJobName("Job 2");
+			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
+		}
+		catch (Exception e){
+			Assert.assertTrue(e instanceof IllegalStateException);
+		}
+		
+		try{
+			ihb.withBatchSize(1);
+			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
+		}
+		catch (Exception e){
+			Assert.assertTrue(e instanceof IllegalStateException);
+		}
 		ihb.add("/local/triple", stringHandle);
 		try{
 			ihb.withJobName("Job 2");
