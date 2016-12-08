@@ -22,7 +22,11 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
-import java.util.*;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.marklogic.client.io.SearchHandle;
@@ -142,7 +146,7 @@ public class QueryBatcherIteratorTest {
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
     StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("dept"), "HR");
     query.setCollections(qhbTestCollection);
-    Set<String> uris = new HashSet<>();
+    Set<String> uris = Collections.synchronizedSet(new HashSet<>());
     StringBuilder failures = new StringBuilder();
     QueryBatcher getUris = moveMgr.newQueryBatcher(query)
       .withThreadCount(6)
@@ -160,7 +164,7 @@ public class QueryBatcherIteratorTest {
 
     // now we have the uris, let's step through them
     AtomicInteger successDocs = new AtomicInteger();
-    Set<String> uris2 = new HashSet<>();
+    Set<String> uris2 = Collections.synchronizedSet(new HashSet<>());
     StringBuilder failures2 = new StringBuilder();
     QueryBatcher performDelete = moveMgr.newQueryBatcher(uris.iterator())
       .withThreadCount(2)
