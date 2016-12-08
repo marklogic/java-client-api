@@ -600,12 +600,16 @@ public class SearchHandle
                     result.setItems( populateExtractedItems(getSlice(events, extractedItemEvents)) );
                 // if extractSelected is "include", this is not a root document node
                 } else if ( Format.JSON == getFormat() && "include".equals(extractSelected) ) {
-                    XMLEvent event = events.get(startChildren);
-                    if ( XMLStreamConstants.CHARACTERS != event.getEventType() ) {
-                        throw new MarkLogicIOException("Cannot parse JSON for " +
-                            getPath() + "--content should be characters");
+                    StringBuilder jsonBuilder = new StringBuilder();
+                    for(int i = startChildren; i < endChildren; i++){
+                        XMLEvent event = events.get(i);
+                        if ( XMLStreamConstants.CHARACTERS != event.getEventType() ) {
+                            throw new MarkLogicIOException("Cannot parse JSON for " +
+                                    getPath() + "--content should be characters");
+                        }
+                        jsonBuilder.append(event.asCharacters().getData());
                     }
-                    String json = event.asCharacters().getData();
+                    String json = jsonBuilder.toString();
                     try {
                         JsonNode jsonArray = new ObjectMapper().readTree(json);
                         ArrayList<String> items = new ArrayList<String>(jsonArray.size());
