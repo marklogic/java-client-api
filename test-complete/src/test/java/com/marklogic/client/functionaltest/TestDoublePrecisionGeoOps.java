@@ -16,6 +16,8 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.*;
+
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -170,11 +172,11 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
         JsonNode jsonPointNodes = resultNode.path("results");
 		
 		// Should have 2 nodes returned.
-		/*assertEquals("Two nodes not returned from testCircleContainsCircle method ", 2, resultNode.path("total").asInt());
+		assertEquals("Two nodes not returned from testCircleContainsCircle method ", 2, resultNode.path("total").asInt());
 		assertTrue("URI returned from testCircleContainsCircle method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator-json.json") ||
 				jsonPointNodes.get(1).path("uri").asText().contains("/Equator-json.json"));
 		assertTrue("URI returned from testCircleContainsCircle method is incorrect", jsonPointNodes.get(0).path("uri").asText().contains("/Equator.xml") ||
-				jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));*/	
+				jsonPointNodes.get(1).path("uri").asText().contains("/Equator.xml"));	
 	}
 	
 	/*
