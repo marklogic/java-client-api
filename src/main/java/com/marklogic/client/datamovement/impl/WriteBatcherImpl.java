@@ -22,11 +22,13 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
@@ -1012,16 +1014,16 @@ public class WriteBatcherImpl
 
   public static class WriteThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
-    private ConcurrentHashMap<Runnable,Future<?>> futures = new ConcurrentHashMap<>();
+    private ConcurrentHashMap<Runnable,WrappedFuture<?>> futures = new ConcurrentHashMap<>();
 
     private static class FutureAwareQueue extends LinkedBlockingQueue<Runnable> {
-      Map<Runnable,Future<?>> futures;
+      Map<Runnable,WrappedFuture<?>> futures;
 
       FutureAwareQueue(int capacity) {
         super(capacity);
       }
 
-      void setFutures(Map<Runnable,Future<?>> futures) {
+      void setFutures(Map<Runnable,WrappedFuture<?>> futures) {
         this.futures = futures;
       }
 
@@ -1031,10 +1033,74 @@ public class WriteBatcherImpl
         int count = super.drainTo(tasks);
         // clear the associated futures
         for ( Runnable task : tasks ) {
-          futures.remove(task);
+logger.debug("DEBUG: [drainTo] task =[" + task  + "]");
+logger.debug("DEBUG: [drainTo] task.getClass() =[" + task.getClass()  + "]");
+logger.debug("DEBUG: [drainTo] futures.get(task) =[" + futures.get(task)  + "]");
+          WrappedFuture<?> future = futures.get(task);
+          if ( future == null || future.isStarted() == false ) {
+            futures.remove(task);
+          }
           c.add(task);
         }
         return count;
+      }
+    }
+
+    // This wrapper allows us to call get() and wait for a future to complete
+    // even if it was cancelled after it started. Without this wrapper, the
+    // Future would throw CancellationException immediately when we call get()
+    // rather than block until completion
+    private static class WrappedFuture<V> implements Future<V> {
+      private Future<V> future;
+      private boolean isCancelled = false;
+      private boolean isStarted = false;
+
+      WrappedFuture(Future<V> future) {
+        this.future = future;
+      }
+
+      public boolean cancel(boolean mayInterruptIfRunning) {
+        isCancelled = true;
+        return true;
+      }
+
+      public V get() throws InterruptedException, ExecutionException {
+logger.debug("DEBUG: [WrappedFuture.get] isCancelled =[" + isCancelled  + "]");
+        if ( isCancelled == false ) {
+          return future.get();
+        } else {
+logger.debug("DEBUG: [WrappedFuture.get] isStarted =[" + isStarted  + "]");
+          if ( isStarted ) {
+            // we're already started, so let's make that clear by waiting until we're finished before
+            // we throw CancellationException
+            future.get();
+            throw new CancellationException();
+          } else {
+            throw new CancellationException();
+          }
+        }
+      }
+
+      public V get(long timeout, TimeUnit unit)
+        throws InterruptedException, ExecutionException, TimeoutException
+      {
+        return future.get(timeout, unit);
+      }
+
+      public boolean isCancelled() {
+        return isCancelled;
+      }
+
+      public boolean isDone() {
+        return future.isDone();
+      }
+
+      public void setStarted() {
+        isStarted = true;
+      }
+
+      public boolean isStarted() {
+        return isStarted;
       }
     }
 
@@ -1046,8 +1112,20 @@ public class WriteBatcherImpl
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
+    protected void beforeExecute(Thread thread, Runnable task) {
+      WrappedFuture<?> future = futures.get(task);
+logger.debug("DEBUG: [beforeExecute] task =[" + task  + "]");
+logger.debug("DEBUG: [beforeExecute] task.getClass() =[" + task.getClass()  + "]");
+logger.debug("DEBUG: [beforeExecute] future =[" + future  + "]");
+      if ( future != null ) future.setStarted();
+      super.beforeExecute(thread, task);
+    }
+
     protected void afterExecute(Runnable task, Throwable t) {
       super.afterExecute(task, t);
+logger.debug("DEBUG: [afterExecute] task =[" + task  + "]");
+logger.debug("DEBUG: [afterExecute] task.getClass() =[" + task.getClass()  + "]");
+logger.debug("DEBUG: [afterExecute] futures.get(task) =[" + futures.get(task)  + "]");
       futures.remove(task);
       if ( t != null ) {
         logger.error("Task threw an Exception", t);
@@ -1057,16 +1135,21 @@ public class WriteBatcherImpl
     @Override
     public Future<?> submit(Runnable task) {
       Future<?> future = super.submit(task);
-      futures.put(task, future);
+      if ( future instanceof FutureTask<?> ) {
+        // surprisingly, because of the current implementation of
+        // ThreadPoolExecutor.beforeExecute and afterExecute and
+        // LinkedBlockingQueue.drainTo, we need to key off the FutureTask
+        futures.put((FutureTask<?>) future, new WrappedFuture(future));
+      }
       return future;
     }
 
     public List<Runnable> shutdownNow() {
       List<Runnable> tasks = super.shutdownNow();
-      Map<Runnable,Future<?>> snapshot = new HashMap<>(futures);
+      Map<Runnable,WrappedFuture<?>> snapshot = new HashMap<>(futures);
       futures.clear();
       for ( Runnable task : snapshot.keySet() ) {
-        Future<?> future = snapshot.get(task);
+        WrappedFuture<?> future = snapshot.get(task);
         if ( future != null ) {
           future.cancel(true);
         }
@@ -1076,19 +1159,54 @@ public class WriteBatcherImpl
 
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
       if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
-      List<Future<?>> snapshotOfFutures = new ArrayList<>();
-      for ( Future<?> future : futures.values() ) {
+      List<WrappedFuture<?>> snapshotOfFutures = new ArrayList<>();
+      for ( WrappedFuture<?> future : futures.values() ) {
         if ( future != null ) snapshotOfFutures.add( future );
       }
       long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
       for ( Future<?> future : snapshotOfFutures ) {
         try {
           long startTime = System.currentTimeMillis();
+logger.debug("DEBUG: [awaitCompletion] future.isCancelled() =[" + future.isCancelled()  + "]");
           if ( ! future.isCancelled() ) {
-            future.get(duration, TimeUnit.MILLISECONDS);
+            try {
+              future.get(duration, TimeUnit.MILLISECONDS);
+            } catch(CancellationException ce) {
+              if ( isTerminating() || isTerminated() || isShutdown() ) {
+                // no problem, this future was cancelled legitimately when shutdownNow() was called
+              } else {
+                // there's a problem, this future was cancelled for an unknown reason
+                throw ce;
+              }
+            }
           }
+          /*
+          if ( future.isCancelled() ) {
+            duration = waitOnCancelledFuture(future, duration);
+          } else {
+            try {
+              future.get(duration, TimeUnit.MILLISECONDS);
+              duration -= System.currentTimeMillis() - startTime;
+logger.debug("DEBUG: [awaitCompletion] duration =[" + duration  + "]");
+            } catch(CancellationException ce) {
+              if ( isTerminating() || isTerminated() || isShutdown() ) {
+                logger.warn("CancellationException");
+                // this future was cancelled legitimately when shutdownNow() was called
+                // but we'd still like to wait for it to finish
+                duration = waitOnCancelledFuture(future, duration);
+              } else {
+                // there's a problem, this future was cancelled for an unknown reason
+                throw ce;
+              }
+            }
+          }
+          */
           duration -= System.currentTimeMillis() - startTime;
-          if ( duration < 0 ) return false;
+logger.debug("DEBUG: [WriteBatcherImpl] duration2 =[" + duration  + "]");
+          if ( duration < 0 ) {
+            // times up!  We didn't finish before timeout...
+            return false;
+          }
         } catch (TimeoutException e) {
           return false;
         } catch (InterruptedException e) {
@@ -1100,6 +1218,23 @@ public class WriteBatcherImpl
         }
       }
       return true;
+    }
+
+    private long waitOnCancelledFuture(Future future, long duration) {
+      long startTime = System.currentTimeMillis();
+      while (future.isDone() == false) {
+logger.debug("DEBUG: [waitOnCancelledFuture] future.isDone() =[" + future.isDone()  + "]");
+        duration -= System.currentTimeMillis() - startTime;
+logger.debug("DEBUG: [waitOnCancelledFuture] duration =[" + duration  + "]");
+        if ( duration < 0 ) {
+          // times up!  We didn't finish before timeout...
+          return duration;
+        }
+        // sleep up to 100 ms to avoid unnecessary CPU use while we wait
+        try { Thread.sleep(duration % 100); } catch (InterruptedException e) {}
+      }
+logger.debug("DEBUG: [waitOnCancelledFuture] future.isDone() =[" + future.isDone()  + "]");
+      return duration;
     }
   }
 }
