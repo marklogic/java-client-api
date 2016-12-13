@@ -44,11 +44,11 @@ import java.util.Set;
  *         .onUrisReady(
  *           new ExportListener()
  *               .withConsistentSnapshot()
- *               .onDocumentReady(doc -&gt; {
+ *               .onDocumentReady(doc -> {
  *                 logger.debug("Contents=[{}]", doc.getContentAs(String.class));
  *               })
  *         )
- *         .onQueryFailure(exception -&gt; exception.printStackTrace());
+ *         .onQueryFailure(exception -> exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();

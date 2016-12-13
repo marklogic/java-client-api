@@ -218,6 +218,9 @@
  * WriteBatcher.  Please make sure to enable your slf4j-compliant [logging
  * framework](../../../../overview-summary.html#logging).
  *
+ * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+ * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+ * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
  */
 /*
  * Copyright 2015-2016 MarkLogic Corporation

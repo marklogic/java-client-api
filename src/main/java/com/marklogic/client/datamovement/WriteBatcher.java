@@ -40,10 +40,10 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
- *         .onBatchSuccess(batch -&gt; {
+ *         .onBatchSuccess(batch -> {
  *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
  *         })
- *         .onBatchFailure((batch,throwable) -&gt; throwable.printStackTrace() );
+ *         .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
  *     JobTicket ticket = dataMovementManager.startJob(whb);
  *     whb.add  ("doc1.txt", new StringHandle("doc1 contents"));
  *     whb.addAs("doc2.txt", "doc2 contents");

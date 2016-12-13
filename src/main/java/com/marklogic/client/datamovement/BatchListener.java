@@ -31,14 +31,14 @@ public interface BatchListener<T extends Batch<?>> {
    *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
-   *         .onUrisReady(batch -&gt; {
+   *         .onUrisReady(batch -> {
    *             for ( String uri : batch.getItems() ) {
    *                 if ( uri.endsWith(".txt") ) {
    *                     batch.getClient().newDocumentManager().delete(uri);
    *                 }
    *             }
    *         })
-   *         .onQueryFailure(queryBatchException -&gt; queryBatchException.printStackTrace());
+   *         .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
    *     JobTicket ticket = dataMovementManager.startJob(qhb);
    *     qhb.awaitCompletion();
    *     dataMovementManager.stopJob(ticket);
