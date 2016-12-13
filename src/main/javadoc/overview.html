@@ -321,5 +321,23 @@ docMgr.writeAs(docId, product);
 
 Product product = docMgr.readAs(docId, Product.class);
 </pre>
+
+<a name="logging"></a>
+<h2>Enabling Logging</h2>
+<p>
+    We use <a href="http://www.slf4j.org/manual.html">slf4j</a> for logging.
+    This means you can choose any slf4j-compliant logging framework such as
+    Logback, AVSL, JDK logging, Log4j, or Simple.  If you don't know which to
+    choose, we recommend Logback since it is a native implementation and the
+    easiest to configure.  Please follow the instructions on the slf4j website to
+    configure your logging framework.  It should take no more than 15 minutes.
+
+    Once your logging framework is configured with slf4j, you should be able to
+    see and manage logging from the Java-client API.  This is especially
+    important for long-running QueryBatcher and WriteBatcher jobs.
+</p>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
 </body>
 </html>
