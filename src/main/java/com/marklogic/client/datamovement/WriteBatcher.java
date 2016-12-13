@@ -138,9 +138,13 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher onBatchSuccess(WriteBatchListener listener);
 
   /**
-   * Add a listener to run each time there is an Exception writing a batch
-   * or running a listener registered with onBatchSuccess.
-   * @param listener the action which has to be done when the batch gets failed
+   * Add a listener to run each time there is an exception writing a batch.
+   *
+   * These listeners will not run when an exception is thrown by a listener
+   * registered with onBatchSuccess.  To learn more, please see
+   * [Handling Exceptions in Listeners](package-summary.html#errs)
+   *
+   * @param listener the code to run when a failure occurs
    * @return this instance for method chaining
    */
   WriteBatcher onBatchFailure(WriteFailureListener listener);

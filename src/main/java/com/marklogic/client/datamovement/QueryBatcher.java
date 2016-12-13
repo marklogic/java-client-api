@@ -120,9 +120,14 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher onUrisReady(QueryBatchListener listener);
 
   /**
-   * Add a listener to run each time there is an Exception retrieving a batch
-   * of uris or running a listener registered with onUrisReady.
-   * @param listener the action which has to be done when the query fails
+   * Add a listener to run each time there is an exception retrieving a batch
+   * of uris.
+   *
+   * These listeners will not run when an exception is thrown by a listener
+   * registered with onUrisReady.  To learn more, please see
+   * [Handling Exceptions in Listeners](package-summary.html#errs)
+   *
+   * @param listener the code to run when a failure occurs
    * @return this instance for method chaining
    */
   QueryBatcher onQueryFailure(QueryFailureListener listener);
