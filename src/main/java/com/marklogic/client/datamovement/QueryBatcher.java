@@ -92,7 +92,7 @@ import java.util.concurrent.TimeUnit;
  *
  * Example of queueing uris in memory instead of using withConsistentSnapshot():
  *
- *     ArrayList&lt;String&gt; uris = new ArrayList&lt;&gt;();
+ *     ArrayList<String> uris = new ArrayList<>();
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( batch -> uris.addAll(Arrays.asList(batch.getItems())) )

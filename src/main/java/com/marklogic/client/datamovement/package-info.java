@@ -26,7 +26,7 @@
  *         are not limited to export, delete, and transform)
  *     * provided code can leverage the full feature set of the Java Client API
  *     * uris usually are matches to a query
- *     * for corner cases uris can be provided by an Iterator&lt;String&gt;
+ *     * for corner cases uris can be provided by an Iterator<String>
  *     * paginates through query matches for best scalability
  *     * paginates with many threads for increased throughput
  *     * directly queries each host in the cluster with forests for

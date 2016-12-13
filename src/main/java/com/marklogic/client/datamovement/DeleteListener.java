@@ -37,7 +37,7 @@ package com.marklogic.client.datamovement;
  *     deleteBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  *
- * With Iterator&lt;String&gt;, pass a DeleteListener instance to
+ * With Iterator<String>, pass a DeleteListener instance to
  * QueryBatcher onUrisReady like so:
  *
  *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
