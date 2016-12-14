@@ -259,7 +259,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 				assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints4.xml"));
 				//Verify Fores Name.
-				assertTrue("Forest name not correct", res[1].contains(fNames[0]));
+				assertTrue("Forest name not correct", res[2].contains(fNames[0]));
 			}
 		}
 		catch(Exception e) {
