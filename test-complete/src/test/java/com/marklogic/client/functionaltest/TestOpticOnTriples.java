@@ -49,6 +49,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.expression.PlanBuilder.ViewPlan;
+import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -61,6 +62,8 @@ import com.marklogic.client.type.PlanParam;
 import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.PlanTriplePatternSeq;
 import com.marklogic.client.type.PlanTripleVal;
+import com.marklogic.client.type.SemIriSeqVal;
+import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.XsStringVal;
 
 public class TestOpticOnTriples extends BasicJavaClientREST {
@@ -684,9 +687,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 	public void testJoinInnerWithSemStore() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{
 		System.out.println("In testJoinInnerWithSemStore method");
-		// TODO Uncomment when Git #537 is fixed for sem.store ambiguous issue.
 		
-		/*// Create a new Plan.
+		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
@@ -707,14 +709,16 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
-		 
-		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, null, p.sem.store("/optic/player/triple/test", "/optic/team/triple/test"), 
+		SemIriSeqVal storeIris =  p.sem.iris("/optic/player/triple/test", "/optic/team/triple/test" );
+		SemStoreExpr storeExpr = p.sem.store("any");
+		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, (String)null, storeExpr,
 				                               p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
-		
+				
 		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
                                                      p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				                                    );	
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,
+                                             (String)null,
                                              null,
                                              null,
                                              p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
@@ -739,17 +743,47 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 1 PlayerName value incorrect", "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
 		assertEquals("Row 1 PlayerAge value incorrect", "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
 		assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
-		assertEquals("Row 1 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(0).path("GraphName").path("value").asText()); 
 		
 		assertEquals("Row 2 PlayerName value incorrect", "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
 		assertEquals("Row 2 PlayerAge value incorrect", "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
 		assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
-		assertEquals("Row 2 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(1).path("GraphName").path("value").asText());
 		
 		assertEquals("Row 3 PlayerName value incorrect", "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
 		assertEquals("Row 3 PlayerAge value incorrect", "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
 		assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
-		assertEquals("Row 3 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(2).path("GraphName").path("value").asText());*/
+		
+		// Verify overloaded fromTriples() with graphIRI
+		ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String)null, "/optic/player/triple/test", null, p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
+		ModifyPlan output1 = player_plan.joinInner(team_plan)
+                .where(p.eq(teamNameCol, p.xs.string("Giants")))
+                .orderBy(p.asc(playerAgeCol))
+                .select(
+                        p.as("PlayerName", playerNameCol), 
+                        p.as("PlayerAge", playerAgeCol), 
+                        p.as("TeamName", p.fn.concat(teamCityCol, p.xs.string(" "), teamNameCol)),
+                        p.as("PlayerGraph", playerGraphCol));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(output1, jacksonHandle);
+		jsonResults = jacksonHandle.get().path("rows");
+
+		// Should have 3 nodes returned.		
+		assertEquals("Three nodes not returned from testJoinInnerWithGraphIRI method ", 3, jsonResults.size());
+		assertEquals("Row 1 PlayerName value incorrect", "Juan Leone", jsonResults.get(0).path("PlayerName").path("value").asText());
+		assertEquals("Row 1 PlayerAge value incorrect", "27", jsonResults.get(0).path("PlayerAge").path("value").asText());
+		assertEquals("Row 1 TeamName value incorrect", "San Francisco Giants", jsonResults.get(0).path("TeamName").path("value").asText());
+		assertEquals("Row 1 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(0).path("PlayerGraph").path("value").asText()); 
+
+		assertEquals("Row 2 PlayerName value incorrect", "Josh Ream", jsonResults.get(1).path("PlayerName").path("value").asText());
+		assertEquals("Row 2 PlayerAge value incorrect", "29", jsonResults.get(1).path("PlayerAge").path("value").asText());
+		assertEquals("Row 2 TeamName value incorrect", "San Francisco Giants", jsonResults.get(1).path("TeamName").path("value").asText());
+		assertEquals("Row 2 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(1).path("PlayerGraph").path("value").asText());
+
+		assertEquals("Row 3 PlayerName value incorrect", "John Doe", jsonResults.get(2).path("PlayerName").path("value").asText());
+		assertEquals("Row 3 PlayerAge value incorrect", "31", jsonResults.get(2).path("PlayerAge").path("value").asText());
+		assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
+		assertEquals("Row 3 GraphName value incorrect", "/optic/player/triple/test", jsonResults.get(2).path("PlayerGraph").path("value").asText());
 	}
 	
 	/* This test checks access with qualifier.
@@ -1371,7 +1405,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 	@Test
 	public void testFromTriplesWithbindParam() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{
-		/*System.out.println("In testFromTriplesWithbindParam method");
+		System.out.println("In testFromTriplesWithbindParam method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
@@ -1388,16 +1422,49 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		ModifyPlan player_plan = p.fromTriples(p.pattern(playerIdCol, bb.iri("age"),  ageParam),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 		           p.pattern(playerIdCol, bb.iri("team"), playerTeamCol));
-		player_plan.bindParam(ageParam, p.xs.intVal(26));
+		player_plan.bindParam(ageParam, p.xs.intVal(27));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
 		rowMgr.resultDoc(player_plan, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-		// Should have 13 nodes returned.
-		assertEquals("Thirteen nodes not returned from testFromTriplesWithbindParam method ", 13, jsonBindingsNodes.size());
-	*/}
+		// Should have 1 nodes returned.
+		assertEquals("One node not returned from testFromTriplesWithbindParam method ", 1, jsonBindingsNodes.size());
+		assertEquals("Row 1 player name value incorrect", "Juan Leone", jsonBindingsNodes.path(0).path("player_name").path("value").asText());
+		assertEquals("Row 1 player team value incorrect", "http://marklogic.com/mlb/team/id/001", jsonBindingsNodes.path(0).path("player_team").path("value").asText());
+		
+		// Verify bind value with different types, values.
+		player_plan.bindParam(ageParam, p.xs.intVal(0));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(player_plan, jacksonHandle);
+		jsonResults = jacksonHandle.get();
+		
+		assertTrue("No data should have been returned", jsonResults == null);
+		
+		// Should not throw an exception, but return null results
+		player_plan.bindParam(ageParam, p.xs.intVal(-1));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(player_plan, jacksonHandle);
+		jsonResults = jacksonHandle.get();		
+		// Should have null nodes returned.
+		assertTrue("No data should have been returned", jsonResults == null);
+		
+		// Should not throw an exception, but return null results
+		player_plan.bindParam(ageParam, p.xs.string("abcd"));
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(player_plan, jacksonHandle);
+		jsonResults = jacksonHandle.get();		
+		// Should have null nodes returned.
+		assertTrue("No data should have been returned", jsonResults == null);
+		
+	}
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception
