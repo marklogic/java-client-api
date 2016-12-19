@@ -2991,7 +2991,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(message);
       System.out.println(statusCode);
 
-      assertTrue("Error Message", message.equals("XDMP-NOMATCH"));
+      assertTrue("Error Message", message.equals("XDMP-DOCROOTTEXT"));
       assertTrue("Status code", (statusCode == 400));
     }
 
