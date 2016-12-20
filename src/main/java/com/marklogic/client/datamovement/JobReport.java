@@ -31,7 +31,7 @@ public interface JobReport {
   long getSuccessEventsCount();
   /**
    * {@link WriteBatcher} : gets the number of documents that were sent but failed to write<br>
-   * {@link QueryBatcher} : gets the number of query attempts that failed
+   * {@link QueryBatcher} : gets the number of query attempts that failed (same as getFailureBatchesCount)
    * @return the number of events that failed
    */
   long getFailureEventsCount();
@@ -43,7 +43,7 @@ public interface JobReport {
   long getSuccessBatchesCount();
   /**
    * {@link WriteBatcher} : gets the number of batches that the job failed to write<br>
-   * {@link QueryBatcher} : gets the number of batches of URIs that the job failed to retrieve
+   * {@link QueryBatcher} : gets the number of query attempts that failed (same as getFailureEventsCount)
    * @return the number of batches that failed
    */
   long getFailureBatchesCount();
