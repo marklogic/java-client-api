@@ -544,7 +544,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
     }
   }
   
-
   public void insertJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside insertJSONSingleDocumentAsEvalUser");
