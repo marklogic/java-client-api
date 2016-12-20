@@ -110,14 +110,13 @@ public class QueryOptionsHandleTest {
 
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@BeforeClass
 	public static void setupTestOptions()
 	throws FileNotFoundException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		Common.connectAdmin();
-		serverConfig = Common.client.newServerConfigManager();
+		serverConfig = Common.adminClient.newServerConfigManager();
 
 		serverConfig.readConfiguration();
 		initialConfig = serverConfig.getQueryOptionValidation();
@@ -125,7 +124,7 @@ public class QueryOptionsHandleTest {
 		serverConfig.setQueryOptionValidation(false);
 		serverConfig.writeConfiguration();
 
-		mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+		mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 	
 		optionsPOJOs = new ArrayList<>();
 
@@ -418,7 +417,7 @@ public class QueryOptionsHandleTest {
     @Test
     public void bug17240()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
+        DatabaseClient client = Common.connectAdmin();
         // create a manager for writing query options
 
         QueryOptionsManager optionsMgr =

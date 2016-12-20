@@ -15,10 +15,6 @@
  */
 package com.marklogic.client.test.datamovement;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,8 +32,13 @@ import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteBatcher;
-import java.util.List;
 
+import com.marklogic.client.test.Common;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 public class ScenariosTest {
   Logger logger = LoggerFactory.getLogger(ScenariosTest.class);
@@ -45,7 +46,6 @@ public class ScenariosTest {
 
   @AfterClass
   public static void afterClass() {
-    Common.release();
   }
 
   @Test

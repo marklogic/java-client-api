@@ -32,8 +32,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
@@ -46,10 +45,10 @@ public class DeleteSearchTest {
     private static final String directory = "/delete/test/";
     private static final String filename = "testWrite1.xml";
     private static final String docId = directory + filename;
+    private static DatabaseClient client = Common.connect();
 
     @BeforeClass
     public static void beforeClass() throws Exception {
-        Common.connectAdmin();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         writeDoc();
     }
@@ -67,23 +66,22 @@ public class DeleteSearchTest {
 		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
                 .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
-        XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        XMLDocumentManager docMgr = client.newXMLDocumentManager();
         docMgr.write(docId, new DOMHandle().with(domDocument));
     }
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
     }
 
     @Test
     public void test_A_Delete() throws IOException {
-        GenericDocumentManager docMgr = Common.client.newDocumentManager();
+        GenericDocumentManager docMgr = client.newDocumentManager();
         DocumentDescriptor desc = docMgr.exists(docId);
         assertNotNull("Should find document before delete", desc);
         assertEquals(desc.getUri(), docId);
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+        QueryManager queryMgr = client.newQueryManager();
         DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
         qdef.setDirectory(directory);
 
@@ -95,10 +93,7 @@ public class DeleteSearchTest {
 
     @Test
     public void test_B_RuntimeDb() throws Exception {
-        Common.release();
-        // connect to a runtime db
-        Common.client = DatabaseClientFactory.newClient(
-            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        client = Common.newEvalClient("Documents");
         writeDoc();
         test_A_Delete();
     }

@@ -29,7 +29,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
@@ -49,7 +49,6 @@ public class GraphsTest {
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
         DatabaseClientFactory.getHandleRegistry().register(StringHandle.newFactory());
     }
 
@@ -182,9 +181,7 @@ public class GraphsTest {
     public void testTransactions() {
         GraphManager graphManagerWriter = Common.client.newGraphManager();
         graphManagerWriter.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
-        DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
-                Common.HOST, Common.PORT, "rest-reader", "x",
-                Authentication.DIGEST);
+        DatabaseClient readOnlyClient = Common.connectReadOnly();
         GraphManager graphManagerReader = readOnlyClient.newGraphManager();
         graphManagerReader.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
         String t1 = "<s1> <p1> <o1> .";
@@ -262,7 +259,7 @@ public class GraphsTest {
             }
         } finally {
             if (tx != null) {
-                tx.rollback();
+                try { tx.rollback(); } catch (Exception e) {}
                 tx = null;
             }
             // always try to delete graph

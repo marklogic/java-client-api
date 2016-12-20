@@ -67,7 +67,6 @@ public class ResourceExtensionsTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 		resourceServices = null;
 	}
 
@@ -93,7 +92,7 @@ public class ResourceExtensionsTest {
 	@Test
 	public void testResourceServiceExtension() throws XpathException, SAXException, IOException {
 		ResourceExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newResourceExtensionsManager();
+			Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
 
 		StringHandle handle = new StringHandle();
 

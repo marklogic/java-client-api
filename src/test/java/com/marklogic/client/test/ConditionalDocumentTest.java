@@ -40,14 +40,13 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 
 public class ConditionalDocumentTest {
-	static DatabaseClient             adminClient;
+	static DatabaseClient adminClient = Common.connectAdmin();
 	static ServerConfigurationManager serverConfig;
 
 	@BeforeClass
 	public static void beforeClass()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		adminClient = Common.newAdminClient();
 		serverConfig = adminClient.newServerConfigManager();
 		serverConfig.readConfiguration();
 		serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
@@ -57,10 +56,8 @@ public class ConditionalDocumentTest {
 	@AfterClass
 	public static void afterClass()
 	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
-		Common.release();
 		serverConfig.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
 		serverConfig.writeConfiguration();
-		adminClient.release();
 	}
 
 	@Test

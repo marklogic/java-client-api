@@ -104,7 +104,6 @@ public class PlanGeneratedBase {
 		p      = null;
 		rowMgr = null;
 
-		Common.release();
 	}
 
 	private PlanBuilder.ModifyPlan makePlan(Object[] literals, ItemSeqExpr[] expressions) {

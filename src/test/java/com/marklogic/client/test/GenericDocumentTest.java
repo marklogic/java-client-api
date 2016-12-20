@@ -63,7 +63,6 @@ public class GenericDocumentTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 		seed = null;
 	}
 

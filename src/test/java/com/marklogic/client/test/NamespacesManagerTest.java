@@ -35,14 +35,13 @@ public class NamespacesManagerTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test
 	public void testWriteReadPrefix()
 	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		NamespacesManager nsMgr =
-			Common.client.newServerConfigManager().newNamespacesManager();
+			Common.adminClient.newServerConfigManager().newNamespacesManager();
 		
 		nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
 
@@ -86,7 +85,7 @@ public class NamespacesManagerTest {
 	public void testExceptions()
 	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
 		NamespacesManager nsMgr =
-			Common.client.newServerConfigManager().newNamespacesManager();
+			Common.adminClient.newServerConfigManager().newNamespacesManager();
 
 		boolean illegalArgument = false;
 		try {

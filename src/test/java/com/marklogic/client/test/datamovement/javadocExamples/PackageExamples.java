@@ -28,7 +28,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.test.datamovement.Common;
+import com.marklogic.client.test.Common;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

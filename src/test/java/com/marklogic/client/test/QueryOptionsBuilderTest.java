@@ -352,7 +352,7 @@ public class QueryOptionsBuilderTest {
 	private QueryOptionsHandle exercise(QueryOptionsHandle options)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		Common.connectAdmin();
-		ServerConfigurationManager serverConfig = Common.client
+		ServerConfigurationManager serverConfig = Common.adminClient
 				.newServerConfigManager();
 
 		serverConfig.readConfiguration();
@@ -360,7 +360,7 @@ public class QueryOptionsBuilderTest {
 		serverConfig.setQueryOptionValidation(true);
 		serverConfig.writeConfiguration();
 
-		QueryOptionsManager mgr = Common.client.newServerConfigManager()
+		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
 				.newQueryOptionsManager();
 		mgr.writeOptions("tmp", options);
 		return mgr.readOptions("tmp", new QueryOptionsHandle());

@@ -78,7 +78,6 @@ public class JSONDocumentTest {
 
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test

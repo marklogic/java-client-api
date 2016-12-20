@@ -45,7 +45,6 @@ public class QueryByExampleTest {
     @AfterClass
     public static void afterClass() {
         cleanUpData();
-        Common.release();
     }
 
     @Test

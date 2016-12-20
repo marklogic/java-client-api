@@ -17,7 +17,11 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
 
-import com.marklogic.client.datamovement.*;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -26,6 +30,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
+import com.marklogic.client.test.Common;
 
 public class DeleteListenerTest {
   private static DatabaseClient client = Common.connect();

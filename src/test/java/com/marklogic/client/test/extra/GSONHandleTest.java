@@ -36,7 +36,6 @@ public class GSONHandleTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test

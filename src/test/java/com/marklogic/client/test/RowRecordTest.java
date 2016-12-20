@@ -93,7 +93,6 @@ public class RowRecordTest {
 		p      = null;
 		rowMgr = null;
 
-		Common.release();
 	}
 
 	@Test

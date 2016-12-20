@@ -70,7 +70,7 @@ import java.util.Map;
 public class EvalTest {
     private static GregorianCalendar septFirst = new GregorianCalendar(TimeZone.getTimeZone("CET"));
     private static ExtensionLibrariesManager libMgr;
-    private static DatabaseClient adminClient = Common.newAdminClient();
+    private static DatabaseClient adminClient = Common.connectAdmin();
 
     @BeforeClass
     public static void beforeClass() {
@@ -83,19 +83,17 @@ public class EvalTest {
     }
     @AfterClass
     public static void afterClass() {
-        adminClient.release();
-        Common.release();
     }
 
     @Test
     public void evalHelloWorld() {
         // javascript hello world and response determined by implicit StringHandle which registered with String.class
-        ServerEvaluationCall query = Common.client.newServerEval().javascript("'hello world'");
+        ServerEvaluationCall query = Common.evalClient.newServerEval().javascript("'hello world'");
         String response = query.evalAs(String.class);
         assertEquals("Return should be 'hello world'", "hello world", response);
 
         // xquery hello world with a variable and response explicit set to StringHandle
-        query = Common.client.newServerEval()
+        query = Common.evalClient.newServerEval()
             .xquery("declare variable $planet external;" +
                     "'hello world from ' || $planet")
             .addVariable("planet", "Mars");
@@ -116,7 +114,7 @@ public class EvalTest {
             "var myNull;" +
             "xdmp.arrayValues([myString, myArray, myObject, myBool, myInteger, myDouble, myDate, myNull])";
         // first run it as ad-hoc eval
-        runAndTestJavascript( Common.client.newServerEval().javascript(javascript) );
+        runAndTestJavascript( Common.evalClient.newServerEval().javascript(javascript) );
 
         // run the same code, this time as a module we'll invoke
         StringHandle javascriptModule = new StringHandle( javascript );
@@ -125,7 +123,7 @@ public class EvalTest {
         // libMgr is connected with  admin privileges (as rest-admin user)
         libMgr.write("/ext/test/evaltest.sjs", javascriptModule);
         // now module is installed, let's invoke it
-        runAndTestJavascript( Common.client.newServerEval().modulePath("/ext/test/evaltest.sjs") );
+        runAndTestJavascript( Common.evalClient.newServerEval().modulePath("/ext/test/evaltest.sjs") );
         // clean up module we no longer need
         libMgr.delete("/ext/test/evaltest.sjs");
     }
@@ -138,7 +136,7 @@ public class EvalTest {
         InputStreamHandle xquery = new InputStreamHandle(
             this.getClass().getClassLoader().getResourceAsStream("evaltest.xqy"));
         // first read it locally and run it as ad-hoc eval
-        runAndTestXQuery( Common.client.newServerEval().xquery(xquery) );
+        runAndTestXQuery( Common.evalClient.newServerEval().xquery(xquery) );
 
         // run the same code, this time as a module we'll invoke
         xquery = new InputStreamHandle(
@@ -148,7 +146,7 @@ public class EvalTest {
         // libMgr is connected with  admin privileges (as rest-admin user)
         libMgr.write("/ext/test/evaltest.xqy", xquery);
         // now module is installed, let's invoke it
-        runAndTestXQuery( Common.client.newServerEval().modulePath("/ext/test/evaltest.xqy") );
+        runAndTestXQuery( Common.evalClient.newServerEval().modulePath("/ext/test/evaltest.xqy") );
         // clean up module we no longer need
         libMgr.delete("/ext/test/evaltest.xqy");
     }
@@ -196,7 +194,7 @@ public class EvalTest {
     @Test
     public void getNullTests() throws DatatypeConfigurationException, JsonProcessingException, IOException {
         String javascript = "var myNull; myNull";
-        ServerEvaluationCall call = Common.client.newServerEval().javascript(javascript)
+        ServerEvaluationCall call = Common.evalClient.newServerEval().javascript(javascript)
             .addVariable("myNull", (String) null);
         EvalResultIterator results = call.eval();
         try { assertEquals("myNull looks wrong", null, results.next().getString());
@@ -406,8 +404,7 @@ public class EvalTest {
     }
     @Test
     public void test_171() throws Exception{
-        DatabaseClient client = DatabaseClientFactory.newClient(
-            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        DatabaseClient client = Common.newEvalClient("Documents");
         int count=1;
         boolean tstatus =true;
         String directory = "/test_eval_171/";

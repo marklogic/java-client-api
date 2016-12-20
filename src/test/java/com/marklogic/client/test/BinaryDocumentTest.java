@@ -45,7 +45,6 @@ public class BinaryDocumentTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	// a simple base64-encoded binary

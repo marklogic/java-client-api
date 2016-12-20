@@ -29,8 +29,12 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.UrisToWriterListener;
+import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.datamovement.*;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.AfterClass;
@@ -45,6 +49,9 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
+
+import com.marklogic.client.test.Common;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -70,8 +77,6 @@ public class QueryBatcherIteratorTest {
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
     queryMgr.delete(deleteQuery);
-
-    Common.release();
   }
 
   public static void setup() throws Exception {

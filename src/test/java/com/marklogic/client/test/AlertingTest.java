@@ -28,6 +28,7 @@ import java.io.IOException;
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.DatabaseClient;
 import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -65,46 +66,41 @@ public class AlertingTest {
 	private static QueryOptionsManager queryOptionsManager;
 	private static QueryManager queryManager;
 	private static TransformExtensionsManager transformManager;
+	private static DatabaseClient adminClient = Common.connectAdmin();
 	
 	@AfterClass
 	public static void teardown()
 	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+		XMLDocumentManager docMgr = adminClient.newXMLDocumentManager();
 		docMgr.delete("/alert/first.xml");
 		docMgr.delete("/alert/second.xml");
 		docMgr.delete("/alert/third.xml");
 		teardownMatchRules();
-		
-		Common.release();
-		Common.connectAdmin();
 
-		transformManager = Common.client.newServerConfigManager().newTransformExtensionsManager();		
+		transformManager = adminClient.newServerConfigManager().newTransformExtensionsManager();
 		transformManager.deleteTransform("ruleTransform");
-		Common.release();
 	}
 
 	@BeforeClass
 	public static void setup()
 	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		XMLUnit.setIgnoreWhitespace(true);
-		Common.connectAdmin();
 
 
-		queryOptionsManager = Common.client.newServerConfigManager()
+		queryOptionsManager = adminClient.newServerConfigManager()
 				.newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
 		queryOptionsManager.writeOptions("alerts", new FileHandle(options));
 
-		queryManager = Common.client.newQueryManager();
+		queryManager = adminClient.newQueryManager();
 
-		transformManager = Common.client.newServerConfigManager().newTransformExtensionsManager();
+		transformManager = adminClient.newServerConfigManager().newTransformExtensionsManager();
 		
 		File ruleTransform = new File("src/test/resources/rule-transform.xqy");
 		transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
 
 		
-		Common.client.newServerConfigManager().setServerRequestLogging(true);
-		Common.release();
+		adminClient.newServerConfigManager().setServerRequestLogging(true);
 		Common.connect();
 
 		// write three files for alert tests.

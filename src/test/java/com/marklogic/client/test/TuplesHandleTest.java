@@ -84,18 +84,18 @@ public class TuplesHandleTest {
 
     @BeforeClass
     public static void beforeClass() {
+        Common.connect();
         Common.connectAdmin();
     }
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
     }
 
     @Test
     public void testAggregates()
     throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
     	logger.debug(options.toString());
@@ -128,7 +128,7 @@ public class TuplesHandleTest {
     @Test
     public void testCoVariances()
     throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
         QueryManager queryMgr = Common.client.newQueryManager();
@@ -152,7 +152,7 @@ public class TuplesHandleTest {
     @Test
     public void testValuesHandle()
     throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
         QueryManager queryMgr = Common.client.newQueryManager();
@@ -180,7 +180,7 @@ public class TuplesHandleTest {
     @Test
     public void testNWayTuples()
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	 QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	 QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
          optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
          QueryManager queryMgr = Common.client.newQueryManager();
@@ -209,7 +209,7 @@ public class TuplesHandleTest {
     @Test
     public void testPagingTuples()
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
         QueryManager queryMgr = Common.client.newQueryManager();

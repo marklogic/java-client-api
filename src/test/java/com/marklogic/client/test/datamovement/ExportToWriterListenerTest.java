@@ -37,6 +37,8 @@ import com.marklogic.client.datamovement.ExportToWriterListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 
+import com.marklogic.client.test.Common;
+
 public class ExportToWriterListenerTest {
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager moveMgr = client.newDataMovementManager();

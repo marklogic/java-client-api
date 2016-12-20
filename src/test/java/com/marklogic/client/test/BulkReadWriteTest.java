@@ -86,7 +86,6 @@ public class BulkReadWriteTest {
     @AfterClass
     public static void afterClass() {
         cleanUp();
-        Common.release();
     }
 
     interface CityWriter {
@@ -558,8 +557,7 @@ public class BulkReadWriteTest {
 
     @Test
     public void test_171() throws Exception{
-        DatabaseClient client = DatabaseClientFactory.newClient(
-            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        DatabaseClient client = Common.newEvalClient("Documents");
         int count=1;
         boolean tstatus =true;
         String directory = "/test_bulk_171/";
@@ -605,6 +603,7 @@ public class BulkReadWriteTest {
             if(tstatus){
                 t1.rollback();
             }
+            client.release();
         }
     } 
 
@@ -613,8 +612,7 @@ public class BulkReadWriteTest {
         int count=1;
         boolean committed = false;
         String directory = "/test_bulk_218/";
-        DatabaseClient client2 = DatabaseClientFactory.newClient(
-            Common.HOST, Common.PORT, "Documents", Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST);
+        DatabaseClient client2 = Common.newEvalClient("Documents");
         Transaction t1 = client2.openTransaction();
         QueryManager queryMgr2 = client2.newQueryManager();
         QueryManager queryMgr1 = Common.client.newQueryManager();

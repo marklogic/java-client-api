@@ -65,13 +65,13 @@ public class StringSearchTest {
 
     @BeforeClass
     public static void beforeClass() {
+        Common.connect();
         Common.connectAdmin();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
     }
 
     @Test
@@ -292,7 +292,7 @@ public class StringSearchTest {
         options.withTransformResults(tresults);
 
         QueryOptionsManager queryOptionsMgr =
-          Common.client.newServerConfigManager().newQueryOptionsManager();
+          Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
         queryOptionsMgr.writeOptions(optionsName, options);
 

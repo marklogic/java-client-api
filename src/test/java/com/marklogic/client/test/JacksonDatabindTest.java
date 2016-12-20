@@ -34,6 +34,7 @@ import com.fasterxml.jackson.databind.ObjectReader;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.xml.XmlMapper;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.GenericDocumentManager;
@@ -49,6 +50,7 @@ public class JacksonDatabindTest {
     private static final String CITIES_FILE = "cities_above_300K.txt";
     private static final int MAX_TO_WRITE = 10;
     private static final String DIRECTORY = "/databindTest/";
+    private static DatabaseClient client;
 
     @BeforeClass
     public static void beforeClass() {
@@ -61,14 +63,15 @@ public class JacksonDatabindTest {
         DatabaseClientFactory.getHandleRegistry().register(
             JacksonDatabindHandle.newFactory(mapper, City.class)
         );
-        Common.connect();
+        // we cannot use the singleton DatabaseClient here because this test requires
+        // a DatabaseClient created after calling getHandleRegistry().register() with City.class
+        client = Common.newClient();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
 
     @AfterClass
     public static void afterClass() {
         cleanUp();
-        Common.release();
     }
 
     /** Here we're trying to keep it simple and demonstrate how you would use Jackson
@@ -81,7 +84,7 @@ public class JacksonDatabindTest {
      **/
     public class JsonCityWriter implements CityWriter {
         private int numCities = 0;
-        private JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+        private JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
         @Override
         public void addCity(City city) {
@@ -110,7 +113,7 @@ public class JacksonDatabindTest {
      **/
     public static class XmlCityWriter implements CityWriter {
         private int numCities = 0;
-        private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        private XMLDocumentManager docMgr = client.newXMLDocumentManager();
         private DocumentWriteSet writeSet = docMgr.newWriteSet();
         private static XmlMapper mapper = new XmlMapper();
         static {
@@ -195,7 +198,7 @@ public class JacksonDatabindTest {
         mapper.addMixInAnnotations(Toponym.class, ToponymMixIn1.class);
         ObjectReader reader = mapper.reader(Toponym.class).with(schema);
         try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE))) {
-            GenericDocumentManager docMgr = Common.client.newDocumentManager();
+            GenericDocumentManager docMgr = client.newDocumentManager();
             DocumentWriteSet set = docMgr.newWriteSet();
             String line = null;
             for (int numWritten = 0; numWritten < MAX_TO_WRITE && (line = cityReader.readLine()) != null; numWritten++ ) {
@@ -210,7 +213,7 @@ public class JacksonDatabindTest {
     }
 
     public static void cleanUp() {
-        QueryManager queryMgr = Common.client.newQueryManager();
+        QueryManager queryMgr = client.newQueryManager();
         DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
         deleteQuery.setDirectory(DIRECTORY);
         queryMgr.delete(deleteQuery);

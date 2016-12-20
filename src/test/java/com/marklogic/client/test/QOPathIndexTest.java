@@ -78,7 +78,6 @@ public class QOPathIndexTest {
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
     }
 
     @Test

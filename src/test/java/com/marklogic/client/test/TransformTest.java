@@ -37,6 +37,7 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
@@ -59,9 +60,10 @@ public class TransformTest {
 	@BeforeClass
 	public static void beforeClass()
 	throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
+		Common.connect();
 		Common.connectAdmin();
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		confMgr = Common.client.newServerConfigManager();
+		confMgr = Common.adminClient.newServerConfigManager();
 
 		extensionMgr = confMgr.newTransformExtensionsManager();
 		optionsName = ValuesHandleTest.makeValuesOptions();
@@ -114,7 +116,6 @@ public class TransformTest {
 		libMgr.delete("/ext/memory-operations.xqy");
 		libMgr.delete("/ext/node-operations.xqy");
 
-		Common.release();
 	}
 
 	@Test
@@ -271,4 +272,40 @@ public class TransformTest {
 		q.search(s, new SearchHandle());
 		// if the previous line throws no exception, then 118 is resolved 
 	}
+
+/*
+	@Test
+	public void testIssue471() {
+		String transform = "xquery version '1.0-ml';" +
+			"module namespace transform = 'http://marklogic.com/rest-api/transform/testIssue471';" +
+
+			"import module namespace json = 'http://marklogic.com/xdmp/json' at '/MarkLogic/json/json.xqy';" +
+
+			"declare namespace search = 'http://marklogic.com/appservices/search';" +
+
+			"declare function transform(" +
+			"        $context as map:map," +
+			"        $params as map:map," +
+			"        $content as document-node()" +
+			") as document-node()" +
+			"{" +
+			"    let $c := json:config('custom') ," +
+			"        $cx := map:put( $c, 'whitespace', 'ignore' )," +
+			"        $cx := map:put( $c, 'text-value', 'label' )," +
+			"        $cx := map:put( $c, 'camel-case', fn:true() )," +
+			"        $cx := map:put( $c, 'json-attributes', ('snippet-format', 'total', 'start', 'page-length'))," +
+			"        $cx := map:put( $c, 'array-element-names', (xs:QName('search:result')))" +
+			"    let $_ := map:put($context, 'output-type', 'text/json')" +
+			"    let $json := json:transform-to-json(  $content ,$c )" +
+			"    return $json" +
+			"};";
+		extensionMgr.writeXQueryTransform( "testIssue471", new StringHandle().with(transform));
+		QueryManager q = Common.client.newQueryManager();
+		StringQueryDefinition s = q.newStringDefinition();
+		s.setCriteria("a");
+		s.setResponseTransform(new ServerTransform("testIssue471"));
+		JacksonHandle response = q.search(s, new JacksonHandle());
+		System.out.println(response.toString());
+	}
+*/
 }

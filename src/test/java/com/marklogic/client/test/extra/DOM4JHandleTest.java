@@ -39,7 +39,6 @@ public class DOM4JHandleTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test

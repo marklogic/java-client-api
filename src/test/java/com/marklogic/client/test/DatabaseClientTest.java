@@ -38,10 +38,10 @@ public class DatabaseClientTest {
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connect();
+		Common.connectAdmin();
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test
@@ -106,7 +106,7 @@ public class DatabaseClientTest {
 
 	@Test
 	public void testNewQueryOptionsManager() {
-		QueryOptionsManager mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 	}
 

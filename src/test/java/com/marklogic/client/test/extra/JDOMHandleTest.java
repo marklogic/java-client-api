@@ -38,7 +38,6 @@ public class JDOMHandleTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test

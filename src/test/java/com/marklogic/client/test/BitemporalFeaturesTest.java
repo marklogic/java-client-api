@@ -53,14 +53,13 @@ public class BitemporalFeaturesTest {
   @BeforeClass
   public static void beforeClass() {
     Common.connectAdmin();
-    docMgr = Common.client.newXMLDocumentManager();
-    queryMgr = Common.client.newQueryManager();
+    docMgr = Common.adminClient.newXMLDocumentManager();
+    queryMgr = Common.adminClient.newQueryManager();
   }
 
   @AfterClass
   public static void afterClass() throws DatatypeConfigurationException {
     cleanUp();
-    Common.release();
   }
 
   @Test
@@ -92,7 +91,7 @@ public class BitemporalFeaturesTest {
     docMgr.write(docId2, temporalDocument2, null, handle2, null, null, temporalCollection);
     StringHandle handle3 = new StringHandle(doc3).withFormat(Format.XML);
     docMgr.write(docId3, temporalDocument1, null, handle3, null, null, temporalCollection);
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = Common.adminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
     query.setCollections(temporalDocument1);
@@ -139,7 +138,7 @@ public class BitemporalFeaturesTest {
     writeSet.add(prefix + "_D.xml", new StringHandle(doc4).withFormat(Format.XML), temporalDocument4);
     docMgr.write(writeSet, null, null, temporalCollection);
     writeSet = docMgr.newWriteSet();
-    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryManager queryMgr = Common.adminClient.newQueryManager();
     queryMgr.setPageLength(1000);
     QueryDefinition query = queryMgr.newStringDefinition();
     query.setCollections(temporalDocument1);
@@ -226,7 +225,7 @@ public class BitemporalFeaturesTest {
           e.printStackTrace();
         }
       docMgr.wipe(logicalID, temporalCollection);
-      QueryManager queryMgr = Common.client.newQueryManager();
+      QueryManager queryMgr = Common.adminClient.newQueryManager();
       queryMgr.setPageLength(1000);
       QueryDefinition query = queryMgr.newStringDefinition();
       query.setCollections(logicalID);

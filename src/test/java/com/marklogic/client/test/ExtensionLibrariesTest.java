@@ -27,7 +27,7 @@ public class ExtensionLibrariesTest {
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 
 		// get a manager
-		ExtensionLibrariesManager libsMgr = Common.client
+		ExtensionLibrariesManager libsMgr = Common.adminClient
 				.newServerConfigManager().newExtensionLibrariesManager();
 
 		// write XQuery file to the modules database

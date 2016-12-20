@@ -26,6 +26,7 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -51,7 +52,6 @@ public class SuggestTest {
 		docMgr.delete("/sample/suggestion.xml");
 		docMgr.delete("/sample2/suggestion.xml");
 		
-		Common.release();
 	}
 
 	@BeforeClass
@@ -59,10 +59,9 @@ public class SuggestTest {
 	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		XMLUnit.setIgnoreWhitespace(true);
 		Common.connectAdmin();
-		writeOptions();
+		writeOptions(Common.adminClient);
 		
-		Common.client.newServerConfigManager().setServerRequestLogging(true);
-		Common.release();
+		Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
 		Common.connect();
 
 		// write three files for alert tests.
@@ -151,8 +150,9 @@ public class SuggestTest {
 	
 	
 
-	private static String writeOptions()
-	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
+	private static String writeOptions(DatabaseClient adminClient)
+		throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+	{
 		String optionsName = "suggest";
 
 		String suggestionOptions = "            <options xmlns='http://marklogic.com/appservices/search'>"
@@ -165,8 +165,7 @@ public class SuggestTest {
 				+ "                    </range>"
 				+ "                </constraint>" + "            </options>";
 
-		QueryOptionsManager queryOptionsMgr = Common.client
-				.newServerConfigManager().newQueryOptionsManager();
+		QueryOptionsManager queryOptionsMgr = adminClient.newServerConfigManager().newQueryOptionsManager();
 
 		queryOptionsMgr.writeOptions(optionsName, new StringHandle(
 				suggestionOptions));

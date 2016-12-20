@@ -61,12 +61,12 @@ public class ValuesHandleTest {
 	
 	@BeforeClass
     public static void beforeClass() {
+        Common.connect();
         Common.connectAdmin();
     }
 
     @AfterClass
     public static void afterClass() {
-        Common.release();
     }
 
     @Test
@@ -97,7 +97,7 @@ public class ValuesHandleTest {
         assertTrue("Aggregate 2 should be between 1.43 and 1.44",
         		1.43 < second && second < 1.44);
 
-        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
     }
 
     @Test
@@ -133,7 +133,7 @@ public class ValuesHandleTest {
         	assertEquals("There should be 3 values", 3, dv.length);
         }
 
-        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
     }
 
     @Test
@@ -187,7 +187,7 @@ public class ValuesHandleTest {
         assertEquals("The second value should be '2.2'",
         		dv[1].get("xs:double", Double.class).toString(), "2.2");
 
-        Common.client.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
     }
 
     // this test only works if you've loaded the 5min guide @Test
@@ -230,7 +230,7 @@ public class ValuesHandleTest {
         	  "<return-metrics>false</return-metrics>"+
         	"</options>";
 
-    	QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+    	QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     	optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
     	return "valuesoptions";

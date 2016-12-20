@@ -54,7 +54,6 @@ public class JacksonStreamTest {
     @AfterClass
     public static void afterClass() {
         cleanUp();
-        Common.release();
     }
 
     

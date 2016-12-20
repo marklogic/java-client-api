@@ -43,6 +43,8 @@ import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 
+import com.marklogic.client.test.Common;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class PointInTimeQueryTest {
   private static Logger logger = LoggerFactory.getLogger(PointInTimeQueryTest.class);
@@ -63,9 +65,7 @@ public class PointInTimeQueryTest {
     QueryManager queryMgr = client.newQueryManager();
     DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
     deleteQuery.setCollections(collection);
-    //queryMgr.delete(deleteQuery);
-
-    Common.release();
+    queryMgr.delete(deleteQuery);
   }
 
   public static void setup() throws Exception {

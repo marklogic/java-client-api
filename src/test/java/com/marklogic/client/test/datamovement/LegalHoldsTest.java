@@ -40,6 +40,8 @@ import com.marklogic.client.query.StructuredQueryBuilder;
 
 import static com.marklogic.client.query.StructuredQueryBuilder.Operator;
 
+import com.marklogic.client.test.Common;
+
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -60,8 +62,8 @@ public class LegalHoldsTest {
     new Random().nextInt(10000);
   private static String directory = "/LegalHoldsTest/";
   private static ObjectMapper mapper = new ObjectMapper();
-  private static DatabaseClient evalClient = Common.newEvalClient();
-  private static DatabaseClient adminClient = Common.newAdminClient();
+  private static DatabaseClient evalClient = Common.connectEval();
+  private static DatabaseClient adminClient = Common.connectAdmin();
 
   @BeforeClass
   public static void beforeClass() throws Exception {
@@ -76,8 +78,6 @@ public class LegalHoldsTest {
   @AfterClass
   public static void afterClass() throws Exception {
     cleanup(adminClient);
-    adminClient.release();
-    evalClient.release();
   }
 
   @Test

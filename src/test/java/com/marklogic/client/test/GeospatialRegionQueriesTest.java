@@ -30,17 +30,17 @@ public class GeospatialRegionQueriesTest {
     @AfterClass
     public static void teardown() {
         deleteEnvironment();
-        Common.release();
     }
 
     private static void deleteEnvironment() {
         XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
         docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml","newpolygon.xml");
-        Common.client.newServerConfigManager().setQueryValidation(false);
+        Common.adminClient.newServerConfigManager().setQueryValidation(false);
     }
 
     @BeforeClass
     public static void setup() {
+        Common.connect();
         Common.connectAdmin();
         try {
             buildEnvironment();
@@ -123,7 +123,7 @@ public class GeospatialRegionQueriesTest {
         writeset.add("p2.xml", new DOMHandle().with(domDocument));
 
         docMgr.write(writeset);
-        Common.client.newServerConfigManager().setQueryValidation(true);
+        Common.adminClient.newServerConfigManager().setQueryValidation(true);
     }
 
     @Test
@@ -180,7 +180,7 @@ public class GeospatialRegionQueriesTest {
                        + "</options>";
         StringHandle writeHandle = new StringHandle(options);
 
-        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("geodoubleoptions", writeHandle);
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
@@ -284,7 +284,7 @@ public class GeospatialRegionQueriesTest {
         // create a handle to send the query options
         StringHandle writeHandle = new StringHandle(options);
 
-        QueryOptionsManager optionsMgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
         optionsMgr.writeOptions("geooptions", writeHandle);
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder("geooptions");

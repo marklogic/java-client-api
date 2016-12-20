@@ -53,6 +53,7 @@ public class TransformExtensionsTest {
 
 	@BeforeClass
 	public static void beforeClass() throws IOException {
+		Common.connect();
 		Common.connectAdmin();
 
         XMLUnit.setIgnoreAttributeOrder(true);
@@ -75,7 +76,6 @@ public class TransformExtensionsTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 		xqueryTransform = null;
 		xslTransform    = null;
 	}
@@ -102,7 +102,7 @@ public class TransformExtensionsTest {
 	public void testTransformExtensions()
 	throws XpathException, SAXException, IOException, FailedRequestException, ResourceNotFoundException, ForbiddenUserException, ResourceNotResendableException {
 		TransformExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newTransformExtensionsManager();
+			Common.adminClient.newServerConfigManager().newTransformExtensionsManager();
 
 		StringHandle handle = new StringHandle();
 		handle.setFormat(Format.TEXT);

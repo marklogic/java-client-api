@@ -23,7 +23,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
@@ -38,9 +38,9 @@ public class FailedRequestTest {
 	@Test
 	public void testFailedRequest()
 	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-		Common.connect();
+		Common.connectAdmin();
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		QueryOptionsManager mgr = Common.client.newServerConfigManager()
+		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
 				.newQueryOptionsManager();
 
 		try {
@@ -53,9 +53,9 @@ public class FailedRequestTest {
 			assertEquals("Forbidden", e.getFailedRequest().getStatus());
 		}
 		Common.connectAdmin();
-		mgr = Common.client.newServerConfigManager().newQueryOptionsManager();
+		mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
-		Common.client.newServerConfigManager().setQueryOptionValidation(true);
+		Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
 
 		QueryOptionsHandle handle;
 		QueryOptionsBuilder builder = new QueryOptionsBuilder();
@@ -85,7 +85,7 @@ public class FailedRequestTest {
 	public void testErrorOnNonREST()
 	throws ForbiddenUserException {
 		DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
-				8001, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST);
+				8001, new DigestAuthContext(Common.USER, Common.PASS));
 		ServerConfigurationManager serverConfig = badClient
 				.newServerConfigManager();
 
@@ -99,6 +99,8 @@ public class FailedRequestTest {
 					e.getMessage());
 			assertEquals(404, e.getFailedRequest().getStatusCode());
 			assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
+		} finally {
+			badClient.release();
 		}
 
 	}

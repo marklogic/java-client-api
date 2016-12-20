@@ -47,14 +47,13 @@ public class ResourceServicesTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 		resourceServices = null;
 	}
 
 	@Test
 	public void testResourceServices() throws XpathException {
 		ResourceExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newResourceExtensionsManager();
+			Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
 
 		extensionMgr.writeServices(
 				ResourceExtensionsTest.RESOURCE_NAME,
@@ -64,7 +63,7 @@ public class ResourceServicesTest {
 				);
 
 		SimpleResourceManager resourceMgr =
-			Common.client.init(ResourceExtensionsTest.RESOURCE_NAME, new SimpleResourceManager());
+			Common.adminClient.init(ResourceExtensionsTest.RESOURCE_NAME, new SimpleResourceManager());
 
 		RequestParameters params = new RequestParameters();
 		params.put("value", "true");
@@ -151,8 +150,10 @@ public class ResourceServicesTest {
 	/** Avoid regression on https://github.com/marklogic/java-client-api/issues/172 */
 	public void test_172() {
 		ResourceExtensionsManager extensionMgr =
-			Common.client.newServerConfigManager().newResourceExtensionsManager();
-		Common.client.release();
+			Common.adminClient.newServerConfigManager().newResourceExtensionsManager();
+		Common.adminClient.release();
+		// since we released the existing connection, clear it out
+		Common.adminClient = null;
 		String expectedMessage = "You cannot use this connected object anymore--connection has already been released";
 		try { extensionMgr.writeServices(ResourceExtensionsTest.RESOURCE_NAME, null, null);
 		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
@@ -162,8 +163,6 @@ public class ResourceServicesTest {
 		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
 		try { extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
 		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
-		// since we released the existing connection, connect again in case this isn't always the last test
-		Common.connectAdmin();
 	}
 
 	static class SimpleResourceManager extends ResourceManager {

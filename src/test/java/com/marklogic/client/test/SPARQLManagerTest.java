@@ -43,7 +43,7 @@ import com.fasterxml.jackson.dataformat.csv.CsvMapper;
 import com.fasterxml.jackson.dataformat.csv.CsvSchema;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
@@ -95,7 +95,6 @@ public class SPARQLManagerTest {
     @AfterClass
     public static void afterClass() {
         gmgr.delete(graphUri);
-        Common.release();
     }
 
     @Test
@@ -478,9 +477,7 @@ public class SPARQLManagerTest {
     public void testTransactions() {
         GraphManager graphManagerWriter = Common.client.newGraphManager();
         graphManagerWriter.setDefaultMimetype(RDFMimeTypes.NTRIPLES);
-        DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
-                Common.HOST, Common.PORT, "rest-reader", "x",
-                Authentication.DIGEST);
+        DatabaseClient readOnlyClient = Common.connectReadOnly();
         SPARQLQueryManager sparqlManagerReader = readOnlyClient.newSPARQLQueryManager();
         String q1 = "INSERT DATA { GRAPH <newGraph> { <s1> <p1> <o1> . } }";
         String q2 = "INSERT DATA { GRAPH <newGraph> { <s2> <p2> <o2> . } }";
@@ -550,7 +547,7 @@ public class SPARQLManagerTest {
 
         } finally {
             if (tx != null) {
-                tx.rollback();
+                try { tx.rollback(); } catch (Exception e) {}
                 tx = null;
             }
             // always try to delete graph
@@ -560,7 +557,6 @@ public class SPARQLManagerTest {
             } catch (Exception e) {
                 // nop
             }
-
         }
     }
 }

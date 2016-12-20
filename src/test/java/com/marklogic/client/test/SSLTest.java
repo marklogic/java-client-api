@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
@@ -57,7 +57,7 @@ public class SSLTest {
         sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
         // create the client
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "MyFooUser", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
 
 
         String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";

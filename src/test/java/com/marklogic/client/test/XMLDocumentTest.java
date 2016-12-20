@@ -74,7 +74,6 @@ public class XMLDocumentTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@SuppressWarnings("unchecked")

@@ -85,7 +85,6 @@ public class HandleAsTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test
@@ -374,8 +373,8 @@ public class HandleAsTest {
 		DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
 		clientFactoryBean.setHost(Common.HOST);
 		clientFactoryBean.setPort(Common.PORT);
-		clientFactoryBean.setUser(Common.USERNAME);
-		clientFactoryBean.setPassword(Common.PASSWORD);
+		clientFactoryBean.setUser(Common.USER);
+		clientFactoryBean.setPassword(Common.PASS);
 		clientFactoryBean.setAuthentication(Authentication.DIGEST);
 		return clientFactoryBean;
 	}

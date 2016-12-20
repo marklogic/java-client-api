@@ -36,61 +36,72 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 
 public class Common {
-	final public static String USERNAME = "rest-writer";
-	final public static String PASSWORD = "x";
-	final public static String ADMIN_USERNAME = "rest-admin";
-	final public static String ADMIN_PASSWORD = "x";
-	final public static String EVAL_USERNAME = "rest-evaluator";
-	final public static String EVAL_PASSWORD = "x";
+	final public static String USER= "rest-writer";
+	final public static String PASS= "x";
+	final public static String REST_ADMIN_USER= "rest-admin";
+	final public static String REST_ADMIN_PASS= "x";
+	final public static String SERVER_ADMIN_USER= "admin";
+	final public static String SERVER_ADMIN_PASS= "admin";
+	final public static String EVAL_USER= "rest-evaluator";
+	final public static String EVAL_PASS= "x";
+	final public static String READ_ONLY_USER= "rest-reader";
+	final public static String READ_ONLY_PASS= "x";
+	final public static String READ_PRIVILIGED_USER = "rest-privileged";
+	final public static String READ_PRIVILIGED_PASS = "x";
+	final public static String WRITE_PRIVILIGED_USER = "write-privileged";
+	final public static String WRITE_PRIVILIGED_PASS = "x";
 	final public static String HOST     = "localhost";
 	final public static int    PORT     = 8012;
 
 	public static DatabaseClient client;
-	private static void connectImpl(DatabaseClient client) {
-		release();
-		Common.client = client;
-	}
+	public static DatabaseClient adminClient;
+	public static DatabaseClient evalClient;
+	public static DatabaseClient readOnlyClient;
 
-	public static void connect() {
-		connectImpl(newClient());
+	public static DatabaseClient connect() {
+		if (client != null) return client;
+		client = newClient();
+		return client;
 	}
-	public static void connectDatabase(String name) {
-		connectImpl(newClient(name));
+	public static DatabaseClient connectAdmin() {
+    if (adminClient != null) return adminClient;
+		adminClient = newAdminClient();
+		return adminClient;
 	}
-	public static void connectAdmin() {
-		client = newAdminClient();
+	public static DatabaseClient connectEval() {
+		if (evalClient != null) return evalClient;
+		evalClient = newEvalClient();
+		return evalClient;
 	}
-	public static void connectEval() {
-		client = newEvalClient();
-	}
-	public static DatabaseClient newClient(String name) {
-		return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, name,
-				new DatabaseClientFactory.DigestAuthContext(Common.USERNAME, Common.PASSWORD)
-				);
+	public static DatabaseClient connectReadOnly() {
+		if (readOnlyClient != null) return readOnlyClient;
+		readOnlyClient = newReadOnlyClient();
+		return readOnlyClient;
 	}
 	public static DatabaseClient newClient() {
-		return DatabaseClientFactory.newClient(
-				Common.HOST, Common.PORT, Common.USERNAME, Common.PASSWORD, Authentication.DIGEST
-				);
+		return newClient(null);
 	}
-	public static DatabaseClient newEvalClient() {
-		return DatabaseClientFactory.newClient(
-				Common.HOST, Common.PORT, Common.EVAL_USERNAME, Common.EVAL_PASSWORD, Authentication.DIGEST
-				);
+	public static DatabaseClient newClient(String databaseName) {
+		return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
+			new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS));
 	}
 	public static DatabaseClient newAdminClient() {
 		return DatabaseClientFactory.newClient(
-				Common.HOST, Common.PORT, Common.ADMIN_USERNAME, Common.ADMIN_PASSWORD, Authentication.DIGEST
-				);
+			Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS));
 	}
-	public static void release() {
-		if (client != null) {
-			client.release();
-			client = null;
-		}
+	public static DatabaseClient newEvalClient() {
+		return newEvalClient(null);
+	}
+	public static DatabaseClient newEvalClient(String databaseName) {
+		return DatabaseClientFactory.newClient(
+			Common.HOST, Common.PORT, databaseName, new DigestAuthContext(Common.EVAL_USER, Common.EVAL_PASS));
+	}
+	public static DatabaseClient newReadOnlyClient() {
+		return DatabaseClientFactory.newClient(
+			Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS));
 	}
 
 	public static byte[] streamToBytes(InputStream is) throws IOException {

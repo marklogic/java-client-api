@@ -39,7 +39,6 @@ public class TextDocumentTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test

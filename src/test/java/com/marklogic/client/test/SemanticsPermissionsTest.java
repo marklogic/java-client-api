@@ -28,7 +28,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.io.StringHandle;
@@ -43,18 +43,16 @@ import com.marklogic.client.semantics.SPARQLQueryManager;
 public class SemanticsPermissionsTest {
     private static GraphManager gmgr;
     private static String graphUri = "SemanticsPermissionsTest";
-    private static DatabaseClient readPrivilegedClient;
-    private static DatabaseClient writePrivilegedClient;
+    private static DatabaseClient readPrivilegedClient = DatabaseClientFactory.newClient(
+                Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_PRIVILIGED_USER, Common.READ_PRIVILIGED_PASS));
+    private static DatabaseClient writePrivilegedClient = DatabaseClientFactory.newClient(
+                Common.HOST, Common.PORT, new DigestAuthContext(Common.WRITE_PRIVILIGED_USER, Common.WRITE_PRIVILIGED_PASS));
 
     @BeforeClass
     public static void beforeClass() {
         Common.connect();
         gmgr = Common.client.newGraphManager();
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        readPrivilegedClient = DatabaseClientFactory.newClient(
-                Common.HOST, Common.PORT, "read-privileged", "x", Authentication.DIGEST);
-        writePrivilegedClient = DatabaseClientFactory.newClient(
-                Common.HOST, Common.PORT, "write-privileged", "x", Authentication.DIGEST);
         String triple = "<s> <p> <o>.";
         GraphPermissions perms = gmgr.permission("read-privileged", Capability.READ)
             .permission("write-privileged", Capability.UPDATE);
@@ -65,7 +63,8 @@ public class SemanticsPermissionsTest {
     public static void afterClass() {
         GraphManager gmgr = Common.client.newGraphManager();
         gmgr.delete(graphUri);
-        Common.release();
+        readPrivilegedClient.release();
+        writePrivilegedClient.release();
     }
 
     @Test

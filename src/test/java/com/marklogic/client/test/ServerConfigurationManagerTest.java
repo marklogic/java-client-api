@@ -38,13 +38,12 @@ public class ServerConfigurationManagerTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@Test
 	public void testSetGet()
 	throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
-		ServerConfigurationManager serverConfig = Common.client.newServerConfigManager();
+		ServerConfigurationManager serverConfig = Common.adminClient.newServerConfigManager();
 
 		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
@@ -65,7 +64,7 @@ public class ServerConfigurationManagerTest {
 		UpdatePolicy modVersionReq   = (initialVersionReq == UpdatePolicy.VERSION_OPTIONAL) ?
 				UpdatePolicy.VERSION_REQUIRED : UpdatePolicy.VERSION_OPTIONAL;
 
-		serverConfig = Common.client.newServerConfigManager();
+		serverConfig = Common.adminClient.newServerConfigManager();
 		serverConfig.setQueryValidation(modQueryValid);
 		serverConfig.setQueryOptionValidation(modOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
@@ -74,7 +73,7 @@ public class ServerConfigurationManagerTest {
 		serverConfig.setUpdatePolicy(modVersionReq);
 		serverConfig.writeConfiguration();
 
-		serverConfig = Common.client.newServerConfigManager();
+		serverConfig = Common.adminClient.newServerConfigManager();
 		serverConfig.readConfiguration();
 		assertEquals("Failed to change query validation",
 				modQueryValid,   serverConfig.getQueryValidation());
@@ -89,7 +88,7 @@ public class ServerConfigurationManagerTest {
 		assertEquals("Failed to change update policy ",
 				modVersionReq,   serverConfig.getUpdatePolicy());
 		
-		serverConfig = Common.client.newServerConfigManager();
+		serverConfig = Common.adminClient.newServerConfigManager();
 		serverConfig.setQueryOptionValidation(initialOptionValid);
 		serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
 		serverConfig.setDefaultDocumentReadTransformAll(initialReadTransAll);

@@ -59,7 +59,6 @@ public class QueryOptionsManagerTest {
 	}
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 	
 
@@ -68,7 +67,7 @@ public class QueryOptionsManagerTest {
 	public void testQueryOptionsManager()
 	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsManager mgr =
-			Common.client.newServerConfigManager().newQueryOptionsManager();
+			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 		mgr.writeOptions("testempty", new QueryOptionsHandle());
@@ -98,7 +97,7 @@ public class QueryOptionsManagerTest {
 		domDocument.appendChild(root);
 
 		QueryOptionsManager queryOptionsMgr =
-			Common.client.newServerConfigManager().newQueryOptionsManager();
+			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		
 		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
@@ -120,7 +119,7 @@ public class QueryOptionsManagerTest {
 	public void testJSONOptions()
 	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		QueryOptionsManager mgr =
-			Common.client.newServerConfigManager().newQueryOptionsManager();
+			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));

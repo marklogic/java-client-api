@@ -30,6 +30,8 @@ import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
 
+import com.marklogic.client.test.Common;
+
 public class ForestConfigTest {
   private static DatabaseClient client = Common.connect();
   private DataMovementManager moveMgr = client.newDataMovementManager();
@@ -40,7 +42,6 @@ public class ForestConfigTest {
 
   @AfterClass
   public static void afterClass() {
-    client.release();
   }
 
   @Test

@@ -35,6 +35,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -73,7 +74,6 @@ public class BitemporalTest {
     }
     @AfterClass
     public static void afterClass() {
-        Common.release();
         cleanUp();
     }
 
@@ -305,20 +305,24 @@ public class BitemporalTest {
 	}
 
 	static public void cleanUp() {
-		DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, "admin", "admin", DatabaseClientFactory.Authentication.DIGEST);
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setPageLength(1000);
-		QueryDefinition query = queryMgr.newStringDefinition();
-		query.setCollections(temporalCollection);
-//		DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
-//		deleteQuery.setCollections(temporalCollection);
-//		client.newQueryManager().delete(deleteQuery);
-		SearchHandle handle = queryMgr.search(query, new SearchHandle());
-		MatchDocumentSummary[] docs = handle.getMatchResults();
-		for ( MatchDocumentSummary doc : docs ) {
-			if ( ! (temporalCollection + ".lsqt").equals(doc.getUri()) ) {
-				client.newXMLDocumentManager().delete(doc.getUri());
+		DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
+		try {
+			QueryManager queryMgr = client.newQueryManager();
+			queryMgr.setPageLength(1000);
+			QueryDefinition query = queryMgr.newStringDefinition();
+			query.setCollections(temporalCollection);
+	//		DeleteQueryDefinition deleteQuery = client.newQueryManager().newDeleteDefinition();
+	//		deleteQuery.setCollections(temporalCollection);
+	//		client.newQueryManager().delete(deleteQuery);
+			SearchHandle handle = queryMgr.search(query, new SearchHandle());
+			MatchDocumentSummary[] docs = handle.getMatchResults();
+			for ( MatchDocumentSummary doc : docs ) {
+				if ( ! (temporalCollection + ".lsqt").equals(doc.getUri()) ) {
+					client.newXMLDocumentManager().delete(doc.getUri());
+				}
 			}
+		} finally {
+			client.release();
 		}
 	}
 }

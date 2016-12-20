@@ -75,14 +75,13 @@ import com.marklogic.client.query.ValuesDefinition;
 public class RawQueryDefinitionTest {
 	@BeforeClass
 	public static void beforeClass() {
-		Common.connectAdmin();
+		Common.connect();
 		queryMgr = Common.client.newQueryManager();
 		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass
 	public static void afterClass() {
-		Common.release();
 	}
 
 	@BeforeClass
@@ -90,11 +89,10 @@ public class RawQueryDefinitionTest {
 	throws FileNotFoundException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
 		Common.connectAdmin();
 
-		QueryOptionsManager queryOptionsManager = Common.client.newServerConfigManager().newQueryOptionsManager();
+		QueryOptionsManager queryOptionsManager = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		File options = new File("src/test/resources/alerting-options.xml");
 		queryOptionsManager.writeOptions("alerts", new FileHandle(options));
-		Common.client.newServerConfigManager().setServerRequestLogging(true);
-		Common.release();
+		Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
 		Common.connect();
 		JSONDocumentManager jsonDocMgr = Common.client.newJSONDocumentManager();
 		jsonDocMgr.write("/basic1.json", new FileHandle(new File("src/test/resources/basic1.json")));

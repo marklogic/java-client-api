@@ -65,7 +65,6 @@ public class PojoFacadeTest {
     @AfterClass
     public static void afterClass() {
         cleanUp();
-        Common.release();
     }
 
     public class PojoCityWriter implements CityWriter {
