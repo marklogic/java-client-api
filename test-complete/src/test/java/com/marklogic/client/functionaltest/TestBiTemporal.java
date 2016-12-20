@@ -164,8 +164,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time");
-    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+    createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in", "any-uri",
+    		                      "xdbc:invoke","temporal:statement-set-system-time");
+    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader", "temporal-admin");
     int restPort = getRestServerPort();
     adminClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
     writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
@@ -1503,7 +1504,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println("actualPermissions: " + actualPermissions);
 
       assertTrue("Document permissions difference in size value",
-          actualPermissions.contains("size:3"));
+          actualPermissions.contains("size:4"));
 
       assertTrue("Document permissions difference in rest-reader permission",
           actualPermissions.contains("rest-reader:[READ]"));
@@ -1516,7 +1517,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
       assertTrue("Document permissions difference in rest-writer permission - third permission",
     		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-    //Split up app-user app-user:[UPDATE, EXECUTE, READ] string
+      //Split up app-user app-user:[UPDATE, EXECUTE, READ] string
       String[] appUserPerms = actualPermissions.split("app\\-user:\\[")[1].split("\\]")[0].split(",");
       
       assertTrue("Document permissions difference in App User permission - first permission",
@@ -1526,6 +1527,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
       assertTrue("Document permissions difference in App User permission - third permission",
     		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
       
+      //Split up temporal-admin=[READ, UPDATE] string
+      String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+      assertTrue("Document permissions difference in temporal-admin permission - first permission",
+    		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+      assertTrue("Document permissions difference in rest-writer permission - second permission",
+    		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+
       // Validate quality
       int quality = metadataHandle.getQuality();
       System.out.println("Quality: " + quality);
@@ -1675,9 +1684,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
 
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in rest-writer permission - first permission",
@@ -1686,13 +1695,20 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[UPDATE, READ] string
+          //Split up app-user app-user:[UPDATE, READ] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
         		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
           
           assertFalse("Document permissions difference in app-user permission",
         		  actualPermissions.split("app-user:\\[")[1].split("\\]")[0].contains("EXECUTE"));
@@ -1725,7 +1741,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
 
           assertTrue(
               "Document permissions difference in rest-reader permission",
@@ -1748,6 +1764,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -1778,7 +1801,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
           }
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));   
+              actualPermissions.contains("size:4"));   
          
           assertTrue(
               "Document permissions difference in rest-reader permission",
@@ -1792,7 +1815,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
@@ -1801,6 +1824,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
 
@@ -1832,7 +1862,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));         
+              actualPermissions.contains("size:4"));         
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
@@ -1845,7 +1875,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
@@ -1854,6 +1884,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -1986,13 +2023,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
          
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));                   
 
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in rest-writer permission - first permission",
@@ -2001,13 +2038,20 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE] string
+          //Split up app-user app-user:[READ, UPDATE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
         		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ"));          
+        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")); 
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
           assertEquals(quality, 99);
         }
 
@@ -2036,7 +2080,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
 
           assertTrue(
               "Document permissions difference in rest-reader permission",
@@ -2051,7 +2095,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
@@ -2060,6 +2104,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -2090,13 +2141,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
           }
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
 
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
          
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in rest-writer permission - first permission",
@@ -2105,7 +2156,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
@@ -2114,6 +2165,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
 
@@ -2144,13 +2202,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:3"));
+              actualPermissions.contains("size:4"));
 
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
           
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in rest-writer permission - first permission",
@@ -2159,7 +2217,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
         		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
           
           assertTrue("Document permissions difference in App User permission - first permission",
@@ -2168,6 +2226,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
         		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
+          //Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -2186,7 +2251,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Create a bitemporal document and update the document with a system time that is less than
-  // the one used durign creation
+  // the one used during creation
   public void testSystemTimeUsingInvalidTime() throws Exception {
 
     System.out.println("Inside testSystemTimeUsingInvalidTime");
@@ -2991,7 +3056,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       System.out.println(message);
       System.out.println(statusCode);
 
-      assertTrue("Error Message", message.equals("XDMP-NOMATCH"));
+      assertTrue("Error Message", message.equals("XDMP-DOCROOTTEXT"));
       assertTrue("Status code", (statusCode == 400));
     }
 
