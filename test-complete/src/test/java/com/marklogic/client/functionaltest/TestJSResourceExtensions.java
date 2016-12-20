@@ -155,7 +155,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames, false);
-		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in", "xdmp:value", "xdmp:eval", "xdmp:eval-in","any-uri","xdbc:invoke");
 	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 
