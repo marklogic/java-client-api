@@ -139,7 +139,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	public void setUp() throws Exception {
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time", "temporal-document-protect", "temporal-document-wipe");
 		
-		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader","temporal-admin");
 		int restPort = getRestServerPort();
 		writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);             
 	}
@@ -718,8 +718,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
-		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);		
-	    
+		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
+		
+	    //TODO: UPdate this test to include temporalDoucmentURi and delete one version of it and search and assert for that deleted version
 		//Protect document for 30 sec from delete and update. Use Duration.
 		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NODELETE, DatatypeFactory.newInstance().newDuration("PT30S"));
 		
@@ -735,13 +736,13 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		
 		// Sleep for 40 secs and try to delete the same docId.
 		Thread.sleep(40000);
-		/*docMgr.delete(docId, null, temporalLsqtCollectionName, deleteTime);
+		docMgr.delete(docId, null, temporalLsqtCollectionName, deleteTime);
 		Thread.sleep(5000);
 		
 		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
 		DocumentPage readResults = jsonDocMgr.read(docId);
 	    System.out.println("Number of results = " + readResults.size());
-    assertEquals("Wrong number of results", 0, readResults.size());		*/
+	    //  assertEquals("Wrong number of results", 0, readResults.size());		
 	}
 	
 	@Test
@@ -1054,7 +1055,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	    	str.append(ex.getMessage());
 	    	System.out.println("Exception not thrown when user does not have permissions" + str.toString());
 	    }
-		assertTrue("Exception not thrown when user does not have permissions", str.toString().contains("User is not allowed to protect resource at documents/protection"));
+		assertTrue("Exception not thrown when user does not have permissions", str.toString().contains("Local message: User is not allowed to protect resource at documents/protection"));
 	}
 	
 	@Test
@@ -1084,29 +1085,37 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
 		Thread.sleep(5000);
 	    
-		//Protect document for 30 sec. Use Duration.
-		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT30S"));
+		//Protect document for 60 sec. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT60S"));
 		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
-		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
+		        "2003-01-01T00:00:00", "2012-12-31T23:59:59",
 		        "1999 Skyway Park - Updated - JSON", docId);
+		docMgr.write(docId, null, handleUpd, null, null, temporalLsqtCollectionName, updateTime);	
 		StringBuilder str = new StringBuilder();
 		try {
-			docMgr.delete(docId, null, temporalLsqtCollectionName, updateTime);
+			docMgr.wipe(docId, temporalLsqtCollectionName);
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
-			System.out.println("Exception when delete within 30 sec is " + str.toString());
+			System.out.println("Exception when delete within 60 sec is " + str.toString());
 		}
-				
-		// Sleep for 40 secs and try to delete the same docId.
-		Thread.sleep(40000);
-		Transaction t1 = writerClient.openTransaction();
-		// TODO Not sure why this doc is not getting deleted.
-		docMgr.delete(docId, t1, temporalLsqtCollectionName, updateTime);
-		Thread.sleep(5000);
-		t1.commit();
+		
+	    assertTrue("Did not receive Expected Exception, Expecting TEMPORAL-PROTECTED, received "+str.toString(),str.toString().contains("TEMPORAL-PROTECTED"));	    
 		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
 		DocumentPage readResults = jsonDocMgr.read(docId);
+		String content = jsonDocMgr.read(docId, new StringHandle()).get();
+	    assertTrue("Wrong number of results", content.contains("1999 Skyway Park - Updated - JSON"));	    
+				
+		// Sleep for 40 secs and try to delete the same docId.
+		Thread.sleep(60000);
+		Transaction t1 = writerClient.openTransaction();
+		//TODO replace get with search and verify the system end time for the document \
+		//temporal document will not be deleted from DB and using get will only return the latest docuemnt.
+		docMgr.wipe(docId, t1, temporalLsqtCollectionName);
+		Thread.sleep(5000);
+		t1.commit();
+	//	DocumentPage readResults = jsonDocMgr.read(docId);
+		readResults = jsonDocMgr.read(docId);
 	    System.out.println("Number of results = " + readResults.size());
 	    assertEquals("Wrong number of results", 0, readResults.size());	    
 	}
