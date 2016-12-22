@@ -599,6 +599,50 @@ $command as xs:string
     </options>)
 };
 
+declare function bootstrap:load-modules-db()
+{
+    try {
+    xdmp:eval('xquery version "1.0-ml";
+declare default function namespace "http://www.w3.org/2005/xpath-functions";
+declare option xdmp:mapping "false";
+declare variable $sjssrc as xs:string external;
+declare variable $xqysrc as xs:string external;
+xdmp:document-insert("/etc/optic/test/processors.sjs", text{$sjssrc}, (
+    xdmp:permission("rest-reader", "execute"),
+    xdmp:permission("rest-admin",  "update")
+    )),
+xdmp:document-insert("/etc/optic/test/processors.xqy", text{$xqysrc}, (
+    xdmp:permission("rest-reader", "execute"),
+    xdmp:permission("rest-admin",  "update")
+    ))
+    ',
+    map:map()
+        => map:with("sjssrc", "'use strict';
+function secondsMapper(result) {
+  result.seconds = fn.floor(fn.secondsFromDateTime(fn.currentDateTime()));
+  return result;
+}
+module.exports = {
+    secondsMapper: secondsMapper
+};
+")
+        => map:with("xqysrc", 'xquery version "1.0-ml";
+module namespace optestproc="http://marklogic.com/optic/test/processors";
+declare default function namespace "http://www.w3.org/2005/xpath-functions";
+declare option xdmp:mapping "false";
+declare function optestproc:seconds-mapper($row as map:map) {
+    map:with($row, "seconds", floor(seconds-from-dateTime(current-dateTime())))
+};
+'),
+    <options xmlns="xdmp:eval">
+        <database>{xdmp:database("java-unittest-modules")}</database>
+    </options>)
+    } catch($e) {
+        xdmp:log("Failed to populate modules database"),
+        xdmp:log($e)
+    }
+};
+
 declare function bootstrap:schema-config() { 
     try {
     xdmp:eval('xquery version "1.0-ml";
@@ -1257,11 +1301,6 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
     )
 };
 
-declare function bootstrap:load-search-data()
-{
-    ()
-};
-
 declare function bootstrap:post(
     $context as map:map,
     $params  as map:map,
@@ -1277,6 +1316,7 @@ declare function bootstrap:post(
             xdmp:log(concat("Configured Java test database:", xdmp:database-name($dbid)))
             ),
 
+        bootstrap:load-modules-db(),
         bootstrap:temporal-setup(),
         bootstrap:load-data()
     )

@@ -70,6 +70,7 @@ public class RowManagerImpl
 {
     private RESTServices services;
 	private HandleFactoryRegistry handleRegistry;
+	private CellStyle cellStyle;
 
 	public RowManagerImpl(RESTServices services) {
 		super();
@@ -100,22 +101,26 @@ public class RowManagerImpl
 	}
 
 	@Override
+	public CellStyle getCellStyle() {
+		return cellStyle;
+	}
+	public void setCellStyle(CellStyle cellStyle) {
+		this.cellStyle = cellStyle;
+	}
+
+	@Override
 	public RawPlanDefinition newRawPlanDefinition(JSONWriteHandle handle) {
 		return new RawPlanDefinitionImpl(handle);
 	}
 
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as) {
-		return resultDocAs(plan, as, null, ColumnTypes.ROWS);
+		return resultDocAs(plan, as, null);
 	}
 	@Override
 	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction) {
-		return resultDocAs(plan, as, transaction, ColumnTypes.ROWS);
-	}
-	@Override
-	public <T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation) {
 		ContentHandle<T> handle = handleFor(as); 
-	    if (resultDoc(plan, (StructureReadHandle) handle, transaction, typeLocation) == null) {
+	    if (resultDoc(plan, (StructureReadHandle) handle, transaction) == null) {
 	    	return null;
 	    }
 
@@ -123,14 +128,10 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle) {
-		return resultDoc(plan, resultsHandle, null, ColumnTypes.ROWS);
+		return resultDoc(plan, resultsHandle, null);
 	}
 	@Override
 	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
-		return resultDoc(plan, resultsHandle, transaction, ColumnTypes.ROWS);
-	}
-	@Override
-	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction, ColumnTypes typeLocation) {
 		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
@@ -140,7 +141,7 @@ public class RowManagerImpl
 		}
 
 		RequestParameters params = getParamBindings(requestPlan);
-		if (ColumnTypes.HEADER == typeLocation) {
+		if (CellStyle.PROPERTY_VALUE == cellStyle) {
 			params.add("column-types", "header");
 		}
 
@@ -153,41 +154,33 @@ public class RowManagerImpl
 	}
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-		RESTServiceResultIterator iter = makeRequest(plan, "json", "reference", transaction, ColumnTypes.ROWS);
+		RESTServiceResultIterator iter = makeRequest(plan, "json", "reference", transaction);
 
 		return new RowSetRecord("json", iter, getHandleRegistry());
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
-		return resultRows(plan, rowHandle, (Transaction) null, ColumnTypes.ROWS);
+		return resultRows(plan, rowHandle, (Transaction) null);
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
-		return resultRows(plan, rowHandle, transaction, ColumnTypes.ROWS);
-	}
-	@Override
-	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction, ColumnTypes typeLocation) {
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction, typeLocation);
+		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
 
 		return new RowSetHandle<>(rowFormat, iter, rowHandle);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
-		return resultRowsAs(plan, as, (Transaction) null, ColumnTypes.ROWS);
+		return resultRowsAs(plan, as, (Transaction) null);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
-		return resultRowsAs(plan, as, transaction, ColumnTypes.ROWS);
-	}
-	@Override
-	public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation) {
 		ContentHandle<T> rowHandle = handleFor(as); 
 
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction, typeLocation);
+		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
 
 		return new RowSetObject<>(rowFormat, iter, rowHandle);
 	}
@@ -239,9 +232,7 @@ public class RowManagerImpl
 			throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
 		}
 	}
-	private RESTServiceResultIterator makeRequest(
-			Plan plan, String rowFormat, String nodeCols, Transaction transaction, ColumnTypes typeLocation
-			) {
+	private RESTServiceResultIterator makeRequest(Plan plan, String rowFormat, String nodeCols, Transaction transaction) {
 		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
@@ -249,7 +240,7 @@ public class RowManagerImpl
 		RequestParameters params = getParamBindings(requestPlan);
 		params.add("row-format",   rowFormat);
 		params.add("node-columns", nodeCols);
-		if (ColumnTypes.HEADER == typeLocation) {
+		if (CellStyle.PROPERTY_VALUE == cellStyle) {
 			params.add("column-types", "header");
 		}
 
@@ -423,6 +414,7 @@ public class RowManagerImpl
 			this.handleRegistry = handleRegistry;
 		}
 
+// TODO: get column names and types from first row (header) if CellStyle.PROPERTY_VALUE
 		@Override
 		public RowRecord next() {
 			RESTServiceResult currentRow = nextRow;

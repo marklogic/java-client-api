@@ -32,6 +32,25 @@ public interface RowManager {
 	PlanBuilder newPlanBuilder();
 
 	/**
+	 * Distinguishes between row objects with the column name, value, and data type
+	 * and row objects without the data type. Because the server supports columns
+	 * with variant data types, the default is objects with data types.  You can
+	 * configure the row manager to return more concise objects if the data type
+	 * is consistent or if you aren't using the data type.
+	 */
+	public enum CellStyle{PROPERTY_DESCRIPTOR, PROPERTY_VALUE}
+	/**
+	 * Returns the style in which rows are emitted in the response for requests made with the row manager
+	 * @return	the row style
+	 */
+	CellStyle getCellStyle();
+	/**
+	 * Specifies the style in which to emit rows.
+	 * @param cellStyle	the row style for the response to requests made with the row manager
+	 */
+	void setCellStyle(CellStyle cellStyle);
+
+	/**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).
      * @param	handle a handle for a JSON serialization of a PlanAST
 	 * @return	a plan for constructing and retrieving database rows
@@ -74,19 +93,6 @@ public interface RowManager {
 	 * @return	an iterable over the result rows
 	 */
 	<T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction);
-	/**
-	 * Constructs and retrieves a set of database rows based on a plan using
-	 * a JSON or XML handle for each row and reflecting documents written or 
-	 * deleted by an uncommitted transaction with the column data types declared
-	 * in the specified location.
-	 * @param plan	the definition of a plan for the database rows
-	 * @param rowHandle	the JSON or XML handle that provides each row
-     * @param transaction	a open transaction for documents from which rows have been projected
-	 * @param typeLocation	specifies whether column types should appear in each row or once on the header
-     * @param <T> the type of the row handle
-	 * @return	an iterable over the result rows
-	 */
-	<T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction, ColumnTypes typeLocation);
 
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
@@ -123,26 +129,6 @@ public interface RowManager {
 	 * @return	an iterable over the result rows
 	 */
 	<T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction);
-	/**
-	 * Constructs and retrieves a set of database rows based on a plan using
-	 * a JSON or XML handle for each row and reflecting documents written or 
-	 * deleted by an uncommitted transaction with the column data types declared
-	 * in the specified location.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
-     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
-     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
-	 * @param plan	the definition of a plan for the database rows
-     * @param as	the IO class for reading each row as JSON or XML content
-     * @param transaction	a open transaction for documents from which rows have been projected
-	 * @param typeLocation	specifies whether column types should appear in each row or once on the header
-     * @param <T> the type of object that will be returned by the handle registered for it
-	 * @return	an iterable over the result rows
-	 */
-	<T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation);
 
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan using
@@ -164,19 +150,6 @@ public interface RowManager {
 	 * @return	the JSON or XML handle populated with the set of rows
 	 */
 	<T extends StructureReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction);
-	/**
-	 * Constructs and retrieves a set of database rows based on a plan using
-	 * a handle to get the set of rows as a single JSON or XML structure
-	 * and reflecting documents written or deleted by an uncommitted transaction
-	 * with the column data types declared in the specified location.
-	 * @param plan	the definition of a plan for the database rows
-	 * @param handle	the JSON or XML handle for the set of rows
-     * @param transaction	a open transaction for documents from which rows have been projected
-	 * @param typeLocation	specifies whether column types should appear in each row or once on the header
-     * @param <T> the type of the row handle
-	 * @return	the JSON or XML handle populated with the set of rows
-	 */
-	<T extends StructureReadHandle> T resultDoc(Plan plan, T handle, Transaction transaction, ColumnTypes typeLocation);
 	
 	/**
 	 * Constructs and retrieves a set of database rows based on a plan
@@ -212,26 +185,6 @@ public interface RowManager {
      * @return	an object of the IO class with the content of the set of rows
 	 */
 	<T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction);
-	/**
-	 * Constructs and retrieves a set of database rows based on a plan
-	 * in the representation specified by the IO class and reflecting
-	 * documents written or deleted by an uncommitted transaction with
-	 * the column data types declared in the specified location.
-     * 
-     * The IO class must have been registered before creating the database client.
-     * By default, the provided handles that implement 
-     * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
-     * 
-     * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
-     * 
-	 * @param plan	the definition of a plan for the database rows
-     * @param as	the IO class for reading the set of rows
-     * @param transaction	a open transaction for documents from which rows have been projected
-	 * @param typeLocation	specifies whether column types should appear in each row or once on the header
-     * @param <T> the type of the IO object for reading the set of rows
-     * @return	an object of the IO class with the content of the set of rows
-	 */
-	<T> T resultDocAs(Plan plan, Class<T> as, Transaction transaction, ColumnTypes typeLocation);
 
 	/**
 	 * Constructs a plan for retrieving a set of database rows and returns a handle
@@ -258,12 +211,4 @@ public interface RowManager {
      * @return	an object of the IO class with the content of the explanation for the plan
 	 */
 	<T> T explainAs(Plan plan, Class<T> as);
-
-	/**
-	 * Distinguishes between column types declared in each row and column types declared
-	 * once in the header. Declaring the column types in the header is appropriate only
-	 * if each column has a consistent data type or if the data type of the columns
-	 * doesn't matter.
-	 */
-	public enum ColumnTypes{HEADER, ROWS}
 }

@@ -141,6 +141,7 @@ import com.marklogic.client.impl.XsExprImpl; import com.marklogic.client.type.Ct
  import com.marklogic.client.type.XsYearMonthDurationExpr;
  import com.marklogic.client.type.XsYearMonthDurationParam;
 
+import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.SemStoreExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
@@ -304,20 +305,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri });
     }
     @Override
-        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery) {
-        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), constrainingQuery); 
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, PlanTripleOptions options) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), options); 
     }
     @Override
-        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery) {
-        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery });
-    }
-    @Override
-        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options) {
-        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), (graphIri == null) ? null : xs.string(graphIri), constrainingQuery, options); 
-    }
-    @Override
-        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options) {
-        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, constrainingQuery, options });
+        public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, PlanTripleOptions options) {
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIri, options });
     }
     @Override
         public ViewPlan fromView(String schema, String view) {
@@ -342,14 +335,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols) {
         return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
-    }
-    @Override
-        public ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery) {
-        return fromView(xs.string(schema), xs.string(view), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery); 
-    }
-    @Override
-        public ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery) {
-        return new ViewPlanCallImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols, constrainingQuery });
     }
     @Override
         public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
@@ -472,6 +457,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanTriplePatternCallImpl("op", "pattern", new Object[]{ subject, predicate, object, sysCols });
     }
     @Override
+        public PlanFunction resolveFunction(XsQNameParam functionName, String modulePath) {
+        return resolveFunction(functionName, xs.string(modulePath)); 
+    }
+    @Override
+        public PlanFunction resolveFunction(XsQNameParam functionName, XsStringParam modulePath) {
+        return new PlanFunctionCallImpl("op", "resolve-function", new Object[]{ functionName, modulePath });
+    }
+    @Override
         public PlanAggregateCol sample(String name, String column) {
         return sample(col(name), col(column)); 
     }
@@ -574,20 +567,12 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new PlanTripleValSeqListImpl(objects);
     }
     @Override
-    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store) {
-        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), store); 
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, PlanTripleOptions options) {
+        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), options); 
     }
     @Override
-    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store) {
-        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{patterns, qualifierName, null, store});
-    }
-    @Override
-    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store, PlanTripleOptions options) {
-        return fromTriples(patterns, (qualifierName == null) ? null : xs.string(qualifierName), store, options); 
-    }
-    @Override
-    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store, PlanTripleOptions options) {
-        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{patterns, qualifierName, null, store, options});
+    public QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, PlanTripleOptions options) {
+        return new QualifiedPlanCallImpl(this, "op", "from-triples", new Object[]{patterns, qualifierName, null, options});
     }
     @Override
     public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
@@ -598,15 +583,9 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{literal(indexes), xs.string(qualifierName)});
     }
     @Override
-    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols) {
+    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols) {
         return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
             literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols
-            });
-    }
-    @Override
-    public QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery) {
-        return new QualifiedPlanCallImpl(this, "op", "from-lexicons", new Object[]{
-            literal(indexes), (qualifierName == null) ? null : xs.string(qualifierName), sysCols, constrainingQuery
             });
     }
     @Override
@@ -688,6 +667,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             .map(item -> col(item))
             .toArray(size -> new PlanExprCol[size])); 
     }
+    @Override
+    public ModifyPlan where(CtsQueryExpr condition) {
+        return new ModifyPlanCallImpl(this, "op", "where", new Object[]{ condition });
+    }
+    @Override
+    public ModifyPlan where(SemStoreExpr condition) {
+        return new ModifyPlanCallImpl(this, "op", "where", new Object[]{ condition });
+    }
      @Override
         public ModifyPlan except(ModifyPlan right) {
         return new ModifyPlanCallImpl(this, "op", "except", new Object[]{ right });
@@ -717,6 +704,14 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ModifyPlanCallImpl(this, "op", "join-cross-product", new Object[]{ right, condition });
     }
     @Override
+        public ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol) {
+        return new ModifyPlanCallImpl(this, "op", "join-doc", new Object[]{ docCol, sourceCol });
+    }
+    @Override
+        public ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol) {
+        return new ModifyPlanCallImpl(this, "op", "join-doc-uri", new Object[]{ uriCol, fragmentIdCol });
+    }
+    @Override
         public ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys) {
         return joinInner(right, new PlanJoinKeySeqListImpl(keys)); 
     }
@@ -729,14 +724,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
         return new ModifyPlanCallImpl(this, "op", "join-inner", new Object[]{ right, keys, condition });
     }
     @Override
-        public ModifyPlan joinInnerDoc(String docCol, String uriCol) {
-        return joinInnerDoc(col(docCol), col(uriCol)); 
-    }
-    @Override
-        public ModifyPlan joinInnerDoc(PlanColumn docCol, PlanExprCol uriCol) {
-        return new ModifyPlanCallImpl(this, "op", "join-inner-doc", new Object[]{ docCol, uriCol });
-    }
-    @Override
         public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys) {
         return joinLeftOuter(right, new PlanJoinKeySeqListImpl(keys)); 
     }
@@ -747,14 +734,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
     @Override
         public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition) {
         return new ModifyPlanCallImpl(this, "op", "join-left-outer", new Object[]{ right, keys, condition });
-    }
-    @Override
-        public ModifyPlan joinLeftOuterDoc(String docCol, String uriCol) {
-        return joinLeftOuterDoc(col(docCol), col(uriCol)); 
-    }
-    @Override
-        public ModifyPlan joinLeftOuterDoc(PlanColumn docCol, PlanExprCol uriCol) {
-        return new ModifyPlanCallImpl(this, "op", "join-left-outer-doc", new Object[]{ docCol, uriCol });
     }
     @Override
         public ModifyPlan limit(long length) {
@@ -830,14 +809,6 @@ public class PlanBuilderImpl extends PlanBuilderBase {
             super(prior, fnPrefix, fnName, fnArgs);
          }
      @Override
-        public PlanFunction installedFunction(String modulePath, String functionName) {
-        return installedFunction(xs.string(modulePath), xs.string(functionName)); 
-    }
-    @Override
-        public PlanFunction installedFunction(XsStringParam modulePath, XsStringParam functionName) {
-        return new PlanFunctionCallImpl("op", "installed-function", new Object[]{ modulePath, functionName });
-    }
-    @Override
         public ExportablePlan map(PlanFunction func) {
         return new ExportablePlanCallImpl(this, "op", "map", new Object[]{ func });
     }

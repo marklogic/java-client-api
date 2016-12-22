@@ -129,6 +129,7 @@ import com.marklogic.client.expression.XsExpr; import com.marklogic.client.type.
  import com.marklogic.client.type.XsYearMonthDurationParam;
 
 
+import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
@@ -219,18 +220,14 @@ public abstract class PlanBuilder {
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri);
     public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, CtsQueryExpr constrainingQuery, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIri, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, XsStringParam graphIri, PlanTripleOptions options);
     public abstract ViewPlan fromView(String schema, String view);
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName);
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName);
     public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols);
     public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols);
-    public abstract ViewPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery);
-    public abstract ViewPlan fromView(XsStringParam schema, XsStringParam view, XsStringParam qualifierName, PlanSystemColumn sysCols, CtsQueryExpr constrainingQuery);
     public abstract XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     public abstract PlanSystemColumn graphCol(String column);
     public abstract PlanSystemColumn graphCol(XsStringParam column);
@@ -261,6 +258,8 @@ public abstract class PlanBuilder {
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleVal... object);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object);
     public abstract PlanTriplePattern pattern(PlanTripleIriSeq subject, PlanTripleIriSeq predicate, PlanTripleValSeq object, PlanSystemColumnSeq sysCols);
+    public abstract PlanFunction resolveFunction(XsQNameParam functionName, String modulePath);
+    public abstract PlanFunction resolveFunction(XsQNameParam functionName, XsStringParam modulePath);
     public abstract PlanAggregateCol sample(String name, String column);
     public abstract PlanAggregateCol sample(PlanExprCol name, PlanExprCol column);
     public abstract PlanColumn schemaCol(String schema, String view, String column);
@@ -305,6 +304,8 @@ public abstract class PlanBuilder {
     public ModifyPlan select(String... cols);
     public ModifyPlan orderBy(String... cols);
     public ModifyPlan groupBy(String... cols);
+    public ModifyPlan where(CtsQueryExpr condition);
+    public ModifyPlan where(SemStoreExpr condition);
      public ModifyPlan except(ModifyPlan right);
     public ModifyPlan groupBy(PlanExprCol... keys);
     public ModifyPlan groupBy(PlanExprColSeq keys);
@@ -312,16 +313,14 @@ public abstract class PlanBuilder {
     public ModifyPlan intersect(ModifyPlan right);
     public ModifyPlan joinCrossProduct(ModifyPlan right);
     public ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition);
+    public ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol);
+    public ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
     public ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys);
     public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys);
     public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
-    public ModifyPlan joinInnerDoc(String docCol, String uriCol);
-    public ModifyPlan joinInnerDoc(PlanColumn docCol, PlanExprCol uriCol);
     public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
     public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
     public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
-    public ModifyPlan joinLeftOuterDoc(String docCol, String uriCol);
-    public ModifyPlan joinLeftOuterDoc(PlanColumn docCol, PlanExprCol uriCol);
     public ModifyPlan limit(long length);
     public ModifyPlan limit(XsLongParam length);
     public ModifyPlan offset(long start);
@@ -341,8 +340,6 @@ public abstract class PlanBuilder {
     public ModifyPlan whereDistinct();
 }
  public interface PreparePlan extends ExportablePlan {
-    public PlanFunction installedFunction(String modulePath, String functionName);
-    public PlanFunction installedFunction(XsStringParam modulePath, XsStringParam functionName);
     public ExportablePlan map(PlanFunction func);
     public ExportablePlan reduce(PlanFunction func);
     public ExportablePlan reduce(PlanFunction func, XsAnyAtomicTypeParam seed);
@@ -379,15 +376,12 @@ public abstract class PlanBuilder {
 
     public abstract PlanTripleOptions tripleOptions(PlanTriples values);
 
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, SemStoreExpr store, PlanTripleOptions options);
-    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, SemStoreExpr store, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, PlanTripleOptions options);
+    public abstract QualifiedPlan fromTriples(PlanTriplePatternSeq patterns, XsStringParam qualifierName, PlanTripleOptions options);
 
     public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes);
     public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName);
-    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumn... sysCols);
-    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols, CtsQueryExpr constrainingQuery);
+    public abstract QualifiedPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, String qualifierName, PlanSystemColumnSeq sysCols);
 
     public abstract QualifiedPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
     public abstract QualifiedPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);

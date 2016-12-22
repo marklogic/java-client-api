@@ -30,6 +30,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
+import javax.xml.namespace.QName;
 import javax.xml.transform.OutputKeys;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -189,9 +190,7 @@ public class RowManagerTest {
 	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
 	        checkSingleRow(testList);
 
-//	        JsonNode testNode = rowMgr.resultDoc(plan, new JacksonHandle()).get();
 	        JacksonHandle handle = rowMgr.resultDoc(plan, new JacksonHandle());
-	        handle.write(System.out);
 	        JsonNode testNode = handle.get();
 
 	        JsonNode arrayNode = testNode.findValue("columns");
@@ -291,7 +290,7 @@ public class RowManagerTest {
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromLiterals(litRows)
 				 .orderBy(p.col("rowNum"))
-				 .joinLeftOuterDoc("doc", "uri")
+				 .joinDoc(p.col("doc"), p.col("uri"))
 				 .select(p.cols("rowNum", "uri", "doc"));
 
 		StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
@@ -322,12 +321,13 @@ public class RowManagerTest {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
 		PlanBuilder.ExportablePlan builtPlan =
-				p.fromView("opticUnitTest", "musician", null, null,
-						p.cts.andQuery(
-								p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet")),
-								p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.strings("Armstrong", "Davis"))
-								)
-						)
+				p.fromView("opticUnitTest", "musician")
+				 .where(
+					  p.cts.andQuery(
+						  p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet")),
+						  p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.strings("Armstrong", "Davis"))
+						  )
+					  )
 				  .select(null, "") 
 				  .orderBy("lastName");
 
@@ -340,6 +340,63 @@ public class RowManagerTest {
 	        assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
 	        assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
 	        assertEquals("unexpected dob value in row record "+rowNum,       dob[rowNum],       row.getString("dob"));
+			rowNum++;
+		}
+        assertEquals("unexpected count of result records", 2, rowNum);
+	}
+	@Test
+	public void testJoinSrcDoc() throws IOException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
+				 .joinDoc(p.col("musicianDoc"), p.fragmentIdCol("musicianDocId"))
+				 .orderBy("lastName")
+				 .select(
+				     p.col("lastName"), p.col("firstName"),
+				     p.as("instruments",  p.xpath("musicianDoc", "/musician/instrument"))
+				     )
+				 .where(p.fn.exists(p.fn.indexOf(p.col("instruments"), p.xs.string("trumpet"))));
+
+        String[] lastName  = {"Armstrong",  "Davis"};
+        String[] firstName = {"Louis",      "Miles"};
+
+        int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+	        assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
+	        assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
+
+	        String instruments = row.getContent("instruments", new StringHandle()).get();
+	        assertNotNull("null instrucments value in row record "+rowNum,    instruments);
+	        assertTrue("unexpected instrucments value in row record "+rowNum, instruments.contains("trumpet"));
+			rowNum++;
+		}
+        assertEquals("unexpected count of result records", 2, rowNum);
+	}
+	@Test
+	public void testJoinDocUri() throws IOException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
+				 .joinDocUri(p.col("musicianDocUri"), p.fragmentIdCol("musicianDocId"))
+				 .orderBy("lastName")
+				 .select(p.col("lastName"), p.col("firstName"), p.col("musicianDocUri"))
+				 .limit(2);
+
+		String[] lastName       = {"Armstrong",                  "Byron"};
+        String[] firstName      = {"Louis",                      "Don"};
+        String[] musicianDocUri = {"/optic/test/musician1.json", "/optic/test/musician2.json"};
+
+        int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+	        assertEquals("unexpected lastName value in row record "+rowNum,       lastName[rowNum],       row.getString("lastName"));
+	        assertEquals("unexpected firstName value in row record "+rowNum,      firstName[rowNum],      row.getString("firstName"));
+	        assertEquals("unexpected musicianDocUri value in row record "+rowNum, musicianDocUri[rowNum], row.getString("musicianDocUri"));
 			rowNum++;
 		}
         assertEquals("unexpected count of result records", 2, rowNum);
@@ -360,8 +417,10 @@ public class RowManagerTest {
 						p.col("object")
 						),
 				(String) null,
-				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), "value")),
 				p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
+				)
+			 .where(
+				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), "value"))
 				)
 			 .orderBy("subject", "object");
 
@@ -611,6 +670,47 @@ public class RowManagerTest {
 		assertFalse("expected two rows", recordRowItr.hasNext());
 
 		recordRowSet.close();
+	}
+	@Test
+	public void testMapper() throws IOException, XPathExpressionException {
+		RowManager rowMgr = Common.client.newRowManager();
+
+		PlanBuilder p = rowMgr.newPlanBuilder();
+
+		PlanBuilder.ExportablePlan builtPlan =
+				p.fromLiterals(litRows)
+				 .select(p.cols("rowNum", "city"))
+				 .orderBy("rowNum")
+				 .limit(3)
+				 .map(p.resolveFunction(p.xs.QName("secondsMapper"), "/etc/optic/test/processors.sjs"));
+
+		int rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+	        assertNotNull("null rowNum value in row record "+rowNum, row.getInt("rowNum"));
+	        assertNotNull("null city value in row record "+rowNum, row.getString("city"));
+			int seconds = row.getInt("seconds");
+	        assertTrue("unexpected seconds value in row record "+rowNum,  0 <= seconds && seconds < 60);
+	        rowNum++;
+		}
+
+		builtPlan =
+				p.fromLiterals(litRows)
+				 .select(p.cols("rowNum", "city"))
+				 .orderBy("rowNum")
+				 .limit(3)
+				 .map(p.resolveFunction(
+						 p.xs.QName(new QName("http://marklogic.com/optic/test/processors", "seconds-mapper")),
+						 p.xs.string("/etc/optic/test/processors.xqy")
+						 ));
+
+		rowNum = 0;
+		for (RowRecord row: rowMgr.resultRows(builtPlan)) {
+	        assertNotNull("null rowNum value in row record "+rowNum, row.getInt("rowNum"));
+	        assertNotNull("null city value in row record "+rowNum, row.getString("city"));
+			int seconds = row.getInt("seconds");
+	        assertTrue("unexpected seconds value in row record "+rowNum,  0 <= seconds && seconds < 60);
+	        rowNum++;
+		}
 	}
 	@Test
 	public void testExplain() throws IOException {
