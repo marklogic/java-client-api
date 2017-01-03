@@ -18,10 +18,12 @@ package com.marklogic.client.datamovement.impl;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
@@ -30,6 +32,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -76,14 +80,14 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *   - topology-aware by calling /v1/forestinfo
  *     - get list of hosts which have writeable forests
  *     - each write hits the next writeable host for round-robin network calls
- *   - manage an internal threadPool of size threadCount for network calls
+ *   - manage an internal activeThreadPool of size threadCount for network calls
  *   - when batchSize reached, writes a batch
- *     - using a thread from threadPool
+ *     - using a thread from activeThreadPool
  *     - no synchronization or unnecessary delays while emptying queue
  *     - and calls each successListener (if not using transactions)
  *   - if usingTransactions (transactionSize > 1)
  *     - opens transactions as needed
- *       - using a thread from threadPool
+ *       - using a thread from activeThreadPool
  *       - but not before, lest we increase likelihood of transaction timeout
  *       - threads needing a transaction will open one then make it available to others up to transactionSize
  *     - after each batch write, check if transactionSize reached and if so commit the transaction
@@ -94,7 +98,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - if commit is successful call each successListener for each transaction batch
  *   - when a batch fails, calls each failureListener
  *     - and calls rollback (if using transactions)
- *       - using a thread from threadPool
+ *       - using a thread from activeThreadPool
  *       - then calls each failureListener for each transaction batch
  *   - flush() writes all queued documents whether the last batch is full or not
  *     - and commits the transaction for each batch so nothing is left uncommitted (ignores transactionSize)
@@ -154,7 +158,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - flush resets this so after flush batch sizes will be normal
  *     - batchNumber to decide which host to use next (round-robin)
  *     - initialized to ensure configuration doesn't change after add/addAs are called
- *     - threadPool of threadCount size for most calls to the server
+ *     - activeThreadPool of threadCount size for most calls to the server
  *       - not calls during forestinfo or flush
  *     - each host
  *       - host name
@@ -204,7 +208,8 @@ public class WriteBatcherImpl
   private AtomicLong itemsSoFar = new AtomicLong(0);
   private HostInfo[] hostInfos;
   private boolean initialized = false;
-  private WriteThreadPoolExecutor threadPool;
+  private AtomicReference<ThreadPoolExecutor> activeThreadPool = new AtomicReference<>(null);
+  private List<ThreadPoolExecutor> stoppedThreadPools = new ArrayList<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
   private JobTicket jobTicket;
@@ -226,14 +231,12 @@ public class WriteBatcherImpl
         logger.warn("batchSize should be 1 or greater--setting batchSize to 1");
       }
       if ( transactionSize > 1 ) usingTransactions = true;
-      int threadCount = getThreadCount();
       // if threadCount is negative or 0, use one thread per host
-      if ( threadCount <= 0 ) {
-        threadCount = hostInfos.length;
+      if ( getThreadCount() <= 0 ) {
+        withThreadCount( hostInfos.length );
         logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", hostInfos.length);
       }
-      // create a threadPool where threads are kept alive for up to one minute of inactivity
-      threadPool = new WriteThreadPoolExecutor(threadCount, this);
+      activeThreadPool.set(newThreadPool());
 
       initialized = true;
 
@@ -241,6 +244,13 @@ public class WriteBatcherImpl
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
     }
+  }
+
+  private ThreadPoolExecutor newThreadPool() {
+    // create a thread pool where threads are kept alive for up to one minute of inactivity,
+    // max queue size is threadCount * 5, and callers run tasks past the max queue size
+    return new ThreadPoolExecutor(getThreadCount(), getThreadCount(), 1, TimeUnit.MINUTES,
+      new LinkedBlockingQueue<Runnable>(getThreadCount() * 5), new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   @Override
@@ -279,7 +289,7 @@ public class WriteBatcherImpl
       }
       writeSet.setItemsSoFar(itemsSoFar.addAndGet(i));
       if ( writeSet.getWriteSet().size() > 0 ) {
-        threadPool.submit( new BatchWriter(writeSet) );
+        activeThreadPool.get().submit( new BatchWriter(writeSet) );
       }
     }
     return this;
@@ -323,7 +333,7 @@ public class WriteBatcherImpl
   }
 
   private void requireNotStopped() {
-    if ( stopped.get() == true ) throw new IllegalStateException("This instance has been stopped");
+    if ( isStopped() == true ) throw new IllegalStateException("This instance has been stopped");
   }
 
   private BatchWriteSet newBatchWriteSet(boolean forceNewTransaction) {
@@ -507,6 +517,7 @@ public class WriteBatcherImpl
     for ( int i=0; iter.hasNext(); i++ ) {
       if ( isStopped() == true ) {
         logger.warn("Job is now stopped, preventing the flush of {} queued docs", docs.size() - i);
+        if ( waitForCompletion == true ) awaitCompletion();
         return;
       }
       BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
@@ -516,7 +527,7 @@ public class WriteBatcherImpl
         writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
       }
       writeSet.setItemsSoFar(itemsSoFar.addAndGet(j));
-      threadPool.submit( new BatchWriter(writeSet) );
+      activeThreadPool.get().submit( new BatchWriter(writeSet) );
     }
 
     if ( waitForCompletion == true ) awaitCompletion();
@@ -539,7 +550,7 @@ public class WriteBatcherImpl
       if ( waitForCompletion == true ) {
         cleanupTransactions.run();
       } else {
-        threadPool.submit( cleanupTransactions );
+        activeThreadPool.get().submit( cleanupTransactions );
       }
     }
   }
@@ -610,13 +621,13 @@ public class WriteBatcherImpl
 
   public void stop() {
     stopped.set(true);
-    threadPool.shutdownNow();
-    awaitCompletion();
+    ThreadPoolExecutor threadPool = activeThreadPool.get();
+    if ( threadPool != null ) threadPool.shutdownNow();
   }
 
   @Override
   public boolean isStopped() {
-    return threadPool != null && threadPool.isTerminated();
+    return stopped.get();
   }
 
   @Override
@@ -626,13 +637,67 @@ public class WriteBatcherImpl
   }
 
   @Override
-  public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
-    return threadPool.awaitTermination(timeout, unit);
-  }
-
-  @Override
   public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-    return threadPool.awaitCompletion(timeout, unit);
+    if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
+    long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
+    // create a new thread pool and move the active thread pool to stoppedThreadPools
+    // this way we can wait for the current active thread pool to finish along with
+    // any other stopped thread pools
+    ThreadPoolExecutor oldThreadPool;
+    synchronized(stoppedThreadPools) {
+      oldThreadPool = activeThreadPool.getAndSet(newThreadPool());
+      if ( oldThreadPool != null ) stoppedThreadPools.add( oldThreadPool );
+    }
+    if ( oldThreadPool != null ) {
+      try {
+        // check if this task queue could use the help of the current thread running tasks
+        Callable<Object> emptyQueue = () -> {
+          Runnable task = oldThreadPool.getQueue().poll();
+          while ( task != null ) {
+            try {
+              task.run();
+            } catch (Throwable t) {
+              logger.error("Exception running a task in awaitComplete", t);
+            }
+            task = oldThreadPool.getQueue().poll();
+          }
+          // now that the queue is empty
+          oldThreadPool.shutdown();
+          return (Object) null;
+        };
+        // call via ExecutorService so execution goes to complete but timeout
+        // allows us to move on
+        ExecutorService executor = Executors.newSingleThreadExecutor();
+        ArrayList<Callable<Object>> tasks = new ArrayList<>();
+        tasks.add(emptyQueue);
+        List<Future<Object>> futures = executor.invokeAll(tasks, duration, TimeUnit.MILLISECONDS);
+        // return false if invokeAll timed out, otherwise continue
+        if ( futures.get(0).isDone() == false ) {
+          logger.debug("[awaitCompletion] timeout while running tasks");
+          return false;
+        }
+      } catch (Throwable t) {
+        logger.error("Exception while emptying task queue in awaitComplete", t);
+      }
+    }
+    List<ThreadPoolExecutor> snapshotStoppedThreadPools = new ArrayList<>(stoppedThreadPools);
+    for ( ThreadPoolExecutor stoppedThreadPool : snapshotStoppedThreadPools ) {
+      long startTime = System.currentTimeMillis();
+      if ( stoppedThreadPool.awaitTermination(duration, TimeUnit.MILLISECONDS) ) {
+        // do nothing, this stoppedThreadPool terminated in time
+      } else {
+        logger.debug("[awaitCompletion] timeout while waiting for tasks to complete");
+        // we didn't finish before timeout
+        return false;
+      }
+      duration -= System.currentTimeMillis() - startTime;
+      if ( duration < 0 ) {
+        // times up!  We didn't finish before timeout...
+        logger.debug("[awaitCompletion] timeout");
+        return false;
+      }
+    }
+    return true;
   }
 
   @Override
@@ -640,6 +705,7 @@ public class WriteBatcherImpl
     try {
       return awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
     } catch(InterruptedException e) {
+      logger.debug("awaitCompletion caught InterruptedException");
       return false;
     }
   }
@@ -746,7 +812,7 @@ public class WriteBatcherImpl
     if ( removedHostInfos.size() > 0 ) {
       // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host
       List<Runnable> tasks = new ArrayList<>();
-      threadPool.getQueue().drainTo(tasks);
+      activeThreadPool.get().getQueue().drainTo(tasks);
       for ( Runnable task : tasks ) {
         if ( task instanceof BatchWriter ) {
           BatchWriter writerTask = (BatchWriter) task;
@@ -759,7 +825,7 @@ public class WriteBatcherImpl
           }
         }
         // this task is still valid so add it back to the queue
-        threadPool.submit(task);
+        activeThreadPool.get().submit(task);
       }
       for ( HostInfo removedHostInfo : removedHostInfos.values() ) {
         cleanupUnfinishedTransactions(removedHostInfo);
@@ -876,7 +942,7 @@ public class WriteBatcherImpl
         if ( transactionInfo.inProcess.get() <= 0 ) {
           if ( transactionInfo.written.get() == true ) {
             transactionInfo.queuedForCleanup.set(true);
-            threadPool.submit( () -> {
+            activeThreadPool.get().submit( () -> {
               if ( completeTransaction(transactionInfo) ) {
                 host.unfinishedTransactions.remove(transactionInfo);
               } else {
@@ -960,6 +1026,7 @@ public class WriteBatcherImpl
             transaction = transactionInfo.transaction;
             transactionInfo.written.set(true);
           }
+          logger.trace("begin write batch {} to host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
           if ( writeSet.getTemporalCollection() == null ) {
             writeSet.getClient().newDocumentManager().write(
               writeSet.getWriteSet(), writeSet.getTransform(), transaction
@@ -975,7 +1042,6 @@ public class WriteBatcherImpl
               transaction, writeSet.getTemporalCollection()
             );
           }
-          logger.trace("sent batch {} to host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
           closeAllHandles();
           Runnable onSuccess = writeSet.getOnSuccess();
           if ( onSuccess != null ) {
@@ -1009,232 +1075,6 @@ public class WriteBatcherImpl
         }
       }
       if ( lastThrowable != null ) throw lastThrowable;
-    }
-  }
-
-  public static class WriteThreadPoolExecutor extends ThreadPoolExecutor {
-    private Object objectToNotifyFrom;
-    private ConcurrentHashMap<Runnable,WrappedFuture<?>> futures = new ConcurrentHashMap<>();
-
-    private static class FutureAwareQueue extends LinkedBlockingQueue<Runnable> {
-      Map<Runnable,WrappedFuture<?>> futures;
-
-      FutureAwareQueue(int capacity) {
-        super(capacity);
-      }
-
-      void setFutures(Map<Runnable,WrappedFuture<?>> futures) {
-        this.futures = futures;
-      }
-
-      @Override
-      public int drainTo(Collection<? super Runnable> c) {
-        List<Runnable> tasks = new ArrayList<>();
-        int count = super.drainTo(tasks);
-        // clear the associated futures
-        for ( Runnable task : tasks ) {
-logger.debug("DEBUG: [drainTo] task =[" + task  + "]");
-logger.debug("DEBUG: [drainTo] task.getClass() =[" + task.getClass()  + "]");
-logger.debug("DEBUG: [drainTo] futures.get(task) =[" + futures.get(task)  + "]");
-          WrappedFuture<?> future = futures.get(task);
-          if ( future == null || future.isStarted() == false ) {
-            futures.remove(task);
-          }
-          c.add(task);
-        }
-        return count;
-      }
-    }
-
-    // This wrapper allows us to call get() and wait for a future to complete
-    // even if it was cancelled after it started. Without this wrapper, the
-    // Future would throw CancellationException immediately when we call get()
-    // rather than block until completion
-    private static class WrappedFuture<V> implements Future<V> {
-      private Future<V> future;
-      private boolean isCancelled = false;
-      private boolean isStarted = false;
-
-      WrappedFuture(Future<V> future) {
-        this.future = future;
-      }
-
-      public boolean cancel(boolean mayInterruptIfRunning) {
-        isCancelled = true;
-        return true;
-      }
-
-      public V get() throws InterruptedException, ExecutionException {
-logger.debug("DEBUG: [WrappedFuture.get] isCancelled =[" + isCancelled  + "]");
-        if ( isCancelled == false ) {
-          return future.get();
-        } else {
-logger.debug("DEBUG: [WrappedFuture.get] isStarted =[" + isStarted  + "]");
-          if ( isStarted ) {
-            // we're already started, so let's make that clear by waiting until we're finished before
-            // we throw CancellationException
-            future.get();
-            throw new CancellationException();
-          } else {
-            throw new CancellationException();
-          }
-        }
-      }
-
-      public V get(long timeout, TimeUnit unit)
-        throws InterruptedException, ExecutionException, TimeoutException
-      {
-        return future.get(timeout, unit);
-      }
-
-      public boolean isCancelled() {
-        return isCancelled;
-      }
-
-      public boolean isDone() {
-        return future.isDone();
-      }
-
-      public void setStarted() {
-        isStarted = true;
-      }
-
-      public boolean isStarted() {
-        return isStarted;
-      }
-    }
-
-    public WriteThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
-      super(threadCount, threadCount, 1, TimeUnit.MINUTES,
-        new FutureAwareQueue(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
-      ((FutureAwareQueue) getQueue()).setFutures(futures);
-      allowCoreThreadTimeOut(true);
-      this.objectToNotifyFrom = objectToNotifyFrom;
-    }
-
-    protected void beforeExecute(Thread thread, Runnable task) {
-      WrappedFuture<?> future = futures.get(task);
-logger.debug("DEBUG: [beforeExecute] task =[" + task  + "]");
-logger.debug("DEBUG: [beforeExecute] task.getClass() =[" + task.getClass()  + "]");
-logger.debug("DEBUG: [beforeExecute] future =[" + future  + "]");
-      if ( future != null ) future.setStarted();
-      super.beforeExecute(thread, task);
-    }
-
-    protected void afterExecute(Runnable task, Throwable t) {
-      super.afterExecute(task, t);
-logger.debug("DEBUG: [afterExecute] task =[" + task  + "]");
-logger.debug("DEBUG: [afterExecute] task.getClass() =[" + task.getClass()  + "]");
-logger.debug("DEBUG: [afterExecute] futures.get(task) =[" + futures.get(task)  + "]");
-      futures.remove(task);
-      if ( t != null ) {
-        logger.error("Task threw an Exception", t);
-      }
-    }
-
-    @Override
-    public Future<?> submit(Runnable task) {
-      Future<?> future = super.submit(task);
-      if ( future instanceof FutureTask<?> ) {
-        // surprisingly, because of the current implementation of
-        // ThreadPoolExecutor.beforeExecute and afterExecute and
-        // LinkedBlockingQueue.drainTo, we need to key off the FutureTask
-        futures.put((FutureTask<?>) future, new WrappedFuture(future));
-      }
-      return future;
-    }
-
-    public List<Runnable> shutdownNow() {
-      List<Runnable> tasks = super.shutdownNow();
-      Map<Runnable,WrappedFuture<?>> snapshot = new HashMap<>(futures);
-      futures.clear();
-      for ( Runnable task : snapshot.keySet() ) {
-        WrappedFuture<?> future = snapshot.get(task);
-        if ( future != null ) {
-          future.cancel(true);
-        }
-      }
-      return tasks;
-    }
-
-    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-      if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
-      List<WrappedFuture<?>> snapshotOfFutures = new ArrayList<>();
-      for ( WrappedFuture<?> future : futures.values() ) {
-        if ( future != null ) snapshotOfFutures.add( future );
-      }
-      long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
-      for ( Future<?> future : snapshotOfFutures ) {
-        try {
-          long startTime = System.currentTimeMillis();
-logger.debug("DEBUG: [awaitCompletion] future.isCancelled() =[" + future.isCancelled()  + "]");
-          if ( ! future.isCancelled() ) {
-            try {
-              future.get(duration, TimeUnit.MILLISECONDS);
-            } catch(CancellationException ce) {
-              if ( isTerminating() || isTerminated() || isShutdown() ) {
-                // no problem, this future was cancelled legitimately when shutdownNow() was called
-              } else {
-                // there's a problem, this future was cancelled for an unknown reason
-                throw ce;
-              }
-            }
-          }
-          /*
-          if ( future.isCancelled() ) {
-            duration = waitOnCancelledFuture(future, duration);
-          } else {
-            try {
-              future.get(duration, TimeUnit.MILLISECONDS);
-              duration -= System.currentTimeMillis() - startTime;
-logger.debug("DEBUG: [awaitCompletion] duration =[" + duration  + "]");
-            } catch(CancellationException ce) {
-              if ( isTerminating() || isTerminated() || isShutdown() ) {
-                logger.warn("CancellationException");
-                // this future was cancelled legitimately when shutdownNow() was called
-                // but we'd still like to wait for it to finish
-                duration = waitOnCancelledFuture(future, duration);
-              } else {
-                // there's a problem, this future was cancelled for an unknown reason
-                throw ce;
-              }
-            }
-          }
-          */
-          duration -= System.currentTimeMillis() - startTime;
-logger.debug("DEBUG: [WriteBatcherImpl] duration2 =[" + duration  + "]");
-          if ( duration < 0 ) {
-            // times up!  We didn't finish before timeout...
-            return false;
-          }
-        } catch (TimeoutException e) {
-          return false;
-        } catch (InterruptedException e) {
-          throw e;
-        } catch (ExecutionException e) {
-          logger.error("", e.getCause());
-        } catch (Exception e) {
-          logger.error("", e);
-        }
-      }
-      return true;
-    }
-
-    private long waitOnCancelledFuture(Future future, long duration) {
-      long startTime = System.currentTimeMillis();
-      while (future.isDone() == false) {
-logger.debug("DEBUG: [waitOnCancelledFuture] future.isDone() =[" + future.isDone()  + "]");
-        duration -= System.currentTimeMillis() - startTime;
-logger.debug("DEBUG: [waitOnCancelledFuture] duration =[" + duration  + "]");
-        if ( duration < 0 ) {
-          // times up!  We didn't finish before timeout...
-          return duration;
-        }
-        // sleep up to 100 ms to avoid unnecessary CPU use while we wait
-        try { Thread.sleep(duration % 100); } catch (InterruptedException e) {}
-      }
-logger.debug("DEBUG: [waitOnCancelledFuture] future.isDone() =[" + future.isDone()  + "]");
-      return duration;
     }
   }
 }

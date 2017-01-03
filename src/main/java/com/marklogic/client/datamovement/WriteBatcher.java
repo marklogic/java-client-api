@@ -291,34 +291,23 @@ public interface WriteBatcher extends Batcher {
   void flushAndWait();
 
   /**
-   * Blocks until the job has no batches queued for writing.
+   * Blocks until the job has finished or cancelled all queued tasks.
    *
-   * @return true if the queue emptied without InterruptedException, false if
-   *         InterruptedException was thrown while waiting
+   * @return true if the queue completed without InterruptedException, false if
+   *         we hit the time limit or InterruptedException was thrown while waiting
    */
   boolean awaitCompletion();
 
   /**
-   * Blocks until the job has no batches queued for writing.
+   * Blocks until the job has finished or cancelled all queued tasks.
    *
    * @param timeout the maximum time to wait
    * @param unit the time unit of the timeout argument
    *
-   * @return true if the queue emptied without timing out, false if we hit the time limit
+   * @return true if the queue completed without timing out, false if we hit the time limit
    * @throws InterruptedException if interrupted while waiting
    */
   boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
-
-  /**
-   * Blocks until the job has terminated.
-   *
-   * @param timeout the maximum time to wait
-   * @param unit the time unit of the timeout argument
-   *
-   * @return true if the job terminated without timing out, false if we hit the time limit
-   * @throws InterruptedException if interrupted while waiting
-   */
-  boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;
 
   /**
    * After the job has been started, returns the JobTicket generated when the

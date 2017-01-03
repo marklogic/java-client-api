@@ -32,6 +32,8 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Random;
+import java.util.stream.Stream;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -113,6 +115,8 @@ public class WriteBatcherTest {
       .withBatchSize(1)
       .onBatchSuccess(
         batch -> {
+          logger.debug("[testSimple] batch: {}, items: {}",
+            batch.getJobBatchNumber(), batch.getItems().length);
           for(WriteEvent w: batch.getItems()){
             successBatch.append(w.getTargetUri()+":");
           }
@@ -157,6 +161,8 @@ public class WriteBatcherTest {
       )
       .onBatchSuccess(
         batch -> {
+          logger.debug("[testWrites] batch: {}, items: {}",
+            batch.getJobBatchNumber(), batch.getItems().length);
           successListenerWasRun.append("true");
           if ( 2 != batch.getItems().length) {
             failures.append("ERROR: There should be 2 items in batch " + batch.getJobBatchNumber() +
@@ -398,10 +404,12 @@ public class WriteBatcherTest {
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
         batch -> {
+          logger.debug("[testWrites_{}] batch: {}, items: {}", testName,
+            batch.getJobBatchNumber(), batch.getItems().length);
           successfulBatchCount.incrementAndGet();
           for ( WriteEvent event : batch.getItems() ) {
             successfulCount.incrementAndGet();
-            logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
+            //logger.debug("success event.getTargetUri()=[{}]", event.getTargetUri());
           }
           if ( expectedBatchSize != batch.getItems().length) {
             // if this isn't the last batch
@@ -576,25 +584,20 @@ public class WriteBatcherTest {
     WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(100);
     batcher.onBatchSuccess(
-        batch -> {
-        System.out.println("Batch size "+batch.getItems().length);
+      batch -> {
+        logger.debug("[testAddMultiThreadedSuccess_Issue61] batch: {}, items: {}",
+          batch.getJobBatchNumber(), batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
-        //System.out.println("Success "+w.getTargetUri());
+          //System.out.println("Success "+w.getTargetUri());
         }
-
-
-
-        }
-        )
-      .onBatchFailure(
-          (batch, throwable) -> {
-          throwable.printStackTrace();
-          for(WriteEvent w:batch.getItems()){
+      });
+    batcher.onBatchFailure(
+      (batch, throwable) -> {
+        throwable.printStackTrace();
+        for(WriteEvent w:batch.getItems()){
           System.out.println("Failure "+w.getTargetUri());
-          }
-
-
-          });
+        }
+      });
     moveMgr.startJob(batcher);
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
@@ -607,15 +610,13 @@ public class WriteBatcherTest {
 
           for (int j =0 ;j < 100; j++){
             String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
-            System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
             batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
-
-
           }
+          logger.debug("[testAddMultiThreadedSuccess_Issue61] added 100 docs");
           batcher.flushAndWait();
-        }  
+        }
 
-    } 
+    }
     Thread t1,t2,t3;
     t1 = new Thread(new MyRunnable());
     t2 = new Thread(new MyRunnable());
@@ -640,9 +641,10 @@ public class WriteBatcherTest {
     batcher.withBatchSize(120);
     batcher
       .onBatchSuccess( batch -> {
-        System.out.println("Success Batch size "+batch.getItems().length);
+        logger.debug("[testAddMultiThreadedSuccess_Issue48] batch: {}, items: {}",
+          batch.getJobBatchNumber(), batch.getItems().length);
         for(WriteEvent w:batch.getItems()){
-          System.out.println("Success "+w.getTargetUri());
+          //System.out.println("Success "+w.getTargetUri());
         }
       })
       .onBatchFailure( (batch, throwable) -> {
@@ -666,15 +668,13 @@ public class WriteBatcherTest {
 
           for (int j =0 ;j < 100; j++){
             String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
-            System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
             batcher.add(uri, meta, fileHandle);
-
-
           }
+          logger.debug("[testAddMultiThreadedSuccess_Issue48] added 100 docs");
           batcher.flushAndWait();
-        } 
-
+        }
     }
+
     Thread t1,t2,t3;
     t1 = new Thread(new MyRunnable());
     t2 = new Thread(new MyRunnable());
@@ -698,17 +698,19 @@ public class WriteBatcherTest {
     batcher.withBatchSize(1);
     final AtomicInteger successfulCount = new AtomicInteger(0);
     batcher.onBatchSuccess(
-        batch -> {
-          for(WriteEvent w:batch.getItems()){
-            successfulCount.incrementAndGet();
-          }
+      batch -> {
+        logger.debug("[testUndeclaredFormat_Issue60] batch: {}, items: {}",
+          batch.getJobBatchNumber(), batch.getItems().length);
+        for(WriteEvent w:batch.getItems()){
+          successfulCount.incrementAndGet();
         }
-      )
-      .onBatchFailure(
-        (batch, throwable) -> {
-          throwable.printStackTrace();
-        }
-      );
+      }
+    );
+    batcher.onBatchFailure(
+      (batch, throwable) -> {
+        throwable.printStackTrace();
+      }
+    );
     JobTicket ticket = moveMgr.startJob(batcher);
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
@@ -761,6 +763,7 @@ public class WriteBatcherTest {
     assertEquals(0, failCount.get());
   }
 
+  // from https://github.com/marklogic/data-movement/issues/109
   @Test
   public void testMultipleFlushAnStop_Issue109() throws Exception {
     String collection = whbTestCollection + "_testMultipleFlushAnStop_Issue109";
@@ -772,19 +775,18 @@ public class WriteBatcherTest {
     ihbMT.withBatchSize(11);
     ihbMT.onBatchSuccess(
         batch -> {
-        System.out.println("Batch size "+batch.getItems().length);
-        for(WriteEvent w:batch.getItems()){
-        System.out.println("Success "+w.getTargetUri());
-        }
+          logger.debug("[testMultipleFlushAnStop_Issue109] batch: {}, items: {}",
+            batch.getJobBatchNumber(), batch.getItems().length);
+          for(WriteEvent w:batch.getItems()){
+            //logger.debug("Success "+w.getTargetUri());
+          }
         })
     .onBatchFailure(
         (batch, throwable) -> {
-        throwable.printStackTrace();
-        for(WriteEvent w:batch.getItems()){
-        System.out.println("Failure "+w.getTargetUri());
-        }
-
-
+          throwable.printStackTrace();
+          for(WriteEvent w:batch.getItems()){
+            System.out.println("Failure "+w.getTargetUri());
+          }
         });
     JobTicket writeTicket = moveMgr.startJob(ihbMT);
 
@@ -796,10 +798,12 @@ public class WriteBatcherTest {
 
         for (int j =0 ;j < 100; j++){
           String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
-          System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
+          logger.debug("[testMultipleFlushAnStop_Issue109] add URI:"+ uri);
           ihbMT.add(uri, meta, new StringHandle("test"));
           if(j ==80){
+            logger.debug("[testMultipleFlushAnStop_Issue109] flushAndWait");
             ihbMT.flushAndWait();
+            logger.debug("[testMultipleFlushAnStop_Issue109] stopJob");
             moveMgr.stopJob(writeTicket);
           }
 
@@ -817,5 +821,90 @@ public class WriteBatcherTest {
     t2.join();
 
     System.out.println("Size is "+client.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+  }
+
+  // from https://github.com/marklogic/java-client-api/issues/595
+  @Test
+  public void testStopBeforeFlush_Issue595() throws Exception {
+    String collection = whbTestCollection + "_testStopBeforeFlush_Issue595";
+    String query1 = "fn:count(fn:collection('" + collection + "'))";
+    DocumentMetadataHandle meta = new DocumentMetadataHandle()
+      .withCollections(collection, whbTestCollection);
+    AtomicInteger count = new AtomicInteger(0);
+    AtomicBoolean isStopped = new AtomicBoolean(false);
+    WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
+    ihbMT.withBatchSize(7).withThreadCount(60);
+
+    ihbMT.onBatchSuccess( batch -> {
+      if (count.get() > 6 ) {
+        boolean stopped = isStopped.getAndSet(true);
+        if ( stopped == false ) {
+          moveMgr.stopJob(batch.getBatcher());
+          logger.debug("[testStopBeforeFlush_Issue595] Job stopped");
+        }
+      }
+      count.addAndGet(batch.getItems().length);
+      logger.debug("[testStopBeforeFlush_Issue595] batch: " + batch.getJobBatchNumber() +
+        ", items: " + batch.getItems().length +
+        ", writes so far: " + batch.getJobWritesSoFar() +
+        ", host: " + batch.getClient().getHost());
+    })
+    .onBatchFailure( (batch, throwable) -> {
+      throwable.printStackTrace();
+      logger.debug("[testStopBeforeFlush_Issue595] Failed Batch: batch: " + batch.getJobBatchNumber() +
+        ", writes so far: " + batch.getJobWritesSoFar() +
+        ", host: " + batch.getClient().getHost() +
+        ", uris: " +
+        Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList()));
+    });
+    moveMgr.startJob(ihbMT);
+
+    class MyRunnable implements Runnable {
+
+      @Override
+        public void run() {
+          try {
+            for (int j =0 ;j < 400; j++){
+              String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
+              ihbMT.add(uri, meta, new StringHandle("test"));
+            }
+            logger.debug("[testStopBeforeFlush_Issue595] Finished executing thread");
+          } catch (Throwable t) {
+            logger.error("", t);
+          }
+        }
+
+    }
+    Thread t1,t2;
+    t1 = new Thread(new MyRunnable());
+    t2 = new Thread(new MyRunnable());
+    t1.setName("First Thread");
+    t2.setName("Second Thread");
+
+    t1.start();
+    t2.start();
+
+    t1.join();
+    t2.join();
+
+    try {
+      ihbMT.flushAndWait();
+      int countAfterFlushAndWait = count.get();
+      logger.debug("[testStopBeforeFlush_Issue595] Count after flushAndWait: "+countAfterFlushAndWait);
+      if ( countAfterFlushAndWait < 800 ) {
+        Thread.currentThread().sleep(5000L);
+        int countAfterSleep = count.get();
+        logger.debug("[testStopBeforeFlush_Issue595] Count 5s after flushAndWait: "+countAfterSleep);
+        assertEquals(countAfterFlushAndWait, countAfterSleep);
+      }
+      assertEquals(countAfterFlushAndWait, client.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+    } catch (IllegalStateException e) {
+      if ( "This instance has been stopped".equals(e.getMessage()) ) {
+        // this is expected behavior if we stop a job before calling flushAndWait
+        logger.debug("[testStopBeforeFlush_Issue595] flushAndWait threw expected exception since stopJob was called first: " + e);
+      } else {
+        throw e;
+      }
+    }
   }
 }
