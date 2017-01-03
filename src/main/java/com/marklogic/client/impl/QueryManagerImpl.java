@@ -39,9 +39,6 @@ import com.marklogic.client.io.marker.TuplesReadHandle;
 import com.marklogic.client.io.marker.ValuesListReadHandle;
 import com.marklogic.client.io.marker.ValuesReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
-import com.marklogic.client.query.ElementLocator;
-import com.marklogic.client.query.KeyLocator;
-import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -104,15 +101,6 @@ public class QueryManagerImpl
     }
 
     @Override
-    public KeyValueQueryDefinition newKeyValueDefinition() {
-        return new KeyValueQueryDefinitionImpl(null);
-    }
-    @Override
-    public KeyValueQueryDefinition newKeyValueDefinition(String optionsName) {
-        return new KeyValueQueryDefinitionImpl(optionsName);
-    }
-
-    @Override
     public StructuredQueryBuilder newStructuredQueryBuilder() {
         return new StructuredQueryBuilder();
     }
@@ -124,20 +112,6 @@ public class QueryManagerImpl
     @Override
     public DeleteQueryDefinition newDeleteDefinition() {
         return new DeleteQueryDefinitionImpl();
-    }
-
-    @Override
-    public ElementLocator newElementLocator(QName element) {
-        return new ElementLocatorImpl(element);
-    }
-    @Override
-    public ElementLocator newElementLocator(QName element, QName attribute) {
-        return new ElementLocatorImpl(element, attribute);
-    }
-
-    @Override
-    public KeyLocator newKeyLocator(String key) {
-        return new KeyLocatorImpl(key);
     }
 
     @Override

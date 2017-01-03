@@ -39,7 +39,6 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
@@ -215,14 +214,6 @@ public class TransformTest {
 		result = queryMgr.search(stringQuery, new DOMHandle()).get();
 		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
 		assertEquals("String query read transform failed","true",value);
-
-		KeyValueQueryDefinition keyValueQuery = queryMgr.newKeyValueDefinition();
-		keyValueQuery.put(queryMgr.newElementLocator(new QName("leaf")), "leaf3");
-		keyValueQuery.setResponseTransform(transform);
-
-		result = queryMgr.search(keyValueQuery, new DOMHandle()).get();
-		value = result.getDocumentElement().getAttributeNS(TEST_NS, "transformed");
-		assertEquals("Key-value query read transform failed","true",value);
 
 		ValuesDefinition vdef =
 			queryMgr.newValuesDefinition("double", optionsName);

@@ -32,11 +32,6 @@ declare function searchcollect:get(
 
         if (exists(map:get($params,"q")))
         then searchmodq:search-get($headers,$params,())
-        else if (
-            exists(map:get($params,"value")) and
-            (exists(map:get($params,"key")) or exists(map:get($params,"element")))
-            )
-        then searchmodq:keyvalue-get($headers,$params,())
         else error((),"REST-INVALIDPARAM",
             "no query parameters for collecting documents"
             )

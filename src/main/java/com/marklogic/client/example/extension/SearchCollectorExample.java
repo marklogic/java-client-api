@@ -117,11 +117,7 @@ public class SearchCollectorExample {
 		getParams.add("start",      "xs:string");
 		getParams.add("view",       "xs:string");
 
-		getParams.add("attribute",  "xs:string");
-		getParams.add("element",    "xs:string");
-		getParams.add("key",        "xs:string");
 		getParams.add("q",          "xs:string");
-		getParams.add("value",      "xs:string");
 
 		MethodParameters postParams = new MethodParameters(MethodType.POST);
 		postParams.add("format",     "xs:string");

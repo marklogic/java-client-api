@@ -116,30 +116,6 @@ public interface QueryManager {
     StringQueryDefinition newStringDefinition(String optionsName);
 
     /**
-     * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
-     * <br><br>
-     *
-     * Creates a query definition based on a locator such as a JSON property,
-     * element name, or element and attribute name and the default query
-     * options.
-     * @return	the key-value query definition
-     */
-    @Deprecated
-    KeyValueQueryDefinition newKeyValueDefinition();
-
-    /**
-     * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
-     * <br><br>
-     *
-     * Creates a query definition based on a locator and on named
-     * query options saved previously.
-     * @param optionsName	the name of the query options
-     * @return	the key-value query definition
-     */
-    @Deprecated
-    KeyValueQueryDefinition newKeyValueDefinition(String optionsName);
-
-    /**
      * Creates a suggestion definition based on a single string for completion,
      * using the default options node.
      * @return	the suggest definition.
@@ -214,42 +190,6 @@ public interface QueryManager {
      * @return the values list definition
      */
     ValuesListDefinition newValuesListDefinition(String optionsName);
-
-    /**
-     * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
-     * <br><br>
-     *
-     * Creates a locator for a key-value query based on an element name,
-     * which may have namespace.
-     * @param element	the element name
-     * @return	the locator for a key-value query
-     */
-    @Deprecated
-    ElementLocator newElementLocator(QName element);
-
-    /**
-     * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
-     * <br><br>
-     *
-     * Creates a locator for a key-value query based on an element name
-     * and attribute name, either or both of which may have a namespace.
-     * @param element	the element name
-     * @param attribute	the attribute name
-     * @return	the locator for a key-value query
-     */
-    @Deprecated
-    ElementLocator newElementLocator(QName element, QName attribute);
-
-    /**
-     * @deprecated Use {@link RawQueryByExampleDefinition Query By Example} instead for easy-to-write and much more full-featured key/value search.
-     * <br><br>
-     *
-     * Creates a locator for a key-value query based on a JSON key.
-     * @param key	the JSON key
-     * @return	the locator for a key-value query
-     */
-    @Deprecated
-    KeyLocator newKeyLocator(String key);
 
     /**
      * Searches documents based on query criteria and, potentially, previously

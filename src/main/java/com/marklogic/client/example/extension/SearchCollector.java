@@ -70,52 +70,6 @@ public class SearchCollector extends ResourceManager {
 
 		return getResults(params);
 	}
-	public CollectorResults collect(String key, String value, long start) {
-		return collect(key, value, start, null);
-	}
-	public CollectorResults collect(
-		String key, String value, long start, String optionsName
-	) {
-		if (key == null)
-			throw new IllegalArgumentException("null query key");
-		if (value == null)
-			throw new IllegalArgumentException("null query value ");
-
-		RequestParameters params = initParams(optionsName, start);
-		params.put("key",   key);
-		params.put("value", value);
-
-		return getResults(params);
-	}
-	public CollectorResults collect(QName elementName, String value, long start) {
-		return collect(elementName, null, value, start, null);
-	}
-	public CollectorResults collect(
-		QName elementName, String value, long start, String optionsName
-	) {
-		return collect(elementName, null, value, start, optionsName);
-	}
-	public CollectorResults collect(
-		QName elementName, QName attributeName, String value, long start
-	) {
-		return collect(elementName, attributeName, value, start, null);
-	}
-	public CollectorResults collect(
-		QName elementName, QName attributeName, String value, long start, String optionsName
-	) {
-		if (elementName == null)
-			throw new IllegalArgumentException("null query element");
-		if (value == null)
-			throw new IllegalArgumentException("null query value ");
-
-		RequestParameters params = initParams(optionsName, start);
-		params.put("element", elementName.toString());
-		if (attributeName != null)
-			params.put("attribute", attributeName.toString());
-		params.put("value",  value);
-
-		return getResults(params);
-	}
 	public CollectorResults collect(StructuredQueryDefinition def, long start) {
 		if (def == null)
 			throw new IllegalArgumentException("null query definition");
