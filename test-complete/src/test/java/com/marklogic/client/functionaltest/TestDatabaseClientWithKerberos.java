@@ -28,13 +28,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.security.KeyManagementException;
-import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
-import java.security.UnrecoverableKeyException;
-import java.security.cert.CertificateException;
 import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Map;
 
 import javax.net.ssl.SSLContext;
 import javax.xml.parsers.DocumentBuilder;
@@ -61,9 +59,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
-import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
 import com.marklogic.client.DatabaseClientFactory.BasicAuthContext;
+import com.marklogic.client.DatabaseClientFactory.KerberosAuthContext;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -71,6 +69,7 @@ import com.marklogic.client.alerting.RuleDefinition;
 import com.marklogic.client.alerting.RuleDefinitionList;
 import com.marklogic.client.alerting.RuleManager;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -78,24 +77,23 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.eval.EvalResult;
+import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.eval.EvalResult.Type;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.Capability;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
@@ -106,7 +104,6 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
-import java.util.Map;
 
 public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 
@@ -145,14 +142,16 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 		createExternalSecurityForKerberos(appServerName, extSecurityName);
 		// Associate the external security with the App Server.
 		associateRESTServerWithKerberosExtSecurity(appServerName, extSecurityName);
-		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
-		createRESTKerberosUser("user2", "MarkLogic200", kdcPrincipalUser, "admin", "test-eval");
+		createUserRolesWithPrevilages("test-evalKer","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+		createRESTKerberosUser("user2", "MarkLogic200", kdcPrincipalUser, "admin", "test-evalKer");
 		createRESTUser("rest-admin","x","rest-admin");
 	}
 	
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down" );
+		deleteUserRole("test-evalKer");
+		deleteRESTUser("user2");
 		tearDownJavaRESTServer(dbName, fNames, appServerName);	
 	}
 	
@@ -167,7 +166,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
 					new KerberosAuthContext().withSSLContext(sslcontext));
 		} else
 			client = DatabaseClientFactory.newClient(appServerHostName,
-					appServerHostPort, new KerberosAuthContext());
+					appServerHostPort, new KerberosAuthContext(kdcPrincipalUser));
 	}
 	
 	@After

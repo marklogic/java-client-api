@@ -2600,7 +2600,8 @@ public abstract class ConnectedRESTQA {
 				+ "\"ldap-attribute\":\"\","
 				+ "\"ldap-default-user\":\"\","
 				+ "\"ldap-password\":\"\","
-				+ "\"ldap-bind-method\":\"MD5\""
+				+ "\"ldap-bind-method\":\"MD5\","
+				+ "\"ssl-require-client-certificate\":\"false\""
 				+ "}";
 
 		HttpPost post = new HttpPost("http://localhost:8002/manage/v2/external-security");
@@ -2632,10 +2633,10 @@ public abstract class ConnectedRESTQA {
 			HttpResponse resp = clientReq.execute(getrequest);
 
 			if(resp.getStatusLine().getStatusCode() == 200) {
-				System.out.println("User already exist");
+				System.out.println("Kerberos User already exist");
 			}
 			else {
-				System.out.println("User dont exist");
+				System.out.println("Kerberos User dont exist");
 				clientPost = new DefaultHttpClient();
 				clientPost.getCredentialsProvider().setCredentials(
 						new AuthScope("localhost", 8002),
@@ -2668,14 +2669,14 @@ public abstract class ConnectedRESTQA {
 				HttpResponse response = clientPost.execute(post);
 				HttpEntity respEntity = response.getEntity();
 				if( response.getStatusLine().getStatusCode() == 400) {
-					System.out.println("User already exist");
+					System.out.println("Kerberos User already exist - Status Code 400");
 				}
 				else if (respEntity != null) {
 					// EntityUtils to get the response content
 					String content =  EntityUtils.toString(respEntity);
 					System.out.println(content);
 				}
-				else {System.out.println("No Proper Response");}
+				else {System.out.println("No Proper Response - Kerberos User");}
 			}
 		} catch (Exception e) {
 			// writing error to Log
