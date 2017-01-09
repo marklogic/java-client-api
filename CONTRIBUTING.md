@@ -126,8 +126,11 @@ Use `git rebase` (not `git merge`) to sync your work from time to time.
 
 #### Test your code
 
-Be sure to run the tests before submitting your pull request. PRs with failing 
-tests won't be accepted. 
+Be sure to run the tests before submitting your pull request. PRs with failing
+tests won't be accepted.
+
+First verify that you have valid server and admin auth info in
+src/test/java/com/marklogic/client/test/util/TestServerBootstrapper.java.
 
     $ mvn test-compile
     $ mvn exec:java@test-server-init
