@@ -41,7 +41,7 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryBuilder.GeoSpatialOperator;
+import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
@@ -132,7 +132,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();		
-		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/circle")), GeoSpatialOperator.CONTAINS, qb.circle(qb.point(0,-66.09375), 6.897));
+		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/circle")), GeospatialOperator.CONTAINS, qb.circle(qb.point(0,-66.09375), 6.897));
 		// create handle
 		JacksonHandle resultsHandle = new JacksonHandle();
 		queryMgr.search(t, resultsHandle);
@@ -161,7 +161,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
-		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), GeoSpatialOperator.CONTAINS, 
+		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), GeospatialOperator.CONTAINS, 
 				qb.polygon(qb.point(-5,-70), qb.point(4, -70), qb.point(3, -60), qb.point(-3, -65), qb.point(-5,-70)));
 		// create handle
 		JacksonHandle resultsHandle = new JacksonHandle();
@@ -191,7 +191,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
-		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), GeoSpatialOperator.INTERSECTS, 
+		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), GeospatialOperator.INTERSECTS, 
 				qb.point(0,-66.09375));
 		// create handle
 		JacksonHandle resultsHandle = new JacksonHandle();
@@ -234,7 +234,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/point")), 
-				                                       GeoSpatialOperator.COVEREDBY, 
+				                                       GeospatialOperator.COVEREDBY, 
 				                                       qb.polygon(qb.point(40.13, -52.96),  qb.point(40.45,-36.61),   qb.point(38.16,-13.48),
 				                                    		      qb.point(21.09,-1.1),     qb.point(0.0,-17.46),     qb.point(-17.38,-12.52),
 				                                    		      qb.point(-33.08,-20.47),  qb.point(-51.46,-28.61),  qb.point(-65.33,-44.77), 
@@ -288,7 +288,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/polygon")), 
-				                                       GeoSpatialOperator.COVERS, 
+				                                       GeospatialOperator.COVERS, 
 				                                       qb.box(-5.45, -76.35643, 5.35, -54.636)
 				                                   );
 		// create handle
@@ -335,7 +335,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/polygon")), 
-				                                       GeoSpatialOperator.CROSSES, 
+				                                       GeospatialOperator.CROSSES, 
 				                                       qb.point(-26.797920, 136.406250)
 				                                   );
 		// create handle
@@ -365,7 +365,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), 
-				                                       GeoSpatialOperator.OVERLAPS, 
+				                                       GeospatialOperator.OVERLAPS, 
 				                                       qb.circle(qb.point(25.234,85.2345), 10)
 				                                   );
 		// create handle
@@ -395,7 +395,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/polygon")), 
-				                                       GeoSpatialOperator.DISJOINT, 
+				                                       GeospatialOperator.DISJOINT, 
 				                                       qb.polygon(
 				                                    		   qb.point(-90, 131),
 				                                    		   qb.point(-85, 133),
@@ -430,7 +430,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/box")), 
-				                                       GeoSpatialOperator.DISJOINT, 
+				                                       GeospatialOperator.DISJOINT, 
 				                                       qb.box(-40.234, 100.4634, -20.345, 140.45230)
 				                                   );
 		// create handle
@@ -461,7 +461,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/point")), 
-				                                       GeoSpatialOperator.EQUALS, 
+				                                       GeospatialOperator.EQUALS, 
 				                                       qb.point(0, -66.09375)
 				                                   );
 		// create handle
@@ -492,7 +492,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/polygon")), 
-				                                       GeoSpatialOperator.TOUCHES, 
+				                                       GeospatialOperator.TOUCHES, 
 				                                       qb.point(-26.797920, 136.406250)
 				                                   );
 		// create handle
@@ -523,7 +523,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		// create query def
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/circle")), 
-				                                       GeoSpatialOperator.WITHIN, 
+				                                       GeospatialOperator.WITHIN, 
 				                                       qb.box(-6, 30, 100, 150)
 				                                   );
 		// create handle

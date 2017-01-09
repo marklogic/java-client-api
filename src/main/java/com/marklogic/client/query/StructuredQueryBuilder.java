@@ -93,7 +93,7 @@ public class StructuredQueryBuilder {
     /**
      * Geospatial operators to be used in geospatial region index queries
      */
-    public enum GeoSpatialOperator {
+    public enum GeospatialOperator {
         EQUALS, DISJOINT, TOUCHES, CONTAINS, COVERS,
         INTERSECTS, WITHIN, COVEREDBY, CROSSES, OVERLAPS;
 
@@ -728,7 +728,7 @@ public class StructuredQueryBuilder {
      * @param regions    the possible regions containing the region
      * @return    the StructuredQueryDefinition for the geospatial query
      */
-    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, Region... regions) {
+    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator, Region... regions) {
         checkRegions(regions);
         return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, null, regions, null);
     }
@@ -745,7 +745,7 @@ public class StructuredQueryBuilder {
      * @param regions    the possible regions containing the region
      * @return    the StructuredQueryDefinition for the geospatial query
      */
-    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeoSpatialOperator operator, FragmentScope scope, String[] options, Region... regions) {
+    public StructuredQueryDefinition geospatial(GeospatialRegionIndex index, GeospatialOperator operator, FragmentScope scope, String[] options, Region... regions) {
         checkRegions(regions);
         return new GeospatialRegionQuery((GeoRegionPathImpl)index, operator, scope, regions, options);
     }
@@ -1110,7 +1110,7 @@ public class StructuredQueryBuilder {
      * @param regions    the possible regions containing the point
      * @return    the StructuredQueryDefinition for the geospatial constraint query
      */
-    public StructuredQueryDefinition geospatialRegionConstraint(String constraintName, GeoSpatialOperator operator, Region... regions) {
+    public StructuredQueryDefinition geospatialRegionConstraint(String constraintName, GeospatialOperator operator, Region... regions) {
         checkRegions(regions);
         return new GeospatialRegionConstraintQuery(constraintName, operator, regions);
     }
@@ -1871,9 +1871,9 @@ public class StructuredQueryBuilder {
     class GeospatialRegionConstraintQuery extends AbstractStructuredQuery {
         String name = null;
         Region[] regions = null;
-        GeoSpatialOperator operator;
+        GeospatialOperator operator;
 
-        public GeospatialRegionConstraintQuery(String constraintName, GeoSpatialOperator operator, Region... regions) {
+        public GeospatialRegionConstraintQuery(String constraintName, GeospatialOperator operator, Region... regions) {
             super();
             name = constraintName;
             this.regions = regions;
@@ -2174,9 +2174,9 @@ public class StructuredQueryBuilder {
 
     class GeospatialRegionQuery extends GeospatialBaseQuery {
         GeoRegionPathImpl index;
-        GeoSpatialOperator operator;
+        GeospatialOperator operator;
 
-        GeospatialRegionQuery(GeoRegionPathImpl index, GeoSpatialOperator operator, FragmentScope scope,
+        GeospatialRegionQuery(GeoRegionPathImpl index, GeospatialOperator operator, FragmentScope scope,
                 Region[] regions, String[] options) {
             super(scope, regions, options);
             this.index = index;

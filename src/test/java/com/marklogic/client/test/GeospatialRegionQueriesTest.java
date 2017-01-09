@@ -22,10 +22,10 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
-import com.marklogic.client.query.StructuredQueryBuilder.GeoSpatialOperator;
+import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
-public class GeoSpatialRegionQueriesTest {
+public class GeospatialRegionQueriesTest {
 
     @AfterClass
     public static void teardown() {
@@ -127,11 +127,11 @@ public class GeoSpatialRegionQueriesTest {
     }
 
     @Test
-    public void testGeoSpatialRegionQuery() {
+    public void testGeospatialRegionQuery() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
         StructuredQueryDefinition qdef;
-        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region")), GeoSpatialOperator.CONTAINS,
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region")), GeospatialOperator.CONTAINS,
                 qb.point(19.429297983081977, -99.140625));
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
@@ -173,7 +173,7 @@ public class GeoSpatialRegionQueriesTest {
     }
 
     @Test
-    public void testGeoSpatialRegionDoubleQuery() {
+    public void testGeospatialRegionDoubleQuery() {
         String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                        + "    <search-option>filtered</search-option>"
                        + "    <debug>true</debug>"
@@ -186,25 +186,25 @@ public class GeoSpatialRegionQueriesTest {
         StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
 
         StructuredQueryDefinition qdef;
-        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84DOUBLE), GeoSpatialOperator.COVERS,
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84DOUBLE), GeospatialOperator.COVERS,
             qb.point(10.00000003, 10.00000003));
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
         assertEquals(0, summaries.length);
         
-        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84), GeoSpatialOperator.COVERS,
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.WGS84), GeospatialOperator.COVERS,
             qb.point(10.00000003, 10.00000003));
         results = queryMgr.search(qdef, new SearchHandle());
         summaries = results.getMatchResults();
         assertEquals(1, summaries.length);
 
-        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84", true)), GeoSpatialOperator.COVERS,
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84", true)), GeospatialOperator.COVERS,
             qb.point(10.00000003, 10.00000003));
         results = queryMgr.search(qdef, new SearchHandle());
         summaries = results.getMatchResults();
         assertEquals(0, summaries.length);
         
-        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84")), GeoSpatialOperator.COVERS,
+        qdef = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/country/region"), CoordinateSystem.getOther("wgs84")), GeospatialOperator.COVERS,
             qb.point(10.00000003, 10.00000003));
         results = queryMgr.search(qdef, new SearchHandle());
         summaries = results.getMatchResults();
@@ -243,7 +243,7 @@ public class GeoSpatialRegionQueriesTest {
     }
 
     @Test
-    public void testGeoSpatialRegionQueryConstraint() {
+    public void testGeospatialRegionQueryConstraint() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
         StructuredQueryDefinition qdef;
@@ -255,7 +255,7 @@ public class GeoSpatialRegionQueriesTest {
                        + "  </constraint>" 
                        + "</options>";
 
-        qdef = qb.geospatialRegionConstraint("geo", GeoSpatialOperator.CONTAINS,
+        qdef = qb.geospatialRegionConstraint("geo", GeospatialOperator.CONTAINS,
                 qb.point(19.429297983081977, -99.140625));
 
         String combinedQuery = "<search xmlns=\"http://marklogic.com/appservices/search\">" 
@@ -272,7 +272,7 @@ public class GeoSpatialRegionQueriesTest {
     }
 
     @Test
-    public void testGeoSpatialRegionQueryOptionsConstraint() {
+    public void testGeospatialRegionQueryOptionsConstraint() {
         String options = "<options xmlns=\"http://marklogic.com/appservices/search\">" 
                        + "  <constraint name='geoo'>"
                        + "    <geo-region-path coord='wgs84'>" 
@@ -289,13 +289,13 @@ public class GeoSpatialRegionQueriesTest {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder("geooptions");
         StructuredQueryDefinition qdef;
-        qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.DISJOINT,
+        qdef = qb.geospatialRegionConstraint("geoo", GeospatialOperator.DISJOINT,
                 qb.point(19.429297983081977, -99.140625));
 
         SearchHandle results = queryMgr.search(qdef, new SearchHandle());
         MatchDocumentSummary[] summaries = results.getMatchResults();
         assertEquals(3, summaries.length);
-        qdef = qb.geospatialRegionConstraint("geoo", GeoSpatialOperator.CONTAINS, 
+        qdef = qb.geospatialRegionConstraint("geoo", GeospatialOperator.CONTAINS, 
                 qb.point(21.884239, -78.164978));
         results = queryMgr.search(qdef, new SearchHandle());
         summaries = results.getMatchResults();
