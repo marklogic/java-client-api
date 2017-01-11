@@ -1,4 +1,4 @@
-Copyright 2012-2016 MarkLogic Corporation.  All Rights Reserved.
+Copyright 2012-2017 MarkLogic Corporation.  All Rights Reserved.
 
 MarkLogic Client API for Java version ${project.version}
 
