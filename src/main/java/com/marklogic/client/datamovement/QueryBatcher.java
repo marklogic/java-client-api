@@ -261,17 +261,6 @@ public interface QueryBatcher extends Batcher {
   boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException;
 
   /**
-   * Blocks until the job is has finished stopping.
-   *
-   * @param timeout the maximum time to wait
-   * @param unit the time unit of the timeout argument
-   *
-   * @return true if the job terminated without timing out, false if we hit the time limit
-   * @throws InterruptedException if interrupted while waiting
-   */
-  boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException;
-
-  /**
    * true if the job is terminated (last batch was finished or {@link
    * DataMovementManager#stopJob DataMovementManager.stopJob} was called),
    * false otherwise

@@ -192,20 +192,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
-  public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
+  public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
     requireJobStarted();
     return threadPool.awaitTermination(timeout, unit);
   }
 
   @Override
-  public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-    return awaitTermination(timeout, unit);
-  }
-
-  @Override
   public boolean awaitCompletion() {
     try {
-      return awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+      return awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
     } catch(InterruptedException e) {
       return false;
     }
