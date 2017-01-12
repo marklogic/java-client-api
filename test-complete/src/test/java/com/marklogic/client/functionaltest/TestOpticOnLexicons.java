@@ -730,7 +730,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}		
 		// Should have XDMP-OPTION exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("Error running JavaScript request: XDMP-OPTION"));
+		assertTrue("Exceptions not found", str.toString().contains("XDMP-OPTION"));
 		assertTrue("Exceptions not found", str.toString().contains("Invalid option \"optimize=-3\""));
 	}
 	
@@ -938,7 +938,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: date_invalid"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: date_invalid"));
 	}
 	
 	/*
@@ -1028,7 +1029,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: myCity_invalid.city"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: myCity_invalid.city"));
 	}
 	
 	/*
@@ -1077,7 +1079,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: invalid_view.city"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: invalid_view.city"));
 	}
 	
 	/*
@@ -1122,7 +1125,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: /foo/bar"));
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: /foo/bar"));
 		
 		//null uri on join inner doc
 		try {
@@ -1146,7 +1150,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN: Column not found: {foo: bar}"));		
+		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));		
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: {foo: bar}"));
 	}
 		
 	@AfterClass
