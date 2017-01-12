@@ -136,10 +136,15 @@ public interface DataMovementManager {
   public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query);
 
   /**
-   * Create a new QueryBatcher instance configured to retrieve uris from
-   * this Iterator.  This is helpful when deleting documents when one cannot
-   * set the server's [merge timestamp][].  For more discussion, see {@link
-   * QueryBatcher}.
+   * Create a new QueryBatcher instance configured to retrieve uris from this
+   * Iterator.  This form enables the uris (actually any String) to come from
+   * any source, whereas the other form requires the uris to come from the
+   * results of a query.  This form is helpful when deleting documents when one
+   * cannot set the server's [merge timestamp][].  For more discussion, see
+   * {@link QueryBatcher}.
+   *
+   * The Iterator needn't be thread-safe as it is only iterated from one
+   * thread.
    *
    * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
    *
