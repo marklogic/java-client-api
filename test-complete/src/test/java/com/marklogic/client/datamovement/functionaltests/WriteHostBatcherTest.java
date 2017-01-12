@@ -793,12 +793,15 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		System.out.println(successDb.toString());
 		
 		Assert.assertTrue(count(successPort.toString(),String.valueOf(port))==10);
-		Assert.assertTrue(count(successHost.toString(),String.valueOf(host))!=10);
-		Assert.assertTrue(count(successDb.toString(),String.valueOf(dbName))==10);
-				
+		if (hostNames.length > 1){
+			Assert.assertTrue(count(successHost.toString(),String.valueOf(host))!=10);
+		}
+						
 		Assert.assertTrue(count(failurePort.toString(),String.valueOf(port))==5);
-		Assert.assertTrue(count(failureHost.toString(),String.valueOf(host))!=5);
-		Assert.assertTrue(count(failureDb.toString(),String.valueOf(dbName))==5);
+		if (hostNames.length > 1){
+			Assert.assertTrue(count(failureHost.toString(),String.valueOf(host))!=5);
+		}
+		
 	}
 	
 	private int count(String s, String in){
@@ -2014,8 +2017,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	}
       	
        	ihbMT.awaitCompletion();
-       	ihbMT.awaitTermination(10L,TimeUnit.MILLISECONDS);
-		
+       			
        	int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
        	System.out.println(count);
        	Assert.assertTrue(count >=80);
@@ -2182,7 +2184,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
 		ihbMT.awaitCompletion();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==200);
-		Assert.assertFalse(successCalled.get());
+		Assert.assertTrue(successCalled.get());
     }
 	
 	// ea3
@@ -2324,111 +2326,5 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
    		  }
    	  }  
        		
-  } 
-	
-	@Test
-	public void testOfflineForestStopServerDuringInsert() throws Exception{
-		
-		final String query1 = "fn:count(fn:doc())";
-		Thread t1 = new Thread(new OffLineForestStopServerRunnable());
-		AtomicBoolean failCheck = new AtomicBoolean(false);
-		AtomicInteger successCount = new AtomicInteger(0);
-		AtomicInteger failureCount = new AtomicInteger(0);
-		
-     	t1.setName("Status Check");
-     	Map<String,String> properties = new HashMap<>(); 
-     	
-
-     	
-		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
-		ihb2.withBatchSize(50);
-				
-		ihb2.onBatchSuccess(
-		        batch -> {
-		        	successCount.getAndAdd(batch.getItems().length);
-		        	
-		        	System.out.println("Success host: "+batch.getClient().getHost());
-		        	System.out.println("Success Batch size "+batch.getItems().length);
-		        	for(WriteEvent w:batch.getItems()){
-		        		System.out.println("Success "+w.getTargetUri());
-		        	}		        	
-		          }
-		        )
-		        .onBatchFailure(
-		          (batch, throwable) -> {
-		        	  failCheck.set(true);
-		        	  failureCount.getAndAdd(batch.getItems().length);
-		        	  throwable.printStackTrace();
-		        	  System.out.println("Failure host: "+batch.getClient().getHost());
-		        	  System.out.println("Failure Batch size "+batch.getItems().length);
-			        	for(WriteEvent w:batch.getItems()){
-			        		System.out.println("Failure "+w.getTargetUri());
-			        	}	           
-		          });
-		
-     
-		dmManager.startJob(ihb2);
-		
-		properties.put("forest-name",dbName+"-1");
-     	properties.put("availability","offline");
-     	
-     	
-     			
-		for (int j =0 ;j < 10000; j++){
-			String uri ="/local/json-"+ j;
-			ihb2.add(uri, fileHandle);
-			if (j == 30){
-				changeProperty(properties,"/manage/v2/forests/"+dbName+"-1/properties");
-				t1.start();
-			}
-			
-			if (j == 2500){
-				properties.put("forest-name",dbName+"-3");
-				changeProperty(properties,"/manage/v2/forests/"+dbName+"-3/properties");
-				
-			}
-		}
-				
-		ihb2.flushAndWait();
-		t1.join();
-		properties.clear();				
-     	properties.put("forest-name",dbName+"-1");
-     	properties.put("availability","online");
-     	changeProperty(properties,"/manage/v2/forests/"+dbName+"-1/properties");
-     	
-     	properties.put("forest-name",dbName+"-3");
-     	changeProperty(properties,"/manage/v2/forests/"+dbName+"-3/properties");
-		Assert.assertTrue(successCount.intValue() == 10000);
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==10000);
-		    	
-	}
-	
-	class OffLineForestStopServerRunnable implements Runnable {
-	  final String query1 = "fn:count(fn:doc())";
-	  Map<String,String> properties = new HashMap<>();
-	
-   	  @Override
-   	  public void run() {
-   		String stopHost;
-		if(hostNames.length >= 1){
-   			stopHost =  hostNames[1];
-   		}
-   		else{
-   			stopHost = hostNames[0];
-   			
-   		}
-		int  count = 0;
-		while (count < 5){
-			
-			changeServer(stopHost,"restart");
-			try {
-				Thread.currentThread().sleep(6000L);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			count++;
-				
-		  }   		
-   	  }  	
   } 
 }

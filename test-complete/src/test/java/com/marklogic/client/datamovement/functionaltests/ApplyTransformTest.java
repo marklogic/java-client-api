@@ -589,7 +589,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		assertEquals("Size should be 0", 0,skippedBatch.size());
 
 	}
-
+	
+	//ISSUE # 569
 	@Test
 	public void jsMasstransformReplaceDelete() throws Exception{
 
