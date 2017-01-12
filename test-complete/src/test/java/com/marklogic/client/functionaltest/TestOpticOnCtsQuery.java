@@ -16,14 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,23 +44,15 @@ import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.PreparePlan;
-import com.marklogic.client.expression.PlanBuilder.QualifiedPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.CtsQuerySeqExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanSystemColumn;
 
 /* The tests here are for checks on cts queries.
  */
