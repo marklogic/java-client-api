@@ -1638,7 +1638,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		System.out.println("Exception message is " + strCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strCol.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.detail.id_invalid"));
+	assertTrue("Exceptions not found", strCol.toString().contains("SQL-NOCOLUMN"));
+	assertTrue("Exceptions not found", strCol.toString().contains("Column not found: opticFunctionalTest.detail.id_invalid"));
 
 	//Invalid column in where
 	StringBuilder strWhereCol = new StringBuilder();
@@ -1662,7 +1663,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		System.out.println("Exception message is " + strWhereCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strWhereCol.toString().contains("SQL-NOCOLUMN: Column not found: opticFunctionalTest.master.id_invalid"));
+	assertTrue("Exceptions not found", strWhereCol.toString().contains("SQL-NOCOLUMN"));
+	assertTrue("Exceptions not found", strWhereCol.toString().contains("Column not found: opticFunctionalTest.master.id_invalid"));
 	
 	//Invalid column in viewCol
 	StringBuilder strViewCol = new StringBuilder();
@@ -1684,7 +1686,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		System.out.println("Exception message is " + strViewCol.toString());
 	}		
 	// Should have SQL-NOCOLUMN exceptions.
-	assertTrue("Exceptions not found", strViewCol.toString().contains("SQL-NOCOLUMN: Column not found: detail_invalid.id"));
+	assertTrue("Exceptions not found", strViewCol.toString().contains("SQL-NOCOLUMN"));
+	assertTrue("Exceptions not found", strViewCol.toString().contains("Column not found: detail_invalid.id"));
 	}
 	
 	/* This test checks different number of columns.
@@ -1698,6 +1701,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	{	
 		System.out.println("In testDifferentColumns method");
 		StringBuilder strIntersect = new StringBuilder();
+		JacksonHandle jacksonHandle = null;
 		
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1716,7 +1720,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		                                  )
 		                        .orderBy(p.asc(p.col("id")));
 		
-		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
 		rowMgr.resultDoc(plan3, jacksonHandle);
@@ -1724,11 +1728,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		catch(Exception ex) {
 			strIntersect.append(ex.getMessage());
 			System.out.println("Exception message is " + strIntersect.toString());
-		}		
-		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strIntersect.toString().contains("SQL-NUMBERCOLUMNS"));
-		assertTrue("Exceptions not found", strIntersect.toString().contains("Number of columns not matched: SELECTs to the left and right of INTERSECT do not have the same number of result columns"));
-		
+		}
+		JsonNode jsonBindingsNodes = jacksonHandle.get();
+		assertTrue("Handle should be null from testDifferentColumns method ", jsonBindingsNodes==null);
 		//except with different number of columns
 		StringBuilder strExcept = new StringBuilder();
 		try {
@@ -1742,7 +1744,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
                                         		     )
                                        )
                                 .orderBy(p.asc(p.col("id")));
-		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
 		rowMgr.resultDoc(plan4, jacksonHandle);
@@ -1751,9 +1753,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			strExcept.append(ex.getMessage());
 			System.out.println("Exception message is " + strExcept.toString());
 		}		
-		// Should have SQL-NUMBERCOLUMNS exceptions.
-		assertTrue("Exceptions not found", strExcept.toString().contains("SQL-NUMBERCOLUMNS"));
-		assertTrue("Exceptions not found", strExcept.toString().contains("Number of columns not matched: SELECTs to the left and right of EXCEPT do not have the same number of result columns"));
+		jsonBindingsNodes = jacksonHandle.get();
+		assertEquals("Two nodes not returned from testFragmentId method ", 2, jsonBindingsNodes.size());
 	}
 	
 	/*
@@ -1800,14 +1801,13 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		JsonNode explainNode = rowMgr.explain(output, new JacksonHandle()).get();
 		// Making sure explain() does not blow up for a valid plan.
 		assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");
-		assertTrue("Explain of plan incorrect", explainNode.path("expr").path("sortNeeded").asBoolean());
+		//assertTrue("Explain of plan incorrect", explainNode.path("expr").path("sortNeeded").asBoolean());
 		assertEquals("Explain of plan incorrect", explainNode.path("expr").path("columns").get(0).path("column").asText(), "DetailName");
 		// Invalid string - Use txt instead of json or xml
 		String explainNodetxt = rowMgr.explain(output, new StringHandle()).get();
 		System.out.println(explainNodetxt);
 		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"plan\""));
-		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"orderBy\", \"sortNeeded\":true, \"numSorted\":0"));
-		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"columns\":[{\"node\":\"orderSpec\", \"descending\":true, \"column\":\"DetailName\""));
+		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"orderBy\", \"order\":\"order(2 DESC)\", \"numSorted\":0"));
 		
 		// Invalid Plan		
 		ModifyPlan plan3 = p.fromView("opticFunctionalTest", "master")
@@ -1828,8 +1828,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 			explainNodeInv = rowMgr.explain(outputInv, new JacksonHandle()).get();
 			assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("node").asText(), "plan");
-			assertTrue("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("sortNeeded").asBoolean());
-			assertEquals("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("expr").path("node").asText(), "intersect");
+			assertTrue("Explain of Invalid plan incorrect", explainNodeInv.path("expr").path("dplan").asBoolean());
 		}
 		catch(Exception ex) {
 			System.out.println(ex.getMessage());
