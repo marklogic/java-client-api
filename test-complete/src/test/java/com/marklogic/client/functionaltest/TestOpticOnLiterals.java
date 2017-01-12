@@ -1140,8 +1140,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		}
 		// Should have SQL-NOCOLUMN exceptions.
 		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
-		assertTrue("Exceptions not found", str.toString().contains("Column not found: invalid_view.colorId"));
-		
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: invalid_view.colorId"));		
 	}
 	
 	/* 
@@ -1217,8 +1216,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	
 	/* 
 	 * Test Map function
+	 * TODO Refer to Eric's test and make changes.
 	*/
-	@Test
+	@Ignore
 	public void testMapFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
 		System.out.println("In testMapFunction method");
@@ -1287,29 +1287,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		// plans from literals
 		ModifyPlan plan1 = p.fromLiterals(literalsM1);
 		ModifyPlan plan2 = p.fromLiterals(literalsM2);
-		/*StringBuilder str = new StringBuilder();
-		str.append("function colorIdMapper(result) {");
-		str.append("switch(result.myColorId) {");
-		str.append("case 1:");
-		str.append("result.myColorId = 'RED';");
-		str.append("     break;");
-		str.append("case 2:");
-		str.append("result.myColorId = 'BLUE';");
-		str.append("break;");
-		str.append("case 3:");
-		str.append("result.myColorId = 'YELLOW';");
-		str.append("break;");
-		str.append("case 4:");
-		str.append("result.myColorId = 'BLACK';");
-		str.append("break;");
-		str.append("default:");
-		str.append("result.myColorId = 'NO COLOR';");
-		str.append("}");
-		str.append("return result;");
-		str.append("};");*/
-		
-		
-		ModifyPlan output = plan1.joinInner( plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
+				
+		ModifyPlan output = plan1.joinInner(plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
 		                         .select(
 		                                 "rowId", 
 		                                "desc", 
@@ -1318,22 +1297,25 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		                               )
 		        .orderBy(p.asc("rowId"));
 		
-		PlanFunction pf = output.installedFunction("/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs", "colorIdMapper");		
+		PlanFunction pf = output.installedFunction("/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs", "colorIdMapper");	
+		
 		output.map(pf);
 
-JacksonHandle jacksonHandle = new JacksonHandle();
-jacksonHandle.setMimetype("application/json");
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
 
-rowMgr.resultDoc(output, jacksonHandle);
-JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 
-// Should have 1 node returned.
-assertEquals("One node not returned from testIntersect method", 4, jsonBindingsNodes.size());
-		
-		
-		
+		// Should have 4 node returned.
+		assertEquals("Four nodes not returned from testMapFunction method", 4, jsonBindingsNodes.size());
+		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodes.path(0).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
+		assertEquals("Row 1 rowId value incorrect", "2", jsonBindingsNodes.path(1).path("rowId").path("value").asText());
+		assertEquals("Row 1 descAgg value incorrect", "blue", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
 	}
 	
+		
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception
 	{
