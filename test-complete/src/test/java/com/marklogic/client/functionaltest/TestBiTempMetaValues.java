@@ -43,6 +43,7 @@ import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -54,6 +55,7 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
 
 public class TestBiTempMetaValues extends BasicJavaClientREST {
 
@@ -123,15 +125,15 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 		// Temporal collection needs to be delete before temporal axis associated
 		// with it can be deleted
-		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalLsqtCollectionName);
-		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalCollectionName);
-		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				bulktemporalCollectionName);
-		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
+		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
 				axisValidName);
-		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
+		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
 				axisSystemName);
 	}
 
@@ -705,24 +707,25 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
 		        temporalLsqtCollectionName, true);
 		
-		Calendar insertTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:01");
-		Calendar deleteTime = DatatypeConverter.parseDateTime("2005-01-01T00:00:11");
+		Calendar insertTime = DatatypeConverter.parseDateTime("2001-01-01T00:00:11");
+		Calendar deleteTime = DatatypeConverter.parseDateTime("2011-01-01T00:00:31");
+		Calendar updateTime1 = DatatypeConverter.parseDateTime("2007-01-01T00:00:21");
+		Calendar updateTime2 = DatatypeConverter.parseDateTime("2009-01-01T00:00:21");
+		
 		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "admin", "x", Authentication.DIGEST);
 
 		String docId = "javaSingleJSONDoc.json";
-		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00", 
-				"2011-12-31T23:59:59", 
+		JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle("2001-01-01T00:00:00Z", 
+				"2011-12-30T23:59:59Z", 
 				"999 Skyway Park - JSON",
 				docId
 				);
 
-		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
-		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
-		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
-		
-	    //TODO: UPdate this test to include temporalDoucmentURi and delete one version of it and search and assert for that deleted version
-		//Protect document for 30 sec from delete and update. Use Duration.
-		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NODELETE, DatatypeFactory.newInstance().newDuration("PT30S"));
+		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();		
+		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);
+			
+		//Protect document for 40 sec from delete and update. Use Duration.
+		docMgr.protect(docId, temporalLsqtCollectionName, ProtectionLevel.NODELETE, DatatypeFactory.newInstance().newDuration("PT40S"));
 		
 		StringBuilder str = new StringBuilder();
 		try {
@@ -732,17 +735,73 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 			System.out.println("Exception when delete within 30 sec is " + str.toString());
 		}
-		assertTrue("Doc should not be deleted",  str.toString().contains("The document javaSingleJSONDoc.json is protected noDelete"));
+		assertTrue("Doc should not be deleted",  str.toString().contains("The document javaSingleJSONDoc.json is protected noDelete"));		
+		str = null;		
+		// Added the word "Updated" to doc from 2007-01-01T00:00:00 to 2008-12-30T23:59:59
+		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
+		        "2007-01-01T00:00:00Z", "2008-12-30T23:59:59Z",
+		        "1999 Skyway Park - Updated - JSON", docId);
 		
+		// Can the document be updated with 40 sec with ProtectionLevel.NODELETE and 40 secs?	
+		docMgr.write(docId, null, handleUpd, null, null, temporalLsqtCollectionName, updateTime1);
+		
+		// Remove the word "Updated" from 2008-12-31T00:00:00 to 2011-12-30T23:59:59
+		JacksonDatabindHandle<ObjectNode> handleUpd2 = getJSONDocumentHandle(
+		        "2008-12-31T00:00:00Z", "2011-12-30T23:59:59Z",
+		        "1999 Skyway Park - JSON", docId);
+		docMgr.write(docId, null, handleUpd2, null, null, temporalLsqtCollectionName, updateTime2);
+		
+		// Search for the "Updated" term in doc and try to delete that document within 40 sec (should throw exception) and again delete that version after 40 secs.
+		QueryManager queryMgr = writerClient.newQueryManager();
+	    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+
+	    StructuredQueryDefinition termQuery = sqb.term("Updated");
+
+	    StructuredQueryBuilder.Axis validAxis = sqb.axis(axisValidName);
+	    Calendar start1 = DatatypeConverter.parseDateTime("2007-02-01T00:00:00Z");
+	    Calendar end1 = DatatypeConverter.parseDateTime("2007-12-31T23:59:59Z");
+	    StructuredQueryBuilder.Period period1 = sqb.period(start1, end1);
+	    
+	    StructuredQueryDefinition periodQuery = sqb.and(termQuery, 
+	    		                                        sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINS, period1));
+	    long startOffset = 1;
+	    DocumentPage termQueryResults = docMgr.search(periodQuery, startOffset);
+	    
+	    long count = 0;
+	    String toDeleteURI = null; 
+	    while (termQueryResults.hasNext()) {
+	      ++count;
+	      DocumentRecord record = termQueryResults.next();
+	      System.out.println("URI = " + record.getUri());
+	      JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
+	              ObjectNode.class);
+	          record.getContent(recordHandle);
+	          System.out.println("Content = " + recordHandle.toString());
+	          if (recordHandle.toString().contains("Updated")) {
+	        	  toDeleteURI =  record.getUri();	        	 
+	          }	          
+	    }
+	    str = new StringBuilder();
+	    // Delete this (searched) doc within 40 sec.
+		try {
+			docMgr.delete(toDeleteURI, null, temporalLsqtCollectionName,
+					deleteTime);
+		}
+		catch(Exception ex) {
+			str.append(ex.getMessage());
+			System.out.println("Exception when delete within 40 sec is " + str.toString());
+		}
+		String docDelMessage = "The document " + toDeleteURI + " is protected noDelete";
+		assertTrue("Doc should not be deleted",  str.toString().contains(docDelMessage));
 		// Sleep for 40 secs and try to delete the same docId.
 		Thread.sleep(40000);
 		docMgr.delete(docId, null, temporalLsqtCollectionName, deleteTime);
 		Thread.sleep(5000);
-		
+		// Make sure that bi temporal doc is not deleted.
 		JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
 		DocumentPage readResults = jsonDocMgr.read(docId);
 	    System.out.println("Number of results = " + readResults.size());
-	    //  assertEquals("Wrong number of results", 0, readResults.size());		
+	    assertEquals("Wrong number of results", 1, readResults.size());		
 	}
 	
 	@Test
@@ -828,6 +887,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 		Transaction t1 = writerClient.openTransaction();
+		Transaction t2 = null;
 		docMgr.write("javaSingleJSONDocV1.json", docId, null, handle, null, t1, temporalLsqtCollectionName, insertTime);		
 	    
 		//Protect document for 30 sec from delete and update. Use Duration.
@@ -860,9 +920,11 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 			StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
+			t1.commit();
 
 			long start = 1;
-			DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
+			t2 = writerClient.openTransaction();
+			DocumentPage termQueryResults = docMgr.search(termQuery, start, t2);
 			System.out
 			.println("Number of results = " + termQueryResults.getTotalSize());
 			assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize()); 
@@ -871,7 +933,8 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 			System.out.println("Exception when update within 30 sec is " + e.getMessage());
 		}
 		finally {
-			t1.rollback();
+			if (t2 != null)
+			t2.rollback();
 		}
 	}
 	
@@ -910,10 +973,11 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle(
 		        "2003-01-01T00:00:00", "2008-12-31T23:59:59",
 		        "1999 Skyway Park - Updated - JSON", docId);
+			
 		StringBuilder str = new StringBuilder();
 		try {
 			// Use t1 to write
-			docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+			docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);			
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
@@ -952,6 +1016,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	 * Write doc in T1 with transaction timeout 2 minutes
 	 * Protect in T2 with transaction timeout of 30 secs and Protect duration of 30 sec.
 	 * Update doc in T1 within 30 sec duration.
+	 * Timeout t2 transaction.
+	 * Should be available update in t1 transaction now.
+	 * Commit and read.
 	 */
 	public void testProtectDiffTransactionsTimeouts() throws Exception {
 		Transaction t1 = null;
@@ -990,6 +1057,8 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 				str.append(ex.getMessage());
 				System.out.println("Exception when update within 30 sec is " + str.toString());
 			}
+			// Time out t2 transaction.
+			Thread.sleep(40000);
 		}
 
 		catch(Exception ex) {
@@ -998,13 +1067,14 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		finally {
 			if (t1 != null) {
 				// Try to update when T2 has timed out
-				docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);
+				docMgr.write(docId, null, handleUpd, null, t1, temporalLsqtCollectionName, updateTime);	
 				Thread.sleep(5000);
 
 				JSONDocumentManager jsonDocMgr = writerClient.newJSONDocumentManager();
 				DocumentPage readResults = jsonDocMgr.read(t1, docId);
 				System.out.println("Number of results = " + readResults.size());
 				assertEquals("Wrong number of results", 1, readResults.size());
+				t1.commit();
 
 				QueryManager queryMgr = writerClient.newQueryManager();
 
@@ -1012,12 +1082,11 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 				StructuredQueryDefinition termQuery = sqb.collection(temporalLsqtCollectionName);
 
 				long start = 1;
-				DocumentPage termQueryResults = docMgr.search(termQuery, start, t1);
+				DocumentPage termQueryResults = docMgr.search(termQuery, start);
 				System.out
 				.println("Number of results = " + termQueryResults.getTotalSize());
 				assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize()); 
-			}
-			t1.rollback();
+			}			
 		}
 	}
 	@Test
