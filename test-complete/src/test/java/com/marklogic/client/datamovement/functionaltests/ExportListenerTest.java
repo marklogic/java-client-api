@@ -32,6 +32,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -174,7 +175,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 	 * 
 	 *  Git Issue: 
 	 */
-	@Test
+	@Ignore
 	public void readPointInTimeQuery() throws Exception{
 		Map<String, String> props = new HashMap<String, String>();
  		props.put("merge-timestamp","-6000000000");
