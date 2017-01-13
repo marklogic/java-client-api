@@ -280,6 +280,8 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	{
 		String testMultipleDB = "QBMultipleForestDB";
 		String[] testMultipleForest = {"QBMultipleForestDB-1", "QBMultipleForestDB-2", "QBMultipleForestDB-3"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
 		
 		try {
 			System.out.println("Running testAndWordQueryWithMultipleForests");
@@ -291,19 +293,22 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			associateRESTServerWithDB(restServerName, testMultipleDB);
 
 			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
 
 			String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 			String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
 
-			setQueryOption(clientQHB, queryOptionName);
+			setQueryOption(clientTmp, queryOptionName);
 
-			QueryManager queryMgr = clientQHB.newQueryManager();
+			QueryManager queryMgr = clientTmp.newQueryManager();
 
 			StringQueryDefinition querydef = queryMgr.newStringDefinition();
 			querydef.setCriteria("0012");
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = dmManager.newWriteBatcher();
+			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -332,7 +337,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
 
 			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
@@ -346,7 +351,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("Test has Exceptions");          	
 			} );
 
-			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
 			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);		
 
 			if (queryBatcher1.isStopped()) {
@@ -374,6 +379,8 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			
 			deleteForest(testMultipleForest[0]);
 			deleteForest(testMultipleForest[1]);
+			Thread.sleep(10000);
+			clientTmp.release();
 		}
 	}
 	
@@ -1149,6 +1156,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			deleteForest(testMultipleForest[0]);
 			deleteForest(testMultipleForest[1]);
 			deleteForest(testMultipleForest[2]);
+			Thread.sleep(10000);
 		}
 	}
 
@@ -1268,6 +1276,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			detachForest(testMultipleDB, testMultipleForest[0]);
 			deleteDB(testMultipleDB);
 			deleteForest(testMultipleForest[0]);
+			Thread.sleep(10000);
 		}
 	}
 
@@ -1386,6 +1395,8 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	{
 		String testMultipleDB = "QHBJobDetaitDB";
 		String[] testMultipleForest = {"QHBJobDetaitDB-1"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
 		
 		try {
 			System.out.println("Running testQueryBatcherJobDetails");
@@ -1396,19 +1407,22 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			associateRESTServerWithDB(restServerName, testMultipleDB);
 
 			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
 
 			String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 			String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
 
-			setQueryOption(clientQHB, queryOptionName);
+			setQueryOption(clientTmp, queryOptionName);
 
-			QueryManager queryMgr = clientQHB.newQueryManager();
+			QueryManager queryMgr = clientTmp.newQueryManager();
 
 			StringQueryDefinition querydef = queryMgr.newStringDefinition();
 			querydef.setCriteria("0012");
 
 			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = dmManager.newWriteBatcher();
+			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -1438,7 +1452,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			StringBuilder batchFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
 
 			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
@@ -1471,7 +1485,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("Test has Exceptions");          	
 			} );
 
-			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
 			String jobId = jobTicket.getJobId();
 			String jobName = jobTicket.getJobType().name();
 						
@@ -1519,6 +1533,8 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			deleteDB(testMultipleDB);
 			
 			deleteForest(testMultipleForest[0]);
+			Thread.sleep(10000);
+			clientTmp.release();
 		}
 	}
 	
@@ -1534,32 +1550,38 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	{
 		String testMultipleDB = "QBtestDifferentQueryTypesDB";
 		String[] testMultipleForest = {"QBtestDifferentQueryTypesDB-1"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
 		
 		try {
 			System.out.println("Running testDifferentQueryTypes");
 
 			//Setup a separate database/
-			createDB(testMultipleDB);
-			createForest(testMultipleForest[0], testMultipleDB);
-			
+			createDB(testMultipleDB);			
+			createForest(testMultipleForest[0], testMultipleDB);			
 			associateRESTServerWithDB(restServerName, testMultipleDB);
-
+			
+			// Setup constraints on DB and wait for indexes to setup.
 			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
 
 			String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 			ServerConfigurationManager srvMgr = client.newServerConfigManager();
 			srvMgr.readConfiguration();
 			srvMgr.setQueryOptionValidation(true);
 			srvMgr.writeConfiguration();
+			
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
 
-			QueryManager queryMgr = clientQHB.newQueryManager();
+			QueryManager queryMgr = clientTmp.newQueryManager();
 
 			// create query def
 			StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 			StructuredQueryDefinition queryWorddef = qb.word(qb.element("id"), "0026");
 
-			//Use WriteBatcher to write the same files.				
-			WriteBatcher batcher = dmManager.newWriteBatcher();
+			//Use WriteBatcher to write the some files.				
+			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -1581,12 +1603,13 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 			// Flush
 			batcher.flushAndWait();
+			//batcher.awaitCompletion();
 
 			StringBuilder batchWordResults = new StringBuilder();
 			StringBuilder batchWordFailResults = new StringBuilder();
 
 			// Run a QueryBatcher on the new URIs.
-			QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(queryWorddef);
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(queryWorddef);
 
 			queryBatcher1.onUrisReady(batch-> {
 				for (String str : batch.getItems()) {
@@ -1599,7 +1622,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchWordFailResults.append("Test has Exceptions");          	
 			} );
-			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
 			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher1.isStopped()) {
 				// do nothing.
@@ -1620,7 +1643,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a range query.
 			
 			StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:integer", Operator.GE, 4);
-			QueryBatcher queryBatcher2 = dmManager.newQueryBatcher(queryRangedef);
+			QueryBatcher queryBatcher2 = dmManagerTmp.newQueryBatcher(queryRangedef);
 			//StringBuilder batchRangeResults = new StringBuilder();
 			List<String> batchRangeResults = new ArrayList<String>();
 			StringBuilder batchRangeFailResults = new StringBuilder();
@@ -1637,7 +1660,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchRangeFailResults.append("Test has Exceptions");          	
 			} );
-			jobTicket = dmManager.startJob(queryBatcher2);
+			jobTicket = dmManagerTmp.startJob(queryBatcher2);
 			bJobFinished = queryBatcher2.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher2.isStopped()) {
 				// do nothing.
@@ -1660,7 +1683,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			// Run a ValueQueryOnAttribute query.
 			
 			StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
-			QueryBatcher queryBatcher3 = dmManager.newQueryBatcher(valuequeyDef);
+			QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
 			//StringBuilder batchRangeResults = new StringBuilder();
 			List<String> batchValueResults = new ArrayList<String>();
 			StringBuilder batchvalueFailResults = new StringBuilder();
@@ -1675,7 +1698,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				throwable.printStackTrace();
 				batchvalueFailResults.append("Test has Exceptions");          	
 			} );
-			jobTicket = dmManager.startJob(queryBatcher3);
+			jobTicket = dmManagerTmp.startJob(queryBatcher3);
 			bJobFinished = queryBatcher3.awaitTermination(3, TimeUnit.MINUTES);
 			while(!queryBatcher3.isStopped()) {
 				// do nothing.
@@ -1702,6 +1725,8 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			detachForest(testMultipleDB, testMultipleForest[0]);
 			deleteDB(testMultipleDB);
 			deleteForest(testMultipleForest[0]);
+			clientTmp.release();
+			Thread.sleep(10000);
 		}
 	}
 }
