@@ -53,6 +53,12 @@ import java.util.Set;
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
+ *
+ * As with all the provided listeners, this listener will not meet the needs of
+ * all applications but the [source code][] for it should serve as helpful sample
+ * code so you can write your own custom listeners.
+ *
+ * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportListener.java
  */
 public class ExportListener implements QueryBatchListener {
   private ServerTransform transform;
