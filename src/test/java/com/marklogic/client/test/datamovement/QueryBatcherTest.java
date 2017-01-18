@@ -41,6 +41,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -53,6 +54,8 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
@@ -387,5 +390,75 @@ public class QueryBatcherTest {
     moveMgr.stopJob(queryBatcher);
     assertEquals(expectedSuccesses, successfulBatchCount.get());
     assertEquals(expectedFailures, failureBatchCount.get());
+  }
+
+  @Test
+  public void issue623() {
+    String issue623Collection = qhbTestCollection + "_issue623";
+    WriteBatcher wb = moveMgr.newWriteBatcher();
+
+    String uniqueDir = issue623Collection + "/";
+    ArrayList<String> uris = new ArrayList<>();
+    uris.add(uniqueDir + "test&with&ampersand.txt");
+    uris.add(uniqueDir + "test with space.txt");
+    uris.add(uniqueDir + "test\"with\"quote.txt");
+    uris.add(uniqueDir + "test+with+plus.txt");
+    uris.add(uniqueDir + "test%with%percent.txt");
+    // TODO: un-comment next line when bugtrack 44123 is fixed
+    //uris.add(uniqueDir + "test\\with\\backslash.txt");
+    uris.add(uniqueDir + "test/with/forwardslash.txt");
+    uris.add(uniqueDir + "test.with.dot.txt");
+    uris.add(uniqueDir + "test with!every@thing#.txt");
+    uris.add(uniqueDir + "test with#else$^.txt");
+    uris.add(uniqueDir + "test with*()-_.txt");
+    uris.add(uniqueDir + "test with={}[]|.txt");
+    // TODO: un-comment next line when bugtrack 44132 is fixed
+    //uris.add(uniqueDir + "test with;.txt");
+    uris.add(uniqueDir + "test with:.txt");
+    uris.add(uniqueDir + "test with'.txt");
+    uris.add(uniqueDir + "test with<>.txt");
+    uris.add(uniqueDir + "test with,?`~.txt");
+    // TODO: un-comment next line when bugtrack 44137 and github 634 are fixed
+    //uris.add(uniqueDir + "test with accents:áéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸ.txt");
+
+    DocumentMetadataHandle meta = new DocumentMetadataHandle()
+      .withCollections(collection, issue623Collection);
+    moveMgr.startJob(wb);
+    for ( String uri : uris ) {
+      wb.addAs(uri, meta, uri);
+    }
+    wb.flushAndWait();
+    moveMgr.stopJob(wb);
+
+    QueryDefinition collectionQuery = new StructuredQueryBuilder().collection(issue623Collection);
+    QueryManager queryMgr = client.newQueryManager();
+    assertEquals(uris.size(), queryMgr.search(collectionQuery, new SearchHandle()).getTotalResults());
+
+    AtomicInteger deletedCount = new AtomicInteger(0);
+    StringBuffer errors = new StringBuffer();
+    QueryBatcher qb = moveMgr.newQueryBatcher(uris.iterator())
+      .withThreadCount(2)
+      .withBatchSize(99)
+      .withConsistentSnapshot()
+      .onUrisReady(new ExportListener()
+        .onDocumentReady(doc -> {
+          String contents = doc.getContent(new StringHandle()).get();
+          if (doc.getUri().equals(contents)) {
+            // all good
+          } else {
+            errors.append("uri=[" + doc.getUri() + "] doesn't match contents=[" + contents + "]");
+          }
+        })
+      )
+      .onUrisReady(new DeleteListener())
+      .onUrisReady(batch -> deletedCount.addAndGet(batch.getItems().length))
+      .onQueryFailure(exception -> exception.printStackTrace());
+    moveMgr.startJob(qb);
+    qb.awaitCompletion();
+    moveMgr.stopJob(qb);
+
+    assertTrue(errors.toString(), "".equals(errors.toString()));
+    assertEquals(uris.size(), deletedCount.get());
+    assertEquals(0, queryMgr.search(collectionQuery, new SearchHandle()).getTotalResults());
   }
 }

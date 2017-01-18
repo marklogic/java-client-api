@@ -17,8 +17,11 @@ package com.marklogic.client.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
 
@@ -26,6 +29,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
@@ -38,6 +42,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -658,6 +663,84 @@ public class BulkReadWriteTest {
 
             client2.release();
         }
+    }
+
+    @Test
+    public void test_issue_623() {
+        String uniqueDir = "BulkReadWriteTest_" + new Random().nextInt(10000) + "/";
+        List<String> uris = new ArrayList<>();
+        uris.add(uniqueDir + "test&with&ampersand.txt");
+        uris.add(uniqueDir + "test with space.txt");
+        uris.add(uniqueDir + "test\"with\"quote.txt");
+        uris.add(uniqueDir + "test+with+plus.txt");
+        uris.add(uniqueDir + "test%with%percent.txt");
+        // TODO: un-comment next line when bugtrack 44123 is fixed
+        //uris.add(uniqueDir + "test\\with\\backslash.txt");
+        uris.add(uniqueDir + "test/with/forwardslash.txt");
+        uris.add(uniqueDir + "test.with.dot.txt");
+        uris.add(uniqueDir + "test with!every@thing#.txt");
+        uris.add(uniqueDir + "test with#else$^.txt");
+        uris.add(uniqueDir + "test with*()-_.txt");
+        uris.add(uniqueDir + "test with={}[]|.txt");
+        // TODO: un-comment next line when bugtrack 44132 is fixed
+        //uris.add(uniqueDir + "test with;.txt");
+        uris.add(uniqueDir + "test with:.txt");
+        uris.add(uniqueDir + "test with'.txt");
+        uris.add(uniqueDir + "test with<>.txt");
+        uris.add(uniqueDir + "test with,?`~.txt");
+        // TODO: un-comment next line when bugtrack 44137 and github 634 are fixed
+        //uris.add(uniqueDir + "test with accents:áéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸ.txt");
+
+        test_issue_623_body( Common.client.newTextDocumentManager(), uris );
+        test_issue_623_body( Common.client.newBinaryDocumentManager(), uris );
+        test_issue_623_body( Common.client.newXMLDocumentManager(), uris );
+        test_issue_623_body( Common.client.newJSONDocumentManager(), uris );
+    }
+
+    private void test_issue_623_body(DocumentManager docMgr, List<String> uris) {
+      // test with 0 args
+      boolean writeSuccess = false;
+      try { docMgr.write(null); } catch (IllegalArgumentException e) { writeSuccess = true; }
+      assertTrue(writeSuccess);
+
+      boolean readSuccess = false;
+      try { docMgr.read(new String[0]); } catch (IllegalArgumentException e) { readSuccess = true; }
+      assertTrue(readSuccess);
+
+      boolean deleteSuccess = false;
+      try { docMgr.delete(new String[0]); } catch (IllegalArgumentException e) { deleteSuccess = true; }
+      assertTrue(deleteSuccess);
+
+      for ( String uri : uris ) {
+        // test with 1 arg
+        // TODO: un-comment next four lines when bugtrack 44117 is fixed
+        //docMgr.writeAs(uri, uri);
+        //assertEquals(uri, docMgr.read(uri).nextContent(new StringHandle()).get());
+        //docMgr.delete(uri);
+        //verifyDeleted(docMgr, uri);
+
+        // test with writeSet
+        DocumentWriteSet writeSet = docMgr.newWriteSet();
+        writeSet.addAs(uri, uri);
+        docMgr.write(writeSet);
+        DocumentPage docs = docMgr.read(new String[] {uri});
+        assertEquals("You should have one and only one doc with uri=[" + uri + "]", 1, docs.size());
+        DocumentRecord doc = docs.next();
+        assertEquals(uri, doc.getUri());
+        assertEquals(uri, doc.getContent(new StringHandle()).get());
+        docMgr.delete(new String[] {uri});
+        verifyDeleted(docMgr, uri);
+      }
+    }
+
+    private void verifyDeleted(DocumentManager docMgr, String uri) {
+      try {
+        docMgr.read(uri, new StringHandle());
+      } catch(ResourceNotFoundException e) {
+        // success!
+        return;
+      }
+      fail("Read of document with uri=[" + uri + "] should have thrown ResourceNotFoundException");
     }
 
     private static void addCountry(String line, Map<String, Country> countries) {

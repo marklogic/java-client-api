@@ -614,6 +614,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   @Override
   public void write(DocumentWriteSet writeSet, ServerTransform transform,
       Transaction transaction, String temporalCollection) {
+    if ( writeSet == null ) throw new IllegalArgumentException("writeSet must not be null");
     Format defaultFormat = contentFormat;
     services.postBulkDocuments(requestLogger, writeSet,
         (transform != null) ? transform : getWriteTransform(),
@@ -948,6 +949,8 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       throws ResourceNotFoundException, ForbiddenUserException,
       FailedRequestException
   {
+    if ( uris == null ) throw new IllegalArgumentException("uris must not be null");
+    if ( uris.length == 0 ) throw new IllegalArgumentException("uris array must not be zero-length");
     services.delete(requestLogger, null, uris);
   }
 

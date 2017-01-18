@@ -2310,7 +2310,9 @@ public class JerseyServices implements RESTServices {
 		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
 	{
 		RequestParameters params = new RequestParameters();
-		addEncodedParam(((RequestParametersImplementation) params).getMapImpl(), "uri", uris);
+		for ( String uri : uris ) {
+			params.add("uri", uri);
+		}
 		deleteResource(logger, "documents", transaction, params, null);
 	}
 
