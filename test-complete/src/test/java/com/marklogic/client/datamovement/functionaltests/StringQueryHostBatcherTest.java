@@ -246,7 +246,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			});
 
 			JobTicket jobTicket = dmManager.startJob(queryBatcher1);
-			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 
 			if (queryBatcher1.isStopped()) {
 
@@ -352,7 +352,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			} );
 
 			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
-			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);		
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);		
 
 			if (queryBatcher1.isStopped()) {
 
@@ -568,7 +568,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 					.append(forest.isUpdateable());
 		} );
 		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
+		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 		
 		if (queryBatcher1.isStopped()) {
 			
@@ -639,7 +639,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchFailResults.append("Test has Exceptions").append('|');
 		} );
 		JobTicket jobTicket = dmManager.startJob(queryBatcher1);
-		queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
+		queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 							
 		if (queryBatcher1.isStopped()) {
 			
@@ -694,7 +694,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchNoFailResults.append("|");
 		});
 		JobTicket jobTicketNoRes = dmManager.startJob(queryBatcherNoResult);
-		queryBatcherNoResult.awaitTermination(30, TimeUnit.SECONDS);
+		queryBatcherNoResult.awaitCompletion(30, TimeUnit.SECONDS);
 		
 		if (queryBatcherNoResult.isStopped()) {
 			assertTrue("Query returned no results when there is no data" , batchNoResults.toString().isEmpty());			
@@ -763,7 +763,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		});
 		JobTicket jobTicket = dmManager.startJob(queryBatcherbatchSize);
 		// Make sure to modify TimeUnit.TIMEUNIT.Method(duration) below before the assert
-		queryBatcherbatchSize.awaitTermination(3, TimeUnit.MINUTES);
+		queryBatcherbatchSize.awaitCompletion(3, TimeUnit.MINUTES);
 			
 		Calendar  calAft;
 		long after = 0L;
@@ -804,7 +804,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			batchFailResults.append(throwable.getJobBatchNumber());
 		});
 		JobTicket jobTicketTimeout = dmManager.startJob(queryBatcherSmallTimeout);
-		queryBatcherSmallTimeout.awaitTermination(5, TimeUnit.MILLISECONDS);
+		queryBatcherSmallTimeout.awaitCompletion(5, TimeUnit.MILLISECONDS);
 		if (queryBatcherSmallTimeout.isStopped()) {					
 	        System.out.println(batchResults.toString());	        
 	        assertNotEquals("Number of batches should not have been 1", batchResults.toString().split("\\|").length, 5);
@@ -865,7 +865,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		
 		JobTicket jobTicket = dmManager.startJob(queryBatcherAwait);
 		// Make sure to modify TimeUnit.MILLISECONDS.Method(duration) below before the assert
-		queryBatcherAwait.awaitTermination(30, TimeUnit.SECONDS);
+		queryBatcherAwait.awaitCompletion(30, TimeUnit.SECONDS);
 		
 		queryBatcherAwait.onUrisReady(batch-> {
 			for (String str : batch.getItems()) {
@@ -1066,7 +1066,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			});
 
 			JobTicket jobTicket = dmManager.startJob(queryBatcherAddForest);
-			queryBatcherAddForest.awaitTermination(3, TimeUnit.MINUTES);
+			queryBatcherAddForest.awaitCompletion(3, TimeUnit.MINUTES);
 
 			// Now add a Forests to the database.
 			createForest(testMultipleForest[1], testMultipleDB);
@@ -1111,7 +1111,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			});
 
 			JobTicket jobTicketRem = dmManager.startJob(queryBatcherRemoveForest);
-			queryBatcherRemoveForest.awaitTermination(3, TimeUnit.MINUTES);
+			queryBatcherRemoveForest.awaitCompletion(3, TimeUnit.MINUTES);
 
 			// Now remove a Forest from the database.
 			detachForest(testMultipleDB, testMultipleForest[2]);
@@ -1248,9 +1248,9 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchFailResults.append("|");
 				batchFailResults.append(throwable.getMessage());
 			});
-			// Have a small awaitTerminatio timeout for the batcher.
+			// Have a small awaitCompletion timeout for the batcher.
 			JobTicket jobTicket = dmManager.startJob(queryBatcherAddForest);
-			queryBatcherAddForest.awaitTermination(30, TimeUnit.SECONDS);
+			queryBatcherAddForest.awaitCompletion(30, TimeUnit.SECONDS);
 	
 			if (queryBatcherAddForest.isStopped()) {					
 			
@@ -1489,7 +1489,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			String jobId = jobTicket.getJobId();
 			String jobName = jobTicket.getJobType().name();
 						
-			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);		
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);		
 
 			if (queryBatcher1.isStopped()) {
 
@@ -1623,7 +1623,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchWordFailResults.append("Test has Exceptions");          	
 			} );
 			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
-			boolean bJobFinished = queryBatcher1.awaitTermination(3, TimeUnit.MINUTES);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 			while(!queryBatcher1.isStopped()) {
 				// do nothing.
 			}	
@@ -1661,7 +1661,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchRangeFailResults.append("Test has Exceptions");          	
 			} );
 			jobTicket = dmManagerTmp.startJob(queryBatcher2);
-			bJobFinished = queryBatcher2.awaitTermination(3, TimeUnit.MINUTES);
+			bJobFinished = queryBatcher2.awaitCompletion(3, TimeUnit.MINUTES);
 			while(!queryBatcher2.isStopped()) {
 				// do nothing.
 			}	
@@ -1699,7 +1699,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 				batchvalueFailResults.append("Test has Exceptions");          	
 			} );
 			jobTicket = dmManagerTmp.startJob(queryBatcher3);
-			bJobFinished = queryBatcher3.awaitTermination(3, TimeUnit.MINUTES);
+			bJobFinished = queryBatcher3.awaitCompletion(3, TimeUnit.MINUTES);
 			while(!queryBatcher3.isStopped()) {
 				// do nothing.
 			}	

@@ -302,7 +302,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		String uris[] = new String[2000];
@@ -355,7 +355,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(urisList.iterator()).withBatchSize(2)
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		assertEquals("success count", 1,success.intValue()); 
@@ -385,7 +385,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		String uris[] = new String[2000];
@@ -419,7 +419,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				.onUrisReady(batch->{
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 		String uri = new String("/local/quality");
 		DocumentPage page = dbClient.newDocumentManager().read(uri);
@@ -462,7 +462,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					System.out.println("notransformTest: URI "+batch.getItems()[0]);
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		page = dbClient.newDocumentManager().read(uri);
@@ -508,7 +508,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		page = dbClient.newDocumentManager().read(uri);
@@ -578,7 +578,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		page = dbClient.newDocumentManager().read(uri);
@@ -685,7 +685,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		    .withMinHosts(2)
 		);	
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 		assertFalse(isClientNull.get());
@@ -708,7 +708,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 				});
 
 		JobTicket ticket1 = dmManager.startJob( queryBatcher );
-		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket1);
 		assertTrue(urisList.isEmpty());
 	}
@@ -735,7 +735,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					Assert.assertEquals("/local/nomatch",batch.getItems()[0]);
 				});
 		JobTicket ticket = dmManager.startJob( batcher );
-		batcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
 
 

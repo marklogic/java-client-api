@@ -198,7 +198,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(ticket);
 	    
 	    Thread.currentThread().sleep(2000L);
@@ -220,7 +220,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -249,7 +249,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(ticket);
 	    
 	   
@@ -271,7 +271,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -298,7 +298,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(ticket);
 	    
 
@@ -332,7 +332,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -380,7 +380,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		t1.start();
 		JobTicket ticket = dmManager.startJob(queryBatcher);
 		
-		queryBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		t1.join();
 	    dmManager.stopJob(ticket);
 	    
@@ -400,7 +400,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -441,7 +441,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -532,7 +532,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    try{
 	    	 System.out.println("Job starting: urisList Size is "+urisList.size());
 	    	 delTicket = dmManager.startJob(deleteBatcher);
-	    	 deleteBatcher.awaitTermination(Long.MAX_VALUE, TimeUnit.DAYS);
+	    	 deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 	 	     System.out.println("Succes Docs "+successDocs.intValue());
 		     System.out.println("DB size: "+dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	    	 Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
