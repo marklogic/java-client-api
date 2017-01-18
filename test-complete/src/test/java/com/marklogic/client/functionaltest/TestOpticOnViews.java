@@ -1806,9 +1806,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		// Invalid string - Use txt instead of json or xml
 		String explainNodetxt = rowMgr.explain(output, new StringHandle()).get();
 		System.out.println(explainNodetxt);
-		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"plan\""));
-		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"orderBy\", \"order\":\"order(2 DESC)\", \"numSorted\":0"));
-		
+		assertTrue("Explain of plan incorrect", explainNodetxt.contains("\"node\":\"plan\""));		
 		// Invalid Plan		
 		ModifyPlan plan3 = p.fromView("opticFunctionalTest", "master")
 		          .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));

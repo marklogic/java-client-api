@@ -701,7 +701,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		// plans from literals
 		ModifyPlan output = p.fromLiterals(literals3).orderBy(p.asc("id"))
-		                                            .joinInnerDoc("doc", "uri" );
+		                                            .joinDoc(p.col("doc"), p.col("uri"));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		rowMgr.resultDoc(output, jacksonHandle);
@@ -1218,7 +1218,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	 * Test Map function
 	 * TODO Refer to Eric's test and make changes.
 	*/
-	@Ignore
+	@Test
 	public void testMapFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
 		System.out.println("In testMapFunction method");
@@ -1239,7 +1239,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		System.out.println(resextMetadata.getScriptLanguage());
 		resextMetadata.setVersion("1.0");
 		MethodParameters getParams = new MethodParameters(MethodType.GET);
-		getParams.add("rows", "xs:string?");
+		getParams.add("row", "xs:string?");
 		FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
 		InputStreamHandle handle = new InputStreamHandle(myStream);
 		handle.set (myStream);
@@ -1288,18 +1288,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(literalsM1);
 		ModifyPlan plan2 = p.fromLiterals(literalsM2);
 				
-		ModifyPlan output = plan1.joinInner(plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
+		ExportablePlan output = plan1.joinInner(plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
 		                         .select(
-		                                 "rowId", 
-		                                "desc", 
-		                                "colorId", 
-		                                "colorDesc"
+		                                 
+		                                 p.as("description", p.col("desc")), 
+		                                 p.as("myColorId", p.col("colorId"))
+		                                 
 		                               )
-		        .orderBy(p.asc("rowId"));
-		
-		PlanFunction pf = output.installedFunction("/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs", "colorIdMapper");	
-		
-		output.map(pf);
+		        .orderBy(p.asc("rowId"))
+		        .map(p.resolveFunction(p.xs.QName("colorIdMapper"), "/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs"));
 
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1314,8 +1311,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		assertEquals("Row 1 rowId value incorrect", "2", jsonBindingsNodes.path(1).path("rowId").path("value").asText());
 		assertEquals("Row 1 descAgg value incorrect", "blue", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
 	}
-	
-		
+			
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception
 	{

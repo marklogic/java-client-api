@@ -339,7 +339,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		ModifyPlan plan2 = p.fromLiterals(literals1);
 
 		ModifyPlan output = plan1.joinInner(plan2)
-				.joinInnerDoc("doc", "uri")
+				.joinDoc(p.col("doc"), p.col("uri"))
 				.select("city", "uri", "rowId", "doc")
 				.orderBy("rowId", "city")
 				.offsetLimit(0, 5);

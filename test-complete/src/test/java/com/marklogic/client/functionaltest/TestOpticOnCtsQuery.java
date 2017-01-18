@@ -61,6 +61,8 @@ import com.marklogic.client.type.CtsQuerySeqExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanSystemColumn;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.XsStringSeqVal;
 
 /* The tests here are for checks on cts queries.
  */
@@ -254,7 +256,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		// plan1 - fromView
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4", null, null, p.cts.jsonPropertyWordQuery("name", "Detail 100"));
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4", null, null)
+				            .where(p.cts.jsonPropertyWordQuery("name", "Detail 100"));
 		// plan2 - fromView
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest4", "master4");
 		
@@ -445,9 +448,10 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// Create an and query that is equivalent to array of queries
 		
 		CtsQuerySeqExpr andQuery = p.cts.andQuery(p.cts.wordQuery("near"), p.cts.wordQuery("Thames"));
-		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.nearQuery(andQuery, p.xs.doubleVal(3)));
+		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"))
+				             .where(p.cts.nearQuery(andQuery, p.xs.doubleVal(3)));
 		// plan2 - fromLexicons
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 		
 		ModifyPlan output = plan1.joinInner(plan2)
 		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
@@ -469,10 +473,12 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 	}
 	
 	/* Checks for cts queries with options on fromLexicons
-	 * TEST 13	
+	 * TEST 14
+	 * 
+	 * TODO when https://github.com/marklogic/java-client-api/issues/633 is fixed.	
 	 * 
 	*/
-	@Ignore
+	@Test
 	public void testCtsQueriesWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
 		System.out.println("In testCtsQueriesWithOptions method");
@@ -486,23 +492,25 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
 		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
-		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));		
 
 		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
 		index2.put("uri2", p.cts.uriReference());
 		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
 		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
 		
-		// plan1 - fromLexicons
-		// Create an and query that is equivalent to array of queries
-		
-		CtsQuerySeqExpr andQuery = p.cts.andQuery(p.cts.wordQuery("near"), p.cts.wordQuery("Thames"));
-		//cts.jsonPropertyWordQuery('city', '*k', ['wildcarded', 'case-sensitive'])
-		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", 0.0));
+		// plan1 - fromLexicons		
+		ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"));
 		// plan2 - fromLexicons
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 		
-		ModifyPlan output = plan1.joinInner(plan2)
+		XsStringSeqVal propertyName = p.xs.string("city");
+		XsStringSeqVal value = p.xs.string("*k");
+		
+		XsStringSeqVal options = p.xs.strings("wildcarded", "case-sensitive");
+				
+		ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery(propertyName, value, options))
+								 .joinInner(plan2)
 		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 		                         .orderBy(p.asc(p.col("date")));
 
@@ -515,12 +523,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());		
 		assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
-		
-		// Verify Error mesaage with invalid options
-		//ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "*k", "wildarded", "case-snsitive");
-		
-		// Verify Error mesaage with empty options
-		//ModifyPlan plan1 =  p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"), p.cts.jsonPropertyWordQuery("city", "*k", "");
 	}
 	
 	/*
@@ -530,7 +532,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 	 */
 	@Test
 	public void testJsonPropertyRangeQueryFromViews() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
-	{/*
+	{
 		System.out.println("In testJsonPropertyRangeQueryFromViews method");
 
 		// Create a new Plan.
@@ -539,12 +541,13 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		// plan1 - fromView
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4", null, null, p.cts.jsonPropertyRangeQuery("id", ">", p.xs.intVal(300)));
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4");
 				                     
 		// plan2 - fromLiterals
 		ModifyPlan  plan2 = p.fromView("opticFunctionalTest4", "master4");
 		
-		ModifyPlan output = plan1.joinInner(plan2, p.on(
+		ModifyPlan output = plan1.where(p.cts.jsonPropertyRangeQuery("id", ">", p.xs.intVal(300)))
+				                 .joinInner(plan2, p.on(
 				                                         p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
 				                                         p.schemaCol("opticFunctionalTest4", "master4", "id")
 				                                       )
@@ -563,7 +566,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		assertEquals("Row 1 opticFunctionalTest4.master4.name value incorrect", "Master 200", jsonBindingsNodes.path(0).path("opticFunctionalTest4.master4.name").path("value").asText());
 		assertEquals("Row 3 opticFunctionalTest4.detail4.id value incorrect", "600", jsonBindingsNodes.path(2).path("opticFunctionalTest4.detail4.id").path("value").asText());
 		assertEquals("Row 3 opticFunctionalTest4.master4.name value incorrect", "Master 100", jsonBindingsNodes.path(2).path("opticFunctionalTest4.master4.name").path("value").asText());
-	*/}
+	}
 	
 	/*
 	 * Test export and import on more complex queries - TEST 18
@@ -594,12 +597,12 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// export of the plan as String.
 		
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity",
-				                          p.fragmentIdCol("fragId1"), 
-				                          p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery(p.xs.QName("metro"), "true")));
+				                          p.fragmentIdCol("fragId1")); 				                          
 		// plan2 - fromLexicons
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"), null);
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 		
-		ModifyPlan output = plan1.joinInner(plan2)
+		ModifyPlan output = plan1.where(p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery(p.xs.QName("metro"), "true")))
+								 .joinInner(plan2)
 		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 		                         .orderBy(p.asc(p.col("date")));
 		StringHandle strHandle = new StringHandle();
@@ -632,6 +635,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 	 * Test cts queries with options and empty results on fromLexicons - TEST 15 and 16
 	 * plan1 uses fromLexicon
 	 * plan2 use fromLexicons
+	 * TODO when 633 is fixed.
 	 */
 	@Test
 	public void testEmptyAndInvalidResults() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
@@ -733,12 +737,12 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
                                                );
 		CtsQueryExpr orQuery = p.cts.orQuery(andQuery1, andQuery2, andQuery3);
 		
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4", null, null, orQuery);
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4");
 				                     
 		// plan2 - fromLiterals
 		ModifyPlan  plan2 = p.fromView("opticFunctionalTest4", "master4");
 		
-		ModifyPlan output = plan1.joinInner(plan2, p.on(
+		ModifyPlan output = plan1.where(orQuery).joinInner(plan2, p.on(
 				                                         p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
 				                                         p.schemaCol("opticFunctionalTest4", "master4", "id")
 				                                       )
@@ -791,7 +795,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		CtsQueryExpr orQuery = p.cts.orQuery(andQuery1, andQuery2);
 		CtsQueryExpr andQuery10 = p.cts.andQuery(orQuery, andQuery9);
 		
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, null, andQuery10);
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail").where(andQuery10);
         
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");

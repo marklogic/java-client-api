@@ -365,7 +365,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 				                .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 			                    .orderBy(p.asc(p.col("date")))
-			                    .joinInnerDoc("doc", "uri2");
+			                    .joinDoc(p.col("doc"), p.col("uri2"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -513,7 +513,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		//using element reference and viewname
 		ModifyPlan outputNullVname = plan1.joinInner(plan2, p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")))
 			                              .orderBy(p.desc("uri2"))
-			                              .joinInnerDoc("doc", "uri1")
+			                              .joinDoc(p.col("doc"), p.col("uri1"))
 			                              .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//city")), uriCol2, cityNameCol, cityTeamCol)
 			                              .where(p.isDefined(p.col("nodes")));
 		jacksonHandle = new JacksonHandle();
@@ -550,7 +550,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		          p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
 		          p.ne(p.col("popularity"), p.xs.intVal(3))
 		        )
-		        .joinInnerDoc("doc", "uri1")
+		        .joinDoc(p.col("doc"), p.col("uri1"))
 		        .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//latLonPair/lat/number()")), uriCol2, cityNameCol, cityTeamCol)
 		        .where(p.isDefined(p.col("nodes")))
 		        .orderBy(p.desc(p.col("distance")));
@@ -585,7 +585,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ExportablePlan innerJoinInnerDocXPath = plan1.joinInner(plan2)
                                                      .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
                                                      .orderBy(p.asc(p.col("date")))
-                                                     .joinInnerDoc("doc", "uri2")
+                                                     .joinDoc(p.col("doc"), p.col("uri2"))
                                                      .select(
                                                     		 uriCol1, cityCol, popCol, dateCol, distCol, pointCol, 
                                                     		 p.viewCol("myCity", "__docId"), 
@@ -763,9 +763,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanSystemColumn fragIdCol2 = p.fragmentIdCol("fragId2");
 	
 		// plan1
-		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", fragIdCol1, null);
+		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", fragIdCol1);
 		// plan2
-		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", fragIdCol2, null);
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", fragIdCol2);
 		
 		// plan3
 		ModifyPlan plan3 =  plan1.joinInner(plan2)
@@ -1111,7 +1111,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		
 		//invalid uri on join inner doc
-		ModifyPlan outputInvalidURI = plan1.joinInnerDoc("doc", "/foo/bar").orderBy(p.asc("uri"));
+		ModifyPlan outputInvalidURI = plan1.joinDoc(p.col("doc"), p.col("/foo/bar")).orderBy(p.asc("uri"));
 		          
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1130,7 +1130,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		//null uri on join inner doc
 		try {
-			ModifyPlan outputNullURI = plan1.joinInnerDoc("doc", null).orderBy(p.asc("uri"));
+			ModifyPlan outputNullURI = plan1.joinDoc(p.col("doc"), null).orderBy(p.asc("uri"));
 			str = new StringBuilder();
 			rowMgr.resultDoc(outputNullURI, jacksonHandle);
 		}
@@ -1138,11 +1138,11 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have java.lang.IllegalArgumentException exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("cannot take null value"));
+		assertTrue("Exceptions not found", str.toString().contains("cannot joinDoc() without col() or fragmentIdCol() object for source column: null"));
 		
 		//invalid doc on join inner doc
 		try {
-			ModifyPlan outputNullURI = plan1.joinInnerDoc("doc", "{foo: bar}").orderBy(p.asc("uri"));
+			ModifyPlan outputNullURI = plan1.joinDoc(p.col("doc"), p.col("{foo: bar}")).orderBy(p.asc("uri"));
 			str = new StringBuilder();
 			rowMgr.resultDoc(outputNullURI, jacksonHandle);
 		}

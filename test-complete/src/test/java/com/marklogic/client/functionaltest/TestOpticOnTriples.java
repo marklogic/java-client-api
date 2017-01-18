@@ -640,7 +640,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
-		ModifyPlan player_plan = p.fromTriples(patSeq, null, "/optic/player/triple/test", null, p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));    
+		ModifyPlan player_plan = p.fromTriples(patSeq, null, "/optic/player/triple/test", p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));    
 		ModifyPlan team_plan = p.fromTriples(
 				p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
@@ -711,16 +711,16 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				);
 		SemIriSeqVal storeIris =  p.sem.iris("/optic/player/triple/test", "/optic/team/triple/test" );
 		SemStoreExpr storeExpr = p.sem.store("any");
-		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, (String)null, storeExpr,
-				                               p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
+		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, (String)null, (String)null,
+				                               p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED))
+				                  .where(storeExpr);
 				
 		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
                                                      p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				                                    );	
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,
                                              (String)null,
-                                             null,
-                                             null,
+                                             null,                                             
                                              p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
                                              );
       
@@ -753,7 +753,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
 		
 		// Verify overloaded fromTriples() with graphIRI
-		ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String)null, "/optic/player/triple/test", null, p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
+		ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String)null, "/optic/player/triple/test", p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
 		ModifyPlan output1 = player_plan.joinInner(team_plan)
                 .where(p.eq(teamNameCol, p.xs.string("Giants")))
                 .orderBy(p.asc(playerAgeCol))
