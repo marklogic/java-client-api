@@ -42,7 +42,6 @@ public interface WriteEvent {
    * @return the metadata
    */
   DocumentMetadataWriteHandle getMetadata();
-  long getBytesMoved();
 
   /**
    * Within the context of the job, the numric position of this document.
