@@ -85,7 +85,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	private static Map<String, Object>[] literals2 = new HashMap[4];
 	private static Map<String, Object>[] storeInformation = new HashMap[4];
 	private static Map<String, Object>[] internetSales = new HashMap[4];
-	ResourceExtensionsManager resourceMgr;
+	private static ResourceExtensionsManager resourceMgr;
 	
 	@BeforeClass
 	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
@@ -243,6 +243,26 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
         row.put("txnDate", "Jan-12-1999"); row.put("sales", 750);row.put("storeName", "Boston");
         internetSales[3] = row;
         
+        // Install JavaScript modules into REST Server module database to support Map and Reduce tests.
+        createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
+		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+
+		DatabaseClient clientRes = DatabaseClientFactory.newClient(getRestAppServerHostName(), getRestServerPort(), dbName, "eval-user", "x", Authentication.DIGEST);
+		//DatabaseClient clientRes = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
+		ExtensionMetadata resextMetadata = new ExtensionMetadata();
+		resextMetadata.setTitle("BasicJSTest");
+		resextMetadata.setDescription("Testing resource extension for java script");
+		System.out.println(resextMetadata.getScriptLanguage());
+		resextMetadata.setScriptLanguage(ScriptLanguage.JAVASCRIPT);
+		System.out.println(resextMetadata.getScriptLanguage());
+		resextMetadata.setVersion("1.0");
+		MethodParameters getParams = new MethodParameters(MethodType.GET);
+		getParams.add("row", "xs:string?");
+		FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
+		InputStreamHandle handle = new InputStreamHandle(myStream);
+		handle.set (myStream);
+		resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata,getParams);  
 	}
 	
 	/**
@@ -1216,7 +1236,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	
 	/* 
 	 * Test Map function
-	 * TODO Refer to Eric's test and make changes.
+	 * Uses JS function colorIdMapper installed in the REST server module database.
 	*/
 	@Test
 	public void testMapFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
@@ -1224,26 +1244,6 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		System.out.println("In testMapFunction method");
 		Map<String, Object>[] literalsM1 = new HashMap[5];
 		Map<String, Object>[] literalsM2 = new HashMap[4];
-	
-		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
-		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
-
-		int restPort = getRestServerPort();
-		DatabaseClient clientRes = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
-		resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
-		ExtensionMetadata resextMetadata = new ExtensionMetadata();
-		resextMetadata.setTitle("BasicJSTest");
-		resextMetadata.setDescription("Testing resource extension for java script");
-		System.out.println(resextMetadata.getScriptLanguage());
-		resextMetadata.setScriptLanguage(ScriptLanguage.JAVASCRIPT);
-		System.out.println(resextMetadata.getScriptLanguage());
-		resextMetadata.setVersion("1.0");
-		MethodParameters getParams = new MethodParameters(MethodType.GET);
-		getParams.add("row", "xs:string?");
-		FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
-		InputStreamHandle handle = new InputStreamHandle(myStream);
-		handle.set (myStream);
-		resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata,getParams);
 		
 		Map<String, Object> row = new HashMap<>();			
 		row.put("rowId", 1); row.put("colorId_shape", 1); row.put("desc", "ball");
@@ -1290,7 +1290,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 				
 		ExportablePlan output = plan1.joinInner(plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
 		                         .select(
-		                                 
+		                                 p.as("rowId", p.col("rowId")),
 		                                 p.as("description", p.col("desc")), 
 		                                 p.as("myColorId", p.col("colorId"))
 		                                 
@@ -1307,10 +1307,100 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		// Should have 4 node returned.
 		assertEquals("Four nodes not returned from testMapFunction method", 4, jsonBindingsNodes.size());
 		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodes.path(0).path("rowId").path("value").asText());
-		assertEquals("Row 1 descAgg value incorrect", "red", jsonBindingsNodes.path(0).path("colorDesc").path("value").asText());
-		assertEquals("Row 1 rowId value incorrect", "2", jsonBindingsNodes.path(1).path("rowId").path("value").asText());
-		assertEquals("Row 1 descAgg value incorrect", "blue", jsonBindingsNodes.path(1).path("colorDesc").path("value").asText());
+		assertEquals("Row 1 myColorId value incorrect", "RED ROBIN", jsonBindingsNodes.path(0).path("myColorId").path("value").asText());
+		assertEquals("Row 1 description value incorrect", "ball", jsonBindingsNodes.path(0).path("description").path("value").asText());
+		
+		assertEquals("Row 2 rowId value incorrect", "2", jsonBindingsNodes.path(1).path("rowId").path("value").asText());
+		assertEquals("Row 2 myColorId value incorrect", "BLUE JAY", jsonBindingsNodes.path(1).path("myColorId").path("value").asText());
+		assertEquals("Row 2 description value incorrect", "square", jsonBindingsNodes.path(1).path("description").path("value").asText());
+		
+		assertEquals("Row 3 rowId value incorrect", "4", jsonBindingsNodes.path(3).path("rowId").path("value").asText());
+		assertEquals("Row 3 myColorId value incorrect", "RED ROBIN", jsonBindingsNodes.path(3).path("myColorId").path("value").asText());
+		assertEquals("Row 3 description value incorrect", "hoop", jsonBindingsNodes.path(3).path("description").path("value").asText());
 	}
+	
+	/* 
+	 * Test Reduce function
+	 * Uses JS function fibReducer installed in the REST server module database.
+	*/
+	@Test
+	public void testReduceFunction() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testReduceFunction method");
+		Map<String, Object>[] literalsM1 = new HashMap[5];
+		Map<String, Object>[] literalsM2 = new HashMap[4];
+		
+		Map<String, Object> row = new HashMap<>();			
+		row.put("rowId", 1); row.put("colorId_shape", 1); row.put("desc", "ball");
+		literalsM1[0] = row;
+		
+		row = new HashMap<>();
+        row.put("rowId", 2); row.put("colorId_shape", 2); row.put("desc", "square");
+        literalsM1[1] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 3); row.put("colorId_shape", 1); row.put("desc", "box");
+        literalsM1[2] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 4); row.put("colorId_shape", 1); row.put("desc", "hoop");
+        literalsM1[3] = row;
+        
+        row = new HashMap<>();
+        row.put("rowId", 5); row.put("colorId_shape", 5); row.put("desc", "circle");
+        literalsM1[4] = row;
+        	
+        // Assemble literalsM2
+		row = new HashMap<>();			
+		row.put("colorId", 1); row.put("colorDesc", "red");
+		literalsM2[0] = row;
+		
+		row = new HashMap<>();
+        row.put("colorId", 2); row.put("colorDesc", "blue");
+        literalsM2[1] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 3); row.put("colorDesc", "black");
+        literalsM2[2] = row;
+        
+        row = new HashMap<>();
+        row.put("colorId", 4); row.put("colorDesc", "yellow");
+        literalsM2[3] = row;
+        
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		// plans from literals
+		ModifyPlan plan1 = p.fromLiterals(literalsM1);
+		ModifyPlan plan2 = p.fromLiterals(literalsM2);
+				
+		ExportablePlan output = plan1.joinInner(plan2, p.on(p.col("colorId_shape"), p.col("colorId")))
+		                         .select(
+		                                 p.as("myRowId", p.col("rowId")) 
+		                               )
+		        .orderBy(p.asc("myRowId"))
+		        .reduce(p.resolveFunction(p.xs.QName("fibReducer"), "/marklogic.rest.resource/OpticsJSResourceModule/assets/resource.sjs"));
+		
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
+
+		// Should have 4 node returned.
+		assertEquals("Four nodes not returned from testMapFunction method", 4, jsonBindingsNodes.size());
+		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodes.path(0).path("myRowId").path("value").asText());
+		assertEquals("Row 1 myColorId value incorrect", "0", jsonBindingsNodes.path(0).path("i").path("value").asText());
+		assertEquals("Row 1 description value incorrect", "0", jsonBindingsNodes.path(0).path("fib").path("value").asText());
+		
+		assertEquals("Row 2 rowId value incorrect", "2", jsonBindingsNodes.path(1).path("myRowId").path("value").asText());
+		assertEquals("Row 2 myColorId value incorrect", "1", jsonBindingsNodes.path(1).path("i").path("value").asText());
+		assertEquals("Row 2 description value incorrect", "1", jsonBindingsNodes.path(1).path("fib").path("value").asText());
+		
+		assertEquals("Row 3 rowId value incorrect", "4", jsonBindingsNodes.path(3).path("myRowId").path("value").asText());
+		assertEquals("Row 3 myColorId value incorrect", "3", jsonBindingsNodes.path(3).path("i").path("value").asText());
+		assertEquals("Row 3 description value incorrect", "2", jsonBindingsNodes.path(3).path("fib").path("value").asText());
+	}
+	
 			
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception

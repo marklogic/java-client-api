@@ -1,5 +1,5 @@
 /*
- * Copyright 2014-2015 MarkLogic Corporation
+ * Copyright 2014-2017 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,82 +14,53 @@
  * limitations under the License.
  */
 
-// module that helps tests in TestOpticOnLiterals.class for map functionality
-function get(context, params) { 
- context.outputTypes = ["application/json"];
- var arg1 = params.arg1;
- var arg2 = params.arg2;
- var x = arg1.toString();
+// Module that helps tests in TestOpticOnLiterals.class for map functionality
 
-   
-return {
-	"argument1": x,
-	"argument2": arg2,
-	"database-name":xdmp.databaseName(xdmp.database()),
-	"document-count":fn.count(fn.doc()),
-    "content": "This is a JSON document",
-    "document-content": fn.doc(),
-    "response": xdmp.getResponseCode(),
-	"outputTypes": context.outputTypes,
-	
-  }
-};
-function post(context, params, input) { 
-    
-   var argUrl = params.uri;
-        	
-    xdmp.eval(" \
-    declareUpdate(); \
-    var argUrl; \
-    var sibling=cts.doc(argUrl).root.content; \
-    var inputObject; \
-    var newNode = new NodeBuilder(); \
-	newNode.addNode(inputObject); \
-	var named = newNode.toNode().xpath('.//array-node()'); xdmp.nodeInsertAfter(sibling,named);\
- ",{"inputObject":input,"argUrl":argUrl},{"isolation":"different-transaction"});
-   return ({"response": xdmp.getResponseCode()})
-
- };
- 
-// Function responding to PUT method - must use local name 'put'.
-function put(context, params, input) {
-    var argUrl = params.uri;
-    var inputObject = input;
-   //xdmp.documentInsert(argUrl,input);
-  xdmp.eval("declareUpdate(); var argUrl; var input;xdmp.documentInsert(argUrl,input)",{"argUrl":argUrl,"input":inputObject},{"isolation":"different-transaction"});
-  var count = xdmp.eval("fn.count(fn.doc())");
-  xdmp.log(count);
-   return ({"response": xdmp.getResponseCode()})
-};
-
-// Function responding to DELETE method - must use local name 'delete'.
-function deleteFunction(context, params) {
-    var docuri = params.uri;
-    xdmp.documentDelete(docuri);
-	return({"response": xdmp.getResponseCode()})
-};
-
-function colorIdMapper() {
-	console.log("Inside the func ==== ");
-    switch(colorId) { 
+function colorIdMapper(row) {
+	const result = row.toObject();
+    switch(result.myColorId) { 
       case 1:
-        colorDesc = 'RED';
+    	  result.myColorId = 'RED ROBIN';
         break;
       case 2:
-        colorDesc = 'BLUE';
+    	  result.myColorId = 'BLUE JAY';
         break;
       case 3:
-    	  colorDesc = 'YELLOW';
+    	  result.myColorId = 'YELLOW PARROT';
         break;
       case 4:
-    	  colorDesc = 'BLACK';
+    	  result.myColorId = 'BLACK CROW';
         break;
       default:
-    	  colorDesc = 'NO COLOR';
+    	  result.myColorId = 'NO COLOR';
     }
-    return colorDesc.;
+    return result;
   };
-exports.GET = colorIdMapper;
-exports.POST = post;
-exports.PUT = put;
-exports.DELETE = deleteFunction;
+  
+  function fibReducer(previous, row) {
+      const i = Array.isArray(previous) ? previous.length : 0;
+      const result = row.toObject();
+      result.i = i;
+      switch(i) {
+        case 0:
+          result.fib = 0;
+          break;
+        case 1:
+          result.fib = 1;
+          break;
+        default:
+          result.fib = previous[i - 2].fib + previous[i - 1].fib;
+          break;
+      }
+      if (previous === void 0) {
+        previous = [result];
+      } else {
+        previous.push(result);
+      }
+      return previous;
+    };
+    
+module.exports = { 
+colorIdMapper : colorIdMapper,
+fibReducer : fibReducer
+}
