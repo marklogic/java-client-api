@@ -32,6 +32,7 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -84,11 +85,15 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 		SearchHandle sHandleOnForest2 = new SearchHandle();
 		
 		queryMgr.search(querydef, sHandle);
+		
+		// Do forest specific searches.
 		queryMgr.search(querydef, sHandleOnForest1, fNames[0]);
 		System.out.println("Documents available on Forest 1 is " + sHandleOnForest1.getTotalResults());
+		assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() == 10);
 		
 		queryMgr.search(querydef, sHandleOnForest2, fNames[1]);
 		System.out.println("Documents available on Forest 2 is " + sHandleOnForest2.getTotalResults());
+		assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() == 10);
 		
 		// Assert on the total from individual forest counts. Round robin scheme yeilds 10 on F1 and 10 on F2.
 		// Future assignments schemes?
@@ -96,6 +101,36 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
 		
 		System.out.println(sHandle.getTotalResults());
 		assertTrue("Document count is incorrect", sHandle.getTotalResults() == 20);
+		
+		// Test other overloaded methods of QueryManager search with forest name.
+		
+		// Test with start page.
+		sHandleOnForest1 = new SearchHandle();
+		sHandleOnForest2 = new SearchHandle();
+		
+		queryMgr.setPageLength(3);
+		
+		queryMgr.search(querydef, sHandleOnForest1, 2, fNames[0]);
+		System.out.println("Start Page on first search on Forest 1 is " + sHandleOnForest1.getStart());
+		assertTrue("Start Page on first search on Forest 1 is incorrect",  sHandleOnForest1.getStart() == 2);
+		
+		queryMgr.search(querydef, sHandleOnForest2, 3, fNames[1]);
+		System.out.println("Start Page on second search on Forest 2 is " + sHandleOnForest2.getStart());
+		assertTrue("Start Page on second search on Forest 2 is incorrect",  sHandleOnForest2.getStart() == 3);
+		
+		assertTrue("Document count is incorrect", sHandleOnForest1.getTotalResults() + sHandleOnForest2.getTotalResults() == 20);
+		
+		// Verify in a transaction.
+		Transaction t = client.openTransaction();
+		
+		sHandleOnForest1 = new SearchHandle();
+		sHandleOnForest2 = new SearchHandle();
+		
+		queryMgr.search(querydef, sHandleOnForest1, 0, t, fNames[0]);
+		assertTrue("Documents count on Forest 1 is ", sHandleOnForest1.getTotalResults() == 10);
+		queryMgr.search(querydef, sHandleOnForest2, 0, t, fNames[1]);
+		assertTrue("Documents count on Forest 2 is ", sHandleOnForest2.getTotalResults() == 10);
+		t.rollback();
 
 		client.release();
 	}
