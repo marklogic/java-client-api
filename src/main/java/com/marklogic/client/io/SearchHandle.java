@@ -161,6 +161,7 @@ public class SearchHandle
 	    	XMLInputFactory factory = XMLInputFactory.newFactory();
 			factory.setProperty("javax.xml.stream.isNamespaceAware", true);
 			factory.setProperty("javax.xml.stream.isValidating",     false);
+			factory.setProperty("javax.xml.stream.isCoalescing",     true);
 
 			XMLEventReader reader = factory.createXMLEventReader(content, "UTF-8");
 			SearchResponseImpl response = new SearchResponseImpl();
