@@ -719,34 +719,157 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		row.put("id", 4); row.put("val", 8); row.put("uri", "/optic/lexicon/test/doc4.xml");
 		literals3[3] = row;
 		
-		// plans from literals
+		// TEST 16 - join inner doc with xpath traversing down and multiple values on json
 		ModifyPlan output = p.fromLiterals(literals3).orderBy(p.asc("id"))
-		                                            .joinDoc(p.col("doc"), p.col("uri"));
+		                                            .joinDoc(p.col("doc"), p.col("uri"))
+		                                            .select(
+		                                            		p.col("id"),
+		                                            		p.col("val"), 
+		                                            		p.col("uri"),
+		                                            		p.as("nodes", p.xpath("doc", "/location/latLonPair/(lat|long)")))
+                                                    .where(p.isDefined(p.col("nodes")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
-		// Should have 3 nodes returned.
-		assertEquals("Three nodes not returned from testJoinInnerDocOnJson method", 3, jsonBindingsNodes.size());
+		// Should have 2 nodes returned.
+		assertEquals("Two nodes not returned from testJoinInnerDocOnJson method", 2, jsonBindingsNodes.size());
 		JsonNode node = jsonBindingsNodes.path(0);
-		assertEquals("Row 1 val value incorrect", "2", node.path("val").path("value").asText());
-		assertEquals("Row 1 val value incorrect", "london", node.path("doc").path("value").path("city").asText());
+		assertEquals("Row 1 id value incorrect", "1", node.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "2", node.path("val").path("value").asText());		
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc1.json", node.path("uri").path("value").asText());
 		node = jsonBindingsNodes.path(1);
+		assertEquals("Row 2 id value incorrect", "3", node.path("id").path("value").asText());
 		assertEquals("Row 2 val value incorrect", "6", node.path("val").path("value").asText());
-		assertEquals("Row 2 val value incorrect", "new jersey", node.path("doc").path("value").path("city").asText());
-		node = jsonBindingsNodes.path(2);
-		assertEquals("Row 3 val value incorrect", "8", node.path("val").path("value").asText());
-		assertTrue("Row 3 val value incorrect", node.path("doc").path("value").asText().contains("The Miyun Reservoir"));
+		assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc3.json", node.path("uri").path("value").asText());
 		
-		//Verify limit
+		// Verify TEST 17 - join inner doc with xpath accessing attribute on xml
+		ModifyPlan output17 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+				.joinDoc(p.col("doc"), p.col("uri"))
+				.select(
+						p.col("id"),
+						p.col("val"), 
+						p.col("uri"),
+						p.as("nodes", p.xpath("doc", "/doc/distance/@direction")))
+						.where(p.isDefined(p.col("nodes")));
+		JacksonHandle jacksonHandle17 = new JacksonHandle();
+		jacksonHandle17.setMimetype("application/json");
+		rowMgr.resultDoc(output17, jacksonHandle17);
+		JsonNode jsonBindingsNodes17 = jacksonHandle17.get().path("rows");
+
+		// Should have 1 node returned.
+		assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes17.size());
+		JsonNode node17 = jsonBindingsNodes17.path(0);
+		assertEquals("Row 1 id value incorrect", "4", node17.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "8", node17.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node17.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "east", node17.path("nodes").path("value").asText());
 		
+		// Verify TEST 18 - join inner doc with xpath traversing down and multiple values on xml
+		ModifyPlan output18 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+				.joinDoc(p.col("doc"), p.col("uri"))
+				.select(
+						p.col("id"),
+						p.col("val"), 
+						p.col("uri"),
+						p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/number()")))
+						.where(p.isDefined(p.col("nodes")));
+		JacksonHandle jacksonHandle18 = new JacksonHandle();
+		jacksonHandle18.setMimetype("application/json");
+		rowMgr.resultDoc(output18, jacksonHandle18);
+		JsonNode jsonBindingsNodes18 = jacksonHandle18.get().path("rows");
+
+		// Should have 1 node returned.
+		assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes18.size());
+		JsonNode node18 = jsonBindingsNodes18.path(0);
+		assertEquals("Row 1 id value incorrect", "4", node18.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "8", node18.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node18.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "39.9", node18.path("nodes").path("value").get(0).asText());
+		assertEquals("Row 1 nodes value incorrect", "116.4", node18.path("nodes").path("value").get(1).asText());
 		
-		/* TODO - TEST 16 - join inner doc with xpath traversing down and multiple values on json when xpath issue is resolved.
-		TEST 17 - join inner doc with xpath accessing attribute on xml
-		TEST 19 - join inner doc with traversing up xpath on json
-		TEST 23 - join left outer doc
-		*/
+		// Verify TEST 19 - join inner doc with traversing up xpath on json
+		ModifyPlan output19 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+				.joinDoc(p.col("doc"), p.col("uri"))
+				.select(
+						p.col("id"),
+						p.col("val"), 
+						p.col("uri"),
+						p.as("nodes", p.xpath("doc", "/location/latLonPair/../../city")))
+						.where(p.isDefined(p.col("nodes")));
+		JacksonHandle jacksonHandle19 = new JacksonHandle();
+		jacksonHandle19.setMimetype("application/json");
+		rowMgr.resultDoc(output19, jacksonHandle19);
+		JsonNode jsonBindingsNodes19 = jacksonHandle19.get().path("rows");
+
+		// Should have 2 nodes returned.
+		assertEquals("Two nodes not returned from testJoinInnerDocOnJson method", 2, jsonBindingsNodes19.size());
+		JsonNode node19 = jsonBindingsNodes19.path(0);
+		assertEquals("Row 1 id value incorrect", "1", node19.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "2", node19.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc1.json", node19.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "london", node19.path("nodes").path("value").asText());
+		
+		node19 = jsonBindingsNodes19.path(1);
+		assertEquals("Row 2 id value incorrect", "3", node19.path("id").path("value").asText());
+		assertEquals("Row 2 val value incorrect", "6", node19.path("val").path("value").asText());
+		assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc3.json", node19.path("uri").path("value").asText());
+		assertEquals("Row 2 nodes value incorrect", "new jersey", node19.path("nodes").path("value").asText());
+		
+		// Verify TEST 20 - join inner doc with traversing up xpath on xml
+		ModifyPlan output20 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+				.joinDoc(p.col("doc"), p.col("uri"))
+				.select(
+						p.col("id"),
+						p.col("val"), 
+						p.col("uri"),
+						p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/../../city")))
+						.where(p.isDefined(p.col("nodes")));
+		JacksonHandle jacksonHandle20 = new JacksonHandle();
+		jacksonHandle20.setMimetype("application/json");
+		rowMgr.resultDoc(output20, jacksonHandle20);
+		JsonNode jsonBindingsNodes20 = jacksonHandle20.get().path("rows");
+
+		// Should have 1 node returned.
+		assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes20.size());
+		JsonNode node20 = jsonBindingsNodes20.path(0);
+		assertEquals("Row 1 id value incorrect", "4", node20.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "8", node20.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node20.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "<city>beijing</city>", node20.path("nodes").path("value").asText());
+		
+		// Verify TEST 21 - join inner doc with traversing deep xpath on json and xml
+		ModifyPlan output21 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+				.joinDoc(p.col("doc"), p.col("uri"))
+				.select(
+						p.col("id"),
+						p.col("val"), 
+						p.col("uri"),
+						p.as("nodes", p.xpath("doc", "//lat/number()")))
+						.where(p.isDefined(p.col("nodes")));
+		JacksonHandle jacksonHandle21 = new JacksonHandle();
+		jacksonHandle21.setMimetype("application/json");
+		rowMgr.resultDoc(output21, jacksonHandle21);
+		JsonNode jsonBindingsNodes21 = jacksonHandle21.get().path("rows");
+
+		// Should have 3 nodes returned.
+		assertEquals("Three nodes not returned from testJoinInnerDocOnJson method", 3, jsonBindingsNodes21.size());
+		JsonNode node21 = jsonBindingsNodes21.path(0);
+		assertEquals("Row 1 id value incorrect", "1", node21.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "2", node21.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc1.json", node21.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "51.5", node21.path("nodes").path("value").asText());
+		node21 = jsonBindingsNodes21.path(1);
+		assertEquals("Row 1 id value incorrect", "3", node21.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "6", node21.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc3.json", node21.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "40.72", node21.path("nodes").path("value").asText());
+		node21 = jsonBindingsNodes21.path(2);
+		assertEquals("Row 1 id value incorrect", "4", node21.path("id").path("value").asText());
+		assertEquals("Row 1 val value incorrect", "8", node21.path("val").path("value").asText());
+		assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node21.path("uri").path("value").asText());
+		assertEquals("Row 1 nodes value incorrect", "39.9", node21.path("nodes").path("value").asText());
 	}
 	
 	/* 
