@@ -309,13 +309,13 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 	
 	/* This test checks access with select aliased columns.
 	 * 
-	 * Should return 8 results. TODO Uncomment and do nothing when Git 537 is fixed
+	 * Should return 8 results.
 	 * 
 	 */
 	@Test
 	public void testAccessWithSelectAlias() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{
-		/*System.out.println("In testAccessWithSelectAlias method");
+		System.out.println("In testAccessWithSelectAlias method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
@@ -332,8 +332,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(idCol, rowGraph.iri("position"), posCol));
 
 		ModifyPlan plan1 = p.fromTriples(patSeq,
-				                         null,
-				                         null,
+				                         (String)null,				                         
 				                         p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
 				 )
 				.orderBy(p.desc(ageCol))
@@ -356,7 +355,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		JsonNode eight = jsonBindingsNodes.path(7);
 		assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", eight.path("PlayerName").path("value").asText());
 		assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", eight.path("PlayerPosition").path("value").asText());
-	*/}
+	}
 	
 	/* This test checks join inner with condition.
 	 * 
