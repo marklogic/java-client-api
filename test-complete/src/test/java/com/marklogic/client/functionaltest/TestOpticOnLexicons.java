@@ -381,7 +381,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		JsonNode jsonInnerDocNodes = jsonResults.path("rows");
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 5", 5 == jsonInnerDocNodes.size());
-		//Verify first result
+		// Verify first result
 		assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", jsonInnerDocNodes.get(0).path("myCity.date").path("value").asText());
 		assertEquals("Element 1 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc3.json", jsonInnerDocNodes.get(0).path("myCity.uri1").path("value").asText());
 		assertEquals("Element 1 (myCity) in distance incorrect", "12.9", jsonInnerDocNodes.get(0).path("myCity.distance").path("value").asText());
@@ -401,7 +401,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Element 3 (myCity) in date incorrect", "1999-04-22", jsonInnerDocNodes.get(2).path("myCity.date").path("value").asText());
 		assertEquals("Element 4 (myCity) in date incorrect", "2006-06-23", jsonInnerDocNodes.get(3).path("myCity.date").path("value").asText());
 		
-		//Verify lasst result, since records are ordered.
+		// Verify lasst result, since records are ordered.
 		assertEquals("Element 5 (myCity) in date incorrect", "2007-01-01", jsonInnerDocNodes.get(4).path("myCity.date").path("value").asText());
 		assertEquals("Element 5 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc1.json", jsonInnerDocNodes.get(4).path("myCity.uri1").path("value").asText());
 		assertEquals("Element 5 (myCity) in distance incorrect", "50.4", jsonInnerDocNodes.get(4).path("myCity.distance").path("value").asText());
@@ -478,7 +478,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ExportablePlan output = plan1.joinInner(plan2)
 		                             .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 		                             .orderBy(p.asc(p.col("date")));
-
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -510,7 +509,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		PlanColumn cityNameCol = p.col("cityName");
 		PlanColumn cityTeamCol = p.col("cityTeam");
-		//using element reference and viewname
+		// using element reference and viewname
 		ModifyPlan outputNullVname = plan1.joinInner(plan2, p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")))
 			                              .orderBy(p.desc("uri2"))
 			                              .joinDoc(p.col("doc"), p.col("uri1"))
@@ -900,6 +899,62 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	}
 	
 	/*
+	 * TEST 28 - join doc uri with fragment id
+	 */
+	@Test
+	public void testJoinDocURI() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	{
+		System.out.println("In testJoinDocURI method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
+		index1.put("uri1", p.cts.uriReference());
+		index1.put("city", p.cts.jsonPropertyReference("city"));
+		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
+		index1.put("date", p.cts.jsonPropertyReference("date"));
+		index1.put("distance", p.cts.jsonPropertyReference("distance"));
+		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+		
+		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
+		index2.put("uri2", p.cts.uriReference());
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+
+		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", p.fragmentIdCol("fragId1"));
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
+		
+		ExportablePlan output = plan1.joinInner(plan2)
+		                             .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
+		                             .joinDocUri(p.col("doc"), p.fragmentIdCol("fragId1"))
+		                             .orderBy(p.asc(p.col("date")));
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		// Should have 5 nodes returned.
+		assertEquals("Five nodes not returned from testJoinInnerKeymatchDateSort method ", 5, jsonBindingsNodes.size());
+		
+		JsonNode node = jsonBindingsNodes.path(0);		
+		assertEquals("Row 1 myCity.city value incorrect", "new jersey", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.date value incorrect", "1971-12-23", node.path("myCity.date").path("value").asText());
+		assertEquals("Row 1 myCity.distance value incorrect", "12.9", node.path("myCity.distance").path("value").asText());
+		
+		node = jsonBindingsNodes.path(1);
+		assertEquals("Row 2 myCity.city value incorrect", "beijing", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 2 myCity.date value incorrect", "1981-11-09", node.path("myCity.date").path("value").asText());
+		assertEquals("Row 2 myCity.distance value incorrect", "134.5", node.path("myCity.distance").path("value").asText());
+		
+		node = jsonBindingsNodes.path(4);
+		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 5 myCity.date value incorrect", "2007-01-01", node.path("myCity.date").path("value").asText());
+		assertEquals("Row 5 myCity.distance value incorrect", "50.4", node.path("myCity.distance").path("value").asText());
+	}
+	
+	/*
 	 * Test Invalid range index- date
 	 * 
 	 */	
@@ -1155,8 +1210,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	}
 		
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception
-	{
+	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
 		// release client		
 		client.release();
