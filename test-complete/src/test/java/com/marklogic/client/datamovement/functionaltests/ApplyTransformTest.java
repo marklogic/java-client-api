@@ -240,10 +240,10 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		properties.put("locking", "strict");
 		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
 		
-		String insert =  "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
+		String insertQuery =  "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
 				 
 		String response = dbClient.newServerEval()
-		    .xquery(insert)
+		    .xquery(insertQuery)
 		    .evalAs(String.class);
 		System.out.println(response);
 		
