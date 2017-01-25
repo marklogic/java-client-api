@@ -1540,7 +1540,10 @@ public class SearchHandle
 					} else if (metadataName.equals(startName)) {
 						mrTime = parseTime(dtFactory, now, reader.getElementText());
 					} else if (extractName.equals(startName)) {
-						erTime = parseTime(dtFactory, now, reader.getElementText());
+						String extractResolutionTime = reader.getElementText();
+						if ( extractResolutionTime.length() > 0 ) {
+							erTime = parseTime(dtFactory, now, extractResolutionTime);
+						}
 					} else if (totalName.equals(startName)) {
 						tTime = parseTime(dtFactory, now, reader.getElementText());
 					} else {
