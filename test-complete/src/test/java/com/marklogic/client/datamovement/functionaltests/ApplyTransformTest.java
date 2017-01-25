@@ -24,8 +24,10 @@ import java.io.File;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -233,22 +235,18 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6103);
 		
-		WriteBatcher ihb1 =  dmManager.newWriteBatcher();
-		ihb1.withBatchSize(2);
-		ihb1.onBatchSuccess(
-				batch -> {
-						System.out.println("Written to "+batch.getClient().getHost());
-				}
-		)
-		.onBatchFailure(
-				(batch, throwable) -> {
-					throwable.printStackTrace();
-				});
-
-		String uri ="/local/failed";
-		ihb1.add(uri, meta7, stringHandle);
-		ihb1.add("/local/failed-1", meta7, jacksonHandle);
-		ihb1.flushAndWait();
+		
+		Map <String, String> properties = new HashMap<>();
+		properties.put("locking", "strict");
+		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
+		
+		String insert =  "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
+				 
+		String response = dbClient.newServerEval()
+		    .xquery(insert)
+		    .evalAs(String.class);
+		System.out.println(response);
+		
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6105);
 	}
 
@@ -529,7 +527,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		List<String> successBatch = new ArrayList<>();
 		List<String> failedBatch = new ArrayList<>();
 		List<String> skippedBatch = new ArrayList<>();
-
+		AtomicInteger failCount = new AtomicInteger(0);
+		
 		String uri = new String("/local/failed");
 		DocumentPage page = dbClient.newDocumentManager().read(uri);
 		DOMHandle dh = new DOMHandle();
@@ -555,6 +554,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					}
 				})
 				.onBatchFailure((batch, throwable) -> {
+					failCount.addAndGet(1);
 					List<String> batchList = Arrays.asList(batch.getItems());
 					failedBatch.addAll(batchList);
 					throwable.printStackTrace();
@@ -562,6 +562,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					for(String s:batch.getItems()){
 						System.out.println("Failure URI's "+s);
 					}
+					String s = null;
+					s.charAt(0);
 				})
 				.onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
@@ -601,6 +603,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		}
 		assertEquals("Size should be 2", 2,urisList.size());
 		assertEquals("Size should be 2", 2,failedBatch.size());
+		assertEquals("Size should be 1", 1,failCount.get());
 		assertEquals("Size should be 0", 0,successBatch.size());
 		assertEquals("Size should be 0", 0,skippedBatch.size());
 
@@ -694,6 +697,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		assertTrue(flag.get());
 
 		List<String> urisList = new ArrayList<>();
+		assertTrue(urisList.isEmpty());
 		QueryBatcher queryBatcher = dmManager.newQueryBatcher(
 				new StructuredQueryBuilder().collection("Replace Snapshot"))
 				.withBatchSize(11)
@@ -710,6 +714,9 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		JobTicket ticket1 = dmManager.startJob( queryBatcher );
 		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket1);
+		for (String uri : urisList){
+			System.out.println("Uris: "+uri);
+		}
 		assertTrue(urisList.isEmpty());
 	}
 
