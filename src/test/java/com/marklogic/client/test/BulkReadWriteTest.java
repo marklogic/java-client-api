@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import javax.xml.bind.JAXBException;
+import org.w3c.dom.Document;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -48,9 +49,11 @@ import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JAXBHandle;
@@ -81,7 +84,7 @@ public class BulkReadWriteTest {
         DatabaseClientFactory.getHandleRegistry().register(
             JAXBHandle.newFactory(City.class)
         );
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -333,7 +336,62 @@ public class BulkReadWriteTest {
     }
 
     @Test
-    public void testF_DefaultMetadata() throws Throwable {
+    public void testF_TextLoadWithTransform() throws IOException {
+        DatabaseClient adminClient = Common.connectAdmin();
+        adminClient.newServerConfigManager().newTransformExtensionsManager().writeXQueryTransformAs(
+            TransformExtensionsTest.XQUERY_NAME,
+            TransformExtensionsTest.makeXQueryMetadata(),
+            Common.testFileToString(TransformExtensionsTest.XQUERY_FILE)
+        );
+
+        String docId[] = {"/foo/test/myFoo1.xml","/foo/test/myFoo2.xml","/foo/test/myFoo3.xml"};
+        XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+        ServerTransform transform = new ServerTransform(TransformExtensionsTest.XQUERY_NAME)
+          .addParameter("value", "true");
+        docMgr.setWriteTransform(transform);
+        DocumentWriteSet writeset =docMgr.newWriteSet();
+
+        writeset.add(docId[0], new StringHandle().with("<xml><a/></xml>").withFormat(Format.XML));
+        writeset.add(docId[1], new StringHandle().with("this is so foo").withFormat(Format.TEXT));
+        docMgr.write(writeset);
+
+        // clear out the write transform
+        docMgr.setWriteTransform(null);
+        docMgr.write(docId[2], new StringHandle().with("<xml><a/></xml>").withFormat(Format.XML));
+
+        String TEST_NS = "http://marklogic.com/rest-api/test/transform";
+        // validate that the write tranform worked
+        Document doc0 = docMgr.read(docId[0], new DOMHandle()).get();
+        assertEquals("true",doc0.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        // validate that the write transform didn't touch the text file
+        assertEquals("this is so foo", docMgr.read(docId[1], new StringHandle()).get());
+
+        // validate that the read transform worked
+        // without the read transform, there is no "transformed" attribute
+        Document doc2 = docMgr.read(docId[2], new DOMHandle()).get();
+        assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        // with the read transform, this should now have the "transformed" attribute
+        doc2 = docMgr.read(docId[2], new DOMHandle(), transform).get();
+        assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        // reading with bulk API, but no read transform there is no "transformed" attribute
+        doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
+        assertEquals("", doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        // reading with bulk API, the transform should work the same
+        docMgr.setReadTransform(transform);
+        doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
+        assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        docMgr.delete(docId[0]);
+        docMgr.delete(docId[1]);
+        docMgr.delete(docId[2]);
+    }
+
+    @Test
+    public void testG_DefaultMetadata() throws Throwable {
         // Synthesize input content
         StringHandle doc1 = new StringHandle(
                 "{\"number\": 1}").withFormat(Format.JSON);
@@ -667,27 +725,14 @@ public class BulkReadWriteTest {
     public void test_issue_623() {
         String uniqueDir = "BulkReadWriteTest_" + new Random().nextInt(10000) + "/";
         List<String> uris = new ArrayList<>();
-        uris.add(uniqueDir + "test&with&ampersand.txt");
-        uris.add(uniqueDir + "test with space.txt");
-        uris.add(uniqueDir + "test\"with\"quote.txt");
+        uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
         uris.add(uniqueDir + "test+with+plus.txt");
-        uris.add(uniqueDir + "test%with%percent.txt");
-        // TODO: un-comment next line when bugtrack 44123 is fixed
-        //uris.add(uniqueDir + "test\\with\\backslash.txt");
         uris.add(uniqueDir + "test/with/forwardslash.txt");
         uris.add(uniqueDir + "test.with.dot.txt");
-        uris.add(uniqueDir + "test with!every@thing#.txt");
-        uris.add(uniqueDir + "test with#else$^.txt");
-        uris.add(uniqueDir + "test with*()-_.txt");
-        uris.add(uniqueDir + "test with={}[]|.txt");
+        // TODO: un-comment next line when bugtrack 44184 is fixed
+        //uris.add(uniqueDir + "test with!every@thing#else$^*()-_[]:',~.txt");
         // TODO: un-comment next line when bugtrack 44132 is fixed
         //uris.add(uniqueDir + "test with;.txt");
-        uris.add(uniqueDir + "test with:.txt");
-        uris.add(uniqueDir + "test with'.txt");
-        uris.add(uniqueDir + "test with<>.txt");
-        uris.add(uniqueDir + "test with,?`~.txt");
-        // TODO: un-comment next line when bugtrack 44137 and github 634 are fixed
-        //uris.add(uniqueDir + "test with accents:áéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸ.txt");
 
         test_issue_623_body( Common.client.newTextDocumentManager(), uris );
         test_issue_623_body( Common.client.newBinaryDocumentManager(), uris );
@@ -711,15 +756,14 @@ public class BulkReadWriteTest {
 
       for ( String uri : uris ) {
         // test with 1 arg
-        // TODO: un-comment next four lines when bugtrack 44117 is fixed
-        //docMgr.writeAs(uri, uri);
-        //assertEquals(uri, docMgr.read(uri).nextContent(new StringHandle()).get());
-        //docMgr.delete(uri);
-        //verifyDeleted(docMgr, uri);
+        docMgr.write(uri, new StringHandle(uri).withFormat(Format.TEXT));
+        assertEquals(uri, docMgr.read(uri).nextContent(new StringHandle()).get());
+        docMgr.delete(uri);
+        verifyDeleted(docMgr, uri);
 
         // test with writeSet
         DocumentWriteSet writeSet = docMgr.newWriteSet();
-        writeSet.addAs(uri, uri);
+        writeSet.add(uri, new StringHandle(uri).withFormat(Format.TEXT));
         docMgr.write(writeSet);
         DocumentPage docs = docMgr.read(new String[] {uri});
         assertEquals("You should have one and only one doc with uri=[" + uri + "]", 1, docs.size());
