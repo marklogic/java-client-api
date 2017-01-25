@@ -1,32 +1,23 @@
-/*
- * Copyright 2014-2017 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -47,6 +38,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
@@ -198,7 +190,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion();
 	    dmManager.stopJob(ticket);
 	    
 	    Thread.currentThread().sleep(2000L);
@@ -220,7 +212,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion();
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -249,7 +241,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion();
 	    dmManager.stopJob(ticket);
 	    
 	   
@@ -271,7 +263,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion();
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -298,7 +290,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	        });
 	 
 	    JobTicket ticket = dmManager.startJob(queryBatcher);
-		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion();
 	    dmManager.stopJob(ticket);
 	    
 
@@ -332,7 +324,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion();
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -380,7 +372,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		t1.start();
 		JobTicket ticket = dmManager.startJob(queryBatcher);
 		
-		queryBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+		queryBatcher.awaitCompletion();
 		t1.join();
 	    dmManager.stopJob(ticket);
 	    
@@ -391,6 +383,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	
 	    QueryBatcher deleteBatcher = dmManager.newQueryBatcher(urisList.iterator())
 	    .withBatchSize(13)
+	    .withThreadCount(5)
 	    .onUrisReady(new DeleteListener())
 	    .onUrisReady(batch -> successDocs.addAndGet(batch.getItems().length))
 	    .onUrisReady(batch -> uris2.addAll(Arrays.asList(batch.getItems())))
@@ -400,7 +393,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion();
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -441,7 +434,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	      });
 	    
 	    JobTicket delTicket = dmManager.startJob(deleteBatcher);
-	    deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    deleteBatcher.awaitCompletion();
 	    dmManager.stopJob(delTicket);
 	    
 	   	if ( failures2.length() > 0 ) fail(failures2.toString());
@@ -532,7 +525,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    try{
 	    	 System.out.println("Job starting: urisList Size is "+urisList.size());
 	    	 delTicket = dmManager.startJob(deleteBatcher);
-	    	 deleteBatcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+	    	 deleteBatcher.awaitCompletion();
 	 	     System.out.println("Succes Docs "+successDocs.intValue());
 		     System.out.println("DB size: "+dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	    	 Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
@@ -622,4 +615,79 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 	    t1.join();
 	   
 	}
+	
+	@Test
+    public void deleteOnDiskUris() throws Exception {
+        String pathname="uriCache.txt";
+        assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+        
+        ArrayList<String> foundUris =getUris();
+        ArrayList<String> diskUris = writeUrisToDisk();
+
+        assertTrue(foundUris.size() == diskUris.size());
+        
+        File file = new File(pathname);
+        assertTrue(file.exists());
+
+        ArrayList<String> deletedUris = deleteDocuments(pathname);
+
+        assertTrue(foundUris.size()==deletedUris.size());
+        assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+        file.delete();
+    }
+	
+    public ArrayList<String> getUris() {
+
+        Set<String> uris = new HashSet<>();
+
+        QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
+                .withBatchSize(5000)
+                .onUrisReady(batch -> uris.addAll(Arrays.asList(batch.getItems())))
+                .onQueryFailure(exception -> exception.printStackTrace());
+        JobTicket getUrisTicket = dmManager.startJob(getUris);
+        getUris.awaitCompletion();
+        dmManager.stopJob(getUrisTicket);
+        return new ArrayList<String>(uris);
+    }
+	
+	public ArrayList<String> writeUrisToDisk() throws IOException {
+        Set<String> uris = new HashSet<>();
+
+        FileWriter writer = new FileWriter("uriCache.txt");
+        QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
+                .withBatchSize(100)
+                .onUrisReady( new UrisToWriterListener(writer) )
+                .onUrisReady(batch -> uris.addAll(Arrays.asList(batch.getItems())))
+                .onQueryFailure(exception -> exception.printStackTrace());
+        JobTicket getUrisTicket = dmManager.startJob(getUris);
+        getUris.awaitCompletion();
+        dmManager.stopJob(getUrisTicket);
+        writer.flush();
+        writer.close();
+
+        return new ArrayList<String>(uris);
+    }
+
+    public ArrayList<String> deleteDocuments(String file) throws Exception {
+        Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+
+        BufferedReader reader = new BufferedReader(new FileReader(file));
+        Iterator<String> itr = reader.lines().iterator();
+        
+        QueryBatcher performDelete = dmManager.newQueryBatcher(itr)
+                .withThreadCount(5)
+                .withBatchSize(99)
+                .withConsistentSnapshot()
+                .onUrisReady(new DeleteListener())
+                .onUrisReady((batch) -> {uris.addAll(Arrays.asList(batch.getItems()));
+                }
+        ).onQueryFailure(exception -> exception.printStackTrace());
+
+        JobTicket ticket = dmManager.startJob(performDelete);
+        performDelete.awaitCompletion();
+        
+        dmManager.stopJob(ticket);
+        reader.close();
+        return new ArrayList<String>(uris);
+    }
 }
