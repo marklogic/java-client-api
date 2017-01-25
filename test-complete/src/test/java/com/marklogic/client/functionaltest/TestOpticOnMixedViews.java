@@ -537,8 +537,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 	}
 	
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception
-	{
+	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
 		// release client
 		client.release();

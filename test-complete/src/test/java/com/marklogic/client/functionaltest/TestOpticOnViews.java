@@ -514,7 +514,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				                		p.schemaCol("opticFunctionalTest", "detail", "amount"),
 				                		p.schemaCol("opticFunctionalTest", "detail", "color")
 				                      )
-				                .orderBy(p.desc(p.col("DetailName")));
+				                .orderBy(p.desc(p.col("DetailName")), p.desc(p.col("MasterName")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
@@ -525,7 +525,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Twelve nodes not returned from testjoinLeftOuterWithSelect method ", 12, jsonBindingsNodes.size());
 		// Verify first node.
 		JsonNode first = jsonBindingsNodes.path(0);
-//Ask Aries about this assert
+
 		assertEquals("Element 1 MasterName value incorrect", "Master 2", first.path("MasterName").path("value").asText());
 		assertEquals("Element 1 DetailName value incorrect", "Detail 6", first.path("DetailName").path("value").asText());
 		
@@ -1800,8 +1800,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 								 .orderBy(p.desc(p.col("DetailName")));
 		JsonNode explainNode = rowMgr.explain(output, new JacksonHandle()).get();
 		// Making sure explain() does not blow up for a valid plan.
-		assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");
-		//assertTrue("Explain of plan incorrect", explainNode.path("expr").path("sortNeeded").asBoolean());
+		assertEquals("Explain of plan incorrect", explainNode.path("node").asText(), "plan");		
 		assertEquals("Explain of plan incorrect", explainNode.path("expr").path("columns").get(0).path("column").asText(), "DetailName");
 		// Invalid string - Use txt instead of json or xml
 		String explainNodetxt = rowMgr.explain(output, new StringHandle()).get();
@@ -2013,8 +2012,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	}
 	
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception
-	{
+	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
 		// release client
 		client.release();

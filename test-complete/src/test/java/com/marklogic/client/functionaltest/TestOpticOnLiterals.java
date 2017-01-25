@@ -247,8 +247,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
         createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
 		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
 
-		DatabaseClient clientRes = DatabaseClientFactory.newClient(getRestAppServerHostName(), getRestServerPort(), dbName, "eval-user", "x", Authentication.DIGEST);
-		//DatabaseClient clientRes = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient clientRes = DatabaseClientFactory.newClient(getRestAppServerHostName(), getRestServerPort(), dbName, "eval-user", "x", Authentication.DIGEST);		
 		resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
 		ExtensionMetadata resextMetadata = new ExtensionMetadata();
 		resextMetadata.setTitle("BasicJSTest");
@@ -370,8 +369,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		assertEquals("Row 4 desc value incorrect", "hoop", node.path("desc").path("value").asText());
 		assertEquals("Row 4 colorDesc value incorrect", "red", node.path("colorDesc").path("value").asText());
 		
-		// Join inner with qualifier
-		
+		// Join inner with qualifier		
 		ModifyPlan plan3 = p.fromLiterals(literals1, "table1");
 		ModifyPlan plan4 = p.fromLiterals(literals2, "table2");
 		ModifyPlan outputQualifier = plan3.joinInner(plan4)
@@ -1085,8 +1083,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
         row = new HashMap<>();
         row.put("rowId", 5); row.put("colorId", 5); row.put("desc", "circle");
         ballLiteral[5] = row;
-        
-        
+                
 		// plans from literals
 		ModifyPlan plan1 = p.fromLiterals(fooLiteral, "myItem");
 		ModifyPlan plan2 = p.fromLiterals(purpleLiteral, "myColor");

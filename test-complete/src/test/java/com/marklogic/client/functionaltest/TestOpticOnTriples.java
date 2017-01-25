@@ -1303,7 +1303,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		}
 		// Should have SQL-NOCOLUMN exceptions.
 		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
-		assertTrue("Exceptions not found", str.toString().contains("Column not found: myPlayer_Invalid.age"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found"));
+		assertTrue("Exceptions not found", str.toString().contains("myPlayer_Invalid.age"));
 	}
 	
 	/* This test checks triples with invalid patterndef.
@@ -1398,8 +1399,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertTrue("Exceptions not found", str.toString().contains("cannot take null value"));
 	}
 	
-	/* This test checks bindParam on triples' subject and object. //TODO when 528 is fixed.
-	 * Uncomment and add asserts.
+	/* This test checks bindParam on triples' subject and object. 
+	 * 
 	 */
 	@Test
 	public void testFromTriplesWithbindParam() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
@@ -1461,13 +1462,11 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		rowMgr.resultDoc(player_plan, jacksonHandle);
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
-		assertTrue("No data should have been returned", jsonResults == null);
-		
+		assertTrue("No data should have been returned", jsonResults == null);	
 	}
 	
 	@AfterClass
-	public static void tearDownAfterClass() throws Exception
-	{
+	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
 		// release client
 		client.release();
