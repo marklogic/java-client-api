@@ -47,10 +47,9 @@ public interface JobReport {
    * @return the number of batches that failed
    */
   long getFailureBatchesCount();
-  /**
-   * Gets the status of the job whether it has been completed or not
-   * @return the completion status of the job
-   */
+
+  //boolean isJobComplete();
+
   boolean isJobComplete();
   /**
    * Gets the timestamp at which this instance of JobReport was created
