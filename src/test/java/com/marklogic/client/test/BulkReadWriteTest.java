@@ -385,12 +385,21 @@ public class BulkReadWriteTest {
         doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
         assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-        // searching with bulk API, the transform should work the same
+        // searching with bulk API, the transform should work the same on the matching documents
         QueryDefinition query = new StructuredQueryBuilder().document(docId[2]);
         query.setResponseTransform(transform);
         DocumentPage page = docMgr.search(query, 1);
         doc2 = page.next().getContent(new DOMHandle()).get();
         assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+
+        // searching with bulk API, the transform should work the same on the matching documents
+        // and the search response
+        query.setResponseTransform(transform);
+        DOMHandle results = new DOMHandle();
+        page = docMgr.search(query, 1, results);
+        doc2 = page.next().getContent(new DOMHandle()).get();
+        assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+        assertEquals("true",results.get().getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
         docMgr.delete(docId[0]);
         docMgr.delete(docId[1]);
