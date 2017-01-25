@@ -402,27 +402,13 @@ public class QueryBatcherTest {
 
     String uniqueDir = issue623Collection + "/";
     ArrayList<String> uris = new ArrayList<>();
-    uris.add(uniqueDir + "test&with&ampersand.txt");
-    uris.add(uniqueDir + "test with space.txt");
-    uris.add(uniqueDir + "test\"with\"quote.txt");
+    uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
     uris.add(uniqueDir + "test+with+plus.txt");
-    uris.add(uniqueDir + "test%with%percent.txt");
-    // TODO: un-comment next line when bugtrack 44123 is fixed
-    //uris.add(uniqueDir + "test\\with\\backslash.txt");
     uris.add(uniqueDir + "test/with/forwardslash.txt");
     uris.add(uniqueDir + "test.with.dot.txt");
-    uris.add(uniqueDir + "test with!every@thing#.txt");
-    uris.add(uniqueDir + "test with#else$^.txt");
-    uris.add(uniqueDir + "test with*()-_.txt");
-    uris.add(uniqueDir + "test with={}[]|.txt");
     // TODO: un-comment next line when bugtrack 44132 is fixed
-    //uris.add(uniqueDir + "test with;.txt");
-    uris.add(uniqueDir + "test with:.txt");
-    uris.add(uniqueDir + "test with'.txt");
-    uris.add(uniqueDir + "test with<>.txt");
-    uris.add(uniqueDir + "test with,?`~.txt");
-    // TODO: un-comment next line when bugtrack 44137 and github 634 are fixed
-    //uris.add(uniqueDir + "test with accents:áéíóúýÁÉÍÓÚÝâêîôûÂÊÎÔÛãñõÃÑÕäëïöüÿÄËÏÖÜŸ.txt");
+    //uris.add(uniqueDir + "test_with_semicolon.txt?a=b;c=d");
+    uris.add(uniqueDir + "test_with-every@thing!#else$^*()[]:',~.txt");
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection, issue623Collection);
