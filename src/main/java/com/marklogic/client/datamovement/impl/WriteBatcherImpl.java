@@ -812,7 +812,8 @@ public class WriteBatcherImpl
     if ( removedHostInfos.size() > 0 ) {
       // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host
       List<Runnable> tasks = new ArrayList<>();
-      activeThreadPool.get().getQueue().drainTo(tasks);
+      ThreadPoolExecutor threadPool = activeThreadPool.get();
+      if ( threadPool != null ) threadPool.getQueue().drainTo(tasks);
       for ( Runnable task : tasks ) {
         if ( task instanceof BatchWriter ) {
           BatchWriter writerTask = (BatchWriter) task;
@@ -825,7 +826,7 @@ public class WriteBatcherImpl
           }
         }
         // this task is still valid so add it back to the queue
-        activeThreadPool.get().submit(task);
+        threadPool.submit(task);
       }
       for ( HostInfo removedHostInfo : removedHostInfos.values() ) {
         cleanupUnfinishedTransactions(removedHostInfo);
