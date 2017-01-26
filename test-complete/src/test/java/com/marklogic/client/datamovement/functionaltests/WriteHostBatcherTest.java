@@ -26,8 +26,11 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -42,9 +45,19 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
+import org.apache.http.entity.StringEntity;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.util.EntityUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -59,7 +72,9 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
@@ -76,6 +91,7 @@ import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.StructuredQueryBuilder;
 
 public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	
@@ -104,7 +120,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	private static OutputStreamHandle osHandle1;
 	private static WriteBatcher ihbMT;
 	private static JsonNode clusterInfo;
-	private static String[] hostNames ;
+	private static String[] hostNames;
 	
 	private static String stringTriple;
 	private static File fileJson;
@@ -2342,5 +2358,193 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
    		  }
    	  }  
        		
-  } 
+  }
+	
+	@Ignore
+	public void testNoHost() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		final String query1 = "fn:count(fn:doc())";
+			
+		try{
+			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+			
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			
+			WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+			
+			FilteredForestConfiguration forestConfig = 
+					  new FilteredForestConfiguration(dmManager.readForestConfig())
+					    .withRenamedHost("localhost", "127.0.0.1")
+					    .withBlackList(hostNames[hostNames.length-1]);
+								
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+				
+			ihb2.onBatchSuccess(
+			        batch -> {
+			        	}
+			        )
+			        .onBatchFailure(
+			          (batch, throwable) -> {
+			        	  throwable.printStackTrace();
+			          
+			          }
+			);
+			for (int j =0 ;j < 1000; j++){
+				String uri ="/local/string-"+ j;
+				ihb2.addAs(uri, meta6 , jsonNode);
+			}
+			
+		
+			ihb2.flushAndWait();
+		
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			
+			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+	        QueryBatcher getUris =  dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
+	        getUris.withForestConfig(forestConfig);
+	        
+	        getUris.withBatchSize(500)
+	                .withThreadCount(2)
+	                .onUrisReady((batch ->{
+	                	uris.addAll(Arrays.asList(batch.getItems()));
+	                }))
+	                .onQueryFailure(exception -> exception.printStackTrace());
+	        
+	        dmManager.startJob(getUris);
+	        
+	        getUris.awaitCompletion();
+	      
+	        Assert.assertTrue(uris.size() == 1000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+				
+	}
+	
+	@Test
+	public void testNoServer() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		final String query1 = "fn:count(fn:doc())";
+		Map<String,String> properties = new HashMap<>();
+		
+		try{
+			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoServer").withQuality(0);
+			
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			
+			
+			properties.put("group-name", "test");
+			postRequest(properties, "/manage/v2/groups");
+			
+			properties.clear();
+			
+			properties.put("host-name", hostNames[hostNames.length-1]);
+			properties.put("group", "test");
+			
+			changeProperty(properties, "/manage/v2/hosts/"+hostNames[hostNames.length-1]+"/properties");
+			
+			Thread.currentThread().sleep(5000L);
+			
+			DatabaseClient dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+			DataMovementManager dmManager = dbClient.newDataMovementManager();
+			
+			WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+			ihb2.withBatchSize(50);
+				
+			ihb2.onBatchSuccess(
+			        batch -> {
+			        	}
+			        )
+			        .onBatchFailure(
+			          (batch, throwable) -> {
+			        	  throwable.printStackTrace();
+			          
+			          }
+			);
+			for (int j =0 ;j < 1000; j++){
+				String uri ="/local/string-"+ j;
+				ihb2.addAs(uri, meta6 , jsonNode);
+			}
+			
+		
+			ihb2.flushAndWait();
+		
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			
+			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+	        QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoServer"))
+	                .withBatchSize(500)
+	                .withThreadCount(2)
+	                .onUrisReady((batch ->{
+	                	uris.addAll(Arrays.asList(batch.getItems()));
+	                }))
+	                .onQueryFailure(exception -> exception.printStackTrace());
+	        
+	        dmManager.startJob(getUris);
+	        
+	        getUris.awaitCompletion();
+	      
+	        Assert.assertTrue(uris.size() == 1000);
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+		finally{
+			properties.clear();
+			
+			properties.put("host-name", hostNames[hostNames.length-1]);
+			properties.put("group", "Default");
+			changeProperty(properties, "/manage/v2/hosts/"+hostNames[hostNames.length-1]+"/properties");
+			
+			Thread.currentThread().sleep(5000L);
+		}
+		
+	}
+	
+	public static void postRequest(Map<String, String> properties, String endpoint)	{
+		try{
+			StringBuffer xmlBuff = new StringBuffer(); 	
+			//xmlBuff.append("<forest-properties xmlns=\"http://marklogic.com/manage\">"); 
+			xmlBuff.append("{");
+			 Iterator it = properties.entrySet().iterator();
+			 int size = properties.size();
+			 int j = 0;
+			 while (it.hasNext()) {
+		         Map.Entry pair = (Map.Entry)it.next();
+		         xmlBuff.append("\"").append(pair.getKey()).append("\":");
+		         if (j == (size -1))
+		        	 xmlBuff.append("\"").append(pair.getValue()).append("\"");
+		         else
+		        	 xmlBuff.append("\"").append(pair.getValue()).append("\",");
+		        	 
+		         j++;
+		      
+			}
+			xmlBuff.append('}');
+			DefaultHttpClient client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope(host, 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+
+			HttpPost post = new HttpPost("http://"+host+":8002"+ endpoint); 
+			post.addHeader("Content-type", "application/json");
+			post.setEntity(new StringEntity(xmlBuff.toString()));
+			
+			
+			HttpResponse response = client.execute(post);
+			HttpEntity respEntity = response.getEntity();
+
+			if (respEntity != null) {
+				// EntityUtils to get the response content
+				String content =  EntityUtils.toString(respEntity);
+				System.out.println(content);
+			}
+		}catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+	}
 }
