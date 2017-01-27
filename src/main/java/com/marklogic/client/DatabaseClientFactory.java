@@ -55,7 +55,7 @@ public class DatabaseClientFactory {
 	/**
 	 * Authentication enumerates the methods for verifying a user and
 	 * password with the database.
-	 * @deprecated use BasicAuthContext, DigestAuthContext and KerberosAuthContext classes
+	 * @deprecated (as of 4.0.1) use BasicAuthContext, DigestAuthContext and KerberosAuthContext classes
 	 */
 	@Deprecated
 	public enum Authentication {
@@ -634,7 +634,7 @@ public class DatabaseClientFactory {
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
@@ -650,7 +650,7 @@ public class DatabaseClientFactory {
 	 * @param password	the password for the user
 	 * @param type	the type of authentication applied to the request
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
@@ -666,7 +666,7 @@ public class DatabaseClientFactory {
 	 * @param type	the type of authentication applied to the request
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
@@ -683,7 +683,7 @@ public class DatabaseClientFactory {
 	 * @param type	the type of authentication applied to the request
 	 * @param context	the SSL context for authenticating with the server
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
@@ -700,7 +700,7 @@ public class DatabaseClientFactory {
 	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
@@ -718,7 +718,7 @@ public class DatabaseClientFactory {
 	 * @param context	the SSL context for authenticating with the server
 	 * @param verifier	a callback for checking hostnames
 	 * @return	a new client for making database requests
-	 * @deprecated	use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
+	 * @deprecated	(as of 4.0.1) use {@link #newClient(String host, int port, String database, SecurityContext securityContext)}
 	 */
 	@Deprecated
 	static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
@@ -852,6 +852,7 @@ public class DatabaseClientFactory {
 		 * Returns the user authentication for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the user
+		 * @deprecated	(as of 4.0.1) use SecurityContext.getUser() with BasicAuthContext or DigestAuthContext
 		 */
 		@Deprecated
 		public String getUser() {
@@ -861,6 +862,7 @@ public class DatabaseClientFactory {
 		 * Specifies the user authentication for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @param user	the user
+		 * @deprecated	(as of 4.0.1) use constructors for BasicAuthContext or DigestAuthContext
 		 */
 		@Deprecated
 		public void setUser(String user) {
@@ -870,6 +872,7 @@ public class DatabaseClientFactory {
 		 * Returns the password authentication for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the password
+		 * @deprecated	(as of 4.0.1) use SecurityContext.getUser() with BasicAuthContext or DigestAuthContext
 		 */
 		@Deprecated
 		public String getPassword() {
@@ -879,6 +882,7 @@ public class DatabaseClientFactory {
 		 * Specifies the password authentication for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @param password	the password
+		 * @deprecated	(as of 4.0.1) use constructors for BasicAuthContext or DigestAuthContext
 		 */
 		@Deprecated
 		public void setPassword(String password) {
@@ -904,6 +908,7 @@ public class DatabaseClientFactory {
 		 * Returns the authentication type for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the authentication type 
+		 * @deprecated	(as of 4.0.1) use instanceof on any SecurityContext to get its type
 		 */
 		@Deprecated
 		public Authentication getAuthentication() {
@@ -913,6 +918,7 @@ public class DatabaseClientFactory {
 		 * Specifies the authentication type for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @param authentication	the authentication type
+		 * @deprecated	(as of 4.0.1) use constructor for any SecurityContext
 		 */
 		@Deprecated
 		public void setAuthentication(Authentication authentication) {
@@ -922,6 +928,7 @@ public class DatabaseClientFactory {
 		 * Specifies the authentication type for clients created with a
 		 * DatabaseClientFactory.Bean object based on a string value.
 		 * @param authentication	the authentication type
+		 * @deprecated	(as of 4.0.1) use constructor for any SecurityContext
 		 */
 		@Deprecated
 		public void setAuthenticationValue(String authentication) {
@@ -947,6 +954,7 @@ public class DatabaseClientFactory {
 		 * Returns the SSLContext for SSL clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the SSL context
+		 * @deprecated	(as of 4.0.1) use SecurityContext.getSSLContext()
 		 */
 		@Deprecated
 		public SSLContext getContext() {
@@ -956,6 +964,8 @@ public class DatabaseClientFactory {
 		 * Specifies the SSLContext for clients created with a
 		 * DatabaseClientFactory.Bean object that authenticate with SSL.
 		 * @param context	the SSL context
+		 * @deprecated	(as of 4.0.1) use SecurityContext.setSSLContext(SSLContext)
+		 *   or SecurityContext.withSSLContext(SSLContext)
 		 */
 		@Deprecated
 		public void setContext(SSLContext context) {
@@ -965,6 +975,7 @@ public class DatabaseClientFactory {
 		 * Returns the host verifier for clients created with a
 		 * DatabaseClientFactory.Bean object.
 		 * @return	the host verifier
+		 * @deprecated	(as of 4.0.1) use SecurityContext.getSSLHostnameVerifier()
 		 */
 		@Deprecated
 		public SSLHostnameVerifier getVerifier() {
@@ -975,6 +986,8 @@ public class DatabaseClientFactory {
 		 * DatabaseClientFactory.Bean object that verify hosts for
 		 * additional security.
 		 * @param verifier	the host verifier
+		 * @deprecated	(as of 4.0.1) use SecurityContext.setSSLHostnameVerifier(SSLHostnameVerifier)
+		 *   or SecurityContext.withSSLHostnameVerifier(SSLHostnameVerifier)
 		 */
 		@Deprecated
 		public void setVerifier(SSLHostnameVerifier verifier) {
