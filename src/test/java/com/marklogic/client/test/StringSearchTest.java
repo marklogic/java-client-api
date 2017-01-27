@@ -264,6 +264,29 @@ public class StringSearchTest {
         assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
     }
 
+    @Test
+    public void test_issue644() {
+      QueryManager queryMgr = Common.client.newQueryManager();
+      String queryText = "queryThatMatchesNothing";
+      RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(
+          new StringHandle(
+            "<search xmlns='http://marklogic.com/appservices/search'>" +
+              "<options>" +
+                "<extract-document-data selected='all'>" +
+                  "<extract-path>/*</extract-path>" +
+                "</extract-document-data>" +
+                "<return-metrics>true</return-metrics>" +
+              "</options>" +
+              "<query>" +
+                "<term-query><text>" + queryText + "</text></term-query>" +
+              "</query>" +
+            "</search>"
+          )
+      );
+      queryMgr.search(query, new SearchHandle());
+      // we didn't throw an Exception, which means this issue is resolved
+    }
+
     private String writeOptions()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
         String optionsName = "facets";
