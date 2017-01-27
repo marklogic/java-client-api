@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +85,7 @@ public class BulkReadWriteTest {
         DatabaseClientFactory.getHandleRegistry().register(
             JAXBHandle.newFactory(City.class)
         );
-        System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     }
     @AfterClass
     public static void afterClass() {
@@ -750,13 +751,14 @@ public class BulkReadWriteTest {
         // TODO: un-comment next line when bugtrack 44132 is fixed
         //uris.add(uniqueDir + "test with;.txt");
 
-        test_issue_623_body( Common.client.newTextDocumentManager(), uris );
-        test_issue_623_body( Common.client.newBinaryDocumentManager(), uris );
-        test_issue_623_body( Common.client.newXMLDocumentManager(), uris );
-        test_issue_623_body( Common.client.newJSONDocumentManager(), uris );
+        test_issue_623_body( Common.client.newTextDocumentManager(), uris, "$0" );
+        test_issue_623_body( Common.client.newBinaryDocumentManager(), uris, "$0" );
+        test_issue_623_body( Common.client.newXMLDocumentManager(), uris,
+          "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<xml>$0</xml>" );
+        test_issue_623_body( Common.client.newJSONDocumentManager(), uris, "[\"$0\"]" );
     }
 
-    private void test_issue_623_body(DocumentManager docMgr, List<String> uris) {
+    private void test_issue_623_body(DocumentManager docMgr, List<String> uris, String regex) {
       // test with 0 args
       boolean writeSuccess = false;
       try { docMgr.write(null); } catch (IllegalArgumentException e) { writeSuccess = true; }
@@ -771,21 +773,23 @@ public class BulkReadWriteTest {
       assertTrue(deleteSuccess);
 
       for ( String uri : uris ) {
+        String contents = URLEncoder.encode(uri).replaceFirst(".*", regex);
+
         // test with 1 arg
-        docMgr.write(uri, new StringHandle(uri).withFormat(Format.TEXT));
-        assertEquals(uri, docMgr.read(uri).nextContent(new StringHandle()).get());
+        docMgr.write(uri, new StringHandle(contents));
+        assertEquals(contents, docMgr.read(uri).nextContent(new StringHandle()).get());
         docMgr.delete(uri);
         verifyDeleted(docMgr, uri);
 
         // test with writeSet
         DocumentWriteSet writeSet = docMgr.newWriteSet();
-        writeSet.add(uri, new StringHandle(uri).withFormat(Format.TEXT));
+        writeSet.add(uri, new StringHandle(contents));
         docMgr.write(writeSet);
         DocumentPage docs = docMgr.read(new String[] {uri});
         assertEquals("You should have one and only one doc with uri=[" + uri + "]", 1, docs.size());
         DocumentRecord doc = docs.next();
         assertEquals(uri, doc.getUri());
-        assertEquals(uri, doc.getContent(new StringHandle()).get());
+        assertEquals(contents, doc.getContent(new StringHandle()).get());
         docMgr.delete(new String[] {uri});
         verifyDeleted(docMgr, uri);
       }
