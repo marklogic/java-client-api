@@ -234,20 +234,6 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		ihb2.add("/local/nonexistent-1", stringHandle);
 		ihb2.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6103);
-		
-		
-		Map <String, String> properties = new HashMap<>();
-		properties.put("locking", "strict");
-		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
-		
-		String insertQuery =  "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
-				 
-		String response = dbClient.newServerEval()
-		    .xquery(insertQuery)
-		    .evalAs(String.class);
-		System.out.println(response);
-		
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 6105);
 	}
 
 	@AfterClass
@@ -579,6 +565,17 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 					System.out.println(batch.getForest().getHost());
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				});
+		Map <String, String> properties = new HashMap<>();
+		properties.put("locking", "strict");
+		changeProperty(properties,"/manage/v2/databases/"+dbName+"/properties");
+		
+		String insertQuery =  "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
+				 
+		String response = dbClient.newServerEval()
+		    .xquery(insertQuery)
+		    .evalAs(String.class);
+		System.out.println(response);
+		
 		JobTicket ticket = dmManager.startJob( batcher );
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);

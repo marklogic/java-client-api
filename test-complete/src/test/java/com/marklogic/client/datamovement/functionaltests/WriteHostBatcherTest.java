@@ -35,7 +35,6 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -50,7 +49,6 @@ import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.util.EntityUtils;
@@ -78,6 +76,7 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.BytesHandle;
@@ -1978,26 +1977,28 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	@Test
 	public void testAddMultiThreadedStopJob() throws Exception{
 		
+	
 		final String query1 = "fn:count(fn:doc())";
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
-		AtomicInteger successCount =  new AtomicInteger(0);
+		WriteJobReportListener jrl = new WriteJobReportListener();
+	
 		ihbMT =  dmManager.newWriteBatcher();
-		ihbMT.withBatchSize(11).withThreadCount(5);
+		ihbMT.withBatchSize(7).withThreadCount(60);
+		
+		ihbMT.setBatchSuccessListeners(jrl);		
+		ihbMT.setBatchFailureListeners(jrl);
+		
        	ihbMT.onBatchSuccess(
 		        batch -> {
-		        	successCount.addAndGet(batch.getItems().length);
-		        	if(successCount.get() > 80){
+		        		       	
+		        	if(jrl.getSuccessEventsCount() > 6 ){
 		    			dmManager.stopJob(writeTicket);
-	    				System.out.println("Job stopped");
-		    		}
-		        })
+		    			System.out.println("Job stopped");
+		    		} })
+		        	
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
-		        	   
-		        		for(WriteEvent w:batch.getItems()){
-		        			System.out.println("Failure "+w.getTargetUri());
-		        		}		       
+		        	 	       
 		});
 		writeTicket = dmManager.startJob(ihbMT);
 				
@@ -2005,14 +2006,11 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	  
        	  @Override
        	  public void run() {
-         		
-           		for (int j =0 ;j < 200; j++){
+         		for (int j =0 ;j < 3000; j++){
     				String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
     				ihbMT.add(uri, fileHandle);
-    				System.out.println(uri);
-    				
-           		}        
-           		ihbMT.flushAndWait();
+    			}        
+         		System.out.println("Finished executing thread: "+Thread.currentThread().getName());
        	  }  
            		
        	} 
@@ -2024,20 +2022,11 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
       
        	t1.start();
        	t2.start();
-       	ihbMT.awaitCompletion();
-       	
-            	
-       	t1.join();
+       
+    	t1.join();
        	t2.join();
-       	try{
-       		ihbMT.add("/new", fileHandle);
-       		fail("Exception should have been thrown");
-       	}
-       	catch(IllegalStateException e){
-       		System.out.println(e.getMessage());
-       		Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
-       		
-       	}
+       	
+
       	try{
       		ihbMT.flushAndWait();
        		fail("Exception should have been thrown");
@@ -2048,13 +2037,25 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        		
        	}
       	
+       
+       	
+       	try{
+       		ihbMT.add("/new", fileHandle);
+       		fail("Exception should have been thrown");
+       	}
+       	catch(IllegalStateException e){
+       		System.out.println(e.getMessage());
+       		Assert.assertTrue(e.getMessage().contains("This instance has been stopped"));
+       		
+       	}
+       	
        	ihbMT.awaitCompletion();
        			
        	int count = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
        	System.out.println(count);
        	Assert.assertTrue(count >=80);
-       	// This is a random number less than 500. it ensures that writing of docs stopped quickly after reaching 80 doc writes.
-       	Assert.assertTrue(count <=250);
+       	// This is a arbitrary number less than 6000 confirming the job was stopped midway. 
+       	Assert.assertTrue(count <= 1000);
 	}
 	
 	@Test
