@@ -1831,8 +1831,8 @@ public class JerseyServices implements RESTServices {
 		if (handleBase == null)
 			return;
 
-		handleBase.setFormat(desc.getFormat());
-		handleBase.setMimetype(desc.getMimetype());
+		if (desc.getFormat() != null) handleBase.setFormat(desc.getFormat());
+		if (desc.getMimetype() != null) handleBase.setMimetype(desc.getMimetype());
 		handleBase.setByteLength(desc.getByteLength());
 	}
 
