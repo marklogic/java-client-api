@@ -140,16 +140,6 @@ public class SearchHandle
 		return this;
 	}
 
-    /**
-     * In a previous release, set the force DOM flag.  This setter now has no effect
-     * and will be removed in a future release.
-     *
-     * @param forceDOM The flag setting.
-     */
-    @Deprecated
-    public void setForceDOM(boolean forceDOM) {
-    }
-
 	@Override
 	protected Class<InputStream> receiveAs() {
         return InputStream.class;

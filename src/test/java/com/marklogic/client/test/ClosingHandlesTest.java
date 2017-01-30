@@ -38,7 +38,6 @@ import com.marklogic.client.io.JAXBHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JacksonParserHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.QueryOptionsListHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -85,8 +84,6 @@ public class ClosingHandlesTest {
         validateClosingHandleClosesUnderlyingStream(
             new JAXBHandle<>(context), "<city><population>0</population></city>");
         validateClosingHandleClosesUnderlyingStream(new JDOMHandle(), "<xml/>");
-        validateClosingHandleClosesUnderlyingStream(
-            new QueryOptionsHandle(), "<options xmlns='http://marklogic.com/appservices/search'/>");
         validateClosingHandleClosesUnderlyingStream(
             new QueryOptionsListHandle(), "<query-options xmlns='http://marklogic.com/rest-api'/>");
         validateClosingHandleClosesUnderlyingStream(new ReaderHandle(), "testing");

@@ -156,21 +156,6 @@ public interface ServerConfigurationManager {
 	void setUpdatePolicy(UpdatePolicy policy);
 
 	/**
-	 * Returns whether the server requires, allows, or ignores document versions
-	 * on document read, write, and delete requests.
-	 * @return	the policy as required, optional, or none
-	 * @deprecated	use {@link #getUpdatePolicy()}, which provides more alternatives
-	 */
-	Policy getContentVersionRequests();
-	/**
-	 * Specifies whether the server requires, allows, or ignores document versions
-	 * on document read, write, and delete requests.
-	 * @param policy	required, optional, or none for document versions
-	 * @deprecated	use {@link #setUpdatePolicy(UpdatePolicy)}, which provides more alternatives
-	 */
-	void setContentVersionRequests(Policy policy);
-
-	/**
 	 * Creates a manager for listing, reading, writing, and deleting query options.
 	 * @return	a new manager for query options
 	 */

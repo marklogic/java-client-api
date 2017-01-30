@@ -44,7 +44,7 @@ import java.util.Map;
 public class QueryOptionsListHandleTest {
 	@SuppressWarnings("unused")
 	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsHandleTest.class);
+			.getLogger(QueryOptionsListHandleTest.class);
 	
     @BeforeClass
     public static void beforeClass() {

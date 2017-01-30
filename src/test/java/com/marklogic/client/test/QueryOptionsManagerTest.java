@@ -34,6 +34,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.ls.DOMImplementationLS;
 import org.xml.sax.SAXException;
+import com.fasterxml.jackson.databind.JsonNode;
 
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
@@ -43,19 +44,19 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.QueryOptionsHandle;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 
 @SuppressWarnings("deprecation")
 public class QueryOptionsManagerTest {
 	
-	private static final org.slf4j.Logger logger = LoggerFactory
-			.getLogger(QueryOptionsManagerTest.class);;
+	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(QueryOptionsManagerTest.class);
 	
 	
 	@BeforeClass
 	public static void beforeClass() {
 		Common.connectAdmin();
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -70,7 +71,7 @@ public class QueryOptionsManagerTest {
 			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 		assertNotNull("Client could not create query options manager", mgr);
 
-		mgr.writeOptions("testempty", new QueryOptionsHandle());
+		mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
         
         String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
         logger.debug("Empty options from server {}", optionsResult);
@@ -125,9 +126,9 @@ public class QueryOptionsManagerTest {
 		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
 		jsonHandle.setFormat(Format.JSON);
 		mgr.writeOptions("jsonoptions", jsonHandle);
-		QueryOptionsHandle options = mgr.readOptions("jsonoptions", new QueryOptionsHandle());
+		JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
 		
-		assertEquals("JSON options came back incorrectly", options.getConstraints().get(0).getName(), "decade");
+		assertEquals("JSON options came back incorrectly", options.findPath("constraint").get(0).get("name").textValue(), "decade");
 		
 		
 		StringHandle jsonStringHandle = new StringHandle();

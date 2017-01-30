@@ -26,8 +26,6 @@ public class JSONDocumentImpl
     extends DocumentManagerImpl<JSONReadHandle, JSONWriteHandle> 
     implements JSONDocumentManager
 {
-	private String language;
-
 	JSONDocumentImpl(RESTServices services) {
 		super(services,Format.JSON);
 	}
@@ -37,22 +35,9 @@ public class JSONDocumentImpl
     	return new DocumentPatchBuilderImpl(Format.JSON);
     }
 
-	@Override
-	public String getLanguage() {
-		return language;
-	}
-	@Override
-	public void setLanguage(String language) {
-		this.language = language;
-	}
-
     @Override
 	protected RequestParameters getWriteParams() {
-		if (language == null)
-			return null;
-
 		RequestParameters params = new RequestParameters();
-		params.put("lang", language);
 
 		return params;
 	}

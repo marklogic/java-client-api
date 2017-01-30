@@ -38,12 +38,8 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions.QueryRange;
-import com.marklogic.client.admin.config.QueryOptions.QueryTransformResults;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.FacetResult;
@@ -57,11 +53,10 @@ import com.marklogic.client.query.SearchMetrics;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.util.RequestLogger;
 
-@SuppressWarnings("deprecation")
 public class StringSearchTest {
   @SuppressWarnings("unused")
   private static final Logger logger = (Logger) LoggerFactory
-      .getLogger(QueryOptionsHandleTest.class);
+      .getLogger(StringSearchTest.class);
 
     @BeforeClass
     public static void beforeClass() {
@@ -274,27 +269,23 @@ public class StringSearchTest {
         String optionsName = "facets";
 
         // Get back facets...
-        QueryOptionsBuilder builder = new QueryOptionsBuilder();
-        QueryRange grandchildRange = builder.range(
-            builder.elementRangeIndex(
-              new QName("grandchild"),
-              builder.stringRangeType("http://marklogic.com/collation/")
-              ));
-        grandchildRange.setDoFacets(true);
-        QueryOptionsHandle options = new QueryOptionsHandle().withConstraints(
-            builder.constraint("grandchild",grandchildRange)
-            );
-
-        QueryRange range = options.getConstraint("grandchild").getSource();
-        assertEquals(range.getElement(), new QName("grandchild"));
-
-        QueryTransformResults tresults = builder.emptySnippets();
-        options.withTransformResults(tresults);
+        String options = 
+          "{\"options\": " +
+              "{   \"constraint\": " +
+                  "[{\"name\":\"grandchild\", \"range\": " +
+                      "{   \"type\":\"xs:string\", \"collation\":\"http://marklogic.com/collation/\"," +
+                          "\"element\":{\"name\":\"grandchild\"}," +
+                          "\"facet\":true" +
+                      "}" +
+                  "}]," +
+                  "\"transform-results\": {\"apply\": \"empty-snippet\"}" +
+              "}" +
+          "}";
 
         QueryOptionsManager queryOptionsMgr =
           Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
-        queryOptionsMgr.writeOptions(optionsName, options);
+        queryOptionsMgr.writeOptions(optionsName, new StringHandle(options).withFormat(Format.JSON));
 
         return optionsName;
     }

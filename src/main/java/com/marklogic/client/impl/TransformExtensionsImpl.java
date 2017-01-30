@@ -246,20 +246,14 @@ class TransformExtensionsImpl
 	@Override
 	public void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeXQueryTransform(transformName, sourceHandle, null, null);
+		writeXQueryTransform(transformName, sourceHandle, null);
 	}
 	@Override
 	public void writeXQueryTransform(
 		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeXQueryTransform(transformName, sourceHandle, metadata, null);
+		writeTransform(transformName, "application/xquery", sourceHandle, metadata);
 	}
-	@Override
-	public void writeXQueryTransform(
-		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeTransform(transformName, "application/xquery", sourceHandle, metadata, paramTypes);
-	}	
 
 	@Override
 	public void writeJavascriptTransformAs(String transformName, Object source)
@@ -307,34 +301,28 @@ class TransformExtensionsImpl
 	@Override
 	public void writeJavascriptTransform(String transformName, TextWriteHandle sourceHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeTransform(transformName, "application/javascript", sourceHandle, null, null);
+		writeTransform(transformName, "application/javascript", sourceHandle, null);
 	}
 	@Override
 	public void writeJavascriptTransform(
 		String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeTransform(transformName, "application/javascript", sourceHandle, metadata, null);
+		writeTransform(transformName, "application/javascript", sourceHandle, metadata);
 	}
 		
 	@Override
 	public void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeXSLTransform(transformName, sourceHandle, null, null);
+		writeXSLTransform(transformName, sourceHandle, null);
 	}
 	@Override
 	public void writeXSLTransform(
 		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeXSLTransform(transformName, sourceHandle, metadata, null);
-	}
-	@Override
-	public void writeXSLTransform(
-		String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		writeTransform(transformName, "application/xslt+xml", sourceHandle, metadata, paramTypes);
+		writeTransform(transformName, "application/xslt+xml", sourceHandle, metadata);
 	}
 	private void writeTransform(
-		String transformName, String sourceMimetype, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String, String> paramTypes)
+		String transformName, String sourceMimetype, AbstractWriteHandle sourceHandle, ExtensionMetadata metadata)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 		if (transformName == null)
 			throw new IllegalArgumentException("Writing transform with null name");
@@ -364,13 +352,6 @@ class TransformExtensionsImpl
 			sourceBase.setMimetype(sourceMimetype);
 
 		RequestParameters extraParams = (metadata != null) ? metadata.asParameters() : null;
-		if (paramTypes != null) {
-			if (extraParams == null)
-				extraParams = new RequestParameters();
-			for (Map.Entry<String,String> entry: paramTypes.entrySet()) {
-				extraParams.put("trans:"+entry.getKey(), entry.getValue());
-			}
-		}
 
 		services.putValue(requestLogger, "config/transforms", transformName, extraParams,
 				sourceMimetype, sourceBase);

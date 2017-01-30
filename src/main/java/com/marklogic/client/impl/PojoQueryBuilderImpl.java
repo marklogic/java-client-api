@@ -21,6 +21,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 import com.marklogic.client.io.Format;
@@ -195,20 +196,17 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         }
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public TermQuery term(String... terms) {
+    public StructuredQueryDefinition term(String... terms) {
         return new PojoTermQuery(wrapQueries, null, terms);
     }
-    @SuppressWarnings("deprecation")
     @Override
-    public TermQuery term(double weight, String... terms) {
+    public StructuredQueryDefinition term(double weight, String... terms) {
         return new PojoTermQuery(wrapQueries, weight, terms);
 
     }
-    @SuppressWarnings("deprecation")
     public class PojoTermQuery extends StructuredQueryBuilder.TermQuery {
-        private AbstractStructuredQuery query; 
+        private AbstractStructuredQuery query;
         public PojoTermQuery(boolean wrapQueries, Double weight, String... terms) {
             super(weight, terms);
             TermQuery termQuery = new TermQuery(weight, terms);
@@ -220,7 +218,7 @@ public class PojoQueryBuilderImpl<T> extends StructuredQueryBuilder implements P
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             query.innerSerialize(serializer);
         }
     }

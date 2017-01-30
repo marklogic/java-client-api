@@ -326,7 +326,7 @@ public interface PojoQueryBuilder<T> {
      * @param radius	the radius of the circle
      * @return	the definition of the circle
      */
-    StructuredQueryBuilder.Region circle(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point center, double radius);
+    StructuredQueryBuilder.Region circle(StructuredQueryBuilder.Point center, double radius);
     /** Copied directly from  {@link StructuredQueryBuilder#collection(String...) StructuredQuerybuilder.collection(String...)}.
      * Matches documents belonging to at least one
      * of the criteria collections.

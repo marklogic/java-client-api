@@ -31,6 +31,7 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.namespace.QName;
 import javax.xml.stream.XMLOutputFactory;
+import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Templates;
 import javax.xml.transform.Transformer;
@@ -55,12 +56,6 @@ import com.marklogic.client.util.IterableNamespaceContext;
 
 /**
  * StructuredQueryBuilder builds a query for documents in the database.
- * Several concrete the query definition classes are now deprecated because you can
- * instead use the more general {@link StructuredQueryDefinition StructuredQueryDefinition} interface
- * as the type for query definitions.  For instance, here is a
- * forward-compatible approach for capturing an AND query definition
- * in a variable:
- * <pre>StructuredQueryDefinition andQry = structuredQueryBuilder.and(... query definitions ...);</pre>
  */
 public class StructuredQueryBuilder {
     public static final String SEARCH_API_NS="http://marklogic.com/appservices/search";
@@ -116,11 +111,9 @@ public class StructuredQueryBuilder {
 
     /**
      * Whether a query should search the document or its associated properties.
-     * The value "DOCUMENT" is here for backward-compatibility but deprecated
-     * in favor of DOCUMENTS.
      */
     public enum FragmentScope {
-        @Deprecated DOCUMENT, DOCUMENTS, PROPERTIES;
+        DOCUMENTS, PROPERTIES;
     }
 
     /**
@@ -321,7 +314,7 @@ public class StructuredQueryBuilder {
      * @param queries    the query definitions
      * @return    the StructuredQueryDefinition for the AND query
      */
-    public AndQuery and(StructuredQueryDefinition... queries) {
+    public StructuredQueryDefinition and(StructuredQueryDefinition... queries) {
         checkQueries(queries);
         return new AndQuery(queries);
     }
@@ -331,7 +324,7 @@ public class StructuredQueryBuilder {
      * @param queries    the query definitions
      * @return    the StructuredQueryDefinition for the OR query
      */
-    public OrQuery or(StructuredQueryDefinition... queries) {
+    public StructuredQueryDefinition or(StructuredQueryDefinition... queries) {
         checkQueries(queries);
         return new OrQuery(queries);
     }
@@ -344,7 +337,7 @@ public class StructuredQueryBuilder {
      * @param query    the query definition
      * @return    the StructuredQueryDefinition for the NOT query
      */
-    public NotQuery not(StructuredQueryDefinition query) {
+    public StructuredQueryDefinition not(StructuredQueryDefinition query) {
         checkQuery(query);
         return new NotQuery(query);
     }
@@ -357,7 +350,7 @@ public class StructuredQueryBuilder {
      * @param negative    the negative query definition
      * @return    the StructuredQueryDefinition for the AND NOT query
      */
-    public AndNotQuery andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
+    public StructuredQueryDefinition andNot(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
         checkQuery(positive);
         checkQuery(negative);
         return new AndNotQuery(positive, negative);
@@ -369,7 +362,7 @@ public class StructuredQueryBuilder {
      * @param queries    the query definitions
      * @return    the StructuredQueryDefinition for the NEAR query
      */
-    public NearQuery near(StructuredQueryDefinition... queries) {
+    public StructuredQueryDefinition near(StructuredQueryDefinition... queries) {
         checkQueries(queries);
         return new NearQuery(queries);
     }
@@ -383,7 +376,7 @@ public class StructuredQueryBuilder {
      * @param queries    the query definitions
      * @return    the StructuredQueryDefinition for the NEAR query
      */
-    public NearQuery near(int distance, double weight, Ordering order, StructuredQueryDefinition... queries) {
+    public StructuredQueryDefinition near(int distance, double weight, Ordering order, StructuredQueryDefinition... queries) {
         checkQueries(queries);
         return new NearQuery(distance, weight, order, queries);
     }
@@ -394,7 +387,7 @@ public class StructuredQueryBuilder {
      * @param query    the query definition
      * @return    the StructuredQueryDefinition for the document fragment query
      */
-    public DocumentFragmentQuery documentFragment(StructuredQueryDefinition query) {
+    public StructuredQueryDefinition documentFragment(StructuredQueryDefinition query) {
         checkQuery(query);
         return new DocumentFragmentQuery(query);
     }
@@ -405,7 +398,7 @@ public class StructuredQueryBuilder {
      * @param query    the query definition
      * @return    the StructuredQueryDefinition for the properties query
      */
-    public PropertiesQuery properties(StructuredQueryDefinition query) {
+    public StructuredQueryDefinition properties(StructuredQueryDefinition query) {
         checkQuery(query);
         return new PropertiesQuery(query);
     }
@@ -481,7 +474,7 @@ public class StructuredQueryBuilder {
      * @param terms    the possible terms to match
      * @return    the StructuredQueryDefinition for the term query
      */
-    public TermQuery term(String... terms) {
+    public StructuredQueryDefinition term(String... terms) {
         return new TermQuery(null, terms);
     }
     /**
@@ -491,7 +484,7 @@ public class StructuredQueryBuilder {
      * @param terms    the possible terms to match
      * @return    the StructuredQueryDefinition for the term query
      */
-    public TermQuery term(double weight, String... terms) {
+    public StructuredQueryDefinition term(double weight, String... terms) {
         return new TermQuery(weight, terms);
     }
 
@@ -932,7 +925,7 @@ public class StructuredQueryBuilder {
      * @return    the definition of the point
      */
     public Point point(double latitude, double longitude) {
-        return new Point(latitude, longitude);
+        return new PointImpl(latitude, longitude);
     }
 
     /**
@@ -944,7 +937,7 @@ public class StructuredQueryBuilder {
      * @return    the definition of the circle
      */
     public Circle circle(double latitude, double longitude, double radius) {
-        return new Circle(latitude, longitude, radius);
+        return new CircleImpl(latitude, longitude, radius);
     }
     /**
      * Specifies a geospatial region as a circle,
@@ -954,7 +947,7 @@ public class StructuredQueryBuilder {
      * @return    the definition of the circle
      */
     public Circle circle(Point center, double radius) {
-        return new Circle(center.getLatitude(), center.getLongitude(), radius);
+        return new CircleImpl(center.getLatitude(), center.getLongitude(), radius);
     }
 
     /**
@@ -967,7 +960,7 @@ public class StructuredQueryBuilder {
      * @return    the definition of the box
      */
     public Box box(double south, double west, double north, double east) {
-        return new Box(south, west, north, east);
+        return new BoxImpl(south, west, north, east);
     }
 
     /**
@@ -976,7 +969,7 @@ public class StructuredQueryBuilder {
      * @return    the definition of the polygon
      */
     public Polygon polygon(Point... points) {
-        return new Polygon(points);
+        return new PolygonImpl(points);
     }
 
     /**
@@ -992,29 +985,13 @@ public class StructuredQueryBuilder {
     }
 
     /**
-     * @deprecated Matches a query within the substructure of the container specified
-     * by the constraint.
-     * This method is deprecated in favor of the more general
-     * {@link #containerConstraint(String, StructuredQueryDefinition) containerConstraint()} method.
-     * @param constraintName    the constraint definition
-     * @param query    the query definition
-     * @return    the StructuredQueryDefinition for the element constraint query
-     */
-    @Deprecated
-    public ElementConstraintQuery elementConstraint(String constraintName, StructuredQueryDefinition query) {
-        checkQuery(query);
-        return new ElementConstraintQuery(constraintName, query);
-    }
-
-
-    /**
      * Associates a query with the properties of documents (as opposed to
      * the content of documents) with the specified constraint.
      * @param constraintName    the constraint definition
      * @param query    the query definition
      * @return    the StructuredQueryDefinition for the properties constraint query
      */
-    public PropertiesConstraintQuery propertiesConstraint(String constraintName, StructuredQueryDefinition query) {
+    public StructuredQueryDefinition propertiesConstraint(String constraintName, StructuredQueryDefinition query) {
         checkQuery(query);
         return new PropertiesConstraintQuery(constraintName, query);
     }
@@ -1026,7 +1003,7 @@ public class StructuredQueryBuilder {
      * @param uris    the identifiers for the criteria collections
      * @return    the StructuredQueryDefinition for the collection constraint query
      */
-    public CollectionConstraintQuery collectionConstraint(String constraintName, String... uris) {
+    public StructuredQueryDefinition collectionConstraint(String constraintName, String... uris) {
         return new CollectionConstraintQuery(constraintName, uris);
     }
 
@@ -1038,7 +1015,7 @@ public class StructuredQueryBuilder {
      * @param values    the possible values to match
      * @return    the StructuredQueryDefinition for the value constraint query
      */
-    public ValueConstraintQuery valueConstraint(String constraintName, String... values) {
+    public StructuredQueryDefinition valueConstraint(String constraintName, String... values) {
         return new ValueConstraintQuery(constraintName, values);
     }
     /**
@@ -1050,7 +1027,7 @@ public class StructuredQueryBuilder {
      * @param values    the possible values to match
      * @return    the StructuredQueryDefinition for the value constraint query
      */
-    public ValueConstraintQuery valueConstraint(String constraintName, double weight, String... values) {
+    public StructuredQueryDefinition valueConstraint(String constraintName, double weight, String... values) {
         return new ValueConstraintQuery(constraintName, weight, values);
     }
 
@@ -1061,7 +1038,7 @@ public class StructuredQueryBuilder {
      * @param words    the possible words to match
      * @return    the StructuredQueryDefinition for the word constraint query
      */
-    public WordConstraintQuery wordConstraint(String constraintName, String... words) {
+    public StructuredQueryDefinition wordConstraint(String constraintName, String... words) {
         return new WordConstraintQuery(constraintName, words);
     }
     /**
@@ -1072,7 +1049,7 @@ public class StructuredQueryBuilder {
      * @param words    the possible words to match
      * @return    the StructuredQueryDefinition for the word constraint query
      */
-    public WordConstraintQuery wordConstraint(String constraintName, double weight, String... words) {
+    public StructuredQueryDefinition wordConstraint(String constraintName, double weight, String... words) {
         return new WordConstraintQuery(constraintName, weight, words);
     }
 
@@ -1085,7 +1062,7 @@ public class StructuredQueryBuilder {
      * @param values    the possible datatyped values for the comparison
      * @return    the StructuredQueryDefinition for the range constraint query
      */
-    public RangeConstraintQuery rangeConstraint(String constraintName, Operator operator, String... values) {
+    public StructuredQueryDefinition rangeConstraint(String constraintName, Operator operator, String... values) {
         return new RangeConstraintQuery(constraintName, operator, values);
     }
 
@@ -1128,7 +1105,6 @@ public class StructuredQueryBuilder {
 
     /* ************************************************************************************* */
 
-    // TODO IN A FUTURE RELEASE:  remove the deprecated innerSerialize() method
     protected abstract class AbstractStructuredQuery
     extends AbstractQueryDefinition
     implements StructuredQueryDefinition {
@@ -1159,95 +1135,50 @@ public class StructuredQueryBuilder {
             return serializeQueries(this);
         }
 
-        /**
-         * Returns the query as a partial string.  This method will be removed in a future
-         * release.
-         * @return    the query content
-         */
-        @Deprecated
-        public String innerSerialize() {
-            return extractQueryContent(serializeQueries(this));
-        }
-
-        public abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+        public abstract void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException;
     }
 
-    // TODO IN A FUTURE RELEASE:  change the visibility of the deprecated
-    // classes from public to package and change the return type of the
-    // builder methods to StructuredQueryDefinition
-
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of AndQuery.
-     */
-    @Deprecated
-    public class AndQuery
+    protected class AndQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition[] queries;
 
-        /**
-         * @deprecated Use the and() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param queries deprecated
-         */
-        @Deprecated
         public AndQuery(StructuredQueryDefinition... queries) {
             super();
             this.queries = queries;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQueryList(serializer, "and-query", convertQueries(queries));
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface as the type for instances of OrQuery.
-     */
-    @Deprecated
-    public class OrQuery
+    protected class OrQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition[] queries;
 
-        /**
-         * @deprecated Use the or() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param queries deprecated
-         */
-        @Deprecated
         public OrQuery(StructuredQueryDefinition... queries) {
             super();
             this.queries = queries;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQueryList(serializer, "or-query", convertQueries(queries));
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface as the type for instances of NotQuery.
-     */
-    @Deprecated
-    public class NotQuery
+    protected class NotQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition query;
 
-        /**
-         * @deprecated Use the not() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param query deprecated
-         */
-        @Deprecated
         public NotQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQuery(serializer, "not-query", (AbstractStructuredQuery) query);
         }
     }
@@ -1257,11 +1188,6 @@ public class StructuredQueryBuilder {
         private StructuredQueryDefinition positive;
         private StructuredQueryDefinition negative;
 
-        /**
-         * @deprecated Use the notIn() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         */
-        @Deprecated
         public NotInQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
             super();
             this.positive = positive;
@@ -1269,7 +1195,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("not-in-query");
             writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
             writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
@@ -1277,23 +1203,11 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of AndNotQuery.
-     */
-    @Deprecated
-    public class AndNotQuery
+    protected class AndNotQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition positive;
         private StructuredQueryDefinition negative;
 
-        /**
-         * @deprecated Use the andNot() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param positive deprecated
-         * @param negative deprecated
-         */
-        @Deprecated
         public AndNotQuery(StructuredQueryDefinition positive, StructuredQueryDefinition negative) {
             super();
             this.positive = positive;
@@ -1301,7 +1215,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("and-not-query");
             writeQuery(serializer, "positive-query", (AbstractStructuredQuery) positive);
             writeQuery(serializer, "negative-query", (AbstractStructuredQuery) negative);
@@ -1314,11 +1228,6 @@ public class StructuredQueryBuilder {
         private StructuredQueryDefinition matchingQuery;
         private StructuredQueryDefinition boostingQuery;
 
-        /**
-         * @deprecated Use the boost() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         */
-        @Deprecated
         public BoostQuery(StructuredQueryDefinition matchingQuery, StructuredQueryDefinition boostingQuery) {
             super();
             this.matchingQuery = matchingQuery;
@@ -1326,7 +1235,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("boost-query");
             writeQuery(serializer, "matching-query", (AbstractStructuredQuery) matchingQuery);
             writeQuery(serializer, "boosting-query", (AbstractStructuredQuery) boostingQuery);
@@ -1335,51 +1244,28 @@ public class StructuredQueryBuilder {
     }
 
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of DocumentQuery.
-     */
-    @Deprecated
-    public class DocumentQuery
+    protected class DocumentQuery
     extends AbstractStructuredQuery {
         private String[] uris = null;
 
-        /**
-         * @deprecated Use the document() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param uris deprecated
-         */
-        @Deprecated
         public DocumentQuery(String... uris) {
             super();
             this.uris = uris;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("document-query");
             writeTextList(serializer, "uri", uris);
             serializer.writeEndElement();
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of TermQuery.
-     */
-    @Deprecated
-    public class TermQuery
+    protected class TermQuery
     extends AbstractStructuredQuery {
         private String[] terms = null;
         private Double weight = 0.0;
 
-        /**
-         * @deprecated Use the term() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param weight deprecated
-         * @param terms deprecated
-         */
-        @Deprecated
         public TermQuery(Double weight, String... terms) {
             super();
             this.weight = weight;
@@ -1387,7 +1273,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("term-query");
             writeTextList(serializer, "text", terms);
             writeText(serializer, "weight", weight);
@@ -1395,24 +1281,13 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of NearQuery.
-     */
-    @Deprecated
-    public class NearQuery
+    protected class NearQuery
     extends AbstractStructuredQuery {
         private Integer distance;
         private Double weight;
         private Ordering order;
         private StructuredQueryDefinition[] queries;
 
-        /**
-         * @deprecated Use the near() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param queries deprecated
-         */
-        @Deprecated
         public NearQuery(StructuredQueryDefinition... queries) {
             super();
             this.queries = queries;
@@ -1426,7 +1301,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("near-query");
             writeQueryList(serializer, queries);
             if (order != null) {
@@ -1441,52 +1316,29 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of CollectionQuery.
-     */
-    @Deprecated
-    public class CollectionQuery
+    protected class CollectionQuery
     extends AbstractStructuredQuery {
         private String uris[] = null;
 
-        /**
-         * @deprecated Use the collection() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param uris deprecated
-         */
-        @Deprecated
         public CollectionQuery(String... uris) {
             super();
             this.uris = uris;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("collection-query");
             writeTextList(serializer, "uri", uris);
             serializer.writeEndElement();
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of DirectoryQuery.
-     */
-    @Deprecated
-    public class DirectoryQuery
+    protected class DirectoryQuery
     extends AbstractStructuredQuery {
         private String uris[];
         private Boolean isInfinite;
         private Integer depth;
 
-        /**
-         * @deprecated Use the directory() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param isInfinite deprecated
-         * @param uris deprecated
-         */
-        @Deprecated
         public DirectoryQuery(Boolean isInfinite, String... uris) {
             super();
             this.isInfinite = isInfinite;
@@ -1502,7 +1354,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("directory-query");
             if (depth != null) {
                 serializer.writeAttribute("depth", Integer.toString(depth));
@@ -1513,80 +1365,47 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of DocumentFragmentQuery.
-     */
-    @Deprecated
-    public class DocumentFragmentQuery
+    protected class DocumentFragmentQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition query;
 
-        /**
-         * @deprecated Use the documentFragment() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param query deprecated
-         */
-        @Deprecated
         public DocumentFragmentQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQuery(serializer, "document-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of PropertiesQuery.
-     */
-    @Deprecated
-    public class PropertiesQuery
+    protected class PropertiesQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition query;
 
-        /**
-         * @deprecated Use the properties() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param query deprecated
-         */
-        @Deprecated
         public PropertiesQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQuery(serializer, "properties-fragment-query", (AbstractStructuredQuery) query);
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of LocksQuery.
-     */
-    @Deprecated
-    public class LocksQuery
+    protected class LocksQuery
     extends AbstractStructuredQuery {
         private StructuredQueryDefinition query;
 
-        /**
-         * @deprecated Use the locks() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param query deprecated
-         */
-        @Deprecated
         public LocksQuery(StructuredQueryDefinition query) {
             super();
             this.query = query;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeQuery(serializer, "locks-fragment-query", (AbstractStructuredQuery) query);
         }
     }
@@ -1614,7 +1433,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("container-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeQuery(serializer, query);
@@ -1622,55 +1441,11 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of ElementConstraintQuery.
-     */
-    @Deprecated
-    public class ElementConstraintQuery
+    protected class PropertiesConstraintQuery
     extends AbstractStructuredQuery {
         private String name;
         private StructuredQueryDefinition query;
 
-        /**
-         * @deprecated Use the elementConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param query deprecated
-         */
-        @Deprecated
-        public ElementConstraintQuery(String constraintName, StructuredQueryDefinition query) {
-            super();
-            name = constraintName;
-            this.query = query;
-        }
-
-        @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
-            serializer.writeStartElement("element-constraint-query");
-            writeText(serializer, "constraint-name", name);
-            writeQuery(serializer, query);
-            serializer.writeEndElement();
-        }
-    }
-
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of PropertiesConstraintQuery.
-     */
-    @Deprecated
-    public class PropertiesConstraintQuery
-    extends AbstractStructuredQuery {
-        private String name;
-        private StructuredQueryDefinition query;
-
-        /**
-         * @deprecated Use the propertiesConstraint() builder method of StructuredQueryBuilder
-         *operator and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param query deprecated
-         */
-        @Deprecated
         public PropertiesConstraintQuery(String constraintName, StructuredQueryDefinition query) {
             super();
             name = constraintName;
@@ -1678,7 +1453,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("properties-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeQuery(serializer, query);
@@ -1686,23 +1461,11 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of CollectionConstraintQuery.
-     */
-    @Deprecated
-    public class CollectionConstraintQuery
+    protected class CollectionConstraintQuery
     extends AbstractStructuredQuery {
         String name = null;
         String[] uris = null;
 
-        /**
-         * @deprecated Use the collectionConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param uris deprecated
-         */
-        @Deprecated
         public CollectionConstraintQuery(String constraintName, String... uris) {
             super();
             name = constraintName;
@@ -1710,7 +1473,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("collection-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeTextList(serializer, "uri", uris);
@@ -1718,24 +1481,12 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of ValueConstraintQuery.
-     */
-    @Deprecated
-    public class ValueConstraintQuery
+    protected class ValueConstraintQuery
     extends AbstractStructuredQuery {
         String name;
         String[] values;
         Double weight;
 
-        /**
-         * @deprecated Use the valueConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param values deprecated
-         */
-        @Deprecated
         public ValueConstraintQuery(String constraintName, String... values) {
             super();
             name = constraintName;
@@ -1749,7 +1500,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("value-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeTextList(serializer, "text", values);
@@ -1758,24 +1509,12 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of WordConstraintQuery.
-     */
-    @Deprecated
-    public class WordConstraintQuery
+    protected class WordConstraintQuery
     extends AbstractStructuredQuery {
         String name;
         String[] words;
         Double weight;
 
-        /**
-         * @deprecated Use the wordConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param words deprecated
-         */
-        @Deprecated
         public WordConstraintQuery(String constraintName, String... words) {
             super();
             name = constraintName;
@@ -1789,7 +1528,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("word-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeTextList(serializer, "text", words);
@@ -1798,25 +1537,12 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of RangeConstraintQuery.
-     */
-    @Deprecated
-    public class RangeConstraintQuery
+    protected class RangeConstraintQuery
     extends AbstractStructuredQuery {
         String name = null;
         String[] values = null;
         Operator operator = null;
 
-        /**
-         * @deprecated Use the rangeConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param operator deprecated
-         * @param values deprecated
-         */
-        @Deprecated
         public RangeConstraintQuery(String constraintName, Operator operator, String... values) {
             super();
             name = constraintName;
@@ -1825,7 +1551,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("range-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeTextList(serializer, "value", values);
@@ -1834,23 +1560,11 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of GeospatialConstraintQuery.
-     */
-    @Deprecated
-    public class GeospatialConstraintQuery
+    protected class GeospatialConstraintQuery
     extends AbstractStructuredQuery {
         String name = null;
         Region[] regions = null;
 
-        /**
-         * @deprecated Use the geospatialConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param regions deprecated
-         */
-        @Deprecated
         public GeospatialConstraintQuery(String constraintName, Region... regions) {
             super();
             name = constraintName;
@@ -1858,7 +1572,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("geospatial-constraint-query");
             writeText(serializer, "constraint-name", name);
             for (Region region : regions) {
@@ -1868,7 +1582,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class GeospatialRegionConstraintQuery extends AbstractStructuredQuery {
+    protected class GeospatialRegionConstraintQuery extends AbstractStructuredQuery {
         String name = null;
         Region[] regions = null;
         GeospatialOperator operator;
@@ -1881,7 +1595,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("geo-region-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeText(serializer, "geospatial-operator", operator.toString());
@@ -1892,23 +1606,11 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the {@link StructuredQueryDefinition StructuredQueryDefinition} interface
-     * as the type for instances of CustomConstraintQuery.
-     */
-    @Deprecated
-    public class CustomConstraintQuery
+    protected class CustomConstraintQuery
     extends AbstractStructuredQuery {
         private String terms[] = null;
         private String name = null;
 
-        /**
-         * @deprecated Use the customConstraint() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the StructuredQueryDefinition interface.
-         * @param constraintName deprecated
-         * @param terms deprecated
-         */
-        @Deprecated
         public CustomConstraintQuery(String constraintName, String... terms) {
             super();
             name = constraintName;
@@ -1916,7 +1618,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("custom-constraint-query");
             writeText(serializer, "constraint-name", name);
             writeTextList(serializer, "text", terms);
@@ -1924,7 +1626,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class ContainerQuery
+    protected class ContainerQuery
     extends AbstractStructuredQuery {
         private ContainerIndex index;
         private StructuredQueryDefinition query;
@@ -1933,7 +1635,7 @@ public class StructuredQueryBuilder {
             this.query = query;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("container-query");
             ((IndexImpl) index).innerSerialize(serializer);
             writeQuery(serializer, query);
@@ -1957,10 +1659,10 @@ public class StructuredQueryBuilder {
             this.values  = values;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             ((IndexImpl) index).innerSerialize(serializer);
             if (scope != null) {
-                if (scope == FragmentScope.DOCUMENT) {
+                if (scope == FragmentScope.DOCUMENTS) {
                     writeText(serializer, "fragment-scope", "documents");
                 }
                 else {
@@ -1974,7 +1676,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class ValueQuery
+    protected class ValueQuery
     extends AbstractStructuredQuery {
         TextIndex     index;
         FragmentScope scope;
@@ -1990,7 +1692,7 @@ public class StructuredQueryBuilder {
             this.values  = values;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("value-query");
             if ( values != null && values.length > 0 ) {
                 if ( values[0] == null ) {
@@ -2005,7 +1707,7 @@ public class StructuredQueryBuilder {
             }
             ((IndexImpl) index).innerSerialize(serializer);
             if (scope != null) {
-                if (scope == FragmentScope.DOCUMENT) {
+                if (scope == FragmentScope.DOCUMENTS) {
                     writeText(serializer, "fragment-scope", "documents");
                 }
                 else {
@@ -2028,14 +1730,14 @@ public class StructuredQueryBuilder {
     }
 
     // QUESTION: why collation on word but not values?
-    class WordQuery
+    protected class WordQuery
     extends TextQuery {
         WordQuery(TextIndex index, FragmentScope scope, String[] options,
                 Double weight, String[] values) {
             super(index, scope, options, weight, values);
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("word-query");
             super.innerSerialize(serializer);
             serializer.writeEndElement();
@@ -2043,7 +1745,7 @@ public class StructuredQueryBuilder {
     }
 
 
-    class RangeQuery
+    protected class RangeQuery
     extends AbstractStructuredQuery {
         RangeIndex    index;
         FragmentScope scope;
@@ -2095,7 +1797,7 @@ public class StructuredQueryBuilder {
           return value.toString();
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("range-query");
             if (type != null) {
                 serializer.writeAttribute("type", type);
@@ -2130,7 +1832,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class GeospatialPointQuery
+    protected class GeospatialPointQuery
     extends GeospatialBaseQuery {
         GeospatialIndex index;
         GeospatialPointQuery(GeospatialIndex index, FragmentScope scope, Region[] regions,
@@ -2139,7 +1841,7 @@ public class StructuredQueryBuilder {
             this.index   = index;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             String elemName = null;
             if (index instanceof GeoJSONPropertyImpl)
                 elemName = "geo-json-property-query";
@@ -2172,7 +1874,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class GeospatialRegionQuery extends GeospatialBaseQuery {
+    protected class GeospatialRegionQuery extends GeospatialBaseQuery {
         GeoRegionPathImpl index;
         GeospatialOperator operator;
 
@@ -2184,7 +1886,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             String elemName = "geo-region-path-query";
             serializer.writeStartElement(elemName);
             if(index.coordinateSystem != null) {
@@ -2203,7 +1905,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalAxis implements Axis {
+    protected class TemporalAxis implements Axis {
         private String name;
         TemporalAxis(String name) {
             this.name = name;
@@ -2214,7 +1916,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalPeriod
+    protected class TemporalPeriod
     extends AbstractStructuredQuery implements Period {
         private String formattedStart;
         private String formattedEnd;
@@ -2224,7 +1926,7 @@ public class StructuredQueryBuilder {
             this.formattedEnd = end;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("period");
             writeText(serializer, "period-start", formattedStart);
             writeText(serializer, "period-end", formattedEnd);
@@ -2232,7 +1934,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalPeriodRangeQuery
+    protected class TemporalPeriodRangeQuery
     extends AbstractStructuredQuery {
         private Axis[] axes;
         private TemporalOperator operator;
@@ -2245,7 +1947,7 @@ public class StructuredQueryBuilder {
             this.options = options;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("period-range-query");
             writeTextList(serializer, "axis", axes);
             writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
@@ -2257,7 +1959,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalPeriodCompareQuery
+    protected class TemporalPeriodCompareQuery
     extends AbstractStructuredQuery {
         private Axis axis1;
         private TemporalOperator operator;
@@ -2270,7 +1972,7 @@ public class StructuredQueryBuilder {
             this.options = options;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("period-compare-query");
             writeText(serializer, "axis1", axis1);
             writeText(serializer, "temporal-operator", operator.toString().toLowerCase());
@@ -2280,7 +1982,7 @@ public class StructuredQueryBuilder {
         }
     }
 
-    class TemporalLsqtQuery
+    protected class TemporalLsqtQuery
     extends AbstractStructuredQuery {
         private String temporalCollection;
         private String formattedTimestamp = null;
@@ -2295,7 +1997,7 @@ public class StructuredQueryBuilder {
             this.options = options;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("lsqt-query");
             writeText(serializer, "temporal-collection", temporalCollection);
             if ( formattedTimestamp != null && formattedTimestamp.length() > 0 ) {
@@ -2310,9 +2012,9 @@ public class StructuredQueryBuilder {
     /* ************************************************************************************* */
 
     protected abstract class IndexImpl {
-        protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+        public abstract void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException;
     }
-    class ElementImpl extends IndexImpl implements Element {
+    protected class ElementImpl extends IndexImpl implements Element {
         String name;
         QName qname;
         ElementImpl(QName qname) {
@@ -2322,11 +2024,11 @@ public class StructuredQueryBuilder {
             this.name = name;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializeNamedIndex(serializer, "element", qname, name);
         }
     }
-    class AttributeImpl extends IndexImpl implements Attribute {
+    protected class AttributeImpl extends IndexImpl implements Attribute {
         String name;
         QName qname;
         AttributeImpl(QName qname) {
@@ -2336,11 +2038,11 @@ public class StructuredQueryBuilder {
             this.name = name;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializeNamedIndex(serializer, "attribute", qname, name);
         }
     }
-    class ElementAttributeImpl extends IndexImpl implements ElementAttribute {
+    protected class ElementAttributeImpl extends IndexImpl implements ElementAttribute {
         Element   element;
         Attribute attribute;
         ElementAttributeImpl(Element element, Attribute attribute) {
@@ -2348,44 +2050,44 @@ public class StructuredQueryBuilder {
             this.attribute = attribute;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             ((IndexImpl) element).innerSerialize(serializer);
             ((IndexImpl) attribute).innerSerialize(serializer);
         }
     }
-    class FieldImpl extends IndexImpl implements Field {
+    protected class FieldImpl extends IndexImpl implements Field {
         String name;
         FieldImpl(String name) {
             this.name = name;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("field");
             serializer.writeAttribute("name", name);
             serializer.writeEndElement();
         }
     }
-    class JSONPropertyImpl extends IndexImpl implements JSONProperty {
+    protected class JSONPropertyImpl extends IndexImpl implements JSONProperty {
         String name;
         JSONPropertyImpl(String name) {
             this.name = name;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeText(serializer, "json-property", name);
         }
     }
-    class PathIndexImpl extends IndexImpl implements PathIndex {
+    protected class PathIndexImpl extends IndexImpl implements PathIndex {
         String path;
         PathIndexImpl(String path) {
             this.path = path;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             writeText(serializer, "path-index", path);
         }
     }
-    class GeoJSONPropertyImpl extends IndexImpl implements GeospatialIndex {
+    protected class GeoJSONPropertyImpl extends IndexImpl implements GeospatialIndex {
         JSONProperty parent;
         JSONProperty jsonProperty;
         GeoJSONPropertyImpl(JSONProperty jsonProperty) {
@@ -2397,7 +2099,7 @@ public class StructuredQueryBuilder {
             this.parent  = parent;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             if (parent != null && parent instanceof JSONPropertyImpl) {
                 JSONPropertyImpl parentImpl  = (JSONPropertyImpl) parent;
                 writeText(serializer, "parent-property", parentImpl.name);
@@ -2406,7 +2108,7 @@ public class StructuredQueryBuilder {
             writeText(serializer, "json-property", jsonPropertyImpl.name);
         }
     }
-    class GeoJSONPropertyPairImpl extends IndexImpl implements GeospatialIndex {
+    protected class GeoJSONPropertyPairImpl extends IndexImpl implements GeospatialIndex {
         JSONProperty parent;
         JSONProperty lat;
         JSONProperty lon;
@@ -2416,7 +2118,7 @@ public class StructuredQueryBuilder {
             this.lon    = lon;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             JSONPropertyImpl parentImpl = (JSONPropertyImpl) parent;
             JSONPropertyImpl latImpl    = (JSONPropertyImpl) lat;
             JSONPropertyImpl lonImpl    = (JSONPropertyImpl) lon;
@@ -2425,7 +2127,7 @@ public class StructuredQueryBuilder {
             writeText(serializer, "lon-property", lonImpl.name);
         }
     }
-    class GeoElementImpl extends IndexImpl implements GeospatialIndex {
+    protected class GeoElementImpl extends IndexImpl implements GeospatialIndex {
         Element parent;
         Element element;
         GeoElementImpl(Element element) {
@@ -2437,7 +2139,7 @@ public class StructuredQueryBuilder {
             this.parent  = parent;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             if (parent != null && parent instanceof ElementImpl) {
                 ElementImpl parentImpl  = (ElementImpl) parent;
                 serializeNamedIndex(serializer, "parent",  parentImpl.qname,  parentImpl.name);
@@ -2454,7 +2156,7 @@ public class StructuredQueryBuilder {
             }
         }
     }
-    class GeoElementPairImpl extends IndexImpl implements GeospatialIndex {
+    protected class GeoElementPairImpl extends IndexImpl implements GeospatialIndex {
         Element parent;
         Element lat;
         Element lon;
@@ -2464,7 +2166,7 @@ public class StructuredQueryBuilder {
             this.lon    = lon;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             ElementImpl parentImpl = (ElementImpl) parent;
             ElementImpl latImpl    = (ElementImpl) lat;
             ElementImpl lonImpl    = (ElementImpl) lon;
@@ -2473,7 +2175,7 @@ public class StructuredQueryBuilder {
             serializeNamedIndex(serializer, "lon", lonImpl.qname, lonImpl.name);
         }
     }
-    class GeoAttributePairImpl extends IndexImpl implements GeospatialIndex {
+    protected class GeoAttributePairImpl extends IndexImpl implements GeospatialIndex {
         Element   parent;
         Attribute lat;
         Attribute lon;
@@ -2483,7 +2185,7 @@ public class StructuredQueryBuilder {
             this.lon    = lon;
         }
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             ElementImpl   parentImpl = (ElementImpl) parent;
             AttributeImpl latImpl    = (AttributeImpl) lat;
             AttributeImpl lonImpl    = (AttributeImpl) lon;
@@ -2501,7 +2203,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             PathIndexImpl pathIndexImpl = (PathIndexImpl) pathIndex;
             pathIndexImpl.innerSerialize(serializer);
             ;
@@ -2530,64 +2232,36 @@ public class StructuredQueryBuilder {
     /**
      * A region matched by a geospatial query.
      */
-    public interface Region {
-        // TODO IN A FUTURE RELEASE:  remove the deprecated serialize() method
-
-        /**
-         * @deprecated Returns the region as a partial string.  This method will be removed in a future
-         * release.
-         * @return    the query content identifying a region
-         */
-        @Deprecated
-        public abstract String serialize();
+    public interface Region extends StructuredQueryDefinition {
     }
 
-    // TODO IN A FUTURE RELEASE:  separate a public Point interface
-    // from a package PointImpl class
-
-    protected abstract class RegionImpl  {
-        /**
-         * @deprecated Returns the region as a partial string.  This method will be removed in a future
-         * release.
-         * @return    the query content identifying a region
-         */
-        @Deprecated
-        public String serialize() {
-            return extractQueryContent(serializeRegions(this));
-        }
-        protected abstract void innerSerialize(XMLStreamWriter serializer) throws Exception;
+    protected abstract class RegionImpl extends AbstractStructuredQuery {
     }
 
-    /**
-     * @deprecated Treat the Point class as an interface that extends Region.
-     */
-    @Deprecated
-    public class Point extends RegionImpl implements Region {
+    public interface Point extends Region {
+        double getLatitude();
+        double getLongitude();
+        String serialize();
+        void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException;
+    }
+
+    protected class PointImpl extends RegionImpl implements Point {
         private double lat = 0.0;
         private double lon = 0.0;
 
-        /**
-         * @deprecated Use the point() builder method of StructuredQueryBuilder.
-         * @param latitude deprecated
-         * @param longitude deprecated
-         */
-        @Deprecated
-        public Point(double latitude, double longitude) {
+        public PointImpl(double latitude, double longitude) {
             lat = latitude;
             lon = longitude;
         }
 
-        @Deprecated
         public double getLatitude() {
             return lat;
         }
-        @Deprecated
         public double getLongitude() {
             return lon;
         }
 
-        @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("point");
             writeText(serializer, "latitude", String.valueOf(lat));
             writeText(serializer, "longitude", String.valueOf(lon));
@@ -2595,33 +2269,19 @@ public class StructuredQueryBuilder {
         }
     }
 
-    // TODO IN A FUTURE RELEASE:  change the visibility of the deprecated
-    // classes from public to package and change the return type of the builder
-    // methods to Region
+    public interface Circle extends Region {}
 
-    /**
-     * @deprecated Use the Region interface as the type for instances of Circle.
-     */
-    @Deprecated
-    public class Circle extends RegionImpl implements Region {
+    protected class CircleImpl extends RegionImpl implements Circle {
         private Point center = null;
         private double radius = 0.0;
 
-        /**
-         * @deprecated Use the circle() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the Region interface.
-         * @param latitude deprecated
-         * @param longitude deprecated
-         * @param radius deprecated
-         */
-        @Deprecated
-        public Circle(double latitude, double longitude, double radius) {
-            center = new Point(latitude, longitude);
+        public CircleImpl(double latitude, double longitude, double radius) {
+            center = new PointImpl(latitude, longitude);
             this.radius = radius;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("circle");
             writeText(serializer, "radius", String.valueOf(radius));
             center.innerSerialize(serializer);
@@ -2629,23 +2289,12 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the Region interface as the type for instances of Box.
-     */
-    @Deprecated
-    public class Box extends RegionImpl implements Region {
+    public interface Box extends Region {}
+
+    protected class BoxImpl extends RegionImpl implements Box {
         private double south, west, north, east;
 
-        /**
-         * @deprecated Use the box() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the Region interface.
-         * @param south deprecated
-         * @param west deprecated
-         * @param north deprecated
-         * @param east deprecated
-         */
-        @Deprecated
-        public Box(double south, double west, double north, double east) {
+        public BoxImpl(double south, double west, double north, double east) {
             this.south = south;
             this.west = west;
             this.north = north;
@@ -2653,7 +2302,7 @@ public class StructuredQueryBuilder {
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("box");
             writeText(serializer, "south", String.valueOf(south));
             writeText(serializer, "west",  String.valueOf(west));
@@ -2663,25 +2312,17 @@ public class StructuredQueryBuilder {
         }
     }
 
-    /**
-     * @deprecated Use the Region interface as the type for instances of Polygon.
-     */
-    @Deprecated
-    public class Polygon extends RegionImpl implements Region {
+    public interface Polygon extends Region {}
+
+    protected class PolygonImpl extends RegionImpl implements Polygon {
         private Point[] points;
 
-        /**
-         * @deprecated Use the polygon() builder method of StructuredQueryBuilder
-         * and type the object as an instance of the Region interface.
-         * @param points deprecated
-         */
-        @Deprecated
-        public Polygon(Point... points) {
+        public PolygonImpl(Point... points) {
             this.points = points;
         }
 
         @Override
-        public void innerSerialize(XMLStreamWriter serializer) throws Exception {
+        public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
             serializer.writeStartElement("polygon");
             for (Point point: points) {
                 point.innerSerialize(serializer);
@@ -2848,7 +2489,8 @@ public class StructuredQueryBuilder {
 
     static private void serializeNamedIndex(XMLStreamWriter serializer,
             String elemName, QName qname, String name)
-    throws Exception {
+        throws XMLStreamException
+    {
         serializer.writeStartElement(elemName);
         if (qname != null) {
             String ns = qname.getNamespaceURI();
@@ -2863,7 +2505,7 @@ public class StructuredQueryBuilder {
 
     static private void writeText(XMLStreamWriter serializer,
             String container, Object object)
-    throws Exception
+        throws XMLStreamException
     {
         if (object == null) {
             return;
@@ -2877,7 +2519,7 @@ public class StructuredQueryBuilder {
     }
     static private void writeTextList(XMLStreamWriter serializer,
             String container, Object[] objects)
-    throws Exception
+        throws XMLStreamException
     {
         if (objects == null) {
             return;
@@ -2893,13 +2535,13 @@ public class StructuredQueryBuilder {
         }
     }
     static private void writeQuery(XMLStreamWriter serializer, StructuredQueryDefinition query)
-    throws Exception
+        throws XMLStreamException
     {
         ((AbstractStructuredQuery) query).innerSerialize(serializer);
     }
     static private void writeQueryList(XMLStreamWriter serializer,
             StructuredQueryDefinition... queries)
-    throws Exception
+        throws XMLStreamException
     {
         if (queries == null) {
             return;
@@ -2911,7 +2553,7 @@ public class StructuredQueryBuilder {
     }
     static private void writeQuery(XMLStreamWriter serializer,
             String container, AbstractStructuredQuery query)
-    throws Exception
+        throws XMLStreamException
     {
         serializer.writeStartElement(container);
         if (query != null) {
@@ -2921,7 +2563,7 @@ public class StructuredQueryBuilder {
     }
     static private void writeQueryList(XMLStreamWriter serializer,
             String container, AbstractStructuredQuery... queries)
-    throws Exception
+        throws XMLStreamException
     {
         serializer.writeStartElement(container);
         if (queries != null) {

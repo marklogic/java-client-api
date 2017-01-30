@@ -223,16 +223,6 @@ public interface TransformExtensionsManager {
      */
     void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Installs a transform implemented in XSL.
-     * @param transformName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XSL implementation
-     * @param metadata	the metadata about the transform
-     * @param paramTypes	the names and XML Schema datatypes of the transform parameters
-     */
-    @Deprecated
-    void writeXSLTransform(String transformName, XMLWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
-    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
 	/**
      * Installs a transform implemented in XQuery
@@ -280,16 +270,6 @@ public interface TransformExtensionsManager {
      * @param metadata	the metadata about the transform
      */
     void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata)
-    	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Installs a transform implemented in XQuery.
-     * @param transformName	the name of the resource
-     * @param sourceHandle	a handle on the source for the XQuery implementation
-     * @param metadata	the metadata about the transform
-     * @param paramTypes	the names and XML Schema datatypes of the transform parameters
-     */
-    @Deprecated
-    void writeXQueryTransform(String transformName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, Map<String,String> paramTypes)
     	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
 
   	/**

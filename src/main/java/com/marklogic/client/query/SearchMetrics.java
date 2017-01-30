@@ -37,12 +37,12 @@ public interface SearchMetrics {
      */
     long getSnippetResolutionTime();
 
-    @Deprecated
     /**
      * Returns the metadata resolution time in milliseconds.
      * @return The metadata resolution time.
-     * @deprecated this is only populated when using the deprecated option extract-metadata
+     * @deprecated (as of 4.0.1) this is only populated when using the deprecated option extract-metadata
      */
+    @Deprecated
     long getMetadataResolutionTime();
 
     /**

@@ -263,17 +263,6 @@ public class StructuredQueryBuilderTest {
     				+ "<locks-fragment-query><term-query><text>one</text></term-query></locks-fragment-query></query>", q);
         }
 
-        t = qb.elementConstraint("name", qb.term("one"));
-        for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
-        	xml = new StringInputStream(q);
-        	parser.parse(xml, handler);
-        	assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\" "
-        			+ "xmlns:xs=\"http://www.w3.org/2001/XMLSchema\" "
-        			+ "xmlns:search=\"http://marklogic.com/appservices/search\" "
-					+ "xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
-    				+ "<element-constraint-query><constraint-name>name</constraint-name><term-query><text>one</text></term-query></element-constraint-query></query>", q);
-        }
-        
         t = qb.containerConstraint("name", qb.term("one"));
         for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
         	xml = new StringInputStream(q);
@@ -566,10 +555,12 @@ q);
 
         // verify backward compatible behaviour
         String inner = null;
-        inner = qb.valueConstraint("name", "one").innerSerialize();
-        assertXMLEqual("<value-constraint-query><constraint-name>name</constraint-name><text>one</text></value-constraint-query>", inner);
+        inner = qb.valueConstraint("name", "one").serialize();
+        assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">" +
+            "<value-constraint-query><constraint-name>name</constraint-name><text>one</text></value-constraint-query></query>", inner);
         inner = qb.point(5, 6).serialize();
-        assertXMLEqual("<point><latitude>5.0</latitude><longitude>6.0</longitude></point>", inner);
+        assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">" +
+            "<point><latitude>5.0</latitude><longitude>6.0</longitude></point></query>", inner);
         
         
         t = qb.boost(qb.term("foo"), qb.term("bar"));

@@ -265,15 +265,6 @@ class ServerConfigurationManagerImpl
 		}
 	}
 
-	@Override
-	public Policy getContentVersionRequests() {
-		return contentVersions;
-	}
-	@Override
-	public void setContentVersionRequests(Policy policy) {
-		contentVersions = policy;
-		contentVersionToUpdatePolicy();
-	}
 	private void contentVersionToUpdatePolicy() {
 		if (contentVersions == null) {
 			return;
