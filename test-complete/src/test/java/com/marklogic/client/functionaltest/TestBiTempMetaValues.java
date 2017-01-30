@@ -21,11 +21,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Calendar;
-import java.util.concurrent.TimeUnit;
 
 import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.DatatypeFactory;
-import javax.xml.datatype.Duration;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -37,8 +35,8 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
@@ -54,8 +52,8 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder.TemporalOperator;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestBiTempMetaValues extends BasicJavaClientREST {
 
@@ -1095,7 +1093,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	 */
 	public void testProtectWipeWithoutPermission() throws Exception {
 
-		System.out.println("Inside testProtectWipe");
+		System.out.println("Inside testProtectWipeWithoutPermission");
 		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "rest-admin", "x", Authentication.DIGEST);
 		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
 		        temporalLsqtCollectionName, true);
@@ -1124,7 +1122,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	    	str.append(ex.getMessage());
 	    	System.out.println("Exception not thrown when user does not have permissions" + str.toString());
 	    }
-		assertTrue("Exception not thrown when user does not have permissions", str.toString().contains("Local message: User is not allowed to protect resource at documents/protection"));
+		assertTrue("Exception not thrown when user does not have permissions ", str.toString().contains("User is not allowed to protect resource"));
 	}
 	
 	@Test
@@ -1183,7 +1181,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		docMgr.wipe(docId, t1, temporalLsqtCollectionName);
 		Thread.sleep(5000);
 		t1.commit();
-	//	DocumentPage readResults = jsonDocMgr.read(docId);
+	
 		readResults = jsonDocMgr.read(docId);
 	    System.out.println("Number of results = " + readResults.size());
 	    assertEquals("Wrong number of results", 0, readResults.size());	    
