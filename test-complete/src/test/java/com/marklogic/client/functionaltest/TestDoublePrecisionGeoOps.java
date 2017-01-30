@@ -16,7 +16,8 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,7 +28,6 @@ import java.util.TreeMap;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.apache.logging.log4j.message.StructuredDataMessage.Format;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -46,13 +46,11 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
-import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.CoordinateSystem;
 import com.marklogic.client.query.StructuredQueryBuilder.GeospatialOperator;
 import com.marklogic.client.query.StructuredQueryDefinition;
-import com.sun.javafx.collections.MappingChange.Map;
 
 public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 
@@ -68,15 +66,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 				
-		// Setup additional indices for double precision.		
-		/*addGeospatialElementIndexes(dbName, "point", "", "wgs84/double", "point", false, "reject");
-		
-		addGeoSpatialElementChildIndexes(dbName,"","ele-child-point", "", "pos" , "wgs84/double", "point", true, "reject");			
-		addGeospatialElementPairIndexes(dbName, "", "ele-pair-point", "", "ele-pair-point-lat", "", "ele-pair-point-long", "wgs84/double", false, "reject");
-		addGeospatialElementAttributePairIndexes(dbName, "", "ele-attr-pair-point", "", "lat", "", "lon", "wgs84/double", true, "reject");
-		addGeospatialPathIndexes(dbName, "/root/lat-long", "wgs84/double", "point", false, "reject");*/
-			
-		// Add /double to the coordinate system once Git Issue 466 is fixed.
+		// Setup additional indices for double precision.				
 		addGeospatialRegionPathIndexes(dbName, "/root/item/linestring", "wgs84/double", "2", "reject");
 		addGeospatialRegionPathIndexes(dbName, "/root/item/point", "wgs84", "2", "reject");
 		addGeospatialRegionPathIndexes(dbName, "/root/item/circle", "wgs84/double", "2", "reject");
@@ -431,7 +421,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Linestring crosses Box TODO
+	 * Linestring crosses Box TODO Once server side issues are sorted in 4.0-2
 	 */
 	@Test	
 	public void testLinestringCrossesBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
@@ -748,7 +738,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Polygon touches Point TODO
+	 * Polygon touches Point TODO - Once Server side issues are fixed in 4.0-2
 	 */
 	
 	@Test	
