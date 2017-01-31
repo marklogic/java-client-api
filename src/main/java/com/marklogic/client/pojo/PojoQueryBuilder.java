@@ -403,7 +403,7 @@ public interface PojoQueryBuilder<T> {
      * @param points	the list of points defining the perimeter of the region
      * @return	the definition of the polygon
      */
-    StructuredQueryBuilder.Region polygon(@SuppressWarnings("deprecation") StructuredQueryBuilder.Point... points);
+    StructuredQueryBuilder.Region polygon(StructuredQueryBuilder.Point... points);
     /** Copied directly from  {@link StructuredQueryBuilder#term(double, String...) StructuredQuerybuilder.term(double, String...)}.
      * Matches documents containing the specified terms, modifying
      * the contribution of the match to the score with the weight.

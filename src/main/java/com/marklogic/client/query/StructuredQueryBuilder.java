@@ -2433,60 +2433,6 @@ public class StructuredQueryBuilder {
         }
     }
 
-    // TODO IN A FUTURE RELEASE:  remove the transformation once the deprecated serialization
-    // methods are removed
-    static private Transformer makeExtractorTransformer() {
-        try {
-            if (extractor == null) {
-                extractor = TransformerFactory.newInstance().newTemplates(new StreamSource(new StringReader(
-                        "<xsl:stylesheet version='1.0'"+
-                            " xmlns:xsl='http://www.w3.org/1999/XSL/Transform'"+
-                            " xmlns:search='http://marklogic.com/appservices/search'"+
-                            " xmlns:xs='http://www.w3.org/2001/XMLSchema'"+
-                            " exclude-result-prefixes='search xs'>"+
-                        "<xsl:output method='xml' omit-xml-declaration='yes'/>"+
-                        "<xsl:template match='/'>"+
-                            "<xsl:apply-templates select='*/node()'/>"+
-                        "</xsl:template>"+
-                        "<xsl:template match='search:*'>"+
-                            "<xsl:element name='{local-name(.)}'>"+
-                                "<xsl:copy-of select='@*'/>"+
-                                "<xsl:apply-templates select='node()'/>"+
-                            "</xsl:element>"+
-                        "</xsl:template>"+
-                        "<xsl:template match='*'>"+
-                            "<xsl:copy>"+
-                                "<xsl:copy-of select='@*'/>"+
-                                "<xsl:apply-templates select='node()'/>"+
-                            "</xsl:copy>"+
-                        "</xsl:template>"+
-                        "<xsl:template match='node()'>"+
-                            "<xsl:copy-of select='.'/>"+
-                        "</xsl:template>"+
-                        "</xsl:stylesheet>"
-                        )));
-            }
-            return extractor.newTransformer();
-        } catch (TransformerConfigurationException e) {
-            throw new MarkLogicIOException(e);
-        }
-    }
-    static private String extractQueryContent(String query) {
-        if (query == null) {
-            return null;
-        }
-        try {
-            StringWriter writer = new StringWriter();
-            makeExtractorTransformer().transform(
-                    new StreamSource(new StringReader(query)),
-                    new StreamResult(writer)
-                );
-            return writer.toString();
-        } catch (TransformerException e) {
-            throw new MarkLogicIOException(e);
-        }
-    }
-
     static private void serializeNamedIndex(XMLStreamWriter serializer,
             String elemName, QName qname, String name)
         throws XMLStreamException
