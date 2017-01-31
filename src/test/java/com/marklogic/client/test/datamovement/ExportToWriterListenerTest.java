@@ -19,13 +19,18 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.FileReader;
+import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -40,12 +45,12 @@ import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.test.Common;
 
 public class ExportToWriterListenerTest {
+  private Logger logger = LoggerFactory.getLogger(ExportToWriterListenerTest.class);
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "ExportToWriterListenerTest_" +
     new Random().nextInt(10000);
   private static String docContents = "doc contents";
-  private static String outputFile = "target/ExportToWriterListenerTest.csv";
 
   @BeforeClass
   public static void beforeClass() {
@@ -58,6 +63,8 @@ public class ExportToWriterListenerTest {
 
   @Test
   public void testMassExportToWriter() throws Exception {
+    File outputFile = Files.createTempFile("ExportToWriterListenerTest", "csv").toFile();
+    logger.debug("outputFile=[{}]", outputFile);
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
@@ -104,8 +111,8 @@ public class ExportToWriterListenerTest {
       }
     }
 
-    try ( // validate that the docs were exported
-            FileReader fileReader = new FileReader(outputFile); BufferedReader reader = new BufferedReader(fileReader)) {
+    // validate that the docs were exported
+    try (FileReader fileReader = new FileReader(outputFile); BufferedReader reader = new BufferedReader(fileReader)) {
       int lines = 0;
       while ( reader.readLine() != null ) lines++;
       assertEquals( "There should be 100 lines in the output file", 100, lines );
