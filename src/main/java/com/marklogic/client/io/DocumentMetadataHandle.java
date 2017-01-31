@@ -138,21 +138,37 @@ public class DocumentMetadataHandle
 	 */
 	public enum Capability {
 		/**
-		 * Permission to execute the document.
+		 * Capability to execute the document.
 		 */
 		EXECUTE,
 		/**
-		 * Permission to create but not modify the document.
+		 * Capability to create but not modify the document.
 		 */
 		INSERT,
 		/**
-		 * Permission to read the document.
+		 * Capability to read the document.
 		 */
 		READ,
 		/**
-		 * Permission to create or modify the document.
+		 * Capability to create or modify the document.
 		 */
-		UPDATE;
+		UPDATE,
+		/**
+		 * Capability to update nodes within the document or properties of the document.
+		 */
+		NODE_UPDATE;
+
+		@Override
+		public String toString() {
+			return super.toString().replace('_', '-');
+		}
+
+		public static final Capability getValueOf(String name) {
+			if ( name != null ) {
+				name = name.replace('-', '_').toUpperCase();
+			}
+			return valueOf(name);
+		}
 	}
 
 	/**
@@ -639,7 +655,7 @@ public class DocumentMetadataHandle
 				if ("role-name".equals(element.getLocalName()))
 					roleName = element.getTextContent();
 				else if ("capability".equals(element.getLocalName()))
-					caps.add(Capability.valueOf(element.getTextContent().toUpperCase()));
+					caps.add(Capability.getValueOf(element.getTextContent()));
 				else if (logger.isWarnEnabled())
 					logger.warn("Skipping unknown permission element", element.getTagName());
 			}
@@ -833,7 +849,7 @@ public class DocumentMetadataHandle
 
 			for (Capability capability: permission.getValue()) {
 				serializer.writeStartElement("rapi", "capability", REST_API_NS);
-				serializer.writeCharacters(capability.name().toLowerCase());
+				serializer.writeCharacters(capability.toString().toLowerCase());
 				serializer.writeEndElement();
 			}
 

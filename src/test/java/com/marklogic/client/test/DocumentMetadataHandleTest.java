@@ -175,4 +175,14 @@ public class DocumentMetadataHandleTest {
 			assertEquals("Wrong value for key in the values metadata", "value2", metadataValues.get("key2"));
 		}
 	}
+
+	@Test
+	public void testCapabilityEnum() {
+		assertEquals(Capability.EXECUTE, Capability.getValueOf("execute"));
+		assertEquals(Capability.INSERT, Capability.getValueOf("Insert"));
+		assertEquals(Capability.READ, Capability.getValueOf("READ"));
+		assertEquals(Capability.UPDATE, Capability.getValueOf("upDate"));
+		assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("node-Update"));
+		assertEquals(Capability.NODE_UPDATE, Capability.getValueOf("NODE_UPDATE"));
+	}
 }
