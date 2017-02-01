@@ -43,6 +43,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -64,8 +65,12 @@ import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.impl.GenericDocumentImpl;
+import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
 import com.marklogic.client.test.Common;
 
@@ -455,6 +460,25 @@ public class QueryBatcherTest {
     );
     // there should be one failure sent to the UrisToWriterListener
     // onBatchFailure listener since the writer is invalid
+    assertEquals(1, failureBatchCount.get());
+  }
+
+  @Test
+  public void testDeleteListenerException() {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    testListenerException( batch -> {
+        DeleteListener listener = new DeleteListener()
+          .onBatchFailure( (batch2, throwable) -> failureBatchCount.incrementAndGet() );
+        QueryBatch mockQueryBatch = new QueryBatchImpl() {
+          public DatabaseClient getClient() {
+            throw new InternalError(errorMessage);
+          }
+        };
+        listener.processEvent(mockQueryBatch);
+      }
+    );
+    // there should be one failure sent to the DeleteListener
+    // onBatchFailure listener since getClient in mockQueryBatch throws InternalError
     assertEquals(1, failureBatchCount.get());
   }
 
