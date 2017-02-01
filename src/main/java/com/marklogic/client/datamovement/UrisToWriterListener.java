@@ -59,6 +59,7 @@ public class UrisToWriterListener implements QueryBatchListener {
   private String suffix = "\n";
   private String prefix;
   private List<OutputListener> outputListeners = new ArrayList<>();
+  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
   public UrisToWriterListener(Writer writer) {
     this.writer = writer;
@@ -66,28 +67,38 @@ public class UrisToWriterListener implements QueryBatchListener {
 
   @Override
   public void processEvent(QueryBatch batch) {
-    synchronized(writer) {
-      for ( String uri : batch.getItems() ) {
-        try {
-          if (prefix != null) writer.write(prefix);
-          if ( outputListeners.size() > 0 ) {
-            for ( OutputListener listener : outputListeners ) {
-              String output = null;
-              try {
-                output = listener.generateOutput(uri);
-              } catch (Throwable t) {
-                logger.error("Exception thrown by an onGenerateOutput listener", t);
+    try {
+      synchronized(writer) {
+        for ( String uri : batch.getItems() ) {
+          try {
+            if (prefix != null) writer.write(prefix);
+            if ( outputListeners.size() > 0 ) {
+              for ( OutputListener listener : outputListeners ) {
+                String output = null;
+                try {
+                  output = listener.generateOutput(uri);
+                } catch (Throwable t) {
+                  logger.error("Exception thrown by an onGenerateOutput listener", t);
+                }
+                if ( output != null ) {
+                  writer.write( output );
+                }
               }
-              if ( output != null ) {
-                writer.write( output );
-              }
+            } else {
+              writer.write(uri);
             }
-          } else {
-            writer.write(uri);
+            if (suffix != null) writer.write(suffix);
+          } catch(IOException e) {
+            throw new DataMovementException("Failed to write uri \"" + uri + "\"", e);
           }
-          if (suffix != null) writer.write(suffix);
-        } catch(IOException e) {
-          throw new DataMovementException("Failed to write uri \"" + uri + "\"", e);
+        }
+      }
+    } catch (Throwable t) {
+      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
+        try {
+          listener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onBatchFailure listener", t2);
         }
       }
     }
@@ -105,6 +116,19 @@ public class UrisToWriterListener implements QueryBatchListener {
 
   public UrisToWriterListener onGenerateOutput(OutputListener listener) {
     outputListeners.add(listener);
+    return this;
+  }
+
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public UrisToWriterListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
+    failureListeners.add(listener);
     return this;
   }
 

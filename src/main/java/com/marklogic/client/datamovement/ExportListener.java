@@ -71,6 +71,7 @@ public class ExportListener implements QueryBatchListener {
   private Format nonDocumentFormat;
   private List<Consumer<DocumentRecord>> exportListeners = new ArrayList<>();
   private boolean consistentSnapshot = false;
+  private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
   public ExportListener() {
   }
@@ -95,13 +96,23 @@ public class ExportListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
-    DocumentPage docs = getDocs(batch);
-    while ( docs.hasNext() ) {
-      for ( Consumer<DocumentRecord> listener : exportListeners ) {
+    try {
+      DocumentPage docs = getDocs(batch);
+      while ( docs.hasNext() ) {
+        for ( Consumer<DocumentRecord> listener : exportListeners ) {
+          try {
+            listener.accept(docs.next());
+          } catch (Throwable t) {
+            logger.error("Exception thrown by an onDocumentReady listener", t);
+          }
+        }
+      }
+    } catch (Throwable t) {
+      for ( BatchFailureListener<Batch<String>> listener : failureListeners ) {
         try {
-          listener.accept(docs.next());
-        } catch (Throwable t) {
-          logger.error("Exception thrown by an onDocumentReady listener", t);
+          listener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onBatchFailure listener", t2);
         }
       }
     }
@@ -196,5 +207,22 @@ public class ExportListener implements QueryBatchListener {
   public ExportListener onDocumentReady(Consumer<DocumentRecord> listener) {
     exportListeners.add(listener);
     return this;
+  }
+
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public ExportListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
+    failureListeners.add(listener);
+    return this;
+  }
+
+  protected List<BatchFailureListener<Batch<String>>> getFailureListeners() {
+    return failureListeners;
   }
 }

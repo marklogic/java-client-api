@@ -20,6 +20,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -42,6 +43,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentManager;
+import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -53,9 +55,13 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
+import com.marklogic.client.datamovement.ExportToWriterListener;
+import com.marklogic.client.datamovement.QueryBatchListener;
+import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
@@ -393,6 +399,77 @@ public class QueryBatcherTest {
     moveMgr.stopJob(queryBatcher);
     assertEquals(expectedSuccesses, successfulBatchCount.get());
     assertEquals(expectedFailures, failureBatchCount.get());
+  }
+
+  @Test
+  public void testApplyTransformListenerException() {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    testListenerException(
+      new ApplyTransformListener()
+        .withTransform(new ServerTransform("thisTransformDoesntExist"))
+        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+    );
+    // there should be one failure sent to the ApplyTransformListener
+    // onBatchFailure listener since the transform is invalid
+    assertEquals(1, failureBatchCount.get());
+  }
+
+  @Test
+  public void testExportListenerException() {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    testListenerException(
+      new ExportListener()
+        .withTransform(new ServerTransform("thisTransformDoesntExist"))
+        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+    );
+    // there should be one failure sent to the ExportListener
+    // onBatchFailure listener since the transform is invalid
+    assertEquals(1, failureBatchCount.get());
+  }
+
+  @Test
+  public void testExportToWriterListenerException() {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+
+    testListenerException(
+      new ExportToWriterListener(new StringWriter())
+        .withTransform(new ServerTransform("thisTransformDoesntExist"))
+        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+    );
+    // there should be one failure sent to the ExportToWriterListener
+    // onBatchFailure listener since the transform is invalid
+    assertEquals(1, failureBatchCount.get());
+  }
+
+  @Test
+  public void testUrisToWriterListenerException() {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    StringWriter badWriter = new StringWriter() {
+      public void write(String str) {
+        throw new InternalError(errorMessage);
+      }
+    };
+    testListenerException(
+      new UrisToWriterListener(badWriter)
+        .onBatchFailure( (batch, throwable) -> failureBatchCount.incrementAndGet() )
+    );
+    // there should be one failure sent to the UrisToWriterListener
+    // onBatchFailure listener since the writer is invalid
+    assertEquals(1, failureBatchCount.get());
+  }
+
+  private void testListenerException(QueryBatchListener listener) {
+    final AtomicInteger failureBatchCount = new AtomicInteger();
+    Iterator<String> iterator = Arrays.asList(new String[] {uri1}).iterator();
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(iterator)
+      .onUrisReady( batch -> logger.debug("uri={}", batch.getItems()[0]) )
+      .onUrisReady(listener)
+      .onQueryFailure( queryThrowable -> failureBatchCount.incrementAndGet() );
+    moveMgr.startJob(queryBatcher);
+    queryBatcher.awaitCompletion();
+    moveMgr.stopJob(queryBatcher);
+    // there should be no failure sent to the QueryBatcher onQueryFailure listeners
+    assertEquals(0, failureBatchCount.get());
   }
 
   @Test

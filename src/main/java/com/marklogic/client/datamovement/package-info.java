@@ -48,6 +48,7 @@
  * | {@link com.marklogic.client.datamovement.ExportListener}         | Downloads each document for further processing in Java |
  * | {@link com.marklogic.client.datamovement.ExportToWriterListener} | Downloads each document and writes it to a Writer (could be a file, HTTP response, in-memory Writer, etc. |
  * | {@link com.marklogic.client.datamovement.DeleteListener}         | Deletes each batch of documents from the server |
+ * | {@link com.marklogic.client.datamovement.UrisToWriterListener}   | Writes each uri to a Writer (could be a file, HTTP response, etc.). |
  *
  * [MarkLogic Java Client API]: http://docs.marklogic.com/guide/java
  *

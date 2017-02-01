@@ -58,35 +58,45 @@ public class ExportToWriterListener extends ExportListener {
 
   @Override
   public void processEvent(QueryBatch batch) {
-    DocumentPage docs = getDocs(batch);
-    synchronized(writer) {
-      for ( DocumentRecord doc : docs ) {
-        Format format = doc.getFormat();
-        if ( Format.BINARY.equals(format) ) {
-          throw new IllegalStateException("Document " + doc.getUri() +
-            " is binary and cannot be written.  Change your query to not select any binary documents.");
-        } else {
-          try {
-            if ( prefix != null ) writer.write( prefix );
-            if ( outputListeners.size() > 0 ) {
-              for ( OutputListener listener : outputListeners ) {
-                String output = null;
-                try {
-                  output = listener.generateOutput(doc);
-                } catch (Throwable t) {
-                  logger.error("Exception thrown by an onGenerateOutput listener", t);
+    try {
+      DocumentPage docs = getDocs(batch);
+      synchronized(writer) {
+        for ( DocumentRecord doc : docs ) {
+          Format format = doc.getFormat();
+          if ( Format.BINARY.equals(format) ) {
+            throw new IllegalStateException("Document " + doc.getUri() +
+              " is binary and cannot be written.  Change your query to not select any binary documents.");
+          } else {
+            try {
+              if ( prefix != null ) writer.write( prefix );
+              if ( outputListeners.size() > 0 ) {
+                for ( OutputListener listener : outputListeners ) {
+                  String output = null;
+                  try {
+                    output = listener.generateOutput(doc);
+                  } catch (Throwable t) {
+                    logger.error("Exception thrown by an onGenerateOutput listener", t);
+                  }
+                  if ( output != null ) {
+                    writer.write( output );
+                  }
                 }
-                if ( output != null ) {
-                  writer.write( output );
-                }
+              } else {
+                writer.write( doc.getContent(new StringHandle()).get() );
               }
-            } else {
-              writer.write( doc.getContent(new StringHandle()).get() );
+              if ( suffix != null ) writer.write( suffix );
+            } catch (IOException e) {
+              throw new DataMovementException("Failed to write document \"" + doc.getUri() + "\"", e);
             }
-            if ( suffix != null ) writer.write( suffix );
-          } catch (IOException e) {
-            throw new DataMovementException("Failed to write document \"" + doc.getUri() + "\"", e);
           }
+        }
+      }
+    } catch (Throwable t) {
+      for ( BatchFailureListener<Batch<String>> listener : getFailureListeners() ) {
+        try {
+          listener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onBatchFailure listener", t2);
         }
       }
     }
