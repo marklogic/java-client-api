@@ -578,7 +578,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = addVersionHeader(desc,
 				webResource.getRequestBuilder(), "If-Match");
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
 				.delete(ClientResponse.class);
@@ -754,7 +755,8 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = makeDocumentResource(
 				makeDocumentParams(uri, categories, transaction, extraParams));
 		WebResource.Builder builder = webResource.accept(mimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		if (extraParams != null && extraParams.containsKey("range"))
 			builder = builder.header("range", extraParams.get("range").get(0));
@@ -1016,7 +1018,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeDocumentResource(docParams);
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 		builder = addVersionHeader(desc, builder, "If-None-Match");
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
@@ -1134,7 +1137,8 @@ public class JerseyServices implements RESTServices {
 					getTransactionId(transaction));
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doHeadFunction = funcBuilder -> funcBuilder
 				.head();
@@ -1287,7 +1291,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = webResource.type(
 				(mimetype != null) ? mimetype : MediaType.WILDCARD);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1454,7 +1459,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeDocumentResource(docParams);
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 		if (uri != null) {
 			builder = addVersionHeader(desc, builder, "If-Match");
 		}
@@ -1622,6 +1628,7 @@ public class JerseyServices implements RESTServices {
 				"transactions").queryParams(transParams) : getConnection()
 				.path("transactions");
 		WebResource.Builder builder = resource.getRequestBuilder();
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> funcBuilder
 				.post(ClientResponse.class);
@@ -1687,7 +1694,8 @@ public class JerseyServices implements RESTServices {
 				.queryParams(transParams);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> funcBuilder
 				.post(ClientResponse.class);
@@ -2165,7 +2173,8 @@ public class JerseyServices implements RESTServices {
                         + queryDef.getClass().getName());
             }
 
-            addTransactionScopedCookies(builder, webResource, transaction);
+            builder = addTransactionScopedCookies(builder, webResource, transaction);
+            builder = addTelemetryAgentId(builder);
         }
 
         ClientResponse getResponse() {
@@ -2281,7 +2290,8 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = getConnection().path("search").queryParams(params);
 
 		WebResource.Builder builder = webResource.getRequestBuilder();
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
 				.delete(ClientResponse.class);
@@ -2427,7 +2437,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeWebResource(uri, docParams);
 		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		final HandleImplementation tempBaseHandle = baseHandle;
 		Function<WebResource.Builder, ClientResponse> doGetFunction =
@@ -2475,7 +2486,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeWebResource(uri, docParams);
 		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
 				.get(ClientResponse.class);
@@ -2512,7 +2524,8 @@ public class JerseyServices implements RESTServices {
 		WebResource webResource = getConnection().path(uri)
 				.queryParams(docParams);
 		WebResource.Builder builder = webResource.accept(mimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
 				.get(ClientResponse.class);
@@ -2545,6 +2558,7 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Getting {}/{}", type, key);
 
 		WebResource.Builder builder = makeBuilder(type + "/" + key, null, null, mimetype);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
 				.get(ClientResponse.class);
@@ -2594,6 +2608,7 @@ public class JerseyServices implements RESTServices {
 		WebResource.Builder builder = (requestParams == null) ?
 				getConnection().path(type).accept(mimetype) :
 				getConnection().path(type).queryParams(requestParams).accept(mimetype);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
 				.get(ClientResponse.class);
@@ -2732,6 +2747,7 @@ public class JerseyServices implements RESTServices {
 						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
+					builder = addTelemetryAgentId(builder);
 				}
 
 				response = (sentValue == null) ?
@@ -2745,6 +2761,7 @@ public class JerseyServices implements RESTServices {
 						getConnection().path(connectPath).queryParams(requestParams);
 					builder = (mimetype == null) ?
 						resource.getRequestBuilder() : resource.type(mimetype);
+					builder = addTelemetryAgentId(builder);
 				}
 
 				response = (sentValue == null) ?
@@ -2815,6 +2832,7 @@ public class JerseyServices implements RESTServices {
 
 		WebResource.Builder builder = getConnection().path(type + "/" + key)
 			.getRequestBuilder();
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
 				.delete(ClientResponse.class);
@@ -2842,6 +2860,7 @@ public class JerseyServices implements RESTServices {
 			logger.debug("Deleting {}", type);
 
 		WebResource.Builder builder = getConnection().path(type).getRequestBuilder();
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
 				.delete(ClientResponse.class);
@@ -2934,7 +2953,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeGetWebResource(path, params, mimetype);
 		WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder);
 		ClientResponse response = makeRequest(builder, doGetFunction, null);
@@ -2970,7 +2990,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makeGetWebResource(path, params, null);
 		WebResource.Builder builder = makeBuilder(webResource, null, null);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -3006,7 +3027,8 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource webResource = makePutWebResource(path, params);
 		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimeType);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Consumer<Boolean> resendableConsumer = (resendable) -> {
 			if (!isResendable) {
@@ -3071,7 +3093,8 @@ public class JerseyServices implements RESTServices {
 
 			WebResource webResource = makePutWebResource(path, params);
 			WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
-			addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTelemetryAgentId(builder);
 
 			response = doPut(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3154,7 +3177,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makePostWebResource(path, params);
 		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimetype);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Consumer<Boolean> resendableConsumer = (resendable) -> {
 			if (!isResendable) {
@@ -3222,7 +3246,8 @@ public class JerseyServices implements RESTServices {
 
 			WebResource webResource = makePostWebResource(path, params);
 			WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
-			addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTelemetryAgentId(builder);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3691,7 +3716,8 @@ public class JerseyServices implements RESTServices {
 
 		WebResource webResource = makePostWebResource(path, params);
 		WebResource.Builder builder = makeBuilder(webResource, inputMimetype, null);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
@@ -3750,7 +3776,8 @@ public class JerseyServices implements RESTServices {
 				webResource,
 				multiPart,
 				Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-			addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTransactionScopedCookies(builder, webResource, transaction);
+			builder = addTelemetryAgentId(builder);
 
 			response = doPost(builder, multiPart, hasStreamingPart);
 			status = response.getClientResponseStatus();
@@ -3778,15 +3805,15 @@ public class JerseyServices implements RESTServices {
 			checkFirstRequest();
 			throw new FailedRequestException(
 					"Service unavailable and maximum retry period elapsed: "+
-						    Math.round((System.currentTimeMillis() - startTime) / 1000)+
-						    " seconds after "+retry+" retries");
+					Math.round((System.currentTimeMillis() - startTime) / 1000)+
+					" seconds after "+retry+" retries");
 		}
 
 		checkStatus(response, status, "apply", "resource", path,
 				ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
 		return makeResults(clazz, reqlog, "apply", "resource", response);
-	}
+			}
 
 	@Override
 	public <R extends AbstractReadHandle> R deleteResource(
@@ -3806,7 +3833,8 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource webResource = makeDeleteWebResource(path, params);
 		WebResource.Builder builder = makeBuilder(webResource, null, outputMimeType);
-		addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTransactionScopedCookies(builder, webResource, transaction);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> doDelete(funcBuilder);
 		ClientResponse response = makeRequest(builder, doDeleteFunction, null);
@@ -4062,7 +4090,7 @@ public class JerseyServices implements RESTServices {
 		}
 	}
 
-	private void addTransactionScopedCookies(WebResource.Builder builder, WebResource webResource,
+	private WebResource.Builder addTransactionScopedCookies(WebResource.Builder builder, WebResource webResource,
 		Transaction transaction)
 	{
 		if ( transaction != null && transaction.getCookies() != null ) {
@@ -4100,9 +4128,15 @@ public class JerseyServices implements RESTServices {
 						continue;
 					}
 				}
-				builder.cookie(cookie);
+				return builder.cookie(cookie);
 			}
 		}
+		return builder;
+	}
+
+	private WebResource.Builder addTelemetryAgentId(WebResource.Builder builder) {
+		if ( builder == null ) throw new MarkLogicInternalException("no builder available to set ML-Agent-ID header");
+		return builder.header("ML-Agent-ID", "java");
 	}
 
 	private <W extends AbstractWriteHandle> boolean addParts(
@@ -4684,6 +4718,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = null;
 		builder = makeBuilder("suggest", params, null, "application/xml");
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
 				.get(ClientResponse.class);
@@ -4722,6 +4757,7 @@ public class JerseyServices implements RESTServices {
 		}
 		WebResource.Builder builder = null;
 		builder = makeBuilder("alert/match", params, "application/xml", mimeType);
+		builder = addTelemetryAgentId(builder);
 
 		Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(null, funcBuilder, baseHandle.sendContent(), false);
 		ClientResponse response = makeRequest(builder, doPostFunction, null);
@@ -4808,6 +4844,7 @@ public class JerseyServices implements RESTServices {
 			throw new UnsupportedOperationException("Cannot match with "
 					+ queryDef.getClass().getName());
 		}
+		builder = addTelemetryAgentId(builder);
 
 		ClientResponse response = null;
 		ClientResponse.Status status = null;
@@ -4892,6 +4929,7 @@ public class JerseyServices implements RESTServices {
 			transform.merge(params);
 		}
 		WebResource.Builder builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
+		builder = addTelemetryAgentId(builder);
 		
 		Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder);
 		ClientResponse response = makeRequest(builder, doGetFunction, null);
