@@ -46,7 +46,7 @@ public class DataMovementServices {
   public ForestConfigurationImpl readForestConfig() {
     List<ForestImpl> forests = new ArrayList<>();
     JsonNode results = ((DatabaseClientImpl) client).getServices()
-      .getResource(null, "forestinfo", null, null, new JacksonHandle())
+      .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
       .get();
     for ( JsonNode forestNode : results ) {
       String id = forestNode.get("id").asText();
