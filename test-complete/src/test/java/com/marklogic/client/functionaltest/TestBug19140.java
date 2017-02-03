@@ -35,9 +35,7 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 public class TestBug19140 extends BasicJavaClientREST {
 
@@ -52,7 +50,6 @@ public class TestBug19140 extends BasicJavaClientREST {
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19140() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -63,14 +60,11 @@ public class TestBug19140 extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 		
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
-		
 		// create query options handle
-        QueryOptionsHandle handle = new QueryOptionsHandle();
-        
-        // build query options
-        handle.withTransformResults(builder.rawResults());
+		String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
+        StringHandle handle = new StringHandle(xmlOptions);
         
         // write query options
         optionsMgr.writeOptions("RawResultsOpt", handle);

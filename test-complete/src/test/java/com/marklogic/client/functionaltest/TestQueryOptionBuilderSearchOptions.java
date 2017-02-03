@@ -35,10 +35,8 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -48,10 +46,8 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 	private static String dbName = "TestQueryOptionBuilderSearchOptionsDB";
 	private static String [] fNames = {"TestQueryOptionBuilderSearchOptionsDB-1"};
 	
-
 	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
@@ -67,32 +63,31 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-1/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:debug>true</search:debug>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:search-option>checked</search:search-option>" +
+			    "<search:search-option>filtered</search:search-option>" +
+			    "<search:search-option>score-simple</search:search-option>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
+		StringHandle handle = new StringHandle(opts1);
 
 		List<String> listOfSearchOptions = new ArrayList<> ();
 		listOfSearchOptions.add("checked");
 		listOfSearchOptions.add("filtered");
 		listOfSearchOptions.add("score-simple");
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false)
-				.debug(true))
-				.withTransformResults(builder.rawResults())
-				.setSearchOptions(listOfSearchOptions);
 
 		// write query options
 		optionsMgr.writeOptions("SearchOptions1", handle);
@@ -118,7 +113,6 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"checked\",\"filtered\",\"score-simple\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
@@ -138,32 +132,31 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-2/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:debug>true</search:debug>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:search-option>unchecked</search:search-option>" +
+			    "<search:search-option>unfiltered</search:search-option>" +
+			    "<search:search-option>score-logtfidf</search:search-option>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
+		StringHandle handle = new StringHandle(opts1);
 
 		List<String> listOfSearchOptions = new ArrayList<> ();
 		listOfSearchOptions.add("unchecked");
 		listOfSearchOptions.add("unfiltered");
 		listOfSearchOptions.add("score-logtfidf");
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false)
-				.debug(true))
-				.withTransformResults(builder.rawResults())
-				.setSearchOptions(listOfSearchOptions);
 
 		// write query options
 		optionsMgr.writeOptions("SearchOptions2", handle);
@@ -189,7 +182,6 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"unchecked\",\"unfiltered\",\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
@@ -200,10 +192,8 @@ public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 	} 
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
-
 	}
 }

@@ -22,7 +22,6 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -35,13 +34,8 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions.QueryGrammar.QueryJoiner.JoinerApply;
-import com.marklogic.client.admin.config.QueryOptions.QueryGrammar.Tokenize;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
-import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -52,16 +46,14 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	
 	
 	@BeforeClass
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -76,32 +68,33 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-op-quote/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:grammar>" +
+				"<search:implicit>" +
+				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+				"</search:implicit>" +
+				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+				"<search:quotation>\"</search:quotation>" +
+				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+				"</search:grammar>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withGrammar(builder.grammar(builder.starters(builder.starterGrouping("(", 30, ")"),
-						builder.starterPrefix("-", 40, "cts:not-query")),	
-						builder.joiners(builder.joiner("OR", 20, JoinerApply.INFIX, "cts:or-query", Tokenize.WORD),
-								builder.joiner("AND", 30, JoinerApply.INFIX, "cts:and-query", Tokenize.WORD),
-								builder.joiner(":", 50, JoinerApply.CONSTRAINT)),
-								"\"",
-								Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("GrammarOperatorQuotation", handle);
@@ -147,33 +140,34 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:grammar>" +
+				"<search:implicit>" +
+				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+				"</search:implicit>" +
+				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+				"<search:quotation>\"</search:quotation>" +
+				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+				"</search:grammar>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withGrammar(builder.grammar(builder.starters(builder.starterGrouping("(", 30, ")"),
-						builder.starterPrefix("-", 40, "cts:not-query")),	
-						builder.joiners(builder.joiner("OR", 20, JoinerApply.INFIX, "cts:or-query", Tokenize.WORD),
-								builder.joiner("AND", 30, JoinerApply.INFIX, "cts:and-query", Tokenize.WORD),
-								builder.joiner(":", 50, JoinerApply.CONSTRAINT)),
-								"\"",
-								Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
-
+		StringHandle handle = new StringHandle(opts1);
+		
 		// write query options
 		optionsMgr.writeOptions("GrammarTwoWordsSpace", handle);
 
@@ -217,32 +211,33 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:grammar>" +
+				"<search:implicit>" +
+				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+				"</search:implicit>" +
+				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='10' tokenize='word'>OR</search:joiner>" +
+				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='20' tokenize='word'>AND</search:joiner>" +
+				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+				"<search:quotation>\"</search:quotation>" +
+				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+				"</search:grammar>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withGrammar(builder.grammar(builder.starters(builder.starterGrouping("(", 30, ")"),
-						builder.starterPrefix("-", 40, "cts:not-query")),	
-						builder.joiners(builder.joiner("OR", 10, JoinerApply.INFIX, "cts:or-query", Tokenize.WORD),
-								builder.joiner("AND", 20, JoinerApply.INFIX, "cts:and-query", Tokenize.WORD),
-								builder.joiner(":", 50, JoinerApply.CONSTRAINT)),
-								"\"",
-								Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("GrammarPrecedenceAndNegate", handle);
@@ -288,34 +283,39 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:grammar>" +
+				"<search:implicit>" +
+				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+				"</search:implicit>" +
+				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+				"<search:quotation>\"</search:quotation>" + 
+				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+				"<search:starter apply='prefix' element='cts:not-query' strength='20'>-</search:starter>" +
+				"</search:grammar>" +
+				"<search:constraint name='intitle'>" +
+				"<search:word>" +
+				"<search:element name='title' ns=''/>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withConstraints(builder.constraint("intitle", builder.word(builder.elementTermIndex(new QName("title")))))
-				.withGrammar(builder.grammar(builder.starters(builder.starterGrouping("(", 30, ")"),
-						builder.starterPrefix("-", 20, "cts:not-query")),	
-						builder.joiners(builder.joiner("OR", 20, JoinerApply.INFIX, "cts:or-query", Tokenize.WORD),
-								builder.joiner("AND", 30, JoinerApply.INFIX, "cts:and-query", Tokenize.WORD),
-								builder.joiner(":", 50, JoinerApply.CONSTRAINT)),
-								"\"",
-								Utilities.domElement("<cts:and-query strength=\"20\" xmlns:cts=\"http://marklogic.com/cts\"/>")));
-
+		StringHandle handle = new StringHandle(opts1);
+		
 		// write query options
 		optionsMgr.writeOptions("GrammarConstraint", handle);
 
@@ -350,10 +350,8 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
-
 	}
 }

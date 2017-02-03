@@ -52,17 +52,13 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 	private static int restPort=8011;
 
 	@BeforeClass
-	public static void setUp() throws Exception
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
-
 		configureRESTServer(dbName, fNames);
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
-		
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -89,7 +85,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 		// require content versions for updates and deletes
 		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.REQUIRED);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -151,23 +147,20 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String updateException = "";
 		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
 
-		try
-		{
+		try {
 			docMgr.write(desc, updateHandle);
 		} catch (FailedRequestException e) { updateException = e.toString(); }
 		System.out.println(updateException);
 		boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
 		assertTrue("Exception is not thrown", isUpdateExceptionThrown);
 
-		
 		// update with unknown version
 		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 
 		String updateUnknownException = "";
 		String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
 
-		try
-		{
+		try {
 			docMgr.write(desc, updateHandle);
 		} catch (FailedRequestException e) { updateUnknownException = e.toString(); }
 
@@ -196,8 +189,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String deleteException = "";
 		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
 
-		try
-		{
+		try {
 			docMgr.delete(desc);
 		} catch (FailedRequestException e) { deleteException = e.toString(); }
 
@@ -211,8 +203,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String deleteUnknownException = "";
 		String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
 
-		try
-		{
+		try {
 			docMgr.delete(desc);
 		} catch (FailedRequestException e) { deleteUnknownException = e.toString(); }
 
@@ -232,8 +223,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /optimistic-locking/xml-original.xml";
 
 		StringHandle deleteHandle = new StringHandle();
-		try
-		{
+		try {
 			docMgr.read(desc, deleteHandle);
 		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
 
@@ -249,11 +239,9 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 			e.printStackTrace();
 		}
 
-		System.out.println(configMgr.getContentVersionRequests());
-
+		System.out.println(configMgr.getUpdatePolicy().toString());
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testOptionalWithUnknownVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -275,7 +263,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		configMgr.readConfiguration();
 
 		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.OPTIONAL);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -301,8 +289,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 		// CREATE
 		// write document with bad version
-		try 
-		{
+		try {
 			docMgr.write(desc, handle);
 		} catch (FailedRequestException e) { exception = e.toString(); }
 
@@ -336,8 +323,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String updateException = "";
 		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		try
-		{
+		try {
 			docMgr.write(desc, updateHandle);
 		} catch (FailedRequestException e) { updateException = e.toString(); }
 
@@ -372,8 +358,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String deleteException = "";
 		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 
-		try
-		{
+		try {
 			docMgr.delete(desc);
 		} catch (FailedRequestException e) { deleteException = e.toString(); }
 
@@ -392,8 +377,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
 		StringHandle deleteHandle = new StringHandle();
-		try
-		{
+		try {
 			docMgr.read(desc, deleteHandle);
 		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
 
@@ -409,11 +393,9 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 			e.printStackTrace();
 		}
 
-		System.out.println(configMgr.getContentVersionRequests());
-
+		System.out.println(configMgr.getUpdatePolicy().toString());
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test	
 	public void testOptionalWithGoodVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -435,7 +417,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		configMgr.readConfiguration();
 
 		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.OPTIONAL);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -461,8 +443,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 
 		// CREATE
 		// write document with bad version
-		try 
-		{
+		try {
 			docMgr.write(desc, handle);
 		} catch (FailedRequestException e) { exception = e.toString(); }
 
@@ -496,8 +477,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String updateException = "";
 		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		try
-		{
+		try	{
 			docMgr.write(desc, updateHandle);
 		} catch (FailedRequestException e) { updateException = e.toString(); }
 
@@ -532,8 +512,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String deleteException = "";
 		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 
-		try
-		{
+		try {
 			docMgr.delete(desc);
 		} catch (FailedRequestException e) { deleteException = e.toString(); }
 
@@ -552,8 +531,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
 		StringHandle deleteHandle = new StringHandle();
-		try
-		{
+		try {
 			docMgr.read(desc, deleteHandle);
 		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
 
@@ -569,11 +547,9 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 			e.printStackTrace();
 		}
 
-		System.out.println(configMgr.getContentVersionRequests());
+		System.out.println(configMgr.getUpdatePolicy().toString());
 	}
 
-
-	@SuppressWarnings("deprecation")
 	@Test	public void testNone() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
 		System.out.println("Running testNone");
@@ -594,7 +570,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		configMgr.readConfiguration();
 
 		// use Policy.NONE
-		configMgr.setContentVersionRequests(Policy.NONE);
+		configMgr.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -652,8 +628,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
 		StringHandle deleteHandle = new StringHandle();
-		try
-		{
+		try	{
 			docMgr.read(desc, deleteHandle);
 		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
 
@@ -669,8 +644,9 @@ public class TestOptimisticLocking extends BasicJavaClientREST{
 			e.printStackTrace();
 		}
 
-		System.out.println(configMgr.getContentVersionRequests());
+		System.out.println(configMgr.getUpdatePolicy().toString());
 	}
+	
 	@AfterClass
 	public static void tearDown() throws Exception
 	{

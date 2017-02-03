@@ -24,7 +24,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -42,11 +41,8 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptions.QuerySortOrder.Direction;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -68,8 +64,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	private static int uberPort = 8000;
 
 	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
@@ -79,8 +74,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -95,26 +89,25 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName,"eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/sort-desc-score/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:sort-order direction='descending'>" +
+			        "<search:score/>" +
+			    "</search:sort-order>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSortOrders(builder.sortByScore(Direction.DESCENDING));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SortOrderDescendingScore", handle);
@@ -140,7 +133,6 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
@@ -161,26 +153,28 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/sort-desc-score-asc-date/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:sort-order direction='descending'>" +
+			        "<search:score/>" +
+			    "</search:sort-order>" +
+			    "<search:sort-order direction='ascending' type='xs:date'>" +
+			        "<search:element name='date' ns='http://purl.org/dc/elements/1.1/'/>" +
+			    "</search:sort-order>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSortOrders(builder.sortByScore(Direction.DESCENDING), builder.sortOrder(builder.elementRangeIndex(new QName("http://purl.org/dc/elements/1.1/", "date"), builder.rangeType("xs:date")), Direction.ASCENDING));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SortOrderPrimaryDescScoreSecondaryAscDate", handle);
@@ -230,28 +224,31 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/mult-sort-order/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:sort-order direction='descending'>" +
+			        "<search:score/>" +
+			    "</search:sort-order>" +
+			    "<search:sort-order direction='ascending' type='xs:int'>" +
+			        "<search:element name='popularity' ns=''/>" +
+			    "</search:sort-order>" +
+			    "<search:sort-order direction='descending' type='xs:string'>" +
+			        "<search:element name='title' ns=''/>" +
+			    "</search:sort-order>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSortOrders(builder.sortByScore(Direction.DESCENDING), 
-						builder.sortOrder(builder.elementRangeIndex(new QName("", "popularity"), builder.rangeType("xs:int")), Direction.ASCENDING),
-						builder.sortOrder(builder.elementRangeIndex(new QName("", "title"), builder.rangeType("xs:string")), Direction.DESCENDING));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("MultipleSortOrder", handle);
@@ -376,27 +373,29 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/attr-sort-order/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:sort-order direction='descending'>" +
+			        "<search:score/>" +
+			    "</search:sort-order>" +
+			    "<search:sort-order direction='ascending' type='xs:decimal'>" +
+			        "<search:attribute name='amt' ns=''/>" +
+			        "<search:element name='price' ns='http://cloudbank.com'/>" +
+			    "</search:sort-order>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSortOrders(builder.sortByScore(Direction.DESCENDING), 
-						builder.sortOrder(builder.elementAttributeRangeIndex(new QName("http://cloudbank.com", "price"), new QName("", "amt"), builder.rangeType("xs:decimal")), Direction.ASCENDING));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SortOrderAttribute", handle);
@@ -503,8 +502,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");

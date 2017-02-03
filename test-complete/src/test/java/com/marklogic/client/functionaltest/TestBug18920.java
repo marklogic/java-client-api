@@ -35,12 +35,12 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.Policy;
+import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 
-public class TestBug18920 extends BasicJavaClientREST{
+public class TestBug18920 extends BasicJavaClientREST {
 
 	private static String dbName = "Test18920DB";
 	private static String [] fNames = {"Test18920DB-1"};
@@ -61,14 +61,13 @@ public class TestBug18920 extends BasicJavaClientREST{
 
 		// require content versions for updates and deletes
 		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setContentVersionRequests(Policy.REQUIRED);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 		System.out.println("set optimistic locking to required");
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
 	}
 
-	@SuppressWarnings("deprecation")
 	@Test
 	public void testBug18920() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
 	{
@@ -100,23 +99,20 @@ public class TestBug18920 extends BasicJavaClientREST{
 		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
 		
 		// update document with no content version
-		try 
-		{
+		try {
 			docMgr.write(docUri, handle);
 		} catch (FailedRequestException e) { exception = e.toString(); }
 		System.out.println("Exception is"+ exception);
 		boolean isExceptionThrown = exception.contains(expectedException);
 		assertTrue("Exception is not thrown", isExceptionThrown);
-		
 	}
 	
 	@AfterClass
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		
 		// set content version back to none
-		configMgr.setContentVersionRequests(Policy.NONE);
+		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
 		// write the server configuration to the database
 		configMgr.writeConfiguration();
@@ -125,6 +121,5 @@ public class TestBug18920 extends BasicJavaClientREST{
 		client.release();
 
 		cleanupRESTServer(dbName, fNames);
-		
 	}
 }

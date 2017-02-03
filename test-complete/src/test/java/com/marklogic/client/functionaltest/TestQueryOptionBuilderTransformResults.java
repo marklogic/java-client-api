@@ -23,7 +23,6 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.namespace.QName;
 import javax.xml.transform.TransformerException;
 
 import org.custommonkey.xmlunit.exceptions.XpathException;
@@ -39,9 +38,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -87,17 +84,22 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:transform-results apply='snippet'>" +
+			        "<search:per-match-tokens>30</search:per-match-tokens>" +
+			        "<search:max-matches>4</search:max-matches>" +
+			        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+			        "<search:preferred-elements>" +
+			            "<search:element name='elem' ns='ns'/>" +
+			        "</search:preferred-elements>" +
+			    "</search:transform-results>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.snippetTransform(30, 4, 200, new QName("ns", "elem")));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("TransformResuleWithSnippetFunction", handle);
@@ -154,17 +156,15 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:transform-results apply='empty-snippet'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.emptySnippets());
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("TransformResuleWithEmptySnippetFunction", handle);

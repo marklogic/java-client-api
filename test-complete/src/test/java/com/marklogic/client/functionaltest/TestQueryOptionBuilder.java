@@ -18,12 +18,10 @@ package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 
-import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
@@ -39,14 +37,10 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.config.QueryOptions.Facets;
-import com.marklogic.client.admin.config.QueryOptions.FragmentScope;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -58,19 +52,15 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	private static String dbName = "TestQueryOptionBuilderDB";
 	private static String [] fNames = {"TestQueryOptionBuilderDB-1"};
 	
-	
 	@BeforeClass
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
-
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -85,28 +75,28 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/value-constraint-query-builder/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:debug>true</search:debug>" +
+				"<search:constraint name='id'>" +
+				"<search:value>" +
+				"<search:element name='id' ns=''/>" +
+				"</search:value>" +
+				"</search:constraint>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConstraints( builder.constraint("id", 
-				builder.value(builder.elementTermIndex(new QName("id")))))
-				.withConfiguration(builder.configure()
-						.returnMetrics(false)
-						.returnQtext(false)
-						.debug(true))
-						.withTransformResults(builder.rawResults());
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("ValueConstraintWildcard", handle);
@@ -154,33 +144,34 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/word-constraint-query-builder/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:debug>true</search:debug>" +
+				"<search:constraint name='intitle'>" +
+				"<search:word>" +
+				"<search:element name='title' ns=''/>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:constraint name='inprice'>" +
+				"<search:word>" +
+				"<search:attribute name='amt' ns=''/>" +
+				"<search:element name='price' ns='http://cloudbank.com'/>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConstraints(builder.constraint("intitle", 
-				builder.word(builder.elementTermIndex(new QName("title")))),
-				builder.constraint("inprice",
-						builder.word(builder.elementAttributeTermIndex(
-								new QName("http://cloudbank.com", "price"),
-								new QName("amt")))))
-								.withConfiguration(builder.configure()
-										.returnMetrics(false)
-										.returnQtext(false)
-										.debug(true))
-										.withTransformResults(builder.rawResults());
-
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("WordConstraintNormalWordQuery", handle);
@@ -259,51 +250,57 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:debug>true</search:debug>" +
+				"<search:constraint name='id'>" +
+				"<search:value>" +
+				"<search:element name='id' ns=''/>" +
+				"</search:value>" +
+				"</search:constraint>" +
+				"<search:constraint name='date'>" +
+				"<search:range type='xs:date'>" +
+				"<search:element name='date' ns='http://purl.org/dc/elements/1.1/'/>" +
+				"</search:range>" +
+				"</search:constraint>" +
+				"<search:constraint name='coll'>" +
+				"<search:collection prefix='http://test.com/' facet='true'/>" +
+				"</search:constraint>" +
+				"<search:constraint name='para'>" +
+				"<search:word>" +
+				"<search:field name='para'/>" +
+				"<search:term-option>case-insensitive</search:term-option>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:constraint name='intitle'>" +
+				"<search:word>" +
+				"<search:element name='title' ns=''/>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:constraint name='price'>" +
+				"<search:range facet='false' type='xs:decimal'>" +
+				"<search:attribute name='amt' ns=''/>" +
+				"<search:element name='price' ns='http://cloudbank.com'/>" +
+				"<search:bucket ge='120' name='high'>High</search:bucket>" +
+				"<search:bucket ge='3' lt='14' name='medium'>Medium</search:bucket>" +
+				"<search:bucket ge='0' lt='2' name='low'>Low</search:bucket>" +
+				"</search:range>" +
+				"</search:constraint>" +
+				"<search:constraint name='pop'>" +
+				"<search:range facet='true' type='xs:int'>" +
+				"<search:element name='popularity' ns=''/>" +
+				"<search:bucket ge='5' name='high'>High</search:bucket>" +
+				"<search:bucket ge='3' lt='5' name='medium'>Medium</search:bucket>" +
+				"<search:bucket ge='1' lt='3' name='low'>Low</search:bucket>" +
+				"</search:range>" +
+				"</search:constraint>" +
+				"<search:return-metrics>false</search:return-metrics>" +
+				"<search:return-qtext>false</search:return-qtext>" +
+				"<search:transform-results apply='raw'/>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options		
-
-		handle.
-		withConstraints(
-				builder.constraint("id", 
-						builder.value(builder.elementTermIndex(new QName("id")))),
-						builder.constraint("date",
-								builder.range(
-										builder.elementRangeIndex(new QName("http://purl.org/dc/elements/1.1/", "date"), 
-												builder.rangeType("xs:date")))),                                
-												builder.constraint("coll", 
-														builder.collection("http://test.com/", Facets.FACETED)),
-														builder.constraint("para",
-																builder.word(builder.fieldTermIndex("para"), null, null, "case-insensitive")),
-																builder.constraint("intitle",
-																		builder.word(builder.elementTermIndex(new QName("title")))),
-																		builder.constraint("price",
-																				builder.range(builder.elementAttributeRangeIndex(new QName("http://cloudbank.com", "price"),
-																						new QName("amt"), builder.rangeType("xs:decimal")),
-																						Facets.UNFACETED,
-																						null,
-																						builder.buckets(
-																								builder.bucket("high", "High", "120", null),
-																								builder.bucket("medium", "Medium", "3", "14"),
-																								builder.bucket("low", "Low", "0", "2")))),
-																								builder.constraint("pop",
-																										builder.range(builder.elementRangeIndex(new QName("popularity"),
-																												builder.rangeType("xs:int")),
-																												Facets.FACETED,
-																												null,
-																												builder.buckets(builder.bucket("high", "High", "5", null),
-																														builder.bucket("medium", "Medium", "3", "5"),
-																														builder.bucket("low", "Low", "1", "3")))))
-																														.withConfiguration(builder.configure()
-																																.returnMetrics(false)
-																																.returnQtext(false)
-																																.debug(true))
-																																.withTransformResults(builder.rawResults());
-
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("AllConstraintsWithStringSearch", handle);
@@ -375,51 +372,57 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:debug>true</search:debug>" +
+			    "<search:constraint name='id'>" +
+			        "<search:value>" +
+			            "<search:element name='id' ns=''/>" +
+			        "</search:value>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='date'>" +
+			        "<search:range type='xs:date'>" +
+			            "<search:element name='date' ns='http://purl.org/dc/elements/1.1/'/>" +
+			        "</search:range>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='coll'>" +
+			        "<search:collection prefix='http://test.com/' facet='true'/>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='para'>" +
+			        "<search:word>" +
+			            "<search:field name='para'/>" +
+			            "<search:term-option>case-insensitive</search:term-option>" +
+			        "</search:word>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='intitle'>" +
+			        "<search:word>" +
+			            "<search:element name='title' ns=''/>" +
+			        "</search:word>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='price'>" +
+			        "<search:range facet='false' type='xs:decimal'>" +
+			            "<search:attribute name='amt' ns=''/>" +
+			            "<search:element name='price' ns='http://cloudbank.com'/>" +
+			            "<search:bucket ge='120' name='high'>High</search:bucket>" +
+			            "<search:bucket ge='3' lt='14' name='medium'>Medium</search:bucket>" +
+			            "<search:bucket ge='0' lt='2' name='low'>Low</search:bucket>" +
+			        "</search:range>" +
+			    "</search:constraint>" +
+			    "<search:constraint name='pop'>" +
+			        "<search:range facet='true' type='xs:int'>" +
+			            "<search:element name='popularity' ns=''/>" +
+			            "<search:bucket ge='5' name='high'>High</search:bucket>" +
+			            "<search:bucket ge='3' lt='5' name='medium'>Medium</search:bucket>" +
+			            "<search:bucket ge='1' lt='3' name='low'>Low</search:bucket>" +
+			        "</search:range>" +
+			    "</search:constraint>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options		
-
-		handle.
-		withConstraints(
-				builder.constraint("id", 
-						builder.value(builder.elementTermIndex(new QName("id")))),
-						builder.constraint("date",
-								builder.range(
-										builder.elementRangeIndex(new QName("http://purl.org/dc/elements/1.1/", "date"), 
-												builder.rangeType("xs:date")))),                                
-												builder.constraint("coll", 
-														builder.collection("http://test.com/", Facets.FACETED)),
-														builder.constraint("para",
-																builder.word(builder.fieldTermIndex("para"), null, null, "case-insensitive")),
-																builder.constraint("intitle",
-																		builder.word(builder.elementTermIndex(new QName("title")))),
-																		builder.constraint("price",
-																				builder.range(builder.elementAttributeRangeIndex(new QName("http://cloudbank.com", "price"),
-																						new QName("amt"), builder.rangeType("xs:decimal")),
-																						Facets.UNFACETED,
-																						null,
-																						builder.buckets(
-																								builder.bucket("high", "High", "120", null),
-																								builder.bucket("medium", "Medium", "3", "14"),
-																								builder.bucket("low", "Low", "0", "2")))),
-																								builder.constraint("pop",
-																										builder.range(builder.elementRangeIndex(new QName("popularity"),
-																												builder.rangeType("xs:int")),
-																												Facets.FACETED,
-																												null,
-																												builder.buckets(builder.bucket("high", "High", "5", null),
-																														builder.bucket("medium", "Medium", "3", "5"),
-																														builder.bucket("low", "Low", "1", "3")))))
-																														.withConfiguration(builder.configure()
-																																.returnMetrics(false)
-																																.returnQtext(false)
-																																.debug(true))
-																																.withTransformResults(builder.rawResults());
-
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("AllConstraintsWithStructuredSearch", handle);
@@ -495,17 +498,22 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:fragment-scope>properties</search:fragment-scope>" +
+				"<search:constraint name='appname'>" +
+				"<search:word>" +
+				"<search:element name='AppName' ns=''/>" +
+				"</search:word>" +
+				"</search:constraint>" +
+				"<search:extract-metadata>" +
+				"<search:qname elem-ns='' elem-name='Author'/>" +
+				"<search:qname elem-ns='' elem-name='AppName'/>" +
+				"</search:extract-metadata>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure().fragmentScope(FragmentScope.PROPERTIES));
-		handle.withExtractMetadata(builder.extractMetadata(builder.elementValue(new QName("", "Author")), builder.elementValue(new QName("", "AppName"))));
-		//handle.withExtractMetadata(builder.extractMetadata(builder.elementValue(new QName("", "Author")), builder.constraintValue("appname")));
-		handle.withConstraints(builder.constraint("appname", builder.word(builder.elementTermIndex(new QName("AppName")))));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("ExtractMetadataWithStructuredSearch", handle);
@@ -577,11 +585,11 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = new QueryOptionsBuilder();
 
 		// create query options handle
-        QueryOptionsHandle handle = new QueryOptionsHandle();
+        StringHandle handle = new StringHandle();
 
         // build query options
         handle.withConfiguration(builder.configure().fragmentScope(FragmentScope.PROPERTIES));
@@ -651,24 +659,25 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:fragment-scope>properties</search:fragment-scope>" +
+				"<search:constraint name='pop'>" +
+				"<search:range facet='true' type='xs:int'>" +
+				"<search:element name='popularity' ns=''/>" +
+				"<search:bucket ge='5' name='high'>High</search:bucket>" +
+				"<search:bucket ge='3' lt='5' name='medium'>Medium</search:bucket>" +
+				"<search:bucket ge='1' lt='3' name='low'>Low</search:bucket>" +
+				"</search:range>" +
+				"</search:constraint>" +
+				"<search:extract-metadata>" +
+				"<search:qname elem-ns='' elem-name='Author'/>" +
+				"<search:constraint-value ref='pop'/>" +
+				"</search:extract-metadata>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure().fragmentScope(FragmentScope.PROPERTIES));
-		handle.withExtractMetadata(builder.extractMetadata(builder.elementValue(new QName("", "Author")), builder.constraintValue("pop")));
-		//handle.withConstraints(builder.constraint("appname", builder.word(builder.elementTermIndex(new QName("AppName")))));
-		handle.withConstraints(builder.constraint("pop",
-				builder.range(builder.elementRangeIndex(new QName("popularity"),
-						builder.rangeType("xs:int")),
-						Facets.FACETED,
-						null,
-						builder.buckets(builder.bucket("high", "High", "5", null),
-								builder.bucket("medium", "Medium", "3", "5"),
-								builder.bucket("low", "Low", "1", "3")))));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("ExtractMetadataWithStructuredSearchAndRangeConstraint", handle);
@@ -739,25 +748,26 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:fragment-scope>documents</search:fragment-scope>" +
+				"<search:constraint name='pop'>" +
+				"<search:range facet='true' type='xs:int'>" +
+				"<search:element name='popularity' ns=''/>" +
+				"<search:bucket ge='5' name='high'>High</search:bucket>" +
+				"<search:bucket ge='3' lt='5' name='medium'>Medium</search:bucket>" +
+				"<search:bucket ge='1' lt='3' name='low'>Low</search:bucket>" +
+				"</search:range>" +
+				"</search:constraint>" +
+				"<search:extract-metadata>" +
+				"<search:qname elem-ns='' elem-name='Author'/>" +
+				"<search:qname elem-ns='' elem-name='name'/>" +
+				"<search:constraint-value ref='pop'/>" +
+				"</search:extract-metadata>" +
+				"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure().fragmentScope(FragmentScope.DOCUMENTS));
-		handle.withExtractMetadata(builder.extractMetadata(builder.elementValue(new QName("", "Author")), builder.constraintValue("pop"), builder.elementValue(new QName("", "name"))));
-		//handle.withConstraints(builder.constraint("appname", builder.word(builder.elementTermIndex(new QName("AppName")))));
-		handle.withConstraints(builder.constraint("pop",
-				builder.range(builder.elementRangeIndex(new QName("popularity"),
-						builder.rangeType("xs:int")),
-						Facets.FACETED,
-						null,
-						builder.buckets(builder.bucket("high", "High", "5", null),
-								builder.bucket("medium", "Medium", "3", "5"),
-								builder.bucket("low", "Low", "1", "3")))));
-
+		StringHandle handle = new StringHandle(opts1);
 		// write query options
 		optionsMgr.writeOptions("DocumentLevelMetadata", handle);
 
@@ -792,10 +802,8 @@ public class TestQueryOptionBuilder extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
-
 	}
 }

@@ -35,9 +35,7 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 public class TestBug19092 extends BasicJavaClientREST {
 
@@ -45,14 +43,12 @@ public class TestBug19092 extends BasicJavaClientREST {
 	private static String [] fNames = {"Bug19092DB-1"};
 	
 @BeforeClass
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 	  System.out.println("In setup");
 	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19092() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -63,14 +59,13 @@ public class TestBug19092 extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 		
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
-		
 		// create query options handle
-        QueryOptionsHandle handle = new QueryOptionsHandle();
-        
-        // build query options
-        handle.withTerm(builder.term("case-sensitive"));
+		String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:term>" +
+				"<search:term-option>case-sensitive</search:term-option>" +
+				"</search:term>" +
+				"</search:options>";
+        StringHandle handle = new StringHandle(xmlOptions);
         
         // write query options
         optionsMgr.writeOptions("DefaultTermOpt", handle);
@@ -90,7 +85,6 @@ public class TestBug19092 extends BasicJavaClientREST {
 		client.release();		
 	}
 
-@SuppressWarnings("deprecation")
 @Test
 	public void testBug19092WithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
@@ -101,14 +95,13 @@ public class TestBug19092 extends BasicJavaClientREST {
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 		
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
-		
 		// create query options handle
-        QueryOptionsHandle handle = new QueryOptionsHandle();
-        
-        // build query options
-        handle.withTerm(builder.term("case-sensitive"));
+		String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+				"<search:term>" +
+				"<search:term-option>case-sensitive</search:term-option>" +
+				"</search:term>" +
+				"</search:options>";
+		StringHandle handle = new StringHandle(xmlOptions);
         
         // write query options
         optionsMgr.writeOptions("DefaultTermOpt", handle);
@@ -125,11 +118,10 @@ public class TestBug19092 extends BasicJavaClientREST {
 		// release client
 		client.release();		
 	}
+
 	@AfterClass
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
-		
 	}
 }

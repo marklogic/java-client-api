@@ -43,7 +43,6 @@ import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
@@ -56,16 +55,14 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 	private static int restPort=8011;
 
 	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
@@ -84,8 +81,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/pojo-query-option/", "XML");
 		}
 
@@ -98,12 +94,11 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 
 		// write the query options to the database
 		optionsMgr.writeOptions(queryOptionName, handle);		    
-
-		//System.out.println("Write " + queryOptionName + " to database");	
+	
 		System.out.println("Write " + queryOptionName + " to database");
 
 		// read query option with QueryOptionsHandle
-		QueryOptionsHandle readHandle = new QueryOptionsHandle();
+		StringHandle readHandle = new StringHandle();
 		optionsMgr.readOptions(queryOptionName, readHandle);
 		String output = readHandle.toString();
 
@@ -153,8 +148,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/pojo-query-option-all/", "XML");
 		}
 
@@ -167,12 +161,11 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 
 		// write the query options to the database
 		optionsMgr.writeOptions(queryOptionName, handle);		    
-
-		//System.out.println("Write " + queryOptionName + " to database");	
+	
 		System.out.println("Write " + queryOptionName + " to database");
 
 		// read query option with QueryOptionsHandle
-		QueryOptionsHandle readHandle = new QueryOptionsHandle();
+		StringHandle readHandle = new StringHandle();
 		optionsMgr.readOptions(queryOptionName, readHandle);
 		String output = readHandle.toString();
 		System.out.println(output);
@@ -206,7 +199,6 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		//assertXpathEvaluatesTo("Vannevar Bush", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
 
 		// release client
 		client.release();	
@@ -226,8 +218,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/pojo-query-option-all-json/", "XML");
 		}
 
@@ -265,8 +256,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionNamePOJO);
-		//querydef.setCriteria("(coll:set1 AND coll:set5) AND -intitle:memex AND (pop:high OR pop:medium) AND price:low AND id:**11 AND date:2005-01-01 AND (para:Bush AND -para:memex)");
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionNamePOJO);		
 		querydef.setCriteria("pop:high");
 
 		// create handle
@@ -305,7 +295,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 		System.out.println("Write " + queryOptionName + " to database");
 
 		// read query option with QueryOptionsHandle
-		QueryOptionsHandle readHandle = new QueryOptionsHandle();
+		StringHandle readHandle = new StringHandle();
 		optionsMgr.readOptions(queryOptionName, readHandle);
 		String output = readHandle.toString();
 		System.out.println(output);
@@ -315,8 +305,7 @@ public class TestQueryOptionsHandle extends BasicJavaClientREST {
 	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}

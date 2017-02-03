@@ -34,10 +34,8 @@ import org.w3c.dom.Document;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.admin.config.QueryOptionsBuilder;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
-import com.marklogic.client.io.QueryOptionsHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -47,18 +45,15 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 	private static String dbName = "TestQueryOptionBuilderSearchableExpressionDB";
 	private static String [] fNames = {"TestQueryOptionBuilderSearchableExpressionDB-1"};
 	
-
 	@BeforeClass 
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 
 	@After
-	public void testCleanUp() throws Exception
-	{
+	public void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}	
@@ -73,26 +68,23 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-child-axis/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:searchable-expression>//root/child::p</search:searchable-expression>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSearchableExpression(builder.searchableExpression("//root/child::p"));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SearchableExpressionChildAxis", handle);
@@ -103,9 +95,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		optionsMgr.readOptions("SearchableExpressionChildAxis", readHandle);
 		String output = readHandle.get();
 		System.out.println(output);
-
-		//String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-		//assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
 
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
@@ -121,7 +110,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("The Bush article described a device called a Memex.", "string(//*[local-name()='result'][1]//*[local-name()='p'])", resultDoc);
@@ -141,26 +129,23 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-desc-axis/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:searchable-expression>/root/descendant::title</search:searchable-expression>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.rawResults())
-				.withSearchableExpression(builder.searchableExpression("/root/descendant::title"));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SearchableExpressionDescendantAxis", handle);
@@ -171,9 +156,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		optionsMgr.readOptions("SearchableExpressionDescendantAxis", readHandle);
 		String output = readHandle.get();
 		System.out.println(output);
-
-		//String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-		//assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
 
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
@@ -189,7 +171,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("The Bush article", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
@@ -210,26 +191,27 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-or-op/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:searchable-expression>//(title|id)</search:searchable-expression>" +
+			    "<search:transform-results apply='snippet'>" +
+			        "<search:per-match-tokens>30</search:per-match-tokens>" +
+			        "<search:max-matches>4</search:max-matches>" +
+			        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+			    "</search:transform-results>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.snippetTransform(30, 4, 200))
-				.withSearchableExpression(builder.searchableExpression("//(title|id)"));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SearchableExpressionOrOperator", handle);
@@ -240,9 +222,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		optionsMgr.readOptions("SearchableExpressionOrOperator", readHandle);
 		String output = readHandle.get();
 		System.out.println(output);
-
-		//String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-		//assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
 
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
@@ -258,7 +237,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("Bush", "string(//*[local-name()='result'][1]//*[local-name()='highlight'])", resultDoc);
@@ -279,26 +257,27 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-desc-or-self/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:searchable-expression>/descendant-or-self::root</search:searchable-expression>" +
+			    "<search:transform-results apply='snippet'>" +
+			        "<search:per-match-tokens>30</search:per-match-tokens>" +
+			        "<search:max-matches>10</search:max-matches>" +
+			        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+			    "</search:transform-results>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.snippetTransform(30, 10, 200))
-				.withSearchableExpression(builder.searchableExpression("/descendant-or-self::root"));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SearchableExpressionDescendantOrSelf", handle);
@@ -309,9 +288,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		optionsMgr.readOptions("SearchableExpressionDescendantOrSelf", readHandle);
 		String output = readHandle.get();
 		System.out.println(output);
-
-		//String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-		//assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
 
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
@@ -330,11 +306,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		//assertXpathEvaluatesTo("Vannevar <search:highlight>Bush</search:highlight>", "string(//*[local-name()='result'][1]//*[local-name()='match'][1])", resultDoc);
-		//assertXpathEvaluatesTo("Vannevar <search:highlight>Bush</search:highlight> wrote an article for The Atlantic Monthly", "string(//*[local-name()='result'][1]//*[local-name()='match'][2])", resultDoc);
-		//assertXpathEvaluatesTo("The <search:highlight>Bush</search:highlight> article", "string(//*[local-name()='result'][2]//*[local-name()='match'][1])", resultDoc);
-		//assertXpathEvaluatesTo("The <search:highlight>Bush</search:highlight> article described a device called a Memex.", "string(//*[local-name()='result'][2]//*[local-name()='match'][2])", resultDoc);
-
 		// release client
 		client.release();	
 	} 
@@ -349,26 +320,27 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/search-expr-func/", "XML");
 		}
 
 		// create query options manager
 		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options builder
-		QueryOptionsBuilder builder = new QueryOptionsBuilder();
+		// create query options
+		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:searchable-expression>//p[contains(.,'groundbreaking')]</search:searchable-expression>" +
+			    "<search:transform-results apply='snippet'>" +
+			        "<search:per-match-tokens>30</search:per-match-tokens>" +
+			        "<search:max-matches>10</search:max-matches>" +
+			        "<search:max-snippet-chars>200</search:max-snippet-chars>" +
+			    "</search:transform-results>" +
+			"</search:options>";
 
 		// create query options handle
-		QueryOptionsHandle handle = new QueryOptionsHandle();
-
-		// build query options
-		handle.withConfiguration(builder.configure()
-				.returnMetrics(false)
-				.returnQtext(false))
-				.withTransformResults(builder.snippetTransform(30, 10, 200))
-				.withSearchableExpression(builder.searchableExpression("//p[contains(.,\"groundbreaking\")]"));
+		StringHandle handle = new StringHandle(opts1);
 
 		// write query options
 		optionsMgr.writeOptions("SearchableExpressionFunction", handle);
@@ -379,9 +351,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 		optionsMgr.readOptions("SearchableExpressionFunction", readHandle);
 		String output = readHandle.get();
 		System.out.println(output);
-
-		//String expectedOutput = "{\"options\":{\"sort-order\":[{\"direction\":\"descending\", \"score\":null},{\"type\":\"xs:decimal\", \"direction\":\"ascending\", \"attribute\":{\"ns\":\"\", \"name\":\"amt\"}, \"element\":{\"ns\":\"http:\\/\\/cloudbank.com\", \"name\":\"price\"}}], \"return-metrics\":false, \"return-qtext\":false, \"transform-results\":{\"apply\":\"raw\"}}}";
-		//assertTrue("Query Options in json is incorrect", output.contains(expectedOutput));
 
 		// create query manager
 		QueryManager queryMgr = client.newQueryManager();
@@ -397,7 +366,6 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 
 		// get the result
 		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
 
 		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
 		assertXpathEvaluatesTo("/search-expr-func/constraint3.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
@@ -407,8 +375,7 @@ public class TestQueryOptionBuilderSearchableExpression extends BasicJavaClientR
 	} 
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}
