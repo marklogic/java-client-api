@@ -95,11 +95,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 
 		// For use with QueryHostBatcher
 		clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);	   
-		dmManager = clientQHB.newDataMovementManager();
-
-		((DatabaseClientImpl) clientQHB).getServices()
-		.getResource(null, "forestinfo", null, null, new JacksonHandle())
-		.get();		
+		dmManager = clientQHB.newDataMovementManager();	
 	}
 
 	@AfterClass
