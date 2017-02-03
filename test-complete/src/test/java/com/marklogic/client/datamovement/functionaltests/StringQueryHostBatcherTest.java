@@ -64,7 +64,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
-import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -101,6 +100,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		restServerHost = getRestAppServerHostName();
 		
 		restServerName = getRestAppServerName();
+		// Points to top level of all QA data folder
 		dataConfigDirPath = getDataConfigDirPath();
 		
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restServerPort);
@@ -197,18 +197,20 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 			//Use WriteBatcher to write the same files.				
 			WriteBatcher batcher = dmManager.newWriteBatcher();
+			// Move to individual data sub folders.
+			String dataFileDir = dataConfigDirPath + "/data/";
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 			batcher.add("/abs-range-constraint/batcher-contraints1.xml", contentHandle1);
 			batcher.add("/abs-range-constraint/batcher-contraints2.xml", contentHandle2);
@@ -306,21 +308,23 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 
 			StringQueryDefinition querydef = queryMgr.newStringDefinition();
 			querydef.setCriteria("0012");
+			// Move to individual data sub folders.
+			String dataFileDir = dataConfigDirPath + "/data/";
 
 			//Use WriteBatcher to write the same files.				
 			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 			batcher.add("/abs-range-constraint/batcher-contraints1.xml", contentHandle1);
 			batcher.add("/abs-range-constraint/batcher-contraints2.xml", contentHandle2);
@@ -400,15 +404,15 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.withBatchSize(2);
 	
 		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 		InputStreamHandle contentHandle2 = new InputStreamHandle();
-		contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+		contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 		InputStreamHandle contentHandle3 = new InputStreamHandle();
-		contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+		contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 		InputStreamHandle contentHandle4 = new InputStreamHandle();
-		contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+		contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 		InputStreamHandle contentHandle5 = new InputStreamHandle();
-		contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+		contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 		StringBuffer writebatchResults  = new StringBuffer();
 		batcher.add("/batcher-contraints1.json", contentHandle1);
@@ -487,17 +491,19 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
+		// Move to individual data sub folders.
+		String dataFileDir = dataConfigDirPath + "/data/";
 	
 		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 		InputStreamHandle contentHandle2 = new InputStreamHandle();
-		contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+		contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 		InputStreamHandle contentHandle3 = new InputStreamHandle();
-		contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+		contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 		InputStreamHandle contentHandle4 = new InputStreamHandle();
-		contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+		contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 		InputStreamHandle contentHandle5 = new InputStreamHandle();
-		contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+		contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 		batcher.add("/fail-contraints1.xml", contentHandle1);
 		batcher.add("/fail-contraints2.xml", contentHandle2);
@@ -597,9 +603,11 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		WriteBatcher batcher = dmManager.newWriteBatcher();
 
 		batcher.withBatchSize(2);
+		// Move to individual data sub folders.
+		String dataFileDir = dataConfigDirPath + "/data/";
 	
 		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 		batcher.add("contraints1.json", contentHandle1);
 			
 		// Flush
@@ -607,10 +615,6 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		StringBuffer batchFailResults  = new StringBuffer();
 		String expectedStr = "Vannevar Bush wrote an article for The Atlantic Monthly";
 		
-		// get the query
-		File file = new File(dataConfigDirPath + "qbe1.json");
-		FileHandle fileHandle = new FileHandle(file);
-
 		QueryManager queryMgr = client.newQueryManager();
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
 		querydef.setCriteria("Vannevar");
@@ -909,7 +913,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testServerXQueryTransform() throws IOException, ParserConfigurationException, SAXException, TransformerException, InterruptedException, XPathExpressionException
 	{	
 		System.out.println("Running testServerXQueryTransform");		
-		
+		String transformFileDir = dataConfigDirPath + "/transforms/";
 		TransformExtensionsManager transMgr = 
 				client.newServerConfigManager().newTransformExtensionsManager();
 		ExtensionMetadata metadata = new ExtensionMetadata();
@@ -918,7 +922,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		metadata.setProvider("MarkLogic");
 		metadata.setVersion("0.1");
 		// get the transform file from add-attr-xquery-transform.xqy
-		File transformFile = new File(dataConfigDirPath +"add-attr-xquery-transform.xqy");
+		File transformFile = new File(transformFileDir +"add-attr-xquery-transform.xqy");
 		FileHandle transformHandle = new FileHandle(transformFile);
 		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
@@ -1297,15 +1301,15 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		batcher.withBatchSize(2);
 	
 		InputStreamHandle contentHandle1 = new InputStreamHandle();
-		contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+		contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 		InputStreamHandle contentHandle2 = new InputStreamHandle();
-		contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+		contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 		InputStreamHandle contentHandle3 = new InputStreamHandle();
-		contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+		contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 		InputStreamHandle contentHandle4 = new InputStreamHandle();
-		contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+		contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 		InputStreamHandle contentHandle5 = new InputStreamHandle();
-		contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+		contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 		StringBuilder writebatchResults = new StringBuilder();
 		batcher.add("/batcher-contraints1.json", contentHandle1);
@@ -1425,16 +1429,18 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
+			// Move to individual data sub folders.
+			String dataFileDir = dataConfigDirPath + "/data/";
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 			batcher.add("/abs-range-constraint/batcher-contraints1.xml", contentHandle1);
 			batcher.add("/abs-range-constraint/batcher-contraints2.xml", contentHandle2);
@@ -1584,16 +1590,18 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
 
 			batcher.withBatchSize(2);
+			// Move to individual data sub folders.
+			String dataFileDir = dataConfigDirPath + "/data/";
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(dataConfigDirPath + filenames[0]));
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(dataConfigDirPath + filenames[1]));
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(dataConfigDirPath + filenames[2]));
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(dataConfigDirPath + filenames[3]));
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(dataConfigDirPath + filenames[4]));
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
 
 			batcher.add("/abs-range-constraint/batcher-contraints1.xml", contentHandle1);
 			batcher.add("/abs-range-constraint/batcher-contraints2.xml", contentHandle2);

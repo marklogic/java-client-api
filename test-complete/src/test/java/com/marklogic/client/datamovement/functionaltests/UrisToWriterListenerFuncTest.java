@@ -72,6 +72,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 
 	private static String restServerHost = null;
 	private static String restServerName = null;
+	private static String dataConfigDirPath = null;
 	private static int restServerPort = 0;
 	private static DatabaseClient clientQHB = null;	
 	private static DataMovementManager dmManager = null;
@@ -85,7 +86,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		restServerHost = getRestAppServerHostName();
 
 		restServerName = getRestAppServerName();
-		getDataConfigDirPath();
+		dataConfigDirPath = getDataConfigDirPath();
 
 		setupJavaRESTServer(dbName, fNames[0], restServerName, restServerPort);
 		setupAppServicesConstraint(dbName);
@@ -139,6 +140,8 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		// file name to hold uris written out
 		String uriFile = "testMultipleFileTypes.txt";
 		String collection = "MultipleFileTypes";
+		// Move to individual data sub folders.
+		String dataFileDir = dataConfigDirPath + "/data/";
 
 		FileWriter writer = null;
 		FileReader freader = null;
@@ -173,49 +176,44 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			// Add multiple files to batcher
 
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/binary.jpg"
+			contentHandle1.set(new FileInputStream(new File(dataFileDir + "binary.jpg"
 					)
 					)
 					);
 			wbatcher.add("/binary.jpg", metadata, contentHandle1);
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/constraint1.xml"
+			contentHandle2.set(new FileInputStream(new File(dataFileDir + "constraint1.xml"
 					)
 					)
 					);
 			wbatcher.add("/constraint1.xml", metadata, contentHandle2);
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/employee-stylesheet.xsl"
+			contentHandle3.set(new FileInputStream(new File(dataFileDir + "employee-stylesheet.xsl"
 					)
 					)
 					);
 			wbatcher.add("/employee-stylesheet.xsl", metadata, contentHandle3);
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/product-microsoft.json"
+			contentHandle4.set(new FileInputStream(new File(dataFileDir + "product-microsoft.json"
 					)
 					)
 					);
 			wbatcher.add("/product-microsoft.json", metadata, contentHandle4);
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/xqueries.txt"
+			contentHandle5.set(new FileInputStream(new File(dataFileDir + "xqueries.txt"
 					)
 					)
 					);
 			wbatcher.add("/xqueries.txt", metadata, contentHandle5);
 			InputStreamHandle contentHandle6 = new InputStreamHandle();
-			contentHandle6.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/multibyte1.xml"
+			contentHandle6.set(new FileInputStream(new File(dataFileDir + "multibyte1.xml"
 					)
 					)
 					);
 			wbatcher.add("/multibyte1.xml", metadata, contentHandle6);
 			wbatcher.flushAndWait();
 			wbatcher.awaitCompletion();
+			Thread.sleep(5000);;
 			if (wbatchFailResults.length() > 0 || wbatchResults.toString().split(":").length != 6) {
 				System.out.println("Success URI's from Write batcher : "+ wbatchResults.toString());
 				System.out.println("Failure URI's from Write batcher : "+ wbatchFailResults.toString());
@@ -301,6 +299,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		String uriFile = "testReadbacks.txt";
 		String docId = null;
 		String collection = "MultipleFileTypes";
+		String dataFileDir = dataConfigDirPath + "/data/";
 
 		FileWriter writer = null;
 		FileReader freader = null;
@@ -315,7 +314,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			//Use WriteBatcher to write files.				
 			WriteBatcher wbatcher = dmManager.newWriteBatcher();
 			wbatcher.withBatchSize(2).withThreadCount(1);
-
+			
 			wbatcher.onBatchSuccess(
 					batch -> {
 						for(WriteEvent w: batch.getItems()) {
@@ -334,8 +333,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			dmManager.startJob(wbatcher);
 			// Add file to batcher
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/product-microsoft.json"
+			contentHandle1.set(new FileInputStream(new File(dataFileDir + "product-microsoft.json"
 					)
 					)
 					);
@@ -436,6 +434,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		String uriFile = "testMultipleFileTypes.txt";
 		String collection1 = "MultipleFileTypes1";
 		String collection2 = "MultipleFileTypes2";
+		String dataFileDir = dataConfigDirPath + "/data/";
 
 		FileWriter writer = null, writer1 = null;
 		FileReader filereader1 = null, freader2 = null;
@@ -469,29 +468,25 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			// Add multiple files to batcher1
 
 			InputStreamHandle contentHandle1 = new InputStreamHandle();
-			contentHandle1.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/binary.jpg"
+			contentHandle1.set(new FileInputStream(new File(dataFileDir + "binary.jpg"
 					)
 					)
 					);
 			wbatcher1.add("/binary.jpg", metadata1, contentHandle1);
 			InputStreamHandle contentHandle2 = new InputStreamHandle();
-			contentHandle2.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/constraint1.xml"
+			contentHandle2.set(new FileInputStream(new File(dataFileDir + "constraint1.xml"
 					)
 					)
 					);
 			wbatcher1.add("/constraint1.xml", metadata1, contentHandle2);
 			InputStreamHandle contentHandle3 = new InputStreamHandle();
-			contentHandle3.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/employee-stylesheet.xsl"
+			contentHandle3.set(new FileInputStream(new File(dataFileDir + "employee-stylesheet.xsl"
 					)
 					)
 					);
 			wbatcher1.add("/employee-stylesheet.xsl", metadata1, contentHandle3);
 			InputStreamHandle contentHandle4 = new InputStreamHandle();
-			contentHandle4.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/product-microsoft.json"
+			contentHandle4.set(new FileInputStream(new File(dataFileDir + "product-microsoft.json"
 					)
 					)
 					);
@@ -563,15 +558,13 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 							});
 			dmManager.startJob(wbatcher2);
 			InputStreamHandle contentHandle5 = new InputStreamHandle();
-			contentHandle5.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/xqueries.txt"
+			contentHandle5.set(new FileInputStream(new File(dataFileDir + "xqueries.txt"
 					)
 					)
 					);
 			wbatcher2.add("/xqueries.txt", metadata2, contentHandle5);
 			InputStreamHandle contentHandle6 = new InputStreamHandle();
-			contentHandle6.set(new FileInputStream(new File(
-					"src/test/java/com/marklogic/client/functionaltest/data/multibyte1.xml"
+			contentHandle6.set(new FileInputStream(new File(dataFileDir + "multibyte1.xml"
 					)
 					)
 					);
