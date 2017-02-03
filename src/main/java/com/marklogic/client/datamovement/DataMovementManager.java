@@ -70,7 +70,10 @@ public interface DataMovementManager {
   public JobTicket startJob(QueryBatcher batcher);
 
   /**
-   * Not yet implemented 
+   * Get a snapshot report of the state of the job when the call is made.
+   * Depends on some pre-installed listeners attached to the job to collect the
+   * details.
+   *
    * @param ticket the JobTicket for which the report has to be generated
    * @return the report for the job
    */
