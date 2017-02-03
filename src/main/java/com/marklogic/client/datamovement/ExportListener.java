@@ -19,6 +19,7 @@ import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.GenericDocumentManager;
+import com.marklogic.client.impl.GenericDocumentImpl;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.query.QueryManager;
@@ -82,7 +83,7 @@ public class ExportListener implements QueryBatchListener {
     if ( categories        != null ) docMgr.setMetadataCategories(categories);
     if ( nonDocumentFormat != null ) docMgr.setNonDocumentFormat(nonDocumentFormat);
     if ( consistentSnapshot == true ) {
-      return docMgr.read( batch.getServerTimestamp(), transform, batch.getItems() );
+      return ((GenericDocumentImpl) docMgr).read( batch.getServerTimestamp(), transform, batch.getItems() );
     } else {
       return docMgr.read( transform, batch.getItems() );
     }

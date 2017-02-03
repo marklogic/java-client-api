@@ -404,7 +404,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return read(-1, null, null, uris);
   }
 
-  @Override
   public DocumentPage read(long serverTimestamp, String... uris) {
     return read(serverTimestamp, null, null, uris);
   }
@@ -414,7 +413,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return read(-1, null, transaction, uris);
   }
 
-  @Override
   public DocumentPage read(long serverTimestamp, Transaction transaction, String... uris) {
     return read(serverTimestamp, null, transaction, uris);
   }
@@ -424,7 +422,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return read(-1, transform, null, uris);
   }
 
-  @Override
   public DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris) {
     return read(serverTimestamp, transform, null, uris);
   }
@@ -436,7 +433,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return read(-1, transform, transaction, withContent, null, uris);
   }
 
-  @Override
   public DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction,
       String... uris) {
     boolean withContent = true;
@@ -491,7 +487,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return search(querydef, start, -1, null, null);
   }
 
-  @Override
   public DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp) {
     return search(querydef, start, serverTimestamp, null, null);
   }
@@ -508,7 +503,6 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
     return search(querydef, start, -1, null, transaction);
   }
 
-  @Override
   public DocumentPage search(QueryDefinition querydef, long start,
       long serverTimestamp, Transaction transaction) {
     return search(querydef, start, serverTimestamp, null, transaction);
