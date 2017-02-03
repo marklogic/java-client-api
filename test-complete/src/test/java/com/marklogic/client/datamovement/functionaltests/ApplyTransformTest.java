@@ -126,7 +126,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		dmManager = dbClient.newDataMovementManager();
 
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
-				.getResource(null, "forestinfo", null, null, new JacksonHandle())
+				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
 				.get();
 
 
@@ -790,7 +790,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		System.out.println("stopTransformJobTest: Skipped: "+skippedBatch.size());
 		System.out.println("stopTransformJobTest: Failed: "+failedBatch.size());
 		System.out.println("stopTransformJobTest : count "+count);
-		Assert.assertEquals(2000,successBatch.size()+skippedBatch.size()+failedBatch.size());
+		Assert.assertEquals(2000,successBatch.size()+skippedBatch.size()+failedBatch.size()+count);
 		Assert.assertEquals(2000-count,successBatch.size());
 
 	}

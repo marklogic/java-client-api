@@ -96,7 +96,7 @@ public class DeleteListenerTest extends  DmsdkJavaClientREST{
 		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
-			      .getResource(null, "forestinfo", null, null, new JacksonHandle())
+			      .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
 			      .get();
 		
 		//JacksonHandle

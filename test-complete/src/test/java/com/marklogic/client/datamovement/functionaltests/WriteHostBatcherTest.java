@@ -153,7 +153,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager = dbClient.newDataMovementManager();
 		
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
-			      .getResource(null, "forestinfo", null, null, new JacksonHandle())
+			      .getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
 			      .get();
 		
 		//JacksonHandle
@@ -1826,7 +1826,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	    	System.out.println("Fail : "+failCount.intValue());
 	    	System.out.println("Success : "+successCount.intValue());
 	    	System.out.println("Count : "+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-	    	// Confirms that more than one thread is spawned
+	    	// Confirms that 20 threads were spawned
 	    	Assert.assertTrue(count.get());
 	    	// Confirms that the number of docs inserted = 50000
 	    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==25000);
