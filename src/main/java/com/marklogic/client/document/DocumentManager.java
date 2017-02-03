@@ -463,7 +463,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, String... uris);
+    */
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -490,7 +492,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, ServerTransform transform, String... uris);
+    */
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -517,7 +521,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, Transaction transaction, String... uris);
+    */
 
     /**
      * Reads from the database a list of documents matching the provided uris.  Allows
@@ -546,7 +552,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      * @param uris the database uris identifying documents to retrieve
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage read(long serverTimestamp, ServerTransform transform, Transaction transaction, String... uris);
+    */
 
     /**
      * Reads from the database the metadata for a list of documents matching the
@@ -598,7 +606,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *   server via getServerTimestamp() on any handle.
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp);
+    */
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long, Transaction) QueryManager.search}
@@ -627,7 +637,9 @@ public interface DocumentManager<R extends AbstractReadHandle, W extends Abstrac
      *   server via getServerTimestamp() on any handle.
      * @return the DocumentPage of matching documents and metadata
      */
+    /* Hide the following for now because the API isn't yet fully fleshed-out
     DocumentPage search(QueryDefinition querydef, long start, long serverTimestamp, Transaction transaction);
+    */
 
     /**
      * Just like {@link QueryManager#search(QueryDefinition, SearchReadHandle, long) QueryManager.search}
