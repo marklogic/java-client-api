@@ -2548,4 +2548,50 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			e.printStackTrace();
 		}
 	}
+	
+	//ISSUE -646
+	@Ignore
+	public void addWithMetadata() throws Exception{
+				
+		final String query1 = "fn:count(fn:doc())";
+				
+		try{
+			DocumentMetadataHandle meta6 = new DocumentMetadataHandle()
+					 .withCollections("Sample Collection 1").withProperty("docMeta-1", "true").withQuality(1);
+			meta6.setFormat(Format.XML);
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+
+			Thread.currentThread().sleep(5000L);
+			
+			DatabaseClient dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+			DataMovementManager dmManager = dbClient.newDataMovementManager();
+			
+			WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+			ihb2.withBatchSize(50).withThreadCount(1);
+				
+			ihb2.onBatchSuccess(
+			        batch -> {
+			        	}
+			        )
+			        .onBatchFailure(
+			          (batch, throwable) -> {
+			        	  throwable.printStackTrace();
+			          
+			          }
+			);
+			for (int j =0 ;j < 1000; j++){
+				String uri ="/local/string-"+ j;
+				ihb2.addAs(uri , meta6,jsonNode);
+			}
+			
+		
+			ihb2.flushAndWait();
+		
+			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+			
+		}
+		catch(Exception e){
+			e.printStackTrace();
+		}
+	}
 }
