@@ -1010,6 +1010,123 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			}			
 		}
 	}
+	
+	/*
+	 * To test Prefix and suffix on UriToWriterListener writer.
+	 * @throws IOException
+	 * @throws ParserConfigurationException
+	 * @throws SAXException
+	 * @throws XpathException
+	 */
+	@Test
+	public void testPrefixAndSuffix() throws IOException, ParserConfigurationException, SAXException, InterruptedException
+	{	
+		System.out.println("Running testPrefixAndSuffix");
+		StringBuilder wbatchResults = new StringBuilder();
+		StringBuilder wbatchFailResults = new StringBuilder();
+		// file name to hold uris written out
+		String uriFile = "testPrefixAndSuffix.txt";
+		String docId = null;
+		String collection = "MultipleFileTypes";
+		String dataFileDir = dataConfigDirPath + "/data/";
+
+		FileWriter writer = null;
+		FileReader freader = null;
+		BufferedReader UriReaderTxt = null;
+
+		try {
+			// Use a collection to querydef for QueryBatcher.
+			DocumentMetadataHandle metadata= new DocumentMetadataHandle()
+			.withCollections(collection)
+			//.withProperty("SomeCollection", "true")
+			.withQuality(100);
+			//Use WriteBatcher to write files.				
+			WriteBatcher wbatcher = dmManager.newWriteBatcher();
+			wbatcher.withBatchSize(2).withThreadCount(1);
+			
+			wbatcher.onBatchSuccess(
+					batch -> {
+						for(WriteEvent w: batch.getItems()) {
+							wbatchResults.append(w.getTargetUri()+":");
+						}		         	
+					}
+					)
+					.onBatchFailure(
+							(batch, throwable) -> {
+								throwable.printStackTrace();
+								for(WriteEvent w: batch.getItems()) {
+									System.out.println("Failed URI's from Writebatcher are"+ w.getTargetUri());
+									wbatchFailResults.append(w.getTargetUri()+":");
+								}		      
+							});
+			dmManager.startJob(wbatcher);
+			// Add file to batcher
+			InputStreamHandle contentHandle1 = new InputStreamHandle();
+			contentHandle1.set(new FileInputStream(new File(dataFileDir + "product-microsoft.json"
+					)
+					)
+					);
+			wbatcher.add("/product-microsoft.json", metadata, contentHandle1);
+
+			wbatcher.flushAndWait();
+			wbatcher.awaitCompletion();
+			if (wbatchFailResults.length() > 0 || wbatchResults.toString().split(":").length != 1) {
+				System.out.println("Success URI's from Write batcher : "+ wbatchResults.toString());
+				System.out.println("Failure URI's from Write batcher : "+ wbatchFailResults.toString());
+				fail("Test failed due to errors in write batcher");
+			}
+			writer = new FileWriter(uriFile);
+			StructuredQueryDefinition querydef = new StructuredQueryBuilder().collection(collection);
+			// Run a QueryBatcher on the new URIs.
+			StringBuilder batchResults = new StringBuilder();
+			StringBuilder batchFailResults = new StringBuilder();
+
+			QueryBatcher qBatcher = dmManager.newQueryBatcher(querydef);
+			qBatcher.onUrisReady(batch -> {
+				for (String str : batch.getItems()) {
+					batchResults.append(str)
+					.append('|');
+				}
+			}).onUrisReady( new UrisToWriterListener(writer).withRecordPrefix("ML9").withRecordSuffix("Great"))
+			.onQueryFailure(throwable -> {
+				System.out.println("Exceptions thrown from callback onQueryFailure");
+				throwable.printStackTrace();
+				batchFailResults.append("Test has Exceptions");
+			});
+			JobTicket qBatcherJob = dmManager.startJob(qBatcher);
+			// Wait for query Batcher to complete and stop Job.
+			qBatcher.awaitCompletion();
+			dmManager.stopJob(qBatcherJob);
+			writer.flush();
+
+			// Verify the writer (file) succeeded.
+			freader = new FileReader(uriFile);
+			UriReaderTxt = new BufferedReader(freader);
+			String line = "";
+			while ((line = UriReaderTxt.readLine()) != null) {
+				System.out.println("Line read from file with URIS is" + line);
+				docId = line.trim();
+			}	
+			assertTrue("Json URI not correct", docId.contains("ML9/product-microsoft.jsonGreat"));
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions thrown from testPrefixAndSuffix method" + ex.getMessage());
+		}
+		finally {
+			try {
+				if (writer != null)
+					writer.close();
+				if (UriReaderTxt != null) UriReaderTxt.close();
+				if (freader != null) freader.close();
+				// Delete the file on JVM exit
+				File file = new File(uriFile);
+				file.deleteOnExit();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}	    	
+		}
+	}
 
 	public Artifact getArtifact(int counter) {
 
