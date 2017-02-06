@@ -122,7 +122,6 @@ public class JobReportImpl implements JobReport {
     return failureBatchesCount;
   }
 
-  @Override
   public boolean isJobComplete() {
     return isJobComplete;
   }

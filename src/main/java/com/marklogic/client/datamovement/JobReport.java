@@ -50,7 +50,6 @@ public interface JobReport {
 
   //boolean isJobComplete();
 
-  boolean isJobComplete();
   /**
    * Gets the timestamp at which this instance of JobReport was created
    * @return the timestamp of the JobReport
