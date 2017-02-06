@@ -20,25 +20,36 @@ import static org.junit.Assert.assertNotEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
+import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Handler;
+import java.util.logging.Level;
+import java.util.logging.LogRecord;
+import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
+import org.apache.logging.log4j.core.jmx.AppenderAdmin;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -46,14 +57,17 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DOMHandle;
@@ -61,9 +75,11 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -115,6 +131,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 	    // For use with QueryHostBatcher
 	    clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);	   
 	    moveMgr = clientQHB.newDataMovementManager();
+	   
 	}
 
 	/**
@@ -473,6 +490,536 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			assertEquals("Batch Number","0", res[3]);
 		}	
 	}*/
+	
+	
+	/*
+	 * To test that RawStructuredQueryDefinition can be mixed in with a StructuredQueryBuilder 
+	 * @throws Exception
+	 * 
+	 * TODO modify this test for Git 591, once 591 is fixed/addressed.
+	 *
+	 */
+	@Ignore
+	public void testRawStructuredQDWithQueryBuilder() throws Exception
+	{
+		String testMultipleDB = "RawStrutdQDWithQBuilderDB";
+		String[] testMultipleForest = {"RawStrutdQDWithQBuilderDB-1", "RawStrutdQDWithQBuilderDB-2", "RawStrutdQDWithQBuilderDB-3"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
+		FileWriter writer = null;
+		BufferedReader UriReaderTxt = null;
+		FileReader freader = null;
+		String fileName = "RawStrutdQDWithQBuilderDB.txt";
+
+		try {
+			System.out.println("Running testRawStructuredQDWithQueryBuilder");
+
+			//Setup a separate database/
+			createDB(testMultipleDB);
+			createForest(testMultipleForest[0], testMultipleDB);
+			createForest(testMultipleForest[1], testMultipleDB);			
+			associateRESTServerWithDB(restServerName, testMultipleDB);
+
+			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
+
+			String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
+			
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
+
+			QueryManager queryMgr = clientTmp.newQueryManager();
+			String dataFileDir = dataConfigDirPath + "/data/";
+
+			//Use WriteBatcher to write the same files.				
+			WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+
+			wbatcher.withBatchSize(2);
+			InputStreamHandle contentHandle1 = new InputStreamHandle();
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+			InputStreamHandle contentHandle2 = new InputStreamHandle();
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+			InputStreamHandle contentHandle3 = new InputStreamHandle();
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+
+			wbatcher.add(filenames[0], contentHandle1);
+			wbatcher.add(filenames[1], contentHandle2);
+			wbatcher.add(filenames[2], contentHandle3);
+			
+			// Verify if the batch flushes when batch size is reached.
+			// Flush
+			wbatcher.flushAndWait();
+			wbatcher.awaitCompletion();
+
+			StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+			String options =
+				    "<options xmlns=\"http://marklogic.com/appservices/search\">" +
+				      "<constraint name='industry'>"+
+				        "<value>"+
+				          "<element name='industry' ns=''/>"+
+				        "</value>"+
+				      "</constraint>"+
+				    "</options>";
+			
+			RawStructuredQueryDefinition rsq = qb.build(qb.term("neighborhoods"),
+							qb.valueConstraint("industry", "Real Estate"));
+			String comboquery = "<search xmlns=\"http://marklogic.com/appservices/search\">" +
+			                rsq.toString() + options +
+			                "</search>";
+			RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition((new StringHandle(comboquery)).withFormat(Format.XML));
+			
+			StringBuilder batchFailResults = new StringBuilder();
+
+			// Run a QueryBatcher on the new URIs.
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+			queryBatcher1.withBatchSize(1);
+			writer = new FileWriter(fileName);
+
+			queryBatcher1.onUrisReady(new UrisToWriterListener(writer))
+			.onQueryFailure(throwable-> {        	
+				System.out.println("Exceptions thrown from callback onQueryFailure");        	
+				throwable.printStackTrace();
+				batchFailResults.append("Test has Exceptions");          	
+			} );
+
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
+			writer.flush();
+
+			if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
+				fail("Test failed due to exceptions");
+			}
+
+			// Verify the batch results now.
+			freader = new FileReader(fileName);
+			UriReaderTxt = new BufferedReader(freader);
+			TreeMap<String, String> expectedMap = new TreeMap<String, String>();
+			TreeMap<String, String> uriMap = new TreeMap<String, String>();
+			expectedMap.put(filenames[0], "URI");
+			expectedMap.put(filenames[1], "URI");
+			String line = null;
+			
+			while ((line = UriReaderTxt.readLine()) != null) {
+				System.out.println("Line read from file with URIS is" + line);
+				uriMap.put(line, "URI");
+			}					
+			assertTrue("URIs not read correctly from testRawStructuredQDWithQueryBuilder method ", expectedMap.equals(uriMap));
+		}
+		catch (Exception e) {
+			System.out.println("Exceptions thrown from Test testRawStructuredQDWithQueryBuilder");
+			System.out.println(e.getMessage());
+		}
+		finally {
+			// Associate back the original DB.
+			associateRESTServerWithDB(restServerName, dbName);
+			detachForest(testMultipleDB, testMultipleForest[0]);
+			detachForest(testMultipleDB, testMultipleForest[1]);
+			deleteDB(testMultipleDB);
+
+			deleteForest(testMultipleForest[0]);
+			deleteForest(testMultipleForest[1]);
+			Thread.sleep(10000);
+			try {
+				if (writer != null)
+					writer.close();
+				if (UriReaderTxt != null) 
+					UriReaderTxt.close();
+				if (freader != null) freader.close();
+				// Delete the file on JVM exit
+				File file = new File(fileName);
+				file.deleteOnExit();
+			} catch (Exception e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			clientTmp.release();
+		}
+	}
+	
+	/*
+	 * To test that RawStructuredQueryDefinition can be used withQueryBatcher 
+	 * Store options from a file to server.
+	 * Read a query from a file into a handle
+	 * Create a RawCombinedQueryDefinition from handle and options, to be used in QueryBatcher Job.
+	 * 
+	 * @throws Exception
+	 *
+	 */
+	@Test
+	public void testRawCombinedQueryXMLWithWriteOptions() throws Exception
+	{
+		String testMultipleDB = "RawCombinedQueryXMLDB";
+		String[] testMultipleForest = {"RawCombinedQueryXMLDB-1", "RawCombinedQueryXMLDB-2", "RawCombinedQueryXMLDB-3"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
+
+		try {
+			System.out.println("Running testRawCombinedQueryXMLWithWriteOptions");
+
+			//Setup a separate database/
+			createDB(testMultipleDB);
+			createForest(testMultipleForest[0], testMultipleDB);
+			createForest(testMultipleForest[1], testMultipleDB);			
+			associateRESTServerWithDB(restServerName, testMultipleDB);
+			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
+
+			String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+			String queryOptionFileName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
+			
+			String queryName = "combinedQueryNoOption.xml";
+			
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
+
+			QueryManager queryMgr = clientTmp.newQueryManager();
+			String dataFileDir = dataConfigDirPath + "/data/";
+			String combQueryFileDir = dataConfigDirPath + "/combined/";
+
+			//Use WriteBatcher to write the same files.				
+			WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+
+			wbatcher.withBatchSize(2);
+			InputStreamHandle contentHandle1 = new InputStreamHandle();
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+			InputStreamHandle contentHandle2 = new InputStreamHandle();
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+			InputStreamHandle contentHandle3 = new InputStreamHandle();
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+			InputStreamHandle contentHandle4 = new InputStreamHandle();
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+			InputStreamHandle contentHandle5 = new InputStreamHandle();
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+
+			wbatcher.add(filenames[0], contentHandle1);
+			wbatcher.add(filenames[1], contentHandle2);
+			wbatcher.add(filenames[2], contentHandle3);
+			wbatcher.add(filenames[3], contentHandle4);
+			wbatcher.add(filenames[4], contentHandle5);
+			
+			// Verify if the batch flushes when batch size is reached.
+			// Flush
+			
+			wbatcher.flushAndWait();
+			wbatcher.awaitCompletion();
+			
+			setQueryOption(clientTmp, queryOptionFileName);
+			// get the combined query
+			File file = new File(combQueryFileDir+queryName);
+
+			// create a handle for the search criteria
+			FileHandle rawHandle = (new FileHandle(file)).withFormat(Format.XML);
+			// create a search definition based on the handle
+			RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionFileName);
+			
+			StringBuilder batchResults = new StringBuilder();
+			StringBuilder batchFailResults = new StringBuilder();
+
+			// Run a QueryBatcher on the new URIs.
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+
+			queryBatcher1.onUrisReady(batch-> {
+				for (String str : batch.getItems()) {
+					batchResults.append(str)
+					.append('|');
+				}     
+			});
+			queryBatcher1.onQueryFailure(throwable-> {        	
+				System.out.println("Exceptions thrown from callback onQueryFailure");        	
+				throwable.printStackTrace();
+				batchFailResults.append("Test has Exceptions");          	
+			} );
+
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);		
+
+			if (queryBatcher1.isStopped()) {
+
+				if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
+					fail("Test failed due to exceptions");
+				}
+
+				// Verify the batch results now.
+				String[] res = batchResults.toString().split("\\|");
+				assertEquals("Number of reults returned is incorrect", 1, res.length);
+				assertTrue("URI returned not correct", res[0].contains(filenames[4]));
+				
+				// Read the document and assert on the value
+				DOMHandle contentHandle = new DOMHandle();
+				contentHandle = readDocumentUsingDOMHandle(clientTmp, filenames[4], "XML");
+				Document readDoc = contentHandle.get();
+				System.out.println(convertXMLDocumentToString(readDoc));
+				
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));				
+			}
+		}
+		catch (Exception e) {
+			System.out.println("Exceptions thrown from testRawCombinedQueryXMLWithWriteOptions");
+			System.out.println(e.getMessage());
+		}
+		finally {
+			// Associate back the original DB.
+			associateRESTServerWithDB(restServerName, dbName);
+			detachForest(testMultipleDB, testMultipleForest[0]);
+			detachForest(testMultipleDB, testMultipleForest[1]);
+			deleteDB(testMultipleDB);
+
+			deleteForest(testMultipleForest[0]);
+			deleteForest(testMultipleForest[1]);
+			Thread.sleep(10000);
+			clientTmp.release();
+		}
+	}
+	
+	/*
+	 * To test that RawStructuredQueryDefinition can be used withQueryBatcher - JSON file
+	 * Read a query from a combined file into a handle. combinedQueryOptionJSON.json contains query, options in JSON format.
+	 * @throws Exception
+	 * 
+	 */
+	@Test
+	public void testRawCombinedQueryJSON() throws Exception
+	{
+		String testMultipleDB = "RawCombinedRangeJsonDB";
+		String[] testMultipleForest = {"RawCombinedRangeJsonDB-1", "RawCombinedRangeJsonDB-2", "RawCombinedRangeJsonDB-3"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
+
+		try {
+			System.out.println("Running testRawCombinedQueryJSON");
+
+			//Setup a separate database/
+			createDB(testMultipleDB);
+			createForest(testMultipleForest[0], testMultipleDB);
+			createForest(testMultipleForest[1], testMultipleDB);			
+			associateRESTServerWithDB(restServerName, testMultipleDB);
+			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
+
+			String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+			String combinedQueryFileName = "combinedQueryOptionJSON.json";
+			
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
+
+			QueryManager queryMgr = clientTmp.newQueryManager();
+			String dataFileDir = dataConfigDirPath + "/data/";
+			String combQueryFileDir = dataConfigDirPath + "/combined/";
+
+			//Use WriteBatcher to write the same files.				
+			WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+
+			wbatcher.withBatchSize(2);
+			InputStreamHandle contentHandle1 = new InputStreamHandle();
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+			InputStreamHandle contentHandle2 = new InputStreamHandle();
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+			InputStreamHandle contentHandle3 = new InputStreamHandle();
+			contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
+			InputStreamHandle contentHandle4 = new InputStreamHandle();
+			contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
+			InputStreamHandle contentHandle5 = new InputStreamHandle();
+			contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
+
+			wbatcher.add(filenames[0], contentHandle1);
+			wbatcher.add(filenames[1], contentHandle2);
+			wbatcher.add(filenames[2], contentHandle3);
+			wbatcher.add(filenames[3], contentHandle4);
+			wbatcher.add(filenames[4], contentHandle5);
+			
+			// Verify if the batch flushes when batch size is reached.
+			// Flush
+			
+			wbatcher.flushAndWait();
+			wbatcher.awaitCompletion();
+			
+			// get the combined query
+			File file = new File(combQueryFileDir+combinedQueryFileName);
+
+			// create a handle for the search criteria
+			FileHandle rawHandle = (new FileHandle(file)).withFormat(Format.JSON);
+			// create a search definition based on the handle
+			RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+			
+			StringBuilder batchResults = new StringBuilder();
+			StringBuilder batchFailResults = new StringBuilder();
+
+			// Run a QueryBatcher on the new URIs.
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+
+			queryBatcher1.onUrisReady(batch-> {
+				for (String str : batch.getItems()) {
+					batchResults.append(str)
+					.append('|');
+				}     
+			});
+			queryBatcher1.onQueryFailure(throwable-> {        	
+				System.out.println("Exceptions thrown from callback onQueryFailure");        	
+				throwable.printStackTrace();
+				batchFailResults.append("Test has Exceptions");          	
+			} );
+
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);		
+
+			if (queryBatcher1.isStopped()) {
+
+				if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
+					fail("Test failed due to exceptions");
+				}
+
+				// Verify the batch results now.
+				String[] res = batchResults.toString().split("\\|");
+				assertEquals("Number of reults returned is incorrect", 1, res.length);
+				assertTrue("URI returned not correct", res[0].contains(filenames[4]));
+				
+				// Read the document and assert on the value
+				DOMHandle contentHandle = new DOMHandle();
+				contentHandle = readDocumentUsingDOMHandle(clientTmp, filenames[4], "XML");
+				Document readDoc = contentHandle.get();
+				System.out.println(convertXMLDocumentToString(readDoc));
+				
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("id").item(0).getTextContent().contains("0026"));
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("title").item(0).getTextContent().contains("The memex"));
+				assertTrue("Document content returned not correct", readDoc.getElementsByTagName("date").item(0).getTextContent().contains("2009-05-05"));				
+			}
+		}
+		catch (Exception e) {
+			System.out.println("Exceptions thrown from testRawCombinedQueryJSONWithWriteOptions");
+			System.out.println(e.getMessage());
+		}
+		finally {
+			// Associate back the original DB.
+			associateRESTServerWithDB(restServerName, dbName);
+			detachForest(testMultipleDB, testMultipleForest[0]);
+			detachForest(testMultipleDB, testMultipleForest[1]);
+			deleteDB(testMultipleDB);
+
+			deleteForest(testMultipleForest[0]);
+			deleteForest(testMultipleForest[1]);
+			Thread.sleep(10000);
+			clientTmp.release();
+		}
+	}
+	
+	/*
+	 * To test that RawStructuredQueryDefinition can be used withQueryBatcher - Combined file
+	 * Read a query from a combined file into a handle.
+	 * Create a RawCombinedQueryDefinition from handle, to be used in QueryBatcher Job.
+	 * 
+	 * @throws Exception
+	 *
+	 */
+	@Test
+	public void testRawCombinedQueryPathIndex() throws Exception
+	{
+		String testMultipleDB = "RawCombinedRangePathDB";
+		String[] testMultipleForest = {"RawCombinedRangePathDB-1", "RawCombinedRangePathDB-2", "RawCombinedRangePathDB-3"};
+		DatabaseClient clientTmp = null;
+		DataMovementManager dmManagerTmp = null;
+
+		try {
+			System.out.println("Running testRawCombinedQueryPathIndex");
+
+			//Setup a separate database/
+			createDB(testMultipleDB);
+			createForest(testMultipleForest[0], testMultipleDB);
+			createForest(testMultipleForest[1], testMultipleDB);			
+			associateRESTServerWithDB(restServerName, testMultipleDB);
+			setupAppServicesConstraint(testMultipleDB);
+			Thread.sleep(10000);
+
+			String[] filenames = {"pathindex1.xml", "pathindex2.xml"};
+			String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
+			
+			clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+			dmManagerTmp = clientTmp.newDataMovementManager();
+
+			QueryManager queryMgr = clientTmp.newQueryManager();
+			String dataFileDir = dataConfigDirPath + "/data/";
+			String combQueryFileDir = dataConfigDirPath + "/combined/";
+
+			//Use WriteBatcher to write the same files.				
+			WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+
+			wbatcher.withBatchSize(2);
+			InputStreamHandle contentHandle1 = new InputStreamHandle();
+			contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
+			InputStreamHandle contentHandle2 = new InputStreamHandle();
+			contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
+
+			wbatcher.add(filenames[0], contentHandle1);
+			wbatcher.add(filenames[1], contentHandle2);
+			
+			// Verify if the batch flushes when batch size is reached.
+			// Flush
+			
+			wbatcher.flushAndWait();
+			wbatcher.awaitCompletion();
+			
+			// get the combined query
+			File file = new File(combQueryFileDir+combinedQueryFileName);
+
+			// create a handle for the search criteria
+			FileHandle rawHandle = new FileHandle(file);
+			rawHandle.withFormat(Format.XML);
+			// create a search definition based on the handle
+			RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+			
+			StringBuilder batchResults = new StringBuilder();
+			StringBuilder batchFailResults = new StringBuilder();
+
+			// Run a QueryBatcher on the new URIs.
+			QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+
+			queryBatcher1.onUrisReady(batch-> {
+				for (String str : batch.getItems()) {
+					batchResults.append(str)
+					.append('|');
+				}     
+			});
+			queryBatcher1.onQueryFailure(throwable-> {        	
+				System.out.println("Exceptions thrown from callback onQueryFailure");        	
+				throwable.printStackTrace();
+				batchFailResults.append("Test has Exceptions");          	
+			} );
+
+			JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
+			boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);		
+
+			if (queryBatcher1.isStopped()) {
+
+				if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
+					fail("Test failed due to exceptions");
+				}
+
+				// Verify the batch results now.
+				String[] res = batchResults.toString().split("\\|");
+				assertEquals("Number of reults returned is incorrect", 2, res.length);
+				assertTrue("URI returned not correct", res[0].contains("pathindex1.xml")?true:(res[1].contains("pathindex1.xml")?true:false));
+				assertTrue("URI returned not correct", res[0].contains("pathindex2.xml")?true:(res[1].contains("pathindex2.xml")?true:false));
+			}
+		}
+		catch (Exception e) {
+			System.out.println("Exceptions thrown from testRawCombinedQueryPathIndex");
+			System.out.println(e.getMessage());
+		}
+		finally {
+			// Associate back the original DB.
+			associateRESTServerWithDB(restServerName, dbName);
+			detachForest(testMultipleDB, testMultipleForest[0]);
+			detachForest(testMultipleDB, testMultipleForest[1]);
+			deleteDB(testMultipleDB);
+
+			deleteForest(testMultipleForest[0]);
+			deleteForest(testMultipleForest[1]);
+			Thread.sleep(10000);
+			clientTmp.release();
+		}
+	}
 		
 	/*
 	 * To test query by example with WriteBatcher and QueryBatcher 
@@ -818,6 +1365,7 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 
 	}
+	
 
 	/*
 	 * To test query by example with WriteBatcher and QueryBatcher 
@@ -1635,7 +2183,6 @@ public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
 			while(!queryBatcher1.isStopped()) {
 				// do nothing.
 			}	
-
 			if (queryBatcher1.isStopped()) {
 
 				if (!batchWordFailResults.toString().isEmpty() && batchWordFailResults.toString().contains("Exceptions")) {
