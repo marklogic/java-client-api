@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsUnsignedShortVal extends XsUnsignedIntVal, XsUnsignedShortSeqVal, XsUnsignedShortParam, PlanTripleVal {
+public interface XsUnsignedShortVal extends XsUnsignedShortExpr, XsUnsignedIntVal, XsUnsignedShortSeqVal, PlanParamBindingVal {
 	public short getShort();
 }

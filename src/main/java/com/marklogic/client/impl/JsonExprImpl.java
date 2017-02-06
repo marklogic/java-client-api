@@ -15,135 +15,190 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.type.ElementNodeExpr;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsUnsignedLongExpr;
+
+import com.marklogic.client.type.JsonArrayExpr;
+import com.marklogic.client.type.JsonArraySeqExpr;
+import com.marklogic.client.type.JsonObjectExpr;
+import com.marklogic.client.type.JsonObjectSeqExpr;
 
 import com.marklogic.client.expression.JsonExpr;
-import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.ItemExpr;
- import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.JsonArrayExpr;
- import com.marklogic.client.type.JsonArraySeqExpr;
- import com.marklogic.client.type.JsonObjectExpr;
- import com.marklogic.client.type.JsonObjectSeqExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
-
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
+class JsonExprImpl implements JsonExpr {
 
-public class JsonExprImpl implements JsonExpr {
-    private XsExprImpl xs = null;
-    public JsonExprImpl(XsExprImpl xs) {
-        this.xs = xs;
+    final static XsExprImpl xs = XsExprImpl.xs;
+
+    final static JsonExprImpl json = new JsonExprImpl();
+
+    JsonExprImpl() {
     }
-     @Override
-        public JsonArrayExpr array() {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "array", new Object[]{  });
-    }
+
+    
     @Override
-        public JsonArrayExpr array(ElementNodeExpr array) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "array", new Object[]{ array });
+    public JsonArrayExpr array() {
+        return new ArrayCallImpl("json", "array", new Object[]{  });
     }
+
+    
     @Override
-        public XsUnsignedLongExpr arraySize(JsonArrayExpr array) {
-        return new XsExprImpl.XsUnsignedLongCallImpl("json", "array-size", new Object[]{ array });
+    public JsonArrayExpr array(ElementNodeExpr array) {
+        return new ArrayCallImpl("json", "array", new Object[]{ array });
     }
+
+    
     @Override
-        public ItemSeqExpr arrayValues(JsonArrayExpr array) {
+    public XsUnsignedLongExpr arraySize(JsonArrayExpr array) {
+        return new XsExprImpl.UnsignedLongCallImpl("json", "array-size", new Object[]{ array });
+    }
+
+    
+    @Override
+    public ItemSeqExpr arrayValues(JsonArrayExpr array) {
         return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array });
     }
+
+    
     @Override
-        public ItemSeqExpr arrayValues(JsonArrayExpr array, boolean flatten) {
-        return arrayValues(array, xs.booleanVal(flatten)); 
+    public ItemSeqExpr arrayValues(JsonArrayExpr array, boolean flatten) {
+        return arrayValues(array, xs.booleanVal(flatten));
     }
+
+    
     @Override
-        public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten) {
+    public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten) {
         return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array, flatten });
     }
-    @Override
-        public JsonObjectExpr object() {
-        return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{  });
-    }
-    @Override
-        public JsonObjectExpr object(ElementNodeExpr map) {
-        return new JsonExprImpl.JsonObjectCallImpl("json", "object", new Object[]{ map });
-    }
-    @Override
-        public JsonObjectExpr objectDefine() {
-        return new JsonExprImpl.JsonObjectCallImpl("json", "object-define", new Object[]{  });
-    }
-    @Override
-        public JsonObjectExpr objectDefine(String keys) {
-        return objectDefine((keys == null) ? null : xs.strings(keys)); 
-    }
-    @Override
-        public JsonObjectExpr objectDefine(XsStringSeqExpr keys) {
-        return new JsonExprImpl.JsonObjectCallImpl("json", "object-define", new Object[]{ keys });
-    }
-    @Override
-        public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc });
-    }
-    @Override
-        public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc, length });
-    }
-    @Override
-        public JsonArrayExpr toArray() {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "to-array", new Object[]{  });
-    }
-    @Override
-        public JsonArrayExpr toArray(ItemSeqExpr items) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "to-array", new Object[]{ items });
-    }
-    @Override
-        public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "to-array", new Object[]{ items, limit });
-    }
-    @Override
-        public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit, ItemExpr zero) {
-        return new JsonExprImpl.JsonArrayCallImpl("json", "to-array", new Object[]{ items, limit, zero });
-    }     @Override
-    public JsonArraySeqExpr array(JsonArrayExpr... items) {
-        return new JsonArraySeqListImpl(items);
-    }
-     @Override
-    public JsonObjectSeqExpr object(JsonObjectExpr... items) {
-        return new JsonObjectSeqListImpl(items);
-    }
-        static class JsonArraySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
-            JsonArraySeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class JsonArraySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
-            JsonArraySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class JsonArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArrayExpr {
-            JsonArrayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class JsonObjectSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
-            JsonObjectSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class JsonObjectSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
-            JsonObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class JsonObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectExpr {
-            JsonObjectCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
 
-}
+    
+    @Override
+    public JsonObjectExpr object() {
+        return new ObjectCallImpl("json", "object", new Object[]{  });
+    }
+
+    
+    @Override
+    public JsonObjectExpr object(ElementNodeExpr map) {
+        return new ObjectCallImpl("json", "object", new Object[]{ map });
+    }
+
+    
+    @Override
+    public JsonObjectExpr objectDefine() {
+        return new ObjectCallImpl("json", "object-define", new Object[]{  });
+    }
+
+    
+    @Override
+    public JsonObjectExpr objectDefine(XsStringSeqExpr keys) {
+        return new ObjectCallImpl("json", "object-define", new Object[]{ keys });
+    }
+
+    
+    @Override
+    public JsonArrayExpr subarray(JsonArrayExpr array, double startingLoc) {
+        return subarray(array, xs.doubleVal(startingLoc));
+    }
+
+    
+    @Override
+    public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc) {
+        return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc });
+    }
+
+    
+    @Override
+    public JsonArrayExpr subarray(JsonArrayExpr array, double startingLoc, double length) {
+        return subarray(array, xs.doubleVal(startingLoc), xs.doubleVal(length));
+    }
+
+    
+    @Override
+    public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length) {
+        return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc, length });
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray() {
+        return new ArrayCallImpl("json", "to-array", new Object[]{  });
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray(ItemSeqExpr items) {
+        return new ArrayCallImpl("json", "to-array", new Object[]{ items });
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray(ItemSeqExpr items, double limit) {
+        return toArray(items, xs.doubleVal(limit));
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit) {
+        return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit });
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray(ItemSeqExpr items, double limit, ItemExpr zero) {
+        return toArray(items, xs.doubleVal(limit), zero);
+    }
+
+    
+    @Override
+    public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit, ItemExpr zero) {
+        return new ArrayCallImpl("json", "to-array", new Object[]{ items, limit, zero });
+    }
+
+    @Override
+    public JsonArraySeqExpr arraySeq(JsonArrayExpr... items) {
+        return new ArraySeqListImpl(items);
+    }
+    static class ArraySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
+        ArraySeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class ArraySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArraySeqExpr {
+        ArraySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class ArrayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonArrayExpr {
+        ArrayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public JsonObjectSeqExpr objectSeq(JsonObjectExpr... items) {
+        return new ObjectSeqListImpl(items);
+    }
+    static class ObjectSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+        ObjectSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class ObjectSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectSeqExpr {
+        ObjectSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class ObjectCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements JsonObjectExpr {
+        ObjectCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+
+    }

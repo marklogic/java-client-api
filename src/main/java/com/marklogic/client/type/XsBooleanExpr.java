@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface XsBooleanExpr extends XsBooleanSeqExpr, XsAnyAtomicTypeExpr {
+public interface XsBooleanExpr extends XsBooleanSeqExpr, XsAnyAtomicTypeExpr, PlanRowFilter {
 }

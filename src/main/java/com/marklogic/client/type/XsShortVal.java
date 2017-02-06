@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsShortVal extends XsIntVal, XsShortSeqVal, XsShortParam, PlanTripleVal {
+public interface XsShortVal extends XsShortExpr, XsIntVal, XsShortSeqVal, PlanParamBindingVal {
 	public short getShort();
 }

@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsBooleanVal extends XsAnyAtomicTypeVal, XsBooleanSeqVal, XsBooleanParam, PlanTripleVal {
+public interface XsBooleanVal extends XsBooleanExpr, XsAnyAtomicTypeVal, XsBooleanSeqVal, PlanParamBindingVal {
 	public boolean getBoolean();
 }

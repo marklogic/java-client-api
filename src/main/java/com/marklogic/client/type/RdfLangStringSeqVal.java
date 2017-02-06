@@ -16,6 +16,6 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface RdfLangStringSeqVal extends RdfLangStringSeqExpr, ItemSeqVal {
+public interface RdfLangStringSeqVal extends RdfLangStringSeqExpr, XsStringSeqVal {
     public RdfLangStringVal[] getLangStringItems();
 }

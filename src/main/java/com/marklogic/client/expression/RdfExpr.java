@@ -15,15 +15,16 @@
  */
 package com.marklogic.client.expression;
 
-import com.marklogic.client.type.RdfLangStringExpr;
- import com.marklogic.client.type.RdfLangStringSeqExpr;
- import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringExpr;
 
+import com.marklogic.client.type.RdfLangStringExpr;
+import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface RdfExpr extends RdfValue {
     public RdfLangStringExpr langString(XsStringExpr string, String lang);
     public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
-    public XsStringExpr langStringLanguage(RdfLangStringExpr val);     public RdfLangStringSeqExpr langString(RdfLangStringExpr... items);
+    public XsStringExpr langStringLanguage(RdfLangStringExpr val);
+    public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items);
 
 }

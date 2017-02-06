@@ -41,13 +41,13 @@ public interface SemValue {
 	 * @param stringIris	the iris as strings
 	 * @return	a value sequence with an sem:iri data type
 	 */
-    public SemIriSeqVal iris(String... stringIris);
+    public SemIriSeqVal iriSeq(String... stringIris);
 	/**
 	 * Takes any number of iris as semtyped :iri values and constructs an sem:iri sequence
 	 * @param iris	the iris as strings
 	 * @return	a value sequence with an sem:iri data type
 	 */
-    public SemIriSeqVal iris(SemIriVal... iris);
+    public SemIriSeqVal iriSeq(SemIriVal... iris);
 
     /**
      * Specifies a store for accessing triples, modifying the triple retrieval based on the options.

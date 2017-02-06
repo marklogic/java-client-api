@@ -16,23 +16,25 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.ItemExpr;
- import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.MapMapExpr;
- import com.marklogic.client.type.NodeExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsAnyURIExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsDateExpr;
- import com.marklogic.client.type.XsDateTimeExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsLongExpr;
- import com.marklogic.client.type.XsNumericSeqExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.MapMapExpr;
+import com.marklogic.client.type.NodeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+import com.marklogic.client.type.XsAnyURIExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsDateExpr;
+import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+import com.marklogic.client.type.XsLongExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsNumericSeqExpr;
+import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.XsUnsignedLongExpr;
+
 
 
 // IMPORTANT: Do not edit. This file is generated. 
@@ -54,6 +56,7 @@ public interface XdmpExpr {
     public XsStringExpr diacriticLess(XsStringExpr string);
     public XsStringExpr elementContentType(ElementNodeExpr element);
     public XsStringExpr encodeForNCName(XsStringExpr name);
+    public XsStringExpr formatNumber(XsNumericExpr... value);
     public XsStringExpr formatNumber(XsNumericSeqExpr value);
     public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture);
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture);
@@ -67,7 +70,7 @@ public interface XdmpExpr {
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding);
     public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding, XsStringExpr groupingSeparator);
-    public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, XsIntegerExpr groupingSize);
+    public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding, XsStringExpr groupingSeparator, XsIntegerExpr groupingSize);
     public ItemSeqExpr fromJson(NodeExpr arg);
     public XsStringExpr getCurrentUser();
@@ -98,10 +101,10 @@ public interface XdmpExpr {
     public XsStringExpr monthNameFromDate(XsDateExpr arg);
     public XsUnsignedLongExpr mul64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
     public XsStringSeqExpr nodeCollections(NodeExpr node);
-    public MapMapExpr nodeMetadata(NodeExpr arg1);
-    public XsStringExpr nodeMetadataValue(NodeExpr arg1, String arg2);
-    public XsStringExpr nodeMetadataValue(NodeExpr arg1, XsStringExpr arg2);
     public XsStringExpr nodeKind(NodeExpr node);
+    public MapMapExpr nodeMetadata(NodeExpr node);
+    public XsStringExpr nodeMetadataValue(NodeExpr uri, String keyName);
+    public XsStringExpr nodeMetadataValue(NodeExpr uri, XsStringExpr keyName);
     public ItemSeqExpr nodePermissions(NodeExpr node);
     public ItemSeqExpr nodePermissions(NodeExpr node, String outputKind);
     public ItemSeqExpr nodePermissions(NodeExpr node, XsStringExpr outputKind);
@@ -153,6 +156,7 @@ public interface XdmpExpr {
     public XsStringExpr sha512(ItemExpr data, String encoding);
     public XsStringExpr sha512(ItemExpr data, XsStringExpr encoding);
     public XsUnsignedLongExpr step64(XsUnsignedLongExpr initial, XsUnsignedLongExpr step);
+    public XsStringExpr strftime(XsStringExpr format, String value);
     public XsStringExpr strftime(XsStringExpr format, XsDateTimeExpr value);
     public XsDateTimeExpr timestampToWallclock(XsUnsignedLongExpr timestamp);
     public NodeExpr toJson(ItemSeqExpr item);
@@ -162,8 +166,8 @@ public interface XdmpExpr {
     public XsStringExpr urlEncode(XsStringExpr plaintext, boolean noSpacePlus);
     public XsStringExpr urlEncode(XsStringExpr plaintext, XsBooleanExpr noSpacePlus);
     public XsUnsignedLongExpr wallclockToTimestamp(XsDateTimeExpr timestamp);
-    public XsIntegerExpr weekdayFromDate(XsDateExpr arg);
     public XsIntegerExpr weekFromDate(XsDateExpr arg);
+    public XsIntegerExpr weekdayFromDate(XsDateExpr arg);
     public XsUnsignedLongExpr xor64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
     public XsIntegerExpr yeardayFromDate(XsDateExpr arg);
 }

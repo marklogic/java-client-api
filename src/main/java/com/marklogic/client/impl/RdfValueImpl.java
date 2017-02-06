@@ -21,7 +21,7 @@ import com.marklogic.client.expression.RdfValue;
 import com.marklogic.client.type.RdfLangStringSeqVal;
 import com.marklogic.client.type.RdfLangStringVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
-import com.marklogic.client.type.XsAnySimpleTypeVal;
+import com.marklogic.client.type.XsStringVal;
 
 public class RdfValueImpl implements RdfValue {
 	@Override
@@ -29,12 +29,12 @@ public class RdfValueImpl implements RdfValue {
 		return new RdfLangStringValImpl(string, lang);
 	}
 	@Override
-	public RdfLangStringSeqVal langStrings(RdfLangStringVal... langStrings) {
+	public RdfLangStringSeqVal langStringSeq(RdfLangStringVal... langStrings) {
 		return new RdfLangStringSeqValImpl(langStrings);
 	}
 	static class RdfLangStringSeqValImpl
-	extends BaseTypeImpl.BaseListImpl<RdfLangStringValImpl>
-	implements RdfLangStringSeqVal, BaseTypeImpl.BaseArgImpl {
+	extends XsValueImpl.AnyAtomicTypeSeqValImpl<RdfLangStringValImpl>
+	implements RdfLangStringSeqVal {
 		RdfLangStringSeqValImpl(RdfLangStringVal[] values) {
 			this(Arrays.copyOf(values, values.length, RdfLangStringValImpl[].class));
 		}
@@ -45,11 +45,22 @@ public class RdfValueImpl implements RdfValue {
 		public RdfLangStringVal[] getLangStringItems() {
 			return getItems();
 		}
+		@Override
+		public XsStringVal[] getStringItems() {
+			return getItems();
+		}
+		@Override
+		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
+			return getItems();
+		}
 	}
-	static class RdfLangStringValImpl implements RdfLangStringVal, BaseTypeImpl.BaseArgImpl, BaseTypeImpl.ParamBinder {
+	static class RdfLangStringValImpl
+	extends XsValueImpl.AnyAtomicTypeValImpl
+	implements RdfLangStringVal, BaseTypeImpl.ParamBinder {
     	private String string = null;
     	private String lang   = null;
     	public RdfLangStringValImpl(String string, String lang) {
+    		super("rdf", "langString");
     		if (string == null) {
     			throw new IllegalArgumentException("cannot take null string");
     		}
@@ -59,10 +70,6 @@ public class RdfValueImpl implements RdfValue {
     		this.string = string;
     		this.lang   = lang;
     	}
-		@Override
-		public XsAnySimpleTypeVal[] getAnySimpleTypeItems() {
-			return new XsAnySimpleTypeVal[]{this};
-		}
 		@Override
 		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
 			return new XsAnyAtomicTypeVal[]{this};
@@ -82,6 +89,10 @@ public class RdfValueImpl implements RdfValue {
 		@Override
 		public RdfLangStringVal[] getItems() {
 			return new RdfLangStringVal[]{this};
+		}
+		@Override
+		public XsStringVal[] getStringItems() {
+			return getItems();
 		}
 		@Override
         public String toString() {

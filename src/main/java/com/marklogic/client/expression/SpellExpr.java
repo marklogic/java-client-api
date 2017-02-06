@@ -16,8 +16,9 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+
 
 
 // IMPORTANT: Do not edit. This file is generated. 

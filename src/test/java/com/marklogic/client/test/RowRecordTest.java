@@ -36,6 +36,7 @@ import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ItemVal;
 import com.marklogic.client.type.PlanExprCol;
+import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.RdfLangStringVal;
 import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -108,7 +109,7 @@ public class RowRecordTest {
 		};
 
 		for (int prefix=0; prefix < prefixes.length; prefix++) {
-			PlanBuilder.Prefixer prefixer = p.prefixer(prefixes[prefix]);
+			PlanPrefixer prefixer = p.prefixer(prefixes[prefix]);
 			for (int suffix=0; suffix < suffixes.length; suffix++) {
 				assertEquals("prefixer "+prefix+","+suffix,
 						p.sem.iri(results[prefix][suffix]).getString(),

@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface XsAnySimpleTypeVal extends ItemVal, XsAnySimpleTypeSeqVal, XsAnySimpleTypeParam { }
+public interface XsAnySimpleTypeVal extends XsAnySimpleTypeExpr, ItemVal, XsAnySimpleTypeSeqVal { }

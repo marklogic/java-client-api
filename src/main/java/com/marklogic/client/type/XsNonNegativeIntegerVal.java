@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface XsNonNegativeIntegerVal extends XsIntegerVal, XsNonNegativeIntegerSeqVal, XsNonNegativeIntegerParam, PlanTripleVal { }
+public interface XsNonNegativeIntegerVal extends XsNonNegativeIntegerExpr, XsIntegerVal, XsNonNegativeIntegerSeqVal { }

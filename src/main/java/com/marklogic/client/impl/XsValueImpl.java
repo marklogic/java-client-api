@@ -100,11 +100,11 @@ public class XsValueImpl implements XsValue {
 		return new AnyURIValImpl(value);
 	}
 	@Override
-	public XsAnyURISeqVal anyURIs(String... values) {
+	public XsAnyURISeqVal anyURISeq(String... values) {
 		return new AnyURISeqValImpl(values);
 	}
 	@Override
-	public XsAnyURISeqVal anyURIs(XsAnyURIVal... values) {
+	public XsAnyURISeqVal anyURISeq(XsAnyURIVal... values) {
 		return new AnyURISeqValImpl(values);
 	}
 
@@ -113,11 +113,11 @@ public class XsValueImpl implements XsValue {
 		return new Base64BinaryValImpl(value);
 	}
 	@Override
-	public XsBase64BinarySeqVal base64Binarys(byte[]... values) {
+	public XsBase64BinarySeqVal base64BinarySeq(byte[]... values) {
 		return new Base64BinarySeqValImpl(values);
 	}
 	@Override
-	public XsBase64BinarySeqVal base64Binarys(XsBase64BinaryVal... values) {
+	public XsBase64BinarySeqVal base64BinarySeq(XsBase64BinaryVal... values) {
 		return new Base64BinarySeqValImpl(values);
 	}
 
@@ -126,11 +126,11 @@ public class XsValueImpl implements XsValue {
 		return new BooleanValImpl(value);
 	}
 	@Override
-	public XsBooleanSeqVal booleanVals(boolean... values) {
+	public XsBooleanSeqVal booleanSeq(boolean... values) {
 		return new BooleanSeqValImpl(values);
 	}
 	@Override
-	public XsBooleanSeqVal booleanVals(XsBooleanVal... values) {
+	public XsBooleanSeqVal booleanSeq(XsBooleanVal... values) {
 		return new BooleanSeqValImpl(values);
 	}
 
@@ -139,11 +139,11 @@ public class XsValueImpl implements XsValue {
 		return new ByteValImpl(value);
 	}
 	@Override
-	public XsByteSeqVal byteVals(byte... values) {
+	public XsByteSeqVal byteSeq(byte... values) {
 		return new ByteSeqValImpl(values);
 	}
 	@Override
-	public XsByteSeqVal byteVals(XsByteVal... values) {
+	public XsByteSeqVal byteSeq(XsByteVal... values) {
 		return new ByteSeqValImpl(values);
 	}
 
@@ -160,19 +160,19 @@ public class XsValueImpl implements XsValue {
 		return new DateValImpl(value);
 	}
 	@Override
-	public XsDateSeqVal dates(String... values) {
+	public XsDateSeqVal dateSeq(String... values) {
 		return new DateSeqValImpl(values);
 	}
 	@Override
-	public XsDateSeqVal dates(Calendar... values) {
+	public XsDateSeqVal dateSeq(Calendar... values) {
 		return new DateSeqValImpl(values);
 	}
 	@Override
-	public XsDateSeqVal dates(XMLGregorianCalendar... values) {
+	public XsDateSeqVal dateSeq(XMLGregorianCalendar... values) {
 		return new DateSeqValImpl(values);
 	}
 	@Override
-	public XsDateSeqVal dates(XsDateVal... values) {
+	public XsDateSeqVal dateSeq(XsDateVal... values) {
 		return new DateSeqValImpl(values);
 	}
 
@@ -193,23 +193,23 @@ public class XsValueImpl implements XsValue {
 		return new DateTimeValImpl(value);
 	}
 	@Override
-	public XsDateTimeSeqVal dateTimes(String... values) {
+	public XsDateTimeSeqVal dateTimeSeq(String... values) {
 		return new DateTimeSeqValImpl(values);
 	}
 	@Override
-	public XsDateTimeSeqVal dateTimes(Date... values) {
+	public XsDateTimeSeqVal dateTimeSeq(Date... values) {
 		return new DateTimeSeqValImpl(values);
 	}
 	@Override
-	public XsDateTimeSeqVal dateTimes(Calendar... values) {
+	public XsDateTimeSeqVal dateTimeSeq(Calendar... values) {
 		return new DateTimeSeqValImpl(values);
 	}
 	@Override
-	public XsDateTimeSeqVal dateTimes(XMLGregorianCalendar... values) {
+	public XsDateTimeSeqVal dateTimeSeq(XMLGregorianCalendar... values) {
 		return new DateTimeSeqValImpl(values);
 	}
 	@Override
-	public XsDateTimeSeqVal dateTimes(XsDateTimeVal... values) {
+	public XsDateTimeSeqVal dateTimeSeq(XsDateTimeVal... values) {
 		return new DateTimeSeqValImpl(values);
 	}
 
@@ -222,15 +222,15 @@ public class XsValueImpl implements XsValue {
 		return new DayTimeDurationValImpl(value);
 	}
 	@Override
-	public XsDayTimeDurationSeqVal dayTimeDurations(String... values) {
+	public XsDayTimeDurationSeqVal dayTimeDurationSeq(String... values) {
 		return new DayTimeDurationSeqValImpl(values);
 	}
 	@Override
-	public XsDayTimeDurationSeqVal dayTimeDurations(Duration... values) {
+	public XsDayTimeDurationSeqVal dayTimeDurationSeq(Duration... values) {
 		return new DayTimeDurationSeqValImpl(values);
 	}
 	@Override
-	public XsDayTimeDurationSeqVal dayTimeDurations(XsDayTimeDurationVal... values) {
+	public XsDayTimeDurationSeqVal dayTimeDurationSeq(XsDayTimeDurationVal... values) {
 		return new DayTimeDurationSeqValImpl(values);
 	}
 
@@ -251,23 +251,23 @@ public class XsValueImpl implements XsValue {
 		return new DecimalValImpl(value);
 	}
 	@Override
-	public XsDecimalSeqVal decimals(String... values) {
+	public XsDecimalSeqVal decimalSeq(String... values) {
 		return new DecimalSeqValImpl(values);
 	}
 	@Override
-	public XsDecimalSeqVal decimals(long... values) {
+	public XsDecimalSeqVal decimalSeq(long... values) {
 		return new DecimalSeqValImpl(values);
 	}
 	@Override
-	public XsDecimalSeqVal decimals(double... values) {
+	public XsDecimalSeqVal decimalSeq(double... values) {
 		return new DecimalSeqValImpl(values);
 	}
 	@Override
-	public XsDecimalSeqVal decimals(BigDecimal... values) {
+	public XsDecimalSeqVal decimalSeq(BigDecimal... values) {
 		return new DecimalSeqValImpl(values);
 	}
 	@Override
-	public XsDecimalSeqVal decimals(XsDecimalVal... values) {
+	public XsDecimalSeqVal decimalSeq(XsDecimalVal... values) {
 		return new DecimalSeqValImpl(values);
 	}
 
@@ -276,11 +276,11 @@ public class XsValueImpl implements XsValue {
 		return new DoubleValImpl(value);
 	}
 	@Override
-	public XsDoubleSeqVal doubleVals(double... values) {
+	public XsDoubleSeqVal doubleSeq(double... values) {
 		return new DoubleSeqValImpl(values);
 	}
 	@Override
-	public XsDoubleSeqVal doubleVals(XsDoubleVal... values) {
+	public XsDoubleSeqVal doubleSeq(XsDoubleVal... values) {
 		return new DoubleSeqValImpl(values);
 	}
 
@@ -289,11 +289,11 @@ public class XsValueImpl implements XsValue {
 		return new FloatValImpl(value);
 	}
 	@Override
-	public XsFloatSeqVal floatVals(float... values) {
+	public XsFloatSeqVal floatSeq(float... values) {
 		return new FloatSeqValImpl(values);
 	}
 	@Override
-	public XsFloatSeqVal floatVals(XsFloatVal... values) {
+	public XsFloatSeqVal floatSeq(XsFloatVal... values) {
 		return new FloatSeqValImpl(values);
 	}
 
@@ -306,15 +306,15 @@ public class XsValueImpl implements XsValue {
 		return new GDayValImpl(value);
 	}
 	@Override
-	public XsGDaySeqVal gDays(String... values) {
+	public XsGDaySeqVal gDaySeq(String... values) {
 		return new GDaySeqValImpl(values);
 	}
 	@Override
-	public XsGDaySeqVal gDays(XMLGregorianCalendar... values) {
+	public XsGDaySeqVal gDaySeq(XMLGregorianCalendar... values) {
 		return new GDaySeqValImpl(values);
 	}
 	@Override
-	public XsGDaySeqVal gDays(XsGDayVal... values) {
+	public XsGDaySeqVal gDaySeq(XsGDayVal... values) {
 		return new GDaySeqValImpl(values);
 	}
 
@@ -327,15 +327,15 @@ public class XsValueImpl implements XsValue {
 		return new GMonthValImpl(value);
 	}
 	@Override
-	public XsGMonthSeqVal gMonths(String... values) {
+	public XsGMonthSeqVal gMonthSeq(String... values) {
 		return new GMonthSeqValImpl(values);
 	}
 	@Override
-	public XsGMonthSeqVal gMonths(XMLGregorianCalendar... values) {
+	public XsGMonthSeqVal gMonthSeq(XMLGregorianCalendar... values) {
 		return new GMonthSeqValImpl(values);
 	}
 	@Override
-	public XsGMonthSeqVal gMonths(XsGMonthVal... values) {
+	public XsGMonthSeqVal gMonthSeq(XsGMonthVal... values) {
 		return new GMonthSeqValImpl(values);
 	}
 
@@ -348,15 +348,15 @@ public class XsValueImpl implements XsValue {
 		return new GMonthDayValImpl(value);
 	}
 	@Override
-	public XsGMonthDaySeqVal gMonthDays(String... values) {
+	public XsGMonthDaySeqVal gMonthDaySeq(String... values) {
 		return new GMonthDaySeqValImpl(values);
 	}
 	@Override
-	public XsGMonthDaySeqVal gMonthDays(XMLGregorianCalendar... values) {
+	public XsGMonthDaySeqVal gMonthDaySeq(XMLGregorianCalendar... values) {
 		return new GMonthDaySeqValImpl(values);
 	}
 	@Override
-	public XsGMonthDaySeqVal gMonthDays(XsGMonthDayVal... values) {
+	public XsGMonthDaySeqVal gMonthDaySeq(XsGMonthDayVal... values) {
 		return new GMonthDaySeqValImpl(values);
 	}
 
@@ -369,15 +369,15 @@ public class XsValueImpl implements XsValue {
 		return new GYearValImpl(value);
 	}
 	@Override
-	public XsGYearSeqVal gYears(String... values) {
+	public XsGYearSeqVal gYearSeq(String... values) {
 		return new GYearSeqValImpl(values);
 	}
 	@Override
-	public XsGYearSeqVal gYears(XMLGregorianCalendar... values) {
+	public XsGYearSeqVal gYearSeq(XMLGregorianCalendar... values) {
 		return new GYearSeqValImpl(values);
 	}
 	@Override
-	public XsGYearSeqVal gYears(XsGYearVal... values) {
+	public XsGYearSeqVal gYearSeq(XsGYearVal... values) {
 		return new GYearSeqValImpl(values);
 	}
 
@@ -390,15 +390,15 @@ public class XsValueImpl implements XsValue {
 		return new GYearMonthValImpl(value);
 	}
 	@Override
-	public XsGYearMonthSeqVal gYearMonths(String... values) {
+	public XsGYearMonthSeqVal gYearMonthSeq(String... values) {
 		return new GYearMonthSeqValImpl(values);
 	}
 	@Override
-	public XsGYearMonthSeqVal gYearMonths(XMLGregorianCalendar... values) {
+	public XsGYearMonthSeqVal gYearMonthSeq(XMLGregorianCalendar... values) {
 		return new GYearMonthSeqValImpl(values);
 	}
 	@Override
-	public XsGYearMonthSeqVal gYearMonths(XsGYearMonthVal... values) {
+	public XsGYearMonthSeqVal gYearMonthSeq(XsGYearMonthVal... values) {
 		return new GYearMonthSeqValImpl(values);
 	}
 
@@ -407,11 +407,11 @@ public class XsValueImpl implements XsValue {
 		return new HexBinaryValImpl(value);
 	}
 	@Override
-	public XsHexBinarySeqVal hexBinarys(byte[]... values) {
+	public XsHexBinarySeqVal hexBinarySeq(byte[]... values) {
 		return new HexBinarySeqValImpl(values);
 	}
 	@Override
-	public XsHexBinarySeqVal hexBinarys(XsHexBinaryVal... values) {
+	public XsHexBinarySeqVal hexBinarySeq(XsHexBinaryVal... values) {
 		return new HexBinarySeqValImpl(values);
 	}
 
@@ -420,11 +420,11 @@ public class XsValueImpl implements XsValue {
 		return new IntValImpl(value);
 	}
 	@Override
-	public XsIntSeqVal intVals(int... values) {
+	public XsIntSeqVal intSeq(int... values) {
 		return new IntSeqValImpl(values);
 	}
 	@Override
-	public XsIntSeqVal intVals(XsIntVal... values) {
+	public XsIntSeqVal intSeq(XsIntVal... values) {
 		return new IntSeqValImpl(values);
 	}
 
@@ -441,19 +441,19 @@ public class XsValueImpl implements XsValue {
 		return new IntegerValImpl(value);
 	}
 	@Override
-	public XsIntegerSeqVal integers(String... values) {
+	public XsIntegerSeqVal integerSeq(String... values) {
 		return new IntegerSeqValImpl(values);
 	}
 	@Override
-	public XsIntegerSeqVal integers(long... values) {
+	public XsIntegerSeqVal integerSeq(long... values) {
 		return new IntegerSeqValImpl(values);
 	}
 	@Override
-	public XsIntegerSeqVal integers(BigInteger... values) {
+	public XsIntegerSeqVal integerSeq(BigInteger... values) {
 		return new IntegerSeqValImpl(values);
 	}
 	@Override
-	public XsIntegerSeqVal integers(XsIntegerVal... values) {
+	public XsIntegerSeqVal integerSeq(XsIntegerVal... values) {
 		return new IntegerSeqValImpl(values);
 	}
 
@@ -462,11 +462,11 @@ public class XsValueImpl implements XsValue {
 		return new LongValImpl(value);
 	}
 	@Override
-	public XsLongSeqVal longVals(long... values) {
+	public XsLongSeqVal longSeq(long... values) {
 		return new LongSeqValImpl(values);
 	}
 	@Override
-	public XsLongSeqVal longVals(XsLongVal... values) {
+	public XsLongSeqVal longSeq(XsLongVal... values) {
 		return new LongSeqValImpl(values);
 	}
 
@@ -475,11 +475,11 @@ public class XsValueImpl implements XsValue {
 		return new ShortValImpl(value);
 	}
 	@Override
-	public XsShortSeqVal shortVals(short... values) {
+	public XsShortSeqVal shortSeq(short... values) {
 		return new ShortSeqValImpl(values);
 	}
 	@Override
-	public XsShortSeqVal shortVals(XsShortVal... values) {
+	public XsShortSeqVal shortSeq(XsShortVal... values) {
 		return new ShortSeqValImpl(values);
 	}
 
@@ -488,11 +488,11 @@ public class XsValueImpl implements XsValue {
 		return new StringValImpl(value);
 	}
 	@Override
-	public XsStringSeqVal strings(String... values) {
+	public XsStringSeqVal stringSeq(String... values) {
 		return new StringSeqValImpl(values);
 	}
     @Override
-    public XsStringSeqVal strings(XsStringVal... values) {
+    public XsStringSeqVal stringSeq(XsStringVal... values) {
        return new StringSeqValImpl(values);
     }
 
@@ -509,19 +509,19 @@ public class XsValueImpl implements XsValue {
 		return new TimeValImpl(value);
 	}
 	@Override
-	public XsTimeSeqVal times(String... values) {
+	public XsTimeSeqVal timeSeq(String... values) {
 		return new TimeSeqValImpl(values);
 	}
 	@Override
-	public XsTimeSeqVal times(Calendar... values) {
+	public XsTimeSeqVal timeSeq(Calendar... values) {
 		return new TimeSeqValImpl(values);
 	}
 	@Override
-	public XsTimeSeqVal times(XMLGregorianCalendar... values) {
+	public XsTimeSeqVal timeSeq(XMLGregorianCalendar... values) {
 		return new TimeSeqValImpl(values);
 	}
 	@Override
-	public XsTimeSeqVal times(XsTimeVal... values) {
+	public XsTimeSeqVal timeSeq(XsTimeVal... values) {
 		return new TimeSeqValImpl(values);
 	}
 
@@ -530,11 +530,11 @@ public class XsValueImpl implements XsValue {
 		return new UnsignedByteValImpl(value);
 	}
 	@Override
-	public XsUnsignedByteSeqVal unsignedBytes(byte... values) {
+	public XsUnsignedByteSeqVal unsignedByteSeq(byte... values) {
 		return new UnsignedByteSeqValImpl(values);
 	}
 	@Override
-	public XsUnsignedByteSeqVal unsignedBytes(XsUnsignedByteVal... values) {
+	public XsUnsignedByteSeqVal unsignedByteSeq(XsUnsignedByteVal... values) {
 		return new UnsignedByteSeqValImpl(values);
 	}
 
@@ -543,11 +543,11 @@ public class XsValueImpl implements XsValue {
 		return new UnsignedIntValImpl(value);
 	}
 	@Override
-	public XsUnsignedIntSeqVal unsignedInts(int... values) {
+	public XsUnsignedIntSeqVal unsignedIntSeq(int... values) {
 		return new UnsignedIntSeqValImpl(values);
 	}
 	@Override
-	public XsUnsignedIntSeqVal unsignedInts(XsUnsignedIntVal... values) {
+	public XsUnsignedIntSeqVal unsignedIntSeq(XsUnsignedIntVal... values) {
 		return new UnsignedIntSeqValImpl(values);
 	}
 
@@ -556,11 +556,11 @@ public class XsValueImpl implements XsValue {
 		return new UnsignedLongValImpl(value);
 	}
 	@Override
-	public XsUnsignedLongSeqVal unsignedLongs(long... values) {
+	public XsUnsignedLongSeqVal unsignedLongSeq(long... values) {
 		return new UnsignedLongSeqValImpl(values);
 	}
 	@Override
-	public XsUnsignedLongSeqVal unsignedLongs(XsUnsignedLongVal... values) {
+	public XsUnsignedLongSeqVal unsignedLongSeq(XsUnsignedLongVal... values) {
 		return new UnsignedLongSeqValImpl(values);
 	}
 
@@ -569,11 +569,11 @@ public class XsValueImpl implements XsValue {
 		return new UnsignedShortValImpl(value);
 	}
 	@Override
-	public XsUnsignedShortSeqVal unsignedShorts(short... values) {
+	public XsUnsignedShortSeqVal unsignedShortSeq(short... values) {
 		return new UnsignedShortSeqValImpl(values);
 	}
 	@Override
-	public XsUnsignedShortSeqVal unsignedShorts(XsUnsignedShortVal... values) {
+	public XsUnsignedShortSeqVal unsignedShortSeq(XsUnsignedShortVal... values) {
 		return new UnsignedShortSeqValImpl(values);
 	}
 
@@ -582,11 +582,11 @@ public class XsValueImpl implements XsValue {
 		return new UntypedAtomicValImpl(value);
 	}
 	@Override
-	public XsUntypedAtomicSeqVal untypedAtomics(String... values) {
+	public XsUntypedAtomicSeqVal untypedAtomicSeq(String... values) {
 		return new UntypedAtomicSeqValImpl(values);
 	}
 	@Override
-	public XsUntypedAtomicSeqVal untypedAtomics(XsUntypedAtomicVal... values) {
+	public XsUntypedAtomicSeqVal untypedAtomicSeq(XsUntypedAtomicVal... values) {
 		return new UntypedAtomicSeqValImpl(values);
 	}
 
@@ -599,15 +599,15 @@ public class XsValueImpl implements XsValue {
 		return new YearMonthDurationValImpl(value);
 	}
 	@Override
-	public XsYearMonthDurationSeqVal yearMonthDurations(String... values) {
+	public XsYearMonthDurationSeqVal yearMonthDurationSeq(String... values) {
 		return new YearMonthDurationSeqValImpl(values);
 	}
 	@Override
-	public XsYearMonthDurationSeqVal yearMonthDurations(Duration... values) {
+	public XsYearMonthDurationSeqVal yearMonthDurationSeq(Duration... values) {
 		return new YearMonthDurationSeqValImpl(values);
 	}
 	@Override
-	public XsYearMonthDurationSeqVal yearMonthDurations(XsYearMonthDurationVal... values) {
+	public XsYearMonthDurationSeqVal yearMonthDurationSeq(XsYearMonthDurationVal... values) {
 		return new YearMonthDurationSeqValImpl(values);
 	}
 
@@ -624,19 +624,19 @@ public class XsValueImpl implements XsValue {
 		return new QNameValImpl(value);
 	}
 	@Override
-	public XsQNameSeqVal QNames(String... localNames) {
+	public XsQNameSeqVal QNameSeq(String... localNames) {
 		return new QNameSeqValImpl(localNames);
 	}
 	@Override
-	public XsQNameSeqVal QNames(String namespace, String... localNames) {
+	public XsQNameSeqVal QNameSeq(String namespace, String... localNames) {
 		return new QNameSeqValImpl(namespace, localNames);
 	}
 	@Override
-	public XsQNameSeqVal QNames(QName... values) {
+	public XsQNameSeqVal QNameSeq(QName... values) {
 		return new QNameSeqValImpl(values);
 	}
 	@Override
-	public XsQNameSeqVal QNames(XsQNameVal... values) {
+	public XsQNameSeqVal QNameSeq(XsQNameVal... values) {
 		return new QNameSeqValImpl(values);
 	}
 
@@ -655,7 +655,11 @@ public class XsValueImpl implements XsValue {
 		}
 		@Override
 		public XsAnySimpleTypeVal[] getAnySimpleTypeItems() {
-			return getItems();
+			return getArgsImpl();
+		}
+		@Override
+		public T[] getItems() {
+			return getArgsImpl();
 		}
 	}
 	static class AnySimpleTypeValImpl implements XsAnySimpleTypeVal, BaseTypeImpl.BaseArgImpl {
@@ -709,7 +713,6 @@ public class XsValueImpl implements XsValue {
 		public String getParamQualifier() {
 			String datatype = getClass().getSimpleName();
 			datatype = datatype.substring(0, datatype.length() - "ValImpl".length());
-// TODO: QNames
 			datatype = datatype.substring(0, 1).toLowerCase() + datatype.substring(1);
 			return ":"+datatype;
 		}

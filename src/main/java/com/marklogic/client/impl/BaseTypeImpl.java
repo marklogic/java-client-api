@@ -20,12 +20,34 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.marklogic.client.type.ArrayNodeExpr;
+import com.marklogic.client.type.ArrayNodeSeqExpr;
+import com.marklogic.client.type.AttributeNodeExpr;
+import com.marklogic.client.type.AttributeNodeSeqExpr;
+import com.marklogic.client.type.BooleanNodeExpr;
+import com.marklogic.client.type.BooleanNodeSeqExpr;
+import com.marklogic.client.type.CommentNodeExpr;
+import com.marklogic.client.type.CommentNodeSeqExpr;
+import com.marklogic.client.type.DocumentNodeExpr;
+import com.marklogic.client.type.DocumentNodeSeqExpr;
 import com.marklogic.client.type.ElementNodeExpr;
 import com.marklogic.client.type.ElementNodeSeqExpr;
 import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.NodeExpr;
 import com.marklogic.client.type.NodeSeqExpr;
+import com.marklogic.client.type.NullNodeExpr;
+import com.marklogic.client.type.NullNodeSeqExpr;
+import com.marklogic.client.type.NumberNodeExpr;
+import com.marklogic.client.type.NumberNodeSeqExpr;
+import com.marklogic.client.type.ObjectNodeExpr;
+import com.marklogic.client.type.ObjectNodeSeqExpr;
+import com.marklogic.client.type.ProcessingInstructionNodeExpr;
+import com.marklogic.client.type.ProcessingInstructionNodeSeqExpr;
+import com.marklogic.client.type.TextNodeExpr;
+import com.marklogic.client.type.TextNodeSeqExpr;
+import com.marklogic.client.type.XmlContentNodeSeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeMapSeq;
 
 public class BaseTypeImpl {
 	public static interface BaseArgImpl {
@@ -88,20 +110,20 @@ public class BaseTypeImpl {
 		return new BaseListImpl<>(convertList(items, as));
 	}
 	static class BaseListImpl<T extends BaseArgImpl> implements BaseArgImpl {
-		protected T[] items;
-		protected BaseListImpl(T[] items) {
-			this.items = items;
+		protected T[] args;
+		protected BaseListImpl(T[] args) {
+			this.args = args;
 		}
-		public T[] getItems() {
-			return this.items;
+		public T[] getArgsImpl() {
+			return this.args;
 		}
 		@Override
 		public StringBuilder exportAst(StringBuilder strb) {
-			return exportASTList(strb, items);
+			return exportASTList(strb, args);
 		}
 		@Override
 		public String toString() {
-			return listToString(items);
+			return listToString(args);
 		}
     }
 
@@ -158,16 +180,6 @@ public class BaseTypeImpl {
 		}
 	}
 
-	static ItemSeqExpr items(ItemExpr... items) {
-		return new ItemSeqListImpl(items);
-	}
-	static NodeSeqExpr nodes(NodeExpr... items) {
-		return new NodeSeqListImpl(items);
-	}
-	static ElementNodeSeqExpr elements(ElementNodeExpr... items) {
-		return new ElementNodeSeqListImpl(items);
-	}
-
     static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements ItemSeqExpr {
     	ItemSeqListImpl(Object[] items) {
             super(convertList(items));
@@ -183,24 +195,142 @@ public class BaseTypeImpl {
             super(fnPrefix, fnName, convertList(fnArgs));
         }
     }
-    static class NodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements NodeSeqExpr {
+    static class NodeSeqListImpl extends ItemSeqListImpl implements NodeSeqExpr {
     	NodeSeqListImpl(Object[] items) {
-            super(convertList(items));
+            super(items);
         }
     }
-    static class NodeCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeExpr {
+    static class NodeSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeSeqExpr {
+    	NodeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, convertList(fnArgs));
+        }
+    }
+    static class NodeCallImpl extends ItemCallImpl implements NodeExpr {
     	NodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, convertList(fnArgs));
+            super(fnPrefix, fnName, fnArgs);
         }
     }
-    static class ElementNodeSeqListImpl extends BaseListImpl<BaseArgImpl> implements ElementNodeSeqExpr {
+    static class ArrayNodeSeqListImpl extends ItemSeqListImpl implements ArrayNodeSeqExpr {
+    	ArrayNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class ArrayNodeCallImpl extends ItemCallImpl implements ArrayNodeExpr {
+    	ArrayNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class AttributeNodeSeqListImpl extends ItemSeqListImpl implements AttributeNodeSeqExpr {
+    	AttributeNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class AttributeNodeCallImpl extends ItemCallImpl implements AttributeNodeExpr {
+    	AttributeNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class BooleanNodeSeqListImpl extends ItemSeqListImpl implements BooleanNodeSeqExpr {
+    	BooleanNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class BooleanNodeCallImpl extends ItemCallImpl implements BooleanNodeExpr {
+    	BooleanNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class CommentNodeSeqListImpl extends ItemSeqListImpl implements CommentNodeSeqExpr {
+    	CommentNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class CommentNodeCallImpl extends ItemCallImpl implements CommentNodeExpr {
+    	CommentNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class DocumentNodeSeqListImpl extends ItemSeqListImpl implements DocumentNodeSeqExpr {
+    	DocumentNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class DocumentNodeCallImpl extends ItemCallImpl implements DocumentNodeExpr {
+    	DocumentNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class ElementNodeSeqListImpl extends ItemSeqListImpl implements ElementNodeSeqExpr {
     	ElementNodeSeqListImpl(Object[] items) {
-            super(convertList(items));
+            super(items);
         }
     }
-    static class ElementNodeCallImpl extends BaseCallImpl<BaseArgImpl> implements ElementNodeExpr {
+    static class ElementNodeCallImpl extends ItemCallImpl implements ElementNodeExpr {
     	ElementNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, convertList(fnArgs));
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class NullNodeSeqListImpl extends ItemSeqListImpl implements NullNodeSeqExpr {
+    	NullNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class NullNodeCallImpl extends ItemCallImpl implements NullNodeExpr {
+    	NullNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class NumberNodeSeqListImpl extends ItemSeqListImpl implements NumberNodeSeqExpr {
+    	NumberNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class NumberNodeCallImpl extends ItemCallImpl implements NumberNodeExpr {
+    	NumberNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class ObjectNodeSeqListImpl extends ItemSeqListImpl implements ObjectNodeSeqExpr {
+    	ObjectNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class ObjectNodeCallImpl extends ItemCallImpl implements ObjectNodeExpr {
+    	ObjectNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class ProcessingInstructionNodeSeqListImpl extends ItemSeqListImpl implements ProcessingInstructionNodeSeqExpr {
+    	ProcessingInstructionNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class ProcessingInstructionNodeCallImpl extends ItemCallImpl implements ProcessingInstructionNodeExpr {
+    	ProcessingInstructionNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+    static class TextNodeSeqListImpl extends ItemSeqListImpl implements TextNodeSeqExpr {
+    	TextNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+    static class TextNodeCallImpl extends ItemCallImpl implements TextNodeExpr {
+    	TextNodeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+
+    static class XmlContentNodeSeqListImpl extends ItemSeqListImpl implements XmlContentNodeSeqExpr {
+    	XmlContentNodeSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+
+// TODO: DELETE???
+    static class XsAnyAtomicTypeMapSeqListImpl extends ItemSeqListImpl implements XsAnyAtomicTypeMapSeq {
+    	XsAnyAtomicTypeMapSeqListImpl(Object[] items) {
+            super(items);
         }
     }
 

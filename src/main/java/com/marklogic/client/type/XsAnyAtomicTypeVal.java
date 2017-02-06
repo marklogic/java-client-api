@@ -15,4 +15,5 @@
  */
 package com.marklogic.client.type;
 
-public interface XsAnyAtomicTypeVal extends XsAnySimpleTypeVal, XsAnyAtomicTypeSeqVal, XsAnyAtomicTypeParam, PlanTripleVal { }
+public interface XsAnyAtomicTypeVal extends XsAnyAtomicTypeExpr, XsAnySimpleTypeVal, XsAnyAtomicTypeSeqVal, PlanTriplePosition {
+}

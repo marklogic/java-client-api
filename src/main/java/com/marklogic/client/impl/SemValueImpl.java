@@ -26,6 +26,7 @@ import com.marklogic.client.type.SemStoreExpr;
 import com.marklogic.client.type.SemStoreSeqExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsAnySimpleTypeVal;
+import com.marklogic.client.type.XsAnyURIVal;
 import com.marklogic.client.type.XsStringSeqVal;
 
 public class SemValueImpl implements SemValue {
@@ -34,11 +35,11 @@ public class SemValueImpl implements SemValue {
 		return new SemIriValImpl(stringIri);
 	}
 	@Override
-	public SemIriSeqVal iris(String... stringIris) {
+	public SemIriSeqVal iriSeq(String... stringIris) {
 		return new SemIriSeqValImpl(stringIris);
 	}
 	@Override
-	public SemIriSeqVal iris(SemIriVal... iris) {
+	public SemIriSeqVal iriSeq(SemIriVal... iris) {
 		return new SemIriSeqValImpl(iris);
 	}
 
@@ -70,8 +71,8 @@ public class SemValueImpl implements SemValue {
 	}
 
 	static class SemIriSeqValImpl
-	extends BaseTypeImpl.BaseListImpl<SemIriValImpl>
-	implements SemIriSeqVal, BaseTypeImpl.BaseArgImpl {
+	extends XsValueImpl.AnyAtomicTypeSeqValImpl<SemIriValImpl>
+	implements SemIriSeqVal {
 		SemIriSeqValImpl(String[] values) {
 			this((SemIriValImpl[]) Arrays.stream(values)
 	                .map(val -> new SemIriValImpl(val))
@@ -87,22 +88,33 @@ public class SemValueImpl implements SemValue {
 		public SemIriVal[] getIriItems() {
 			return getItems();
 		}
+		@Override
+		public XsAnyURIVal[] getAnyURIItems() {
+			return getItems();
+		}
+		@Override
+		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
+			return getItems();
+		}
 	}
-	static class SemIriValImpl implements SemIriVal, BaseTypeImpl.BaseArgImpl, BaseTypeImpl.ParamBinder {
+	static class SemIriValImpl
+	extends XsValueImpl.AnyAtomicTypeValImpl
+	implements SemIriVal, BaseTypeImpl.ParamBinder {
     	private String value = null;
     	public SemIriValImpl(String value) {
+    		super("sem", "iri");
     		if (value == null) {
     			throw new IllegalArgumentException("cannot take null value");
     		}
     		this.value = value;
     	}
 		@Override
-		public XsAnySimpleTypeVal[] getAnySimpleTypeItems() {
-			return new XsAnySimpleTypeVal[]{this};
-		}
-		@Override
 		public XsAnyAtomicTypeVal[] getAnyAtomicTypeItems() {
 			return new XsAnyAtomicTypeVal[]{this};
+		}
+		@Override
+		public XsAnyURIVal[] getAnyURIItems() {
+			return new XsAnyURIVal[]{this};
 		}
 		@Override
         public String getString() {

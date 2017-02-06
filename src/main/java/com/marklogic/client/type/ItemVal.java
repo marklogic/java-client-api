@@ -15,4 +15,4 @@
  */
 package com.marklogic.client.type;
 
-public interface ItemVal extends ItemSeqVal, ItemParam { }
+public interface ItemVal extends ItemExpr, ItemSeqVal { }

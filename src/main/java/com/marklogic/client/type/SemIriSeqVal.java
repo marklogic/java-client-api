@@ -16,6 +16,6 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface SemIriSeqVal extends SemIriSeqExpr, ItemSeqVal {
+public interface SemIriSeqVal extends SemIriSeqExpr, XsAnyURISeqVal {
     public SemIriVal[] getIriItems();
 }

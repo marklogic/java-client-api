@@ -15,1081 +15,1160 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.XsValue;
 
-import com.marklogic.client.expression.XsExpr;
+
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
- import com.marklogic.client.type.XsAnySimpleTypeExpr;
- import com.marklogic.client.type.XsAnySimpleTypeSeqExpr;
- import com.marklogic.client.type.XsAnyURIExpr;
- import com.marklogic.client.type.XsAnyURISeqExpr;
- import com.marklogic.client.type.XsBase64BinaryExpr;
- import com.marklogic.client.type.XsBase64BinarySeqExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsBooleanSeqExpr;
- import com.marklogic.client.type.XsByteExpr;
- import com.marklogic.client.type.XsByteSeqExpr;
- import com.marklogic.client.type.XsDateExpr;
- import com.marklogic.client.type.XsDateSeqExpr;
- import com.marklogic.client.type.XsDateTimeExpr;
- import com.marklogic.client.type.XsDateTimeSeqExpr;
- import com.marklogic.client.type.XsDayTimeDurationExpr;
- import com.marklogic.client.type.XsDayTimeDurationSeqExpr;
- import com.marklogic.client.type.XsDecimalExpr;
- import com.marklogic.client.type.XsDecimalSeqExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.XsDoubleSeqExpr;
- import com.marklogic.client.type.XsDurationExpr;
- import com.marklogic.client.type.XsDurationSeqExpr;
- import com.marklogic.client.type.XsFloatExpr;
- import com.marklogic.client.type.XsFloatSeqExpr;
- import com.marklogic.client.type.XsGDayExpr;
- import com.marklogic.client.type.XsGDaySeqExpr;
- import com.marklogic.client.type.XsGMonthDayExpr;
- import com.marklogic.client.type.XsGMonthDaySeqExpr;
- import com.marklogic.client.type.XsGMonthExpr;
- import com.marklogic.client.type.XsGMonthSeqExpr;
- import com.marklogic.client.type.XsGYearExpr;
- import com.marklogic.client.type.XsGYearMonthExpr;
- import com.marklogic.client.type.XsGYearMonthSeqExpr;
- import com.marklogic.client.type.XsGYearSeqExpr;
- import com.marklogic.client.type.XsHexBinaryExpr;
- import com.marklogic.client.type.XsHexBinarySeqExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsIntegerSeqExpr;
- import com.marklogic.client.type.XsIntExpr;
- import com.marklogic.client.type.XsIntSeqExpr;
- import com.marklogic.client.type.XsLanguageExpr;
- import com.marklogic.client.type.XsLanguageSeqExpr;
- import com.marklogic.client.type.XsLongExpr;
- import com.marklogic.client.type.XsLongSeqExpr;
- import com.marklogic.client.type.XsNameExpr;
- import com.marklogic.client.type.XsNameSeqExpr;
- import com.marklogic.client.type.XsNCNameExpr;
- import com.marklogic.client.type.XsNCNameSeqExpr;
- import com.marklogic.client.type.XsNegativeIntegerExpr;
- import com.marklogic.client.type.XsNegativeIntegerSeqExpr;
- import com.marklogic.client.type.XsNMTOKENExpr;
- import com.marklogic.client.type.XsNMTOKENSeqExpr;
- import com.marklogic.client.type.XsNonNegativeIntegerExpr;
- import com.marklogic.client.type.XsNonNegativeIntegerSeqExpr;
- import com.marklogic.client.type.XsNonPositiveIntegerExpr;
- import com.marklogic.client.type.XsNonPositiveIntegerSeqExpr;
- import com.marklogic.client.type.XsNormalizedStringExpr;
- import com.marklogic.client.type.XsNormalizedStringSeqExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsNumericSeqExpr;
- import com.marklogic.client.type.XsPositiveIntegerExpr;
- import com.marklogic.client.type.XsPositiveIntegerSeqExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.XsQNameSeqExpr;
- import com.marklogic.client.type.XsShortExpr;
- import com.marklogic.client.type.XsShortSeqExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsTimeExpr;
- import com.marklogic.client.type.XsTimeSeqExpr;
- import com.marklogic.client.type.XsTokenExpr;
- import com.marklogic.client.type.XsTokenSeqExpr;
- import com.marklogic.client.type.XsUnsignedByteExpr;
- import com.marklogic.client.type.XsUnsignedByteSeqExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.XsUnsignedIntSeqExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
- import com.marklogic.client.type.XsUnsignedLongSeqExpr;
- import com.marklogic.client.type.XsUnsignedShortExpr;
- import com.marklogic.client.type.XsUnsignedShortSeqExpr;
- import com.marklogic.client.type.XsUntypedAtomicExpr;
- import com.marklogic.client.type.XsUntypedAtomicSeqExpr;
- import com.marklogic.client.type.XsYearMonthDurationExpr;
- import com.marklogic.client.type.XsYearMonthDurationSeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
+import com.marklogic.client.type.XsAnyURIExpr;
+import com.marklogic.client.type.XsAnyURISeqExpr;
+import com.marklogic.client.type.XsBase64BinaryExpr;
+import com.marklogic.client.type.XsBase64BinarySeqExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsBooleanSeqExpr;
+import com.marklogic.client.type.XsByteExpr;
+import com.marklogic.client.type.XsByteSeqExpr;
+import com.marklogic.client.type.XsDateExpr;
+import com.marklogic.client.type.XsDateSeqExpr;
+import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsDateTimeSeqExpr;
+import com.marklogic.client.type.XsDayTimeDurationExpr;
+import com.marklogic.client.type.XsDayTimeDurationSeqExpr;
+import com.marklogic.client.type.XsDecimalExpr;
+import com.marklogic.client.type.XsDecimalSeqExpr;
+import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDoubleSeqExpr;
+import com.marklogic.client.type.XsFloatExpr;
+import com.marklogic.client.type.XsFloatSeqExpr;
+import com.marklogic.client.type.XsGDayExpr;
+import com.marklogic.client.type.XsGDaySeqExpr;
+import com.marklogic.client.type.XsGMonthDayExpr;
+import com.marklogic.client.type.XsGMonthDaySeqExpr;
+import com.marklogic.client.type.XsGMonthExpr;
+import com.marklogic.client.type.XsGMonthSeqExpr;
+import com.marklogic.client.type.XsGYearExpr;
+import com.marklogic.client.type.XsGYearMonthExpr;
+import com.marklogic.client.type.XsGYearMonthSeqExpr;
+import com.marklogic.client.type.XsGYearSeqExpr;
+import com.marklogic.client.type.XsHexBinaryExpr;
+import com.marklogic.client.type.XsHexBinarySeqExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+import com.marklogic.client.type.XsIntegerSeqExpr;
+import com.marklogic.client.type.XsIntExpr;
+import com.marklogic.client.type.XsIntSeqExpr;
+import com.marklogic.client.type.XsLanguageExpr;
+import com.marklogic.client.type.XsLanguageSeqExpr;
+import com.marklogic.client.type.XsLongExpr;
+import com.marklogic.client.type.XsLongSeqExpr;
+import com.marklogic.client.type.XsNameExpr;
+import com.marklogic.client.type.XsNameSeqExpr;
+import com.marklogic.client.type.XsNCNameExpr;
+import com.marklogic.client.type.XsNCNameSeqExpr;
+import com.marklogic.client.type.XsNegativeIntegerExpr;
+import com.marklogic.client.type.XsNegativeIntegerSeqExpr;
+import com.marklogic.client.type.XsNMTOKENExpr;
+import com.marklogic.client.type.XsNMTOKENSeqExpr;
+import com.marklogic.client.type.XsNonNegativeIntegerExpr;
+import com.marklogic.client.type.XsNonNegativeIntegerSeqExpr;
+import com.marklogic.client.type.XsNonPositiveIntegerExpr;
+import com.marklogic.client.type.XsNonPositiveIntegerSeqExpr;
+import com.marklogic.client.type.XsNormalizedStringExpr;
+import com.marklogic.client.type.XsNormalizedStringSeqExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsNumericSeqExpr;
+import com.marklogic.client.type.XsPositiveIntegerExpr;
+import com.marklogic.client.type.XsPositiveIntegerSeqExpr;
+import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsQNameSeqExpr;
+import com.marklogic.client.type.XsShortExpr;
+import com.marklogic.client.type.XsShortSeqExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsTimeExpr;
+import com.marklogic.client.type.XsTimeSeqExpr;
+import com.marklogic.client.type.XsTokenExpr;
+import com.marklogic.client.type.XsTokenSeqExpr;
+import com.marklogic.client.type.XsUnsignedByteExpr;
+import com.marklogic.client.type.XsUnsignedByteSeqExpr;
+import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.XsUnsignedIntSeqExpr;
+import com.marklogic.client.type.XsUnsignedLongExpr;
+import com.marklogic.client.type.XsUnsignedLongSeqExpr;
+import com.marklogic.client.type.XsUnsignedShortExpr;
+import com.marklogic.client.type.XsUnsignedShortSeqExpr;
+import com.marklogic.client.type.XsUntypedAtomicExpr;
+import com.marklogic.client.type.XsUntypedAtomicSeqExpr;
+import com.marklogic.client.type.XsYearMonthDurationExpr;
+import com.marklogic.client.type.XsYearMonthDurationSeqExpr;
 
+import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
+class XsExprImpl extends XsValueImpl implements XsExpr {
 
-public class XsExprImpl extends XsValueImpl implements XsExpr {
-     @Override
-        public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsAnyURICallImpl("xs", "anyURI", new Object[]{ arg1 });
-    }
-    @Override
-        public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsBase64BinaryCallImpl("xs", "base64Binary", new Object[]{ arg1 });
-    }
-    @Override
-        public XsBooleanExpr booleanExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsBooleanCallImpl("xs", "boolean", new Object[]{ arg1 });
-    }
-    @Override
-        public XsByteExpr byteExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsByteCallImpl("xs", "byte", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDateExpr date(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDateCallImpl("xs", "date", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDateTimeExpr dateTime(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDateTimeCallImpl("xs", "dateTime", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDayTimeDurationExpr dayTimeDuration(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDayTimeDurationCallImpl("xs", "dayTimeDuration", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDecimalExpr decimal(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDecimalCallImpl("xs", "decimal", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDoubleExpr doubleExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDoubleCallImpl("xs", "double", new Object[]{ arg1 });
-    }
-    @Override
-        public XsDurationExpr duration(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsDurationCallImpl("xs", "duration", new Object[]{ arg1 });
-    }
-    @Override
-        public XsFloatExpr floatExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsFloatCallImpl("xs", "float", new Object[]{ arg1 });
-    }
-    @Override
-        public XsGDayExpr gDay(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsGDayCallImpl("xs", "gDay", new Object[]{ arg1 });
-    }
-    @Override
-        public XsGMonthExpr gMonth(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsGMonthCallImpl("xs", "gMonth", new Object[]{ arg1 });
-    }
-    @Override
-        public XsGMonthDayExpr gMonthDay(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsGMonthDayCallImpl("xs", "gMonthDay", new Object[]{ arg1 });
-    }
-    @Override
-        public XsGYearExpr gYear(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsGYearCallImpl("xs", "gYear", new Object[]{ arg1 });
-    }
-    @Override
-        public XsGYearMonthExpr gYearMonth(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsGYearMonthCallImpl("xs", "gYearMonth", new Object[]{ arg1 });
-    }
-    @Override
-        public XsHexBinaryExpr hexBinary(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsHexBinaryCallImpl("xs", "hexBinary", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntExpr intExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsIntCallImpl("xs", "int", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr integer(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("xs", "integer", new Object[]{ arg1 });
-    }
-    @Override
-        public XsLanguageExpr language(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsLanguageCallImpl("xs", "language", new Object[]{ arg1 });
-    }
-    @Override
-        public XsLongExpr longExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsLongCallImpl("xs", "long", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNameExpr Name(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNameCallImpl("xs", "Name", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNCNameExpr NCName(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNCNameCallImpl("xs", "NCName", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNMTOKENExpr NMTOKEN(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNMTOKENCallImpl("xs", "NMTOKEN", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNegativeIntegerExpr negativeInteger(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNegativeIntegerCallImpl("xs", "negativeInteger", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNonNegativeIntegerExpr nonNegativeInteger(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNonNegativeIntegerCallImpl("xs", "nonNegativeInteger", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNonPositiveIntegerExpr nonPositiveInteger(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNonPositiveIntegerCallImpl("xs", "nonPositiveInteger", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNormalizedStringExpr normalizedString(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNormalizedStringCallImpl("xs", "normalizedString", new Object[]{ arg1 });
-    }
-    @Override
-        public XsNumericExpr numeric(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsNumericCallImpl("xs", "numeric", new Object[]{ arg1 });
-    }
-    @Override
-        public XsPositiveIntegerExpr positiveInteger(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsPositiveIntegerCallImpl("xs", "positiveInteger", new Object[]{ arg1 });
-    }
-    @Override
-        public XsQNameExpr QName(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsQNameCallImpl("xs", "QName", new Object[]{ arg1 });
-    }
-    @Override
-        public XsShortExpr shortExpr(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsShortCallImpl("xs", "short", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr string(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("xs", "string", new Object[]{ arg1 });
-    }
-    @Override
-        public XsTimeExpr time(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsTimeCallImpl("xs", "time", new Object[]{ arg1 });
-    }
-    @Override
-        public XsTokenExpr token(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsTokenCallImpl("xs", "token", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUnsignedByteExpr unsignedByte(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsUnsignedByteCallImpl("xs", "unsignedByte", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUnsignedIntExpr unsignedInt(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsUnsignedIntCallImpl("xs", "unsignedInt", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUnsignedLongExpr unsignedLong(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsUnsignedLongCallImpl("xs", "unsignedLong", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUnsignedShortExpr unsignedShort(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsUnsignedShortCallImpl("xs", "unsignedShort", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUntypedAtomicExpr untypedAtomic(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsUntypedAtomicCallImpl("xs", "untypedAtomic", new Object[]{ arg1 });
-    }
-    @Override
-        public XsYearMonthDurationExpr yearMonthDuration(XsAnyAtomicTypeExpr arg1) {
-        return new XsExprImpl.XsYearMonthDurationCallImpl("xs", "yearMonthDuration", new Object[]{ arg1 });
-    }     @Override
-    public XsAnyAtomicTypeSeqExpr anyAtomicType(XsAnyAtomicTypeExpr... items) {
-        return new XsAnyAtomicTypeSeqListImpl(items);
-    }
-     @Override
-    public XsAnySimpleTypeSeqExpr anySimpleType(XsAnySimpleTypeExpr... items) {
-        return new XsAnySimpleTypeSeqListImpl(items);
-    }
-     @Override
-    public XsAnyURISeqExpr anyURI(XsAnyURIExpr... items) {
-        return new XsAnyURISeqListImpl(items);
-    }
-     @Override
-    public XsBase64BinarySeqExpr base64Binary(XsBase64BinaryExpr... items) {
-        return new XsBase64BinarySeqListImpl(items);
-    }
-     @Override
-    public XsBooleanSeqExpr booleanExpr(XsBooleanExpr... items) {
-        return new XsBooleanSeqListImpl(items);
-    }
-     @Override
-    public XsByteSeqExpr byteExpr(XsByteExpr... items) {
-        return new XsByteSeqListImpl(items);
-    }
-     @Override
-    public XsDateSeqExpr date(XsDateExpr... items) {
-        return new XsDateSeqListImpl(items);
-    }
-     @Override
-    public XsDateTimeSeqExpr dateTime(XsDateTimeExpr... items) {
-        return new XsDateTimeSeqListImpl(items);
-    }
-     @Override
-    public XsDayTimeDurationSeqExpr dayTimeDuration(XsDayTimeDurationExpr... items) {
-        return new XsDayTimeDurationSeqListImpl(items);
-    }
-     @Override
-    public XsDecimalSeqExpr decimal(XsDecimalExpr... items) {
-        return new XsDecimalSeqListImpl(items);
-    }
-     @Override
-    public XsDoubleSeqExpr doubleExpr(XsDoubleExpr... items) {
-        return new XsDoubleSeqListImpl(items);
-    }
-     @Override
-    public XsDurationSeqExpr duration(XsDurationExpr... items) {
-        return new XsDurationSeqListImpl(items);
-    }
-     @Override
-    public XsFloatSeqExpr floatExpr(XsFloatExpr... items) {
-        return new XsFloatSeqListImpl(items);
-    }
-     @Override
-    public XsGDaySeqExpr gDay(XsGDayExpr... items) {
-        return new XsGDaySeqListImpl(items);
-    }
-     @Override
-    public XsGMonthSeqExpr gMonth(XsGMonthExpr... items) {
-        return new XsGMonthSeqListImpl(items);
-    }
-     @Override
-    public XsGMonthDaySeqExpr gMonthDay(XsGMonthDayExpr... items) {
-        return new XsGMonthDaySeqListImpl(items);
-    }
-     @Override
-    public XsGYearSeqExpr gYear(XsGYearExpr... items) {
-        return new XsGYearSeqListImpl(items);
-    }
-     @Override
-    public XsGYearMonthSeqExpr gYearMonth(XsGYearMonthExpr... items) {
-        return new XsGYearMonthSeqListImpl(items);
-    }
-     @Override
-    public XsHexBinarySeqExpr hexBinary(XsHexBinaryExpr... items) {
-        return new XsHexBinarySeqListImpl(items);
-    }
-     @Override
-    public XsIntegerSeqExpr integer(XsIntegerExpr... items) {
-        return new XsIntegerSeqListImpl(items);
-    }
-     @Override
-    public XsIntSeqExpr intExpr(XsIntExpr... items) {
-        return new XsIntSeqListImpl(items);
-    }
-     @Override
-    public XsLanguageSeqExpr language(XsLanguageExpr... items) {
-        return new XsLanguageSeqListImpl(items);
-    }
-     @Override
-    public XsLongSeqExpr longExpr(XsLongExpr... items) {
-        return new XsLongSeqListImpl(items);
-    }
-     @Override
-    public XsNameSeqExpr name(XsNameExpr... items) {
-        return new XsNameSeqListImpl(items);
-    }
-     @Override
-    public XsNCNameSeqExpr nCName(XsNCNameExpr... items) {
-        return new XsNCNameSeqListImpl(items);
-    }
-     @Override
-    public XsNegativeIntegerSeqExpr negativeInteger(XsNegativeIntegerExpr... items) {
-        return new XsNegativeIntegerSeqListImpl(items);
-    }
-     @Override
-    public XsNMTOKENSeqExpr nMTOKEN(XsNMTOKENExpr... items) {
-        return new XsNMTOKENSeqListImpl(items);
-    }
-     @Override
-    public XsNonNegativeIntegerSeqExpr nonNegativeInteger(XsNonNegativeIntegerExpr... items) {
-        return new XsNonNegativeIntegerSeqListImpl(items);
-    }
-     @Override
-    public XsNonPositiveIntegerSeqExpr nonPositiveInteger(XsNonPositiveIntegerExpr... items) {
-        return new XsNonPositiveIntegerSeqListImpl(items);
-    }
-     @Override
-    public XsNormalizedStringSeqExpr normalizedString(XsNormalizedStringExpr... items) {
-        return new XsNormalizedStringSeqListImpl(items);
-    }
-     @Override
-    public XsNumericSeqExpr numeric(XsNumericExpr... items) {
-        return new XsNumericSeqListImpl(items);
-    }
-     @Override
-    public XsPositiveIntegerSeqExpr positiveInteger(XsPositiveIntegerExpr... items) {
-        return new XsPositiveIntegerSeqListImpl(items);
-    }
-     @Override
-    public XsQNameSeqExpr QName(XsQNameExpr... items) {
-        return new XsQNameSeqListImpl(items);
-    }
-     @Override
-    public XsShortSeqExpr shortExpr(XsShortExpr... items) {
-        return new XsShortSeqListImpl(items);
-    }
-     @Override
-    public XsStringSeqExpr string(XsStringExpr... items) {
-        return new XsStringSeqListImpl(items);
-    }
-     @Override
-    public XsTimeSeqExpr time(XsTimeExpr... items) {
-        return new XsTimeSeqListImpl(items);
-    }
-     @Override
-    public XsTokenSeqExpr token(XsTokenExpr... items) {
-        return new XsTokenSeqListImpl(items);
-    }
-     @Override
-    public XsUnsignedByteSeqExpr unsignedByte(XsUnsignedByteExpr... items) {
-        return new XsUnsignedByteSeqListImpl(items);
-    }
-     @Override
-    public XsUnsignedIntSeqExpr unsignedInt(XsUnsignedIntExpr... items) {
-        return new XsUnsignedIntSeqListImpl(items);
-    }
-     @Override
-    public XsUnsignedLongSeqExpr unsignedLong(XsUnsignedLongExpr... items) {
-        return new XsUnsignedLongSeqListImpl(items);
-    }
-     @Override
-    public XsUnsignedShortSeqExpr unsignedShort(XsUnsignedShortExpr... items) {
-        return new XsUnsignedShortSeqListImpl(items);
-    }
-     @Override
-    public XsUntypedAtomicSeqExpr untypedAtomic(XsUntypedAtomicExpr... items) {
-        return new XsUntypedAtomicSeqListImpl(items);
-    }
-     @Override
-    public XsYearMonthDurationSeqExpr yearMonthDuration(XsYearMonthDurationExpr... items) {
-        return new XsYearMonthDurationSeqListImpl(items);
-    }
-        static class XsAnyAtomicTypeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeSeqExpr {
-            XsAnyAtomicTypeSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsAnyAtomicTypeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeSeqExpr {
-            XsAnyAtomicTypeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsAnyAtomicTypeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeExpr {
-            XsAnyAtomicTypeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsAnySimpleTypeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsAnySimpleTypeSeqExpr {
-            XsAnySimpleTypeSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsAnySimpleTypeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnySimpleTypeSeqExpr {
-            XsAnySimpleTypeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsAnySimpleTypeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnySimpleTypeExpr {
-            XsAnySimpleTypeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsAnyURISeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURISeqExpr {
-            XsAnyURISeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsAnyURISeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURISeqExpr {
-            XsAnyURISeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsAnyURICallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURIExpr {
-            XsAnyURICallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsBase64BinarySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinarySeqExpr {
-            XsBase64BinarySeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsBase64BinarySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinarySeqExpr {
-            XsBase64BinarySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsBase64BinaryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinaryExpr {
-            XsBase64BinaryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsBooleanSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanSeqExpr {
-            XsBooleanSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsBooleanSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanSeqExpr {
-            XsBooleanSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsBooleanCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanExpr {
-            XsBooleanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsByteSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsByteSeqExpr {
-            XsByteSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsByteSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsByteSeqExpr {
-            XsByteSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsByteCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsByteExpr {
-            XsByteCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDateSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDateSeqExpr {
-            XsDateSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDateSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateSeqExpr {
-            XsDateSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDateCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateExpr {
-            XsDateCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDateTimeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeSeqExpr {
-            XsDateTimeSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDateTimeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeSeqExpr {
-            XsDateTimeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDateTimeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeExpr {
-            XsDateTimeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDayTimeDurationSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationSeqExpr {
-            XsDayTimeDurationSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDayTimeDurationSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationSeqExpr {
-            XsDayTimeDurationSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDayTimeDurationCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationExpr {
-            XsDayTimeDurationCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDecimalSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalSeqExpr {
-            XsDecimalSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDecimalSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalSeqExpr {
-            XsDecimalSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDecimalCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalExpr {
-            XsDecimalCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDoubleSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleSeqExpr {
-            XsDoubleSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDoubleSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleSeqExpr {
-            XsDoubleSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDoubleCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleExpr {
-            XsDoubleCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsDurationSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDurationSeqExpr {
-            XsDurationSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsDurationSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDurationSeqExpr {
-            XsDurationSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsDurationCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDurationExpr {
-            XsDurationCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsFloatSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatSeqExpr {
-            XsFloatSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsFloatSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatSeqExpr {
-            XsFloatSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsFloatCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatExpr {
-            XsFloatCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsGDaySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGDaySeqExpr {
-            XsGDaySeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsGDaySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGDaySeqExpr {
-            XsGDaySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsGDayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGDayExpr {
-            XsGDayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsGMonthSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthSeqExpr {
-            XsGMonthSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsGMonthSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthSeqExpr {
-            XsGMonthSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsGMonthCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthExpr {
-            XsGMonthCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsGMonthDaySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDaySeqExpr {
-            XsGMonthDaySeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsGMonthDaySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDaySeqExpr {
-            XsGMonthDaySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsGMonthDayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDayExpr {
-            XsGMonthDayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsGYearSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearSeqExpr {
-            XsGYearSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsGYearSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearSeqExpr {
-            XsGYearSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsGYearCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearExpr {
-            XsGYearCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsGYearMonthSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthSeqExpr {
-            XsGYearMonthSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsGYearMonthSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthSeqExpr {
-            XsGYearMonthSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsGYearMonthCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthExpr {
-            XsGYearMonthCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsHexBinarySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinarySeqExpr {
-            XsHexBinarySeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsHexBinarySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinarySeqExpr {
-            XsHexBinarySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsHexBinaryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinaryExpr {
-            XsHexBinaryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsIntSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsIntSeqExpr {
-            XsIntSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsIntSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntSeqExpr {
-            XsIntSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsIntCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntExpr {
-            XsIntCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerSeqExpr {
-            XsIntegerSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerSeqExpr {
-            XsIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerExpr {
-            XsIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsLanguageSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageSeqExpr {
-            XsLanguageSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsLanguageSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageSeqExpr {
-            XsLanguageSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsLanguageCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageExpr {
-            XsLanguageCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsLongSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsLongSeqExpr {
-            XsLongSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsLongSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLongSeqExpr {
-            XsLongSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsLongCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLongExpr {
-            XsLongCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNameSeqExpr {
-            XsNameSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNameSeqExpr {
-            XsNameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNameExpr {
-            XsNameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNCNameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameSeqExpr {
-            XsNCNameSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNCNameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameSeqExpr {
-            XsNCNameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNCNameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameExpr {
-            XsNCNameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNegativeIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerSeqExpr {
-            XsNegativeIntegerSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNegativeIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerSeqExpr {
-            XsNegativeIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNegativeIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerExpr {
-            XsNegativeIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNMTOKENSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENSeqExpr {
-            XsNMTOKENSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNMTOKENSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENSeqExpr {
-            XsNMTOKENSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNMTOKENCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENExpr {
-            XsNMTOKENCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNonNegativeIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerSeqExpr {
-            XsNonNegativeIntegerSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNonNegativeIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerSeqExpr {
-            XsNonNegativeIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNonNegativeIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerExpr {
-            XsNonNegativeIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNonPositiveIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerSeqExpr {
-            XsNonPositiveIntegerSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNonPositiveIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerSeqExpr {
-            XsNonPositiveIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNonPositiveIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerExpr {
-            XsNonPositiveIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNormalizedStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringSeqExpr {
-            XsNormalizedStringSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNormalizedStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringSeqExpr {
-            XsNormalizedStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNormalizedStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringExpr {
-            XsNormalizedStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsNumericSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericSeqExpr {
-            XsNumericSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsNumericSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericSeqExpr {
-            XsNumericSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsNumericCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericExpr {
-            XsNumericCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsPositiveIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerSeqExpr {
-            XsPositiveIntegerSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsPositiveIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerSeqExpr {
-            XsPositiveIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsPositiveIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerExpr {
-            XsPositiveIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsQNameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameSeqExpr {
-            XsQNameSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsQNameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameSeqExpr {
-            XsQNameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsQNameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameExpr {
-            XsQNameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsShortSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsShortSeqExpr {
-            XsShortSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsShortSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsShortSeqExpr {
-            XsShortSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsShortCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsShortExpr {
-            XsShortCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsStringSeqExpr {
-            XsStringSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsStringSeqExpr {
-            XsStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsStringExpr {
-            XsStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsTimeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeSeqExpr {
-            XsTimeSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsTimeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeSeqExpr {
-            XsTimeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsTimeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeExpr {
-            XsTimeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsTokenSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenSeqExpr {
-            XsTokenSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsTokenSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenSeqExpr {
-            XsTokenSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsTokenCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenExpr {
-            XsTokenCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsUnsignedByteSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteSeqExpr {
-            XsUnsignedByteSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsUnsignedByteSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteSeqExpr {
-            XsUnsignedByteSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsUnsignedByteCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteExpr {
-            XsUnsignedByteCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsUnsignedIntSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntSeqExpr {
-            XsUnsignedIntSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsUnsignedIntSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntSeqExpr {
-            XsUnsignedIntSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsUnsignedIntCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntExpr {
-            XsUnsignedIntCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsUnsignedLongSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongSeqExpr {
-            XsUnsignedLongSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsUnsignedLongSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongSeqExpr {
-            XsUnsignedLongSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsUnsignedLongCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongExpr {
-            XsUnsignedLongCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsUnsignedShortSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortSeqExpr {
-            XsUnsignedShortSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsUnsignedShortSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortSeqExpr {
-            XsUnsignedShortSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsUnsignedShortCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortExpr {
-            XsUnsignedShortCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsUntypedAtomicSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicSeqExpr {
-            XsUntypedAtomicSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsUntypedAtomicSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicSeqExpr {
-            XsUntypedAtomicSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsUntypedAtomicCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicExpr {
-            XsUntypedAtomicCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class XsYearMonthDurationSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationSeqExpr {
-            XsYearMonthDurationSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class XsYearMonthDurationSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationSeqExpr {
-            XsYearMonthDurationSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class XsYearMonthDurationCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationExpr {
-            XsYearMonthDurationCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
+    final static XsExprImpl xs = new XsExprImpl();
 
-}
+    XsExprImpl() {
+    }
+
+    
+    @Override
+    public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1) {
+        return new AnyURICallImpl("xs", "anyURI", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1) {
+        return new Base64BinaryCallImpl("xs", "base64Binary", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsBooleanExpr booleanExpr(XsAnyAtomicTypeExpr arg1) {
+        return new BooleanCallImpl("xs", "boolean", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsByteExpr byteExpr(XsAnyAtomicTypeExpr arg1) {
+        return new ByteCallImpl("xs", "byte", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsDateExpr date(XsAnyAtomicTypeExpr arg1) {
+        return new DateCallImpl("xs", "date", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsDateTimeExpr dateTime(XsAnyAtomicTypeExpr arg1) {
+        return new DateTimeCallImpl("xs", "dateTime", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsDayTimeDurationExpr dayTimeDuration(XsAnyAtomicTypeExpr arg1) {
+        return new DayTimeDurationCallImpl("xs", "dayTimeDuration", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsDecimalExpr decimal(XsAnyAtomicTypeExpr arg1) {
+        return new DecimalCallImpl("xs", "decimal", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsDoubleExpr doubleExpr(XsAnyAtomicTypeExpr arg1) {
+        return new DoubleCallImpl("xs", "double", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsFloatExpr floatExpr(XsAnyAtomicTypeExpr arg1) {
+        return new FloatCallImpl("xs", "float", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsGDayExpr gDay(XsAnyAtomicTypeExpr arg1) {
+        return new GDayCallImpl("xs", "gDay", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsGMonthExpr gMonth(XsAnyAtomicTypeExpr arg1) {
+        return new GMonthCallImpl("xs", "gMonth", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsGMonthDayExpr gMonthDay(XsAnyAtomicTypeExpr arg1) {
+        return new GMonthDayCallImpl("xs", "gMonthDay", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsGYearExpr gYear(XsAnyAtomicTypeExpr arg1) {
+        return new GYearCallImpl("xs", "gYear", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsGYearMonthExpr gYearMonth(XsAnyAtomicTypeExpr arg1) {
+        return new GYearMonthCallImpl("xs", "gYearMonth", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsHexBinaryExpr hexBinary(XsAnyAtomicTypeExpr arg1) {
+        return new HexBinaryCallImpl("xs", "hexBinary", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntExpr intExpr(XsAnyAtomicTypeExpr arg1) {
+        return new IntCallImpl("xs", "int", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr integer(XsAnyAtomicTypeExpr arg1) {
+        return new IntegerCallImpl("xs", "integer", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsLanguageExpr language(XsAnyAtomicTypeExpr arg1) {
+        return new LanguageCallImpl("xs", "language", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsLongExpr longExpr(XsAnyAtomicTypeExpr arg1) {
+        return new LongCallImpl("xs", "long", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNameExpr name(XsAnyAtomicTypeExpr arg1) {
+        return new NameCallImpl("xs", "Name", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNCNameExpr NCName(XsAnyAtomicTypeExpr arg1) {
+        return new NCNameCallImpl("xs", "NCName", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNegativeIntegerExpr negativeInteger(XsAnyAtomicTypeExpr arg1) {
+        return new NegativeIntegerCallImpl("xs", "negativeInteger", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNMTOKENExpr NMTOKEN(XsAnyAtomicTypeExpr arg1) {
+        return new NMTOKENCallImpl("xs", "NMTOKEN", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNonNegativeIntegerExpr nonNegativeInteger(XsAnyAtomicTypeExpr arg1) {
+        return new NonNegativeIntegerCallImpl("xs", "nonNegativeInteger", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNonPositiveIntegerExpr nonPositiveInteger(XsAnyAtomicTypeExpr arg1) {
+        return new NonPositiveIntegerCallImpl("xs", "nonPositiveInteger", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNormalizedStringExpr normalizedString(XsAnyAtomicTypeExpr arg1) {
+        return new NormalizedStringCallImpl("xs", "normalizedString", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsNumericExpr numeric(XsAnyAtomicTypeExpr arg1) {
+        return new NumericCallImpl("xs", "numeric", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsPositiveIntegerExpr positiveInteger(XsAnyAtomicTypeExpr arg1) {
+        return new PositiveIntegerCallImpl("xs", "positiveInteger", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsQNameExpr QName(XsAnyAtomicTypeExpr arg1) {
+        return new QNameCallImpl("xs", "QName", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsShortExpr shortExpr(XsAnyAtomicTypeExpr arg1) {
+        return new ShortCallImpl("xs", "short", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsStringExpr string(XsAnyAtomicTypeExpr arg1) {
+        return new StringCallImpl("xs", "string", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsTimeExpr time(XsAnyAtomicTypeExpr arg1) {
+        return new TimeCallImpl("xs", "time", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsTokenExpr token(XsAnyAtomicTypeExpr arg1) {
+        return new TokenCallImpl("xs", "token", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUnsignedByteExpr unsignedByte(XsAnyAtomicTypeExpr arg1) {
+        return new UnsignedByteCallImpl("xs", "unsignedByte", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUnsignedIntExpr unsignedInt(XsAnyAtomicTypeExpr arg1) {
+        return new UnsignedIntCallImpl("xs", "unsignedInt", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUnsignedLongExpr unsignedLong(XsAnyAtomicTypeExpr arg1) {
+        return new UnsignedLongCallImpl("xs", "unsignedLong", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUnsignedShortExpr unsignedShort(XsAnyAtomicTypeExpr arg1) {
+        return new UnsignedShortCallImpl("xs", "unsignedShort", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUntypedAtomicExpr untypedAtomic(XsAnyAtomicTypeExpr arg1) {
+        return new UntypedAtomicCallImpl("xs", "untypedAtomic", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsYearMonthDurationExpr yearMonthDuration(XsAnyAtomicTypeExpr arg1) {
+        return new YearMonthDurationCallImpl("xs", "yearMonthDuration", new Object[]{ arg1 });
+    }
+
+    @Override
+    public XsAnyAtomicTypeSeqExpr anyAtomicTypeSeq(XsAnyAtomicTypeExpr... items) {
+        return new AnyAtomicTypeSeqListImpl(items);
+    }
+    static class AnyAtomicTypeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeSeqExpr {
+        AnyAtomicTypeSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class AnyAtomicTypeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeSeqExpr {
+        AnyAtomicTypeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class AnyAtomicTypeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyAtomicTypeExpr {
+        AnyAtomicTypeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsAnyURISeqExpr anyURISeq(XsAnyURIExpr... items) {
+        return new AnyURISeqListImpl(items);
+    }
+    static class AnyURISeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURISeqExpr {
+        AnyURISeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class AnyURISeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURISeqExpr {
+        AnyURISeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class AnyURICallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsAnyURIExpr {
+        AnyURICallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsBase64BinarySeqExpr base64BinarySeq(XsBase64BinaryExpr... items) {
+        return new Base64BinarySeqListImpl(items);
+    }
+    static class Base64BinarySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinarySeqExpr {
+        Base64BinarySeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class Base64BinarySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinarySeqExpr {
+        Base64BinarySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class Base64BinaryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBase64BinaryExpr {
+        Base64BinaryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsBooleanSeqExpr booleanExprSeq(XsBooleanExpr... items) {
+        return new BooleanSeqListImpl(items);
+    }
+    static class BooleanSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanSeqExpr {
+        BooleanSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class BooleanSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanSeqExpr {
+        BooleanSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class BooleanCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsBooleanExpr {
+        BooleanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsByteSeqExpr byteExprSeq(XsByteExpr... items) {
+        return new ByteSeqListImpl(items);
+    }
+    static class ByteSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsByteSeqExpr {
+        ByteSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class ByteSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsByteSeqExpr {
+        ByteSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class ByteCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsByteExpr {
+        ByteCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsDateSeqExpr dateSeq(XsDateExpr... items) {
+        return new DateSeqListImpl(items);
+    }
+    static class DateSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDateSeqExpr {
+        DateSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class DateSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateSeqExpr {
+        DateSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class DateCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateExpr {
+        DateCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsDateTimeSeqExpr dateTimeSeq(XsDateTimeExpr... items) {
+        return new DateTimeSeqListImpl(items);
+    }
+    static class DateTimeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeSeqExpr {
+        DateTimeSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class DateTimeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeSeqExpr {
+        DateTimeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class DateTimeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDateTimeExpr {
+        DateTimeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsDayTimeDurationSeqExpr dayTimeDurationSeq(XsDayTimeDurationExpr... items) {
+        return new DayTimeDurationSeqListImpl(items);
+    }
+    static class DayTimeDurationSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationSeqExpr {
+        DayTimeDurationSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class DayTimeDurationSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationSeqExpr {
+        DayTimeDurationSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class DayTimeDurationCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDayTimeDurationExpr {
+        DayTimeDurationCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsDecimalSeqExpr decimalSeq(XsDecimalExpr... items) {
+        return new DecimalSeqListImpl(items);
+    }
+    static class DecimalSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalSeqExpr {
+        DecimalSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class DecimalSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalSeqExpr {
+        DecimalSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class DecimalCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDecimalExpr {
+        DecimalCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsDoubleSeqExpr doubleExprSeq(XsDoubleExpr... items) {
+        return new DoubleSeqListImpl(items);
+    }
+    static class DoubleSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleSeqExpr {
+        DoubleSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class DoubleSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleSeqExpr {
+        DoubleSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class DoubleCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsDoubleExpr {
+        DoubleCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsFloatSeqExpr floatExprSeq(XsFloatExpr... items) {
+        return new FloatSeqListImpl(items);
+    }
+    static class FloatSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatSeqExpr {
+        FloatSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class FloatSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatSeqExpr {
+        FloatSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class FloatCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsFloatExpr {
+        FloatCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsGDaySeqExpr GDaySeq(XsGDayExpr... items) {
+        return new GDaySeqListImpl(items);
+    }
+    static class GDaySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGDaySeqExpr {
+        GDaySeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class GDaySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGDaySeqExpr {
+        GDaySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class GDayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGDayExpr {
+        GDayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsGMonthSeqExpr GMonthSeq(XsGMonthExpr... items) {
+        return new GMonthSeqListImpl(items);
+    }
+    static class GMonthSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthSeqExpr {
+        GMonthSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class GMonthSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthSeqExpr {
+        GMonthSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class GMonthCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthExpr {
+        GMonthCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsGMonthDaySeqExpr GMonthDaySeq(XsGMonthDayExpr... items) {
+        return new GMonthDaySeqListImpl(items);
+    }
+    static class GMonthDaySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDaySeqExpr {
+        GMonthDaySeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class GMonthDaySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDaySeqExpr {
+        GMonthDaySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class GMonthDayCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGMonthDayExpr {
+        GMonthDayCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsGYearSeqExpr GYearSeq(XsGYearExpr... items) {
+        return new GYearSeqListImpl(items);
+    }
+    static class GYearSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearSeqExpr {
+        GYearSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class GYearSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearSeqExpr {
+        GYearSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class GYearCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearExpr {
+        GYearCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsGYearMonthSeqExpr GYearMonthSeq(XsGYearMonthExpr... items) {
+        return new GYearMonthSeqListImpl(items);
+    }
+    static class GYearMonthSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthSeqExpr {
+        GYearMonthSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class GYearMonthSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthSeqExpr {
+        GYearMonthSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class GYearMonthCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsGYearMonthExpr {
+        GYearMonthCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsHexBinarySeqExpr hexBinarySeq(XsHexBinaryExpr... items) {
+        return new HexBinarySeqListImpl(items);
+    }
+    static class HexBinarySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinarySeqExpr {
+        HexBinarySeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class HexBinarySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinarySeqExpr {
+        HexBinarySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class HexBinaryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsHexBinaryExpr {
+        HexBinaryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsIntSeqExpr intExprSeq(XsIntExpr... items) {
+        return new IntSeqListImpl(items);
+    }
+    static class IntSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsIntSeqExpr {
+        IntSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class IntSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntSeqExpr {
+        IntSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class IntCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntExpr {
+        IntCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsIntegerSeqExpr integerSeq(XsIntegerExpr... items) {
+        return new IntegerSeqListImpl(items);
+    }
+    static class IntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerSeqExpr {
+        IntegerSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class IntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerSeqExpr {
+        IntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class IntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsIntegerExpr {
+        IntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsLanguageSeqExpr languageSeq(XsLanguageExpr... items) {
+        return new LanguageSeqListImpl(items);
+    }
+    static class LanguageSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageSeqExpr {
+        LanguageSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class LanguageSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageSeqExpr {
+        LanguageSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class LanguageCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLanguageExpr {
+        LanguageCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsLongSeqExpr longExprSeq(XsLongExpr... items) {
+        return new LongSeqListImpl(items);
+    }
+    static class LongSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsLongSeqExpr {
+        LongSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class LongSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLongSeqExpr {
+        LongSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class LongCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsLongExpr {
+        LongCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNameSeqExpr nameSeq(XsNameExpr... items) {
+        return new NameSeqListImpl(items);
+    }
+    static class NameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNameSeqExpr {
+        NameSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNameSeqExpr {
+        NameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNameExpr {
+        NameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNCNameSeqExpr NCNameSeq(XsNCNameExpr... items) {
+        return new NCNameSeqListImpl(items);
+    }
+    static class NCNameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameSeqExpr {
+        NCNameSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NCNameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameSeqExpr {
+        NCNameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NCNameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNCNameExpr {
+        NCNameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNegativeIntegerSeqExpr negativeIntegerSeq(XsNegativeIntegerExpr... items) {
+        return new NegativeIntegerSeqListImpl(items);
+    }
+    static class NegativeIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerSeqExpr {
+        NegativeIntegerSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NegativeIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerSeqExpr {
+        NegativeIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NegativeIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNegativeIntegerExpr {
+        NegativeIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNMTOKENSeqExpr NMTOKENSeq(XsNMTOKENExpr... items) {
+        return new NMTOKENSeqListImpl(items);
+    }
+    static class NMTOKENSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENSeqExpr {
+        NMTOKENSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NMTOKENSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENSeqExpr {
+        NMTOKENSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NMTOKENCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNMTOKENExpr {
+        NMTOKENCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNonNegativeIntegerSeqExpr nonNegativeIntegerSeq(XsNonNegativeIntegerExpr... items) {
+        return new NonNegativeIntegerSeqListImpl(items);
+    }
+    static class NonNegativeIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerSeqExpr {
+        NonNegativeIntegerSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NonNegativeIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerSeqExpr {
+        NonNegativeIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NonNegativeIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonNegativeIntegerExpr {
+        NonNegativeIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNonPositiveIntegerSeqExpr nonPositiveIntegerSeq(XsNonPositiveIntegerExpr... items) {
+        return new NonPositiveIntegerSeqListImpl(items);
+    }
+    static class NonPositiveIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerSeqExpr {
+        NonPositiveIntegerSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NonPositiveIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerSeqExpr {
+        NonPositiveIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NonPositiveIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNonPositiveIntegerExpr {
+        NonPositiveIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNormalizedStringSeqExpr normalizedStringSeq(XsNormalizedStringExpr... items) {
+        return new NormalizedStringSeqListImpl(items);
+    }
+    static class NormalizedStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringSeqExpr {
+        NormalizedStringSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NormalizedStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringSeqExpr {
+        NormalizedStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NormalizedStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNormalizedStringExpr {
+        NormalizedStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsNumericSeqExpr numericSeq(XsNumericExpr... items) {
+        return new NumericSeqListImpl(items);
+    }
+    static class NumericSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericSeqExpr {
+        NumericSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class NumericSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericSeqExpr {
+        NumericSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class NumericCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsNumericExpr {
+        NumericCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsPositiveIntegerSeqExpr positiveIntegerSeq(XsPositiveIntegerExpr... items) {
+        return new PositiveIntegerSeqListImpl(items);
+    }
+    static class PositiveIntegerSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerSeqExpr {
+        PositiveIntegerSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class PositiveIntegerSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerSeqExpr {
+        PositiveIntegerSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class PositiveIntegerCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsPositiveIntegerExpr {
+        PositiveIntegerCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsQNameSeqExpr QNameSeq(XsQNameExpr... items) {
+        return new QNameSeqListImpl(items);
+    }
+    static class QNameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameSeqExpr {
+        QNameSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class QNameSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameSeqExpr {
+        QNameSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class QNameCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsQNameExpr {
+        QNameCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsShortSeqExpr shortExprSeq(XsShortExpr... items) {
+        return new ShortSeqListImpl(items);
+    }
+    static class ShortSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsShortSeqExpr {
+        ShortSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class ShortSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsShortSeqExpr {
+        ShortSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class ShortCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsShortExpr {
+        ShortCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsStringSeqExpr stringSeq(XsStringExpr... items) {
+        return new StringSeqListImpl(items);
+    }
+    static class StringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsStringSeqExpr {
+        StringSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class StringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsStringSeqExpr {
+        StringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class StringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsStringExpr {
+        StringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsTimeSeqExpr timeSeq(XsTimeExpr... items) {
+        return new TimeSeqListImpl(items);
+    }
+    static class TimeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeSeqExpr {
+        TimeSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class TimeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeSeqExpr {
+        TimeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class TimeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTimeExpr {
+        TimeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsTokenSeqExpr tokenSeq(XsTokenExpr... items) {
+        return new TokenSeqListImpl(items);
+    }
+    static class TokenSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenSeqExpr {
+        TokenSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class TokenSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenSeqExpr {
+        TokenSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class TokenCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsTokenExpr {
+        TokenCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsUnsignedByteSeqExpr unsignedByteSeq(XsUnsignedByteExpr... items) {
+        return new UnsignedByteSeqListImpl(items);
+    }
+    static class UnsignedByteSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteSeqExpr {
+        UnsignedByteSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class UnsignedByteSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteSeqExpr {
+        UnsignedByteSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class UnsignedByteCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedByteExpr {
+        UnsignedByteCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsUnsignedIntSeqExpr unsignedIntSeq(XsUnsignedIntExpr... items) {
+        return new UnsignedIntSeqListImpl(items);
+    }
+    static class UnsignedIntSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntSeqExpr {
+        UnsignedIntSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class UnsignedIntSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntSeqExpr {
+        UnsignedIntSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class UnsignedIntCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedIntExpr {
+        UnsignedIntCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsUnsignedLongSeqExpr unsignedLongSeq(XsUnsignedLongExpr... items) {
+        return new UnsignedLongSeqListImpl(items);
+    }
+    static class UnsignedLongSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongSeqExpr {
+        UnsignedLongSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class UnsignedLongSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongSeqExpr {
+        UnsignedLongSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class UnsignedLongCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedLongExpr {
+        UnsignedLongCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsUnsignedShortSeqExpr unsignedShortSeq(XsUnsignedShortExpr... items) {
+        return new UnsignedShortSeqListImpl(items);
+    }
+    static class UnsignedShortSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortSeqExpr {
+        UnsignedShortSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class UnsignedShortSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortSeqExpr {
+        UnsignedShortSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class UnsignedShortCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUnsignedShortExpr {
+        UnsignedShortCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsUntypedAtomicSeqExpr untypedAtomicSeq(XsUntypedAtomicExpr... items) {
+        return new UntypedAtomicSeqListImpl(items);
+    }
+    static class UntypedAtomicSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicSeqExpr {
+        UntypedAtomicSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class UntypedAtomicSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicSeqExpr {
+        UntypedAtomicSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class UntypedAtomicCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsUntypedAtomicExpr {
+        UntypedAtomicCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public XsYearMonthDurationSeqExpr yearMonthDurationSeq(XsYearMonthDurationExpr... items) {
+        return new YearMonthDurationSeqListImpl(items);
+    }
+    static class YearMonthDurationSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationSeqExpr {
+        YearMonthDurationSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class YearMonthDurationSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationSeqExpr {
+        YearMonthDurationSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class YearMonthDurationCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements XsYearMonthDurationExpr {
+        YearMonthDurationCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+
+    }

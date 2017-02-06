@@ -15,52 +15,60 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.type.XsStringExpr;
+
+import com.marklogic.client.type.RdfLangStringExpr;
+import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 import com.marklogic.client.expression.RdfExpr;
-import com.marklogic.client.type.RdfLangStringExpr;
- import com.marklogic.client.type.RdfLangStringSeqExpr;
- import com.marklogic.client.type.XsStringExpr;
-
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
+class RdfExprImpl extends RdfValueImpl implements RdfExpr {
 
-public class RdfExprImpl extends RdfValueImpl implements RdfExpr {
-    private XsExprImpl xs = null;
-    public RdfExprImpl(XsExprImpl xs) {
-        this.xs = xs;
-    }
-     @Override
-        public RdfLangStringExpr langString(XsStringExpr string, String lang) {
-        return langString(string, xs.string(lang)); 
-    }
-    @Override
-        public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
-        return new RdfExprImpl.RdfLangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
-    }
-    @Override
-        public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
-        return new XsExprImpl.XsStringCallImpl("rdf", "langString-language", new Object[]{ val });
-    }     @Override
-    public RdfLangStringSeqExpr langString(RdfLangStringExpr... items) {
-        return new RdfLangStringSeqListImpl(items);
-    }
-        static class RdfLangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
-            RdfLangStringSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class RdfLangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
-            RdfLangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class RdfLangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringExpr {
-            RdfLangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
+    final static XsExprImpl xs = XsExprImpl.xs;
 
-}
+    final static RdfExprImpl rdf = new RdfExprImpl();
+
+    RdfExprImpl() {
+    }
+
+    
+    @Override
+    public RdfLangStringExpr langString(XsStringExpr string, String lang) {
+        return langString(string, (lang == null) ? (XsStringExpr) null : xs.string(lang));
+    }
+
+    
+    @Override
+    public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
+        return new LangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
+    }
+
+    
+    @Override
+    public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
+        return new XsExprImpl.StringCallImpl("rdf", "langString-language", new Object[]{ val });
+    }
+
+    @Override
+    public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items) {
+        return new LangStringSeqListImpl(items);
+    }
+    static class LangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+        LangStringSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class LangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+        LangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class LangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringExpr {
+        LangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+
+    }

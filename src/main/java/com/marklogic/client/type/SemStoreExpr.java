@@ -15,5 +15,5 @@
  */
 package com.marklogic.client.type;
 
-public interface SemStoreExpr extends SemStoreSeqExpr {
+public interface SemStoreExpr extends SemStoreSeqExpr, PlanRowFilter {
 }

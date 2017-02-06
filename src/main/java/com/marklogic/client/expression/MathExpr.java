@@ -16,17 +16,18 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.JsonArraySeqExpr;
- import com.marklogic.client.type.MathLinearModelExpr;
- import com.marklogic.client.type.MathLinearModelSeqExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.XsDoubleSeqExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.JsonArraySeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
+import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDoubleSeqExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
 
+import com.marklogic.client.type.MathLinearModelExpr;
+import com.marklogic.client.type.MathLinearModelSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface MathExpr {
@@ -49,6 +50,7 @@ public interface MathExpr {
     public XsDoubleExpr fmod(XsDoubleExpr x, double y);
     public XsDoubleExpr fmod(XsDoubleExpr x, XsDoubleExpr y);
     public ItemSeqExpr frexp(XsDoubleExpr x);
+    public XsDoubleExpr ldexp(XsDoubleExpr y, long i);
     public XsDoubleExpr ldexp(XsDoubleExpr y, XsIntegerExpr i);
     public MathLinearModelExpr linearModel(JsonArraySeqExpr arg);
     public XsDoubleSeqExpr linearModelCoeff(MathLinearModelExpr linearModel);
@@ -61,16 +63,19 @@ public interface MathExpr {
     public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, String options);
     public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, XsStringSeqExpr options);
     public XsDoubleSeqExpr modf(XsDoubleExpr x);
+    public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value);
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value);
-    public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value, String options);
+    public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value, String options);
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value, XsStringSeqExpr options);
+    public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, double p);
     public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, XsDoubleSeqExpr p);
     public XsDoubleExpr pi();
     public XsDoubleExpr pow(XsDoubleExpr x, double y);
     public XsDoubleExpr pow(XsDoubleExpr x, XsDoubleExpr y);
     public XsDoubleExpr radians(XsDoubleExpr x);
+    public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2);
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2);
-    public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2, String options);
+    public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2, String options);
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2, XsStringSeqExpr options);
     public XsDoubleExpr sin(XsDoubleExpr x);
     public XsDoubleExpr sinh(XsDoubleExpr x);
@@ -80,8 +85,10 @@ public interface MathExpr {
     public XsDoubleExpr tan(XsDoubleExpr x);
     public XsDoubleExpr tanh(XsDoubleExpr x);
     public XsNumericExpr trunc(XsNumericExpr arg);
+    public XsNumericExpr trunc(XsNumericExpr arg, long n);
     public XsNumericExpr trunc(XsNumericExpr arg, XsIntegerExpr n);
     public XsDoubleExpr variance(XsDoubleSeqExpr arg);
-    public XsDoubleExpr varianceP(XsDoubleSeqExpr arg);     public MathLinearModelSeqExpr linearModel(MathLinearModelExpr... items);
+    public XsDoubleExpr varianceP(XsDoubleSeqExpr arg);
+    public MathLinearModelSeqExpr linearModelSeq(MathLinearModelExpr... items);
 
 }

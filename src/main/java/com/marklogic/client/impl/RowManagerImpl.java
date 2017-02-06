@@ -60,7 +60,8 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.PlanParamBindingVal;
+import com.marklogic.client.type.PlanParamExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.util.RequestParameters;
 
@@ -86,14 +87,7 @@ public class RowManagerImpl
 
 	@Override
 	public PlanBuilder newPlanBuilder() {
-		XsExprImpl xs = new XsExprImpl();
-
-		PlanBuilderImpl planBuilder = new PlanBuilderImpl(
-				new CtsExprImpl(xs),  new FnExprImpl(xs),    new JsonExprImpl(xs),
-				new MapExprImpl(xs),  new MathExprImpl(xs),  new RdfExprImpl(xs),
-				new SemExprImpl(xs),  new SpellExprImpl(xs), new SqlExprImpl(xs),
-				new XdmpExprImpl(xs), xs
-				);
+		PlanBuilderImpl planBuilder = new PlanBuilderSubImpl();
 
 		planBuilder.setHandleRegistry(getHandleRegistry());
 
@@ -132,7 +126,7 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends StructureReadHandle> T resultDoc(Plan plan, T resultsHandle, Transaction transaction) {
-		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
+		PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
 
@@ -187,7 +181,7 @@ public class RowManagerImpl
 
 	@Override
 	public <T extends StructureReadHandle> T explain(Plan plan, T resultsHandle) {		
-		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
+		PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
 
@@ -233,7 +227,7 @@ public class RowManagerImpl
 		}
 	}
 	private RESTServiceResultIterator makeRequest(Plan plan, String rowFormat, String nodeCols, Transaction transaction) {
-		PlanBuilderBase.RequestPlan requestPlan = checkPlan(plan);
+		PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
 
@@ -247,21 +241,21 @@ public class RowManagerImpl
 // QUESTION: outputMimetypes a noop?
 		return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
 	}
-	private PlanBuilderBase.RequestPlan checkPlan(Plan plan) {
+	private PlanBuilderBaseImpl.RequestPlan checkPlan(Plan plan) {
 		if (plan == null) {
 			throw new IllegalArgumentException("Must specify a plan to produce row results");
-		} else if (!(plan instanceof PlanBuilderBase.RequestPlan)) {
+		} else if (!(plan instanceof PlanBuilderBaseImpl.RequestPlan)) {
 			throw new IllegalArgumentException(
 				"Cannot produce rows with invalid plan having class "+plan.getClass().getName()
 				);
 		}
-		return (PlanBuilderBase.RequestPlan) plan;
+		return (PlanBuilderBaseImpl.RequestPlan) plan;
 	}
-	private RequestParameters getParamBindings(PlanBuilderBase.RequestPlan requestPlan) {
+	private RequestParameters getParamBindings(PlanBuilderBaseImpl.RequestPlan requestPlan) {
 		RequestParameters params = new RequestParameters();
-		Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> planParams = requestPlan.getParams();
+		Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> planParams = requestPlan.getParams();
 		if (planParams != null) {
-			for (Map.Entry<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> entry: planParams.entrySet()) {
+			for (Map.Entry<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> entry: planParams.entrySet()) {
 				BaseTypeImpl.ParamBinder binder = entry.getValue();
 
 				StringBuilder nameBuf = new StringBuilder("bind:");
@@ -982,53 +976,53 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 			return content;
 		}
 	}
-	static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBase.RequestPlan {
-		private Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
+	static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBaseImpl.RequestPlan {
+		private Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
 		private JSONWriteHandle handle = null;
 		RawPlanDefinitionImpl(JSONWriteHandle handle) {
 			setHandle(handle);
 		}
 
 		@Override
-		public Map<PlanBuilderBase.PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
+		public Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
 	    	return params;
 	    }
 
 	    @Override
-	    public Plan bindParam(PlanParam param, boolean literal) {
+	    public Plan bindParam(PlanParamExpr param, boolean literal) {
 	    	return bindParam(param, new XsValueImpl.BooleanValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, byte literal) {
+	    public Plan bindParam(PlanParamExpr param, byte literal) {
 	    	return bindParam(param, new XsValueImpl.ByteValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, double literal) {
+	    public Plan bindParam(PlanParamExpr param, double literal) {
 	    	return bindParam(param, new XsValueImpl.DoubleValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, float literal) {
+	    public Plan bindParam(PlanParamExpr param, float literal) {
 	    	return bindParam(param, new XsValueImpl.FloatValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, int literal) {
+	    public Plan bindParam(PlanParamExpr param, int literal) {
 	    	return bindParam(param, new XsValueImpl.IntValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, long literal) {
+	    public Plan bindParam(PlanParamExpr param, long literal) {
 	    	return bindParam(param, new XsValueImpl.LongValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, short literal) {
+	    public Plan bindParam(PlanParamExpr param, short literal) {
 	    	return bindParam(param, new XsValueImpl.ShortValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, String literal) {
+	    public Plan bindParam(PlanParamExpr param, String literal) {
 	    	return bindParam(param, new XsValueImpl.StringValImpl(literal));
 	    }
 	    @Override
-	    public Plan bindParam(PlanParam param, XsAnyAtomicTypeVal literal) {
-	    	if (!(param instanceof PlanBuilderBase.PlanParamBase)) {
+	    public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
+	    	if (!(param instanceof PlanBuilderBaseImpl.PlanParamBase)) {
 	    		throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
 	    	}
 	    	if (!(literal instanceof XsValueImpl.AnyAtomicTypeValImpl)) {
@@ -1037,7 +1031,7 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 	    	if (params == null) {
 	    		params = new HashMap<>();
 	    	}
-	    	params.put((PlanBuilderBase.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
+	    	params.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
 // TODO: return clone with param for immutability
 	    	return this;
 		}

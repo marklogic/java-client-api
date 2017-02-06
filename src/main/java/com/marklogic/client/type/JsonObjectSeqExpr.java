@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface JsonObjectSeqExpr extends ItemSeqExpr {
+public interface JsonObjectSeqExpr extends MapMapSeqExpr {
 }

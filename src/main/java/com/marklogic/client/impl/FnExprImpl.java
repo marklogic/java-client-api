@@ -15,717 +15,1219 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.type.ElementNodeExpr;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.NodeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
+import com.marklogic.client.type.XsAnyURIExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsDateExpr;
+import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsDayTimeDurationExpr;
+import com.marklogic.client.type.XsDecimalExpr;
+import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDurationExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+import com.marklogic.client.type.XsIntegerSeqExpr;
+import com.marklogic.client.type.XsNCNameExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsNumericSeqExpr;
+import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsTimeExpr;
+
+
 
 import com.marklogic.client.expression.FnExpr;
-import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.ItemExpr;
- import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.NodeExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeExpr;
- import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
- import com.marklogic.client.type.XsAnyURIExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsDateExpr;
- import com.marklogic.client.type.XsDateTimeExpr;
- import com.marklogic.client.type.XsDayTimeDurationExpr;
- import com.marklogic.client.type.XsDecimalExpr;
- import com.marklogic.client.type.XsDoubleExpr;
- import com.marklogic.client.type.XsDurationExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsIntegerSeqExpr;
- import com.marklogic.client.type.XsNCNameExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsNumericSeqExpr;
- import com.marklogic.client.type.XsQNameExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsTimeExpr;
-
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
+class FnExprImpl implements FnExpr {
 
-public class FnExprImpl implements FnExpr {
-    private XsExprImpl xs = null;
-    public FnExprImpl(XsExprImpl xs) {
-        this.xs = xs;
+    final static XsExprImpl xs = XsExprImpl.xs;
+
+    final static FnExprImpl fn = new FnExprImpl();
+
+    FnExprImpl() {
     }
-     @Override
-        public XsNumericExpr abs(XsNumericExpr arg) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "abs", new Object[]{ arg });
-    }
+
+    
     @Override
-        public XsDateExpr adjustDateToTimezone(XsDateExpr arg) {
-        return new XsExprImpl.XsDateCallImpl("fn", "adjust-date-to-timezone", new Object[]{ arg });
+    public XsNumericExpr abs(XsNumericExpr arg) {
+        return new XsExprImpl.NumericCallImpl("fn", "abs", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDateExpr adjustDateToTimezone(XsDateExpr arg, XsDayTimeDurationExpr timezone) {
-        return new XsExprImpl.XsDateCallImpl("fn", "adjust-date-to-timezone", new Object[]{ arg, timezone });
+    public XsDateExpr adjustDateToTimezone(XsDateExpr arg) {
+        return new XsExprImpl.DateCallImpl("fn", "adjust-date-to-timezone", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDateTimeExpr adjustDateTimeToTimezone(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsDateTimeCallImpl("fn", "adjust-dateTime-to-timezone", new Object[]{ arg });
+    public XsDateExpr adjustDateToTimezone(XsDateExpr arg, String timezone) {
+        return adjustDateToTimezone(arg, (timezone == null) ? (XsDayTimeDurationExpr) null : xs.dayTimeDuration(timezone));
     }
+
+    
     @Override
-        public XsDateTimeExpr adjustDateTimeToTimezone(XsDateTimeExpr arg, XsDayTimeDurationExpr timezone) {
-        return new XsExprImpl.XsDateTimeCallImpl("fn", "adjust-dateTime-to-timezone", new Object[]{ arg, timezone });
+    public XsDateExpr adjustDateToTimezone(XsDateExpr arg, XsDayTimeDurationExpr timezone) {
+        return new XsExprImpl.DateCallImpl("fn", "adjust-date-to-timezone", new Object[]{ arg, timezone });
     }
+
+    
     @Override
-        public XsTimeExpr adjustTimeToTimezone(XsTimeExpr arg) {
-        return new XsExprImpl.XsTimeCallImpl("fn", "adjust-time-to-timezone", new Object[]{ arg });
+    public XsDateTimeExpr adjustDateTimeToTimezone(XsDateTimeExpr arg) {
+        return new XsExprImpl.DateTimeCallImpl("fn", "adjust-dateTime-to-timezone", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsTimeExpr adjustTimeToTimezone(XsTimeExpr arg, XsDayTimeDurationExpr timezone) {
-        return new XsExprImpl.XsTimeCallImpl("fn", "adjust-time-to-timezone", new Object[]{ arg, timezone });
+    public XsDateTimeExpr adjustDateTimeToTimezone(XsDateTimeExpr arg, String timezone) {
+        return adjustDateTimeToTimezone(arg, (timezone == null) ? (XsDayTimeDurationExpr) null : xs.dayTimeDuration(timezone));
     }
+
+    
     @Override
-        public ElementNodeExpr analyzeString(XsStringExpr in, String regex) {
-        return analyzeString(in, xs.string(regex)); 
+    public XsDateTimeExpr adjustDateTimeToTimezone(XsDateTimeExpr arg, XsDayTimeDurationExpr timezone) {
+        return new XsExprImpl.DateTimeCallImpl("fn", "adjust-dateTime-to-timezone", new Object[]{ arg, timezone });
     }
+
+    
     @Override
-        public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
+    public XsTimeExpr adjustTimeToTimezone(XsTimeExpr arg) {
+        return new XsExprImpl.TimeCallImpl("fn", "adjust-time-to-timezone", new Object[]{ arg });
+    }
+
+    
+    @Override
+    public XsTimeExpr adjustTimeToTimezone(XsTimeExpr arg, String timezone) {
+        return adjustTimeToTimezone(arg, (timezone == null) ? (XsDayTimeDurationExpr) null : xs.dayTimeDuration(timezone));
+    }
+
+    
+    @Override
+    public XsTimeExpr adjustTimeToTimezone(XsTimeExpr arg, XsDayTimeDurationExpr timezone) {
+        return new XsExprImpl.TimeCallImpl("fn", "adjust-time-to-timezone", new Object[]{ arg, timezone });
+    }
+
+    
+    @Override
+    public ElementNodeExpr analyzeString(String in, String regex) {
+        return analyzeString((in == null) ? (XsStringExpr) null : xs.string(in), (regex == null) ? (XsStringExpr) null : xs.string(regex));
+    }
+
+    
+    @Override
+    public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
         return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex });
     }
+
+    
     @Override
-        public ElementNodeExpr analyzeString(XsStringExpr in, String regex, String flags) {
-        return analyzeString(in, xs.string(regex), (flags == null) ? null : xs.string(flags)); 
+    public ElementNodeExpr analyzeString(String in, String regex, String flags) {
+        return analyzeString((in == null) ? (XsStringExpr) null : xs.string(in), (regex == null) ? (XsStringExpr) null : xs.string(regex), (flags == null) ? (XsStringExpr) null : xs.string(flags));
     }
+
+    
     @Override
-        public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
+    public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
         return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex, flags });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr avg(XsAnyAtomicTypeSeqExpr arg) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "avg", new Object[]{ arg });
+    public XsAnyAtomicTypeExpr avg(XsAnyAtomicTypeSeqExpr arg) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "avg", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyURIExpr baseUri(NodeExpr arg) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "base-uri", new Object[]{ arg });
+    public XsAnyURIExpr baseUri(NodeExpr arg) {
+        return new XsExprImpl.AnyURICallImpl("fn", "base-uri", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr booleanExpr(ItemSeqExpr arg) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "boolean", new Object[]{ arg });
+    public XsBooleanExpr booleanExpr(ItemSeqExpr arg) {
+        return new XsExprImpl.BooleanCallImpl("fn", "boolean", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsNumericExpr ceiling(XsNumericExpr arg) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "ceiling", new Object[]{ arg });
+    public XsNumericExpr ceiling(XsNumericExpr arg) {
+        return new XsExprImpl.NumericCallImpl("fn", "ceiling", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr codepointEqual(XsStringExpr comparand1, String comparand2) {
-        return codepointEqual(comparand1, xs.string(comparand2)); 
+    public XsBooleanExpr codepointEqual(XsStringExpr comparand1, String comparand2) {
+        return codepointEqual(comparand1, (comparand2 == null) ? (XsStringExpr) null : xs.string(comparand2));
     }
+
+    
     @Override
-        public XsBooleanExpr codepointEqual(XsStringExpr comparand1, XsStringExpr comparand2) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "codepoint-equal", new Object[]{ comparand1, comparand2 });
+    public XsBooleanExpr codepointEqual(XsStringExpr comparand1, XsStringExpr comparand2) {
+        return new XsExprImpl.BooleanCallImpl("fn", "codepoint-equal", new Object[]{ comparand1, comparand2 });
     }
+
+    
     @Override
-        public XsStringExpr codepointsToString(XsIntegerSeqExpr arg) {
-        return new XsExprImpl.XsStringCallImpl("fn", "codepoints-to-string", new Object[]{ arg });
+    public XsStringExpr codepointsToString(XsIntegerSeqExpr arg) {
+        return new XsExprImpl.StringCallImpl("fn", "codepoints-to-string", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr compare(XsStringExpr comparand1, String comparand2) {
-        return compare(comparand1, xs.string(comparand2)); 
+    public XsIntegerExpr compare(XsStringExpr comparand1, String comparand2) {
+        return compare(comparand1, (comparand2 == null) ? (XsStringExpr) null : xs.string(comparand2));
     }
+
+    
     @Override
-        public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "compare", new Object[]{ comparand1, comparand2 });
+    public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2) {
+        return new XsExprImpl.IntegerCallImpl("fn", "compare", new Object[]{ comparand1, comparand2 });
     }
+
+    
     @Override
-        public XsIntegerExpr compare(XsStringExpr comparand1, String comparand2, String collation) {
-        return compare(comparand1, xs.string(comparand2), (collation == null) ? null : xs.string(collation)); 
+    public XsIntegerExpr compare(XsStringExpr comparand1, String comparand2, String collation) {
+        return compare(comparand1, (comparand2 == null) ? (XsStringExpr) null : xs.string(comparand2), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2, XsStringExpr collation) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "compare", new Object[]{ comparand1, comparand2, collation });
+    public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2, XsStringExpr collation) {
+        return new XsExprImpl.IntegerCallImpl("fn", "compare", new Object[]{ comparand1, comparand2, collation });
     }
+
+    
     @Override
-        public XsStringExpr concat(XsAnyAtomicTypeExpr... parameter1) {
-        return new XsExprImpl.XsStringCallImpl("fn", "concat", parameter1);
+    public XsStringExpr concat(XsAnyAtomicTypeExpr... parameter1) {
+        return new XsExprImpl.StringCallImpl("fn", "concat", parameter1);
     }
+
+    
     @Override
-        public XsIntegerExpr count(ItemSeqExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "count", new Object[]{ arg });
+    public XsBooleanExpr contains(XsStringExpr parameter1, String parameter2) {
+        return contains(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2));
     }
+
+    
     @Override
-        public XsIntegerExpr count(ItemSeqExpr arg, double maximum) {
-        return count(arg, xs.doubleVal(maximum)); 
+    public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2) {
+        return new XsExprImpl.BooleanCallImpl("fn", "contains", new Object[]{ parameter1, parameter2 });
     }
+
+    
     @Override
-        public XsIntegerExpr count(ItemSeqExpr arg, XsDoubleExpr maximum) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "count", new Object[]{ arg, maximum });
+    public XsBooleanExpr contains(XsStringExpr parameter1, String parameter2, String collation) {
+        return contains(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
+    @Override
+    public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        return new XsExprImpl.BooleanCallImpl("fn", "contains", new Object[]{ parameter1, parameter2, collation });
+    }
+
+    
+    @Override
+    public XsIntegerExpr count(ItemSeqExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "count", new Object[]{ arg });
+    }
+
+    
+    @Override
+    public XsIntegerExpr count(ItemSeqExpr arg, double maximum) {
+        return count(arg, xs.doubleVal(maximum));
+    }
+
+    
+    @Override
+    public XsIntegerExpr count(ItemSeqExpr arg, XsDoubleExpr maximum) {
+        return new XsExprImpl.IntegerCallImpl("fn", "count", new Object[]{ arg, maximum });
+    }
+
+    
     @Override
     public XsDateExpr currentDate() {
-        return new XsExprImpl.XsDateCallImpl("fn", "current-date", null);
+        return new XsExprImpl.DateCallImpl("fn", "current-date", new Object[]{  });
     }
+
+    
     @Override
     public XsDateTimeExpr currentDateTime() {
-        return new XsExprImpl.XsDateTimeCallImpl("fn", "current-dateTime", null);
+        return new XsExprImpl.DateTimeCallImpl("fn", "current-dateTime", new Object[]{  });
     }
+
+    
     @Override
     public XsTimeExpr currentTime() {
-        return new XsExprImpl.XsTimeCallImpl("fn", "current-time", null);
+        return new XsExprImpl.TimeCallImpl("fn", "current-time", new Object[]{  });
     }
+
+    
     @Override
-        public XsBooleanExpr contains(XsStringExpr parameter1, String parameter2) {
-        return contains(parameter1, xs.string(parameter2)); 
+    public XsIntegerExpr dayFromDate(XsDateExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "day-from-date", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "contains", new Object[]{ parameter1, parameter2 });
+    public XsIntegerExpr dayFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "day-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr contains(XsStringExpr parameter1, String parameter2, String collation) {
-        return contains(parameter1, xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
+    public XsIntegerExpr daysFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "days-from-duration", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "contains", new Object[]{ parameter1, parameter2, collation });
+    public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2) {
+        return new XsExprImpl.BooleanCallImpl("fn", "deep-equal", new Object[]{ parameter1, parameter2 });
     }
+
+    
     @Override
-        public XsIntegerExpr dayFromDate(XsDateExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "day-from-date", new Object[]{ arg });
+    public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, String collation) {
+        return deepEqual(parameter1, parameter2, (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsIntegerExpr dayFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "day-from-dateTime", new Object[]{ arg });
+    public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, XsStringExpr collation) {
+        return new XsExprImpl.BooleanCallImpl("fn", "deep-equal", new Object[]{ parameter1, parameter2, collation });
     }
-    @Override
-        public XsIntegerExpr daysFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "days-from-duration", new Object[]{ arg });
-    }
-    @Override
-        public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "deep-equal", new Object[]{ parameter1, parameter2 });
-    }
-    @Override
-        public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, String collation) {
-        return deepEqual(parameter1, parameter2, (collation == null) ? null : xs.string(collation)); 
-    }
-    @Override
-        public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, XsStringExpr collation) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "deep-equal", new Object[]{ parameter1, parameter2, collation });
-    }
+
+    
     @Override
     public XsStringExpr defaultCollation() {
-        return new XsExprImpl.XsStringCallImpl("fn", "default-collation", null);
+        return new XsExprImpl.StringCallImpl("fn", "default-collation", new Object[]{  });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg) {
-        return new XsExprImpl.XsAnyAtomicTypeSeqCallImpl("fn", "distinct-values", new Object[]{ arg });
+    public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg) {
+        return new XsExprImpl.AnyAtomicTypeSeqCallImpl("fn", "distinct-values", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return distinctValues(arg, (collation == null) ? null : xs.string(collation)); 
+    public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, String collation) {
+        return distinctValues(arg, (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
-        return new XsExprImpl.XsAnyAtomicTypeSeqCallImpl("fn", "distinct-values", new Object[]{ arg, collation });
+    public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        return new XsExprImpl.AnyAtomicTypeSeqCallImpl("fn", "distinct-values", new Object[]{ arg, collation });
     }
+
+    
     @Override
-        public XsAnyURIExpr documentUri(NodeExpr arg) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "document-uri", new Object[]{ arg });
+    public XsAnyURIExpr documentUri(NodeExpr arg) {
+        return new XsExprImpl.AnyURICallImpl("fn", "document-uri", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr empty(ItemSeqExpr arg) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "empty", new Object[]{ arg });
+    public XsBooleanExpr empty(ItemSeqExpr arg) {
+        return new XsExprImpl.BooleanCallImpl("fn", "empty", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr encodeForUri(XsStringExpr uriPart) {
-        return new XsExprImpl.XsStringCallImpl("fn", "encode-for-uri", new Object[]{ uriPart });
+    public XsStringExpr encodeForUri(XsStringExpr uriPart) {
+        return new XsExprImpl.StringCallImpl("fn", "encode-for-uri", new Object[]{ uriPart });
     }
+
+    
     @Override
-        public XsBooleanExpr endsWith(XsStringExpr parameter1, String parameter2) {
-        return endsWith(parameter1, xs.string(parameter2)); 
+    public XsBooleanExpr endsWith(XsStringExpr parameter1, String parameter2) {
+        return endsWith(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2));
     }
+
+    
     @Override
-        public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "ends-with", new Object[]{ parameter1, parameter2 });
+    public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
+        return new XsExprImpl.BooleanCallImpl("fn", "ends-with", new Object[]{ parameter1, parameter2 });
     }
+
+    
     @Override
-        public XsBooleanExpr endsWith(XsStringExpr parameter1, String parameter2, String collation) {
-        return endsWith(parameter1, xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
+    public XsBooleanExpr endsWith(XsStringExpr parameter1, String parameter2, String collation) {
+        return endsWith(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "ends-with", new Object[]{ parameter1, parameter2, collation });
+    public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        return new XsExprImpl.BooleanCallImpl("fn", "ends-with", new Object[]{ parameter1, parameter2, collation });
     }
+
+    
     @Override
-        public XsStringExpr escapeHtmlUri(XsStringExpr uriPart) {
-        return new XsExprImpl.XsStringCallImpl("fn", "escape-html-uri", new Object[]{ uriPart });
+    public XsStringExpr escapeHtmlUri(XsStringExpr uriPart) {
+        return new XsExprImpl.StringCallImpl("fn", "escape-html-uri", new Object[]{ uriPart });
     }
+
+    
     @Override
-        public XsBooleanExpr exists(ItemSeqExpr arg) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "exists", new Object[]{ arg });
+    public XsBooleanExpr exists(ItemSeqExpr arg) {
+        return new XsExprImpl.BooleanCallImpl("fn", "exists", new Object[]{ arg });
     }
+
+    
     @Override
     public XsBooleanExpr falseExpr() {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "false", null);
+        return new XsExprImpl.BooleanCallImpl("fn", "false", new Object[]{  });
     }
+
+    
     @Override
-        public XsNumericExpr floor(XsNumericExpr arg) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "floor", new Object[]{ arg });
+    public XsNumericExpr floor(XsNumericExpr arg) {
+        return new XsExprImpl.NumericCallImpl("fn", "floor", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr formatDate(XsDateExpr value, String picture) {
-        return formatDate(value, xs.string(picture)); 
+    public XsStringExpr formatDate(XsDateExpr value, String picture) {
+        return formatDate(value, (picture == null) ? (XsStringExpr) null : xs.string(picture));
     }
+
+    
     @Override
-        public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture) {
-        return new XsExprImpl.XsStringCallImpl("fn", "format-date", new Object[]{ value, picture });
+    public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture) {
+        return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture });
     }
+
+    
     @Override
-        public XsStringExpr formatDateTime(XsDateTimeExpr value, String picture) {
-        return formatDateTime(value, xs.string(picture)); 
+    public XsStringExpr formatDate(XsDateExpr value, String picture, String language) {
+        return formatDate(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language));
     }
+
+    
     @Override
-        public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture) {
-        return new XsExprImpl.XsStringCallImpl("fn", "format-dateTime", new Object[]{ value, picture });
+    public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language) {
+        return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language });
     }
+
+    
     @Override
-        public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture) {
-        return formatNumber(value, xs.string(picture)); 
+    public XsStringExpr formatDate(XsDateExpr value, String picture, String language, String calendar) {
+        return formatDate(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar));
     }
+
+    
     @Override
-        public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture) {
-        return new XsExprImpl.XsStringCallImpl("fn", "format-number", new Object[]{ value, picture });
+    public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language, calendar });
     }
+
+    
     @Override
-        public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String decimalFormatName) {
-        return formatNumber(value, xs.string(picture), (decimalFormatName == null) ? null : xs.string(decimalFormatName)); 
+    public XsStringExpr formatDate(XsDateExpr value, String picture, String language, String calendar, String country) {
+        return formatDate(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar), (country == null) ? (XsStringExpr) null : xs.string(country));
     }
+
+    
     @Override
-        public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr decimalFormatName) {
-        return new XsExprImpl.XsStringCallImpl("fn", "format-number", new Object[]{ value, picture, decimalFormatName });
+    public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language, calendar, country });
     }
+
+    
     @Override
-        public XsStringExpr formatTime(XsTimeExpr value, String picture) {
-        return formatTime(value, xs.string(picture)); 
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, String picture) {
+        return formatDateTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture));
     }
+
+    
     @Override
-        public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture) {
-        return new XsExprImpl.XsStringCallImpl("fn", "format-time", new Object[]{ value, picture });
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture) {
+        return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture });
     }
+
+    
     @Override
-        public XsStringExpr generateId(NodeExpr node) {
-        return new XsExprImpl.XsStringCallImpl("fn", "generate-id", new Object[]{ node });
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, String picture, String language) {
+        return formatDateTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language));
     }
+
+    
     @Override
-        public ItemExpr head(ItemSeqExpr arg1) {
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language) {
+        return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language });
+    }
+
+    
+    @Override
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, String picture, String language, String calendar) {
+        return formatDateTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar));
+    }
+
+    
+    @Override
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language, calendar });
+    }
+
+    
+    @Override
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, String picture, String language, String calendar, String country) {
+        return formatDateTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar), (country == null) ? (XsStringExpr) null : xs.string(country));
+    }
+
+    
+    @Override
+    public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language, calendar, country });
+    }
+
+    
+    @Override
+    public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture) {
+        return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture));
+    }
+
+    
+    @Override
+    public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture) {
+        return new XsExprImpl.StringCallImpl("fn", "format-number", new Object[]{ value, picture });
+    }
+
+    
+    @Override
+    public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String decimalFormatName) {
+        return formatNumber(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (decimalFormatName == null) ? (XsStringExpr) null : xs.string(decimalFormatName));
+    }
+
+    
+    @Override
+    public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr decimalFormatName) {
+        return new XsExprImpl.StringCallImpl("fn", "format-number", new Object[]{ value, picture, decimalFormatName });
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, String picture) {
+        return formatTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture));
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture) {
+        return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture });
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, String picture, String language) {
+        return formatTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language));
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language) {
+        return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language });
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, String picture, String language, String calendar) {
+        return formatTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar));
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language, calendar });
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, String picture, String language, String calendar, String country) {
+        return formatTime(value, (picture == null) ? (XsStringExpr) null : xs.string(picture), (language == null) ? (XsStringExpr) null : xs.string(language), (calendar == null) ? (XsStringExpr) null : xs.string(calendar), (country == null) ? (XsStringExpr) null : xs.string(country));
+    }
+
+    
+    @Override
+    public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language, calendar, country });
+    }
+
+    
+    @Override
+    public XsStringExpr generateId(NodeExpr node) {
+        return new XsExprImpl.StringCallImpl("fn", "generate-id", new Object[]{ node });
+    }
+
+    
+    @Override
+    public ItemExpr head(ItemSeqExpr arg1) {
         return new BaseTypeImpl.ItemCallImpl("fn", "head", new Object[]{ arg1 });
     }
+
+    
     @Override
-        public XsIntegerExpr hoursFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "hours-from-dateTime", new Object[]{ arg });
+    public XsIntegerExpr hoursFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "hours-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr hoursFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "hours-from-duration", new Object[]{ arg });
+    public XsIntegerExpr hoursFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "hours-from-duration", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr hoursFromTime(XsTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "hours-from-time", new Object[]{ arg });
+    public XsIntegerExpr hoursFromTime(XsTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "hours-from-time", new Object[]{ arg });
     }
+
+    
     @Override
     public XsDayTimeDurationExpr implicitTimezone() {
-        return new XsExprImpl.XsDayTimeDurationCallImpl("fn", "implicit-timezone", null);
+        return new XsExprImpl.DayTimeDurationCallImpl("fn", "implicit-timezone", new Object[]{  });
     }
+
+    
     @Override
-        public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam) {
-        return new XsExprImpl.XsIntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam });
+    public XsStringSeqExpr inScopePrefixes(ElementNodeExpr element) {
+        return new XsExprImpl.StringSeqCallImpl("fn", "in-scope-prefixes", new Object[]{ element });
     }
+
+    
     @Override
-        public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, String collationLiteral) {
-        return indexOf(seqParam, srchParam, (collationLiteral == null) ? null : xs.string(collationLiteral)); 
+    public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, String srchParam) {
+        return indexOf(seqParam, (srchParam == null) ? (XsAnyAtomicTypeExpr) null : xs.string(srchParam));
     }
+
+    
     @Override
-        public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, XsStringExpr collationLiteral) {
-        return new XsExprImpl.XsIntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam, collationLiteral });
+    public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam) {
+        return new XsExprImpl.IntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam });
     }
+
+    
     @Override
-        public XsStringSeqExpr inScopePrefixes(ElementNodeExpr element) {
-        return new XsExprImpl.XsStringSeqCallImpl("fn", "in-scope-prefixes", new Object[]{ element });
+    public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, String srchParam, String collationLiteral) {
+        return indexOf(seqParam, (srchParam == null) ? (XsAnyAtomicTypeExpr) null : xs.string(srchParam), (collationLiteral == null) ? (XsStringExpr) null : xs.string(collationLiteral));
     }
+
+    
     @Override
-        public ItemSeqExpr insertBefore(ItemSeqExpr target, XsIntegerExpr position, ItemSeqExpr inserts) {
+    public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, XsStringExpr collationLiteral) {
+        return new XsExprImpl.IntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam, collationLiteral });
+    }
+
+    
+    @Override
+    public ItemSeqExpr insertBefore(ItemSeqExpr target, long position, ItemSeqExpr inserts) {
+        return insertBefore(target, xs.integer(position), inserts);
+    }
+
+    
+    @Override
+    public ItemSeqExpr insertBefore(ItemSeqExpr target, XsIntegerExpr position, ItemSeqExpr inserts) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "insert-before", new Object[]{ target, position, inserts });
     }
+
+    
     @Override
-        public XsStringExpr iriToUri(XsStringExpr uriPart) {
-        return new XsExprImpl.XsStringCallImpl("fn", "iri-to-uri", new Object[]{ uriPart });
+    public XsStringExpr iriToUri(XsStringExpr uriPart) {
+        return new XsExprImpl.StringCallImpl("fn", "iri-to-uri", new Object[]{ uriPart });
     }
+
+    
     @Override
-        public XsBooleanExpr lang(XsStringExpr testlang, NodeExpr node) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "lang", new Object[]{ testlang, node });
+    public XsBooleanExpr lang(XsStringExpr testlang, NodeExpr node) {
+        return new XsExprImpl.BooleanCallImpl("fn", "lang", new Object[]{ testlang, node });
     }
+
+    
     @Override
-        public XsStringExpr localName(NodeExpr arg) {
-        return new XsExprImpl.XsStringCallImpl("fn", "local-name", new Object[]{ arg });
+    public XsStringExpr localName(NodeExpr arg) {
+        return new XsExprImpl.StringCallImpl("fn", "local-name", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsNCNameExpr localNameFromQName(XsQNameExpr arg) {
-        return new XsExprImpl.XsNCNameCallImpl("fn", "local-name-from-QName", new Object[]{ arg });
+    public XsNCNameExpr localNameFromQName(XsQNameExpr arg) {
+        return new XsExprImpl.NCNameCallImpl("fn", "local-name-from-QName", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr lowerCase(XsStringExpr string) {
-        return new XsExprImpl.XsStringCallImpl("fn", "lower-case", new Object[]{ string });
+    public XsStringExpr lowerCase(XsStringExpr string) {
+        return new XsExprImpl.StringCallImpl("fn", "lower-case", new Object[]{ string });
     }
+
+    
     @Override
-        public XsBooleanExpr matches(XsStringExpr input, String pattern) {
-        return matches(input, xs.string(pattern)); 
+    public XsBooleanExpr matches(XsStringExpr input, String pattern) {
+        return matches(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern));
     }
+
+    
     @Override
-        public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "matches", new Object[]{ input, pattern });
+    public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern) {
+        return new XsExprImpl.BooleanCallImpl("fn", "matches", new Object[]{ input, pattern });
     }
+
+    
     @Override
-        public XsBooleanExpr matches(XsStringExpr input, String pattern, String flags) {
-        return matches(input, xs.string(pattern), (flags == null) ? null : xs.string(flags)); 
+    public XsBooleanExpr matches(XsStringExpr input, String pattern, String flags) {
+        return matches(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern), (flags == null) ? (XsStringExpr) null : xs.string(flags));
     }
+
+    
     @Override
-        public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "matches", new Object[]{ input, pattern, flags });
+    public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
+        return new XsExprImpl.BooleanCallImpl("fn", "matches", new Object[]{ input, pattern, flags });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "max", new Object[]{ arg });
+    public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "max", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return max(arg, (collation == null) ? null : xs.string(collation)); 
+    public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, String collation) {
+        return max(arg, (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "max", new Object[]{ arg, collation });
+    public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "max", new Object[]{ arg, collation });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "min", new Object[]{ arg });
+    public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "min", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, String collation) {
-        return min(arg, (collation == null) ? null : xs.string(collation)); 
+    public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, String collation) {
+        return min(arg, (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "min", new Object[]{ arg, collation });
+    public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "min", new Object[]{ arg, collation });
     }
+
+    
     @Override
-        public XsIntegerExpr minutesFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "minutes-from-dateTime", new Object[]{ arg });
+    public XsIntegerExpr minutesFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "minutes-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr minutesFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "minutes-from-duration", new Object[]{ arg });
+    public XsIntegerExpr minutesFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "minutes-from-duration", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr minutesFromTime(XsTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "minutes-from-time", new Object[]{ arg });
+    public XsIntegerExpr minutesFromTime(XsTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "minutes-from-time", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr monthFromDate(XsDateExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "month-from-date", new Object[]{ arg });
+    public XsIntegerExpr monthFromDate(XsDateExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "month-from-date", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr monthFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "month-from-dateTime", new Object[]{ arg });
+    public XsIntegerExpr monthFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "month-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr monthsFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "months-from-duration", new Object[]{ arg });
+    public XsIntegerExpr monthsFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "months-from-duration", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr name(NodeExpr arg) {
-        return new XsExprImpl.XsStringCallImpl("fn", "name", new Object[]{ arg });
+    public XsStringExpr name(NodeExpr arg) {
+        return new XsExprImpl.StringCallImpl("fn", "name", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyURIExpr namespaceUri(NodeExpr arg) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "namespace-uri", new Object[]{ arg });
+    public XsAnyURIExpr namespaceUri(NodeExpr arg) {
+        return new XsExprImpl.AnyURICallImpl("fn", "namespace-uri", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, ElementNodeExpr element) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "namespace-uri-for-prefix", new Object[]{ prefix, element });
+    public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, ElementNodeExpr element) {
+        return new XsExprImpl.AnyURICallImpl("fn", "namespace-uri-for-prefix", new Object[]{ prefix, element });
     }
+
+    
     @Override
-        public XsAnyURIExpr namespaceUriFromQName(XsQNameExpr arg) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "namespace-uri-from-QName", new Object[]{ arg });
+    public XsAnyURIExpr namespaceUriFromQName(XsQNameExpr arg) {
+        return new XsExprImpl.AnyURICallImpl("fn", "namespace-uri-from-QName", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr nilled() {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "nilled", new Object[]{  });
+    public XsBooleanExpr nilled(NodeExpr arg) {
+        return new XsExprImpl.BooleanCallImpl("fn", "nilled", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr nilled(NodeExpr arg) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "nilled", new Object[]{ arg });
+    public XsQNameExpr nodeName(NodeExpr arg) {
+        return new XsExprImpl.QNameCallImpl("fn", "node-name", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsQNameExpr nodeName() {
-        return new XsExprImpl.XsQNameCallImpl("fn", "node-name", new Object[]{  });
+    public XsStringExpr normalizeSpace(XsStringExpr input) {
+        return new XsExprImpl.StringCallImpl("fn", "normalize-space", new Object[]{ input });
     }
+
+    
     @Override
-        public XsQNameExpr nodeName(NodeExpr arg) {
-        return new XsExprImpl.XsQNameCallImpl("fn", "node-name", new Object[]{ arg });
+    public XsStringExpr normalizeUnicode(XsStringExpr arg) {
+        return new XsExprImpl.StringCallImpl("fn", "normalize-unicode", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr normalizeSpace(XsStringExpr input) {
-        return new XsExprImpl.XsStringCallImpl("fn", "normalize-space", new Object[]{ input });
+    public XsStringExpr normalizeUnicode(XsStringExpr arg, String normalizationForm) {
+        return normalizeUnicode(arg, (normalizationForm == null) ? (XsStringExpr) null : xs.string(normalizationForm));
     }
+
+    
     @Override
-        public XsStringExpr normalizeUnicode(XsStringExpr arg) {
-        return new XsExprImpl.XsStringCallImpl("fn", "normalize-unicode", new Object[]{ arg });
+    public XsStringExpr normalizeUnicode(XsStringExpr arg, XsStringExpr normalizationForm) {
+        return new XsExprImpl.StringCallImpl("fn", "normalize-unicode", new Object[]{ arg, normalizationForm });
     }
+
+    
     @Override
-        public XsStringExpr normalizeUnicode(XsStringExpr arg, String normalizationForm) {
-        return normalizeUnicode(arg, (normalizationForm == null) ? null : xs.string(normalizationForm)); 
+    public XsBooleanExpr not(ItemSeqExpr arg) {
+        return new XsExprImpl.BooleanCallImpl("fn", "not", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr normalizeUnicode(XsStringExpr arg, XsStringExpr normalizationForm) {
-        return new XsExprImpl.XsStringCallImpl("fn", "normalize-unicode", new Object[]{ arg, normalizationForm });
+    public XsDoubleExpr number(XsAnyAtomicTypeExpr arg) {
+        return new XsExprImpl.DoubleCallImpl("fn", "number", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr not(ItemSeqExpr arg) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "not", new Object[]{ arg });
+    public XsNCNameExpr prefixFromQName(XsQNameExpr arg) {
+        return new XsExprImpl.NCNameCallImpl("fn", "prefix-from-QName", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDoubleExpr number(XsAnyAtomicTypeExpr arg) {
-        return new XsExprImpl.XsDoubleCallImpl("fn", "number", new Object[]{ arg });
+    public XsQNameExpr QName(XsStringExpr paramURI, String paramQName) {
+        return QName(paramURI, (paramQName == null) ? (XsStringExpr) null : xs.string(paramQName));
     }
+
+    
     @Override
-        public XsNCNameExpr prefixFromQName(XsQNameExpr arg) {
-        return new XsExprImpl.XsNCNameCallImpl("fn", "prefix-from-QName", new Object[]{ arg });
+    public XsQNameExpr QName(XsStringExpr paramURI, XsStringExpr paramQName) {
+        return new XsExprImpl.QNameCallImpl("fn", "QName", new Object[]{ paramURI, paramQName });
     }
+
+    
     @Override
-        public XsQNameExpr QName(XsStringExpr paramURI, String paramQName) {
-        return QName(paramURI, xs.string(paramQName)); 
+    public ItemSeqExpr remove(ItemSeqExpr target, long position) {
+        return remove(target, xs.integer(position));
     }
+
+    
     @Override
-        public XsQNameExpr QName(XsStringExpr paramURI, XsStringExpr paramQName) {
-        return new XsExprImpl.XsQNameCallImpl("fn", "QName", new Object[]{ paramURI, paramQName });
-    }
-    @Override
-        public ItemSeqExpr remove(ItemSeqExpr target, XsIntegerExpr position) {
+    public ItemSeqExpr remove(ItemSeqExpr target, XsIntegerExpr position) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "remove", new Object[]{ target, position });
     }
+
+    
     @Override
-        public XsStringExpr replace(XsStringExpr input, String pattern, String replacement) {
-        return replace(input, xs.string(pattern), xs.string(replacement)); 
+    public XsStringExpr replace(XsStringExpr input, String pattern, String replacement) {
+        return replace(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern), (replacement == null) ? (XsStringExpr) null : xs.string(replacement));
     }
+
+    
     @Override
-        public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement) {
-        return new XsExprImpl.XsStringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement });
+    public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement) {
+        return new XsExprImpl.StringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement });
     }
+
+    
     @Override
-        public XsStringExpr replace(XsStringExpr input, String pattern, String replacement, String flags) {
-        return replace(input, xs.string(pattern), xs.string(replacement), (flags == null) ? null : xs.string(flags)); 
+    public XsStringExpr replace(XsStringExpr input, String pattern, String replacement, String flags) {
+        return replace(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern), (replacement == null) ? (XsStringExpr) null : xs.string(replacement), (flags == null) ? (XsStringExpr) null : xs.string(flags));
     }
+
+    
     @Override
-        public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement, XsStringExpr flags) {
-        return new XsExprImpl.XsStringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement, flags });
+    public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement, XsStringExpr flags) {
+        return new XsExprImpl.StringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement, flags });
     }
+
+    
     @Override
-        public XsQNameExpr resolveQName(XsStringExpr qname, ElementNodeExpr element) {
-        return new XsExprImpl.XsQNameCallImpl("fn", "resolve-QName", new Object[]{ qname, element });
+    public XsQNameExpr resolveQName(XsStringExpr qname, ElementNodeExpr element) {
+        return new XsExprImpl.QNameCallImpl("fn", "resolve-QName", new Object[]{ qname, element });
     }
+
+    
     @Override
-        public XsAnyURIExpr resolveUri(XsStringExpr relative, String base) {
-        return resolveUri(relative, xs.string(base)); 
+    public XsAnyURIExpr resolveUri(XsStringExpr relative, String base) {
+        return resolveUri(relative, (base == null) ? (XsStringExpr) null : xs.string(base));
     }
+
+    
     @Override
-        public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
-        return new XsExprImpl.XsAnyURICallImpl("fn", "resolve-uri", new Object[]{ relative, base });
+    public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
+        return new XsExprImpl.AnyURICallImpl("fn", "resolve-uri", new Object[]{ relative, base });
     }
+
+    
     @Override
-        public ItemSeqExpr reverse(ItemSeqExpr target) {
+    public ItemSeqExpr reverse(ItemSeqExpr target) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "reverse", new Object[]{ target });
     }
+
+    
     @Override
-        public NodeExpr root(NodeExpr arg) {
+    public NodeExpr root(NodeExpr arg) {
         return new BaseTypeImpl.NodeCallImpl("fn", "root", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsNumericExpr round(XsNumericExpr arg) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "round", new Object[]{ arg });
+    public XsNumericExpr round(XsNumericExpr arg) {
+        return new XsExprImpl.NumericCallImpl("fn", "round", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsNumericExpr roundHalfToEven(XsNumericExpr arg) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "round-half-to-even", new Object[]{ arg });
+    public XsNumericExpr roundHalfToEven(XsNumericExpr arg) {
+        return new XsExprImpl.NumericCallImpl("fn", "round-half-to-even", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsNumericExpr roundHalfToEven(XsNumericExpr arg, XsIntegerExpr precision) {
-        return new XsExprImpl.XsNumericCallImpl("fn", "round-half-to-even", new Object[]{ arg, precision });
+    public XsNumericExpr roundHalfToEven(XsNumericExpr arg, long precision) {
+        return roundHalfToEven(arg, xs.integer(precision));
     }
+
+    
     @Override
-        public XsDecimalExpr secondsFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsDecimalCallImpl("fn", "seconds-from-dateTime", new Object[]{ arg });
+    public XsNumericExpr roundHalfToEven(XsNumericExpr arg, XsIntegerExpr precision) {
+        return new XsExprImpl.NumericCallImpl("fn", "round-half-to-even", new Object[]{ arg, precision });
     }
+
+    
     @Override
-        public XsDecimalExpr secondsFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsDecimalCallImpl("fn", "seconds-from-duration", new Object[]{ arg });
+    public XsDecimalExpr secondsFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.DecimalCallImpl("fn", "seconds-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDecimalExpr secondsFromTime(XsTimeExpr arg) {
-        return new XsExprImpl.XsDecimalCallImpl("fn", "seconds-from-time", new Object[]{ arg });
+    public XsDecimalExpr secondsFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.DecimalCallImpl("fn", "seconds-from-duration", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr startsWith(XsStringExpr parameter1, String parameter2) {
-        return startsWith(parameter1, xs.string(parameter2)); 
+    public XsDecimalExpr secondsFromTime(XsTimeExpr arg) {
+        return new XsExprImpl.DecimalCallImpl("fn", "seconds-from-time", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "starts-with", new Object[]{ parameter1, parameter2 });
+    public XsBooleanExpr startsWith(XsStringExpr parameter1, String parameter2) {
+        return startsWith(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2));
     }
+
+    
     @Override
-        public XsBooleanExpr startsWith(XsStringExpr parameter1, String parameter2, String collation) {
-        return startsWith(parameter1, xs.string(parameter2), (collation == null) ? null : xs.string(collation)); 
+    public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2) {
+        return new XsExprImpl.BooleanCallImpl("fn", "starts-with", new Object[]{ parameter1, parameter2 });
     }
+
+    
     @Override
-        public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "starts-with", new Object[]{ parameter1, parameter2, collation });
+    public XsBooleanExpr startsWith(XsStringExpr parameter1, String parameter2, String collation) {
+        return startsWith(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsStringExpr string(ItemExpr arg) {
-        return new XsExprImpl.XsStringCallImpl("fn", "string", new Object[]{ arg });
+    public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        return new XsExprImpl.BooleanCallImpl("fn", "starts-with", new Object[]{ parameter1, parameter2, collation });
     }
+
+    
     @Override
-        public XsStringExpr stringJoin(XsStringSeqExpr parameter1) {
-        return new XsExprImpl.XsStringCallImpl("fn", "string-join", new Object[]{ parameter1 });
+    public XsStringExpr string(ItemExpr arg) {
+        return new XsExprImpl.StringCallImpl("fn", "string", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringExpr stringJoin(XsStringSeqExpr parameter1, String parameter2) {
-        return stringJoin(parameter1, (parameter2 == null) ? null : xs.string(parameter2)); 
+    public XsStringExpr stringJoin(XsStringSeqExpr parameter1, String parameter2) {
+        return stringJoin(parameter1, (parameter2 == null) ? (XsStringExpr) null : xs.string(parameter2));
     }
+
+    
     @Override
-        public XsStringExpr stringJoin(XsStringSeqExpr parameter1, XsStringExpr parameter2) {
-        return new XsExprImpl.XsStringCallImpl("fn", "string-join", new Object[]{ parameter1, parameter2 });
+    public XsStringExpr stringJoin(XsStringSeqExpr parameter1, XsStringExpr parameter2) {
+        return new XsExprImpl.StringCallImpl("fn", "string-join", new Object[]{ parameter1, parameter2 });
     }
+
+    
     @Override
-        public XsIntegerExpr stringLength(XsStringExpr sourceString) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "string-length", new Object[]{ sourceString });
+    public XsIntegerExpr stringLength(XsStringExpr sourceString) {
+        return new XsExprImpl.IntegerCallImpl("fn", "string-length", new Object[]{ sourceString });
     }
+
+    
     @Override
-        public XsIntegerSeqExpr stringToCodepoints(XsStringExpr arg) {
-        return new XsExprImpl.XsIntegerSeqCallImpl("fn", "string-to-codepoints", new Object[]{ arg });
+    public XsIntegerSeqExpr stringToCodepoints(XsStringExpr arg) {
+        return new XsExprImpl.IntegerSeqCallImpl("fn", "string-to-codepoints", new Object[]{ arg });
     }
+
+    
     @Override
-        public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc) {
+    public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, double startingLoc) {
+        return subsequence(sourceSeq, xs.doubleVal(startingLoc));
+    }
+
+    
+    @Override
+    public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "subsequence", new Object[]{ sourceSeq, startingLoc });
     }
+
+    
     @Override
-        public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc, XsNumericExpr length) {
+    public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, double startingLoc, double length) {
+        return subsequence(sourceSeq, xs.doubleVal(startingLoc), xs.doubleVal(length));
+    }
+
+    
+    @Override
+    public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc, XsNumericExpr length) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "subsequence", new Object[]{ sourceSeq, startingLoc, length });
     }
+
+    
     @Override
-        public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc });
+    public XsStringExpr substring(XsStringExpr sourceString, double startingLoc) {
+        return substring(sourceString, xs.doubleVal(startingLoc));
     }
+
+    
     @Override
-        public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc, XsNumericExpr length) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc, length });
+    public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc) {
+        return new XsExprImpl.StringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc });
     }
+
+    
     @Override
-        public XsStringExpr substringAfter(XsStringExpr input, String after) {
-        return substringAfter(input, xs.string(after)); 
+    public XsStringExpr substring(XsStringExpr sourceString, double startingLoc, double length) {
+        return substring(sourceString, xs.doubleVal(startingLoc), xs.doubleVal(length));
     }
+
+    
     @Override
-        public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring-after", new Object[]{ input, after });
+    public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc, XsNumericExpr length) {
+        return new XsExprImpl.StringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc, length });
     }
+
+    
     @Override
-        public XsStringExpr substringAfter(XsStringExpr input, String after, String collation) {
-        return substringAfter(input, xs.string(after), (collation == null) ? null : xs.string(collation)); 
+    public XsStringExpr substringAfter(XsStringExpr input, String after) {
+        return substringAfter(input, (after == null) ? (XsStringExpr) null : xs.string(after));
     }
+
+    
     @Override
-        public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after, XsStringExpr collation) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring-after", new Object[]{ input, after, collation });
+    public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after) {
+        return new XsExprImpl.StringCallImpl("fn", "substring-after", new Object[]{ input, after });
     }
+
+    
     @Override
-        public XsStringExpr substringBefore(XsStringExpr input, String before) {
-        return substringBefore(input, xs.string(before)); 
+    public XsStringExpr substringAfter(XsStringExpr input, String after, String collation) {
+        return substringAfter(input, (after == null) ? (XsStringExpr) null : xs.string(after), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring-before", new Object[]{ input, before });
+    public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after, XsStringExpr collation) {
+        return new XsExprImpl.StringCallImpl("fn", "substring-after", new Object[]{ input, after, collation });
     }
+
+    
     @Override
-        public XsStringExpr substringBefore(XsStringExpr input, String before, String collation) {
-        return substringBefore(input, xs.string(before), (collation == null) ? null : xs.string(collation)); 
+    public XsStringExpr substringBefore(XsStringExpr input, String before) {
+        return substringBefore(input, (before == null) ? (XsStringExpr) null : xs.string(before));
     }
+
+    
     @Override
-        public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before, XsStringExpr collation) {
-        return new XsExprImpl.XsStringCallImpl("fn", "substring-before", new Object[]{ input, before, collation });
+    public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before) {
+        return new XsExprImpl.StringCallImpl("fn", "substring-before", new Object[]{ input, before });
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr sum(XsAnyAtomicTypeSeqExpr arg) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "sum", new Object[]{ arg });
+    public XsStringExpr substringBefore(XsStringExpr input, String before, String collation) {
+        return substringBefore(input, (before == null) ? (XsStringExpr) null : xs.string(before), (collation == null) ? (XsStringExpr) null : xs.string(collation));
     }
+
+    
     @Override
-        public XsAnyAtomicTypeExpr sum(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr zero) {
-        return new XsExprImpl.XsAnyAtomicTypeCallImpl("fn", "sum", new Object[]{ arg, zero });
+    public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before, XsStringExpr collation) {
+        return new XsExprImpl.StringCallImpl("fn", "substring-before", new Object[]{ input, before, collation });
     }
+
+    
     @Override
-        public ItemSeqExpr tail(ItemSeqExpr seq) {
+    public XsAnyAtomicTypeExpr sum(XsAnyAtomicTypeSeqExpr arg) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "sum", new Object[]{ arg });
+    }
+
+    
+    @Override
+    public XsAnyAtomicTypeExpr sum(XsAnyAtomicTypeSeqExpr arg, String zero) {
+        return sum(arg, (zero == null) ? (XsAnyAtomicTypeExpr) null : xs.string(zero));
+    }
+
+    
+    @Override
+    public XsAnyAtomicTypeExpr sum(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr zero) {
+        return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "sum", new Object[]{ arg, zero });
+    }
+
+    
+    @Override
+    public ItemSeqExpr tail(ItemSeqExpr seq) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "tail", new Object[]{ seq });
     }
+
+    
     @Override
-        public XsDayTimeDurationExpr timezoneFromDate(XsDateExpr arg) {
-        return new XsExprImpl.XsDayTimeDurationCallImpl("fn", "timezone-from-date", new Object[]{ arg });
+    public XsDayTimeDurationExpr timezoneFromDate(XsDateExpr arg) {
+        return new XsExprImpl.DayTimeDurationCallImpl("fn", "timezone-from-date", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDayTimeDurationExpr timezoneFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsDayTimeDurationCallImpl("fn", "timezone-from-dateTime", new Object[]{ arg });
+    public XsDayTimeDurationExpr timezoneFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.DayTimeDurationCallImpl("fn", "timezone-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsDayTimeDurationExpr timezoneFromTime(XsTimeExpr arg) {
-        return new XsExprImpl.XsDayTimeDurationCallImpl("fn", "timezone-from-time", new Object[]{ arg });
+    public XsDayTimeDurationExpr timezoneFromTime(XsTimeExpr arg) {
+        return new XsExprImpl.DayTimeDurationCallImpl("fn", "timezone-from-time", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsStringSeqExpr tokenize(XsStringExpr input, String pattern) {
-        return tokenize(input, xs.string(pattern)); 
+    public XsStringSeqExpr tokenize(XsStringExpr input, String pattern) {
+        return tokenize(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern));
     }
+
+    
     @Override
-        public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern) {
-        return new XsExprImpl.XsStringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern });
+    public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern) {
+        return new XsExprImpl.StringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern });
     }
+
+    
     @Override
-        public XsStringSeqExpr tokenize(XsStringExpr input, String pattern, String flags) {
-        return tokenize(input, xs.string(pattern), (flags == null) ? null : xs.string(flags)); 
+    public XsStringSeqExpr tokenize(XsStringExpr input, String pattern, String flags) {
+        return tokenize(input, (pattern == null) ? (XsStringExpr) null : xs.string(pattern), (flags == null) ? (XsStringExpr) null : xs.string(flags));
     }
+
+    
     @Override
-        public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
-        return new XsExprImpl.XsStringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern, flags });
+    public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
+        return new XsExprImpl.StringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern, flags });
     }
+
+    
     @Override
-        public XsStringExpr translate(XsStringExpr src, String mapString, String transString) {
-        return translate(src, xs.string(mapString), xs.string(transString)); 
+    public XsStringExpr translate(XsStringExpr src, String mapString, String transString) {
+        return translate(src, (mapString == null) ? (XsStringExpr) null : xs.string(mapString), (transString == null) ? (XsStringExpr) null : xs.string(transString));
     }
+
+    
     @Override
-        public XsStringExpr translate(XsStringExpr src, XsStringExpr mapString, XsStringExpr transString) {
-        return new XsExprImpl.XsStringCallImpl("fn", "translate", new Object[]{ src, mapString, transString });
+    public XsStringExpr translate(XsStringExpr src, XsStringExpr mapString, XsStringExpr transString) {
+        return new XsExprImpl.StringCallImpl("fn", "translate", new Object[]{ src, mapString, transString });
     }
+
+    
     @Override
     public XsBooleanExpr trueExpr() {
-        return new XsExprImpl.XsBooleanCallImpl("fn", "true", null);
+        return new XsExprImpl.BooleanCallImpl("fn", "true", new Object[]{  });
     }
+
+    
     @Override
-        public ItemSeqExpr unordered(ItemSeqExpr sourceSeq) {
+    public ItemSeqExpr unordered(ItemSeqExpr sourceSeq) {
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "unordered", new Object[]{ sourceSeq });
     }
+
+    
     @Override
-        public XsStringExpr upperCase(XsStringExpr string) {
-        return new XsExprImpl.XsStringCallImpl("fn", "upper-case", new Object[]{ string });
+    public XsStringExpr upperCase(XsStringExpr string) {
+        return new XsExprImpl.StringCallImpl("fn", "upper-case", new Object[]{ string });
     }
+
+    
     @Override
-        public XsIntegerExpr yearFromDate(XsDateExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "year-from-date", new Object[]{ arg });
+    public XsIntegerExpr yearFromDate(XsDateExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "year-from-date", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr yearFromDateTime(XsDateTimeExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "year-from-dateTime", new Object[]{ arg });
+    public XsIntegerExpr yearFromDateTime(XsDateTimeExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "year-from-dateTime", new Object[]{ arg });
     }
+
+    
     @Override
-        public XsIntegerExpr yearsFromDuration(XsDurationExpr arg) {
-        return new XsExprImpl.XsIntegerCallImpl("fn", "years-from-duration", new Object[]{ arg });
+    public XsIntegerExpr yearsFromDuration(XsDurationExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("fn", "years-from-duration", new Object[]{ arg });
     }
-}
+
+    }

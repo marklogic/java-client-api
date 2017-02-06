@@ -15,240 +15,251 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.expression.XsExpr;
-import com.marklogic.client.expression.XsValue;
+import com.marklogic.client.type.ItemExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.XsDecimalExpr;
+import com.marklogic.client.type.XsIntegerExpr;
+import com.marklogic.client.type.XsIntExpr;
+import com.marklogic.client.type.XsNumericExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.XsUnsignedLongExpr;
+
+
 
 import com.marklogic.client.expression.SqlExpr;
-import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.SqlCollatedStringExpr;
- import com.marklogic.client.type.SqlCollatedStringSeqExpr;
- import com.marklogic.client.type.SqlGenericDateTimeExpr;
- import com.marklogic.client.type.SqlGenericDateTimeSeqExpr;
- import com.marklogic.client.type.XsDecimalExpr;
- import com.marklogic.client.type.XsIntegerExpr;
- import com.marklogic.client.type.XsIntExpr;
- import com.marklogic.client.type.XsNumericExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
- import com.marklogic.client.type.XsUnsignedLongExpr;
-
 import com.marklogic.client.impl.BaseTypeImpl;
 
 // IMPORTANT: Do not edit. This file is generated.
+class SqlExprImpl implements SqlExpr {
 
-public class SqlExprImpl implements SqlExpr {
-    private XsExprImpl xs = null;
-    public SqlExprImpl(XsExprImpl xs) {
-        this.xs = xs;
-    }
-     @Override
-        public XsIntegerExpr bitLength() {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "bit-length", new Object[]{  });
-    }
-    @Override
-        public XsIntegerExpr bitLength(XsStringExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "bit-length", new Object[]{ arg1 });
-    }
-    @Override
-        public SqlGenericDateTimeExpr dateadd(XsStringExpr datepart, int number, SqlGenericDateTimeExpr date) {
-        return dateadd(datepart, xs.intVal(number), date); 
-    }
-    @Override
-        public SqlGenericDateTimeExpr dateadd(XsStringExpr datepart, XsIntExpr number, SqlGenericDateTimeExpr date) {
-        return new SqlExprImpl.SqlGenericDateTimeCallImpl("sql", "dateadd", new Object[]{ datepart, number, date });
-    }
-    @Override
-        public XsIntegerExpr datediff(XsStringExpr datepart, SqlGenericDateTimeExpr startdate, SqlGenericDateTimeExpr enddate) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "datediff", new Object[]{ datepart, startdate, enddate });
-    }
-    @Override
-        public XsIntegerExpr datepart(XsStringExpr datepart, SqlGenericDateTimeExpr date) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "datepart", new Object[]{ datepart, date });
-    }
-    @Override
-        public XsIntegerExpr day(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "day", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr dayname(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "dayname", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr hours(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "hours", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr insert(XsStringExpr arg1, XsNumericExpr arg2, XsNumericExpr arg3, String arg4) {
-        return insert(arg1, arg2, arg3, xs.string(arg4)); 
-    }
-    @Override
-        public XsStringExpr insert(XsStringExpr arg1, XsNumericExpr arg2, XsNumericExpr arg3, XsStringExpr arg4) {
-        return new XsExprImpl.XsStringCallImpl("sql", "insert", new Object[]{ arg1, arg2, arg3, arg4 });
-    }
-    @Override
-        public XsUnsignedIntExpr instr(XsStringExpr arg1, String arg2) {
-        return instr(arg1, xs.string(arg2)); 
-    }
-    @Override
-        public XsUnsignedIntExpr instr(XsStringExpr arg1, XsStringExpr arg2) {
-        return new XsExprImpl.XsUnsignedIntCallImpl("sql", "instr", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsStringExpr left(ItemSeqExpr arg1, XsNumericExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "left", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsStringExpr ltrim(XsStringExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "ltrim", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr ltrim(XsStringExpr arg1, String arg2) {
-        return ltrim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
-    }
-    @Override
-        public XsStringExpr ltrim(XsStringExpr arg1, XsStringExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "ltrim", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsIntegerExpr minutes(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "minutes", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr month(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "month", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr monthname(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "monthname", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr octetLength() {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "octet-length", new Object[]{  });
-    }
-    @Override
-        public XsIntegerExpr octetLength(XsStringExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "octet-length", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr quarter(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "quarter", new Object[]{ arg1 });
-    }
-    @Override
-        public XsUnsignedLongExpr rand() {
-        return new XsExprImpl.XsUnsignedLongCallImpl("sql", "rand", new Object[]{  });
-    }
-    @Override
-        public XsUnsignedLongExpr rand(XsUnsignedLongExpr arg1) {
-        return new XsExprImpl.XsUnsignedLongCallImpl("sql", "rand", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr repeat(ItemSeqExpr arg1, XsNumericExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "repeat", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsStringExpr right(ItemSeqExpr arg1, XsNumericExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "right", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsStringExpr rtrim(XsStringExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "rtrim", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr rtrim(XsStringExpr arg1, String arg2) {
-        return rtrim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
-    }
-    @Override
-        public XsStringExpr rtrim(XsStringExpr arg1, XsStringExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "rtrim", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsDecimalExpr seconds(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsDecimalCallImpl("sql", "seconds", new Object[]{ arg1 });
-    }
-    @Override
-        public ItemSeqExpr sign(XsNumericExpr arg1) {
-        return new BaseTypeImpl.ItemSeqCallImpl("sql", "sign", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr space(XsNumericExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "space", new Object[]{ arg1 });
-    }
-    @Override
-        public SqlGenericDateTimeExpr timestampadd(XsStringExpr arg1, int arg2, SqlGenericDateTimeExpr arg3) {
-        return timestampadd(arg1, xs.intVal(arg2), arg3); 
-    }
-    @Override
-        public SqlGenericDateTimeExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, SqlGenericDateTimeExpr arg3) {
-        return new SqlExprImpl.SqlGenericDateTimeCallImpl("sql", "timestampadd", new Object[]{ arg1, arg2, arg3 });
-    }
-    @Override
-        public XsIntegerExpr timestampdiff(XsStringExpr arg1, SqlGenericDateTimeExpr arg2, SqlGenericDateTimeExpr arg3) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "timestampdiff", new Object[]{ arg1, arg2, arg3 });
-    }
-    @Override
-        public XsStringExpr trim(XsStringExpr arg1) {
-        return new XsExprImpl.XsStringCallImpl("sql", "trim", new Object[]{ arg1 });
-    }
-    @Override
-        public XsStringExpr trim(XsStringExpr arg1, String arg2) {
-        return trim(arg1, (arg2 == null) ? null : xs.string(arg2)); 
-    }
-    @Override
-        public XsStringExpr trim(XsStringExpr arg1, XsStringExpr arg2) {
-        return new XsExprImpl.XsStringCallImpl("sql", "trim", new Object[]{ arg1, arg2 });
-    }
-    @Override
-        public XsIntegerExpr week(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "week", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr weekday(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "weekday", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr year(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "year", new Object[]{ arg1 });
-    }
-    @Override
-        public XsIntegerExpr yearday(SqlGenericDateTimeExpr arg1) {
-        return new XsExprImpl.XsIntegerCallImpl("sql", "yearday", new Object[]{ arg1 });
-    }     @Override
-    public SqlCollatedStringSeqExpr collatedString(SqlCollatedStringExpr... items) {
-        return new SqlCollatedStringSeqListImpl(items);
-    }
-     @Override
-    public SqlGenericDateTimeSeqExpr genericDateTime(SqlGenericDateTimeExpr... items) {
-        return new SqlGenericDateTimeSeqListImpl(items);
-    }
-        static class SqlCollatedStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SqlCollatedStringSeqExpr {
-            SqlCollatedStringSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class SqlCollatedStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SqlCollatedStringSeqExpr {
-            SqlCollatedStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class SqlCollatedStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SqlCollatedStringExpr {
-            SqlCollatedStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-         static class SqlGenericDateTimeSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SqlGenericDateTimeSeqExpr {
-            SqlGenericDateTimeSeqListImpl(Object[] items) {
-                super(BaseTypeImpl.convertList(items));
-            }
-        }
-        static class SqlGenericDateTimeSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SqlGenericDateTimeSeqExpr {
-            SqlGenericDateTimeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
-        static class SqlGenericDateTimeCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SqlGenericDateTimeExpr {
-            SqlGenericDateTimeCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-                super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-            }
-        }
+    final static XsExprImpl xs = XsExprImpl.xs;
 
-}
+    final static SqlExprImpl sql = new SqlExprImpl();
+
+    SqlExprImpl() {
+    }
+
+    
+    @Override
+    public XsIntegerExpr bitLength(XsStringExpr str) {
+        return new XsExprImpl.IntegerCallImpl("sql", "bit-length", new Object[]{ str });
+    }
+
+    
+    @Override
+    public ItemExpr dateadd(XsStringExpr datepart, int number, ItemExpr date) {
+        return dateadd(datepart, xs.intVal(number), date);
+    }
+
+    
+    @Override
+    public ItemExpr dateadd(XsStringExpr datepart, XsIntExpr number, ItemExpr date) {
+        return new BaseTypeImpl.ItemCallImpl("sql", "dateadd", new Object[]{ datepart, number, date });
+    }
+
+    
+    @Override
+    public XsIntegerExpr datediff(XsStringExpr datepart, ItemExpr startdate, ItemExpr enddate) {
+        return new XsExprImpl.IntegerCallImpl("sql", "datediff", new Object[]{ datepart, startdate, enddate });
+    }
+
+    
+    @Override
+    public XsIntegerExpr datepart(XsStringExpr datepart, ItemExpr date) {
+        return new XsExprImpl.IntegerCallImpl("sql", "datepart", new Object[]{ datepart, date });
+    }
+
+    
+    @Override
+    public XsIntegerExpr day(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "day", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsStringExpr dayname(ItemExpr arg1) {
+        return new XsExprImpl.StringCallImpl("sql", "dayname", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr hours(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "hours", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsStringExpr insert(XsStringExpr str, double start, double length, String str2) {
+        return insert(str, xs.doubleVal(start), xs.doubleVal(length), (str2 == null) ? (XsStringExpr) null : xs.string(str2));
+    }
+
+    
+    @Override
+    public XsStringExpr insert(XsStringExpr str, XsNumericExpr start, XsNumericExpr length, XsStringExpr str2) {
+        return new XsExprImpl.StringCallImpl("sql", "insert", new Object[]{ str, start, length, str2 });
+    }
+
+    
+    @Override
+    public XsUnsignedIntExpr instr(XsStringExpr str, String n) {
+        return instr(str, (n == null) ? (XsStringExpr) null : xs.string(n));
+    }
+
+    
+    @Override
+    public XsUnsignedIntExpr instr(XsStringExpr str, XsStringExpr n) {
+        return new XsExprImpl.UnsignedIntCallImpl("sql", "instr", new Object[]{ str, n });
+    }
+
+    
+    @Override
+    public XsStringExpr left(ItemSeqExpr str, double n) {
+        return left(str, xs.doubleVal(n));
+    }
+
+    
+    @Override
+    public XsStringExpr left(ItemSeqExpr str, XsNumericExpr n) {
+        return new XsExprImpl.StringCallImpl("sql", "left", new Object[]{ str, n });
+    }
+
+    
+    @Override
+    public XsStringExpr ltrim(XsStringExpr str) {
+        return new XsExprImpl.StringCallImpl("sql", "ltrim", new Object[]{ str });
+    }
+
+    
+    @Override
+    public XsIntegerExpr minutes(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "minutes", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr month(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "month", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsStringExpr monthname(ItemExpr arg1) {
+        return new XsExprImpl.StringCallImpl("sql", "monthname", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr octetLength(XsStringExpr x) {
+        return new XsExprImpl.IntegerCallImpl("sql", "octet-length", new Object[]{ x });
+    }
+
+    
+    @Override
+    public XsIntegerExpr quarter(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "quarter", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsUnsignedLongExpr rand(XsUnsignedLongExpr n) {
+        return new XsExprImpl.UnsignedLongCallImpl("sql", "rand", new Object[]{ n });
+    }
+
+    
+    @Override
+    public XsStringExpr repeat(ItemSeqExpr str, double n) {
+        return repeat(str, xs.doubleVal(n));
+    }
+
+    
+    @Override
+    public XsStringExpr repeat(ItemSeqExpr str, XsNumericExpr n) {
+        return new XsExprImpl.StringCallImpl("sql", "repeat", new Object[]{ str, n });
+    }
+
+    
+    @Override
+    public XsStringExpr right(ItemSeqExpr str, double n) {
+        return right(str, xs.doubleVal(n));
+    }
+
+    
+    @Override
+    public XsStringExpr right(ItemSeqExpr str, XsNumericExpr n) {
+        return new XsExprImpl.StringCallImpl("sql", "right", new Object[]{ str, n });
+    }
+
+    
+    @Override
+    public XsStringExpr rtrim(XsStringExpr str) {
+        return new XsExprImpl.StringCallImpl("sql", "rtrim", new Object[]{ str });
+    }
+
+    
+    @Override
+    public XsDecimalExpr seconds(ItemExpr arg1) {
+        return new XsExprImpl.DecimalCallImpl("sql", "seconds", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public ItemSeqExpr sign(XsNumericExpr x) {
+        return new BaseTypeImpl.ItemSeqCallImpl("sql", "sign", new Object[]{ x });
+    }
+
+    
+    @Override
+    public XsStringExpr space(XsNumericExpr n) {
+        return new XsExprImpl.StringCallImpl("sql", "space", new Object[]{ n });
+    }
+
+    
+    @Override
+    public ItemExpr timestampadd(XsStringExpr arg1, int arg2, ItemExpr arg3) {
+        return timestampadd(arg1, xs.intVal(arg2), arg3);
+    }
+
+    
+    @Override
+    public ItemExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, ItemExpr arg3) {
+        return new BaseTypeImpl.ItemCallImpl("sql", "timestampadd", new Object[]{ arg1, arg2, arg3 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr timestampdiff(XsStringExpr arg1, ItemExpr arg2, ItemExpr arg3) {
+        return new XsExprImpl.IntegerCallImpl("sql", "timestampdiff", new Object[]{ arg1, arg2, arg3 });
+    }
+
+    
+    @Override
+    public XsStringExpr trim(XsStringExpr str) {
+        return new XsExprImpl.StringCallImpl("sql", "trim", new Object[]{ str });
+    }
+
+    
+    @Override
+    public XsIntegerExpr week(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "week", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr weekday(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "weekday", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr year(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "year", new Object[]{ arg1 });
+    }
+
+    
+    @Override
+    public XsIntegerExpr yearday(ItemExpr arg1) {
+        return new XsExprImpl.IntegerCallImpl("sql", "yearday", new Object[]{ arg1 });
+    }
+
+    }

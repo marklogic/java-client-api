@@ -818,11 +818,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testSqlBitLength0Exist() {
-        executeTester("testSqlBitLength0", p.sql.bitLength(), null, new Object[]{}, new ItemSeqExpr[]{});
-    }
-
-    @Test
     public void testSqlBitLength1Exist() {
         executeTester("testSqlBitLength1", p.sql.bitLength(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
     }
@@ -848,23 +843,8 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testSqlLtrim2Exist() {
-        executeTester("testSqlLtrim2", p.sql.ltrim(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
-    }
-
-    @Test
-    public void testSqlOctetLength0Exist() {
-        executeTester("testSqlOctetLength0", p.sql.octetLength(), null, new Object[]{}, new ItemSeqExpr[]{});
-    }
-
-    @Test
     public void testSqlOctetLength1Exist() {
         executeTester("testSqlOctetLength1", p.sql.octetLength(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
-    }
-
-    @Test
-    public void testSqlRand0Exist() {
-        executeTester("testSqlRand0", p.sql.rand(), null, new Object[]{}, new ItemSeqExpr[]{});
     }
 
     @Test
@@ -888,11 +868,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testSqlRtrim2Exist() {
-        executeTester("testSqlRtrim2", p.sql.rtrim(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
-    }
-
-    @Test
     public void testSqlSign1Exec() {
         executeTester("testSqlSign1", p.sql.sign(p.col("1")), "-1", new Object[]{p.xs.doubleVal(-3)}, new ItemSeqExpr[]{});
     }
@@ -905,11 +880,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     @Test
     public void testSqlTrim1Exist() {
         executeTester("testSqlTrim1", p.sql.trim(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
-    }
-
-    @Test
-    public void testSqlTrim2Exist() {
-        executeTester("testSqlTrim2", p.sql.trim(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
     }
 
     @Test
@@ -1333,11 +1303,6 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
     }
 
     @Test
-    public void testXsDuration1Exec() {
-        executeTester("testXsDuration1", p.xs.duration(p.col("1")), "xs:duration(\"P1Y2M\")", new Object[]{p.xs.string("P1Y2M")}, new ItemSeqExpr[]{});
-    }
-
-    @Test
     public void testXsFloat1Exec() {
         executeTester("testXsFloat1", p.xs.floatVal((float) 1), "1", null, null);
     }
@@ -1389,7 +1354,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXsName1Exec() {
-        executeTester("testXsName1", p.xs.Name(p.col("1")), "xs:Name(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
+        executeTester("testXsName1", p.xs.name(p.col("1")), "xs:Name(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
     }
 
     @Test

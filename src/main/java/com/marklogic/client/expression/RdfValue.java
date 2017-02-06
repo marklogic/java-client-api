@@ -38,5 +38,5 @@ public interface RdfValue {
      * @param langStrings	the language-specific strings
 	 * @return	a value sequence with an rdf:langString data type
      */
-    public RdfLangStringSeqVal langStrings(RdfLangStringVal... langStrings);
+    public RdfLangStringSeqVal langStringSeq(RdfLangStringVal... langStrings);
 }

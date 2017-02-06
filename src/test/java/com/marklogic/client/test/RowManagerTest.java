@@ -54,7 +54,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.PlanValues;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -67,7 +66,10 @@ import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.PlanParamExpr;
+import com.marklogic.client.type.PlanPrefixer;
+import com.marklogic.client.type.PlanTripleOption;
+import com.marklogic.client.type.PlanValueOption;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class RowManagerTest {
@@ -323,12 +325,12 @@ public class RowManagerTest {
 				p.fromView("opticUnitTest", "musician")
 				 .where(
 					  p.cts.andQuery(
-						  p.cts.jsonPropertyWordQuery(p.xs.string("instrument"), p.xs.string("trumpet")),
-						  p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.strings("Armstrong", "Davis"))
+						  p.cts.jsonPropertyWordQuery("instrument", "trumpet"),
+						  p.cts.jsonPropertyWordQuery(p.xs.string("lastName"),   p.xs.stringSeq("Armstrong", "Davis"))
 						  )
 					  )
 				  .select(null, "") 
-				  .orderBy("lastName");
+				  .orderBy(p.col("lastName"));
 
         String[] lastName  = {"Armstrong",  "Davis"};
         String[] firstName = {"Louis",      "Miles"};
@@ -352,7 +354,7 @@ public class RowManagerTest {
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
 				 .joinDoc(p.col("musicianDoc"), p.fragmentIdCol("musicianDocId"))
-				 .orderBy("lastName")
+				 .orderBy(p.col("lastName"))
 				 .select(
 				     p.col("lastName"), p.col("firstName"),
 				     p.as("instruments",  p.xpath("musicianDoc", "/musician/instrument"))
@@ -383,7 +385,7 @@ public class RowManagerTest {
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
 				 .joinDocUri(p.col("musicianDocUri"), p.fragmentIdCol("musicianDocId"))
-				 .orderBy("lastName")
+				 .orderBy(p.col("lastName"))
 				 .select(p.col("lastName"), p.col("firstName"), p.col("musicianDocUri"))
 				 .limit(2);
 
@@ -406,7 +408,7 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanBuilder.Prefixer rowGraph = p.prefixer("http://example.org/rowgraph");
+		PlanPrefixer rowGraph = p.prefixer("http://example.org/rowgraph");
 
 		PlanBuilder.ExportablePlan plan =
 			p.fromTriples(
@@ -416,12 +418,13 @@ public class RowManagerTest {
 						p.col("object")
 						),
 				(String) null,
-				p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
+				(String) null,
+				PlanTripleOption.DEDUPLICATED
 				)
 			 .where(
-				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), "value"))
+				p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), p.xs.string("value")))
 				)
-			 .orderBy("subject", "object");
+			 .orderBy(p.cols("subject", "object"));
 
 		int rowNum = 0;
 		for (RowRecord row: rowMgr.resultRows(plan)) {
@@ -488,8 +491,8 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanParam cityParam  = p.param("city");
-		PlanParam limitParam = p.param("limit");
+		PlanParamExpr cityParam  = p.param("city");
+		PlanParamExpr limitParam = p.param("limit");
 
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromLiterals(litRows)
@@ -569,7 +572,7 @@ public class RowManagerTest {
 							),
 						 p.xmlDocument(
 							p.xmlElement("e",
-								p.xmlAttribute("a", p.xs.string("s")),
+								p.xmlAttribute("a", "s"),
 								p.xmlText(p.col("city"))
 								)
 							)
@@ -651,8 +654,10 @@ public class RowManagerTest {
 
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromLiterals(testRows)
-				 .groupBy(p.col("group"), p.groupConcat("vals", "val", p.groupConcatOptions("-", PlanValues.DISTINCT)))
-				 .orderBy("group");
+				 .groupBy(p.col("group"), p.groupConcat("vals", "val",
+						 p.groupConcatOptions("-", PlanValueOption.DISTINCT)
+						 ))
+				 .orderBy(p.col("group"));
 
 		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(builtPlan);
 
@@ -679,7 +684,7 @@ public class RowManagerTest {
 		PlanBuilder.ExportablePlan builtPlan =
 				p.fromLiterals(litRows)
 				 .select(p.cols("rowNum", "city"))
-				 .orderBy("rowNum")
+				 .orderBy(p.col("rowNum"))
 				 .limit(3)
 				 .map(p.resolveFunction(p.xs.QName("secondsMapper"), "/etc/optic/test/processors.sjs"));
 
@@ -695,7 +700,7 @@ public class RowManagerTest {
 		builtPlan =
 				p.fromLiterals(litRows)
 				 .select(p.cols("rowNum", "city"))
-				 .orderBy("rowNum")
+				 .orderBy(p.col("rowNum"))
 				 .limit(3)
 				 .map(p.resolveFunction(
 						 p.xs.QName(new QName("http://marklogic.com/optic/test/processors", "seconds-mapper")),

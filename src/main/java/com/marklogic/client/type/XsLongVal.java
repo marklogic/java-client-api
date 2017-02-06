@@ -15,6 +15,6 @@
  */
 package com.marklogic.client.type;
 
-public interface XsLongVal extends XsIntegerVal, XsLongSeqVal, XsLongParam, PlanTripleVal {
+public interface XsLongVal extends XsLongExpr, XsIntegerVal, XsLongSeqVal, PlanLongParam, PlanParamBindingVal {
 	public long getLong();
 }

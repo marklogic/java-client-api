@@ -16,14 +16,14 @@
 package com.marklogic.client.expression;
 
 import com.marklogic.client.type.ElementNodeExpr;
- import com.marklogic.client.type.ItemSeqExpr;
- import com.marklogic.client.type.MapMapExpr;
- import com.marklogic.client.type.MapMapSeqExpr;
- import com.marklogic.client.type.XsBooleanExpr;
- import com.marklogic.client.type.XsStringExpr;
- import com.marklogic.client.type.XsStringSeqExpr;
- import com.marklogic.client.type.XsUnsignedIntExpr;
+import com.marklogic.client.type.ItemSeqExpr;
+import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsUnsignedIntExpr;
 
+import com.marklogic.client.type.MapMapExpr;
+import com.marklogic.client.type.MapMapSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface MapExpr {
@@ -35,6 +35,7 @@ public interface MapExpr {
     public ItemSeqExpr get(MapMapExpr map, XsStringExpr key);
     public XsStringSeqExpr keys(MapMapExpr map);
     public MapMapExpr map();
-    public MapMapExpr map(ElementNodeExpr map);     public MapMapSeqExpr map(MapMapExpr... items);
+    public MapMapExpr map(ElementNodeExpr map);
+    public MapMapSeqExpr mapSeq(MapMapExpr... items);
 
 }

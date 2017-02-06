@@ -16,6 +16,6 @@
 package com.marklogic.client.type;
 
 // Java 8 introduced Integer and Long methods on unsigned ints and longs 
-public interface XsUnsignedByteVal extends XsUnsignedShortVal, XsUnsignedByteSeqVal, XsUnsignedByteParam, PlanTripleVal {
+public interface XsUnsignedByteVal extends XsUnsignedByteExpr, XsUnsignedShortVal, XsUnsignedByteSeqVal, PlanParamBindingVal {
 	public byte getByte();
 }

@@ -1,7 +1,7 @@
 xquery version "1.0-ml";
 
 module namespace bootstrap = "http://marklogic.com/rest-api/resource/bootstrap";
-(: Copyright 2002-2010 Mark Logic Corporation.  All Rights Reserved. :)
+(: Copyright 2002-2017 Mark Logic Corporation.  All Rights Reserved. :)
 
 import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
 import module namespace temporal = "http://marklogic.com/xdmp/temporal" at "/MarkLogic/temporal.xqy";
@@ -618,8 +618,9 @@ xdmp:document-insert("/etc/optic/test/processors.xqy", text{$xqysrc}, (
     ',
     map:map()
         => map:with("sjssrc", "'use strict';
-function secondsMapper(result) {
-  result.seconds = fn.floor(fn.secondsFromDateTime(fn.currentDateTime()));
+function secondsMapper(row) {
+  const result = row.toObject();
+  result.seconds = new Date().getSeconds();
   return result;
 }
 module.exports = {
