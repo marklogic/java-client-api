@@ -52,6 +52,7 @@ import static com.marklogic.client.io.Format.JSON;
 import static com.marklogic.client.io.Format.XML;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -203,6 +204,36 @@ public class QueryBatcherTest {
     runQueryBatcher(query, matchesByForest, 17, 99);
   }
 
+  @Test
+  public void testRawCombinedQuery() throws Exception {
+    StringHandle structuredQuery = new StringHandle(
+      "{ \"search\": " +
+        "{ \"query\": " +
+          "{ \"queries\": [" +
+            "{ \"value-query\": " +
+              "{  \"json-property\": \"department\"," +
+              "  \"text\": [\"HR\"]" +
+              "}" +
+            "}" +
+          "]}" +
+        "}" +
+      "}").withFormat(JSON);
+    RawCombinedQueryDefinition query = client.newQueryManager().newRawCombinedQueryDefinition(structuredQuery);
+    query.setCollections(qhbTestCollection);
+    Map<String, String[]> matchesByForest = new HashMap<>();
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-2", new String[] {});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
+    runQueryBatcher(query, matchesByForest, 30, 20);
+  }
+
+
+  public void runQueryBatcher(RawCombinedQueryDefinition query, Map<String,String[]> matchesByForest,
+      int batchSize, int threadCount)
+    throws Exception
+  {
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
+  }
 
   public void runQueryBatcher(StructuredQueryDefinition query, Map<String,String[]> matchesByForest,
       int batchSize, int threadCount)
