@@ -570,6 +570,12 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
+    public PlanTriplePatternSeq patterns(PlanTriplePattern... pattern) {
+        return new TriplePatternSeqListImpl(pattern);
+    }
+
+    
+    @Override
     public PlanTriplePositionSeq predicates(PlanTriplePosition... predicate) {
         return new TriplePositionSeqListImpl(predicate);
     }

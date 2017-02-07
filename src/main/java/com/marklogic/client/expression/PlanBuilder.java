@@ -180,6 +180,7 @@ public abstract XsNumericExpr add(XsNumericExpr... operand);
     public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName, XsStringSeqVal graphIris, PlanTripleOption option);
     public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subjects, PlanTriplePositionSeq predicates, PlanTriplePositionSeq objects);
     public abstract PlanTriplePattern pattern(PlanTriplePositionSeq subjects, PlanTriplePositionSeq predicates, PlanTriplePositionSeq objects, PlanSystemColumnSeq sysCols);
+    public abstract PlanTriplePatternSeq patterns(PlanTriplePattern... pattern);
     public abstract PlanTriplePositionSeq subjects(PlanTriplePosition... subject);
     public abstract PlanTriplePositionSeq predicates(PlanTriplePosition... predicate);
     public abstract PlanTriplePositionSeq objects(PlanTriplePosition... object);
