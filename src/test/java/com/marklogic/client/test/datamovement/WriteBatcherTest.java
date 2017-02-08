@@ -738,7 +738,7 @@ public class WriteBatcherTest {
     WriteBatcher batcher =  moveMgr.newWriteBatcher()
       .onBatchFailure(
         (batch, throwable) -> {
-          throwable.printStackTrace();
+          logger.error("Error in testCloseHandles", throwable);
           failCount.incrementAndGet();
         }
       );
