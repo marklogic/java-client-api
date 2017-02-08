@@ -52,8 +52,10 @@ public interface ContentDescriptor {
 	/** 
 	 * Returns the length of the content in bytes as returned by the server.
 	 * This value is usually not set when reading from a local source (such as a
-	 * file or an input stream).  The byte length can be larger than the
-	 * character length if the content contains multi-byte characters.
+	 * file or an input stream).  The byte length won't be returned by the server
+	 * for very large documents for performance reasons.  The byte length can be
+	 * larger than the character length if the content contains multi-byte
+	 * characters.
 	 * @return	the content length in bytes
 	 */
 	long getByteLength();
