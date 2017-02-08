@@ -618,8 +618,7 @@ xdmp:document-insert("/etc/optic/test/processors.xqy", text{$xqysrc}, (
     ',
     map:map()
         => map:with("sjssrc", "'use strict';
-function secondsMapper(row) {
-  const result = row.toObject();
+function secondsMapper(result) {
   result.seconds = new Date().getSeconds();
   return result;
 }
