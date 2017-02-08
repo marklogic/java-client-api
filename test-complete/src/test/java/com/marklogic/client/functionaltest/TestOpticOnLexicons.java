@@ -253,7 +253,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// plan1 - Use strings as col names, with date ordered and using intval
 		ExportablePlan plan1 = p.fromLexicons(indexes)				
 				                         .where(p.gt(p.col("popularity"), p.xs.intVal(2)))
-				                         .orderBy(p.sortKeys("date"))
+				                         .orderBy(p.sortKeys(p.col("date")))
 				                         .select(p.col("city"), p.col("popularity"), p.col("date"), p.col("distance"), p.col("point"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
@@ -303,7 +303,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		//use cols() on select
 		ExportablePlan plan2 = p.fromLexicons(indexes)				
                 .where(p.eq(p.col("popularity"), p.xs.intVal(5)))
-                .orderBy(p.sortKeys("date"))
+                .orderBy(p.sortKeys(p.col("date")))
                 .select(p.cols("city", "popularity", "date", "distance", "point"));
 		
 		JacksonHandle jacksonHandle2 = new JacksonHandle();
@@ -318,8 +318,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		//use strings on select
 		ExportablePlan plan3 = p.fromLexicons(indexes)				
 				.where(p.eq(p.col("popularity"), p.xs.intVal(5)))
-				.orderBy(p.sortKeys("date"))
-				.select("city", "popularity", "date", "distance", "point");
+				.orderBy(p.sortKeys(p.col("date")))
+				.select(p.cols("city", "popularity", "date", "distance", "point"));
 
 		JacksonHandle jacksonHandle3 = new JacksonHandle();
 		jacksonHandle3.setMimetype("application/json");
@@ -655,7 +655,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		PreparePlan output1 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
 		                             .orderBy(p.asc("city"))
-		                             .select("city", "popularity", "date", "distance", "point")
+		                             .select(p.cols("city", "popularity", "date", "distance", "point"))
 		                             .prepare(0);
 
 		JacksonHandle jacksonHandle = new JacksonHandle();
@@ -675,7 +675,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// prepare = 2
 		PreparePlan output2 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
                 .orderBy(p.asc("city"))
-                .select("city", "popularity", "date", "distance", "point")
+                .select(p.cols("city", "popularity", "date", "distance", "point"))
                 .prepare(2);
 
 		jacksonHandle = new JacksonHandle();
@@ -695,7 +695,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// prepare = 5
 		PreparePlan output3 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
 				.orderBy(p.asc("city"))
-				.select("city", "popularity", "date", "distance", "point")
+				.select(p.cols("city", "popularity", "date", "distance", "point"))
 				.prepare(5);
 
 		jacksonHandle = new JacksonHandle();
@@ -715,7 +715,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// prepare = -3
 		PreparePlan output4 = plan1.where(p.gt(popCol, p.xs.intVal(2)))
 				.orderBy(p.asc("city"))
-				.select("city", "popularity", "date", "distance", "point")
+				.select(p.cols("city", "popularity", "date", "distance", "point"))
 				.prepare(-3);
 
 		jacksonHandle = new JacksonHandle();
@@ -830,8 +830,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		
 		PreparePlan preparedPlan = plan1.where(p.gt(popCol, p.xs.intVal(2)))
-		                                .orderBy(p.asc("popularity"), p.desc("date"))
-		                                .select("city", "popularity", "date", "distance", "point")
+		                                .orderBy(p.sortKeys(p.asc("popularity"), p.desc("date")))
+		                                .select(p.cols("city", "popularity", "date", "distance", "point"))
 		                                .prepare(0);
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -883,7 +883,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		PreparePlan output = plan1.where(p.gt(popCol, p.xs.string("blah")))
 		        .orderBy(p.asc("date"))
-		        .select("city", "popularity", "date", "distance", "point");
+		        .select(p.cols("city", "popularity", "date", "distance", "point"));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -980,7 +980,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		PreparePlan output = plan1.where(p.gt(popCol, p.xs.intVal(2)))
 		        .orderBy(p.asc("date_invalid"))
-		        .select("city", "popularity", "date", "distance", "point");
+		        .select(p.cols("city", "popularity", "date", "distance", "point"));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1022,7 +1022,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		PreparePlan output = plan1.where(p.gt(popCol, p.xs.intVal(2)))
 		        .orderBy(p.asc("date_invalid"))
-		        .select("city", "popularity", "date", "distance", "point");
+		        .select(p.cols("city", "popularity", "date", "distance", "point"));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 

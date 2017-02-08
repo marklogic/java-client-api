@@ -58,6 +58,7 @@ import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ArrayNodeExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
+import com.marklogic.client.type.PlanPrefixer;
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
  */
@@ -340,8 +341,8 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 
 		ModifyPlan output = plan1.joinInner(plan2)
 				.joinDoc(p.col("doc"), p.col("uri"))
-				.select("city", "uri", "rowId", "doc")
-				.orderBy("rowId", "city")
+				.select(p.cols("city", "uri", "rowId", "doc"))
+				.orderBy(p.sortKeys(p.col("rowId"), p.col("city")))
 				.offsetLimit(0, 5);
 
 		JacksonHandle jacksonHandle = new JacksonHandle();
@@ -405,7 +406,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -476,7 +477,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");

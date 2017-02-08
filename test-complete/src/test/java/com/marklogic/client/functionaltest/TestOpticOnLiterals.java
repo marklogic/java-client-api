@@ -16,7 +16,9 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,32 +45,24 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
 import com.marklogic.client.admin.MethodType;
 import com.marklogic.client.admin.ResourceExtensionsManager;
-import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
 import com.marklogic.client.admin.ResourceExtensionsManager.MethodParameters;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.QualifiedPlan;
-import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.type.PlanAggregateColSeq;
-import com.marklogic.client.type.PlanAggregateOptions;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanExprColSeq;
-import com.marklogic.client.type.PlanFunction;
-import com.marklogic.client.type.PlanParam;
-import com.marklogic.client.type.SqlGenericDateTimeExpr;
-import com.marklogic.client.type.XsDateExpr;
-import com.marklogic.client.type.XsIntegerExpr;
-import com.marklogic.client.type.XsTimeExpr;
+import com.marklogic.client.type.PlanValueOption;
 
 public class TestOpticOnLiterals extends BasicJavaClientREST {
 	
@@ -399,7 +393,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		PlanColumn colorIdCol =  p.viewCol("myColor", "colorId");
 		ModifyPlan outputMultiOrder = plan5.joinInner(plan6, p.on(itemColorIdCol, colorIdCol))
 				                          .select(descCol, colorIdCol)
-				                          .orderBy(colorIdCol, descCol);
+				                          .orderBy(p.sortKeys(colorIdCol, descCol));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -446,7 +440,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan outputMultiJoin = plan5.joinInner(plan6, p.on(itemColorIdCol, colorIdCol))
 				                          .joinInner(plan7, p.on(colorDescCol, refColorCol))
 				                          .select(descCol, colorIdCol, refCol)
-				                          .orderBy(colorIdCol, descCol);
+				                          .orderBy(p.sortKeys(colorIdCol, descCol));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -570,7 +564,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan output = plan1.joinInner(plan2)
 		                         .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
 		                         .offsetLimit(1, 3)
-		                         .select("rowId", "desc", "colorId", "colorDesc");
+		                         .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -595,7 +589,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan outputLimit = plan1.joinInner(plan2)
                                       .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
                                       .limit(0)
-                                      .select("rowId", "desc", "colorId", "colorDesc");
+                                      .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		StringBuilder str = new StringBuilder();
@@ -885,7 +879,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		// plans from literals
 		ModifyPlan plan1 = p.fromLiterals(literals1);
 		
-		ModifyPlan output = plan1.groupBy("colorId").orderBy("colorId");
+		ModifyPlan output = plan1.groupBy(p.col("colorId")).orderBy(p.col("colorId"));
 
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -916,7 +910,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(literals1);
 		ModifyPlan plan2 = p.fromLiterals(literals2);
 		
-		ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy("rowId");
+		ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy(p.sortKeys(p.col("rowId")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -953,8 +947,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(storeInformation);
 		ModifyPlan plan2 = p.fromLiterals(internetSales);
 		
-		ModifyPlan output = plan1.select("txnDate")
-		                         .intersect(plan2.select("txnDate"));
+		ModifyPlan output = plan1.select(p.col("txnDate"))
+		                         .intersect(plan2.select(p.col("txnDate")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -983,8 +977,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(storeInformation);
 		ModifyPlan plan2 = p.fromLiterals(internetSales);
 		
-		ModifyPlan output = plan1.select("txnDate")
-		                         .except(plan2.select("txnDate"));
+		ModifyPlan output = plan1.select(p.cols("txnDate"))
+		                         .except(plan2.select(p.cols("txnDate")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1094,7 +1088,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan outputAgg = plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol))
 		                         .groupBy(rowIdExp, p.arrayAggregate("colorIdArray", "colorDesc"))
-		                         .orderBy("rowId");
+		                         .orderBy(p.sortKeys(p.col("rowId")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1112,7 +1106,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan outputSeqAgg = plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol))
                                        .groupBy(rowIdExp, p.sequenceAggregate("colorIdArray", "colorDesc"))
-                                       .orderBy("rowId");
+                                       .orderBy(p.sortKeys(p.col("rowId")));
 		
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1132,14 +1126,14 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan4 = p.fromLiterals(literals2);
 		
 		// Verify DISTINCT
-		PlanAggregateOptions options = p.aggregateOptions(PlanBuilder.PlanValues.DISTINCT);
+		//Ajit PlanValueOption options = p.aggregateOptions(PlanValueOption.DISTINCT);
 		
-		PlanAggregateColSeq aggColSeq = p.aggregates(p.count("descAgg", "desc", options));
+		PlanAggregateColSeq aggColSeq = p.aggregates(p.count("descAgg", "desc", PlanValueOption.DISTINCT));
 		PlanExprColSeq colSeq = p.cols("rowId");
 		
 		ModifyPlan outputCountDist = plan3.joinInner(plan4)
 		                                  .groupBy(colSeq, aggColSeq)
-		                                  .orderBy("rowId");
+		                                  .orderBy(p.sortKeys(p.col("rowId")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1156,14 +1150,14 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		// aggregate with duplicate option
 		
-		PlanAggregateOptions optionsDup = p.aggregateOptions(PlanBuilder.PlanValues.DUPLICATE);
+		// Ajit PlanValueOption optionsDup = p.aggregateOptions(PlanValueOption.DUPLICATE);
 		
-		PlanAggregateColSeq aggColSeqDup = p.aggregates(p.count("descAgg", "desc", optionsDup));
+		PlanAggregateColSeq aggColSeqDup = p.aggregates(p.count("descAgg", "desc", PlanValueOption.DUPLICATE));
 		PlanExprColSeq colSeqDup = p.cols("rowId");
 		
 		ModifyPlan outputCountDup = plan3.joinInner(plan4)
 		                                  .groupBy(colSeqDup, aggColSeqDup)
-		                                  .orderBy("rowId");
+		                                  .orderBy(p.sortKeys(p.col("rowId")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1250,7 +1244,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan output = plan1.joinInner(plan2)
 		        .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
-		        .select("rowIdRef", "desc", "colorId", "colorDesc");
+		        .select(p.cols("rowIdRef", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1302,7 +1296,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan output = plan1.joinInner(plan2)
 		                         .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
 		                         .offsetLimit(-1, 1)
-		                         .select("rowId", "desc", "colorId", "colorDesc");
+		                         .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");

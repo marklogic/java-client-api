@@ -16,7 +16,10 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -42,9 +45,9 @@ import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
+import com.marklogic.client.expression.PlanBuilder.AccessPlan;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.ViewPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -53,7 +56,8 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.PlanParamExpr;
+import com.marklogic.client.type.PlanSortKeySeq;
 import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.XsStringVal;
 
@@ -290,12 +294,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 				
-		ViewPlan plan = p.fromView("opticFunctionalTest", "detail", "MarkLogicQAQualifier" );
-		plan.orderBy(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.masterId"), 
+		AccessPlan plan = p.fromView("opticFunctionalTest", "detail", "MarkLogicQAQualifier" );
+		
+		plan.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.masterId"), 
 				     p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.color"),
-				     p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.amount"));
-		
-		
+				     p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.amount")));
+				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
@@ -514,7 +518,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				                		p.schemaCol("opticFunctionalTest", "detail", "amount"),
 				                		p.schemaCol("opticFunctionalTest", "detail", "color")
 				                      )
-				                .orderBy(p.desc(p.col("DetailName")), p.desc(p.col("MasterName")));
+				                .orderBy(p.sortKeys(p.desc(p.col("DetailName")), p.desc(p.col("MasterName"))));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
@@ -668,39 +672,50 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	}
 	
 	/* This test checks join inner with null schema.
-	 * Throw Exception : IllegalArgumentException
+	 * Should return 3 nodes
 	 * 
 	 */
 	@Test
 	public void testjoinInnerWithNullSchema() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
-	{	StringBuilder str = new StringBuilder();
-		try {
+	{	
+		StringBuilder str = new StringBuilder();
+
 		System.out.println("In testjoinInnerWithNullSchema method");
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		
+
 		ModifyPlan plan1 = p.fromView(null, "detail3");
 		ModifyPlan plan2 = p.fromView(null, "master3");             
 		ModifyPlan plan3 =  plan1.joinInner(plan2)
-		                         .where(
-		                                 p.eq(
-		                                        p.schemaCol(null, "master3" , "id"),
-		                                        p.schemaCol(null, "detail3", "masterId")
-		                                      )
-		                               )
-		                         .orderBy(p.asc(p.schemaCol(null, "detail3", "id")));
-		
+				.where(
+						p.eq(
+								p.schemaCol(null, "master3" , "id"),
+								p.schemaCol(null, "detail3", "masterId")
+								)
+						)
+						.orderBy(p.asc(p.schemaCol(null, "detail3", "id")));
+
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
-		
+
 		rowMgr.resultDoc(plan3, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-	} 
-	catch(Exception ex) {
-		str.append(ex.getMessage());
-	}
-	assertTrue("Exception Message incorrect", str.toString().contains("cannot take null value"));
+
+		// Should have 3 node3 returned.
+		assertEquals("Three nodes not returned from testExportPlan method ", 3, jsonBindingsNodes.size());
+		// Verify first node.
+		JsonNode first = jsonBindingsNodes.path(0);
+		assertEquals("Element 1 opticFunctionalTest3.detail3.id value incorrect", "7", first.path("opticFunctionalTest3.detail3.id").path("value").asText());
+		assertEquals("Element 1 opticFunctionalTest3.master3.date value incorrect", "2016-03-01", first.path("opticFunctionalTest3.master3.date").path("value").asText());
+
+		JsonNode second = jsonBindingsNodes.path(1);
+		assertEquals("Element 2 opticFunctionalTest3.detail3.name value incorrect", "Detail 8", second.path("opticFunctionalTest3.detail3.name").path("value").asText());
+		assertEquals("Element 2 opticFunctionalTest3.detail3.amount value incorrect", "89.36", second.path("opticFunctionalTest3.detail3.amount").path("value").asText());
+
+		JsonNode third = jsonBindingsNodes.path(2);
+		assertEquals("Element 3 opticFunctionalTest3.detail3.name value incorrect", "Detail 11", third.path("opticFunctionalTest3.detail3.name").path("value").asText());
+		assertEquals("Element 3 opticFunctionalTest3.detail3.color value incorrect", "green", third.path("opticFunctionalTest3.detail3.color").path("value").asText());	
 	}
 	
 	/* This test checks when we export plan.
@@ -715,8 +730,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		JacksonHandle exportHandle = new JacksonHandle();
 		
-		ViewPlan plan1 = p.fromView("opticFunctionalTest", "detail");
-		ViewPlan plan2 = p.fromView("opticFunctionalTest", "master");
+		AccessPlan plan1 = p.fromView("opticFunctionalTest", "detail");
+		AccessPlan plan2 = p.fromView("opticFunctionalTest", "master");
 		
 		PlanColumn masterIdCol1 = plan1.col("masterId");
 		PlanColumn masterIdCol2 = plan2.col("id");
@@ -762,7 +777,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Plan export incorrect", "offset-limit", exportNode.path("$optic").path("args").get(3).path("fn").asText());
 				
 		// ExportAs the Plan to a handle.
-		String strJackHandleAs = exportedPlan.exportAs(String.class);
+		String strJackHandleAs = exportedPlan.exportAs(String.class);		
 		JsonNode JsonNodeAs = exportedPlan2.exportAs(JsonNode.class);
 		
 		// verify parts of the Exported Plan String.
@@ -1127,7 +1142,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		                 p.schemaCol("opticFunctionalTest", "detail", "amount"), 
 		                 p.schemaCol("opticFunctionalTest", "detail", "color")
 				       )
-				.orderBy(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date")));
+				.orderBy(p.sortKeys(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
 		
 		RowSet<RowRecord> rowSet = rowMgr.resultRows(plan3);
 		// Verify RowRecords using Iterator
@@ -1199,7 +1214,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				                				  p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")),
 							                	  p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))
 				                		         ))
-				                .orderBy("unionId");	
+				                .orderBy(p.col("unionId"));	
 				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1242,7 +1257,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
                 		                p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))
                 	                   )
                 	            .intersect(plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "detail", "id"))))
-                	            .orderBy("unionId");	
+                	            .orderBy(p.col("unionId"));	
 				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1331,7 +1346,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			                .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 		     .where(p.gt(
-		    		     p.schemaCol("opticFunctionalTest", "detail", "amount"), p.math.median(p.xs.doubleVals(numbers))
+		    		     p.schemaCol("opticFunctionalTest", "detail", "amount"), p.math.median(p.xs.doubleSeq(10.0, 40.0, 50.0, 30.0, 60.0, 0.0, 100.0))
                         )
                     )
              .select(p.as("myAmount", p.viewCol("detail", "amount")))
@@ -1448,8 +1463,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		
 		// Verify for invalid schema name
-		ViewPlan planInvalidSchema = p.fromView("opticFunctionalTestInvalid", "detail", "MarkLogicQAQualifier" );
-		planInvalidSchema.orderBy("opticFunctionalTest", "detail","id");
+		AccessPlan planInvalidSchema = p.fromView("opticFunctionalTestInvalid", "detail", "MarkLogicQAQualifier" );
+		planInvalidSchema.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1465,8 +1480,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				exceptionSch.contains("Unknown table: Table 'opticFunctionalTestInvalid.detail' not found"));
 		
 		// Verify for invalid view name
-		ViewPlan planInvalidView = p.fromView("opticFunctionalTest", "detailInvalid", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy("opticFunctionalTest", "detail","id");
+		AccessPlan planInvalidView = p.fromView("opticFunctionalTest", "detailInvalid", "MarkLogicQAQualifier" );
+		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 		
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1482,8 +1497,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				exceptionVw.contains("Unknown table: Table 'opticFunctionalTest.detailInvalid' not found"));
 		
 		// Verify for empty view name
-		ViewPlan planEmptyView = p.fromView("opticFunctionalTest", "", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy("opticFunctionalTest", "detail","id");
+		AccessPlan planEmptyView = p.fromView("opticFunctionalTest", "", "MarkLogicQAQualifier" );
+		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1499,8 +1514,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				exceptionNoView.contains("Invalid arguments: cannot specify fromView() without view name"));
 		
 		// Verify for empty Schma name
-		ViewPlan planEmptySch = p.fromView("", "detail", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy("opticFunctionalTest", "detail","id");
+		AccessPlan planEmptySch = p.fromView("", "detail", "MarkLogicQAQualifier" );
+		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1538,7 +1553,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	                                        )
 	                                  )
 	                            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")))
-	                            .select("id");
+	                            .select(p.cols("id"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1906,7 +1921,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				            .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
 				            .orderBy(p.schemaCol("opticFunctionalTest", "master","id"));
-		PlanParam idParam  = p.param("ID");
+		PlanParamExpr idParam  = p.param("ID");
 		ModifyPlan plan3 = plan1.joinInner(plan2)
 		                        .where(
 		                                p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
@@ -1963,7 +1978,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());
 		
 		// Verify with double value.
-		PlanParam amtParam  = p.param("AMT");
+		PlanParamExpr amtParam  = p.param("AMT");
 		ModifyPlan planAmt = p.fromView("opticFunctionalTest", "detail")
 				.where(p.gt(p.schemaCol("opticFunctionalTest", "detail", "amount"), amtParam)
 					   )
@@ -1982,7 +1997,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Row 5 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(4).path("opticFunctionalTest.detail.amount").path("value").asText());
 		
 		// verify for Strings.
-		PlanParam detNameParam  = p.param("DETAILNAME");
+		PlanParamExpr detNameParam  = p.param("DETAILNAME");
 		ModifyPlan planStringBind = p.fromView("opticFunctionalTest", "detail")
 				                     .where(p.eq(p.schemaCol("opticFunctionalTest", "detail", "name"), detNameParam)
 						                   )

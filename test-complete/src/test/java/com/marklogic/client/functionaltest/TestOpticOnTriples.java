@@ -17,7 +17,6 @@
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
@@ -25,14 +24,12 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.Arrays;
 import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -48,23 +45,20 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.ViewPlan;
-import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanParam;
+import com.marklogic.client.type.PlanParamExpr;
+import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanSystemColumn;
+import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanTriplePatternSeq;
 import com.marklogic.client.type.PlanTripleVal;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemStoreExpr;
-import com.marklogic.client.type.XsStringVal;
 
 public class TestOpticOnTriples extends BasicJavaClientREST {
 	private static String dbName = "TestOpticOnTriplesDB";
@@ -278,7 +272,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
 		ExportablePlan  plan1 = p.fromTriples(p.pattern(p.col("id"), rowGraph.iri("age"), p.col("age")))
 				.orderBy(p.col("age"));
 
@@ -320,7 +314,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer rowGraph = p.prefixer("http://marklogic.com/baseball/players");
 
 		PlanColumn ageCol = p.col("age");
 		PlanColumn idCol = p.col("id");
@@ -332,9 +326,9 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(idCol, rowGraph.iri("position"), posCol));
 
 		ModifyPlan plan1 = p.fromTriples(patSeq,
-				                         (String)null,				                         
-				                         p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
-				 )
+				                         (String)null,
+				                         (String)null,
+				                         PlanTripleOption.DEDUPLICATED)				 
 				.orderBy(p.desc(ageCol))
 				.select(
 						p.as("PlayerName", nameCol), 
@@ -369,8 +363,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  players = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  players = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -430,8 +424,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  players = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  players = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -473,8 +467,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  players = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  players = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -538,8 +532,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -622,8 +616,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -639,7 +633,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
-		ModifyPlan player_plan = p.fromTriples(patSeq, null, "/optic/player/triple/test", p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));    
+		ModifyPlan player_plan = p.fromTriples(patSeq, null, "/optic/player/triple/test", PlanTripleOption.DEDUPLICATED);    
 		ModifyPlan team_plan = p.fromTriples(
 				p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
@@ -690,8 +684,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -708,10 +702,10 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
-		SemIriSeqVal storeIris =  p.sem.iris("/optic/player/triple/test", "/optic/team/triple/test" );
+		SemIriSeqVal storeIris =  p.sem.iriSeq("/optic/player/triple/test", "/optic/team/triple/test" );
 		SemStoreExpr storeExpr = p.sem.store("any");
 		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, (String)null, (String)null,
-				                               p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED))
+				                               PlanTripleOption.DEDUPLICATED)
 				                  .where(storeExpr);
 				
 		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
@@ -720,7 +714,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,
                                              (String)null,
                                              null,                                             
-                                             p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED)
+                                             PlanTripleOption.DEDUPLICATED
                                              );
       
 		ModifyPlan output = player_plan.joinInner(team_plan)
@@ -752,7 +746,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 3 TeamName value incorrect", "San Francisco Giants", jsonResults.get(2).path("TeamName").path("value").asText());
 		
 		// Verify overloaded fromTriples() with graphIRI
-		ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String)null, "/optic/player/triple/test", p.tripleOptions(PlanBuilder.PlanTriples.DEDUPLICATED));
+		ModifyPlan player_plan1 = p.fromTriples(patPlayerSeq, (String)null, "/optic/player/triple/test", PlanTripleOption.DEDUPLICATED);
 		ModifyPlan output1 = player_plan.joinInner(team_plan)
                 .where(p.eq(teamNameCol, p.xs.string("Giants")))
                 .orderBy(p.asc(playerAgeCol))
@@ -796,7 +790,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 
 		PlanColumn ageCol = p.col("age");
 		PlanColumn idCol = p.col("id");
@@ -866,7 +860,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 8 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
 
 		//access with qualifier and no object		
-		ModifyPlan outputNoObject = p.fromTriples(p.pattern(idCol, bb.iri("age"), (PlanTripleVal)null), "myPlayer")
+		ModifyPlan outputNoObject = p.fromTriples(p.pattern(idCol, bb.iri("age"), null), "myPlayer")
 				.orderBy(p.asc(p.viewCol("myPlayer", "id")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -925,7 +919,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 
 		PlanColumn ageCol = p.col("age");
 		PlanColumn idCol = p.col("id");
@@ -977,8 +971,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/other/bball/players#");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/other/bball/players#");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -1023,8 +1017,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -1075,8 +1069,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -1115,7 +1109,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 						p.as("day", p.fn.dayFromDate(playerDobCol)),
 						p.as("log", p.math.log(playerEffCol))
 						)
-						.orderBy("lastname");
+						.orderBy(p.sortKeys(p.col("lastname")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1154,8 +1148,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -1202,9 +1196,9 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanBuilder.Prefixer bb = p.prefixer("http://marklogic.com/other/bball/players#");
-		PlanBuilder.Prefixer org = p.prefixer("http://marklogic.com/baseball/players/");
-		PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer bb = p.prefixer("http://marklogic.com/other/bball/players#");
+		PlanPrefixer org = p.prefixer("http://marklogic.com/baseball/players/");
+		PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 		PlanColumn playerAgeCol = p.col("player_age");
 		PlanColumn playerIdCol = p.col("player_id");
@@ -1279,7 +1273,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanBuilder.Prefixer bb = p.prefixer("http://marklogic.com/baseball/players/");
+		PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players/");
 		PlanColumn ageCol = p.col("age");
 		PlanColumn idCol = p.col("id");
 		PlanColumn nameCol = p.col("name");
@@ -1307,34 +1301,34 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertTrue("Exceptions not found", str.toString().contains("myPlayer_Invalid.age"));
 	}
 	
-	/* This test checks triples with invalid patterndef.
+	/* This test checks triples with invaid qualifier.
 	 * 
 	 * Should return exception.
 	 * 
 	 */
 	@Test
-	public void testInvalidPatterndef() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	public void testInvalidQualifier() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
 	{
-		System.out.println("In testInvalidPatterndef method");
+		System.out.println("In testInvalidQualifier method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
-		PlanBuilder.Prefixer bb = p.prefixer("http://marklogic.com/baseball/players/");	
+		PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players/");	
 		PlanColumn nameCol = p.col("name");
-		PlanColumn posCol = p.col("position");
-
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(p.col("id"), bb.iri("age"), p.col("age")),
-				p.pattern(p.col("id"), nameCol),     
-				p.pattern(p.col("id"), bb.iri("position"), posCol)
+		PlanColumn ageCol = p.col("age");
+		PlanColumn idCol = p.col("id");
+		PlanColumn teamCol = p.col("team");
+		
+		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol),
+				p.pattern(idCol, bb.iri("name"), nameCol),     
+				p.pattern(idCol, bb.iri("team"), teamCol)
 				);		
-		ModifyPlan output = p.fromTriples(patPlayerSeq, "")
-				.orderBy(p.desc(p.col("age")))
-				.select(
-						p.as("PlayerName", nameCol),
-						p.as("PlayerPosition", posCol)
-						);
+		ModifyPlan output = p.fromTriples(patPlayerSeq, "myPlayer", null, PlanTripleOption.DEDUPLICATED)
+				.where(p.ge(p.viewCol("myPlayer_Invalid", "age"), p.xs.intVal(25)))
+				.orderBy(p.desc(p.viewCol("myPlayer", "name")));
+				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		StringBuilder str = new StringBuilder();
@@ -1347,7 +1341,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		}
 		// Should have SQL-NOCOLUMN exceptions.
 		assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
-		assertTrue("Exceptions not found", str.toString().contains("Column not found: name"));
+		assertTrue("Exceptions not found", str.toString().contains("Column not found: myPlayer_Invalid.age"));
 	}
 	
 	/* This test checks null value in avg function.
@@ -1365,8 +1359,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			RowManager rowMgr = client.newRowManager();
 			PlanBuilder p = rowMgr.newPlanBuilder();
 
-			PlanBuilder.Prefixer bb = p.prefixer("http://marklogic.com/baseball/players/");
-			PlanBuilder.Prefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
+			PlanPrefixer bb = p.prefixer("http://marklogic.com/baseball/players/");
+			PlanPrefixer tm = p.prefixer("http://marklogic.com/mlb/team/");
 
 			PlanColumn playerAgeCol = p.col("player_age");
 			PlanColumn playerIdCol = p.col("player_id");
@@ -1396,7 +1390,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("cannot take null value"));
+		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: avg aggregate must specify input column: null"));
 	}
 	
 	/* This test checks bindParam on triples' subject and object. 
@@ -1410,10 +1404,10 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
-		PlanBuilder.Prefixer team = p.prefixer("http://marklogic.com/mlb/team/");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer team = p.prefixer("http://marklogic.com/mlb/team/");
 		
-		PlanParam ageParam  = p.param("player_age");
+		PlanParamExpr ageParam  = p.param("player_age");
 		
 		PlanColumn playerIdCol = p.col("player_id");
 		PlanColumn playerNameCol = p.col("player_name");

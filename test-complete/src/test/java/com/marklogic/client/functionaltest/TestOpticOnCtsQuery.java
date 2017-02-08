@@ -16,21 +16,20 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -44,24 +43,16 @@ import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.PreparePlan;
-import com.marklogic.client.expression.PlanBuilder.QualifiedPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.CtsQuerySeqExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanSystemColumn;
-import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.XsStringSeqVal;
 
 /* The tests here are for checks on cts queries.
@@ -390,7 +381,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		// plan1 - fromView
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4", null, null, 
@@ -507,7 +498,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		XsStringSeqVal propertyName = p.xs.string("city");
 		XsStringSeqVal value = p.xs.string("*k");
 		
-		XsStringSeqVal options = p.xs.strings("wildcarded", "case-sensitive");
+		XsStringSeqVal options = p.xs.stringSeq("wildcarded", "case-sensitive");
 				
 		ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery(propertyName, value, options))
 								 .joinInner(plan2)
@@ -521,6 +512,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		JsonNode jsonResults = jacksonHandle.get();
 
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		// Git Issue 633
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());		
 		assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
 	}
@@ -538,7 +530,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		// plan1 - fromView
 		ModifyPlan plan1 = p.fromView("opticFunctionalTest4", "detail4");
@@ -546,7 +538,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// plan2 - fromLiterals
 		ModifyPlan  plan2 = p.fromView("opticFunctionalTest4", "master4");
 		
-		ModifyPlan output = plan1.where(p.cts.jsonPropertyRangeQuery("id", ">", p.xs.intVal(300)))
+		ModifyPlan output = plan1.where(p.cts.jsonPropertyRangeQuery("id", ">", "300"))
 				                 .joinInner(plan2, p.on(
 				                                         p.schemaCol("opticFunctionalTest4", "detail4", "masterId"),
 				                                         p.schemaCol("opticFunctionalTest4", "master4", "id")
@@ -601,7 +593,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// plan2 - fromLexicons
 		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", p.fragmentIdCol("fragId2"));
 		
-		ModifyPlan output = plan1.where(p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery(p.xs.QName("metro"), "true")))
+		ModifyPlan output = plan1.where(p.cts.orQuery(p.cts.collectionQuery("/other/coll1"), p.cts.elementValueQuery("metro", "true")))
 								 .joinInner(plan2)
 		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 		                         .orderBy(p.asc(p.col("date")));
@@ -723,7 +715,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		// plan1 - fromView
 		CtsQueryExpr andQuery1 = p.cts.andQuery(p.cts.jsonPropertyWordQuery("id", "400"), 
@@ -777,7 +769,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
-		PlanBuilder.Prefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
 		
 		// plan1 - fromView
 		CtsQueryExpr andQuery3 = p.cts.jsonPropertyWordQuery("id", "1");
