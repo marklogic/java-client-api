@@ -20,6 +20,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 
 import java.util.Iterator;
@@ -117,6 +118,16 @@ public interface DataMovementManager {
    * @return the new QueryBatcher instance
    */
   public QueryBatcher newQueryBatcher(StructuredQueryDefinition query);
+
+  /**
+   * Create a new QueryBatcher instance configured to retrieve uris that
+   * match this query.
+   *
+   * @param query the query used to find matching uris
+   *
+   * @return the new QueryBatcher instance
+   */
+  public QueryBatcher newQueryBatcher(RawStructuredQueryDefinition query);
 
   /**
    * Create a new QueryBatcher instance configured to retrieve uris that

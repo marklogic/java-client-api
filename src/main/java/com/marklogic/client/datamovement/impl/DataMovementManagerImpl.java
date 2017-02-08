@@ -21,6 +21,7 @@ import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
@@ -108,6 +109,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public QueryBatcher newQueryBatcher(StructuredQueryDefinition query) {
+    return newQueryBatcherImpl(query);
+  }
+
+  @Override
+  public QueryBatcher newQueryBatcher(RawStructuredQueryDefinition query) {
     return newQueryBatcherImpl(query);
   }
 

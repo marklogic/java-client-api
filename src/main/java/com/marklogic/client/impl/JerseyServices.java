@@ -2112,18 +2112,21 @@ public class JerseyServices implements RESTServices {
         }
 
         void init() {
+            String text = null;
             if (queryDef instanceof StringQueryDefinition) {
-                String text = ((StringQueryDefinition) queryDef).getCriteria();
-
-                if (text != null) {
-                    addEncodedParam(params, "q", text);
-                }
+                text = ((StringQueryDefinition) queryDef).getCriteria();
+            } else if (queryDef instanceof StructuredQueryDefinition) {
+                text = ((StructuredQueryDefinition) queryDef).getCriteria();
+            } else if (queryDef instanceof RawStructuredQueryDefinition) {
+                text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
             }
-            if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
+            if (text != null) {
+                addEncodedParam(params, "q", text);
+            }
+            if (queryDef instanceof StructuredQueryDefinition) {
                 structure = ((StructuredQueryDefinition) queryDef).serialize();
 
                 if (logger.isDebugEnabled()) {
-                    String text = ((StringQueryDefinition) queryDef).getCriteria();
                     String qtextMessage = text == null ? "" : " and string query \"" + text + "\"";
                     logger.debug("Searching for structure {}{}", structure, qtextMessage);
                 }
@@ -2156,7 +2159,6 @@ public class JerseyServices implements RESTServices {
                 webResource = getConnection().path("search").queryParams(params);
                 builder = webResource.type("application/xml").accept(mimetype);
             } else if (queryDef instanceof StringQueryDefinition) {
-                String text = ((StringQueryDefinition) queryDef).getCriteria();
                 if (logger.isDebugEnabled())
                     logger.debug("Searching for string [{}]", text);
 
@@ -2399,13 +2401,18 @@ public class JerseyServices implements RESTServices {
 					logger.warn("directory scope ignored for values query");
 			}
 
+			String text = null;
 			if (queryDef instanceof StringQueryDefinition) {
-				String text = ((StringQueryDefinition) queryDef).getCriteria();
-				if (text != null) {
-					addEncodedParam(docParams, "q", text);
-				}
+				text = ((StringQueryDefinition) queryDef).getCriteria();
+			} else if (queryDef instanceof StructuredQueryDefinition) {
+				text = ((StructuredQueryDefinition) queryDef).getCriteria();
+			} else if (queryDef instanceof RawStructuredQueryDefinition) {
+				text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
 			}
-			if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
+			if (text != null) {
+				addEncodedParam(docParams, "q", text);
+			}
+			if (queryDef instanceof StructuredQueryDefinition ) {
 				String structure = ((StructuredQueryDefinition) queryDef)
 						.serialize();
 				if (structure != null) {
@@ -2904,18 +2911,30 @@ public class JerseyServices implements RESTServices {
 
 			return postResource(reqlog, "internal/uris", transaction, params, input, output);
 		} else {
+			String text = null;
 			if (qdef instanceof StringQueryDefinition) {
-				String text = ((StringQueryDefinition) qdef).getCriteria();
-				if (text != null) {
-					params.add("q", text);
-				}
+				text = ((StringQueryDefinition) qdef).getCriteria();
+			} else if (qdef instanceof StructuredQueryDefinition) {
+				text = ((StructuredQueryDefinition) qdef).getCriteria();
+			} else if (qdef instanceof RawStructuredQueryDefinition) {
+				text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+			}
+			String qtextMessage = "";
+			if (text != null) {
+				params.add("q", text);
+				qtextMessage = " and string query \"" + text + "\"";
 			}
 			if (qdef instanceof StructuredQueryDefinition) {
 				String structure = ((StructuredQueryDefinition) qdef).serialize();
 
-				String text = ((StringQueryDefinition) qdef).getCriteria();
-				String qtextMessage = text == null ? "" : " and string query \"" + text + "\"";
 				logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+				if (structure != null) {
+					params.add("structuredQuery", structure);
+				}
+			} else if (qdef instanceof RawStructuredQueryDefinition) {
+				String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+
+				logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
 				if (structure != null) {
 					params.add("structuredQuery", structure);
 				}
@@ -2927,7 +2946,6 @@ public class JerseyServices implements RESTServices {
 					params.add("structuredQuery", structure);
 				}
 			} else if (qdef instanceof StringQueryDefinition) {
-				String text = ((StringQueryDefinition) qdef).getCriteria();
 				logger.debug("Query uris with string query \"{}\"", text);
 			} else {
 				throw new UnsupportedOperationException("Cannot query uris with " +
@@ -4812,11 +4830,16 @@ public class JerseyServices implements RESTServices {
 		String structure = null;
 		HandleImplementation baseHandle = null;
 
+		String text = null;
 		if (queryDef instanceof StringQueryDefinition) {
-			String text = ((StringQueryDefinition) queryDef).getCriteria();
-			if (text != null) {
-				addEncodedParam(params, "q", text);
-			}
+			text = ((StringQueryDefinition) queryDef).getCriteria();
+		} else if (queryDef instanceof StructuredQueryDefinition) {
+			text = ((StructuredQueryDefinition) queryDef).getCriteria();
+		} else if (queryDef instanceof RawStructuredQueryDefinition) {
+			text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
+		}
+		if (text != null) {
+			addEncodedParam(params, "q", text);
 		}
 		if (queryDef instanceof StructuredQueryDefinition) {
 			structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -4835,7 +4858,6 @@ public class JerseyServices implements RESTServices {
 
 			builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
 		} else if (queryDef instanceof StringQueryDefinition) {
-			String text = ((StringQueryDefinition) queryDef).getCriteria();
 			if (logger.isDebugEnabled())
 				logger.debug("Searching for string [{}]", text);
 

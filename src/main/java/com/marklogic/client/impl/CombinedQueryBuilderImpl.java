@@ -137,6 +137,29 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
     }
 
     @Override
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery, String qtext) {
+        return new CombinedQueryDefinitionImpl(rawQuery, null, qtext, null);
+    }
+    @Override
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, null, null);
+    }
+    @Override
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, qtext, null);
+    }
+    @Override
+    public CombinedQueryDefinition combine(RawStructuredQueryDefinition rawQuery,
+        QueryOptionsWriteHandle options, String qtext, String sparql)
+    {
+        return new CombinedQueryDefinitionImpl(rawQuery, options, qtext, sparql);
+    }
+
+    @Override
     public CombinedQueryDefinition combine(RawCombinedQueryDefinition rawQuery, String qtext)
     {
         return new CombinedQueryDefinitionImpl(rawQuery, null, qtext, null);
@@ -341,7 +364,7 @@ public class CombinedQueryBuilderImpl implements CombinedQueryBuilder {
          StringHandle structuredQueryHandle = new StringHandle().with(query).withFormat(Format.XML);
          RawStructuredQueryDefinition structuredQueryDefinition = 
                  new RawQueryDefinitionImpl.Structured(structuredQueryHandle);
-         return new CombinedQueryDefinitionImpl((StructuredQueryDefinition) structuredQueryDefinition,
+         return new CombinedQueryDefinitionImpl(structuredQueryDefinition,
              optionsHandle, qtext, sparql);
     }
 }

@@ -53,6 +53,7 @@ import static com.marklogic.client.io.Format.XML;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -145,7 +146,7 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(query, matchesByForest, 1, 2);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
   }
 
   @Test
@@ -156,7 +157,7 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(query, matchesByForest, 2, 1);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 2, 1);
   }
 
   @Test
@@ -168,7 +169,7 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(query, matchesByForest, 3, 2);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 3, 2);
   }
 
   @Test
@@ -180,7 +181,7 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {});
-    runQueryBatcher(query, matchesByForest, 99, 17);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 99, 17);
   }
 
   @Test
@@ -195,13 +196,13 @@ public class QueryBatcherTest {
           "}" +
         "]}" +
       "}").withFormat(JSON);
-    StructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
+    RawStructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(structuredQuery);
     query.setCollections(qhbTestCollection);
     Map<String, String[]> matchesByForest = new HashMap<>();
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(query, matchesByForest, 17, 99);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 17, 99);
   }
 
   @Test
@@ -224,29 +225,7 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
     matchesByForest.put("java-unittest-2", new String[] {});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(query, matchesByForest, 30, 20);
-  }
-
-
-  public void runQueryBatcher(RawCombinedQueryDefinition query, Map<String,String[]> matchesByForest,
-      int batchSize, int threadCount)
-    throws Exception
-  {
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
-  }
-
-  public void runQueryBatcher(StructuredQueryDefinition query, Map<String,String[]> matchesByForest,
-      int batchSize, int threadCount)
-    throws Exception
-  {
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
-  }
-
-  public void runQueryBatcher(StringQueryDefinition query, Map<String,String[]> matchesByForest,
-      int batchSize, int threadCount)
-    throws Exception
-  {
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, batchSize, threadCount);
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 30, 20);
   }
 
   public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
@@ -367,7 +346,7 @@ public class QueryBatcherTest {
 
   @Test
   public void testBadQueryAndThrowException() {
-    StructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(
+    RawStructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(
       new StringHandle("<this is not a valid structured query>").withFormat(JSON));
     // we'll see one failure per forest
     List<String> urisIterator = testQueryExceptions(query, 0, 3);
@@ -395,15 +374,25 @@ public class QueryBatcherTest {
 
   private String errorMessage = "This is an expected exception used for a negative test";
 
-  public List<String> testQueryExceptions(StructuredQueryDefinition query, int expectedSuccesses, int expectedFailures) {
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+  public QueryBatcher newQueryBatcher(QueryDefinition query) {
+    if ( query instanceof RawStructuredQueryDefinition ) {
+      return moveMgr.newQueryBatcher((RawStructuredQueryDefinition) query);
+    } else if ( query instanceof StructuredQueryDefinition ) {
+      return moveMgr.newQueryBatcher((StructuredQueryDefinition) query);
+    } else {
+      throw new IllegalStateException("Unsupported query type: " + query.getClass().getName());
+    }
+  }
+
+  public List<String> testQueryExceptions(QueryDefinition query, int expectedSuccesses, int expectedFailures) {
+    QueryBatcher queryBatcher = newQueryBatcher(query)
       .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
     testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
 
     // collect the uris this time
     List<String> matchingUris = Collections.synchronizedList(new ArrayList<>());
-    queryBatcher = moveMgr.newQueryBatcher(query)
+    queryBatcher = newQueryBatcher(query)
       .onUrisReady( batch -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
       .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
