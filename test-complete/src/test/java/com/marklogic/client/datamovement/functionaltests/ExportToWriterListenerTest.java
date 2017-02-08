@@ -48,9 +48,8 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.query.QueryDefinition;
-import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class ExportToWriterListenerTest extends com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST {
 	
@@ -178,7 +177,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testMassExportJSON() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-		StringQueryDefinition query = new StructuredQueryBuilder().collection("ExportListener");
+		StructuredQueryDefinition query = new StructuredQueryBuilder().collection("ExportListener");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")
@@ -221,7 +220,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testMassExportXML() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-		StringQueryDefinition query = new StructuredQueryBuilder().collection("XML");
+		StructuredQueryDefinition query = new StructuredQueryBuilder().collection("XML");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")
@@ -264,7 +263,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@Test
 	public void testExportXMLJSON() throws Exception {
 		  // export to a csv with uri, collection, and contents columns
-		StringQueryDefinition query = new StructuredQueryBuilder().document("/local/xml-1","/local/jsonA-1");
+		StructuredQueryDefinition query = new StructuredQueryBuilder().document("/local/xml-1","/local/jsonA-1");
 	    try (FileWriter writer = new FileWriter(outputFile)) {
 	      ExportToWriterListener exportListener = new ExportToWriterListener(writer)
 	        .withRecordSuffix("\n")
