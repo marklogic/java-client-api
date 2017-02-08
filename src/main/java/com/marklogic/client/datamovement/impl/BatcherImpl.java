@@ -72,6 +72,7 @@ public abstract class BatcherImpl implements Batcher {
 
   @Override
   public Batcher withForestConfig(ForestConfiguration forestConfig) {
+    if ( forestConfig == null ) throw new IllegalArgumentException("forestConfig must not be null");
     this.forestConfig = forestConfig;
     return this;
   }

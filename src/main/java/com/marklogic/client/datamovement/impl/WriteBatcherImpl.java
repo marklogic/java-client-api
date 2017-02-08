@@ -268,6 +268,8 @@ public class WriteBatcherImpl
   public WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
       AbstractWriteHandle contentHandle)
   {
+    if ( uri == null ) throw new IllegalArgumentException("uri must not be null");
+    if ( contentHandle == null ) throw new IllegalArgumentException("contentHandle must not be null");
     initialize();
     requireNotStopped();
     queue.add( new DocumentToWrite(uri, metadataHandle, contentHandle) );
@@ -437,17 +439,20 @@ public class WriteBatcherImpl
 
   @Override
   public WriteBatcher onBatchSuccess(WriteBatchListener listener) {
+    if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
     successListeners.add(listener);
     return this;
   }
   @Override
   public WriteBatcher onBatchFailure(WriteFailureListener listener) {
+    if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
     failureListeners.add(listener);
     return this;
   }
 
   @Override
   public void retry(WriteBatch batch) {
+    if ( batch == null ) throw new IllegalArgumentException("batch must not be null");
     boolean forceNewTransaction = true;
     BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());
     writeSet.onFailure(throwable -> {

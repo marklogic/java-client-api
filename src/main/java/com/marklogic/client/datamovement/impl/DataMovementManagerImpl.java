@@ -74,26 +74,31 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public JobTicket startJob(WriteBatcher batcher) {
+    if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
     return service.startJob(batcher);
   }
 
   @Override
   public JobTicket startJob(QueryBatcher batcher) {
+    if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
     return service.startJob(batcher);
   }
 
   @Override
   public JobReport getJobReport(JobTicket ticket) {
+    if ( ticket == null ) throw new IllegalArgumentException("ticket must not be null");
     return service.getJobReport(ticket);
   }
 
   @Override
   public void stopJob(JobTicket ticket) {
+    if ( ticket == null ) throw new IllegalArgumentException("ticket must not be null");
     service.stopJob(ticket);
   }
 
   @Override
   public void stopJob(Batcher batcher) {
+    if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
     service.stopJob(batcher);
   }
 
@@ -128,6 +133,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
+    if ( query == null ) throw new IllegalArgumentException("query must not be null");
     QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
@@ -138,6 +144,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
+    if ( iterator == null ) throw new IllegalArgumentException("iterator must not be null");
     QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
@@ -159,6 +166,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   public DatabaseClient getForestClient(Forest forest) {
+    if ( forest == null ) throw new IllegalArgumentException("forest must not be null");
     String hostName = forest.getHost();
     if ( forest.getOpenReplicaHost() != null ) {
       hostName = forest.getOpenReplicaHost();

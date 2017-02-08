@@ -93,12 +93,14 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public QueryBatcherImpl onUrisReady(QueryBatchListener listener) {
+    if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
     urisReadyListeners.add(listener);
     return this;
   }
 
   @Override
   public QueryBatcherImpl onQueryFailure(QueryFailureListener listener) {
+    if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
     failureListeners.add(listener);
     return this;
   }
