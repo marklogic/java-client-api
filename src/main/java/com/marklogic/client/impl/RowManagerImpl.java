@@ -60,6 +60,7 @@ import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowSet;
+import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanParamBindingVal;
 import com.marklogic.client.type.PlanParamExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -870,6 +871,10 @@ public class RowManagerImpl
 		}
 
 		@Override
+		public ColumnKind getKind(PlanExprCol col) {
+			return getKind(getNameForColumn(col));
+		}
+		@Override
 		public ColumnKind getKind(String columnName) {
 			if (columnName == null) {
 				throw new IllegalArgumentException("cannot get column kind with null name");
@@ -884,6 +889,10 @@ public class RowManagerImpl
 			return ColumnKind.NULL;
 		}
 
+		@Override
+		public String getDatatype(PlanExprCol col) {
+			return getDatatype(getNameForColumn(col));
+		}
 		@Override
 		public String getDatatype(String columnName) {
 			if (columnName == null) {
@@ -959,32 +968,64 @@ public class RowManagerImpl
 
 		// literal casting convenience getters
 		@Override
+		public boolean getBoolean(PlanExprCol col) {
+			return getBoolean(getNameForColumn(col));
+		}
+		@Override
 		public boolean getBoolean(String columnName) {
 			return asBoolean(columnName, get(columnName));
+		}
+		@Override
+		public byte getByte(PlanExprCol col) {
+			return getByte(getNameForColumn(col));
 		}
 		@Override
 		public byte getByte(String columnName) {
 			return asByte(columnName, get(columnName));
 		}
 		@Override
+		public double getDouble(PlanExprCol col) {
+			return getDouble(getNameForColumn(col));
+		}
+		@Override
 		public double getDouble(String columnName) {
 			return asDouble(columnName, get(columnName));
+		}
+		@Override
+		public float getFloat(PlanExprCol col) {
+			return getFloat(getNameForColumn(col));
 		}
 		@Override
 		public float getFloat(String columnName) {
 			return asFloat(columnName, get(columnName));
 		}
 		@Override
+		public int getInt(PlanExprCol col) {
+			return getInt(getNameForColumn(col));
+		}
+		@Override
 		public int getInt(String columnName) {
 			return asInt(columnName, get(columnName));
+		}
+		@Override
+		public long getLong(PlanExprCol col) {
+			return getLong(getNameForColumn(col));
 		}
 		@Override
 		public long getLong(String columnName) {
 			return asLong(columnName, get(columnName));
 		}
 		@Override
+		public short getShort(PlanExprCol col) {
+			return getShort(getNameForColumn(col));
+		}
+		@Override
 		public short getShort(String columnName) {
 			return asShort(columnName, get(columnName));
+		}
+		@Override
+		public String getString(PlanExprCol col) {
+			return getString(getNameForColumn(col));
 		}
 		@Override
 		public String getString(String columnName) {
@@ -1046,6 +1087,11 @@ public class RowManagerImpl
 				return (RESTServiceResult) val;
 			}
 			return null;
+		}
+
+		@Override
+		public <T extends XsAnyAtomicTypeVal> T getValueAs(PlanExprCol col, Class<T> as) {
+			return getValueAs(getNameForColumn(col), as);
 		}
 
 		@Override
@@ -1165,6 +1211,10 @@ public class RowManagerImpl
 		}
 
 		@Override
+		public Format getContentFormat(PlanExprCol col) {
+			return getContentFormat(getNameForColumn(col));
+		}
+		@Override
 		public Format getContentFormat(String columnName) {
 			String mimetype = getContentMimetype(columnName);
 			if (mimetype == null) {
@@ -1183,6 +1233,10 @@ public class RowManagerImpl
 			}
 		}
 		@Override
+		public String getContentMimetype(PlanExprCol col) {
+			return getContentMimetype(getNameForColumn(col));
+		}
+		@Override
 		public String getContentMimetype(String columnName) {
 			if (columnName == null) {
 				throw new IllegalArgumentException("cannot get column mime type with null name");
@@ -1194,6 +1248,10 @@ public class RowManagerImpl
 			return nodeResult.getMimetype();
 		}
 		@Override
+		public <T extends AbstractReadHandle> T getContent(PlanExprCol col, T contentHandle) {
+			return getContent(getNameForColumn(col), contentHandle);
+		}
+		@Override
 		public <T extends AbstractReadHandle> T getContent(String columnName, T contentHandle) {
 			if (columnName == null) {
 				throw new IllegalArgumentException("cannot get column node with null name");
@@ -1203,6 +1261,10 @@ public class RowManagerImpl
 				return null;
 			}
 			return nodeResult.getContent(contentHandle);
+		}
+		@Override
+		public <T> T getContentAs(PlanExprCol col, Class<T> as) {
+			return getContentAs(getNameForColumn(col), as);
 		}
 		@Override
 		public <T> T getContentAs(String columnName, Class<T> as) {
@@ -1220,6 +1282,16 @@ public class RowManagerImpl
 			T content = (handle == null) ? null : handle.get();
 
 			return content;
+		}
+
+		private String getNameForColumn(PlanExprCol col) {
+            if (col == null) {
+            	throw new IllegalArgumentException("null column");
+            }
+            if (!(col instanceof PlanBuilderSubImpl.ColumnNamer)) {
+            	throw new IllegalArgumentException("invalid column class: "+col.getClass().getName());
+            }
+			return ((PlanBuilderSubImpl.ColumnNamer) col).getColName();
 		}
 	}
 	static class RawPlanDefinitionImpl implements RawPlanDefinition, PlanBuilderBaseImpl.RequestPlan {

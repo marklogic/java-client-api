@@ -22,6 +22,7 @@ import java.io.StringReader;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.io.BaseHandle;
@@ -252,6 +253,33 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 		
 		return new CaseCallImpl(whenList, ((CaseElseImpl) lastCase).getArg());
 	}
+
+// TODO: delete as(), col(), viewCol(), schemaCol(), fragmentIdCol(), and graphCol()
+// after code generation can specify base class
+    @Override
+    public PlanExprCol as(PlanColumn column, ItemSeqExpr expression) {
+        return new ExprColCallImpl("op", "as", new Object[]{ column, expression });
+    }
+    @Override
+    public PlanColumn col(XsStringVal column) {
+        return new ColumnCallImpl("op", "col", new Object[]{ column });
+    }
+    @Override
+    public PlanColumn viewCol(XsStringVal view, XsStringVal column) {
+        return new ColumnCallImpl("op", "view-col", new Object[]{ view, column });
+    }
+    @Override
+    public PlanColumn schemaCol(XsStringVal schema, XsStringVal view, XsStringVal column) {
+        return new ColumnCallImpl("op", "schema-col", new Object[]{ schema, view, column });
+    }
+    @Override
+    public PlanSystemColumn fragmentIdCol(XsStringVal column) {
+        return new SystemColumnCallImpl("op", "fragment-id-col", new Object[]{ column });
+    }
+    @Override
+    public PlanSystemColumn graphCol(XsStringVal column) {
+        return new SystemColumnCallImpl("op", "graph-col", new Object[]{ column });
+    }
 
 // TODO: move when() and elseExpr() into generated code
     @Override
@@ -614,7 +642,63 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 		}
     }
 
-	static class CaseCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ItemExpr {
+    static class ExprColCallImpl extends PlanCallImpl implements PlanExprCol, ColumnNamer {
+    	private ColumnNamer namedCol;
+        ExprColCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+            Object firstArg = fnArgs[0];
+            if (!(firstArg instanceof ColumnNamer)) {
+            	throw new IllegalArgumentException("invalid column class: "+firstArg.getClass().getName());
+            }
+           	namedCol = (ColumnNamer) firstArg;
+        }
+    	@Override
+        public String getColName() {
+        	return namedCol.getColName();
+        }
+    }
+
+    static class ColumnCallImpl extends PlanCallImpl implements PlanColumn, ColumnNamer {
+    	private Object[] fnArgs = null;
+    	private String   name   = null;
+        ColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+            this.fnArgs = fnArgs;
+        }
+    	@Override
+        public String getColName() {
+        	if (name == null) {
+        		int stepCount = fnArgs.length;
+        		if (stepCount == 1) {
+        			name = fnArgs[0].toString();
+        		} else {
+        			name = Arrays.stream(fnArgs)
+        			    .filter(step -> step != null)
+        			    .map(Object::toString)
+        			    .collect(Collectors.joining("."));
+        		}
+        	}
+        	return name;
+        }
+    }
+
+    static class SystemColumnCallImpl extends ColumnCallImpl implements PlanSystemColumn, ColumnNamer {
+    	private String name;
+        SystemColumnCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+            this.name = fnArgs[0].toString();
+        }
+    	@Override
+        public String getColName() {
+        	return name;
+        }
+    }
+    
+    static interface ColumnNamer {
+    	public String getColName();
+    }
+
+    static class CaseCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements ItemExpr {
 		CaseCallImpl(BaseTypeImpl.BaseArgImpl[] whenList, BaseTypeImpl.BaseArgImpl otherwise) {
             super("op", "case", new BaseTypeImpl.BaseArgImpl[]{
             		new BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl>(whenList), otherwise

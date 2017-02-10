@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import com.marklogic.client.DatabaseClientFactory.HandleFactoryRegistry;
@@ -23,16 +22,9 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
-import com.marklogic.client.type.AttributeNodeSeqExpr;
-import com.marklogic.client.type.ElementNodeExpr;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanGroupConcatOption;
 import com.marklogic.client.type.PlanLongParam;
 import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanTripleOption;
-import com.marklogic.client.type.PlanValueOption;
-import com.marklogic.client.type.XmlContentNodeSeqExpr;
-import com.marklogic.client.type.XsQNameExpr;
 
 abstract class PlanBuilderBaseImpl extends PlanBuilder {
 	final static PlanBuilderSubImpl pb = new PlanBuilderSubImpl();

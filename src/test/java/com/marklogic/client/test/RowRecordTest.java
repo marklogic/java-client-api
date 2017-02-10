@@ -23,6 +23,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -121,15 +122,19 @@ public class RowRecordTest {
 		Map<String,Object> literalRow = new HashMap<String,Object>();
 		literalRow.put("rowId", 1);
 
-		PlanExprCol[] cols = (PlanExprCol[])
-			datatypedValues
+		Map<String,PlanExprCol> cols =
+				datatypedValues
 		    	.entrySet()
 		    	.stream()
-		    	.map(entry -> p.as(entry.getKey(), entry.getValue()))
-		    	.toArray(size -> new PlanExprCol[size]);
+		    	.collect(Collectors.toMap(
+		    			entry -> entry.getKey(),
+		    			entry -> p.as(entry.getKey(), entry.getValue())
+		    			));
 
 		@SuppressWarnings("unchecked")
-		PlanBuilder.ModifyPlan plan = p.fromLiterals(new Map[]{literalRow}).select(cols);
+		PlanBuilder.ModifyPlan plan = p.fromLiterals(new Map[]{literalRow}).select(
+				cols.values().toArray(new PlanExprCol[cols.size()])
+				);
 
 		RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
 		Iterator<RowRecord> rowItr = rowSet.iterator();
@@ -138,106 +143,122 @@ public class RowRecordTest {
 		RowRecord row = rowItr.next();
 		datatypedValues.forEach((key,expected) -> {
 			boolean isFloatingPoint = (expected instanceof XsDoubleVal || expected instanceof XsFloatVal);
+			PlanExprCol col = cols.get(key);
+			for (boolean useKey: new boolean[]{true, false}) {
+				String expectedStr = expected.toString();
+				String actualStr   =
+						useKey ? row.getString(key) : row.getString(col);
+				if (isFloatingPoint && expectedStr.length() < actualStr.length()) {
+					actualStr = actualStr.substring(0, expectedStr.length());
+				}
+				assertEquals("string comparison for: "+key, expectedStr, actualStr);
 
-			String expectedStr = expected.toString();
-			String actualStr   = row.getString(key);
-			if (isFloatingPoint && expectedStr.length() < actualStr.length()) {
-				actualStr = actualStr.substring(0, expectedStr.length());
-			}
-			assertEquals("string comparison for: "+key, expectedStr, actualStr);
+				RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
+				RowRecord.ColumnKind actualKind   =
+						useKey ? row.getKind(key) : row.getKind(col);
+				assertEquals("column kind for: "+key, expectedKind, actualKind);
 
-			RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
-			RowRecord.ColumnKind actualKind   = row.getKind(key);
-			assertEquals("column kind for: "+key, expectedKind, actualKind);
+				String actualDatatype =
+						useKey ? row.getDatatype(key) : row.getDatatype(col);
+				switch(actualKind) {
+				case ATOMIC_VALUE:
+					String expectedTypePrefix = "xs";
+					String expectedTypeName   = key;
+					switch(key) {
+					case "double":
+					case "float":
+						expectedTypeName = "decimal";
+						break;
+					case "byte":
+					case "int":
+					case "long":
+					case "short":
+					case "unsignedByte":
+					case "unsignedInt":
+					case "unsignedLong":
+					case "unsignedShort":
+						expectedTypeName = "integer";
+						break;
+					case "anyURI":
+						expectedTypeName = "string";
+						break;
+					case "qname":
+						expectedTypeName = "QName";
+						break;
+					case "langString":
+						expectedTypePrefix = "rdf";
+						break;
+					case "iri":
+						expectedTypePrefix = "sem";
+						break;
+					}
+					assertEquals("column datatype for: "+key,
+							expectedTypePrefix+":"+expectedTypeName,
+							actualDatatype
+							);
+					break;
+				}
 
-			String actualDatatype = row.getDatatype(key);
-			switch(actualKind) {
-			case ATOMIC_VALUE:
-				String expectedTypePrefix = "xs";
-				String expectedTypeName   = key;
+	// TODO: testing on RdfLangString and SemIri
+				switch (key) {
+		  		case "langString":
+		  		case "iri":
+		  			break;
+		  		default:
+					if (expected instanceof XsAnyAtomicTypeVal && key != "langString") {
+						@SuppressWarnings("unchecked")
+						Class<? extends XsAnyAtomicTypeVal> expectedClass = (Class<? extends XsAnyAtomicTypeVal>) expected.getClass();
+						String name = expectedClass.getSimpleName();
+						name = name.substring(0, name.length() - "Impl".length());
+						try {
+							assertNotNull("null value for: "+key,
+									useKey ? row.getValueAs(key, expectedClass) : row.getValueAs(col, expectedClass));
+
+							@SuppressWarnings("unchecked")
+							Class<? extends XsAnyAtomicTypeVal> expectedInterface =
+					  			(Class<? extends XsAnyAtomicTypeVal>) Class.forName("com.marklogic.client.type.Xs"+name);
+
+							assertNotNull("null value for: "+key,
+									useKey ? row.getValueAs(key, expectedInterface) : row.getValueAs(col, expectedInterface));
+						} catch (Exception e) {
+							throw new RuntimeException(e);
+						}
+					}
+		  			break;
+				}
+
 				switch(key) {
-				case "double":
-				case "float":
-					expectedTypeName = "decimal";
+				case "boolean":
+					assertEquals("boolean overload", ((XsBooleanVal) expected).getBoolean(),
+							useKey ? row.getBoolean(key) : row.getBoolean(col));
 					break;
 				case "byte":
+					assertEquals("byte overload", ((XsByteVal) expected).getByte(),
+							useKey ? row.getByte(key) : row.getByte(col));
+					break;
+				case "double":
+					assertEquals("double overload", ((XsDoubleVal) expected).getDouble(),
+							useKey ? row.getDouble(key) : row.getDouble(col),
+							0.1);
+					break;
+				case "float":
+					assertEquals("float overload", ((XsFloatVal) expected).getFloat(),
+							useKey ? row.getFloat(key) : row.getFloat(col),
+							0.1);
+					break;
 				case "int":
+					assertEquals("int overload", ((XsIntVal) expected).getInt(),
+							useKey ? row.getInt(key) : row.getInt(col));
+					break;
 				case "long":
+					assertEquals("long overload", ((XsLongVal) expected).getLong(),
+							useKey ? row.getLong(key) : row.getLong(col));
+					break;
 				case "short":
-				case "unsignedByte":
-				case "unsignedInt":
-				case "unsignedLong":
-				case "unsignedShort":
-					expectedTypeName = "integer";
-					break;
-				case "anyURI":
-					expectedTypeName = "string";
-					break;
-				case "qname":
-					expectedTypeName = "QName";
-					break;
-				case "langString":
-					expectedTypePrefix = "rdf";
-					break;
-				case "iri":
-					expectedTypePrefix = "sem";
+					assertEquals("short overload", ((XsShortVal) expected).getShort(),
+							useKey ? row.getShort(key) : row.getShort(col));
 					break;
 				}
-				assertEquals("column datatype for: "+key,
-						expectedTypePrefix+":"+expectedTypeName,
-						actualDatatype
-						);
-				break;
-			}
-
-// TODO: testing on RdfLangString and SemIri
-			switch (key) {
-	  		case "langString":
-	  		case "iri":
-	  			break;
-	  		default:
-				if (expected instanceof XsAnyAtomicTypeVal && key != "langString") {
-					@SuppressWarnings("unchecked")
-					Class<? extends XsAnyAtomicTypeVal> expectedClass = (Class<? extends XsAnyAtomicTypeVal>) expected.getClass();
-					String name = expectedClass.getSimpleName();
-					name = name.substring(0, name.length() - "Impl".length());
-					try {
-						assertNotNull("null value for: "+key, row.getValueAs(key, expectedClass));
-
-						@SuppressWarnings("unchecked")
-						Class<? extends XsAnyAtomicTypeVal> expectedInterface =
-				  			(Class<? extends XsAnyAtomicTypeVal>) Class.forName("com.marklogic.client.type.Xs"+name);
-
-						assertNotNull("null value for: "+key, row.getValueAs(key, expectedInterface));
-					} catch (Exception e) {
-						throw new RuntimeException(e);
-					}
-				}
-	  			break;
-			}
-
-			switch(key) {
-			case "boolean":
-				assertEquals("boolean overload", ((XsBooleanVal) expected).getBoolean(), row.getBoolean(key));
-				break;
-			case "byte":
-				assertEquals("byte overload", ((XsByteVal) expected).getByte(), row.getByte(key));
-				break;
-			case "double":
-				assertEquals("double overload", ((XsDoubleVal) expected).getDouble(), row.getDouble(key), 0.1);
-				break;
-			case "float":
-				assertEquals("float overload", ((XsFloatVal) expected).getFloat(), row.getFloat(key), 0.1);
-				break;
-			case "int":
-				assertEquals("int overload", ((XsIntVal) expected).getInt(), row.getInt(key));
-				break;
-			case "long":
-				assertEquals("long overload", ((XsLongVal) expected).getLong(), row.getLong(key));
-				break;
-			case "short":
-				assertEquals("short overload", ((XsShortVal) expected).getShort(), row.getShort(key));
-				break;
 			}
 		});
 
