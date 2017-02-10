@@ -24,8 +24,6 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
 
-import javax.xml.namespace.QName;
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,8 +35,6 @@ import com.marklogic.client.row.RowSet;
 import com.marklogic.client.type.ItemVal;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.RdfLangStringVal;
-import com.marklogic.client.type.SemIriVal;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsByteVal;
@@ -154,11 +150,11 @@ public class RowRecordTest {
 			RowRecord.ColumnKind actualKind   = row.getKind(key);
 			assertEquals("column kind for: "+key, expectedKind, actualKind);
 
-			QName actualDatatype = row.getAtomicDatatype(key);
+			String actualDatatype = row.getDatatype(key);
 			switch(actualKind) {
 			case ATOMIC_VALUE:
-				String expectedTypeUri  = "http://www.w3.org/2001/XMLSchema";
-				String expectedTypeName = key;
+				String expectedTypePrefix = "xs";
+				String expectedTypeName   = key;
 				switch(key) {
 				case "double":
 				case "float":
@@ -181,14 +177,14 @@ public class RowRecordTest {
 					expectedTypeName = "QName";
 					break;
 				case "langString":
-					expectedTypeUri  = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
+					expectedTypePrefix = "rdf";
 					break;
 				case "iri":
-					expectedTypeUri  = "http://marklogic.com/semantics";
+					expectedTypePrefix = "sem";
 					break;
 				}
 				assertEquals("column datatype for: "+key,
-						new QName(expectedTypeUri, expectedTypeName),
+						expectedTypePrefix+":"+expectedTypeName,
 						actualDatatype
 						);
 				break;

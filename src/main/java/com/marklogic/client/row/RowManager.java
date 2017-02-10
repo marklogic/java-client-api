@@ -32,23 +32,50 @@ public interface RowManager {
 	PlanBuilder newPlanBuilder();
 
 	/**
-	 * Distinguishes between row objects with the column name, value, and data type
-	 * and row objects without the data type. Because the server supports columns
-	 * with variant data types, the default is objects with data types.  You can
-	 * configure the row manager to return more concise objects if the data type
+	 * Distinguishes between the header and rows that constitute a row set.
+	 */
+	public enum RowSetPart{HEADER, ROWS}
+
+	/**
+	 * Distinguishes between rows in an object structure or array structure.
+	 */
+	public enum RowStructure{ARRAY, OBJECT}
+
+	/**
+	 * Returns whether data types should be emitted in each row (the default) or in the header
+	 * in the response for requests made with the row manager.
+	 * @return	the part of the row set that identifies the column data types
+	 */
+	RowSetPart getDatatypeStyle();
+	/**
+	 * Specifies whether to emit the data type of each column in each row or only in the header
+	 * in the response for requests made with the row manager.
+	 * 
+	 * The distinction is significant when getting the rows as JSON or XML.
+	 * Because the server supports columns with variant data types, the default is in each row.
+	 * You can configure the row manager to return more concise objects if the data type
 	 * is consistent or if you aren't using the data type.
+	 * 
+	 * @param style	the part of the rowset that should contain data types
 	 */
-	public enum CellStyle{PROPERTY_DESCRIPTOR, PROPERTY_VALUE}
+	void setDatatypeStyle(RowSetPart style);
+
 	/**
-	 * Returns the style in which rows are emitted in the response for requests made with the row manager
-	 * @return	the row style
+	 * Returns whether each row should have an array or object structure 
+	 * in the response for requests made with the row manager.
+	 * @return	the style of row structure
 	 */
-	CellStyle getCellStyle();
+	RowStructure getRowStructureStyle();
 	/**
-	 * Specifies the style in which to emit rows.
-	 * @param cellStyle	the row style for the response to requests made with the row manager
+	 * Specifies whether to get each row as an object (the default) or as an array
+	 * in the response for requests made with the row manager.
+	 * 
+	 * The distinction is significant when getting the rows as JSON
+	 * and also when executing a map or reduce function on the server.
+	 * 
+	 * @param style	the structure of rows in the response
 	 */
-	void setCellStyle(CellStyle cellStyle);
+	void setRowStructureStyle(RowStructure style);
 
 	/**
      * Defines a plan from a JSON serialization of the plan AST (Abstract Syntax Tree).

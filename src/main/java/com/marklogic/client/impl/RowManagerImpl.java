@@ -16,6 +16,7 @@
 package com.marklogic.client.impl;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
@@ -30,7 +31,6 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 import java.util.stream.StreamSupport;
 
-import javax.xml.namespace.QName;
 import javax.xml.stream.XMLStreamConstants;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
@@ -71,7 +71,8 @@ public class RowManagerImpl
 {
     private RESTServices services;
 	private HandleFactoryRegistry handleRegistry;
-	private CellStyle cellStyle;
+	private RowSetPart   datatypeStyle     = null;
+	private RowStructure rowStructureStyle = null;
 
 	public RowManagerImpl(RESTServices services) {
 		super();
@@ -95,11 +96,26 @@ public class RowManagerImpl
 	}
 
 	@Override
-	public CellStyle getCellStyle() {
-		return cellStyle;
+	public RowSetPart getDatatypeStyle() {
+		if (datatypeStyle == null) {
+			return RowSetPart.ROWS;
+		}
+		return datatypeStyle;
 	}
-	public void setCellStyle(CellStyle cellStyle) {
-		this.cellStyle = cellStyle;
+	@Override
+	public void setDatatypeStyle(RowSetPart style) {
+		this.datatypeStyle = style;
+	}
+	@Override
+	public RowStructure getRowStructureStyle() {
+		if (rowStructureStyle == null) {
+			return RowStructure.OBJECT;
+		}
+		return rowStructureStyle;
+	}
+	@Override
+	public void setRowStructureStyle(RowStructure style) {
+		this.rowStructureStyle = style;
 	}
 
 	@Override
@@ -135,9 +151,8 @@ public class RowManagerImpl
 		}
 
 		RequestParameters params = getParamBindings(requestPlan);
-		if (CellStyle.PROPERTY_VALUE == cellStyle) {
-			params.add("column-types", "header");
-		}
+		addDatatypeStyleParam(params,     getDatatypeStyle());
+		addRowStructureStyleParam(params, getRowStructureStyle());
 
 		return services.postResource(requestLogger, "rows", transaction, params, astHandle, resultsHandle);
 	}
@@ -148,9 +163,14 @@ public class RowManagerImpl
 	}
 	@Override
 	public RowSet<RowRecord> resultRows(Plan plan, Transaction transaction) {
-		RESTServiceResultIterator iter = makeRequest(plan, "json", "reference", transaction);
+		RowSetPart   datatypeStyle     = getDatatypeStyle();
+		RowStructure rowStructureStyle = getRowStructureStyle();
 
-		return new RowSetRecord("json", iter, getHandleRegistry());
+		RESTServiceResultIterator iter = makeRequest(
+				plan, "json", datatypeStyle, rowStructureStyle, "reference", transaction
+				);
+
+		return new RowSetRecord("json", datatypeStyle, rowStructureStyle, iter, getHandleRegistry());
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
@@ -158,11 +178,16 @@ public class RowManagerImpl
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle, Transaction transaction) {
+		RowSetPart   datatypeStyle     = getDatatypeStyle();
+		RowStructure rowStructureStyle = getRowStructureStyle();
+
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
+		RESTServiceResultIterator iter = makeRequest(
+				plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
+				);
 
-		return new RowSetHandle<>(rowFormat, iter, rowHandle);
+		return new RowSetHandle<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
@@ -170,13 +195,18 @@ public class RowManagerImpl
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as, Transaction transaction) {
+		RowSetPart   datatypeStyle     = getDatatypeStyle();
+		RowStructure rowStructureStyle = getRowStructureStyle();
+
 		ContentHandle<T> rowHandle = handleFor(as); 
 
 		String rowFormat = getRowFormat(rowHandle);
 
-		RESTServiceResultIterator iter = makeRequest(plan, rowFormat, "inline", transaction);
+		RESTServiceResultIterator iter = makeRequest(
+				plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
+				);
 
-		return new RowSetObject<>(rowFormat, iter, rowHandle);
+		return new RowSetObject<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
 	}
 
 	@Override
@@ -204,6 +234,35 @@ public class RowManagerImpl
 		return handle.get();
 	}
 
+	private void addDatatypeStyleParam(RequestParameters params, RowSetPart datatypeStyle) {
+		if (datatypeStyle != null) {
+			switch (datatypeStyle) {
+			case HEADER:
+				params.add("column-types", "header");
+				break;
+			case ROWS:
+				params.add("column-types", "rows");
+				break;
+			default:
+				throw new IllegalStateException("unknown data type style: "+datatypeStyle);
+			}
+		}
+	}
+	private void addRowStructureStyleParam(RequestParameters params, RowStructure rowStructureStyle) {
+		if (rowStructureStyle != null) {
+			switch (rowStructureStyle) {
+			case ARRAY:
+				params.add("output", "array");
+				break;
+			case OBJECT:
+				params.add("output", "object");
+				break;
+			default:
+				throw new IllegalStateException("unknown row structure style: "+rowStructureStyle);
+			}
+		}
+	}
+
 	private <T extends AbstractReadHandle> String getRowFormat(T rowHandle) {
 		if (rowHandle == null) {
 			throw new IllegalArgumentException("Must specify a handle to iterate over the rows");
@@ -226,7 +285,11 @@ public class RowManagerImpl
 			throw new IllegalArgumentException("Must use JSON or XML format to iterate rows instead of "+handleFormat.name());
 		}
 	}
-	private RESTServiceResultIterator makeRequest(Plan plan, String rowFormat, String nodeCols, Transaction transaction) {
+	private RESTServiceResultIterator makeRequest(
+			Plan plan,
+			String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle, String nodeCols, 
+			Transaction transaction
+			) {
 		PlanBuilderBaseImpl.RequestPlan requestPlan = checkPlan(plan);
 
 		AbstractWriteHandle astHandle = requestPlan.getHandle();
@@ -234,9 +297,8 @@ public class RowManagerImpl
 		RequestParameters params = getParamBindings(requestPlan);
 		params.add("row-format",   rowFormat);
 		params.add("node-columns", nodeCols);
-		if (CellStyle.PROPERTY_VALUE == cellStyle) {
-			params.add("column-types", "header");
-		}
+		addDatatypeStyleParam(params,     datatypeStyle);
+		addRowStructureStyleParam(params, rowStructureStyle);
 
 // QUESTION: outputMimetypes a noop?
 		return services.postIteratedResource(requestLogger, "rows", transaction, params, astHandle);
@@ -290,21 +352,30 @@ public class RowManagerImpl
 	}
 
 	abstract static class RowSetBase<T> implements RowSet<T>, Iterator<T> {
-		String                    rowFormat    = null;
-		RESTServiceResultIterator results      = null;
-		String[]                  columns      = null;
-		RESTServiceResult         nextRow      = null;
+		String                    rowFormat         = null;
+		RESTServiceResultIterator results           = null;
+		String[]                  columnNames       = null;
+		String[]                  columnTypes       = null;
+		RESTServiceResult         nextRow           = null;
+		RowSetPart                datatypeStyle     = null;
+		RowStructure              rowStructureStyle = null;
 
-		RowSetBase(String rowFormat, RESTServiceResultIterator results) {
-			this.rowFormat = rowFormat;
-			this.results   = results;
-			parseColumns();
+		RowSetBase(
+				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
+				RESTServiceResultIterator results
+				) {
+			this.rowFormat         = rowFormat;
+			this.datatypeStyle     = datatypeStyle;
+			this.rowStructureStyle = rowStructureStyle;
+			this.results           = results;
+			parseColumns(datatypeStyle, rowStructureStyle);
 			if (results.hasNext()) {
 				nextRow = results.next();
 			}
 		}
 
-		private void parseColumns() {
+		@SuppressWarnings("unchecked")
+		private void parseColumns(RowSetPart datatypeStyle, RowStructure rowStructureStyle) {
 			if (!results.hasNext()) {
 				return;
 			}
@@ -312,21 +383,37 @@ public class RowManagerImpl
 			switch(rowFormat) {
 			case "json":
 				try {
-					@SuppressWarnings("unchecked")
-					Map<String, Object> headerObj = (Map<String, Object>) new ObjectMapper().readValue(
-					        headerRow.getContent(new InputStreamHandle()).get(), Map.class
-					        );
-					if (headerObj != null) {
-						@SuppressWarnings("unchecked")
-						List<Map<String, String>> cols = (List<Map<String, String>>) headerObj.get("columns");
-						int colSize = (cols == null) ? 0 : cols.size();
-						if (colSize > 0) {
-							columns = new String[colSize];
-							int i=0;
-							for (Map<String, String> col: cols) {
-								columns[i] = col.get("name");
-								i++;
+                    List<Map<String, String>> cols = null;
+					switch (rowStructureStyle) {
+					case OBJECT:
+						Map<String, Object> headerObj = (Map<String, Object>) new ObjectMapper().readValue(
+								headerRow.getContent(new InputStreamHandle()).get(), Map.class
+						        );
+						if (headerObj != null) {
+							cols = (List<Map<String, String>>) headerObj.get("columns");
+						}
+						break;
+					case ARRAY:
+						cols = (List<Map<String, String>>) new ObjectMapper().readValue(
+								headerRow.getContent(new InputStreamHandle()).get(), List.class
+						        );
+						break;
+					default:
+						throw new InternalError("unknown row structure style: "+rowStructureStyle);
+					}
+					int colSize = (cols == null) ? 0 : cols.size();
+					columnNames = (colSize > 0) ?
+						new String[colSize] : new String[0];
+					columnTypes = (colSize > 0 && datatypeStyle == RowSetPart.HEADER) ?
+						new String[colSize] : new String[0];
+					if (colSize > 0) {
+						int i=0;
+						for (Map<String, String> col: cols) {
+							columnNames[i] = col.get("name");
+							if (datatypeStyle == RowSetPart.HEADER) {
+								columnTypes[i] = col.get("type");
 							}
+							i++;
 						}
 					}
 				} catch (JsonParseException e) {
@@ -339,22 +426,29 @@ public class RowManagerImpl
 				break;
 			case "xml":
 				try {
-					List<String> cols = new ArrayList<>();
-					XMLStreamReader headerReader = headerRow.getContent(new XMLStreamReaderHandle()).get();
+					List<String> cols  = new ArrayList<>();
+					List<String> types = (datatypeStyle == RowSetPart.HEADER) ?
+							new ArrayList<>() : null;
+					XMLStreamReader headerReader =
+							headerRow.getContent(new XMLStreamReaderHandle()).get();
 					while (headerReader.hasNext()) {
 						switch(headerReader.next()) {
 						case XMLStreamConstants.START_ELEMENT:
 							if ("column".equals(headerReader.getLocalName())) {
 								cols.add(headerReader.getAttributeValue(null, "name"));
+								if (datatypeStyle == RowSetPart.HEADER) {
+									types.add(headerReader.getAttributeValue(null, "type"));
+								}
 								headerReader.nextTag();
 							}
 							break;
 						}
 					}
 					int colSize = cols.size();
-					if (colSize > 0) {
-						columns = cols.toArray(new String[colSize]);
-					}
+					columnNames = (colSize > 0) ?
+						cols.toArray(new String[colSize]) : new String[0];
+					columnTypes = (colSize > 0 && datatypeStyle == RowSetPart.HEADER) ?
+						types.toArray(new String[colSize]) : new String[0];
 				} catch (XMLStreamException e) {
 					throw new MarkLogicIOException("could not read XML header", e);
 				}
@@ -366,7 +460,12 @@ public class RowManagerImpl
 
 		@Override
 		public String[] getColumnNames() {
-			return columns;
+			return columnNames;
+		}
+
+		@Override
+		public String[] getColumnTypes() {
+			return columnTypes;
 		}
 
 		@Override
@@ -395,20 +494,38 @@ public class RowManagerImpl
 		private void closeImpl() {
 			if (results != null) {
 				results.close();
-				results   = null;
-				nextRow   = null;
-				columns   = null;
+				results     = null;
+				nextRow     = null;
+				columnNames = null;
+				columnTypes = null;
 			}
 		}
 	}
 	static class RowSetRecord extends RowSetBase<RowRecord> {
-		private HandleFactoryRegistry handleRegistry = null;
-		RowSetRecord(String rowFormat, RESTServiceResultIterator results, HandleFactoryRegistry handleRegistry) {
-			super(rowFormat, results);
+		private HandleFactoryRegistry             handleRegistry  = null;
+		private Map<String, RowRecord.ColumnKind> headerKinds     = null;
+		private Map<String, String>               headerDatatypes = null;
+		RowSetRecord(
+				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
+				RESTServiceResultIterator results, HandleFactoryRegistry handleRegistry
+				) {
+			super(rowFormat, datatypeStyle, rowStructureStyle, results);
 			this.handleRegistry = handleRegistry;
+			if (datatypeStyle == RowSetPart.HEADER) {
+				headerKinds     = new HashMap<>();
+				headerDatatypes = new HashMap<>();
+				for (int i=0; i < columnNames.length; i++) {
+					String columnName = columnNames[i];
+					String columnType = columnTypes[i];
+					headerDatatypes.put(columnName, columnType);
+					RowRecord.ColumnKind columnKind = getColumnKind(
+							columnType,RowRecord.ColumnKind.CONTENT
+							);
+					headerKinds.put(columnName, columnKind);
+				}
+			}
 		}
 
-// TODO: get column names and types from first row (header) if CellStyle.PROPERTY_VALUE
 		@Override
 		public RowRecord next() {
 			RESTServiceResult currentRow = nextRow;
@@ -419,37 +536,136 @@ public class RowManagerImpl
 			boolean hasMoreRows = results.hasNext();
 
 			try {
-				Map<String, RowRecord.ColumnKind> kinds     = new HashMap<>();
-				Map<String, String>               datatypes = new HashMap<>();
+				Map<String, String>               datatypes = null;
+				Map<String, RowRecord.ColumnKind> kinds     = null;
+				Map<String, Object>               row       = null;
+
+				InputStream  rowStream = currentRow.getContent(new InputStreamHandle()).get();
 
 				// TODO: replace Jackson mapper with binding-sensitive mapper?
-				@SuppressWarnings("unchecked")
-				Map<String, Object> row = new ObjectMapper().readValue(
-						currentRow.getContent(new InputStreamHandle()).get(), Map.class
-						);
-				row.replaceAll((key, rawBinding) -> {
-					@SuppressWarnings("unchecked")
-					Map<String,Object> binding = (Map<String,Object>) rawBinding;
-					String datatype  = (String) binding.get("type");
-					Object value = null;
-					if ("cid".equals(datatype)) {
-// TODO: increment the count of expected nodes and list the column names expecting values
-						kinds.put(key, RowRecord.ColumnKind.CONTENT);
-						datatypes.put(key, null);
-					} else if ("null".equals(datatype)) {
-						kinds.put(key, RowRecord.ColumnKind.NULL);
-						datatypes.put(key, null);
-					} else if (datatype.contains(":")) {
-						kinds.put(key, RowRecord.ColumnKind.ATOMIC_VALUE);
-						datatypes.put(key, datatype);
-						value = binding.get("value");
-					} else {
-// TODO: standalone inline nodes such as processing instructions and comments?
-throw new MarkLogicInternalException("Column value with unsupported datatype: "+datatype);
-					}
-					return value;
-				});
+				ObjectMapper rowMapper = new ObjectMapper();
 
+				switch(rowStructureStyle) {
+				case ARRAY:
+					row = new HashMap<String, Object>();
+
+					int i=0;
+
+					switch(datatypeStyle) {
+					case HEADER:
+						datatypes = headerDatatypes;
+
+						@SuppressWarnings("unchecked")
+						List<Object> valueLister = rowMapper.readValue(rowStream, List.class);
+						int valueListSize = valueLister.size();
+
+						for (; i < valueListSize; i++) {
+							String columnName = columnNames[i];
+							Object value = valueLister.get(i);
+
+							row.put(columnName, value);
+							if (value != null) {
+								continue;
+							}
+
+							RowRecord.ColumnKind columnKind = headerKinds.get(columnName);
+							if (columnKind == RowRecord.ColumnKind.NULL) {
+								continue;
+							}
+
+							if (kinds == null) {
+								kinds = new HashMap<>();
+								kinds.putAll(headerKinds);
+							}
+
+							kinds.put(columnName, RowRecord.ColumnKind.NULL);
+						}
+
+						if (kinds == null) {
+							kinds = headerKinds;
+						}
+						break;
+					case ROWS:
+						datatypes = new HashMap<>();
+						kinds     = new HashMap<>();
+
+						@SuppressWarnings("unchecked")
+						List<Map<String, Object>> rowLister = rowMapper.readValue(rowStream, List.class);
+						int rowListSize = rowLister.size();
+
+						for (; i < rowListSize; i++) {
+							String columnName = columnNames[i];
+							row.put(columnName, getTypedRowValue(datatypes, kinds, columnName, rowLister.get(i)));
+						}
+						break;
+					default:
+						throw new MarkLogicInternalException("Row record set with unknown datatype style: "+datatypeStyle);
+					}
+
+					for (; i < columnNames.length; i++) {
+						String columnName = columnNames[i];
+						kinds.put(columnName, RowRecord.ColumnKind.NULL);
+						row.put(columnName, null);
+					}
+
+					break;
+				case OBJECT:
+					@SuppressWarnings("unchecked")
+					Map<String, Object> mapRow = rowMapper.readValue(rowStream, Map.class);
+
+					switch(datatypeStyle) {
+					case HEADER:
+						datatypes = headerDatatypes;
+
+						for (Map.Entry<String, RowRecord.ColumnKind> entry: headerKinds.entrySet()) {
+							String columnName = entry.getKey();
+
+							Object value = mapRow.get(columnName);
+							if (value != null) {
+								continue;
+							}
+
+							RowRecord.ColumnKind columnKind = entry.getValue();
+							if (columnKind == RowRecord.ColumnKind.NULL) {
+								continue;
+							}
+
+							if (kinds == null) {
+								kinds = new HashMap<>();
+								kinds.putAll(headerKinds);
+							}
+
+							kinds.put(columnName, RowRecord.ColumnKind.NULL);
+						}
+
+						if (kinds == null) {
+							kinds = headerKinds;
+						}
+						break;
+					case ROWS:
+						Map<String, String>               rowDatatypes = new HashMap<>();
+						Map<String, RowRecord.ColumnKind> rowKinds     = new HashMap<>();
+
+						mapRow.replaceAll((key, rawBinding) -> {
+							@SuppressWarnings("unchecked")
+							Map<String,Object> binding = (Map<String,Object>) rawBinding;
+							return getTypedRowValue(rowDatatypes, rowKinds, key, binding);
+						});
+
+						datatypes = rowDatatypes;
+						kinds     = rowKinds;
+						break;
+					default:
+						throw new MarkLogicInternalException("Row record set with unknown datatype style: "+datatypeStyle);
+					}
+
+					row = mapRow;
+					break;
+				default:
+					throw new MarkLogicInternalException(
+							"Row record set with unknown row structure style: "+rowStructureStyle
+							);
+				}
 				
 				while (hasMoreRows) {
 					currentRow = results.next();
@@ -519,11 +735,47 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 				handleRegistry = null;
 			}
 		}
+
+		private Object getTypedRowValue(
+				Map<String, String>               datatypes,
+				Map<String, RowRecord.ColumnKind> kinds, 
+				String                            columnName,
+				Map<String,Object>                binding
+				) {
+			RowRecord.ColumnKind columnKind = null;
+			Object value = null;
+			String datatype = (String) binding.get("type");
+			if (datatype != null) {
+				datatypes.put(columnName, datatype);
+			}
+			columnKind = getColumnKind(datatype, null);
+			kinds.put(columnName, columnKind);
+			value = (columnKind == RowRecord.ColumnKind.ATOMIC_VALUE) ?
+					binding.get("value") : null;
+
+// TODO: for RowRecord.ColumnKind.CONTENT, increment the count of expected nodes and list the column names expecting values?
+			return value;
+		}
+		private RowRecord.ColumnKind getColumnKind(String datatype, RowRecord.ColumnKind defaultKind) {
+			if ("cid".equals(datatype)) {
+				return RowRecord.ColumnKind.CONTENT;
+			} else if ("null".equals(datatype)) {
+				return RowRecord.ColumnKind.NULL;
+			} else if (datatype.contains(":")) {
+				return RowRecord.ColumnKind.ATOMIC_VALUE;
+			} else if (datatype != null && defaultKind != null) {
+				return defaultKind;
+			}
+			throw new MarkLogicInternalException("Column value with unsupported datatype: "+datatype);
+		}
 	}
 	abstract static class RowSetHandleBase<T, R extends AbstractReadHandle> extends RowSetBase<T> {
 		private R rowHandle = null;
-		RowSetHandleBase(String rowFormat, RESTServiceResultIterator results, R rowHandle) {
-			super(rowFormat, results);
+		RowSetHandleBase(
+				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
+				RESTServiceResultIterator results, R rowHandle
+				) {
+			super(rowFormat, datatypeStyle, rowStructureStyle, results);
 			this.rowHandle = rowHandle;
 		}
 
@@ -565,8 +817,11 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 		}
 	}
 	static class RowSetHandle<T extends StructureReadHandle> extends RowSetHandleBase<T, T> {
-		RowSetHandle(String rowFormat, RESTServiceResultIterator results, T rowHandle) {
-			super(rowFormat, results, rowHandle);
+		RowSetHandle(
+				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
+				RESTServiceResultIterator results, T rowHandle
+				) {
+			super(rowFormat, datatypeStyle, rowStructureStyle, results, rowHandle);
 		}
 		@Override
 		T makeNextResult(T currentHandle) {
@@ -574,8 +829,10 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 		}
 	}
 	static class RowSetObject<T> extends RowSetHandleBase<T, ContentHandle<T>> {
-		RowSetObject(String rowFormat, RESTServiceResultIterator results, ContentHandle<T> rowHandle) {
-			super(rowFormat, results, rowHandle);
+		RowSetObject(
+				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
+				RESTServiceResultIterator results, ContentHandle<T> rowHandle) {
+			super(rowFormat, datatypeStyle, rowStructureStyle, results, rowHandle);
 		}
 		@Override
 		T makeNextResult(ContentHandle<T> currentHandle) {
@@ -618,39 +875,28 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 				throw new IllegalArgumentException("cannot get column kind with null name");
 			}
 			ColumnKind kind = kinds.get(columnName);
-			return (kind == null) ? ColumnKind.NULL : kind;
+			if (kind != null) {
+				return kind;
+			}
+			if (!kinds.containsKey(columnName)) {
+				throw new IllegalArgumentException("no kind for column: "+columnName);
+			}
+			return ColumnKind.NULL;
 		}
 
 		@Override
-		public QName getAtomicDatatype(String columnName) {
+		public String getDatatype(String columnName) {
 			if (columnName == null) {
 				throw new IllegalArgumentException("cannot get column datatype with null name");
 			}
 			String datatype = datatypes.get(columnName);
-			if (datatype == null) {
-				return null;
+			if (datatype != null) {
+				return datatype;
 			}
-			int pos = datatype.indexOf(":");
-			if (pos == -1) {
-				throw new MarkLogicInternalException("datatype "+datatype+" without prefix");
+			if (!datatypes.containsKey(columnName)) {
+				throw new IllegalArgumentException("no datatype for column: "+columnName);
 			}
-
-			String uri = null;
-			String prefix = datatype.substring(0, pos);
-			switch(prefix) {
-			case "rdf":
-				uri = "http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-				break;
-			case "sem":
-				uri = "http://marklogic.com/semantics";
-				break;
-			case "xs":
-				uri = "http://www.w3.org/2001/XMLSchema";
-				break;
-			default:
-				throw new MarkLogicInternalException("datatype "+datatype+" with unknown prefix: "+prefix);
-			}
-			return new QName(uri, datatype.substring(pos + 1));
+			return null;
 		}
 
 		// supported operations for unmodifiable map
@@ -922,7 +1168,7 @@ throw new MarkLogicInternalException("Column value with unsupported datatype: "+
 		public Format getContentFormat(String columnName) {
 			String mimetype = getContentMimetype(columnName);
 			if (mimetype == null) {
-				return Format.BINARY;
+				return null;
 			}
 			switch(mimetype) {
 			case "application/json":

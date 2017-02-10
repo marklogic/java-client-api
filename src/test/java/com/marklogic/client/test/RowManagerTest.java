@@ -61,6 +61,8 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RawPlanDefinition;
 import com.marklogic.client.row.RowManager;
+import com.marklogic.client.row.RowManager.RowSetPart;
+import com.marklogic.client.row.RowManager.RowStructure;
 import com.marklogic.client.row.RowRecord;
 import com.marklogic.client.row.RowRecord.ColumnKind;
 import com.marklogic.client.row.RowSet;
@@ -71,12 +73,16 @@ import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanValueOption;
 import com.marklogic.client.util.EditableNamespaceContext;
+import com.sun.org.apache.xalan.internal.xsltc.compiler.util.InternalError;
 
 public class RowManagerTest {
-    private static String[]             uris    = null;
-    private static String[]             docs    = null;
-    private static Map<String,Object>[] litRows = null;
-    private static String[][]           triples = null;
+    private static String[]             uris           = null;
+    private static String[]             docs           = null;
+    private static Map<String,Object>[] litRows        = null;
+    private static String[][]           triples        = null;
+    private static RowStructure[]       rowstructs     = null;
+    private static RowSetPart[]         datatypeStyles = null;
+
 	@SuppressWarnings("unchecked")
 	@BeforeClass
 	public static void beforeClass() throws IOException, InterruptedException {
@@ -144,6 +150,9 @@ public class RowManagerTest {
                   .add(uris[2], new StringHandle(docs[2]).withFormat(Format.TEXT))
                   .add("/rowtest/triples1.xml", new StringHandle(triplesXML).withFormat(Format.TEXT))
               );
+
+        rowstructs     = new RowStructure[]{ RowStructure.OBJECT, RowStructure.ARRAY };
+        datatypeStyles = new RowSetPart[]{   RowSetPart.ROWS,     RowSetPart.HEADER  };
 	}
 	@AfterClass
 	public static void afterClass() {
@@ -151,7 +160,7 @@ public class RowManagerTest {
 
 	@Test
 	public void testResultDoc() throws IOException, XPathExpressionException {
-		RowManager rowMgr = Common.client.newRowManager();
+        RowManager rowMgr = Common.client.newRowManager();
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanBuilder.ExportablePlan builtPlan =
@@ -165,6 +174,11 @@ public class RowManagerTest {
 		
 		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
             try (ReaderHandle readerHandle = new ReaderHandle()) {
+// TODO: also ARRAY
+                rowMgr.setRowStructureStyle(RowStructure.OBJECT);
+// TODO: also HEADER
+                rowMgr.setDatatypeStyle(RowSetPart.ROWS);
+
                 rowMgr.resultDoc(plan, readerHandle.withMimetype("text/csv"));
                 
                 try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
@@ -176,35 +190,62 @@ public class RowManagerTest {
                 }
             }
 
-	        DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
+            for (RowStructure rowstruct: rowstructs) {
+                rowMgr.setRowStructureStyle(rowstruct);
 
-	        NodeList testList = domHandle.evaluateXPath("/table:table/table:columns/table:column", NodeList.class);
-	        assertEquals("unexpected header count in XML", 2, testList.getLength());
-	        Element testElement = (Element) testList.item(0);
-	        assertEquals("unexpected first header name in XML", "rowNum", testElement.getAttribute("name"));
-	        testElement = (Element) testList.item(1);
-	        assertEquals("unexpected second header name in XML", "temp", testElement.getAttribute("name"));
+                for (RowSetPart datatypeStyle: datatypeStyles) {
+                    rowMgr.setDatatypeStyle(datatypeStyle);
+                	
+                    DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
+// domHandle.write(System.out);
 
-	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row", NodeList.class);
-	        assertEquals("unexpected row count in XML", 1, testList.getLength());
+        	        NodeList testList = domHandle.evaluateXPath("/table:table/table:columns/table:column", NodeList.class);
+        	        assertEquals("unexpected header count in XML", 2, testList.getLength());
+        	        Element testElement = (Element) testList.item(0);
+        	        assertEquals("unexpected first header name in XML", "rowNum", testElement.getAttribute("name"));
+        	        if (datatypeStyle == RowSetPart.HEADER) {
+        	            assertEquals("unexpected first header type in XML",  "xs:integer", testElement.getAttribute("type"));
+        	        }
+        	        testElement = (Element) testList.item(1);
+        	        assertEquals("unexpected second header name in XML", "temp", testElement.getAttribute("name"));
+        	        if (datatypeStyle == RowSetPart.HEADER) {
+        	            assertEquals("unexpected second header type in XML",  "xs:string", testElement.getAttribute("type"));
+        	        }
 
-	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
-	        checkSingleRow(testList);
+        	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row", NodeList.class);
+        	        assertEquals("unexpected row count in XML", 1, testList.getLength());
 
-	        JacksonHandle handle = rowMgr.resultDoc(plan, new JacksonHandle());
-	        JsonNode testNode = handle.get();
+        	        testList = domHandle.evaluateXPath("/table:table/table:rows/table:row[1]/table:cell", NodeList.class);
+        	        checkSingleRow(testList, datatypeStyle);
 
-	        JsonNode arrayNode = testNode.findValue("columns");
-	        assertEquals("unexpected header count in JSON", 2, arrayNode.size());
-	        
-	        assertEquals("unexpected first header name in JSON",  "rowNum", arrayNode.get(0).get("name").asText());
-	        assertEquals("unexpected second header name in JSON", "temp",   arrayNode.get(1).get("name").asText());
-	        
+        	        JacksonHandle handle = rowMgr.resultDoc(plan, new JacksonHandle());
+// handle.write(System.out);
 
-	        arrayNode = testNode.findValue("rows");
-	        assertEquals("unexpected row count in JSON", 1, arrayNode.size());
+        	        JsonNode testNode = handle.get();
 
-	        checkSingleRow(arrayNode.get(0));
+        	        JsonNode rowsNode = null;
+        	        switch(rowstruct) {
+        	        case OBJECT:
+                    	checkHeader(testNode.findValue("columns"), datatypeStyle);
+
+                    	rowsNode = testNode.findValue("rows");
+            	        assertEquals("unexpected row count in JSON", 1, rowsNode.size());
+
+            	        checkSingleRow(rowsNode.get(0), rowstruct, datatypeStyle);
+        	        	break;
+        	        case ARRAY:
+                    	checkHeader(testNode.get(0), datatypeStyle);
+
+                    	rowsNode = testNode.get(1);
+            	        assertEquals("unexpected row count in JSON", 2, rowsNode.size());
+
+            	        checkSingleRow(rowsNode, rowstruct, datatypeStyle);
+        	        	break;
+        	        default:
+        	        	throw new InternalError("unknown case for RowStructure: "+rowstruct);
+        	        }
+                }
+            }
 		}
 	}
 	@Test
@@ -220,65 +261,79 @@ public class RowManagerTest {
 
 		StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
 		RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
-		
+
 		for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
-			xmlhandle: {
-				RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
-	
-				Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
-				assertTrue("no XML row to iterate", xmlRowItr.hasNext());
-				DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
-				checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class));
-		        assertFalse("expected one XML row", xmlRowItr.hasNext());
-	
-		        xmlRowSet.close();
-		    }
+            for (RowStructure rowstruct: rowstructs) {
+                rowMgr.setRowStructureStyle(rowstruct);
 
-		    xmlshortcut: {
-				RowSet<Document> xmlRowSetAs = rowMgr.resultRowsAs(plan, Document.class);
+                for (RowSetPart datatypeStyle: datatypeStyles) {
+                    rowMgr.setDatatypeStyle(datatypeStyle);
 
-				Iterator<Document> xmlRowItrAs = xmlRowSetAs.iterator();
-				assertTrue("no XML rows as to iterate", xmlRowItrAs.hasNext());
-				DOMHandle xmlRow = initNamespaces(new DOMHandle().with(xmlRowItrAs.next()));
-		        checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class));
-		        assertFalse("expected one XML row", xmlRowItrAs.hasNext());
+        			xmlhandle: {
+        				RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
+        				checkHeader("XML", xmlRowSet, datatypeStyle);
 
-		        xmlRowSetAs.close();
-		    }
+        				Iterator<DOMHandle> xmlRowItr = xmlRowSet.iterator();
+        				assertTrue("no XML row to iterate", xmlRowItr.hasNext());
+        				DOMHandle xmlRow = initNamespaces(xmlRowItr.next());
+        				checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class), datatypeStyle);
+        		        assertFalse("expected one XML row", xmlRowItr.hasNext());
+        	
+        		        xmlRowSet.close();
+        		    }
 
-		    jsonhandle: {
-				RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+        		    xmlshortcut: {
+        				RowSet<Document> xmlRowSetAs = rowMgr.resultRowsAs(plan, Document.class);
+        				checkHeader("XML", xmlRowSetAs, datatypeStyle);
 
-				Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
-				assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
-				JacksonHandle jsonRow = jsonRowItr.next();
-		        checkSingleRow(jsonRow.get());
-		        assertFalse("expected one JSON row", jsonRowItr.hasNext());
+        				Iterator<Document> xmlRowItrAs = xmlRowSetAs.iterator();
+        				assertTrue("no XML rows as to iterate", xmlRowItrAs.hasNext());
+        				DOMHandle xmlRow = initNamespaces(new DOMHandle().with(xmlRowItrAs.next()));
+        		        checkSingleRow(xmlRow.evaluateXPath("/table:row/table:cell", NodeList.class), datatypeStyle);
+        		        assertFalse("expected one XML row", xmlRowItrAs.hasNext());
 
-		        jsonRowSet.close();
-		    }
+        		        xmlRowSetAs.close();
+        		    }
 
-		    jsonshortcut: {
-		        RowSet<JsonNode> jsonRowSetAs = rowMgr.resultRowsAs(plan, JsonNode.class);
+                    jsonhandle: {
+        				RowSet<JacksonHandle> jsonRowSet = rowMgr.resultRows(plan, new JacksonHandle());
+        				checkHeader("JSON", jsonRowSet, datatypeStyle);
 
-				Iterator<JsonNode> jsonRowItrAs = jsonRowSetAs.iterator();
-				assertTrue("no JSON row to iterate", jsonRowItrAs.hasNext());
-		        checkSingleRow(jsonRowItrAs.next());
-		        assertFalse("expected one JSON row", jsonRowItrAs.hasNext());
+        				Iterator<JacksonHandle> jsonRowItr = jsonRowSet.iterator();
+        				assertTrue("no JSON row to iterate", jsonRowItr.hasNext());
+        				JacksonHandle jsonRow = jsonRowItr.next();
+// jsonRow.write(System.out);
 
-		        jsonRowSetAs.close();
-		    }
+        		        checkSingleRow(jsonRow.get(), rowstruct, datatypeStyle);
+        		        assertFalse("expected one JSON row", jsonRowItr.hasNext());
 
-		    rowrecord: {
-				RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
-				Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
-				assertTrue("no record row to iterate", recordRowItr.hasNext());
-				RowRecord recordRow = recordRowItr.next();
-				checkSingleRow(recordRow);
-		        assertFalse("expected one record row", recordRowItr.hasNext());
+        		        jsonRowSet.close();
+        		    }
 
-		        recordRowSet.close();
-		    }
+        		    jsonshortcut: {
+        		        RowSet<JsonNode> jsonRowSetAs = rowMgr.resultRowsAs(plan, JsonNode.class);
+        				checkHeader("JSON", jsonRowSetAs, datatypeStyle);
+
+        				Iterator<JsonNode> jsonRowItrAs = jsonRowSetAs.iterator();
+        				assertTrue("no JSON row to iterate", jsonRowItrAs.hasNext());
+        		        checkSingleRow(jsonRowItrAs.next(), rowstruct, datatypeStyle);
+        		        assertFalse("expected one JSON row", jsonRowItrAs.hasNext());
+
+        		        jsonRowSetAs.close();
+        		    }
+
+         		    rowrecord: {
+         				RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan);
+         				Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
+         				assertTrue("no record row to iterate", recordRowItr.hasNext());
+         				RowRecord recordRow = recordRowItr.next();
+         				checkSingleRow(recordRow);
+         		        assertFalse("expected one record row", recordRowItr.hasNext());
+
+         		        recordRowSet.close();
+         		    }
+                }
+            }
 		}
 	}
 	@Test
@@ -745,20 +800,128 @@ public class RowManagerTest {
 
         return handle;
 	}
-	private void checkSingleRow(NodeList row) {
+	private void checkSingleRow(NodeList row, RowSetPart datatypeStyle) {
         assertEquals("unexpected column count in XML", 2, row.getLength());
         Element testElement = (Element) row.item(0);
         assertEquals("unexpected first binding name in XML",  "rowNum", testElement.getAttribute("name"));
+        if (datatypeStyle == RowSetPart.ROWS) {
+            assertEquals("unexpected first binding type in XML",  "xs:integer", testElement.getAttribute("type"));
+        }
         assertEquals("unexpected first binding value in XML", "2",      testElement.getTextContent());
         testElement = (Element) row.item(1);
         assertEquals("unexpected second binding name in XML",  "temp", testElement.getAttribute("name"));
+        if (datatypeStyle == RowSetPart.ROWS) {
+            assertEquals("unexpected second binding type in XML",  "xs:string", testElement.getAttribute("type"));
+        }
         assertEquals("unexpected second binding value in XML", "72",   testElement.getTextContent());
 	}
-	private void checkSingleRow(JsonNode row) {
-        String value = row.findValue("rowNum").findValue("value").asText();
-        assertEquals("unexpected first binding value in JSON", "2",  value);
-        value = row.findValue("temp").findValue("value").asText();
-        assertEquals("unexpected first binding value in JSON", "72", value);
+	private void checkHeader(String format, RowSet<?> rowset, RowSetPart datatypeStyle) {
+		String[] columnNames = rowset.getColumnNames();
+        assertEquals("unexpected column name count in "+format, 2, columnNames.length);
+		checkFirstHeader(  format, columnNames[0] );
+		checkSecondHeader( format, columnNames[1] );
+		if (datatypeStyle == RowSetPart.HEADER) {
+			String[] columnTypes = rowset.getColumnTypes();
+	        assertEquals("unexpected column type count in "+format, 2, columnTypes.length);
+			checkFirstType(  format, columnTypes[0] );
+			checkSecondType( format, columnTypes[1] );
+		}
+	}
+	private void checkHeader(JsonNode header, RowSetPart datatypeStyle) {
+        assertEquals("unexpected header count in JSON", 2, header.size());
+
+		switch(datatypeStyle) {
+		case ROWS:
+// [{"name":"rowNum"},{"name":"temp"}]
+			checkFirstHeader(  header.get(0) );
+			checkSecondHeader( header.get(1) );
+			break;
+		case HEADER:
+// [{"name":"rowNum","type":"xs:integer"},{"name":"temp","type":"xs:string"}]
+			checkFirstTypedHeader(  header.get(0) );
+			checkSecondTypedHeader( header.get(1) );
+			break;
+		default:
+			throw new InternalError("unknown case for RowSetPart: "+datatypeStyle);
+		}
+	}
+	private void checkSingleRow(JsonNode row, RowStructure rowstruct, RowSetPart datatypeStyle) {
+		switch(datatypeStyle) {
+		case ROWS:
+			switch(rowstruct) {
+			case OBJECT:
+// {"rowNum":{"type":"xs:integer","value":2},"temp":{"type":"xs:string","value":"72"}}
+				checkFirstObject(  row.get("rowNum") );
+				checkSecondObject( row.get("temp")   );
+				break;
+			case ARRAY:
+// [{"type":"xs:integer","value":2},{"type":"xs:string","value":"72"}]
+				checkFirstObject(  row.get(0) );
+				checkSecondObject( row.get(1) );
+				break;
+			default:
+				throw new InternalError("unknown case for RowStructure: "+rowstruct);
+			}
+			break;
+		case HEADER:
+			switch(rowstruct) {
+			case OBJECT:
+// {"rowNum":2,"temp":"72"}
+				checkFirstValue("JSON",  row.get("rowNum").asText() );
+				checkSecondValue("JSON", row.get("temp").asText()   );
+				break;
+			case ARRAY:
+// [2,"72"]
+				checkFirstValue("JSON",  row.get(0).asText() );
+				checkSecondValue("JSON", row.get(1).asText() );
+				break;
+			default:
+				throw new InternalError("unknown case for RowStructure: "+rowstruct);
+			}
+			break;
+		default:
+			throw new InternalError("unknown case for RowSetPart: "+datatypeStyle);
+		}
+	}
+	private void checkFirstTypedHeader(JsonNode colNode) {
+		checkFirstType("JSON", colNode.get("type").asText());
+		checkFirstHeader(colNode);
+	}
+	private void checkSecondTypedHeader(JsonNode colNode) {
+		checkSecondType("JSON", colNode.get("type").asText());
+		checkSecondHeader(colNode);
+	}
+	private void checkFirstHeader(JsonNode colNode) {
+		checkFirstHeader("JSON", colNode.get("name").asText());
+	}
+	private void checkSecondHeader(JsonNode colNode) {
+		checkSecondHeader("JSON", colNode.get("name").asText());
+	}
+	private void checkFirstHeader(String format, String name) {
+        assertEquals("unexpected first header name in "+format,  "rowNum", name);
+	}
+	private void checkSecondHeader(String format, String name) {
+        assertEquals("unexpected second header name in "+format, "temp",  name);
+	}
+	private void checkFirstObject(JsonNode object) {
+		checkFirstType("JSON", object.get("type").asText());
+		checkFirstValue("JSON", object.get("value").asText());
+	}
+	private void checkSecondObject(JsonNode object) {
+		checkSecondType("JSON", object.get("type").asText());
+		checkSecondValue("JSON", object.get("value").asText());
+	}
+	private void checkFirstType(String format, String type) {
+        assertEquals("unexpected first binding type in "+format, "xs:integer",  type);
+	}
+	private void checkFirstValue(String format, String value) {
+        assertEquals("unexpected first binding value in "+format, "2",  value);
+	}
+	private void checkSecondType(String format, String type) {
+        assertEquals("unexpected second binding type in "+format, "xs:string",  type);
+	}
+	private void checkSecondValue(String format, String value) {
+        assertEquals("unexpected second binding value in "+format, "72",  value);
 	}
 	private void checkSingleRow(RowRecord row) {
         assertEquals("unexpected first binding value in row record", "2",  row.getString("rowNum"));
@@ -830,11 +993,11 @@ public class RowManagerTest {
 			rowCount++;
 
 			assertEquals("unexpected first binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("rowNum"));
-			assertEquals("unexpected first binding datatype in row record", "integer", row.getAtomicDatatype("rowNum").getLocalPart());
+			assertEquals("unexpected first binding datatype in row record", "xs:integer", row.getDatatype("rowNum"));
 			assertEquals("unexpected first binding value in row record", rowCount, row.getInt("rowNum"));
 
 			assertEquals("unexpected second binding kind in row record", ColumnKind.ATOMIC_VALUE, row.getKind("uri"));
-			assertEquals("unexpected second binding datatype in row record", "string", row.getAtomicDatatype("uri").getLocalPart());
+			assertEquals("unexpected second binding datatype in row record", "xs:string", row.getDatatype("uri"));
 	        assertEquals("unexpected second binding value in row record", uris[rowCount - 1], row.getString("uri"));
 
 			assertEquals("unexpected third binding kind in row record", ColumnKind.CONTENT, row.getKind("doc"));

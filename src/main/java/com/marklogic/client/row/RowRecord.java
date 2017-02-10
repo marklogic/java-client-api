@@ -17,8 +17,6 @@ package com.marklogic.client.row;
 
 import java.util.Map;
 
-import javax.xml.namespace.QName;
-
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -38,23 +36,27 @@ public interface RowRecord extends Map<String, Object> {
 
 	/**
 	 * Identifies whether the value of a column is an atomic value,
-	 * a document or other content structure, a uri, a blank node
-	 * for a triple, or a null.
+	 * a document or other content structure, or a null.
 	 * @param columnName	the name of the column
 	 * @return	the kind of value of the column in the row
 	 */
 	ColumnKind getKind(String columnName);
 
 	/**
-	 * Identifies the schema data type where a column has an
-	 * atomic value instead of a content value. 
+	 * Identifies the server data type for a column. A column
+	 * may have different data types in different rows.
 	 * 
-	 * The data type is represented as a QName 
-	 * such as xs:int or xs:dateTime. 
+	 * For atomic values, the string is the lexical form of a QName
+	 * with the conventional prefix for the type namespace,
+	 * a separating colon, and the type local name as in
+	 * xs:int or xs:dateTime. 
+	 * 
+	 * For node values, the string has the node type
+	 * as in array, document, element, or object.
 	 * @param columnName	the name of the column
-	 * @return	the schema data type
+	 * @return	the server data type
 	 */
-	QName getAtomicDatatype(String columnName);
+	String getDatatype(String columnName);
 
 	/**
 	 * Gets the value of a column with an xs:boolean schema data type
