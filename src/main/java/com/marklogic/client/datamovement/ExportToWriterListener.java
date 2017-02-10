@@ -170,11 +170,14 @@ public class ExportToWriterListener extends ExportListener {
   */
 
   /**
-   * The types of metadata to retrieve with each document.  The metadata will
-   * be available in each DocumentRecord sent to the OutputListener registered
-   * with onGenerateOutput.
+   * Adds a metadata category to retrieve with each document.  The metadata
+   * will be available via {@link DocumentRecord#getMetadata
+   * DocumentRecord.getMetadata} in each DocumentRecord sent to the
+   * OutputListener registered with onGenerateOutput.  To specify the format
+   * for the metdata, call {@link #withNonDocumentFormat
+   * withNonDocumentFormat}.
    *
-   * @param category the types of metadata desired
+   * @param category the metadata category to retrieve
    * @return this instance (for method chaining)
    */
   @Override
