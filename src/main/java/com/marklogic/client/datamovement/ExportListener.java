@@ -34,8 +34,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reads document contents and metadata for each batch, then sends each
- * document to any listeners registered with {@link #onDocumentReady
+ * Reads document contents (and optionally metadata) for each batch, then sends
+ * each document to any listeners registered with {@link #onDocumentReady
  * onDocumentReady} for further processing or writing to any target supported
  * by Java.  Supports reading partial documents via transforms.  Supports
  * exporting all documents at a consistent point-in-time using
@@ -58,11 +58,15 @@ import java.util.Set;
  *     exportBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  *
+ * By default only document contents are retrieved.  If you would also like
+ * metadata, make sure to call {@link #withMetadataCategory withMetadataCategory}
+ * to configure which categories of metadata you desire.
+ *
  * As with all the provided listeners, this listener will not meet the needs of
  * all applications but the [source code][] for it should serve as helpful sample
  * code so you can write your own custom listeners.
  *
- * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportListener.java
+ * [source code]: https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/datamovement/ExportListener.java
  */
 public class ExportListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(ExportListener.class);

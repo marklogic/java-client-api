@@ -39,6 +39,10 @@ import org.slf4j.LoggerFactory;
  * to write output to a CSV file.  The Writer could pipe to a socket, for
  * example, to send the output directly to another server endpoint.
  *
+ * By default only document contents are retrieved.  If you would also like
+ * metadata, make sure to call {@link #withMetadataCategory withMetadataCategory}
+ * to configure which categories of metadata you desire.
+ *
  * As with all the provided listeners, this listener will not meet the needs of
  * all applications but the [source code][] for it should serve as helpful sample
  * code so you can write your own custom listeners.
