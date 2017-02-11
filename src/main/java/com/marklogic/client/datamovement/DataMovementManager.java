@@ -85,7 +85,7 @@ public interface DataMovementManager {
    * to the queue, and begin to free all resources.  In-process tasks cannot be
    * cancelled because they talk to the REST server which does not have such a
    * mechanism.  This does not block until all in-process tasks are finished,
-   * for that use QueryBatcher.awaitCancellation() or WriteBatcher.awaitCancellation().
+   * for that use QueryBatcher.awaitCompletion() or WriteBatcher.awaitCompletion().
    *
    * @param ticket indicates the job to stop
    */
@@ -96,7 +96,7 @@ public interface DataMovementManager {
    * to the queue, and begin to free all resources.  In-process tasks cannot be
    * cancelled because they talk to the REST server which does not have such a
    * mechanism.  This does not block until all in-process tasks are finished,
-   * for that use QueryBatcher.awaitCancellation() or WriteBatcher.awaitCancellation().
+   * for that use QueryBatcher.awaitCompletion() or WriteBatcher.awaitCompletion().
    *
    * @param batcher the batcher instance to stop
    */
