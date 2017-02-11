@@ -91,7 +91,7 @@ public class RowManagerImpl
 	public PlanBuilder newPlanBuilder() {
 		PlanBuilderImpl planBuilder = new PlanBuilderSubImpl();
 
-		planBuilder.setHandleRegistry(getHandleRegistry());
+		planBuilder.setHandleRegistry(handleRegistry);
 
 		return planBuilder;
 	}
@@ -171,7 +171,12 @@ public class RowManagerImpl
 				plan, "json", datatypeStyle, rowStructureStyle, "reference", transaction
 				);
 
-		return new RowSetRecord("json", datatypeStyle, rowStructureStyle, iter, getHandleRegistry());
+		RowSetRecord rowset = new RowSetRecord(
+				"json", datatypeStyle, rowStructureStyle, iter, handleRegistry
+				);
+		rowset.init();
+
+		return rowset;
 	}
 	@Override
 	public <T extends StructureReadHandle> RowSet<T> resultRows(Plan plan, T rowHandle) {
@@ -188,7 +193,12 @@ public class RowManagerImpl
 				plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
 				);
 
-		return new RowSetHandle<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
+		RowSetHandle<T> rowset = new RowSetHandle<>(
+				rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
+				);
+		rowset.init();
+
+		return rowset;
 	}
 	@Override
     public <T> RowSet<T> resultRowsAs(Plan plan, Class<T> as) {
@@ -207,7 +217,12 @@ public class RowManagerImpl
 				plan, rowFormat, datatypeStyle, rowStructureStyle, "inline", transaction
 				);
 
-		return new RowSetObject<>(rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle);
+		RowSetObject<T> rowset = new RowSetObject<>(
+				rowFormat, datatypeStyle, rowStructureStyle, iter, rowHandle
+				);
+		rowset.init();
+
+		return rowset;
 	}
 
 	@Override
@@ -339,7 +354,7 @@ public class RowManagerImpl
 			throw new IllegalArgumentException("Must specify a class for content with a registered handle");
 		}
 
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+		ContentHandle<T> handle = handleRegistry.makeHandle(as);
 		if (!(handle instanceof StructureReadHandle)) {
 			if (handle == null) {
 		    	throw new IllegalArgumentException("Class \"" + as.getName() + "\" has no registered handle");
@@ -369,6 +384,9 @@ public class RowManagerImpl
 			this.datatypeStyle     = datatypeStyle;
 			this.rowStructureStyle = rowStructureStyle;
 			this.results           = results;
+		}
+
+		void init() {
 			parseColumns(datatypeStyle, rowStructureStyle);
 			if (results.hasNext()) {
 				nextRow = results.next();
@@ -495,10 +513,8 @@ public class RowManagerImpl
 		private void closeImpl() {
 			if (results != null) {
 				results.close();
-				results     = null;
-				nextRow     = null;
-				columnNames = null;
-				columnTypes = null;
+				results = null;
+				nextRow = null;
 			}
 		}
 	}
@@ -506,12 +522,17 @@ public class RowManagerImpl
 		private HandleFactoryRegistry             handleRegistry  = null;
 		private Map<String, RowRecord.ColumnKind> headerKinds     = null;
 		private Map<String, String>               headerDatatypes = null;
+		private Map<String, String>               aliases         = null;
 		RowSetRecord(
 				String rowFormat, RowSetPart datatypeStyle, RowStructure rowStructureStyle,
 				RESTServiceResultIterator results, HandleFactoryRegistry handleRegistry
 				) {
 			super(rowFormat, datatypeStyle, rowStructureStyle, results);
 			this.handleRegistry = handleRegistry;
+		}
+
+		void init() {
+			super.init();
 			if (datatypeStyle == RowSetPart.HEADER) {
 				headerKinds     = new HashMap<>();
 				headerDatatypes = new HashMap<>();
@@ -525,6 +546,59 @@ public class RowManagerImpl
 					headerKinds.put(columnName, columnKind);
 				}
 			}
+		}
+
+		HandleFactoryRegistry getHandleRegistry() {
+			return handleRegistry;
+		}
+
+		void initAliases(Map<String, ?> cols) {
+			if (aliases != null) {
+				return;
+			}
+
+			Map<String,String> candidates = new HashMap<String,String>();
+
+			Set<String> noncandidates = cols.keySet();
+			for (String col: noncandidates.toArray(new String[noncandidates.size()])) {
+				String[] parts = col.split("\\.", 3);
+				if (parts.length == 1) {
+					continue;
+				}
+				for (int i=1; i < parts.length; i++) {
+					int next = i + 1;
+					String candidate = (next == parts.length) ?
+							parts[i] : parts[i]+"."+parts[next];
+					if (noncandidates.contains(candidate)) {
+						continue;
+					} else if (candidates.containsKey(candidate)) {
+						candidates.remove(candidate);
+						noncandidates.add(candidate);
+						continue;
+					}
+					candidates.put(candidate, col);
+				}
+			}
+
+			aliases = candidates;
+		}
+		<T> boolean hasAlias(Map<String, T> cols, Object colName) {
+			if (colName == null) {
+				return false;
+			}
+
+			initAliases(cols);
+
+			String columnName = (colName instanceof String) ? (String) colName : colName.toString();
+
+			String col = aliases.get(columnName);
+			if (col == null) {
+				return false;
+			}
+
+			cols.put(columnName, cols.get(col));
+
+			return true;
 		}
 
 		@Override
@@ -701,7 +775,7 @@ public class RowManagerImpl
 					hasMoreRows = results.hasNext();
 				}
 
-				RowRecordImpl rowRecord = new RowRecordImpl(handleRegistry);
+				RowRecordImpl rowRecord = new RowRecordImpl(this);
 				
 				rowRecord.init(kinds, datatypes, row);
 
@@ -718,22 +792,6 @@ public class RowManagerImpl
 				throw new MarkLogicIOException("could not map row record", e);
 			} catch (IOException e) {
 				throw new MarkLogicIOException("could not read row record", e);
-			}
-		}
-
-		@Override
-		public void close() {
-			closeImpl();
-			super.close();
-		}
-		@Override
-		protected void finalize() throws Throwable {
-			closeImpl();
-			super.finalize();
-		}
-		private void closeImpl() {
-			if (handleRegistry != null) {
-				handleRegistry = null;
 			}
 		}
 
@@ -801,21 +859,6 @@ public class RowManagerImpl
 
 			return makeNextResult(currentRow.getContent(currentHandle));
 		}
-		@Override
-		public void close() {
-			closeImpl();
-			super.close();
-		}
-		@Override
-		protected void finalize() throws Throwable {
-			closeImpl();
-			super.finalize();
-		}
-		private void closeImpl() {
-			if (rowHandle != null) {
-				rowHandle = null;
-			}
-		}
 	}
 	static class RowSetHandle<T extends StructureReadHandle> extends RowSetHandleBase<T, T> {
 		RowSetHandle(
@@ -842,25 +885,21 @@ public class RowManagerImpl
 	}
 
 	static class RowRecordImpl implements RowRecord {
-		private static final
-		Map<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>> factories =
-		new HashMap<>();
+		private static final Map<Class<? extends XsAnyAtomicTypeVal>, Function<String,? extends XsAnyAtomicTypeVal>>
+		    factories = new HashMap<>();
 
 		private static final Map<Class<? extends XsAnyAtomicTypeVal>,Constructor<?>> constructors = new HashMap<>();
 
 		private Map<String, ColumnKind> kinds     = null;
 		private Map<String, String>     datatypes = null;
 
-		private Map<String, Object> row = null;
+		private Map<String, Object> row        = null;
+		private Map<String, Object> aliasedRow = null;
 
-		private HandleFactoryRegistry handleRegistry = null;
+		private RowSetRecord set = null;
 
-		RowRecordImpl(HandleFactoryRegistry handleRegistry) {
-			this.handleRegistry = handleRegistry;
-		}
-
-		HandleFactoryRegistry getHandleRegistry() {
-			return handleRegistry;
+		RowRecordImpl(RowSetRecord set) {
+			this.set = set;
 		}
 
 // QUESTION:  threading guarantees - multiple handles? precedent?
@@ -882,11 +921,12 @@ public class RowManagerImpl
 			ColumnKind kind = kinds.get(columnName);
 			if (kind != null) {
 				return kind;
+			} else if (kinds.containsKey(columnName)) {
+				return ColumnKind.NULL;
+			} else if (set.hasAlias(kinds, columnName)) {
+				return kinds.get(columnName);
 			}
-			if (!kinds.containsKey(columnName)) {
-				throw new IllegalArgumentException("no kind for column: "+columnName);
-			}
-			return ColumnKind.NULL;
+			throw new IllegalArgumentException("no kind for column: "+columnName);
 		}
 
 		@Override
@@ -901,17 +941,27 @@ public class RowManagerImpl
 			String datatype = datatypes.get(columnName);
 			if (datatype != null) {
 				return datatype;
+			} else if (datatypes.containsKey(columnName)) {
+				return null;
+			} else if (set.hasAlias(datatypes, columnName)) {
+				return datatypes.get(columnName);
 			}
-			if (!datatypes.containsKey(columnName)) {
-				throw new IllegalArgumentException("no datatype for column: "+columnName);
-			}
-			return null;
+			throw new IllegalArgumentException("no datatype for column: "+columnName);
 		}
 
 		// supported operations for unmodifiable map
 		@Override
 		public boolean containsKey(Object key) {
-			return row.containsKey(key);
+			if (aliasedRow == null) {
+				boolean isContained = row.containsKey(key);
+				if (isContained) {
+					return isContained;
+				}
+
+				aliasedRow = new HashMap<String, Object>(row);
+			}
+			
+			return set.hasAlias(aliasedRow, key);
 		}
 		@Override
 		public boolean containsValue(Object value) {
@@ -926,10 +976,25 @@ public class RowManagerImpl
 			if (key == null) {
 				throw new IllegalArgumentException("cannot get column value with null name");
 			}
-// TODO: get ColumnKind.NULL as null
+
+			Map<String, Object> valueRow = (aliasedRow == null) ? row : aliasedRow;
+
+			Object value = valueRow.get(key);
+			if (value != null) {
+				return value;
+			} else if (valueRow.containsKey(key)) {
+				return null;
+			} else if (aliasedRow == null) {
+				aliasedRow = new HashMap<String, Object>(row);
+			}
+
+			if (set.hasAlias(aliasedRow, key)) {
+				return aliasedRow.get(key);
+			}
+
 // TODO: get ColumnKind.CONTENT of binary as byte[] - getKind()?
 // TODO: get ColumnKind.CONTENT if not binary as String - getKind()?
-			return row.get(key);
+			return null;
 		}
 		@Override
 		public boolean isEmpty() {
@@ -1272,7 +1337,7 @@ public class RowManagerImpl
 				throw new IllegalArgumentException("Must specify a class for content with a registered handle");
 			}
 
-			ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+			ContentHandle<T> handle = set.getHandleRegistry().makeHandle(as);
 			if (handle == null) {
 				throw new IllegalArgumentException("No handle registered for class: "+as.getName());
 			}

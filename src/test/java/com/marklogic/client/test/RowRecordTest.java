@@ -20,6 +20,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -199,7 +200,7 @@ public class RowRecordTest {
 					break;
 				}
 
-	// TODO: testing on RdfLangString and SemIri
+// TODO: testing on RdfLangString and SemIri
 				switch (key) {
 		  		case "langString":
 		  		case "iri":
@@ -263,6 +264,35 @@ public class RowRecordTest {
 		});
 
 		assertFalse("too many results for datatypes", rowItr.hasNext());
+        rowSet.close();
+	}
+
+	@Test
+	public void aliasTest() throws IOException {
+		PlanBuilder.ModifyPlan plan =
+				p.fromView("opticUnitTest", "musician")
+				 .orderBy(p.col("lastName"))
+				 .limit(1);
+
+		RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
+		Iterator<RowRecord> rowItr = rowSet.iterator();
+		assertTrue("no row to test for datatypes", rowItr.hasNext());
+
+		RowRecord row = rowItr.next();
+
+		for (String colName: new String[]{"opticUnitTest.musician.lastName", "musician.lastName", "lastName"}) {
+			RowRecord.ColumnKind expectedKind = RowRecord.ColumnKind.ATOMIC_VALUE;
+			RowRecord.ColumnKind actualKind   = row.getKind(colName);
+			assertEquals("kind for alias: "+colName, expectedKind, actualKind);
+			
+			String datatype = row.getDatatype(colName);
+			assertEquals("datatype for alias: "+colName, "xs:string", datatype);
+
+			String value = row.getString(colName);
+			assertEquals("value for alias: "+colName, "Armstrong", value);
+		}
+
+		assertFalse("too many results for alias", rowItr.hasNext());
         rowSet.close();
 	}
 	// Note: content payloads covered in RowManagerTest
