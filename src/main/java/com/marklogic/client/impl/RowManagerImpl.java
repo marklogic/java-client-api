@@ -1349,6 +1349,91 @@ public class RowManagerImpl
 			return content;
 		}
 
+		@Override
+		public String toString() {
+			StringBuilder buf = new StringBuilder();
+
+			buf.append("{");
+
+			boolean isFirst = true;
+			if (row != null) {
+				for (String colName: row.keySet()) {
+					if (isFirst) {
+						buf.append("\n    ");
+						isFirst = false;
+					} else {
+						buf.append(",\n    ");
+					}
+
+					RowRecord.ColumnKind colKind = kinds.get(colName);
+					String               colType = datatypes.get(colName);
+
+					buf.append(colName);
+					buf.append(":{kind: \"");
+					buf.append(colKind.name());
+					buf.append("\", type: \"");
+					buf.append(colType);
+					buf.append("\", ");
+
+					switch(colKind) {
+					case ATOMIC_VALUE:
+						buf.append("value: ");
+
+						String colVal = getString(colName);
+
+						switch(colType) {
+						case "xs:boolean":
+						case "xs:byte":
+						case "xs:decimal":
+						case "xs:double":
+						case "xs:float":
+						case "xs:int":
+						case "xs:integer":
+						case "xs:long":
+						case "xs:short":
+						case "xs:unsignedByte":
+						case "xs:unsignedInt":
+						case "xs:unsignedLong":
+						case "xs:unsignedShort":
+							buf.append(colVal);
+							break;
+						default:
+							if (colVal == null) {
+								buf.append("null");
+							} else {
+								buf.append("\"");
+								buf.append(colVal.replace("\"", "\\\""));
+								buf.append("\"");
+							}
+							break;
+						}
+						break;
+					case CONTENT:
+						buf.append("format: \"");
+						buf.append(getContentFormat(colName).name().toLowerCase());
+						buf.append("\", mimetype: \"");
+						buf.append(getContentMimetype(colName));
+						buf.append("\"");
+						break;
+					case NULL:
+						buf.append("value: null");
+						break;
+					default:
+						throw new InternalError("unknown value kind: "+colKind);
+					}
+
+					buf.append("}");
+				}
+			}
+
+			if (!isFirst) {
+				buf.append("\n    ");
+			}
+			buf.append("}\n");
+
+			return buf.toString();
+		}
+
 		private String getNameForColumn(PlanExprCol col) {
             if (col == null) {
             	throw new IllegalArgumentException("null column");

@@ -20,10 +20,14 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.junit.AfterClass;
@@ -294,6 +298,41 @@ public class RowRecordTest {
 
 		assertFalse("too many results for alias", rowItr.hasNext());
         rowSet.close();
+	}
+
+	@Test
+	public void toStringTest() throws IOException {
+		Set<String> expected = new HashSet<>();
+		expected.add("bool:{kind: \"ATOMIC_VALUE\", type: \"xs:boolean\", value: true},");
+		expected.add("dec:{kind: \"ATOMIC_VALUE\", type: \"xs:decimal\", value: 3.3},");
+		expected.add("int:{kind: \"ATOMIC_VALUE\", type: \"xs:integer\", value: 2},");
+		expected.add("str:{kind: \"ATOMIC_VALUE\", type: \"xs:string\", value: \"string four\"},");
+
+		Map<String,Object> literalRow = new HashMap<String,Object>();
+		literalRow.put("bool", true);
+		literalRow.put("int",  2);
+		literalRow.put("dec",  3.3);
+		literalRow.put("str",  "string four");
+
+		@SuppressWarnings("unchecked")
+		PlanBuilder.ModifyPlan plan = p.fromLiterals(new Map[]{literalRow});
+
+		RowSet<RowRecord>   rowSet = rowMgr.resultRows(plan);
+		Iterator<RowRecord> rowItr = rowSet.iterator();
+		assertTrue("no row to test for datatypes", rowItr.hasNext());
+
+		RowRecord row = rowItr.next();
+
+		Set<String> actual = new BufferedReader(new StringReader(row.toString()))
+				.lines()
+				.map(line -> line.trim())
+				.filter(line -> (!"{".equals(line) && !"}".equals(line)))
+				.map(line -> (line.endsWith(",") ? line : line.concat(",")))
+				.collect(Collectors.toSet());
+
+		assertTrue("stringified record", expected.equals(actual));
+
+		rowSet.close();
 	}
 	// Note: content payloads covered in RowManagerTest
 }
