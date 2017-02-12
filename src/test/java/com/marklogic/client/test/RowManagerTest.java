@@ -675,6 +675,7 @@ public class RowManagerTest {
 
 		PlanBuilder p = rowMgr.newPlanBuilder();
 
+		@SuppressWarnings("unchecked")
 		Map<String,Object>[] testRows = new Map[5];
 
 		Map<String,Object> row = new HashMap<>();

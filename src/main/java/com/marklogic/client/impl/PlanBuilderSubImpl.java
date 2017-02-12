@@ -76,14 +76,30 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
         		option);
 	}
 
-	@Override
+// TODO: delete override of fromTriples() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromTriples(PlanTriplePatternSeq patterns) {
+        return new AccessPlanSubImpl(this, "op", "from-triples", new Object[]{ patterns });
+    }
+// TODO: delete override of fromTriples() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName) {
+        return new AccessPlanSubImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName });
+    }
+// TODO: delete override of fromTriples() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName, XsStringSeqVal graphIris) {
+        return new AccessPlanSubImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIris });
+    }
+
+    @Override
 	public AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName, XsStringSeqVal graphIris, PlanTripleOption option) {
-        return new AccessPlanSubImpl("op", "from-triples", new Object[]{ patterns, qualifierName, graphIris, asArg(makeMap(option))});
+        return new AccessPlanSubImpl(this, "op", "from-triples", new Object[]{ patterns, qualifierName, graphIris, asArg(makeMap(option))});
 	}
 
 	@Override
 	public AccessPlan fromLexicons(Map<String, CtsReferenceExpr> indexes) {
-        return new AccessPlanSubImpl("op", "from-lexicons", new Object[]{ literal(indexes) });
+        return new AccessPlanSubImpl(this, "op", "from-lexicons", new Object[]{ literal(indexes) });
 	}
 
 	@Override
@@ -93,7 +109,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
 	@Override
 	public AccessPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, XsStringVal qualifierName) {
-        return new AccessPlanSubImpl("op", "from-lexicons", new Object[]{ literal(indexes), qualifierName});
+        return new AccessPlanSubImpl(this, "op", "from-lexicons", new Object[]{ literal(indexes), qualifierName});
 	}
 
 	@Override
@@ -103,12 +119,12 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
 	@Override
 	public AccessPlan fromLexicons(Map<String, CtsReferenceExpr> indexes, XsStringVal qualifierName, PlanSystemColumn sysCols) {
-        return new AccessPlanSubImpl("op", "from-lexicons", new Object[]{ literal(indexes), qualifierName, sysCols});
+        return new AccessPlanSubImpl(this, "op", "from-lexicons", new Object[]{ literal(indexes), qualifierName, sysCols});
 	}
 
 	@Override
 	public AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String, Object>... rows) {
-        return new AccessPlanSubImpl("op", "from-literals", new Object[]{ literal(rows) });
+        return new AccessPlanSubImpl(this, "op", "from-literals", new Object[]{ literal(rows) });
 	}
 
 	@Override
@@ -118,8 +134,24 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
 	@Override
 	public AccessPlan fromLiterals(Map<String, Object>[] rows, XsStringVal qualifierName) {
-        return new AccessPlanSubImpl("op", "from-literals", new Object[]{ literal(rows), qualifierName});
+        return new AccessPlanSubImpl(this, "op", "from-literals", new Object[]{ literal(rows), qualifierName});
 	}
+
+// TODO: delete override of fromView() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromView(XsStringVal schema, XsStringVal view) {
+        return new AccessPlanSubImpl(this, "op", "from-view", new Object[]{ schema, view });
+    }
+// TODO: delete override of fromView() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName) {
+        return new AccessPlanSubImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName });
+    }
+// TODO: delete override of fromView() arity after code generation passes PlanBuilderBaseImpl this
+    @Override
+    public AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName, PlanSystemColumn sysCols) {
+        return new AccessPlanSubImpl(this, "op", "from-view", new Object[]{ schema, view, qualifierName, sysCols });
+    }
 
 	@Override
 	public PlanAggregateCol avg(String name, String column, PlanValueOption option) {
@@ -599,11 +631,20 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     extends PlanBuilderImpl.AccessPlanImpl {
     	XsStringVal schema    = null;
     	XsStringVal qualifier = null;
+// TODO: delete overload constructor once generated PlanBuilderImpl arities pass builder reference
     	AccessPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+    		this(null, fnPrefix, fnName, fnArgs);
+    	}
+    	AccessPlanSubImpl(PlanBuilderBaseImpl builder, String fnPrefix, String fnName, Object[] fnArgs) {
 			super(fnPrefix, fnName, fnArgs);
 			if (!"op".equals(fnPrefix)) {
 				throw new IllegalArgumentException("unknown accessor constructor prefix: "+fnPrefix);
 			}
+
+			if (builder != null) {
+				setHandleRegistry(builder.getHandleRegistry());
+			}
+
 			switch(fnName) {
 			case "from-view":
 				if (fnArgs.length < 2) {
