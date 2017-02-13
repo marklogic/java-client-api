@@ -24,20 +24,20 @@ import com.marklogic.client.io.marker.JSONWriteHandle;
  * AST (Abstract Syntax Tree) for the plan.
  */
 public interface RawPlanDefinition extends Plan {
-	/**
-	 * Returns the handle for the JSON representation of the plan.
-	 * @return	the JSON handle
-	 */
-	JSONWriteHandle getHandle();
-	/**
-	 * Specifies the handle for the JSON representation of the plan.
-	 * @param handle	the JSON handle
-	 */
-	void setHandle(JSONWriteHandle handle);
     /**
-	 * Assigns the handle and returns the raw plan as a convenience.
+     * Returns the handle for the JSON representation of the plan.
+     * @return	the JSON handle
+     */
+    JSONWriteHandle getHandle();
+    /**
+     * Specifies the handle for the JSON representation of the plan.
+     * @param handle	the JSON handle
+     */
+    void setHandle(JSONWriteHandle handle);
+    /**
+     * Assigns the handle and returns the raw plan as a convenience.
      * @param handle	the JSON handle
      * @return	this raw plan object
      */
-	RawPlanDefinition withHandle(JSONWriteHandle handle);
+    RawPlanDefinition withHandle(JSONWriteHandle handle);
 }

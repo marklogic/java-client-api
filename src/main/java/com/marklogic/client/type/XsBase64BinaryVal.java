@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsBase64BinaryVal extends XsBase64BinaryExpr, XsAnyAtomicTypeVal, XsBase64BinarySeqVal {
-	public byte[] getBytes();
+    public byte[] getBytes();
 }

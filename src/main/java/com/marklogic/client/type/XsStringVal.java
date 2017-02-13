@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsStringVal extends XsStringExpr, XsAnyAtomicTypeVal, XsStringSeqVal, PlanGroupConcatOption, PlanParamBindingVal {
-	public String getString();
+    public String getString();
 }

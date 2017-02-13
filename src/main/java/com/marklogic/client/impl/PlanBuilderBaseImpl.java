@@ -27,109 +27,109 @@ import com.marklogic.client.type.PlanLongParam;
 import com.marklogic.client.type.PlanParamExpr;
 
 abstract class PlanBuilderBaseImpl extends PlanBuilder {
-	final static PlanBuilderSubImpl pb = new PlanBuilderSubImpl();
+    final static PlanBuilderSubImpl pb = new PlanBuilderSubImpl();
 
-	private HandleFactoryRegistry handleRegistry;
+    private HandleFactoryRegistry handleRegistry;
 
-	PlanBuilderBaseImpl() {
+    PlanBuilderBaseImpl() {
         super(
-        	CtsExprImpl.cts, FnExprImpl.fn, JsonExprImpl.json, MapExprImpl.map,
+            CtsExprImpl.cts, FnExprImpl.fn, JsonExprImpl.json, MapExprImpl.map,
             MathExprImpl.math, RdfExprImpl.rdf, SemExprImpl.sem, SpellExprImpl.spell,
             SqlExprImpl.sql, XdmpExprImpl.xdmp, XsExprImpl.xs
             );
     }
 
-	HandleFactoryRegistry getHandleRegistry() {
-		return handleRegistry;
-	}
-	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-		this.handleRegistry = handleRegistry;
-	}
+    HandleFactoryRegistry getHandleRegistry() {
+        return handleRegistry;
+    }
+    void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+        this.handleRegistry = handleRegistry;
+    }
 
     public PlanColumn exprCol(String column) {
         return col(column);
     }
 
-	static BaseTypeImpl.Literal literal(Object value) {
-		return new BaseTypeImpl.Literal(value);
-	}
+    static BaseTypeImpl.Literal literal(Object value) {
+        return new BaseTypeImpl.Literal(value);
+    }
 
     static class PlanParamBase extends BaseTypeImpl.BaseCallImpl<XsValueImpl.StringValImpl> implements PlanParamExpr {
-		String name = null;
-		PlanParamBase(String name) {
-			super("op", "param", new XsValueImpl.StringValImpl[]{new XsValueImpl.StringValImpl(name)});
-			if (name == null) {
-				throw new IllegalArgumentException("cannot define parameter with null name");
-			}
-			this.name = name;
-		}
-		public String getName() {
-			return name;
-		}
-	}
+        String name = null;
+        PlanParamBase(String name) {
+            super("op", "param", new XsValueImpl.StringValImpl[]{new XsValueImpl.StringValImpl(name)});
+            if (name == null) {
+                throw new IllegalArgumentException("cannot define parameter with null name");
+            }
+            this.name = name;
+        }
+        public String getName() {
+            return name;
+        }
+    }
 
     static interface RequestPlan {
-    	public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
-    	public AbstractWriteHandle getHandle();
+        public Map<PlanParamBase,BaseTypeImpl.ParamBinder> getParams();
+        public AbstractWriteHandle getHandle();
     }
 
     static abstract class PlanBaseImpl
     extends BaseTypeImpl.BaseChainImpl<BaseTypeImpl.BaseArgImpl>
     implements PlanBuilder.Plan, RequestPlan, BaseTypeImpl.BaseArgImpl {
-    	final static CtsExprImpl   cts   = CtsExprImpl.cts;
-    	final static FnExprImpl    fn    = FnExprImpl.fn;
-    	final static JsonExprImpl  json  = JsonExprImpl.json;
-    	final static MapExprImpl   map   = MapExprImpl.map;
+        final static CtsExprImpl   cts   = CtsExprImpl.cts;
+        final static FnExprImpl    fn    = FnExprImpl.fn;
+        final static JsonExprImpl  json  = JsonExprImpl.json;
+        final static MapExprImpl   map   = MapExprImpl.map;
         final static MathExprImpl  math  = MathExprImpl.math;
         final static RdfExprImpl   rdf   = RdfExprImpl.rdf;
         final static SemExprImpl   sem   = SemExprImpl.sem;
         final static SpellExprImpl spell = SpellExprImpl.spell;
         final static SqlExprImpl   sql   = SqlExprImpl.sql;
         final static XdmpExprImpl  xdmp  = XdmpExprImpl.xdmp;
-    	final static XsExprImpl    xs    = XsExprImpl.xs;
+        final static XsExprImpl    xs    = XsExprImpl.xs;
 
-    	final static PlanBuilderSubImpl pb = PlanBuilderBaseImpl.pb;
-    	
+        final static PlanBuilderSubImpl pb = PlanBuilderBaseImpl.pb;
+        
         private HandleFactoryRegistry handleRegistry;
 
-		PlanBaseImpl(PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
-			super(prior, fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        PlanBaseImpl(PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
+            super(prior, fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
             if (prior != null) {
-            	setHandleRegistry(prior.getHandleRegistry());
+                setHandleRegistry(prior.getHandleRegistry());
             }
-		}
+        }
 
 
         HandleFactoryRegistry getHandleRegistry() {
-			return handleRegistry;
-		}
-		void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-			this.handleRegistry = handleRegistry;
-		}
+            return handleRegistry;
+        }
+        void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+            this.handleRegistry = handleRegistry;
+        }
 
-		@Override
-		public AbstractWriteHandle getHandle() {
+        @Override
+        public AbstractWriteHandle getHandle() {
 // TODO: maybe serialize plan to JSON using JSON writer?
-			return new StringHandle(getAst()).withFormat(Format.JSON);
-		}
+            return new StringHandle(getAst()).withFormat(Format.JSON);
+        }
 
-		String getAst() {
-	    	StringBuilder strb = new StringBuilder();
-	    	strb.append("{\"$optic\":");
-	    	return exportAst(strb).append("}").toString();
-	    }
+        String getAst() {
+            StringBuilder strb = new StringBuilder();
+            strb.append("{\"$optic\":");
+            return exportAst(strb).append("}").toString();
+        }
 
 // TODO: cleanup
-	    public PlanColumn col(String column) {
-	        return pb.col(column);
-	    }
-	    public PlanColumn exprCol(String column) {
-	        return pb.col(column);
-	    }
-	    public PlanLongParam longParam(long value) {
-	    	return xs.longVal(value);
-	    }
-	}
+        public PlanColumn col(String column) {
+            return pb.col(column);
+        }
+        public PlanColumn exprCol(String column) {
+            return pb.col(column);
+        }
+        public PlanLongParam longParam(long value) {
+            return xs.longVal(value);
+        }
+    }
 
     static class PlanCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> {
         PlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {

@@ -17,6 +17,6 @@ package com.marklogic.client.type;
 
 //IMPORTANT: Do not edit. This file is generated.
 public interface PlanPrefixer extends PlanPrefixerSeq {
-	public SemIriVal iri(String name);
-	public SemIriVal iri(XsStringVal name);
+    public SemIriVal iri(String name);
+    public SemIriVal iri(XsStringVal name);
 }

@@ -37,8 +37,8 @@ import com.marklogic.client.type.XsQNameVal;
 interface PlanBuilderBase {
     public PlanBuilder.AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
 
-	public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeSeqExpr content);
-	public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value);
+    public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeSeqExpr content);
+    public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value);
 
     public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath);
 
@@ -47,26 +47,26 @@ interface PlanBuilderBase {
     public PlanGroupConcatOptionSeq groupConcatOptions(String separator, PlanValueOption option);
 
     public interface PlanBase {
-		public PlanBuilder.Plan bindParam(PlanParamExpr param, boolean literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, byte    literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, double  literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, float   literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, int     literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, long    literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, short   literal);
-	    public PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
-	}
-	public interface AccessPlanBase {
-	}
-	public interface ExportablePlanBase {
-		public <T extends JSONReadHandle> T export(T handle);
-		public <T> T exportAs(Class<T> as);
-	}
-	public interface ModifyPlanBase {
-		public PlanBuilder.ModifyPlan limit(long length);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, boolean literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, byte    literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, double  literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, float   literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, int     literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, long    literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, short   literal);
+        public PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
+    }
+    public interface AccessPlanBase {
+    }
+    public interface ExportablePlanBase {
+        public <T extends JSONReadHandle> T export(T handle);
+        public <T> T exportAs(Class<T> as);
+    }
+    public interface ModifyPlanBase {
+        public PlanBuilder.ModifyPlan limit(long length);
         public PlanBuilder.ModifyPlan limit(XsLongVal length);
         public PlanBuilder.ModifyPlan limit(PlanParamExpr length);
-		public PlanBuilder.ModifyPlan offset(long start);
+        public PlanBuilder.ModifyPlan offset(long start);
         public PlanBuilder.ModifyPlan offset(XsLongVal start);
         public PlanBuilder.ModifyPlan offset(PlanParamExpr start);
         public PlanBuilder.ModifyPlan offsetLimit(long start, long length);
@@ -74,7 +74,7 @@ interface PlanBuilderBase {
         public PlanBuilder.ModifyPlan where(XsBooleanExpr condition);
         public PlanBuilder.ModifyPlan where(CtsQueryExpr condition);
         public PlanBuilder.ModifyPlan where(SemStoreExpr condition);
-	}
-	public interface PreparePlanBase {
-	}
+    }
+    public interface PreparePlanBase {
+    }
 }

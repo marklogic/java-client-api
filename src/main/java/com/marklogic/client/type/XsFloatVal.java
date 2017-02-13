@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsFloatVal extends XsFloatExpr, XsAnyAtomicTypeVal, XsNumericVal, XsFloatSeqVal, PlanParamBindingVal { 
-	public float getFloat();
+    public float getFloat();
 }

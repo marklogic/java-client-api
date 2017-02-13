@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsIntVal extends XsIntExpr, XsLongVal, XsIntSeqVal, PlanParamBindingVal {
-	public int getInt();
+    public int getInt();
 }

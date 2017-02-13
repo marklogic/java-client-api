@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsByteVal extends XsByteExpr, XsShortVal, XsByteSeqVal, PlanParamBindingVal {
-	public byte getByte();
+    public byte getByte();
 }

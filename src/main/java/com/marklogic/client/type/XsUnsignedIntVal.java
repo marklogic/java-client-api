@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsUnsignedIntVal extends XsUnsignedIntExpr, XsUnsignedLongVal, XsUnsignedIntSeqVal, PlanParamBindingVal {
-	public int getInt();
+    public int getInt();
 }

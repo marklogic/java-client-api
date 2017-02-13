@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface ItemSeqVal extends ItemSeqExpr {
-	public ItemVal[] getItems();
+    public ItemVal[] getItems();
 }

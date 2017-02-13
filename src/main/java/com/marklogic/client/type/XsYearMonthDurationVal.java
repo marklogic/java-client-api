@@ -18,5 +18,5 @@ package com.marklogic.client.type;
 import javax.xml.datatype.Duration;
 
 public interface XsYearMonthDurationVal extends XsYearMonthDurationExpr, XsDurationVal, XsYearMonthDurationSeqVal, PlanParamBindingVal {
-	public Duration getDuration();
+    public Duration getDuration();
 }

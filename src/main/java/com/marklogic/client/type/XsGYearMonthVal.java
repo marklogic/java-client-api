@@ -18,5 +18,5 @@ package com.marklogic.client.type;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 public interface XsGYearMonthVal extends XsGYearMonthExpr, XsAnyAtomicTypeVal, XsGYearMonthSeqVal, PlanParamBindingVal {
-	public XMLGregorianCalendar getXMLGregorianCalendar();
+    public XMLGregorianCalendar getXMLGregorianCalendar();
 }

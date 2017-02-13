@@ -17,5 +17,5 @@ package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
 public enum PlanTripleOption {
-	DEDUPLICATED, UNCHECKED;
+    DEDUPLICATED, UNCHECKED;
 }

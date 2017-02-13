@@ -32,26 +32,26 @@ import java.util.stream.Stream;
  * @param <T>	the type for reading a row from the set
  */
 public interface RowSet<T> extends Iterable<T>, Closeable {
-	/**
-	 * Identifies the columns in the row set.
-	 * @return	The column names
-	 */
+    /**
+     * Identifies the columns in the row set.
+     * @return	The column names
+     */
     String[] getColumnNames();
 
-	/**
-	 * Identifies the data types of the columns.
-	 * 
-	 * The array lists the data types only if the rows were
-	 * requested with a RowManager configured by calling the
-	 * setDatatypeStyle() method with RowSetPart.HEADER.
-	 * 
-	 * Note that setting the data type style to HEADER does
-	 * not cast the values of the column. The actual data type
-	 * of the column values may be different from the header
-	 * data type if the column values are inconsistent.
-	 *  
-	 * @return	The column data types
-	 */
+    /**
+     * Identifies the data types of the columns.
+     * 
+     * The array lists the data types only if the rows were
+     * requested with a RowManager configured by calling the
+     * setDatatypeStyle() method with RowSetPart.HEADER.
+     * 
+     * Note that setting the data type style to HEADER does
+     * not cast the values of the column. The actual data type
+     * of the column values may be different from the header
+     * data type if the column values are inconsistent.
+     *  
+     * @return	The column data types
+     */
     String[] getColumnTypes();
 
     /**

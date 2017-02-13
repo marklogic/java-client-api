@@ -18,5 +18,5 @@ package com.marklogic.client.type;
 import javax.xml.datatype.Duration;
 
 public interface XsDayTimeDurationVal extends XsDayTimeDurationExpr, XsDurationVal, XsDayTimeDurationSeqVal {
-	public Duration getDuration();
+    public Duration getDuration();
 }

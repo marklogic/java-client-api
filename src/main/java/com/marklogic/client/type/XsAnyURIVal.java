@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface XsAnyURIVal extends XsAnyURIExpr, XsAnyAtomicTypeVal, XsAnyURISeqVal, PlanParamBindingVal {
-	public String getString();
+    public String getString();
 }

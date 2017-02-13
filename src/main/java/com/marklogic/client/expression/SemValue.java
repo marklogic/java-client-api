@@ -30,23 +30,23 @@ import com.marklogic.client.type.XsStringSeqVal;
  * for execution on the server.
  */
 public interface SemValue {
-	/**
-	 * Takes a semantic iri as a string and constructs a sem:iri value
-	 * @param stringIri	the uri as a string
-	 * @return	a value with an sem:iri data type
-	 */
+    /**
+     * Takes a semantic iri as a string and constructs a sem:iri value
+     * @param stringIri	the uri as a string
+     * @return	a value with an sem:iri data type
+     */
     public SemIriVal     iri(String stringIri);
-	/**
-	 * Takes any number of iris as a string and constructs an sem:iri sequence
-	 * @param stringIris	the iris as strings
-	 * @return	a value sequence with an sem:iri data type
-	 */
+    /**
+     * Takes any number of iris as a string and constructs an sem:iri sequence
+     * @param stringIris	the iris as strings
+     * @return	a value sequence with an sem:iri data type
+     */
     public SemIriSeqVal iriSeq(String... stringIris);
-	/**
-	 * Takes any number of iris as semtyped :iri values and constructs an sem:iri sequence
-	 * @param iris	the iris as strings
-	 * @return	a value sequence with an sem:iri data type
-	 */
+    /**
+     * Takes any number of iris as semtyped :iri values and constructs an sem:iri sequence
+     * @param iris	the iris as strings
+     * @return	a value sequence with an sem:iri data type
+     */
     public SemIriSeqVal iriSeq(SemIriVal... iris);
 
     /**
@@ -88,9 +88,9 @@ public interface SemValue {
     public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr stores, String... options);
 
     /**
-	 * Takes any number of triple store specifications and constructs a store sequence
+     * Takes any number of triple store specifications and constructs a store sequence
      * @param stores	the triple store specifications
-	 * @return	a sequence of triple store specifications
+     * @return	a sequence of triple store specifications
      */
     public SemStoreSeqExpr stores(SemStoreExpr... stores);
 }

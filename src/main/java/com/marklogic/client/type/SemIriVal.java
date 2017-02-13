@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 public interface SemIriVal extends SemIriExpr, XsAnyURIVal, SemIriSeqVal, PlanTripleIri, PlanParamBindingVal {
-	public String getString();
+    public String getString();
 }

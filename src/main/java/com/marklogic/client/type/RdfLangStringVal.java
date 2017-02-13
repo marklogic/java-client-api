@@ -16,6 +16,6 @@
 package com.marklogic.client.type;
 
 public interface RdfLangStringVal extends RdfLangStringExpr, XsStringVal, RdfLangStringSeqVal, PlanParamBindingVal {
-	public String getString();
-	public String getLang();
+    public String getString();
+    public String getLang();
 }
