@@ -393,7 +393,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		PlanColumn colorIdCol =  p.viewCol("myColor", "colorId");
 		ModifyPlan outputMultiOrder = plan5.joinInner(plan6, p.on(itemColorIdCol, colorIdCol))
 				                          .select(descCol, colorIdCol)
-				                          .orderBy(p.sortKeys(colorIdCol, descCol));
+				                          .orderBy(p.sortKeySeq(colorIdCol, descCol));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -440,7 +440,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan outputMultiJoin = plan5.joinInner(plan6, p.on(itemColorIdCol, colorIdCol))
 				                          .joinInner(plan7, p.on(colorDescCol, refColorCol))
 				                          .select(descCol, colorIdCol, refCol)
-				                          .orderBy(p.sortKeys(colorIdCol, descCol));
+				                          .orderBy(p.sortKeySeq(colorIdCol, descCol));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -564,7 +564,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan output = plan1.joinInner(plan2)
 		                         .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
 		                         .offsetLimit(1, 3)
-		                         .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
+		                         .select(p.colSeq("rowId", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -589,7 +589,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan outputLimit = plan1.joinInner(plan2)
                                       .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
                                       .limit(0)
-                                      .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
+                                      .select(p.colSeq("rowId", "desc", "colorId", "colorDesc"));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		StringBuilder str = new StringBuilder();
@@ -910,7 +910,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(literals1);
 		ModifyPlan plan2 = p.fromLiterals(literals2);
 		
-		ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy(p.sortKeys(p.col("rowId")));
+		ModifyPlan output = plan1.union(plan2).whereDistinct().orderBy(p.sortKeySeq(p.col("rowId")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -977,8 +977,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan1 = p.fromLiterals(storeInformation);
 		ModifyPlan plan2 = p.fromLiterals(internetSales);
 		
-		ModifyPlan output = plan1.select(p.cols("txnDate"))
-		                         .except(plan2.select(p.cols("txnDate")));
+		ModifyPlan output = plan1.select(p.colSeq("txnDate"))
+		                         .except(plan2.select(p.colSeq("txnDate")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -997,9 +997,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	 * Test arrayAggregate, sequenceAggregate and aggregate with distinct and duplicate options
 	*/
 	@Test
-	public void testAggregates() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	public void testAggregateSeq() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
-		System.out.println("In testAggregates method");
+		System.out.println("In testAggregateSeq method");
 	
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
@@ -1088,7 +1088,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan outputAgg = plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol))
 		                         .groupBy(rowIdExp, p.arrayAggregate("colorIdArray", "colorDesc"))
-		                         .orderBy(p.sortKeys(p.col("rowId")));
+		                         .orderBy(p.sortKeySeq(p.col("rowId")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1097,7 +1097,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		JsonNode jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
-		assertEquals("Four nodes not returned from testAggregates method", 4, jsonBindingsNodes.size());		
+		assertEquals("Four nodes not returned from testAggregateSeq method", 4, jsonBindingsNodes.size());		
 		assertEquals("Row 1 myItem.rowId value incorrect", "1", jsonBindingsNodes.path(0).path("myItem.rowId").path("value").asText());
 		assertEquals("Row 1 colorIdArray length value incorrect", 4, jsonBindingsNodes.path(0).path("colorIdArray").path("value").size());
 		assertEquals("Row 2 colorIdArray array 1 value incorrect", "blue", jsonBindingsNodes.path(1).path("colorIdArray").path("value").path(0).asText());
@@ -1106,7 +1106,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan outputSeqAgg = plan1.joinInner(plan2, p.on(itemColorIdCol, colorIdCol))
                                        .groupBy(rowIdExp, p.sequenceAggregate("colorIdArray", "colorDesc"))
-                                       .orderBy(p.sortKeys(p.col("rowId")));
+                                       .orderBy(p.sortKeySeq(p.col("rowId")));
 		
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1115,7 +1115,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
-		assertEquals("Four nodes not returned from testAggregates method", 4, jsonBindingsNodes.size());
+		assertEquals("Four nodes not returned from testAggregateSeq method", 4, jsonBindingsNodes.size());
 		assertEquals("Row 1 myItem.rowId value incorrect", "1", jsonBindingsNodes.path(0).path("myItem.rowId").path("value").asText());
 		assertEquals("Row 1 colorIdArray length value incorrect", 4, jsonBindingsNodes.path(0).path("colorIdArray").path("value").size());
 		assertEquals("Row 2 colorIdArray array 1 value incorrect", "blue", jsonBindingsNodes.path(1).path("colorIdArray").path("value").asText());
@@ -1126,14 +1126,12 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan plan4 = p.fromLiterals(literals2);
 		
 		// Verify DISTINCT
-		//Ajit PlanValueOption options = p.aggregateOptions(PlanValueOption.DISTINCT);
-		
-		PlanAggregateColSeq aggColSeq = p.aggregates(p.count("descAgg", "desc", PlanValueOption.DISTINCT));
-		PlanExprColSeq colSeq = p.cols("rowId");
+		PlanAggregateColSeq aggColSeq = p.aggregateSeq(p.count("descAgg", "desc", PlanValueOption.DISTINCT));
+		PlanExprColSeq colSeq = p.colSeq("rowId");
 		
 		ModifyPlan outputCountDist = plan3.joinInner(plan4)
 		                                  .groupBy(colSeq, aggColSeq)
-		                                  .orderBy(p.sortKeys(p.col("rowId")));
+		                                  .orderBy(p.sortKeySeq(p.col("rowId")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1141,7 +1139,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		jsonBindingsNodes = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned.
-		assertEquals("Four node not returned from testAggregates method", 4, jsonBindingsNodes.size());
+		assertEquals("Four node not returned from testAggregateSeq method", 4, jsonBindingsNodes.size());
 		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodes.path(0).path("rowId").path("value").asText());
 		assertEquals("Row 1 descAgg value incorrect", 1, jsonBindingsNodes.path(0).path("descAgg").path("value").asInt());
 		
@@ -1149,15 +1147,12 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		assertEquals("Row 1 descAgg value incorrect", 1, jsonBindingsNodes.path(3).path("descAgg").path("value").asInt());
 		
 		// aggregate with duplicate option
-		
-		// Ajit PlanValueOption optionsDup = p.aggregateOptions(PlanValueOption.DUPLICATE);
-		
-		PlanAggregateColSeq aggColSeqDup = p.aggregates(p.count("descAgg", "desc", PlanValueOption.DUPLICATE));
-		PlanExprColSeq colSeqDup = p.cols("rowId");
+		PlanAggregateColSeq aggColSeqDup = p.aggregateSeq(p.count("descAgg", "desc", PlanValueOption.DUPLICATE));
+		PlanExprColSeq colSeqDup = p.colSeq("rowId");
 		
 		ModifyPlan outputCountDup = plan3.joinInner(plan4)
 		                                  .groupBy(colSeqDup, aggColSeqDup)
-		                                  .orderBy(p.sortKeys(p.col("rowId")));
+		                                  .orderBy(p.sortKeySeq(p.col("rowId")));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1165,7 +1160,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		JsonNode jsonBindingsNodesDup = jacksonHandle.get().path("rows");
 		
 		// Should have 4 nodes returned. Duplicate values are included.
-		assertEquals("Four node not returned from testAggregates method", 4, jsonBindingsNodesDup.size());
+		assertEquals("Four node not returned from testAggregateSeq method", 4, jsonBindingsNodesDup.size());
 		assertEquals("Row 1 rowId value incorrect", "1", jsonBindingsNodesDup.path(0).path("rowId").path("value").asText());
 		assertEquals("Row 1 descAgg value incorrect", 2, jsonBindingsNodesDup.path(0).path("descAgg").path("value").asInt());
 		
@@ -1244,7 +1239,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		
 		ModifyPlan output = plan1.joinInner(plan2)
 		        .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
-		        .select(p.cols("rowIdRef", "desc", "colorId", "colorDesc"));
+		        .select(p.colSeq("rowIdRef", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1296,7 +1291,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		ModifyPlan output = plan1.joinInner(plan2)
 		                         .where(p.eq(p.col("colorId"), p.xs.intVal(1)))
 		                         .offsetLimit(-1, 1)
-		                         .select(p.cols("rowId", "desc", "colorId", "colorDesc"));
+		                         .select(p.colSeq("rowId", "desc", "colorId", "colorDesc"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");

@@ -341,8 +341,8 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 
 		ModifyPlan output = plan1.joinInner(plan2)
 				.joinDoc(p.col("doc"), p.col("uri"))
-				.select(p.cols("city", "uri", "rowId", "doc"))
-				.orderBy(p.sortKeys(p.col("rowId"), p.col("city")))
+				.select(p.colSeq("city", "uri", "rowId", "doc"))
+				.orderBy(p.sortKeySeq(p.col("rowId"), p.col("city")))
 				.offsetLimit(0, 5);
 
 		JacksonHandle jacksonHandle = new JacksonHandle();

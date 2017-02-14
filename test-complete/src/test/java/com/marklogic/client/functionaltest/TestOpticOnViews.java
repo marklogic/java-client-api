@@ -50,6 +50,7 @@ import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
@@ -296,7 +297,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				
 		AccessPlan plan = p.fromView("opticFunctionalTest", "detail", "MarkLogicQAQualifier" );
 		
-		plan.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.masterId"), 
+		plan.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.masterId"), 
 				     p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.color"),
 				     p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.amount")));
 				
@@ -518,7 +519,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 				                		p.schemaCol("opticFunctionalTest", "detail", "amount"),
 				                		p.schemaCol("opticFunctionalTest", "detail", "color")
 				                      )
-				                .orderBy(p.sortKeys(p.desc(p.col("DetailName")), p.desc(p.col("MasterName"))));
+				                .orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.col("MasterName"))));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
@@ -1142,7 +1143,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		                 p.schemaCol("opticFunctionalTest", "detail", "amount"), 
 		                 p.schemaCol("opticFunctionalTest", "detail", "color")
 				       )
-				.orderBy(p.sortKeys(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
+				.orderBy(p.sortKeySeq(p.desc(p.col("DetailName")), p.desc(p.schemaCol("opticFunctionalTest", "master", "date"))));
 		
 		RowSet<RowRecord> rowSet = rowMgr.resultRows(plan3);
 		// Verify RowRecords using Iterator
@@ -1464,7 +1465,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		// Verify for invalid schema name
 		AccessPlan planInvalidSchema = p.fromView("opticFunctionalTestInvalid", "detail", "MarkLogicQAQualifier" );
-		planInvalidSchema.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
+		planInvalidSchema.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1481,7 +1482,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		// Verify for invalid view name
 		AccessPlan planInvalidView = p.fromView("opticFunctionalTest", "detailInvalid", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
+		planInvalidView.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 		
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1498,7 +1499,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		// Verify for empty view name
 		AccessPlan planEmptyView = p.fromView("opticFunctionalTest", "", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
+		planInvalidView.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1515,7 +1516,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		// Verify for empty Schma name
 		AccessPlan planEmptySch = p.fromView("", "detail", "MarkLogicQAQualifier" );
-		planInvalidView.orderBy(p.sortKeys(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
+		planInvalidView.orderBy(p.sortKeySeq(p.viewCol("opticFunctionalTest", "MarkLogicQAQualifier.id")));
 
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1553,7 +1554,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	                                        )
 	                                  )
 	                            .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")))
-	                            .select(p.cols("id"));
+	                            .select(p.colSeq("id"));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");

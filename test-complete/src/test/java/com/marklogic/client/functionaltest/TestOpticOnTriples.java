@@ -320,7 +320,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn idCol = p.col("id");
 		PlanColumn nameCol = p.col("name");
 		PlanColumn posCol = p.col("position");
-		PlanTriplePatternSeq patSeq = p.patterns(
+		PlanTriplePatternSeq patSeq = p.patternSeq(
 				p.pattern(idCol, rowGraph.iri("age"), ageCol),
 				p.pattern(idCol, rowGraph.iri("name"), nameCol),
 				p.pattern(idCol, rowGraph.iri("position"), posCol));
@@ -629,7 +629,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		
 		PlanSystemColumn graphCol = p.graphCol("graphUri");
 
-		PlanTriplePatternSeq patSeq = p.patterns(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol, graphCol),
+		PlanTriplePatternSeq patSeq = p.patternSeq(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol, graphCol),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
@@ -698,7 +698,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn teamNameCol = p.col("team_name");
 		PlanColumn teamCityCol = p.col("team_city");
 		
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol, playerGraphCol),
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol, playerGraphCol),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
@@ -708,7 +708,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 				                               PlanTripleOption.DEDUPLICATED)
 				                  .where(storeExpr);
 				
-		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
+		PlanTriplePatternSeq patTeamSeq = p.patternSeq(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
                                                      p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				                                    );	
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,
@@ -796,7 +796,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn idCol = p.col("id");
 		PlanColumn nameCol = p.col("name");
 		PlanColumn teamCol = p.col("team");
-		PlanTriplePatternSeq patSeq = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol),
+		PlanTriplePatternSeq patSeq = p.patternSeq(p.pattern(idCol, bb.iri("age"), ageCol),
 				p.pattern(idCol, bb.iri("name"), nameCol),
 				p.pattern(idCol, bb.iri("team"), teamCol));
 		ModifyPlan output = p.fromTriples(patSeq, "myPlayer")
@@ -878,7 +878,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		// access with qualifier and fragment id column
 
 		PlanSystemColumn fragIdCol = p.fragmentIdCol("fragId");
-		PlanTriplePatternSeq patSeq1 = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol, fragIdCol),
+		PlanTriplePatternSeq patSeq1 = p.patternSeq(p.pattern(idCol, bb.iri("age"), ageCol, fragIdCol),
 				p.pattern(idCol, bb.iri("name"), nameCol),
 				p.pattern(idCol, bb.iri("team"), teamCol));
 
@@ -926,7 +926,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn nameCol = p.col("name");
 		PlanColumn teamCol = p.col("team");
 
-		PlanTriplePatternSeq patSeq = p.patterns(p.pattern(
+		PlanTriplePatternSeq patSeq = p.patternSeq(p.pattern(
 				idCol,
 				p.sem.iri("http://marklogic.com/baseball/players/age"),
 				ageCol)
@@ -982,13 +982,13 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn teamNameCol = p.col("team_name");
 		PlanColumn teamCityCol = p.col("team_city");
 
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
 		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer");
 
-		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
+		PlanTriplePatternSeq patTeamSeq = p.patternSeq(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				);
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam");
@@ -1109,7 +1109,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 						p.as("day", p.fn.dayFromDate(playerDobCol)),
 						p.as("log", p.math.log(playerEffCol))
 						)
-						.orderBy(p.sortKeys(p.col("lastname")));
+						.orderBy(p.sortKeySeq(p.col("lastname")));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -1159,13 +1159,13 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn teamNameCol = p.col("team_name");
 		PlanColumn teamCityCol = p.col("team_city");
 
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
 		ModifyPlan player_plan = p.fromTriples(patPlayerSeq, "myPlayer");
 
-		PlanTriplePatternSeq patTeamSeq = p.patterns(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
+		PlanTriplePatternSeq patTeamSeq = p.patternSeq(p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				);
 		ModifyPlan team_plan = p.fromTriples(patTeamSeq,"myTeam");
@@ -1208,17 +1208,17 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn teamNameCol = p.col("team_name");
 		PlanColumn teamCityCol = p.col("team_city");
 
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(
 				p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
 				p.pattern(playerIdCol, bb.iri("age"), playerAgeCol),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 				p.pattern(playerIdCol, bb.iri("team"), playerTeamCol)
 				);
-		PlanTriplePatternSeq patTeamSeq = p.patterns(
+		PlanTriplePatternSeq patTeamSeq = p.patternSeq(
 				p.pattern(teamIdCol, tm.iri("name"), teamNameCol),
 				p.pattern(teamIdCol, tm.iri("city"), teamCityCol)
 				);
-		PlanTriplePatternSeq patOrgSeq = p.patterns(
+		PlanTriplePatternSeq patOrgSeq = p.patternSeq(
 				p.pattern(p.col("org_id"), org.iri("age"), p.col("org_age")),
 				p.pattern(p.col("org_id"), org.iri("name"), p.col("org_name")),
 				p.pattern(p.col("org_id"), org.iri("team"), p.col("org_team"))
@@ -1278,7 +1278,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn idCol = p.col("id");
 		PlanColumn nameCol = p.col("name");
 		PlanColumn teamCol = p.col("team");
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol),
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(p.pattern(idCol, bb.iri("age"), ageCol),
 				p.pattern(idCol, bb.iri("name"), nameCol),
 				p.pattern(idCol, bb.iri("team"), teamCol)
 				);
@@ -1321,7 +1321,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn idCol = p.col("id");
 		PlanColumn teamCol = p.col("team");
 		
-		PlanTriplePatternSeq patPlayerSeq = p.patterns(p.pattern(idCol, bb.iri("age"), ageCol),
+		PlanTriplePatternSeq patPlayerSeq = p.patternSeq(p.pattern(idCol, bb.iri("age"), ageCol),
 				p.pattern(idCol, bb.iri("name"), nameCol),     
 				p.pattern(idCol, bb.iri("team"), teamCol)
 				);		
