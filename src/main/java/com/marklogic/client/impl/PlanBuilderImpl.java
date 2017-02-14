@@ -116,7 +116,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanAggregateColSeq aggregates(PlanAggregateCol... aggregate) {
+    public PlanAggregateColSeq aggregateSeq(PlanAggregateCol... aggregate) {
         return new AggregateColSeqListImpl(aggregate);
     }
 
@@ -194,8 +194,8 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanExprColSeq cols(String... col) {
-        return cols(
+    public PlanExprColSeq colSeq(String... col) {
+        return colSeq(
                 (PlanExprCol[]) Arrays.stream(col)
                 .map(item -> exprCol(item))
                 .toArray(size -> new PlanExprCol[size])
@@ -204,7 +204,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanExprColSeq cols(PlanExprCol... col) {
+    public PlanExprColSeq colSeq(PlanExprCol... col) {
         return new ExprColSeqListImpl(col);
     }
 
@@ -390,7 +390,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanJoinKeySeq joinKeys(PlanJoinKey... key) {
+    public PlanJoinKeySeq joinKeySeq(PlanJoinKey... key) {
         return new JoinKeySeqListImpl(key);
     }
 
@@ -522,7 +522,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanTriplePositionSeq objects(PlanTriplePosition... object) {
+    public PlanTriplePositionSeq objectSeq(PlanTriplePosition... object) {
         return new TriplePositionSeqListImpl(object);
     }
 
@@ -570,13 +570,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanTriplePatternSeq patterns(PlanTriplePattern... pattern) {
+    public PlanTriplePatternSeq patternSeq(PlanTriplePattern... pattern) {
         return new TriplePatternSeqListImpl(pattern);
     }
 
     
     @Override
-    public PlanTriplePositionSeq predicates(PlanTriplePosition... predicate) {
+    public PlanTriplePositionSeq predicateSeq(PlanTriplePosition... predicate) {
         return new TriplePositionSeqListImpl(predicate);
     }
 
@@ -642,13 +642,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanSortKeySeq sortKeys(PlanSortKey... key) {
+    public PlanSortKeySeq sortKeySeq(PlanSortKey... key) {
         return new SortKeySeqListImpl(key);
     }
 
     
     @Override
-    public PlanTriplePositionSeq subjects(PlanTriplePosition... subject) {
+    public PlanTriplePositionSeq subjectSeq(PlanTriplePosition... subject) {
         return new TriplePositionSeqListImpl(subject);
     }
 
@@ -732,7 +732,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public AttributeNodeSeqExpr xmlAttributes(AttributeNodeExpr... attribute) {
+    public AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attribute) {
         return new BaseTypeImpl.AttributeNodeSeqListImpl(attribute);
     }
 

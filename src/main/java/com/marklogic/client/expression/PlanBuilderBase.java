@@ -44,6 +44,7 @@ interface PlanBuilderBase {
 
     public PlanGroupConcatOptionSeq groupConcatOptions(String separator);
     public PlanGroupConcatOptionSeq groupConcatOptions(PlanValueOption option);
+    // not a sequence constructor
     public PlanGroupConcatOptionSeq groupConcatOptions(String separator, PlanValueOption option);
 
     public interface PlanBase {

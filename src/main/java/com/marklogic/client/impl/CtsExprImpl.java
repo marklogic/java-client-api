@@ -1365,6 +1365,18 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
+    public XsStringSeqExpr stem(XsStringExpr text, String language, String partOfSpeech) {
+        return stem(text, (language == null) ? (XsStringExpr) null : xs.string(language), (partOfSpeech == null) ? (XsStringExpr) null : xs.string(partOfSpeech));
+    }
+
+    
+    @Override
+    public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language, XsStringExpr partOfSpeech) {
+        return new XsExprImpl.StringSeqCallImpl("cts", "stem", new Object[]{ text, language, partOfSpeech });
+    }
+
+    
+    @Override
     public XsStringSeqExpr tokenize(XsStringExpr text) {
         return new XsExprImpl.StringSeqCallImpl("cts", "tokenize", new Object[]{ text });
     }

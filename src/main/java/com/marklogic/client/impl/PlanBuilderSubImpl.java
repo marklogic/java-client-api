@@ -354,7 +354,7 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
     }
 
     @Override
-    public AttributeNodeSeqExpr xmlAttributes(AttributeNodeExpr... attributes) {
+    public AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attributes) {
         return new XmlAttributeSeqListImpl(attributes);
     }
 

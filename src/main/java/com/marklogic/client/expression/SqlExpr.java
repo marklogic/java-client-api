@@ -58,8 +58,8 @@ public interface SqlExpr {
     public XsDecimalExpr seconds(ItemExpr arg1);
     public ItemSeqExpr sign(XsNumericExpr x);
     public XsStringExpr space(XsNumericExpr n);
-    public ItemExpr timestampadd(XsStringExpr arg1, int arg2, ItemExpr arg3);
-    public ItemExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, ItemExpr arg3);
+    public ItemExpr timestampadd(XsStringExpr dateTimeType, int value, ItemExpr timestamp);
+    public ItemExpr timestampadd(XsStringExpr dateTimeType, XsIntExpr value, ItemExpr timestamp);
     public XsIntegerExpr timestampdiff(XsStringExpr arg1, ItemExpr arg2, ItemExpr arg3);
     public XsStringExpr trim(XsStringExpr str);
     public XsIntegerExpr week(ItemExpr arg1);

@@ -216,14 +216,14 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public ItemExpr timestampadd(XsStringExpr arg1, int arg2, ItemExpr arg3) {
-        return timestampadd(arg1, xs.intVal(arg2), arg3);
+    public ItemExpr timestampadd(XsStringExpr dateTimeType, int value, ItemExpr timestamp) {
+        return timestampadd(dateTimeType, xs.intVal(value), timestamp);
     }
 
     
     @Override
-    public ItemExpr timestampadd(XsStringExpr arg1, XsIntExpr arg2, ItemExpr arg3) {
-        return new BaseTypeImpl.ItemCallImpl("sql", "timestampadd", new Object[]{ arg1, arg2, arg3 });
+    public ItemExpr timestampadd(XsStringExpr dateTimeType, XsIntExpr value, ItemExpr timestamp) {
+        return new BaseTypeImpl.ItemCallImpl("sql", "timestampadd", new Object[]{ dateTimeType, value, timestamp });
     }
 
     

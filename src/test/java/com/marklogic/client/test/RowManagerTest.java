@@ -167,7 +167,7 @@ public class RowManagerTest {
                 p.fromLiterals(litRows)
                  .orderBy(p.col("rowNum"))
                  .where(p.eq(p.col("city"), p.xs.string("Seattle")))
-                 .select(p.cols("rowNum", "temp"));
+                 .select(p.colSeq("rowNum", "temp"));
 
         StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
         RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
@@ -257,7 +257,7 @@ public class RowManagerTest {
                 p.fromLiterals(litRows)
                  .orderBy(p.col("rowNum"))
                  .where(p.eq(p.col("city"), p.xs.string("Seattle")))
-                 .select(p.cols("rowNum", "temp"));
+                 .select(p.colSeq("rowNum", "temp"));
 
         StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
         RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
@@ -347,7 +347,7 @@ public class RowManagerTest {
                 p.fromLiterals(litRows)
                  .orderBy(p.col("rowNum"))
                  .joinDoc(p.col("doc"), p.col("uri"))
-                 .select(p.cols("rowNum", "uri", "doc"));
+                 .select(p.colSeq("rowNum", "uri", "doc"));
 
         StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
         RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
@@ -479,7 +479,7 @@ public class RowManagerTest {
              .where(
                 p.sem.store(p.xs.string("document"), p.cts.elementValueQuery(p.xs.QName("metadata"), p.xs.string("value")))
                 )
-             .orderBy(p.cols("subject", "object"));
+             .orderBy(p.colSeq("subject", "object"));
 
         int rowNum = 0;
         for (RowRecord row: rowMgr.resultRows(plan)) {
@@ -506,8 +506,8 @@ public class RowManagerTest {
 
         PlanBuilder.ExportablePlan plan =
                 p.fromLexicons(lexicons)
-                 .orderBy(p.cols("int", "uri"))
-                 .select(p.cols("int",  "uri"));
+                 .orderBy(p.colSeq("int", "uri"))
+                 .select(p.colSeq("int",  "uri"));
 
         int[]    expectedInts = {
             1,
@@ -553,7 +553,7 @@ public class RowManagerTest {
                 p.fromLiterals(litRows)
                  .orderBy(p.col("rowNum"))
                  .where(p.eq(p.col("city"), cityParam))
-                 .select(p.cols("rowNum", "temp"))
+                 .select(p.colSeq("rowNum", "temp"))
                  .limit(limitParam);
 
         RowSet<RowRecord> recordRowSet = rowMgr.resultRows(
@@ -739,7 +739,7 @@ public class RowManagerTest {
 
         PlanBuilder.ExportablePlan builtPlan =
                 p.fromLiterals(litRows)
-                 .select(p.cols("rowNum", "city"))
+                 .select(p.colSeq("rowNum", "city"))
                  .orderBy(p.col("rowNum"))
                  .limit(3)
                  .map(p.resolveFunction(p.xs.QName("secondsMapper"), "/etc/optic/test/processors.sjs"));
@@ -755,7 +755,7 @@ public class RowManagerTest {
 
         builtPlan =
                 p.fromLiterals(litRows)
-                 .select(p.cols("rowNum", "city"))
+                 .select(p.colSeq("rowNum", "city"))
                  .orderBy(p.col("rowNum"))
                  .limit(3)
                  .map(p.resolveFunction(

@@ -262,6 +262,8 @@ public interface CtsExpr {
     public XsStringSeqExpr stem(XsStringExpr text);
     public XsStringSeqExpr stem(XsStringExpr text, String language);
     public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language);
+    public XsStringSeqExpr stem(XsStringExpr text, String language, String partOfSpeech);
+    public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language, XsStringExpr partOfSpeech);
     public XsStringSeqExpr tokenize(XsStringExpr text);
     public XsStringSeqExpr tokenize(XsStringExpr text, String language);
     public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language);

@@ -96,8 +96,8 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
     
     @Override
-    public SemIriExpr iri(XsAnyAtomicTypeExpr arg1) {
-        return new IriCallImpl("sem", "iri", new Object[]{ arg1 });
+    public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri) {
+        return new IriCallImpl("sem", "iri", new Object[]{ stringIri });
     }
 
     

@@ -43,7 +43,7 @@ public interface SemExpr extends SemValue {
     public SemInvalidExpr invalid(XsStringExpr string, String datatype);
     public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype);
     public SemIriExpr invalidDatatype(SemInvalidExpr val);
-    public SemIriExpr iri(XsAnyAtomicTypeExpr arg1);
+    public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri);
     public XsQNameExpr iriToQName(XsStringExpr arg1);
     public XsBooleanExpr isBlank(XsAnyAtomicTypeExpr value);
     public XsBooleanExpr isIRI(XsAnyAtomicTypeExpr value);
