@@ -17,52 +17,40 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileWriter;
-import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
 public class ExportListenerTest extends  DmsdkJavaClientREST {
-	
+
 	private static String dbName = "ExportListener";
 	private static DataMovementManager dmManager = null;
-	private static final String TEST_DIR_PREFIX = "src/test/resources/QueryHostBatcher-testdata/";
-	
 	private static DatabaseClient dbClient;
 	private static String host = "localhost";
 	private static String user = "admin";
@@ -70,21 +58,10 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 	private static String password = "admin";
 	private static String server = "App-Services";
 	private static JsonNode clusterInfo;
-	
-	private static JacksonHandle jacksonHandle;
-	private static StringHandle stringHandle;
-	private static FileHandle fileHandle;
-	
-	private static DocumentMetadataHandle meta;
-	
-	private static String stringTriple;
-	private static File fileJson;
-	private static JsonNode jsonNode;
+
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames ;
-	private String outputFile = "/tmp/out.csv";
-	
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		hostNames = getHosts();	    
@@ -93,37 +70,20 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 		int count = 1;
 		for ( String forestHost : hostNames ) {
 			createForestonHost(dbName+"-"+count,dbName,forestHost);
-		    count ++;
+			count ++;
 			Thread.currentThread().sleep(500L);
 		}
-			
+
 		associateRESTServerWithDB(server,dbName);
-		
+
 		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
-		
+
 		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
-			      .getResource(null, "forestinfo", null, null, new JacksonHandle())
-			      .get();
-		
-		//JacksonHandle
-		jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
-		jacksonHandle = new JacksonHandle();
-		jacksonHandle.set(jsonNode);
-		
-		meta = new DocumentMetadataHandle().withCollections("DeleteListener");
-		
-		//StringHandle
-		stringTriple = "<abc>xml</abc>";
-		stringHandle = new StringHandle(stringTriple);
-		stringHandle.setFormat(Format.XML);
-		
-		// FileHandle
-		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX+"dir.json"));
-		fileHandle = new FileHandle(fileJson);
-		fileHandle.setFormat(Format.JSON);
+				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle())
+				.get();		
 	}
-	
+
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server,"Documents");
@@ -131,134 +91,408 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 			System.out.println(dbName+"-"+(i+1));
 			detachForest(dbName, dbName+"-"+(i+1));
 			deleteForest(dbName+"-"+(i+1));
-		}
-		
+		}		
 		deleteDB(dbName);
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		Thread.currentThread().sleep(1000L);
-		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
-		ihb2.withBatchSize(27).withThreadCount(10);
-		ihb2.onBatchSuccess(
-		        batch -> {	        	
-		        	}
-		        )
-		        .onBatchFailure(
-		          (batch, throwable) -> {
-		        	 throwable.printStackTrace();
-		          });
-		
-		dmManager.startJob(ihb2);
-		for (int j =0 ;j < 2000; j++){
-			String uri ="/local/json-"+ j;
-			ihb2.add(uri, meta, jacksonHandle);
+		String jsonDoc = "{" +
+				"\"employees\": [" +
+				"{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
+				"{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
+				"{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" +
+				"}";
+
+		//Use WriteBatcher to write the files.				
+		WriteBatcher wbatcher = dmManager.newWriteBatcher();
+
+		wbatcher.withBatchSize(1000);
+		StringHandle handle = new StringHandle();
+		handle.set(jsonDoc);
+		String uri = null;
+
+		// Insert 10K documents
+		for (int i = 0; i < 100; i++) {
+			uri = "firstName" + i + ".json";
+			wbatcher.add(uri, handle);
 		}
-	
-		ihb2.flushAndWait();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+		wbatcher.flushAndWait();
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {
 		clearDB(port);
 	}
+
 	/*
 	 * This test verifies that DMSDK supports PointInTime query and export using ExportListener.
-	 * Issue seen: We are yet to completly set/get the server timestamp for the query. Needs REST support.
-	 * As of now we have export working with Snapshot and QHB returns a document as of its run-time.
-	 * 
-	 * ToDo: Update this test using a patch builder to have fragments and when we have support for 
-	 * timestamp, use the timestamp in the qery def' query to go back in the time and retrieve that
-	 * specific document.
-	 * 
-	 *  Git Issue: 
+	 * The result returned is deterministic, since we have a delete operation running when
+	 *  1) query batcher is setup with ConsistentSnapshot and
+	 *  2) Listener is also setup with ConsistentSnapshot.
+	 *  3) Second query batcher after delete listener should return 0 uris.
 	 */
-	@Ignore
-	public void readPointInTimeQuery() throws Exception{
+	@Test
+	public void testPointInTimeQueryDeterministicSet() throws Exception {
+		System.out.println("Running testPointInTimeQueryDeterministicSet");
 		Map<String, String> props = new HashMap<String, String>();
- 		props.put("merge-timestamp","-6000000000");
- 		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
- 		Thread.currentThread().sleep(5000L);
- 		
- 		// Write the json document into database using Java Client API.
- 		//Cannot use DMSDK API to simulate updates for the document.
- 		// Use PatchBuilder.
- 		
- 		String[] filenames = {"json-original.json"};
- 		for(String filename : filenames) {
- 			writeDocuments(dbClient, filename, "/partial-update/", "JSON");
-		}
-		DocumentManager docMgrIns = dbClient.newJSONDocumentManager();
-		// create handle
-		JacksonHandle jacksonHandle = new JacksonHandle();
-		
-		// Read the document with timestamp.
-		docMgrIns.read( "/partial-update/"+filenames[0], jacksonHandle);
-		
-		long insTimeStamp = jacksonHandle.getServerTimestamp();
-		System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);
-		
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(10000L);
+
+		List<String> docExporterList = new ArrayList<String>();
+		List<String> batcherList2 = new ArrayList<String>();
+
 		QueryManager queryMgr = dbClient.newQueryManager();
-
-		// create query def for export listener with point in time query.
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
-		StringBuilder expListenResult = new StringBuilder();
-		StringBuilder expListenHandle = new StringBuilder();
-		querydef.setCriteria("(John AND Bob");
-		 try (FileWriter writer = new FileWriter(outputFile)) {
-			 ExportListener exportListener = new ExportListener();
-			 exportListener.withConsistentSnapshot()
-			               .onDocumentReady(doc->{ 
-			            	   StringHandle handle = new StringHandle();
-			                   doc.getContent(handle); 
-			                   expListenResult.append(handle.get());
-			                   expListenHandle.append(handle.getServerTimestamp());
-			                   });
-			               
-			 QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
-			    .withConsistentSnapshot()
-			    .onUrisReady(exportListener)
-		        .onQueryFailure(exception -> {
-		        	System.out.println("Exceptions thrown from callback onQueryFailure");
-		        	exception.printStackTrace(); 
-		        });
-		 JobTicket ticket = dmManager.startJob(exportBatcher); 
-		 exportBatcher.awaitCompletion();
-		 dmManager.stopJob(ticket);
-		 System.out.println("Original Document contents " + expListenResult.toString());
-		 System.out.println("First query time stamp is " + expListenHandle.toString());
-			    
-		 }
+		querydef.setCriteria("John AND Bob");
 
+		StringQueryDefinition querydef2 = queryMgr.newStringDefinition();
+		querydef2.setCriteria("John AND Bob");
+		StringBuffer batchResults  = new StringBuffer();		
+
+		try {
+			// Listener IS setup with withConsistentSnapshot()
+			ExportListener exportListener = new ExportListener();
+			exportListener.withConsistentSnapshot()
+			.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				System.out.println("URIs from Export " + uriOfDoc);
+				// Make sure the docs are available. Not deleted from DB.
+				docExporterList.add(uriOfDoc);
+			}
+					);
+
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(10)
+					.onUrisReady(exportListener)
+					.onUrisReady(new DeleteListener())
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from exportBatcher callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+			exportBatcher.awaitCompletion();
+
+			ExportListener exportListener2 = new ExportListener();
+			exportListener2.withConsistentSnapshot()
+			.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				batcherList2.add(uriOfDoc);
+			}
+					);
+
+			// Run a second batcher, no that DeleteListener has done its work.
+			// Currently the DB snapshot is at a point, where we do not have any docs.			
+			QueryBatcher batcher2 = dmManager.newQueryBatcher(querydef2)
+					.withConsistentSnapshot()
+					.withBatchSize(100)
+					.onUrisReady(exportListener2)
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from batcher2 callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+
+			dmManager.startJob(batcher2);
+			batcher2.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
+		}
+		finally {
+		}
+
+		System.out.println("Batch" + batchResults.toString());
 		props.put("merge-timestamp","0");
- 		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
-	//   	if ( failures2.length() > 0 ) fail(failures2.toString());
-	    assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");	
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		System.out.println("List size from second QueryBatcher is " + batcherList2.size());
+		System.out.println("List size from Export Listener is " + docExporterList.size());
+
+		assertTrue("Docs deleted. Size incorrect", batcherList2.size() == 0);
+		assertTrue("Docs deleted. Size incorrect", docExporterList.size() == 100);		
 	}
-	
-	public void writeDocuments(DatabaseClient client, String filename, String uri, String type) throws FileNotFoundException
-	{
-		// create doc manager
-		DocumentManager docMgr = null;
-		docMgr = documentManagerSelector(client, docMgr, type);	
 
-		// create handle
-		InputStreamHandle contentHandle = new InputStreamHandle();
+	/*
+	 * This test verifies that DMSDK supports PointInTime query and export using ExportListener.
+	 * The result returned is deterministic, since we have a delete operation running when
+	 *  1) query batcher is setup with ConsistentSnapshot and
+	 *  2) Listener is setup with ConsistentSnapshot.
+	 */
+	@Test
+	public void testWithSnapshots() throws Exception {
+		System.out.println("Running testPointInTimeQueryDeterministicSet");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(5000L);
 
-		// get the file
-		InputStream inputStream = new FileInputStream(TEST_DIR_PREFIX + filename);
-		
-		// set uri
-		String docId = uri + filename;
+		List<String> docExporterList = new ArrayList<String>();
+		List<String> batcherList = new ArrayList<String>();
 
-		contentHandle.set(inputStream);
-			
-		// write doc
-		docMgr.write(docId, contentHandle);
-		
-		System.out.println("Write " + docId + " to database");
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("John AND Bob");
+		StringBuffer batchResults  = new StringBuffer();		
+
+		try {			
+			// Listener is setup with withConsistentSnapshot()
+			ExportListener exportListener = new ExportListener();
+			exportListener
+			.withConsistentSnapshot()
+			.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				// Make sure the docs are available. Not deleted from DB.
+				docExporterList.add(uriOfDoc);
+			}
+					);
+
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(10)
+					.onUrisReady(exportListener)
+					.onUrisReady(batch-> {						
+						for (String u: batch.getItems()) {
+							batchResults.append(u);
+							batcherList.add(u);
+						}
+						batchResults.append("|");
+						System.out.println("Batch Numer is " + batch.getJobBatchNumber());
+						if (batch.getJobBatchNumber() == 1) {
+							// Attempt to read firstName11 from database
+							DocumentManager docMgr = dbClient.newJSONDocumentManager();
+							JacksonHandle jacksonhandle = new JacksonHandle();
+							docMgr.read("firstName11.json", jacksonhandle);
+							JsonNode node = jacksonhandle.get();
+							// 3 nodes available
+							assertTrue("URI attempted for delete",node.path("employees").size() == 3);
+							assertEquals("Doc content incorrect", "John", node.path("employees").get(0).path("firstName").asText());
+							assertEquals("Doc content incorrect", "Ann", node.path("employees").get(1).path("firstName").asText());
+							assertEquals("Doc content incorrect", "Bob", node.path("employees").get(2).path("firstName").asText());			
+						}
+						try {
+							Thread.sleep(5000);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					})
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from testPointInTimeQueryDeterministicSet callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+
+			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(100)
+					.onUrisReady(new DeleteListener());
+
+			dmManager.startJob(deleteBatcher);
+			deleteBatcher.awaitCompletion();
+
+			exportBatcher.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
+		}
+		finally {
+		}
+
+		System.out.println("Batch" + batchResults.toString());
+		props.put("merge-timestamp","0");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");	
+
+		System.out.println("List size from QueryBatcher is " + batcherList.size());
+		System.out.println("List size from Export Listener is " + docExporterList.size());
+
+		assertTrue("Docs deleted. Size incorrect", batcherList.size() == 100);
+		assertTrue("Docs deleted. Size incorrect", docExporterList.size() == 100);
+
+		// Doc count should be zero after both batchers are done.
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	}
-	
+
+	/*
+	 * This test verifies that DMSDK supports PointInTime query and export using ExportListener.
+	 * The result returned is non-deterministic, since we have a delete operation running when
+	 *  1) query batcher is setup with ConsistentSnapshot and
+	 *  2) Listener is NOT setup with ConsistentSnapshot.
+	 */
+	@Test
+	public void testNoSnapshotOnListener() throws Exception {
+		System.out.println("Running testNoSnapshotOnListener");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(5000L);
+
+		List<String> docExporterList = new ArrayList<String>();
+		List<String> batcherList = new ArrayList<String>();
+
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("John AND Bob");
+		StringBuffer batchResults  = new StringBuffer();		
+
+		try {			
+			// Listener is NOT setup with withConsistentSnapshot()
+			ExportListener exportListener = new ExportListener();
+			exportListener.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				docExporterList.add(uriOfDoc);
+			}
+					);
+
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(10)
+					.onUrisReady(exportListener)
+					.onUrisReady(batch-> {						
+						for (String u: batch.getItems()) {
+							batchResults.append(u);
+							batcherList.add(u);
+						}
+						batchResults.append("|");
+						System.out.println("Batch Numer is " + batch.getJobBatchNumber());
+						if (batch.getJobBatchNumber() == 1) {
+							// Attempt to read firstName11 from database
+							DocumentManager docMgr = dbClient.newJSONDocumentManager();
+							JacksonHandle jacksonhandle = new JacksonHandle();
+							docMgr.read("firstName11.json", jacksonhandle);
+							JsonNode node = jacksonhandle.get();
+							// 3 nodes available
+							assertTrue("URI attempted for delete",node.path("employees").size() == 3);
+							assertEquals("Doc content incorrect", "John", node.path("employees").get(0).path("firstName").asText());
+							assertEquals("Doc content incorrect", "Ann", node.path("employees").get(1).path("firstName").asText());
+							assertEquals("Doc content incorrect", "Bob", node.path("employees").get(2).path("firstName").asText());			
+						}
+						try {
+							Thread.sleep(1000);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					})
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from exportBatcher callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+
+			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(100)
+					.onUrisReady(new DeleteListener());
+
+			dmManager.startJob(deleteBatcher);
+			deleteBatcher.awaitCompletion();
+
+			exportBatcher.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from deleteBatcher method is" + ex.getMessage());
+		}
+		finally {
+		}
+
+		System.out.println("Batch" + batchResults.toString());
+		props.put("merge-timestamp","0");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");	
+
+		System.out.println("List size from QueryBatcher is " + batcherList.size());
+		System.out.println("List size from Export Listener is " + docExporterList.size());
+
+		assertTrue("Docs deleted. Size incorrect", batcherList.size() == 100);
+		assertTrue("Docs deleted. Size incorrect", docExporterList.size() != 100);
+
+		// Doc count should be zero after both batchers are done.
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+	}
+
+	/*
+	 * This test verifies that DMSDK supports PointInTime query and export using ExportListener.
+	 * The result returned is non-deterministic, since we have a delete operation running when query batcher is 
+	 * setup with no ConsistentSnapshot.
+	 * 1) Start query batcher 1 with a export listener.
+	 * 2) Query batcher 1 waits for 5 seconds
+	 * 3) Start a second query batcher with delete listener
+	 * Results should be non deterministic.
+	 */
+	@Test
+	public void testPointInTimeQueryNonDeterministicSet() throws Exception {
+		System.out.println("Running testPointInTimeQueryNonDeterministicSet");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(5000L);
+
+		List<String> docExporterList = new ArrayList<String>();
+		List<String> batcherList = new ArrayList<String>();
+
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("John AND Bob");
+		StringBuffer batchResults  = new StringBuffer();		
+
+		try {			
+			ExportListener exportListener = new ExportListener();			
+			exportListener.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				// Make sure the docs are available. Not deleted from DB.
+				docExporterList.add(uriOfDoc);
+			}
+					);
+
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
+					.withBatchSize(10)
+					.onUrisReady(exportListener)
+					.onUrisReady(batch-> {						
+						for (String u: batch.getItems()) {
+							batchResults.append(u);
+							batcherList.add(u);
+						}
+						batchResults.append("|");
+						System.out.println("Batch Numer is " + batch.getJobBatchNumber());
+
+						try {
+							Thread.sleep(5000);
+						} catch (Exception e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+					})
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from testPointInTimeQueryDeterministicSet callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+
+			QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
+					.withConsistentSnapshot()
+					.withBatchSize(100)
+					.onUrisReady(new DeleteListener());
+
+			dmManager.startJob(deleteBatcher);
+			deleteBatcher.awaitCompletion();
+
+			exportBatcher.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
+		}
+		finally {
+		}
+
+		System.out.println("Batch" + batchResults.toString());
+		props.put("merge-timestamp","0");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");		
+
+		assertTrue("Docs deleted. Size incorrect", batcherList.size() != 100);
+		assertTrue("Docs deleted. Size incorrect", docExporterList.size() != 100);
+
+		// Doc count should be zero after both batchers are done.
+		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+	}
 }
