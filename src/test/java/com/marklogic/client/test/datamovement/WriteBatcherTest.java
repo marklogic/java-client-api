@@ -29,9 +29,13 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collections;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 import java.util.stream.Stream;
 import java.util.stream.Collectors;
 
@@ -40,6 +44,8 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -59,9 +65,11 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
@@ -907,4 +915,47 @@ public class WriteBatcherTest {
       }
     }
   }
+
+  @Test
+  public void testIssue642() throws Exception{
+    String[] hostNames = new String[] {"engrlab-128-167.engrlab.marklogic.com"};
+
+    DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+
+    WriteBatcher ihb2 =  moveMgr.newWriteBatcher();
+
+    FilteredForestConfiguration forestConfig = 
+      new FilteredForestConfiguration(moveMgr.readForestConfig())
+      //.withRenamedHost("localhost", "127.0.0.1")
+      .withBlackList(hostNames[hostNames.length-1]);
+
+    ihb2.withBatchSize(50).withForestConfig(forestConfig);
+
+    ihb2.onBatchSuccess( batch -> { })
+      .onBatchFailure( (batch, throwable) -> { throwable.printStackTrace(); });
+    for (int j =0 ;j < 1000; j++){
+      String uri ="/local/string-"+ j;
+      ihb2.addAs(uri, meta6 , new ObjectMapper().readTree("{\"k1\":\"v1\"}"));
+    }
+
+
+    ihb2.flushAndWait();
+
+    Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+    QueryBatcher getUris =  moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
+    getUris.withForestConfig(forestConfig);
+
+    getUris.withBatchSize(500)
+      .withThreadCount(2)
+      .onUrisReady(batch -> uris.addAll(Arrays.asList(batch.getItems())) )
+    .onQueryFailure(exception -> exception.printStackTrace());
+
+    moveMgr.startJob(getUris);
+
+    logger.debug("calling awaitCompletion()");
+    getUris.awaitCompletion();
+
+    logger.debug("uris=" + uris.size());
+  }
+
 }
