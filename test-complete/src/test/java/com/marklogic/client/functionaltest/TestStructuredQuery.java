@@ -18,6 +18,7 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -34,11 +35,14 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -48,18 +52,15 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 	private static String dbName = "TestStructuredQueryDB";
 	private static String [] fNames = {"TestStructuredQueryDB-1"};
 	
-
 	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
+	public static void setUp() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 	}
 	
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}	
@@ -81,13 +82,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -125,13 +124,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query/", "JSON");
 		}
+		
 		setJSONQueryOption(client, queryOptionName);
-		//		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create value query def
@@ -192,13 +189,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -239,13 +234,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query-andnot/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -288,13 +281,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query-near/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -336,19 +327,16 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename1 : filenames1)
-		{
+		for(String filename1 : filenames1) {
 			writeDocumentUsingInputStreamHandle(client, filename1, "/dir1/dir2/", "XML");
 		}
 
 		// write docs
-		for(String filename2 : filenames2)
-		{
+		for(String filename2 : filenames2) {
 			writeDocumentUsingInputStreamHandle(client, filename2, "/dir3/dir4/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -390,19 +378,16 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename1 : filenames1)
-		{
+		for(String filename1 : filenames1) {
 			writeDocumentUsingInputStreamHandle(client, filename1, "/dir1/dir2/", "XML");
 		}
 
 		// write docs
-		for(String filename2 : filenames2)
-		{
+		for(String filename2 : filenames2) {
 			writeDocumentUsingInputStreamHandle(client, filename2, "/dir3/dir4/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -471,7 +456,6 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -513,13 +497,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		srvMgr.writeConfiguration();
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query-container/", "XML");
 		}
 
 		setQueryOption(client, queryOptionName);
-
 		QueryManager queryMgr = client.newQueryManager();
 
 		// create query def
@@ -539,10 +521,187 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 		// release client
 		client.release();		
 	}
+	
+	/*
+	 * Create a StructuredQueryDefinition (using StructuredQueryBuilder) and add a string query by calling setCriteria and withCriteria
+	 * Make sure a query using those query definitions selects only documents that match both the query definition and the string query
+	 * 
+	 * Uses setCriteria. Uses valueConstraintWildCardOpt.xml options file
+	 * QD and string query (Memex) should return 1 URI in the response.
+	 */
+	@Test	
+	public void testSetCriteriaOnStructdgQueryDef() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{	
+		System.out.println("Running testSetCriteriaOnStructdgQueryDef");
+
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+		String queryOptionName = "valueConstraintWildCardOpt.xml";
+
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+		// set query option validation to true
+		ServerConfigurationManager srvMgr = client.newServerConfigManager();
+		srvMgr.readConfiguration();
+		srvMgr.setQueryOptionValidation(true);
+		srvMgr.writeConfiguration();
+
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query/", "XML");
+		}
+
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
+
+		// create query def
+		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(queryOptionName);
+		StructuredQueryDefinition strutdDef = qb.valueConstraint("id", "0012");
+		strutdDef.setCriteria("Memex");
+		
+		// create handle
+		JacksonHandle strHandle = new JacksonHandle();
+		JacksonHandle results = queryMgr.search(strutdDef, strHandle.withFormat(Format.JSON));
+		
+		JsonNode node = results.get();
+		assertEquals("Number of results returned incorrect in response", "1", node.path("total").asText());
+		assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", node.path("results").get(0).path("uri").asText());
+		
+		// With multiple setCriteria - positive
+		StructuredQueryDefinition strutdDefPos = qb.valueConstraint("id", "0012");
+		strutdDefPos.setCriteria("Memex");
+		strutdDefPos.setCriteria("described");
+		
+		// create handle
+		JacksonHandle strHandlePos = new JacksonHandle();
+		JacksonHandle resultsPos = queryMgr.search(strutdDefPos, strHandlePos.withFormat(Format.JSON));
+		
+		JsonNode nodePos = resultsPos.get();
+		// Return 1 node - constraint2.xml
+		assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+		assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", nodePos.path("results").get(0).path("uri").asText());
+		
+		// With setCriteria AND - positive
+		StructuredQueryDefinition strutdDefPosAnd = qb.valueConstraint("id", "0012");
+		strutdDefPosAnd.setCriteria("Memex AND described");		
+
+		// create handle
+		JacksonHandle strHandlePosAnd = new JacksonHandle();
+		JacksonHandle resultsPosAnd = queryMgr.search(strutdDefPosAnd, strHandlePosAnd.withFormat(Format.JSON));
+
+		JsonNode nodePosAnd = resultsPosAnd.get();
+		// Return 1 node - constraint2.xml
+		assertEquals("Number of results returned incorrect in response", "1", nodePosAnd.path("total").asText());
+		assertEquals("Result returned incorrect in response", "/structured-query/constraint2.xml", nodePosAnd.path("results").get(0).path("uri").asText());
+		assertEquals("Get Criteria returned incorrect", "Memex AND described", strutdDefPosAnd.getCriteria());
+			
+		// With multiple setCriteria - negative
+		StructuredQueryDefinition strutdDefNeg = qb.valueConstraint("id", "0012");
+		strutdDefNeg.setCriteria("Memex");
+		strutdDefNeg.setCriteria("Atlantic");
+
+		// create handle
+		JacksonHandle strHandleNeg = new JacksonHandle();
+		JacksonHandle resultsNeg = queryMgr.search(strutdDefNeg, strHandleNeg.withFormat(Format.JSON));
+
+		JsonNode nodeNeg = resultsNeg.get();
+		// Return 0 nodes
+		assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
+		// release client
+		client.release();		
+	}
+	
+	/*
+	 * Create a StructuredQueryDefinition (using StructuredQueryBuilder) and add a string query by calling setCriteria and withCriteria
+	 * Make sure a query using those query definitions selects only documents that match both the query definition and the string query
+	 * 
+	 * Uses withCriteria. Uses valueConstraintPopularityOpt.xml options file
+	 * QD and string query (Vannevar) should return 2 URIs in the response. constraint1.xml and constraint4.xml
+	 */
+	@Test	
+	public void testWithCriteriaOnStructdgQueryDef() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{	
+		System.out.println("Running testWithCriteriaOnStructdgQueryDef");
+
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+		String queryOptionName = "valueConstraintPopularityOpt.xml";
+
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+		// set query option validation to true
+		ServerConfigurationManager srvMgr = client.newServerConfigManager();
+		srvMgr.readConfiguration();
+		srvMgr.setQueryOptionValidation(true);
+		srvMgr.writeConfiguration();
+
+		// write docs
+		for(String filename : filenames) {
+			writeDocumentUsingInputStreamHandle(client, filename, "/structured-query/", "XML");
+		}
+
+		setQueryOption(client, queryOptionName);
+		QueryManager queryMgr = client.newQueryManager();
+
+		// create query def
+		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(queryOptionName);
+		StructuredQueryDefinition strutdDef = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar");
+		
+		// create handle
+		JacksonHandle strHandle = new JacksonHandle();
+		JacksonHandle results = queryMgr.search(strutdDef, strHandle.withFormat(Format.JSON));
+		
+		JsonNode node = results.get();
+		assertEquals("Number of results returned incorrect in response", "2", node.path("total").asText());
+		assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint1.xml")||
+				                                             node.path("results").get(1).path("uri").asText().contains("/structured-query/constraint1.xml") );
+		assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml")||
+                                                             node.path("results").get(1).path("uri").asText().contains("/structured-query/constraint4.xml") );
+		// With multiple withCriteria - positive
+		StructuredQueryDefinition strutdDefPos = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar").withCriteria("Atlantic").withCriteria("intellectual");
+
+		// create handle
+		JacksonHandle strHandlePos = new JacksonHandle();
+		JacksonHandle resultsPos = queryMgr.search(strutdDefPos, strHandlePos.withFormat(Format.JSON));
+
+		JsonNode nodePos = results.get();
+		// Return 2 nodes.
+		assertEquals("Number of results returned incorrect in response", "2", nodePos.path("total").asText());
+		assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint1.xml")||
+				nodePos.path("results").get(1).path("uri").asText().contains("/structured-query/constraint1.xml") );
+		assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml")||
+				nodePos.path("results").get(1).path("uri").asText().contains("/structured-query/constraint4.xml") );
+		
+		// With multiple withCriteria - negative
+		StructuredQueryDefinition strutdDefNeg = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar").withCriteria("England");
+
+		// create handle
+		JacksonHandle strHandleNeg = new JacksonHandle();
+		JacksonHandle resultsNeg = queryMgr.search(strutdDefNeg, strHandleNeg.withFormat(Format.JSON));
+
+		JsonNode nodeNeg = resultsNeg.get();
+		// Return 0 nodes.
+		assertEquals("Number of results returned incorrect in response", "0", nodeNeg.path("total").asText());
+		assertEquals("Get Criteria returned incorrect in response", "England", strutdDefNeg.getCriteria());
+		
+		// create query def2 with both criteria methods and check fluent return
+		
+		StructuredQueryDefinition strutdDef2 = qb.valueConstraint("popularity", "5");
+		strutdDef2.withCriteria("Vannevar").setCriteria("Bush");
+		
+		// create handle
+		JacksonHandle strHandle2 = new JacksonHandle();
+		JacksonHandle results2 = queryMgr.search(strutdDef2, strHandle2.withFormat(Format.JSON));
+
+		JsonNode node2 = results2.get();
+		// Returns 1 node. constraint1.xml
+		assertEquals("Number of results returned incorrect in response", "1", node2.path("total").asText());
+		assertEquals("Result returned incorrect in response", "/structured-query/constraint1.xml", node2.path("results").get(0).path("uri").asText());
+		assertEquals("Get Criteria returned incorrect in response", "Bush", strutdDef2.getCriteria());
+		// release client
+		client.release();		
+	}
 
 	@AfterClass	
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		System.out.println("In tear down");
 		cleanupRESTServer(dbName, fNames);
 	}
