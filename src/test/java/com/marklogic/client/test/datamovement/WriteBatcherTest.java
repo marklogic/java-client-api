@@ -916,6 +916,23 @@ public class WriteBatcherTest {
     }
   }
 
+  // TODO: uncomment this after fixing https://github.com/marklogic/java-client-api/issues/646
+  @Ignore
+  public void testIssue646() throws Exception {
+    DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withProperty("docMeta-1", "true");
+
+    WriteBatcher ihb2 =  moveMgr.newWriteBatcher().withBatchSize(10);
+
+    ihb2.onBatchFailure( (batch, throwable) -> throwable.printStackTrace() );
+
+    for (int j =0 ;j < 21; j++){
+      String uri ="/local/string-"+ j;
+      ihb2.addAs(uri , meta6,	"test");
+    }
+
+    ihb2.flushAndWait();
+  }
+
   @Test
   public void testIssue642() throws Exception{
     String[] hostNames = new String[] {"engrlab-128-167.engrlab.marklogic.com"};
@@ -957,5 +974,4 @@ public class WriteBatcherTest {
 
     logger.debug("uris=" + uris.size());
   }
-
 }
