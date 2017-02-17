@@ -23,8 +23,38 @@ import com.marklogic.client.type.XsStringSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
 public interface SpellExpr {
+    /**
+    * Given a word returns the two metaphone keys. The primary and secondary metaphone keys which represent the phonetic encoding of two words are returned as a sequence of two strings. Double metaphone is an algorithm based on phonetic sounds useful in providing data to spelling correction suggestions.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/spell:double-metaphone" target="mlserverdoc">spell:double-metaphone</a>
+    * @param word  The word for phonetic matching.
+    * @return  a XsStringSeqExpr expression sequence
+    */
     public XsStringSeqExpr doubleMetaphone(XsStringExpr word);
+    /**
+    * Given two strings, returns the Levenshtein distance between those strings. The Levenshtein distance is a measure of how many operations it takes to transform a string into another string, and it is useful in determining if a word is spelled correctly, or in simply comparing how "different" two words are.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/spell:levenshtein-distance" target="mlserverdoc">spell:levenshtein-distance</a>
+    * @param str1  The first input string.
+    * @param str2  The second input string.
+    * @return  a XsIntegerExpr expression
+    */
     public XsIntegerExpr levenshteinDistance(XsStringExpr str1, String str2);
+    /**
+    * Given two strings, returns the Levenshtein distance between those strings. The Levenshtein distance is a measure of how many operations it takes to transform a string into another string, and it is useful in determining if a word is spelled correctly, or in simply comparing how "different" two words are.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/spell:levenshtein-distance" target="mlserverdoc">spell:levenshtein-distance</a>
+    * @param str1  The first input string.
+    * @param str2  The second input string.
+    * @return  a XsIntegerExpr expression
+    */
     public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2);
+    /**
+    * Returns the romanization of the string, substituting basic Latin letters for the letters in the string, according to their sound. Unsupported characters will be mapped to '?' for compatibility with the double metaphone algorithm. We support romanization of the scripts of the languages with advanced support in MarkLogic except for Chinese characters and Hangul.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/spell:romanize" target="mlserverdoc">spell:romanize</a>
+    * @param string  The input string.
+    * @return  a XsStringExpr expression
+    */
     public XsStringExpr romanize(XsStringExpr string);
 }

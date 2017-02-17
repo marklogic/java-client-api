@@ -336,6 +336,7 @@ public class RowManagerTest {
             }
         }
     }
+// Bug:43761
     @Test
     public void testResultRowDocs()
     throws IOException, XPathExpressionException, TransformerConfigurationException, TransformerException, TransformerFactoryConfigurationError, SAXException
@@ -409,6 +410,8 @@ public class RowManagerTest {
         PlanBuilder.ExportablePlan builtPlan =
                 p.fromView("opticUnitTest", "musician", "", p.fragmentIdCol("musicianDocId"))
                  .joinDoc(p.col("musicianDoc"), p.fragmentIdCol("musicianDocId"))
+// WORKAROUOND FOR Bug:43761
+.select(null, "")
                  .orderBy(p.col("lastName"))
                  .select(
                      p.col("lastName"), p.col("firstName"),
