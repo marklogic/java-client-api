@@ -251,7 +251,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   synchronized void start(JobTicket ticket) {
-    if ( threadPool != null ) logger.warn("startJob called more than once");
+    if ( threadPool != null ) {
+      logger.warn("startJob called more than once");
+      return;
+    }
     if ( getBatchSize() <= 0 ) {
       withBatchSize(1);
       logger.warn("batchSize should be 1 or greater--setting batchSize to 1");

@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
 import org.junit.AfterClass;
@@ -570,5 +571,42 @@ public class QueryBatcherTest {
     assertTrue(errors.toString(), "".equals(errors.toString()));
     assertEquals(uris.size(), deletedCount.get());
     assertEquals(0, queryMgr.search(collectionQuery, new SearchHandle()).getTotalResults());
+  }
+
+  @Test
+  public void testIssue658() throws Exception{
+    QueryBatcher batcher = moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
+      .withBatchSize(20)
+      .withThreadCount(20);
+
+    AtomicInteger batchCount = new AtomicInteger(0);
+    AtomicInteger successCount = new AtomicInteger(0);
+    AtomicReference<JobTicket> queryTicket = new AtomicReference<>(null);
+
+    Set uris = Collections.synchronizedSet(new HashSet());
+
+    batcher.onUrisReady(batch->{
+      uris.addAll(Arrays.asList(batch.getItems()));
+      batchCount.incrementAndGet();
+      if(moveMgr.getJobReport(queryTicket.get()).getSuccessEventsCount() > 40){
+        moveMgr.stopJob(queryTicket.get());
+      }
+    });
+    batcher.onQueryFailure(throwable -> throwable.printStackTrace());
+
+    queryTicket.set( moveMgr.startJob(batcher) );
+    batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+
+    queryTicket.set( moveMgr.startJob(batcher) );
+    batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+
+    System.out.println("Success event: "+moveMgr.getJobReport(queryTicket.get()).getSuccessEventsCount());
+    System.out.println("Success batch: "+moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
+    System.out.println("Failure event: "+moveMgr.getJobReport(queryTicket.get()).getFailureEventsCount());
+    System.out.println("Failure batch: "+moveMgr.getJobReport(queryTicket.get()).getFailureBatchesCount());
+
+
+    assertTrue(successCount.get() < 200);
+    assertTrue(batchCount.get() == moveMgr.getJobReport(queryTicket.get()).getSuccessBatchesCount());
   }
 }
