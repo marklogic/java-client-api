@@ -274,7 +274,6 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 						try {
 							Thread.sleep(5000);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					})
@@ -371,7 +370,6 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 						try {
 							Thread.sleep(1000);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					})
@@ -459,7 +457,6 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 						try {
 							Thread.sleep(5000);
 						} catch (Exception e) {
-							// TODO Auto-generated catch block
 							e.printStackTrace();
 						}
 					})
@@ -494,5 +491,84 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 
 		// Doc count should be zero after both batchers are done.
 		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+	}
+	
+	/*
+	 * Trigger batch failure by calling incorrect meta data values 
+	 */
+	
+	@Test
+	public void testOnBatchFailure() throws Exception {
+		System.out.println("Running testOnBatchFailure");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(5000L);
+		
+		String jsonDoc = "{" +
+				"\"employees\": [" +
+				"{ \"firstName\":\"Will\" , \"lastName\":\"Kirkham\" }," +
+				"{ \"firstName\":\"Hus\" , \"lastName\":\"Wattan\" }," +
+				"{ \"firstName\":\"Rod\" , \"lastName\":\"Mendez\" }]" +
+				"}";
+
+		//Use WriteBatcher to write the files.				
+		WriteBatcher wbatcher = dmManager.newWriteBatcher();
+
+		wbatcher.withBatchSize(1000);
+		StringHandle handle = new StringHandle();
+		handle.set(jsonDoc);
+		String uri = null;
+
+		// Insert 100 documents
+		for (int i = 0; i < 100; i++) {
+			uri = "lastname" + i + ".json";
+			wbatcher.add(uri, handle);
+		}
+		wbatcher.flushAndWait();
+
+		List<String> docExporterList = new ArrayList<String>();		
+
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("Will AND Hus");		
+		StringBuilder onBatchFailureStr = new StringBuilder();
+
+		try {
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)					
+					.withBatchSize(50)
+					.onUrisReady(
+							new ExportListener()
+							.withMetadataCategory(DocumentManager.Metadata.METADATAVALUES)							
+							.onDocumentReady(doc->{								
+								String uriOfDoc = doc.getUri();									
+								docExporterList.add(uriOfDoc);								
+							}
+							)
+							.onBatchFailure((batch, throwable)->{
+										onBatchFailureStr.append("From onBatchFailure QA Exception");
+										System.out.println("From onBatchFailure " + throwable.getMessage());
+										System.out.println("From onBatchFailure QA Exception");
+									}
+					         )
+						)
+					.onUrisReady(batch-> {						
+						System.out.println("Batch Numer is " + batch.getJobBatchNumber());
+					})
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from testOnBatchFailure callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+
+			exportBatcher.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from testOnBatchFailure method is" + ex.getMessage());
+		}
+		finally {
+		}
+		System.out.println("On Batch Failure contents are " + onBatchFailureStr.toString());
+		assertTrue("On Batch Failure call has issues", onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
 	}
 }

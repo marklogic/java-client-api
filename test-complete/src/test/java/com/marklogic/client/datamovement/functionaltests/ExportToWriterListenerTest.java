@@ -22,12 +22,9 @@ import static org.junit.Assert.assertTrue;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.io.OutputStreamWriter;
-import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,7 +35,6 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
@@ -46,7 +42,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
@@ -58,13 +53,12 @@ import com.marklogic.client.functionaltest.Artifact;
 import com.marklogic.client.functionaltest.Company;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -186,12 +180,10 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 
 	@Before
 	public void setUp() throws Exception {
-		
 	}
 
 	@After
 	public void tearDown() throws Exception {
-			
 	}
 
 	@Test
@@ -546,6 +538,57 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 		}
 	}
 	
+	/*
+	 * Trigger writer closure to generate batch failure
+	 */
+	@Test
+	public void testOnBatchFailure() throws Exception {
+		System.out.println("Running testOnBatchFailure");
+		StructuredQueryDefinition query = new StructuredQueryBuilder().document("/local/xml-1","/local/jsonA-1");
+		StringBuilder onBatchFailureStr = new StringBuilder();
+		try (FileWriter writer = new FileWriter(outputFile)) {
+
+			QueryBatcher queryJob =
+					dmManager.newQueryBatcher(query)
+					.withThreadCount(2)
+					.withBatchSize(2)
+					.onUrisReady(new ExportToWriterListener(writer)
+					.withRecordSuffix("\n")
+					.withMetadataCategory(DocumentManager.Metadata.COLLECTIONS)
+					.withMetadataCategory(DocumentManager.Metadata.QUALITY)
+					.onGenerateOutput(
+							record -> {
+								String uri = record.getUri();
+								DocumentMetadataHandle handle = record.getMetadata(new DocumentMetadataHandle());
+								String collection = handle.getCollections().iterator().next();
+								int quality = handle.getQuality();
+								String contents = record.getContentAs(String.class);
+								try {
+									Thread.sleep(5000);
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+								return uri + "," + collection + "," + quality+ ","+ contents;
+							}
+							)
+							.onBatchFailure((batch, throwable)->{
+								onBatchFailureStr.append("From onBatchFailure QA Exception");
+								System.out.println("From onBatchFailure QA Exception");
+							}))
+							.onQueryFailure(throwable -> throwable.printStackTrace());
+			dmManager.startJob( queryJob );
+			// Close writer to trigger onBatchFailure on Listener.
+			writer.close();
+
+			// wait for the export to finish
+			boolean finished = queryJob.awaitCompletion();
+			if ( finished == false ) {
+				throw new IllegalStateException("ERROR: Job did not finish within three minutes");
+			}
+		}
+		assertTrue("On Batch Failure call has issues", onBatchFailureStr.toString().contains("From onBatchFailure QA Exception"));
+	}
+	
 	public Artifact getArtifact(int counter) {
 
 		Artifact cogs = new Artifact();
@@ -590,6 +633,4 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 		cogs.setInventory(1000+counter);
 		return cogs;
 	}
-}	
-
-
+}

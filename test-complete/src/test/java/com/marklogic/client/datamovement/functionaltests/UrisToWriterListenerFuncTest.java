@@ -52,12 +52,12 @@ import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
 import com.marklogic.client.functionaltest.Company;
 import com.marklogic.client.functionaltest.Product;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonDatabindHandle;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.QueryManager;
@@ -76,6 +76,8 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	private static int restServerPort = 0;
 	private static DatabaseClient clientQHB = null;	
 	private static DataMovementManager dmManager = null;
+	private static DatabaseClient clientQHBTmp = null;	
+	private static DataMovementManager dmManagerTmp = null;
 	private static String uriFile2 = "testMultipleOutputListeners2.txt";
 	private static FileWriter writer2 = null;
 	
@@ -97,6 +99,9 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		// For use with QueryHostBatcher
 		clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);	   
 		dmManager = clientQHB.newDataMovementManager();	
+		
+		clientQHBTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);	   
+		dmManagerTmp = clientQHBTmp.newDataMovementManager();
 	}
 
 	@AfterClass
@@ -111,7 +116,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		deleteDB(dbName);
 		deleteForest(fNames[0]);
 	}
-
 
 	@Before
 	public void setUp() throws Exception {
@@ -212,13 +216,9 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 					);
 			wbatcher.add("/multibyte1.xml", metadata, contentHandle6);
 			wbatcher.flushAndWait();
-			wbatcher.awaitCompletion();
+			
 			Thread.sleep(5000);;
-			if (wbatchFailResults.length() > 0 || wbatchResults.toString().split(":").length != 6) {
-				System.out.println("Success URI's from Write batcher : "+ wbatchResults.toString());
-				System.out.println("Failure URI's from Write batcher : "+ wbatchFailResults.toString());
-				fail("Test failed due to errors in write batcher");
-			}
+			
 			writer = new FileWriter(uriFile);
 			StructuredQueryDefinition querydef = new StructuredQueryBuilder().collection(collection);
 			// Run a QueryBatcher on the new URIs.
@@ -295,7 +295,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		System.out.println("Running testReadbacks");
 		StringBuilder wbatchResults = new StringBuilder();
 		StringBuilder wbatchFailResults = new StringBuilder();
-		// file name to hold uris written out
+		// File name to hold uris written out
 		String uriFile = "testReadbacks.txt";
 		String docId = null;
 		String collection = "MultipleFileTypes";
@@ -419,10 +419,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	 * Query for 2 docs in collection2
 	 * Open writer in append mode
 	 * Verify writer contents
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws XpathException
 	 */
 	@Test
 	public void testWriteMultipleTimes() throws IOException, ParserConfigurationException, SAXException, InterruptedException
@@ -635,8 +631,7 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 				// Delete the file on JVM exit
 				File file = new File(uriFile);
 				file.deleteOnExit();
-			} catch (Exception e) {
-				// TODO Auto-generated catch block
+			} catch (Exception e) {				
 				e.printStackTrace();
 			}	    	
 		}
@@ -645,10 +640,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	/*
 	 * To test UriToWriterListener with POJO objects' URIs 
 	 * POJOs are stored in Database using regular Java Client API, not using WriteBatcher
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws XpathException
 	 */
 	@Test
 	public void testPOJOUris() throws IOException, ParserConfigurationException, SAXException, InterruptedException
@@ -737,10 +728,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	 * POJOs are stored in Database using JacksonDataBindHandle
 	 * Read the POJO rep from DB back into object and validate the object. Use the URI from map.
 	 * Similar to testPOJOUris method
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws XpathException
 	 */
 	@Test
 	public void testPOJOUrisUsingDataBindHandle() throws IOException, ParserConfigurationException, SAXException, InterruptedException
@@ -899,10 +886,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	 * To test if UriToWriterListener accepts OutputListener 
 	 * Verify if multiple listeners do not overwrite previously registered listeners.
 	 * Tests Git Issue # 573
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws XpathException
 	 */
 	@Test
 	public void testMultipleOutputListeners() throws IOException, ParserConfigurationException, SAXException, InterruptedException
@@ -1013,10 +996,6 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 	
 	/*
 	 * To test Prefix and suffix on UriToWriterListener writer.
-	 * @throws IOException
-	 * @throws ParserConfigurationException
-	 * @throws SAXException
-	 * @throws XpathException
 	 */
 	@Test
 	public void testPrefixAndSuffix() throws IOException, ParserConfigurationException, SAXException, InterruptedException
@@ -1127,6 +1106,124 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			}	    	
 		}
 	}
+	
+	/*
+	 * To test if URI from UriToWriterListener writer OnBatchfailure.
+	 * Call sleep on OnGenerate
+	 * Get rid of URIListener's  writer while URIListener is sleeping
+	 * Failure to write will trigger OnBatchFailure callback
+	 * assert on failure buffer contents.
+	 */
+	@Test() 
+	public void testOnBatchFailure() throws IOException, ParserConfigurationException, SAXException, InterruptedException
+	{
+		System.out.println("Running testOnBatchFailure");
+		StringBuilder wbatchResults = new StringBuilder();
+		StringBuilder wbatchFailResults = new StringBuilder();
+
+		StringBuilder batchResults = new StringBuilder();
+		StringBuilder batchFailResults = new StringBuilder();
+
+		// File name to hold uris written out
+		String uriFile = "testOnBatchfailure.txt";
+
+		String jsonDoc = "{" +
+				"\"employees\": [" +
+				"{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
+				"{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
+				"{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" +
+				"}";
+		// create query def
+		try {
+			QueryManager queryMgr = clientQHBTmp.newQueryManager();
+			StringQueryDefinition querydef = queryMgr.newStringDefinition();
+			querydef.setCriteria("John AND Bob");	
+
+			WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+			wbatcher.withBatchSize(100)
+			.onBatchSuccess(
+					batch -> {
+						for(WriteEvent w: batch.getItems()) {
+							wbatchResults.append(w.getTargetUri()+":");
+						}		         	
+					}
+					)
+					.onBatchFailure(
+							(batch, throwable) -> {
+								throwable.printStackTrace();
+								for(WriteEvent w: batch.getItems()) {
+									System.out.println("Failed URI's from Writebatcher are"+ w.getTargetUri());
+									wbatchFailResults.append(w.getTargetUri()+":");
+								}		      
+							});
+			StringHandle handle = new StringHandle();
+			handle.set(jsonDoc);
+			String uri = null;
+
+			// Insert 100 documents
+			for (int i = 0; i < 100; i++) {
+				uri = "/firstName" + i + ".json";
+				wbatcher.add(uri, handle);
+			}						
+			dmManagerTmp.startJob(wbatcher);			
+			wbatcher.awaitCompletion();
+			if (wbatchFailResults.length() > 0) {
+				fail("Test failed due to errors in write batcher");
+			}
+
+			FileWriter writer = new FileWriter(uriFile);
+
+			QueryBatcher qBatcher = dmManagerTmp.newQueryBatcher(querydef);
+			qBatcher.withBatchSize(100)
+			.onUrisReady( new  UrisToWriterListener(writer)
+			.onBatchFailure((batch, throwable) ->{
+				batchFailResults.append("QA OnBatchFailure Event");
+				System.out.println("Exception thrown from onBatchFailure == " + throwable.getMessage());
+			})
+			.onGenerateOutput(record->{
+				try {
+					Thread.sleep(5000);
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				return  "";
+			}))
+			.onUrisReady(batch -> {
+				for (String str : batch.getItems()) {
+					batchResults.append(str)
+					.append('|');
+				}
+			})			 
+			.onQueryFailure(throwable -> {
+				System.out.println("Exceptions thrown from callback onQueryFailure");
+				throwable.printStackTrace();
+				batchFailResults.append(throwable.toString());
+				System.out.println("Contents of batchFailResults is  " + batchFailResults.toString());
+			});
+			JobTicket qBatcherJob = dmManagerTmp.startJob(qBatcher);
+			// Get rid of the writer to trigger on batch failure
+			writer.close();
+
+			// Wait for query Batcher to complete and stop Job.
+			qBatcher.awaitCompletion();
+			dmManagerTmp.stopJob(qBatcherJob);
+		}
+		catch (Exception e) {
+			System.out.println(e.toString());
+		}
+		finally {
+			try {
+				// Delete the file on JVM exit
+				File file = new File(uriFile);
+				file.deleteOnExit();
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		System.out.println("Batch Failure contents are " + batchFailResults.toString());
+		assertTrue("Exception is not thrown", batchFailResults.toString().contains("QA OnBatchFailure Event"));
+	}
 
 	public Artifact getArtifact(int counter) {
 
@@ -1172,7 +1269,8 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 		cogs.setInventory(1000+counter);
 		return cogs;
 	}
-	private class MyOutputListener implements UrisToWriterListener.OutputListener {
+	
+	class MyOutputListener implements UrisToWriterListener.OutputListener {
 		@Override
 		public String generateOutput(String uri) {
 			// Make sure this listener is ALSO getting called in addition to use of writer (writing URIs to a file)
@@ -1189,5 +1287,5 @@ public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
 			}
 			return uri;
 		}		
-	}
+	}	
 }
