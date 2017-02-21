@@ -236,14 +236,8 @@ public interface WriteBatcher extends Batcher {
    *
    * @return this instance for method chaining
    */
+  @Override
   WriteBatcher withForestConfig(ForestConfiguration forestConfig);
-
-  /**
-   * Gets the current ForestConfiguration
-   *
-   * @return the current ForestConfiguration
-   */
-  ForestConfiguration getForestConfig();
 
   /**
    * Sets the job name.  Eventually, this may become useful for seeing named

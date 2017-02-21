@@ -201,6 +201,18 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher withConsistentSnapshot();
 
   /**
+   * If the server forest configuration changes mid-job, it can be re-fetched
+   * with {@link DataMovementManager#readForestConfig} then set via
+   * withForestConfig.
+   *
+   * @param forestConfig the updated ForestConfiguration
+   *
+   * @return this instance for method chaining
+   */
+  @Override
+  QueryBatcher withForestConfig(ForestConfiguration forestConfig);
+
+  /**
    * Sets the job name.  Eventually, this may become useful for seeing named
    * jobs in ops director.
    *
