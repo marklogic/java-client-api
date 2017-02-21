@@ -673,13 +673,17 @@ public class WriteBatcherImpl
         // call via ExecutorService so execution goes to complete but timeout
         // allows us to move on
         ExecutorService executor = Executors.newSingleThreadExecutor();
-        ArrayList<Callable<Object>> tasks = new ArrayList<>();
-        tasks.add(emptyQueue);
-        List<Future<Object>> futures = executor.invokeAll(tasks, duration, TimeUnit.MILLISECONDS);
-        // return false if invokeAll timed out, otherwise continue
-        if ( futures.get(0).isDone() == false ) {
-          logger.debug("[awaitCompletion] timeout while running tasks");
-          return false;
+        try {
+          ArrayList<Callable<Object>> tasks = new ArrayList<>();
+          tasks.add(emptyQueue);
+          List<Future<Object>> futures = executor.invokeAll(tasks, duration, TimeUnit.MILLISECONDS);
+          // return false if invokeAll timed out, otherwise continue
+          if ( futures.get(0).isDone() == false ) {
+            logger.debug("[awaitCompletion] timeout while running tasks");
+            return false;
+          }
+        } finally {
+          executor.shutdown();
         }
       } catch (Throwable t) {
         logger.error("Exception while emptying task queue in awaitComplete", t);
