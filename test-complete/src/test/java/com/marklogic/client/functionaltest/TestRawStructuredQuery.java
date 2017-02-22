@@ -618,7 +618,9 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		assertTrue("Results returned incorrect in response", node.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml")||
 				node.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint4.xml") );
 		
-		// With multiple withCriteria - positive
+		/*This is an invalid scenario--you can only specify one string criteria.
+		 * Calling withCriteria subsequent times just overwrites the string criteria value.
+		 */
 		RawStructuredQueryDefinition rawquerydefPos = (queryMgr.newRawStructuredQueryDefinition(rawHandle)).withCriteria("Vannevar").withCriteria("Atlantic").withCriteria("intellectual");
 
 		// create handle
@@ -633,7 +635,10 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 		assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml")||
 				nodePos.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint4.xml") );
 
-		// With multiple withCriteria - negative
+		/*With multiple withCriteria - negative
+		 *This is an invalid scenario--you can only specify one string criteria.
+		 * Calling withCriteria subsequent times just overwrites the string criteria value.
+		 */
 		RawStructuredQueryDefinition rawquerydefNeg = (queryMgr.newRawStructuredQueryDefinition(rawHandle)).withCriteria("Vannevar").withCriteria("England");
 
 		// create handle

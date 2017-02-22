@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.JacksonHandle;
@@ -36,6 +37,9 @@ import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
 import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 
@@ -315,5 +319,52 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 //		assertEquals("total no of pages",3,p.getTotalPages());
 		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
 		}
+	
+	/* Below scenarios are to test setCriteria and withCriteris on query returned from a PojoQueryBuilder.
+	 * Query with wild cards in strings. Same as testPOJOValueSearchWithStrings() method.
+	 */
+		@Test
+		public void testPOJOValueQueryWithCriteria() {
+			PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+			PojoPage<Artifact> p;
+			this.loadSimplePojos(products);
+			String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
+			PojoQueryBuilder qb = products.getQueryBuilder();
+			String[] searchNames = {"Acme spe* *","Widgets spe* *"};
+			PojoQueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames).withCriteria("Cogs 101");
+				
+			JacksonHandle jh = new JacksonHandle();
+			products.setPageLength(5);
+			p = products.search(qd, 1,jh);
 
+			JsonNode nodePos = jh.get();
+			// Return 1 node - constraint2.xml
+			assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+			assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+		}
+		
+		@Test
+		public void testPOJOValueQuerySetCriteria() {
+			PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+			PojoPage<Artifact> p;
+			this.loadSimplePojos(products);
+			String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
+			PojoQueryBuilder qb = products.getQueryBuilder();
+			String[] searchNames = {"Adme spe* *","Wedgets spe* *"};
+			QueryManager queryMgr = client.newQueryManager();
+			StructuredQueryBuilder strdqb = queryMgr.newStructuredQueryBuilder();
+			
+			StructuredQueryDefinition strutdDef =  qb.word("name", "Widgets 101");
+			strutdDef.setCriteria("Cogs 101");
+			PojoQueryDefinition qd = qb.or(strutdDef, qb.value("name",searchOptions,100.0,searchNames));
+				
+			JacksonHandle jh = new JacksonHandle();
+			products.setPageLength(5);
+			p = products.search(qd, 1,jh);
+
+			JsonNode nodePos = jh.get();
+			// Return 1 node - constraint2.xml
+			assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+			assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+		}
 }
