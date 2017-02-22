@@ -745,11 +745,11 @@ public class BulkReadWriteTest {
         uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
         uris.add(uniqueDir + "test+with+plus.txt");
         uris.add(uniqueDir + "test/with/forwardslash.txt");
+        uris.add(uniqueDir + "test\\with\\backslash.txt");
         uris.add(uniqueDir + "test.with.dot.txt");
-        // TODO: un-comment next line when bugtrack 44184 is fixed
-        //uris.add(uniqueDir + "test with!every@thing#else$^*()-_[]:',~.txt");
+        uris.add(uniqueDir + "test_with!every@thing#else$^*()-_[]:',~.txt");
         // TODO: un-comment next line when bugtrack 44132 is fixed
-        //uris.add(uniqueDir + "test with;.txt");
+        //uris.add(uniqueDir + "test_with;.txt");
 
         test_issue_623_body( Common.client.newTextDocumentManager(), uris, "$0" );
         test_issue_623_body( Common.client.newBinaryDocumentManager(), uris, "$0" );
