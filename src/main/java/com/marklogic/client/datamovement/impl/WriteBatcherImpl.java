@@ -776,6 +776,7 @@ public class WriteBatcherImpl
 
   @Override
   public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
+    if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
     // get the list of hosts to use
     Forest[] forests = forestConfig.listForests();
     if ( forests.length == 0 ) {
