@@ -102,6 +102,10 @@ public class FilteredForestConfiguration implements ForestConfiguration {
     if ( blackList.size() > 0 ) {
       replaced = replaced.map( forest -> {
         if ( blackList.contains(forest.getPreferredHost()) ) {
+          if ( validHosts.length == 0 ) {
+            throw new IllegalStateException("White list or black list rules are too restrictive:" +
+              " no valid hosts are left");
+          }
           // this forest has a preferred host which is black-listed, so let's
           // replace it with an acceptable (valid) host
           String openReplicaHost = forest.getOpenReplicaHost();
@@ -126,6 +130,10 @@ public class FilteredForestConfiguration implements ForestConfiguration {
     if ( whiteList.size() > 0 ) {
       replaced = replaced.map( forest -> {
         if ( ! whiteList.contains(forest.getPreferredHost()) ) {
+          if ( validHosts.length == 0 ) {
+            throw new IllegalStateException("White list or black list rules are too restrictive:" +
+              " no valid hosts are left");
+          }
           // this forest has a preferred host which is not white-listed, so let's
           // replace it with an acceptable (valid) host
           String openReplicaHost = forest.getOpenReplicaHost();

@@ -26,13 +26,33 @@ import org.junit.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.io.DocumentMetadataHandle;
+import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
+import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.impl.ForestImpl;
+import com.marklogic.client.test.Common;
+
+import java.net.Inet4Address;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Random;
+import java.util.Set;
+import java.util.stream.Stream;
 
 public class FilteredForestConfigTest {
   private Logger logger = LoggerFactory.getLogger(FilteredForestConfigTest.class);
+  private DatabaseClient client = Common.connect();
+  private DataMovementManager moveMgr = client.newDataMovementManager();
+
   private ForestConfiguration forests = () -> new Forest[] {
       new ForestImpl("host1", "openReplicaHost1", "alternateHost1", "databaseName1",
         "forestName1", "forestId1", true, false),
@@ -137,5 +157,78 @@ public class FilteredForestConfigTest {
     assertEquals("host3", filteredForests[2].getHost());
     assertEquals(null, filteredForests[2].getOpenReplicaHost());
     assertEquals("forestId3", filteredForests[2].getForestId());
+  }
+
+  @Test
+  public void testWithWriteAndQueryBatcher() throws Exception{
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
+    long hostNum = Stream.of(forestConfig.listForests()).map(forest->forest.getPreferredHost()).distinct().count();
+    if ( hostNum <= 1 ) return; // we're not in a cluster, so this test isn't valid
+
+    String host1 = forestConfig.listForests()[0].getPreferredHost();
+    FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)
+      .withRenamedHost(host1, Inet4Address.getByName(host1).getHostAddress());
+    runWithWriteAndQueryBatcher(ffg);
+    ffg = new FilteredForestConfiguration(forestConfig)
+      .withWhiteList(host1);
+    runWithWriteAndQueryBatcher(ffg);
+    ffg = new FilteredForestConfiguration(forestConfig)
+      .withBlackList(host1);
+    runWithWriteAndQueryBatcher(ffg);
+  }
+
+  @Test
+  public void testWithInvalidHosts() throws Exception{
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
+    String host1 = forestConfig.listForests()[0].getPreferredHost();
+
+    FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)
+      .withRenamedHost("someInvalidHostName", "anotherInvalidHostName");
+    runWithWriteAndQueryBatcher(ffg);
+    ffg = new FilteredForestConfiguration(forestConfig)
+      .withBlackList("someInvalidHostName");
+    runWithWriteAndQueryBatcher(ffg);
+    ffg = new FilteredForestConfiguration(forestConfig)
+      .withWhiteList("someInvalidHostName")
+      .withWhiteList(host1);
+    runWithWriteAndQueryBatcher(ffg);
+  }
+
+  public void runWithWriteAndQueryBatcher(FilteredForestConfiguration ffg) {
+    String collection = "testAgainstRealHosts_" + new Random().nextInt(10000);
+    DocumentMetadataHandle meta6 = new DocumentMetadataHandle()
+      .withCollections(collection)
+      .withQuality(0);
+
+    Set<String> sentUris = Collections.synchronizedSet(new HashSet<String>());
+    WriteBatcher writeBatcher =  moveMgr.newWriteBatcher()
+      .withBatchSize(10)
+      .withForestConfig(ffg)
+      .onBatchSuccess( batch -> {
+        for ( WriteEvent event : batch.getItems() ) {
+          sentUris.add(event.getTargetUri());
+        }
+      })
+      .onBatchFailure( (batch, throwable) -> throwable.printStackTrace() );
+    for (int j =0 ;j < 10; j++){
+      String uri ="/testAgainstRealHosts/"+ j;
+      writeBatcher.addAs(uri, meta6, "test");
+      sentUris.add(uri);
+    }
+    writeBatcher.flushAndWait();
+    moveMgr.stopJob(writeBatcher);
+
+    Set<String> retrievedUris = Collections.synchronizedSet(new HashSet<String>());
+    StructuredQueryDefinition query =  new StructuredQueryBuilder().collection(collection);
+    QueryBatcher getUris =  moveMgr.newQueryBatcher(query)
+      .withForestConfig(ffg)
+      .withBatchSize(2)
+      .withThreadCount(5)
+      .onUrisReady(batch -> retrievedUris.addAll(Arrays.asList(batch.getItems())) )
+      .onQueryFailure(exception -> exception.printStackTrace() );
+    moveMgr.startJob(getUris);
+    getUris.awaitCompletion();
+
+    assertEquals(sentUris, retrievedUris);
   }
 }
