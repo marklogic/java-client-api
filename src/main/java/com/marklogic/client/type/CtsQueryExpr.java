@@ -16,5 +16,5 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface CtsQueryExpr extends CtsQuerySeqExpr, ItemExpr, PlanRowFilter {
+public interface CtsQueryExpr extends CtsQuerySeqExpr, ItemExpr {
 }
