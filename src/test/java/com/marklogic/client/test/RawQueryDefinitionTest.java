@@ -550,7 +550,7 @@ public class RawQueryDefinitionTest {
 	@Test
 	public void test_issue581_RawStructuredQueryFromFileHandle() throws Exception {
 		Common.client.newDocumentManager().write("test_issue581_RawStructuredQueryFromFileHandle.xml",
-			new FileHandle(new File("src/test/resources/constraint5.xml")));
+			new FileHandle(new File("src/test/resources/constraint5.xml")).withFormat(Format.XML));
 
 		// get the combined query
 		File file = new File("src/test/resources/combinedQueryOption.xml");
