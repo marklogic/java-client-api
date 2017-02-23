@@ -934,47 +934,4 @@ public class WriteBatcherTest {
 
     ihb2.flushAndWait();
   }
-
-  @Test
-  public void testIssue642() throws Exception{
-    DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
-
-    WriteBatcher ihb2 =  moveMgr.newWriteBatcher();
-
-    ForestConfiguration forestConfig = moveMgr.readForestConfig();
-    long numHosts = Stream.of(forestConfig.listForests()).map(forest->forest.getPreferredHost()).distinct().count();
-    if ( numHosts <= 1 ) return; // we're not in a cluster, so this test isn't valid
-
-    FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)
-      //.withRenamedHost("localhost", "127.0.0.1")
-      .withBlackList(forestConfig.listForests()[0].getPreferredHost());
-
-    ihb2.withBatchSize(50).withForestConfig(ffg);
-
-    ihb2.onBatchSuccess( batch -> { })
-      .onBatchFailure( (batch, throwable) -> { throwable.printStackTrace(); });
-    for (int j =0 ;j < 1000; j++){
-      String uri ="/local/string-"+ j;
-      ihb2.addAs(uri, meta6 , new ObjectMapper().readTree("{\"k1\":\"v1\"}"));
-    }
-
-
-    ihb2.flushAndWait();
-
-    Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
-    QueryBatcher getUris =  moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
-    getUris.withForestConfig(ffg);
-
-    getUris.withBatchSize(500)
-      .withThreadCount(2)
-      .onUrisReady(batch -> uris.addAll(Arrays.asList(batch.getItems())) )
-    .onQueryFailure(exception -> exception.printStackTrace());
-
-    moveMgr.startJob(getUris);
-
-    logger.debug("calling awaitCompletion()");
-    getUris.awaitCompletion();
-
-    logger.debug("uris=" + uris.size());
-  }
 }
