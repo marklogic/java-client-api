@@ -552,6 +552,83 @@ public abstract class ConnectedRESTQA {
 		}
 	}
 	
+	/*Create a role with given privilages. With added Node Update Capability
+	 * Similar to createUserRolesWithPrevilages method, but have Node Update. 
+	 */
+	public static void createRoleWithNodeUpdate(String roleName, String... privNames ) {
+		DefaultHttpClient client = null;
+		try {
+			client = new DefaultHttpClient();
+			client.getCredentialsProvider().setCredentials(
+					new AuthScope("localhost", 8002),
+					new UsernamePasswordCredentials("admin", "admin"));
+			HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/roles/"+roleName);
+			HttpResponse resp = client.execute(getrequest);
+
+			if (resp.getStatusLine().getStatusCode() == 200) {
+				System.out.println("Role already exist");
+			}
+			else {
+				System.out.println("Role dont exist, will create now");
+				String[] roleNames = {"rest-reader","rest-writer"};
+				client = new DefaultHttpClient();
+				client.getCredentialsProvider().setCredentials(
+						new AuthScope("localhost", 8002),
+						new UsernamePasswordCredentials("admin", "admin"));
+
+				ObjectMapper mapper = new ObjectMapper();
+				ObjectNode mainNode = mapper.createObjectNode();
+				
+				ArrayNode roleArray = mapper.createArrayNode();
+				ArrayNode privArray = mapper.createArrayNode();
+				ArrayNode permArray = mapper.createArrayNode();
+				mainNode.put("role-name",roleName);
+				mainNode.put("description", "role discription");
+				
+				for(String rolename: roleNames)
+					roleArray.add(rolename);
+				mainNode.withArray("role").addAll(roleArray);
+				for(String privName: privNames) {
+					ObjectNode privNode = mapper.createObjectNode();
+					privNode.put("privilege-name", privName);
+					privNode.put("action", "http://marklogic.com/xdmp/privileges/"+privName.replace(":", "-"));
+					privNode.put("kind", "execute");
+					privArray.add(privNode);
+				}
+				mainNode.withArray("privilege").addAll(privArray);
+				permArray.add(getPermissionNode(roleNames[0],Capability.READ).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.READ).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.EXECUTE).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.UPDATE).get("permission").get(0));
+				permArray.add(getPermissionNode(roleNames[1],Capability.NODE_UPDATE).get("permission").get(0));
+				
+				mainNode.withArray("permission").addAll(permArray);
+				System.out.println(mainNode.toString());
+				HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/roles?format=json");
+				post.addHeader("Content-type", "application/json");
+				post.setEntity(new StringEntity(mainNode.toString()));
+
+				HttpResponse response = client.execute(post);
+				HttpEntity respEntity = response.getEntity();
+				if( response.getStatusLine().getStatusCode() == 400) {
+					System.out.println("creation of role got a problem");
+				}
+				else if (respEntity != null) {
+					// EntityUtils to get the response content
+					String content =  EntityUtils.toString(respEntity);
+					System.out.println(content);
+				}
+				else {System.out.println("No Proper Response");}
+			}
+		} catch (Exception e) {
+			// writing error to Log
+			e.printStackTrace();
+		}
+		finally {
+			client.getConnectionManager().shutdown();
+		}
+	}
+	
 	/*
 	 * This function creates a REST user with given roles 
 	 */
