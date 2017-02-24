@@ -18,12 +18,20 @@ package com.marklogic.client.impl;
 import com.marklogic.client.type.MapMapExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsDateTimeVal;
 import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDoubleVal;
 import com.marklogic.client.type.XsQNameExpr;
 import com.marklogic.client.type.XsQNameSeqExpr;
+import com.marklogic.client.type.XsQNameSeqVal;
+import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
@@ -82,12 +90,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr andQuery(CtsQuerySeqExpr queries, String options) {
-        return andQuery(queries, (options == null) ? (XsStringExpr) null : xs.string(options));
+        return andQuery(queries, (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsQueryExpr andQuery(CtsQuerySeqExpr queries, XsStringSeqExpr options) {
+    public CtsQueryExpr andQuery(CtsQuerySeqExpr queries, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "and-query", new Object[]{ queries, options });
     }
 
@@ -105,13 +113,13 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
-    public CtsBoxExpr box(XsDoubleExpr south, double west, double north, double east) {
-        return box(south, xs.doubleVal(west), xs.doubleVal(north), xs.doubleVal(east));
+    public CtsBoxExpr box(double south, double west, double north, double east) {
+        return box(xs.doubleVal(south), xs.doubleVal(west), xs.doubleVal(north), xs.doubleVal(east));
     }
 
     
     @Override
-    public CtsBoxExpr box(XsDoubleExpr south, XsDoubleExpr west, XsDoubleExpr north, XsDoubleExpr east) {
+    public CtsBoxExpr box(XsDoubleVal south, XsDoubleVal west, XsDoubleVal north, XsDoubleVal east) {
         if (south == null) {
             throw new IllegalArgumentException("south parameter for box() cannot be null");
         }
@@ -129,7 +137,13 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
-    public CtsCircleExpr circle(XsDoubleExpr radius, CtsPointExpr center) {
+    public CtsCircleExpr circle(double radius, CtsPointExpr center) {
+        return circle(xs.doubleVal(radius), center);
+    }
+
+    
+    @Override
+    public CtsCircleExpr circle(XsDoubleVal radius, CtsPointExpr center) {
         if (radius == null) {
             throw new IllegalArgumentException("radius parameter for circle() cannot be null");
         }
@@ -142,12 +156,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr collectionQuery(String uris) {
-        return collectionQuery((uris == null) ? (XsStringExpr) null : xs.string(uris));
+        return collectionQuery((uris == null) ? (XsStringVal) null : xs.string(uris));
     }
 
     
     @Override
-    public CtsQueryExpr collectionQuery(XsStringSeqExpr uris) {
+    public CtsQueryExpr collectionQuery(XsStringSeqVal uris) {
         return new QueryCallImpl("cts", "collection-query", new Object[]{ uris });
     }
 
@@ -160,36 +174,36 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr collectionReference(String options) {
-        return collectionReference((options == null) ? (XsStringExpr) null : xs.string(options));
+        return collectionReference((options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr collectionReference(XsStringSeqExpr options) {
+    public CtsReferenceExpr collectionReference(XsStringSeqVal options) {
         return new ReferenceCallImpl("cts", "collection-reference", new Object[]{ options });
     }
 
     
     @Override
     public CtsQueryExpr directoryQuery(String uris) {
-        return directoryQuery((uris == null) ? (XsStringExpr) null : xs.string(uris));
+        return directoryQuery((uris == null) ? (XsStringVal) null : xs.string(uris));
     }
 
     
     @Override
-    public CtsQueryExpr directoryQuery(XsStringSeqExpr uris) {
+    public CtsQueryExpr directoryQuery(XsStringSeqVal uris) {
         return new QueryCallImpl("cts", "directory-query", new Object[]{ uris });
     }
 
     
     @Override
     public CtsQueryExpr directoryQuery(String uris, String depth) {
-        return directoryQuery((uris == null) ? (XsStringExpr) null : xs.string(uris), (depth == null) ? (XsStringExpr) null : xs.string(depth));
+        return directoryQuery((uris == null) ? (XsStringVal) null : xs.string(uris), (depth == null) ? (XsStringVal) null : xs.string(depth));
     }
 
     
     @Override
-    public CtsQueryExpr directoryQuery(XsStringSeqExpr uris, XsStringExpr depth) {
+    public CtsQueryExpr directoryQuery(XsStringSeqVal uris, XsStringVal depth) {
         return new QueryCallImpl("cts", "directory-query", new Object[]{ uris, depth });
     }
 
@@ -205,60 +219,60 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr documentQuery(String uris) {
-        return documentQuery((uris == null) ? (XsStringExpr) null : xs.string(uris));
+        return documentQuery((uris == null) ? (XsStringVal) null : xs.string(uris));
     }
 
     
     @Override
-    public CtsQueryExpr documentQuery(XsStringSeqExpr uris) {
+    public CtsQueryExpr documentQuery(XsStringSeqVal uris) {
         return new QueryCallImpl("cts", "document-query", new Object[]{ uris });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributePairGeospatialQuery(String elementName, String latitudeAttributeNames, String longitudeAttributeNames, CtsRegionExpr... regions) {
-        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(longitudeAttributeNames), new RegionSeqListImpl(regions));
+        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(longitudeAttributeNames), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "element-attribute-pair-geospatial-query", new Object[]{ elementName, latitudeAttributeNames, longitudeAttributeNames, regions });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributePairGeospatialQuery(String elementName, String latitudeAttributeNames, String longitudeAttributeNames, CtsRegionSeqExpr regions, String... options) {
-        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(longitudeAttributeNames), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(longitudeAttributeNames), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-attribute-pair-geospatial-query", new Object[]{ elementName, latitudeAttributeNames, longitudeAttributeNames, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributePairGeospatialQuery(String elementName, String latitudeAttributeNames, String longitudeAttributeNames, CtsRegionSeqExpr regions, String options, double weight) {
-        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameExpr) null : xs.QName(longitudeAttributeNames), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementAttributePairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(latitudeAttributeNames), (longitudeAttributeNames == null) ? (XsQNameVal) null : xs.QName(longitudeAttributeNames), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-attribute-pair-geospatial-query", new Object[]{ elementName, latitudeAttributeNames, longitudeAttributeNames, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(String elementName, String attributeName, String operator, String value) {
-        return elementAttributeRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return elementAttributeRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
         }
@@ -268,12 +282,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(String elementName, String attributeName, String operator, String value, String... options) {
-        return elementAttributeRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementAttributeRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
         }
@@ -283,12 +297,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(String elementName, String attributeName, String operator, String value, String options, double weight) {
-        return elementAttributeRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementAttributeRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
         }
@@ -298,12 +312,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementAttributeReference(String element, String attribute) {
-        return elementAttributeReference((element == null) ? (XsQNameExpr) null : xs.QName(element), (attribute == null) ? (XsQNameExpr) null : xs.QName(attribute));
+        return elementAttributeReference((element == null) ? (XsQNameVal) null : xs.QName(element), (attribute == null) ? (XsQNameVal) null : xs.QName(attribute));
     }
 
     
     @Override
-    public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute) {
+    public CtsReferenceExpr elementAttributeReference(XsQNameVal element, XsQNameVal attribute) {
         if (element == null) {
             throw new IllegalArgumentException("element parameter for elementAttributeReference() cannot be null");
         }
@@ -316,12 +330,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementAttributeReference(String element, String attribute, String options) {
-        return elementAttributeReference((element == null) ? (XsQNameExpr) null : xs.QName(element), (attribute == null) ? (XsQNameExpr) null : xs.QName(attribute), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return elementAttributeReference((element == null) ? (XsQNameVal) null : xs.QName(element), (attribute == null) ? (XsQNameVal) null : xs.QName(attribute), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute, XsStringSeqExpr options) {
+    public CtsReferenceExpr elementAttributeReference(XsQNameVal element, XsQNameVal attribute, XsStringSeqVal options) {
         if (element == null) {
             throw new IllegalArgumentException("element parameter for elementAttributeReference() cannot be null");
         }
@@ -334,192 +348,192 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeValueQuery(String elementName, String attributeName, String text) {
-        return elementAttributeValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return elementAttributeValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text) {
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "element-attribute-value-query", new Object[]{ elementName, attributeName, text });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeValueQuery(String elementName, String attributeName, String text, String... options) {
-        return elementAttributeValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementAttributeValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-attribute-value-query", new Object[]{ elementName, attributeName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeValueQuery(String elementName, String attributeName, String text, String options, double weight) {
-        return elementAttributeValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementAttributeValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-attribute-value-query", new Object[]{ elementName, attributeName, text, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeWordQuery(String elementName, String attributeName, String text) {
-        return elementAttributeWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return elementAttributeWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text) {
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "element-attribute-word-query", new Object[]{ elementName, attributeName, text });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeWordQuery(String elementName, String attributeName, String text, String... options) {
-        return elementAttributeWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementAttributeWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-attribute-word-query", new Object[]{ elementName, attributeName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr elementAttributeWordQuery(String elementName, String attributeName, String text, String options, double weight) {
-        return elementAttributeWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (attributeName == null) ? (XsQNameExpr) null : xs.QName(attributeName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementAttributeWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (attributeName == null) ? (XsQNameVal) null : xs.QName(attributeName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-attribute-word-query", new Object[]{ elementName, attributeName, text, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementChildGeospatialQuery(String parentElementName, String childElementNames, CtsRegionExpr... regions) {
-        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameExpr) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameExpr) null : xs.QName(childElementNames), new RegionSeqListImpl(regions));
+        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameVal) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameVal) null : xs.QName(childElementNames), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "element-child-geospatial-query", new Object[]{ parentElementName, childElementNames, regions });
     }
 
     
     @Override
     public CtsQueryExpr elementChildGeospatialQuery(String parentElementName, String childElementNames, CtsRegionSeqExpr regions, String... options) {
-        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameExpr) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameExpr) null : xs.QName(childElementNames), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameVal) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameVal) null : xs.QName(childElementNames), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-child-geospatial-query", new Object[]{ parentElementName, childElementNames, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr elementChildGeospatialQuery(String parentElementName, String childElementNames, CtsRegionSeqExpr regions, String options, double weight) {
-        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameExpr) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameExpr) null : xs.QName(childElementNames), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementChildGeospatialQuery((parentElementName == null) ? (XsQNameVal) null : xs.QName(parentElementName), (childElementNames == null) ? (XsQNameVal) null : xs.QName(childElementNames), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-child-geospatial-query", new Object[]{ parentElementName, childElementNames, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementGeospatialQuery(String elementName, CtsRegionExpr... regions) {
-        return elementGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), new RegionSeqListImpl(regions));
+        return elementGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "element-geospatial-query", new Object[]{ elementName, regions });
     }
 
     
     @Override
     public CtsQueryExpr elementGeospatialQuery(String elementName, CtsRegionSeqExpr regions, String... options) {
-        return elementGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-geospatial-query", new Object[]{ elementName, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr elementGeospatialQuery(String elementName, CtsRegionSeqExpr regions, String options, double weight) {
-        return elementGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-geospatial-query", new Object[]{ elementName, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementPairGeospatialQuery(String elementName, String latitudeElementNames, String longitudeElementNames, CtsRegionExpr... regions) {
-        return elementPairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(longitudeElementNames), new RegionSeqListImpl(regions));
+        return elementPairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameVal) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameVal) null : xs.QName(longitudeElementNames), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "element-pair-geospatial-query", new Object[]{ elementName, latitudeElementNames, longitudeElementNames, regions });
     }
 
     
     @Override
     public CtsQueryExpr elementPairGeospatialQuery(String elementName, String latitudeElementNames, String longitudeElementNames, CtsRegionSeqExpr regions, String... options) {
-        return elementPairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(longitudeElementNames), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementPairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameVal) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameVal) null : xs.QName(longitudeElementNames), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-pair-geospatial-query", new Object[]{ elementName, latitudeElementNames, longitudeElementNames, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr elementPairGeospatialQuery(String elementName, String latitudeElementNames, String longitudeElementNames, CtsRegionSeqExpr regions, String options, double weight) {
-        return elementPairGeospatialQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameExpr) null : xs.QName(longitudeElementNames), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementPairGeospatialQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (latitudeElementNames == null) ? (XsQNameVal) null : xs.QName(latitudeElementNames), (longitudeElementNames == null) ? (XsQNameVal) null : xs.QName(longitudeElementNames), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-pair-geospatial-query", new Object[]{ elementName, latitudeElementNames, longitudeElementNames, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementQuery(String elementName, CtsQueryExpr query) {
-        return elementQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), query);
+        return elementQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), query);
     }
 
     
     @Override
-    public CtsQueryExpr elementQuery(XsQNameSeqExpr elementName, CtsQueryExpr query) {
+    public CtsQueryExpr elementQuery(XsQNameSeqVal elementName, CtsQueryExpr query) {
         if (query == null) {
             throw new IllegalArgumentException("query parameter for elementQuery() cannot be null");
         }
@@ -529,12 +543,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(String elementName, String operator, String value) {
-        return elementRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return elementRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
         }
@@ -544,12 +558,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(String elementName, String operator, String value, String... options) {
-        return elementRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
         }
@@ -559,12 +573,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(String elementName, String operator, String value, String options, double weight) {
-        return elementRangeQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementRangeQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
         }
@@ -574,12 +588,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementReference(String element) {
-        return elementReference((element == null) ? (XsQNameExpr) null : xs.QName(element));
+        return elementReference((element == null) ? (XsQNameVal) null : xs.QName(element));
     }
 
     
     @Override
-    public CtsReferenceExpr elementReference(XsQNameExpr element) {
+    public CtsReferenceExpr elementReference(XsQNameVal element) {
         if (element == null) {
             throw new IllegalArgumentException("element parameter for elementReference() cannot be null");
         }
@@ -589,12 +603,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementReference(String element, String options) {
-        return elementReference((element == null) ? (XsQNameExpr) null : xs.QName(element), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return elementReference((element == null) ? (XsQNameVal) null : xs.QName(element), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr elementReference(XsQNameExpr element, XsStringSeqExpr options) {
+    public CtsReferenceExpr elementReference(XsQNameVal element, XsStringSeqVal options) {
         if (element == null) {
             throw new IllegalArgumentException("element parameter for elementReference() cannot be null");
         }
@@ -604,84 +618,84 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementValueQuery(String elementName) {
-        return elementValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName));
+        return elementValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName));
     }
 
     
     @Override
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName) {
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName) {
         return new QueryCallImpl("cts", "element-value-query", new Object[]{ elementName });
     }
 
     
     @Override
     public CtsQueryExpr elementValueQuery(String elementName, String text) {
-        return elementValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return elementValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text) {
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "element-value-query", new Object[]{ elementName, text });
     }
 
     
     @Override
     public CtsQueryExpr elementValueQuery(String elementName, String text, String... options) {
-        return elementValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-value-query", new Object[]{ elementName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr elementValueQuery(String elementName, String text, String options, double weight) {
-        return elementValueQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementValueQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-value-query", new Object[]{ elementName, text, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr elementWordQuery(String elementName, String text) {
-        return elementWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return elementWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text) {
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "element-word-query", new Object[]{ elementName, text });
     }
 
     
     @Override
     public CtsQueryExpr elementWordQuery(String elementName, String text, String... options) {
-        return elementWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return elementWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "element-word-query", new Object[]{ elementName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr elementWordQuery(String elementName, String text, String options, double weight) {
-        return elementWordQuery((elementName == null) ? (XsQNameExpr) null : xs.QName(elementName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return elementWordQuery((elementName == null) ? (XsQNameVal) null : xs.QName(elementName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "element-word-query", new Object[]{ elementName, text, options, weight });
     }
 
@@ -694,12 +708,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(String fieldName, String operator, String value) {
-        return fieldRangeQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return fieldRangeQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
         }
@@ -709,12 +723,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(String fieldName, String operator, String value, String... options) {
-        return fieldRangeQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return fieldRangeQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
         }
@@ -724,12 +738,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(String fieldName, String operator, String value, String options, double weight) {
-        return fieldRangeQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return fieldRangeQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
         }
@@ -739,12 +753,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr fieldReference(String field) {
-        return fieldReference((field == null) ? (XsStringExpr) null : xs.string(field));
+        return fieldReference((field == null) ? (XsStringVal) null : xs.string(field));
     }
 
     
     @Override
-    public CtsReferenceExpr fieldReference(XsStringExpr field) {
+    public CtsReferenceExpr fieldReference(XsStringVal field) {
         if (field == null) {
             throw new IllegalArgumentException("field parameter for fieldReference() cannot be null");
         }
@@ -754,12 +768,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr fieldReference(String field, String options) {
-        return fieldReference((field == null) ? (XsStringExpr) null : xs.string(field), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return fieldReference((field == null) ? (XsStringVal) null : xs.string(field), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr fieldReference(XsStringExpr field, XsStringSeqExpr options) {
+    public CtsReferenceExpr fieldReference(XsStringVal field, XsStringSeqVal options) {
         if (field == null) {
             throw new IllegalArgumentException("field parameter for fieldReference() cannot be null");
         }
@@ -769,192 +783,192 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldValueQuery(String fieldName, String text) {
-        return fieldValueQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeExpr) null : xs.string(text));
+        return fieldValueQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text) {
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text) {
         return new QueryCallImpl("cts", "field-value-query", new Object[]{ fieldName, text });
     }
 
     
     @Override
     public CtsQueryExpr fieldValueQuery(String fieldName, String text, String... options) {
-        return fieldValueQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return fieldValueQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "field-value-query", new Object[]{ fieldName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr fieldValueQuery(String fieldName, String text, String options, double weight) {
-        return fieldValueQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return fieldValueQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsAnyAtomicTypeVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "field-value-query", new Object[]{ fieldName, text, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr fieldWordQuery(String fieldName, String text) {
-        return fieldWordQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return fieldWordQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text) {
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "field-word-query", new Object[]{ fieldName, text });
     }
 
     
     @Override
     public CtsQueryExpr fieldWordQuery(String fieldName, String text, String... options) {
-        return fieldWordQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return fieldWordQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "field-word-query", new Object[]{ fieldName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr fieldWordQuery(String fieldName, String text, String options, double weight) {
-        return fieldWordQuery((fieldName == null) ? (XsStringExpr) null : xs.string(fieldName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return fieldWordQuery((fieldName == null) ? (XsStringVal) null : xs.string(fieldName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "field-word-query", new Object[]{ fieldName, text, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyChildGeospatialQuery(String parentPropertyName, String childPropertyNames, CtsRegionExpr... regions) {
-        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringExpr) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringExpr) null : xs.string(childPropertyNames), new RegionSeqListImpl(regions));
+        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringVal) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringVal) null : xs.string(childPropertyNames), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "json-property-child-geospatial-query", new Object[]{ parentPropertyName, childPropertyNames, regions });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyChildGeospatialQuery(String parentPropertyName, String childPropertyNames, CtsRegionSeqExpr regions, String... options) {
-        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringExpr) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringExpr) null : xs.string(childPropertyNames), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringVal) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringVal) null : xs.string(childPropertyNames), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "json-property-child-geospatial-query", new Object[]{ parentPropertyName, childPropertyNames, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyChildGeospatialQuery(String parentPropertyName, String childPropertyNames, CtsRegionSeqExpr regions, String options, double weight) {
-        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringExpr) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringExpr) null : xs.string(childPropertyNames), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyChildGeospatialQuery((parentPropertyName == null) ? (XsStringVal) null : xs.string(parentPropertyName), (childPropertyNames == null) ? (XsStringVal) null : xs.string(childPropertyNames), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "json-property-child-geospatial-query", new Object[]{ parentPropertyName, childPropertyNames, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyGeospatialQuery(String propertyName, CtsRegionExpr... regions) {
-        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), new RegionSeqListImpl(regions));
+        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "json-property-geospatial-query", new Object[]{ propertyName, regions });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyGeospatialQuery(String propertyName, CtsRegionSeqExpr regions, String... options) {
-        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "json-property-geospatial-query", new Object[]{ propertyName, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyGeospatialQuery(String propertyName, CtsRegionSeqExpr regions, String options, double weight) {
-        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "json-property-geospatial-query", new Object[]{ propertyName, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyPairGeospatialQuery(String propertyName, String latitudePropertyNames, String longitudePropertyNames, CtsRegionExpr... regions) {
-        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringExpr) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringExpr) null : xs.string(longitudePropertyNames), new RegionSeqListImpl(regions));
+        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringVal) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringVal) null : xs.string(longitudePropertyNames), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "json-property-pair-geospatial-query", new Object[]{ propertyName, latitudePropertyNames, longitudePropertyNames, regions });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyPairGeospatialQuery(String propertyName, String latitudePropertyNames, String longitudePropertyNames, CtsRegionSeqExpr regions, String... options) {
-        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringExpr) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringExpr) null : xs.string(longitudePropertyNames), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringVal) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringVal) null : xs.string(longitudePropertyNames), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "json-property-pair-geospatial-query", new Object[]{ propertyName, latitudePropertyNames, longitudePropertyNames, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyPairGeospatialQuery(String propertyName, String latitudePropertyNames, String longitudePropertyNames, CtsRegionSeqExpr regions, String options, double weight) {
-        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringExpr) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringExpr) null : xs.string(longitudePropertyNames), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyPairGeospatialQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (latitudePropertyNames == null) ? (XsStringVal) null : xs.string(latitudePropertyNames), (longitudePropertyNames == null) ? (XsStringVal) null : xs.string(longitudePropertyNames), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "json-property-pair-geospatial-query", new Object[]{ propertyName, latitudePropertyNames, longitudePropertyNames, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(String propertyName, String operator, String value) {
-        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
         }
@@ -964,12 +978,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(String propertyName, String operator, String value, String... options) {
-        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
         }
@@ -979,12 +993,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(String propertyName, String operator, String value, String options, double weight) {
-        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyRangeQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
         }
@@ -994,12 +1008,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr jsonPropertyReference(String property) {
-        return jsonPropertyReference((property == null) ? (XsStringExpr) null : xs.string(property));
+        return jsonPropertyReference((property == null) ? (XsStringVal) null : xs.string(property));
     }
 
     
     @Override
-    public CtsReferenceExpr jsonPropertyReference(XsStringExpr property) {
+    public CtsReferenceExpr jsonPropertyReference(XsStringVal property) {
         if (property == null) {
             throw new IllegalArgumentException("property parameter for jsonPropertyReference() cannot be null");
         }
@@ -1009,12 +1023,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr jsonPropertyReference(String property, String options) {
-        return jsonPropertyReference((property == null) ? (XsStringExpr) null : xs.string(property), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return jsonPropertyReference((property == null) ? (XsStringVal) null : xs.string(property), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr jsonPropertyReference(XsStringExpr property, XsStringSeqExpr options) {
+    public CtsReferenceExpr jsonPropertyReference(XsStringVal property, XsStringSeqVal options) {
         if (property == null) {
             throw new IllegalArgumentException("property parameter for jsonPropertyReference() cannot be null");
         }
@@ -1024,12 +1038,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyScopeQuery(String propertyName, CtsQueryExpr query) {
-        return jsonPropertyScopeQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), query);
+        return jsonPropertyScopeQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), query);
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyScopeQuery(XsStringSeqExpr propertyName, CtsQueryExpr query) {
+    public CtsQueryExpr jsonPropertyScopeQuery(XsStringSeqVal propertyName, CtsQueryExpr query) {
         if (query == null) {
             throw new IllegalArgumentException("query parameter for jsonPropertyScopeQuery() cannot be null");
         }
@@ -1039,72 +1053,72 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyValueQuery(String propertyName, String value) {
-        return jsonPropertyValueQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return jsonPropertyValueQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value) {
         return new QueryCallImpl("cts", "json-property-value-query", new Object[]{ propertyName, value });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyValueQuery(String propertyName, String value, String... options) {
-        return jsonPropertyValueQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyValueQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "json-property-value-query", new Object[]{ propertyName, value, options });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyValueQuery(String propertyName, String value, String options, double weight) {
-        return jsonPropertyValueQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyValueQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "json-property-value-query", new Object[]{ propertyName, value, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyWordQuery(String propertyName, String text) {
-        return jsonPropertyWordQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (text == null) ? (XsStringExpr) null : xs.string(text));
+        return jsonPropertyWordQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text) {
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text) {
         return new QueryCallImpl("cts", "json-property-word-query", new Object[]{ propertyName, text });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyWordQuery(String propertyName, String text, String... options) {
-        return jsonPropertyWordQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return jsonPropertyWordQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "json-property-word-query", new Object[]{ propertyName, text, options });
     }
 
     
     @Override
     public CtsQueryExpr jsonPropertyWordQuery(String propertyName, String text, String options, double weight) {
-        return jsonPropertyWordQuery((propertyName == null) ? (XsStringExpr) null : xs.string(propertyName), (text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return jsonPropertyWordQuery((propertyName == null) ? (XsStringVal) null : xs.string(propertyName), (text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "json-property-word-query", new Object[]{ propertyName, text, options, weight });
     }
 
@@ -1120,12 +1134,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(String temporalCollection) {
-        return lsqtQuery((temporalCollection == null) ? (XsStringExpr) null : xs.string(temporalCollection));
+        return lsqtQuery((temporalCollection == null) ? (XsStringVal) null : xs.string(temporalCollection));
     }
 
     
     @Override
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection) {
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection) {
         if (temporalCollection == null) {
             throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
         }
@@ -1135,12 +1149,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(String temporalCollection, String timestamp) {
-        return lsqtQuery((temporalCollection == null) ? (XsStringExpr) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeExpr) null : xs.dateTime(timestamp));
+        return lsqtQuery((temporalCollection == null) ? (XsStringVal) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeVal) null : xs.dateTime(timestamp));
     }
 
     
     @Override
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp) {
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp) {
         if (temporalCollection == null) {
             throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
         }
@@ -1150,12 +1164,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(String temporalCollection, String timestamp, String... options) {
-        return lsqtQuery((temporalCollection == null) ? (XsStringExpr) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeExpr) null : xs.dateTime(timestamp), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return lsqtQuery((temporalCollection == null) ? (XsStringVal) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeVal) null : xs.dateTime(timestamp), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options) {
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp, XsStringSeqVal options) {
         if (temporalCollection == null) {
             throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
         }
@@ -1165,12 +1179,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(String temporalCollection, String timestamp, String options, double weight) {
-        return lsqtQuery((temporalCollection == null) ? (XsStringExpr) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeExpr) null : xs.dateTime(timestamp), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return lsqtQuery((temporalCollection == null) ? (XsStringVal) null : xs.string(temporalCollection), (timestamp == null) ? (XsDateTimeVal) null : xs.dateTime(timestamp), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp, XsStringSeqVal options, XsDoubleVal weight) {
         if (temporalCollection == null) {
             throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
         }
@@ -1197,31 +1211,31 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance) {
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance) {
         return new QueryCallImpl("cts", "near-query", new Object[]{ queries, distance });
     }
 
     
     @Override
     public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, double distance, String... options) {
-        return nearQuery(queries, xs.doubleVal(distance), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return nearQuery(queries, xs.doubleVal(distance), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance, XsStringSeqExpr options) {
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "near-query", new Object[]{ queries, distance, options });
     }
 
     
     @Override
     public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, double distance, String options, double distanceWeight) {
-        return nearQuery(queries, xs.doubleVal(distance), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(distanceWeight));
+        return nearQuery(queries, xs.doubleVal(distance), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(distanceWeight));
     }
 
     
     @Override
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance, XsStringSeqExpr options, XsDoubleExpr distanceWeight) {
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance, XsStringSeqVal options, XsDoubleVal distanceWeight) {
         return new QueryCallImpl("cts", "near-query", new Object[]{ queries, distance, options, distanceWeight });
     }
 
@@ -1261,60 +1275,60 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr orQuery(CtsQuerySeqExpr queries, String options) {
-        return orQuery(queries, (options == null) ? (XsStringExpr) null : xs.string(options));
+        return orQuery(queries, (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsQueryExpr orQuery(CtsQuerySeqExpr queries, XsStringSeqExpr options) {
+    public CtsQueryExpr orQuery(CtsQuerySeqExpr queries, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "or-query", new Object[]{ queries, options });
     }
 
     
     @Override
     public CtsQueryExpr pathGeospatialQuery(String pathExpression, CtsRegionExpr... regions) {
-        return pathGeospatialQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), new RegionSeqListImpl(regions));
+        return pathGeospatialQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), new RegionSeqListImpl(regions));
     }
 
     
     @Override
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions) {
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions) {
         return new QueryCallImpl("cts", "path-geospatial-query", new Object[]{ pathExpression, regions });
     }
 
     
     @Override
     public CtsQueryExpr pathGeospatialQuery(String pathExpression, CtsRegionSeqExpr regions, String... options) {
-        return pathGeospatialQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), regions, (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return pathGeospatialQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), regions, (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions, XsStringSeqExpr options) {
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "path-geospatial-query", new Object[]{ pathExpression, regions, options });
     }
 
     
     @Override
     public CtsQueryExpr pathGeospatialQuery(String pathExpression, CtsRegionSeqExpr regions, String options, double weight) {
-        return pathGeospatialQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), regions, (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return pathGeospatialQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), regions, (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "path-geospatial-query", new Object[]{ pathExpression, regions, options, weight });
     }
 
     
     @Override
     public CtsQueryExpr pathRangeQuery(String pathExpression, String operator, String value) {
-        return pathRangeQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
+        return pathRangeQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value));
     }
 
     
     @Override
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
         }
@@ -1324,12 +1338,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr pathRangeQuery(String pathExpression, String operator, String value, String... options) {
-        return pathRangeQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return pathRangeQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
         }
@@ -1339,12 +1353,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr pathRangeQuery(String pathExpression, String operator, String value, String options, double weight) {
-        return pathRangeQuery((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), (operator == null) ? (XsStringExpr) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return pathRangeQuery((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (operator == null) ? (XsStringVal) null : xs.string(operator), (value == null) ? (XsAnyAtomicTypeVal) null : xs.string(value), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
         }
@@ -1354,12 +1368,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(String pathExpression) {
-        return pathReference((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression));
+        return pathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression));
     }
 
     
     @Override
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression) {
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression) {
         if (pathExpression == null) {
             throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
         }
@@ -1369,12 +1383,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(String pathExpression, String options) {
-        return pathReference((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return pathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options) {
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options) {
         if (pathExpression == null) {
             throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
         }
@@ -1384,12 +1398,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(String pathExpression, String options, MapMapExpr map) {
-        return pathReference((pathExpression == null) ? (XsStringExpr) null : xs.string(pathExpression), (options == null) ? (XsStringExpr) null : xs.string(options), map);
+        return pathReference((pathExpression == null) ? (XsStringVal) null : xs.string(pathExpression), (options == null) ? (XsStringVal) null : xs.string(options), map);
     }
 
     
     @Override
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options, MapMapExpr map) {
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, MapMapExpr map) {
         if (pathExpression == null) {
             throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
         }
@@ -1399,12 +1413,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsPeriodExpr period(String start, String end) {
-        return period((start == null) ? (XsDateTimeExpr) null : xs.dateTime(start), (end == null) ? (XsDateTimeExpr) null : xs.dateTime(end));
+        return period((start == null) ? (XsDateTimeVal) null : xs.dateTime(start), (end == null) ? (XsDateTimeVal) null : xs.dateTime(end));
     }
 
     
     @Override
-    public CtsPeriodExpr period(XsDateTimeExpr start, XsDateTimeExpr end) {
+    public CtsPeriodExpr period(XsDateTimeVal start, XsDateTimeVal end) {
         if (start == null) {
             throw new IllegalArgumentException("start parameter for period() cannot be null");
         }
@@ -1417,12 +1431,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodCompareQuery(String axis1, String operator, String axis2) {
-        return periodCompareQuery((axis1 == null) ? (XsStringExpr) null : xs.string(axis1), (operator == null) ? (XsStringExpr) null : xs.string(operator), (axis2 == null) ? (XsStringExpr) null : xs.string(axis2));
+        return periodCompareQuery((axis1 == null) ? (XsStringVal) null : xs.string(axis1), (operator == null) ? (XsStringVal) null : xs.string(operator), (axis2 == null) ? (XsStringVal) null : xs.string(axis2));
     }
 
     
     @Override
-    public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2) {
+    public CtsQueryExpr periodCompareQuery(XsStringVal axis1, XsStringVal operator, XsStringVal axis2) {
         if (axis1 == null) {
             throw new IllegalArgumentException("axis1 parameter for periodCompareQuery() cannot be null");
         }
@@ -1438,12 +1452,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodCompareQuery(String axis1, String operator, String axis2, String options) {
-        return periodCompareQuery((axis1 == null) ? (XsStringExpr) null : xs.string(axis1), (operator == null) ? (XsStringExpr) null : xs.string(operator), (axis2 == null) ? (XsStringExpr) null : xs.string(axis2), (options == null) ? (XsStringExpr) null : xs.string(options));
+        return periodCompareQuery((axis1 == null) ? (XsStringVal) null : xs.string(axis1), (operator == null) ? (XsStringVal) null : xs.string(operator), (axis2 == null) ? (XsStringVal) null : xs.string(axis2), (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2, XsStringSeqExpr options) {
+    public CtsQueryExpr periodCompareQuery(XsStringVal axis1, XsStringVal operator, XsStringVal axis2, XsStringSeqVal options) {
         if (axis1 == null) {
             throw new IllegalArgumentException("axis1 parameter for periodCompareQuery() cannot be null");
         }
@@ -1459,12 +1473,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(String axisName, String operator) {
-        return periodRangeQuery((axisName == null) ? (XsStringExpr) null : xs.string(axisName), (operator == null) ? (XsStringExpr) null : xs.string(operator));
+        return periodRangeQuery((axisName == null) ? (XsStringVal) null : xs.string(axisName), (operator == null) ? (XsStringVal) null : xs.string(operator));
     }
 
     
     @Override
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator) {
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
         }
@@ -1474,12 +1488,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(String axisName, String operator, CtsPeriodExpr... period) {
-        return periodRangeQuery((axisName == null) ? (XsStringExpr) null : xs.string(axisName), (operator == null) ? (XsStringExpr) null : xs.string(operator), new PeriodSeqListImpl(period));
+        return periodRangeQuery((axisName == null) ? (XsStringVal) null : xs.string(axisName), (operator == null) ? (XsStringVal) null : xs.string(operator), new PeriodSeqListImpl(period));
     }
 
     
     @Override
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period) {
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator, CtsPeriodSeqExpr period) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
         }
@@ -1489,12 +1503,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(String axisName, String operator, CtsPeriodSeqExpr period, String options) {
-        return periodRangeQuery((axisName == null) ? (XsStringExpr) null : xs.string(axisName), (operator == null) ? (XsStringExpr) null : xs.string(operator), period, (options == null) ? (XsStringExpr) null : xs.string(options));
+        return periodRangeQuery((axisName == null) ? (XsStringVal) null : xs.string(axisName), (operator == null) ? (XsStringVal) null : xs.string(operator), period, (options == null) ? (XsStringVal) null : xs.string(options));
     }
 
     
     @Override
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period, XsStringSeqExpr options) {
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator, CtsPeriodSeqExpr period, XsStringSeqVal options) {
         if (operator == null) {
             throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
         }
@@ -1503,13 +1517,13 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
-    public CtsPointExpr point(XsDoubleExpr latitude, double longitude) {
-        return point(latitude, xs.doubleVal(longitude));
+    public CtsPointExpr point(double latitude, double longitude) {
+        return point(xs.doubleVal(latitude), xs.doubleVal(longitude));
     }
 
     
     @Override
-    public CtsPointExpr point(XsDoubleExpr latitude, XsDoubleExpr longitude) {
+    public CtsPointExpr point(XsDoubleVal latitude, XsDoubleVal longitude) {
         if (latitude == null) {
             throw new IllegalArgumentException("latitude parameter for point() cannot be null");
         }
@@ -1521,7 +1535,7 @@ class CtsExprImpl implements CtsExpr {
 
     
     @Override
-    public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqExpr vertices) {
+    public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqVal vertices) {
         return new PolygonCallImpl("cts", "polygon", new Object[]{ vertices });
     }
 
@@ -1615,48 +1629,48 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr tripleRangeQuery(String subject, String predicate, String object) {
-        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeExpr) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeExpr) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeExpr) null : xs.string(object));
+        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeVal) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeVal) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeVal) null : xs.string(object));
     }
 
     
     @Override
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object) {
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object) {
         return new QueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object });
     }
 
     
     @Override
     public CtsQueryExpr tripleRangeQuery(String subject, String predicate, String object, String operator) {
-        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeExpr) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeExpr) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeExpr) null : xs.string(object), (operator == null) ? (XsStringExpr) null : xs.string(operator));
+        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeVal) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeVal) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeVal) null : xs.string(object), (operator == null) ? (XsStringVal) null : xs.string(operator));
     }
 
     
     @Override
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator) {
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator) {
         return new QueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object, operator });
     }
 
     
     @Override
     public CtsQueryExpr tripleRangeQuery(String subject, String predicate, String object, String operator, String... options) {
-        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeExpr) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeExpr) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeExpr) null : xs.string(object), (operator == null) ? (XsStringExpr) null : xs.string(operator), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeVal) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeVal) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeVal) null : xs.string(object), (operator == null) ? (XsStringVal) null : xs.string(operator), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator, XsStringSeqExpr options) {
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object, operator, options });
     }
 
     
     @Override
     public CtsQueryExpr tripleRangeQuery(String subject, String predicate, String object, String operator, String options, double weight) {
-        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeExpr) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeExpr) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeExpr) null : xs.string(object), (operator == null) ? (XsStringExpr) null : xs.string(operator), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return tripleRangeQuery((subject == null) ? (XsAnyAtomicTypeVal) null : xs.string(subject), (predicate == null) ? (XsAnyAtomicTypeVal) null : xs.string(predicate), (object == null) ? (XsAnyAtomicTypeVal) null : xs.string(object), (operator == null) ? (XsStringVal) null : xs.string(operator), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "triple-range-query", new Object[]{ subject, predicate, object, operator, options, weight });
     }
 
@@ -1675,36 +1689,36 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr wordQuery(String text) {
-        return wordQuery((text == null) ? (XsStringExpr) null : xs.string(text));
+        return wordQuery((text == null) ? (XsStringVal) null : xs.string(text));
     }
 
     
     @Override
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text) {
+    public CtsQueryExpr wordQuery(XsStringSeqVal text) {
         return new QueryCallImpl("cts", "word-query", new Object[]{ text });
     }
 
     
     @Override
     public CtsQueryExpr wordQuery(String text, String... options) {
-        return wordQuery((text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.stringSeq(options));
+        return wordQuery((text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.stringSeq(options));
     }
 
     
     @Override
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text, XsStringSeqExpr options) {
+    public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options) {
         return new QueryCallImpl("cts", "word-query", new Object[]{ text, options });
     }
 
     
     @Override
     public CtsQueryExpr wordQuery(String text, String options, double weight) {
-        return wordQuery((text == null) ? (XsStringExpr) null : xs.string(text), (options == null) ? (XsStringExpr) null : xs.string(options), xs.doubleVal(weight));
+        return wordQuery((text == null) ? (XsStringVal) null : xs.string(text), (options == null) ? (XsStringVal) null : xs.string(options), xs.doubleVal(weight));
     }
 
     
     @Override
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight) {
+    public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight) {
         return new QueryCallImpl("cts", "word-query", new Object[]{ text, options, weight });
     }
 

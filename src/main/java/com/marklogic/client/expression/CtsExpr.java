@@ -18,12 +18,20 @@ package com.marklogic.client.expression;
 import com.marklogic.client.type.MapMapExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeSeqVal;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsDateTimeVal;
 import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDoubleVal;
 import com.marklogic.client.type.XsQNameExpr;
 import com.marklogic.client.type.XsQNameSeqExpr;
+import com.marklogic.client.type.XsQNameSeqVal;
+import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
@@ -86,7 +94,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"ordered"</dt> <dd>An ordered and-query, which specifies that the sub-query matches must occur in the order of the specified sub-queries. For example, if the sub-queries are "cat" and "dog", an ordered query will only match fragments where both "cat" and "dog" occur, and where "cat" comes before "dog" in the fragment.</dd> <dt>"unordered"</dt> <dd>An unordered and-query, which specifies that the sub-query matches can occur in any order. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr andQuery(CtsQuerySeqExpr queries, XsStringSeqExpr options);
+    public CtsQueryExpr andQuery(CtsQuerySeqExpr queries, XsStringSeqVal options);
     /**
     * Returns a query specifying that matches to <code>matching-query</code> should have their search relevance scores boosted if they also match <code>boosting-query</code>.
     * <p>
@@ -106,7 +114,7 @@ public interface CtsExpr {
     * @param east  The eastern boundary of the box.
     * @return  a CtsBoxExpr expression
     */
-    public CtsBoxExpr box(XsDoubleExpr south, double west, double north, double east);
+    public CtsBoxExpr box(double south, double west, double north, double east);
     /**
     * Returns a geospatial box value.
     * <p>
@@ -117,7 +125,7 @@ public interface CtsExpr {
     * @param east  The eastern boundary of the box.
     * @return  a CtsBoxExpr expression
     */
-    public CtsBoxExpr box(XsDoubleExpr south, XsDoubleExpr west, XsDoubleExpr north, XsDoubleExpr east);
+    public CtsBoxExpr box(XsDoubleVal south, XsDoubleVal west, XsDoubleVal north, XsDoubleVal east);
     /**
     * Returns a geospatial circle value.
     * <p>
@@ -126,7 +134,16 @@ public interface CtsExpr {
     * @param center  A point representing the center of the circle.
     * @return  a CtsCircleExpr expression
     */
-    public CtsCircleExpr circle(XsDoubleExpr radius, CtsPointExpr center);
+    public CtsCircleExpr circle(double radius, CtsPointExpr center);
+    /**
+    * Returns a geospatial circle value.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/cts:circle" target="mlserverdoc">cts:circle</a>
+    * @param radius  The radius of the circle. The units for the radius is determined at runtime by the <code>cts:query</code> options (miles is currently the only option).
+    * @param center  A point representing the center of the circle.
+    * @return  a CtsCircleExpr expression
+    */
+    public CtsCircleExpr circle(XsDoubleVal radius, CtsPointExpr center);
     /**
     * Returns a query matching documents in the collections with the given URIs. It will match both documents and properties documents in the collections with the given URIs.
     * <p>
@@ -142,7 +159,7 @@ public interface CtsExpr {
     * @param uris  One or more collection URIs.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr collectionQuery(XsStringSeqExpr uris);
+    public CtsQueryExpr collectionQuery(XsStringSeqVal uris);
     /**
     * Creates a reference to the collection lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -165,7 +182,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Do not check the definition against the context database.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr collectionReference(XsStringSeqExpr options);
+    public CtsReferenceExpr collectionReference(XsStringSeqVal options);
     /**
     * Returns a query matching documents in the directories with the given URIs.
     * <p>
@@ -181,7 +198,7 @@ public interface CtsExpr {
     * @param uris  One or more directory URIs.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr directoryQuery(XsStringSeqExpr uris);
+    public CtsQueryExpr directoryQuery(XsStringSeqVal uris);
     /**
     * Returns a query matching documents in the directories with the given URIs.
     * <p>
@@ -199,7 +216,7 @@ public interface CtsExpr {
     * @param depth  "1" for immediate children, "infinity" for all. If not supplied, depth is "1".
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr directoryQuery(XsStringSeqExpr uris, XsStringExpr depth);
+    public CtsQueryExpr directoryQuery(XsStringSeqVal uris, XsStringVal depth);
     /**
     * Returns a query that matches all documents where <code>query</code> matches any document fragment. When searching documents, document-properties, or document-locks, <code>cts:document-fragment-query</code> provides a convenient way to additionally constrain the search against any document fragment.
     * <p>
@@ -223,7 +240,7 @@ public interface CtsExpr {
     * @param uris  One or more document URIs.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr documentQuery(XsStringSeqExpr uris);
+    public CtsQueryExpr documentQuery(XsStringSeqVal uris);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific attributes representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -245,7 +262,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions);
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific attributes representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -269,7 +286,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific attributes representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -295,7 +312,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeAttributeNames, XsQNameSeqExpr longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementAttributePairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeAttributeNames, XsQNameSeqVal longitudeAttributeNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching element-attributes by name with a range-index entry equal to a given value. Searches with the <code>cts:element-attribute-range-query</code> constructor require an attribute range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -317,7 +334,7 @@ public interface CtsExpr {
     * @param value  Some values to match. When multiple values are specified, the query matches if any value matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a <code>cts:query</code> matching element-attributes by name with a range-index entry equal to a given value. Searches with the <code>cts:element-attribute-range-query</code> constructor require an attribute range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -341,7 +358,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Use the range index with the collation specified by <em>URI</em>. If not specified, then the default collation from the query is used. If a range index with the specified collation does not exist, an error is thrown.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $value parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching element-attributes by name with a range-index entry equal to a given value. Searches with the <code>cts:element-attribute-range-query</code> constructor require an attribute range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -367,7 +384,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Creates a reference to an element attribute value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -385,7 +402,7 @@ public interface CtsExpr {
     * @param attribute  An attribute QName.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute);
+    public CtsReferenceExpr elementAttributeReference(XsQNameVal element, XsQNameVal attribute);
     /**
     * Creates a reference to an element attribute value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -405,7 +422,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"type=<em>type</em>"</dt> <dd>Use the lexicon with the type specified by <em>type</em> (int, unsignedInt, long, unsignedLong, float, double, decimal, dateTime, time, date, gYearMonth, gYear, gMonth, gDay, yearMonthDuration, dayTimeDuration, string, anyURI, point, or long-lat-point)</dd> <dt>"collation=<em>URI</em>"</dt> <dd>Use the lexicon with the collation specified by <em>URI</em>.</dd> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Read the scalar type, collation and coordinate-system info only from the input. Do not check the definition against the context database.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Create a reference to an index or lexicon based on the specified coordinate system. Allowed values: "wgs84", "wgs84/double", "raw", "raw/double". Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Create a reference to an index or lexicon configured with the specified geospatial precision. Allowed values: <code>float</code> and <code>double</code>. Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>. This value takes precedence over the precision implicit in the coordinate system name.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute, XsStringSeqExpr options);
+    public CtsReferenceExpr elementAttributeReference(XsQNameVal element, XsQNameVal attribute, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with attributes by name with text content equal a given phrase.
     * <p>
@@ -425,7 +442,7 @@ public interface CtsExpr {
     * @param text  One or more attribute values to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text);
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text);
     /**
     * Returns a query matching elements by name with attributes by name with text content equal a given phrase.
     * <p>
@@ -447,7 +464,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> * <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with attributes by name with text content equal a given phrase.
     * <p>
@@ -471,7 +488,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementAttributeValueQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query matching elements by name with attributes by name with text content containing a given phrase.
     * <p>
@@ -491,7 +508,7 @@ public interface CtsExpr {
     * @param text  Some words or phrases to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text);
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text);
     /**
     * Returns a query matching elements by name with attributes by name with text content containing a given phrase.
     * <p>
@@ -513,7 +530,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expand=<em>value</em>"</dt> <dd>The <em>value</em> is one of <code>full</code>, <code>prefix-postfix</code>, <code>off</code>, or <code>heuristic</code> (the default is <code>heuristic</code>). An option with a value of <code>lexicon-expand=full</code> specifies that wildcards are resolved by expanding the pattern to words in a lexicon (if there is one available), and turning into a series of <code>cts:word-queries</code>, even if this takes a long time to evaluate. An option with a value of <code>lexicon-expand=prefix-postfix</code> specifies that wildcards are resolved by expanding the pattern to the pre- and postfixes of the words in the word lexicon (if there is one), and turning the query into a series of character queries, even if it takes a long time to evaluate. An option with a value of <code>lexicon-expand=off</code> specifies that wildcards are only resolved by looking up character patterns in the search pattern index, not in the lexicon. An option with a value of <code>lexicon-expand=heuristic</code>, which is the default, specifies that wildcards are resolved by using a series of internal rules, such as estimating the number of lexicon entries that need to be scanned, seeing if the estimate crosses certain thresholds, and (if appropriate), using another way besides lexicon expansion to resolve the query. </dd> * <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with attributes by name with text content containing a given phrase.
     * <p>
@@ -537,7 +554,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementAttributeWordQuery(XsQNameSeqVal elementName, XsQNameSeqVal attributeName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -557,7 +574,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions);
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -579,7 +596,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"type=long-lat-point"</dt> <dd>Specifies the format for the point in the data as longitude first, latitude second.</dd> <dt>"type=point"</dt> <dd>Specifies the format for the point in the data as latitude first, longitude second. This is the default format.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -603,7 +620,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqExpr parentElementName, XsQNameSeqExpr childElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementChildGeospatialQuery(XsQNameSeqVal parentElementName, XsQNameSeqVal childElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching elements by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -621,7 +638,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions);
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching elements by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -641,7 +658,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"type=long-lat-point"</dt> <dd>Specifies the format for the point in the data as longitude first, latitude second.</dd> <dt>"type=point"</dt> <dd>Specifies the format for the point in the data as latitude first, longitude second. This is the default format.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching elements by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -663,7 +680,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqExpr elementName, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementGeospatialQuery(XsQNameSeqVal elementName, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -685,7 +702,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions);
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -709,7 +726,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching elements by name which has specific element children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -735,7 +752,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr latitudeElementNames, XsQNameSeqExpr longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementPairGeospatialQuery(XsQNameSeqVal elementName, XsQNameSeqVal latitudeElementNames, XsQNameSeqVal longitudeElementNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching elements by name with the content constrained by the given <code>cts:query</code> in the second parameter. Searches for matches in the specified element and all of its descendants. If the specified query in the second parameter has any <code>cts:element-attribute-*-query</code> constructors, it will search attributes directly on the specified element and attributes on any descendant elements (see the <a>second example</a> below).
     * <p>
@@ -753,7 +770,7 @@ public interface CtsExpr {
     * @param query  A query for the element to match. If a string is entered, the string is treated as a <code>cts:word-query</code> of the specified string.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementQuery(XsQNameSeqExpr elementName, CtsQueryExpr query);
+    public CtsQueryExpr elementQuery(XsQNameSeqVal elementName, CtsQueryExpr query);
     /**
     * Returns a <code>cts:query</code> matching elements by name with a range-index entry equal to a given value. Searches with the <code>cts:element-range-query</code> constructor require an element range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -773,7 +790,7 @@ public interface CtsExpr {
     * @param value  One or more element values to match. When multiple values are specified, the query matches if any value matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a <code>cts:query</code> matching elements by name with a range-index entry equal to a given value. Searches with the <code>cts:element-range-query</code> constructor require an element range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -795,7 +812,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Use the range index with the collation specified by <em>URI</em>. If not specified, then the default collation from the query is used. If a range index with the specified collation does not exist, an error is thrown.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $value parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching elements by name with a range-index entry equal to a given value. Searches with the <code>cts:element-range-query</code> constructor require an element range index on the specified QName(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -819,7 +836,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementRangeQuery(XsQNameSeqVal elementName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Creates a reference to an element value lexicon, for use as a parameter to <a><code>cts:value-tuples</code></a>, <a><code>temporal:axis-create</code></a>, or any other function that takes an index reference. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -835,7 +852,7 @@ public interface CtsExpr {
     * @param element  An element QName.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr elementReference(XsQNameExpr element);
+    public CtsReferenceExpr elementReference(XsQNameVal element);
     /**
     * Creates a reference to an element value lexicon, for use as a parameter to <a><code>cts:value-tuples</code></a>, <a><code>temporal:axis-create</code></a>, or any other function that takes an index reference. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -853,7 +870,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"type=<em>type</em>"</dt> <dd>Use the lexicon with the type specified by <em>type</em> (int, unsignedInt, long, unsignedLong, float, double, decimal, dateTime, time, date, gYearMonth, gYear, gMonth, gDay, yearMonthDuration, dayTimeDuration, string, anyURI, point, or long-lat-point)</dd> <dt>"collation=<em>URI</em>"</dt> <dd>Use the lexicon with the collation specified by <em>URI</em>.</dd> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Read the scalar type, collation and coordinate-system info only from the input. Do not check the definition against the context database.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Create a reference to an index or lexicon based on the specified coordinate system. Allowed values: "wgs84", "wgs84/double", "raw", "raw/double". Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Create a reference to an index or lexicon configured with the specified geospatial precision. Allowed values: <code>float</code> and <code>double</code>. Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>. This value takes precedence over the precision implicit in the coordinate system name.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr elementReference(XsQNameExpr element, XsStringSeqExpr options);
+    public CtsReferenceExpr elementReference(XsQNameVal element, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with text content equal a given phrase. <code>cts:element-value-query</code> only matches against simple elements (that is, elements that contain only text and have no element children).
     * <p>
@@ -869,7 +886,7 @@ public interface CtsExpr {
     * @param elementName  One or more element QNames to match. When multiple QNames are specified, the query matches if any QName matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName);
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName);
     /**
     * Returns a query matching elements by name with text content equal a given phrase. <code>cts:element-value-query</code> only matches against simple elements (that is, elements that contain only text and have no element children).
     * <p>
@@ -887,7 +904,7 @@ public interface CtsExpr {
     * @param text  One or more element values to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text);
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text);
     /**
     * Returns a query matching elements by name with text content equal a given phrase. <code>cts:element-value-query</code> only matches against simple elements (that is, elements that contain only text and have no element children).
     * <p>
@@ -907,7 +924,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with text content equal a given phrase. <code>cts:element-value-query</code> only matches against simple elements (that is, elements that contain only text and have no element children).
     * <p>
@@ -929,7 +946,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementValueQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementValueQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
     * <p>
@@ -947,7 +964,7 @@ public interface CtsExpr {
     * @param text  Some words or phrases to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text);
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text);
     /**
     * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
     * <p>
@@ -967,7 +984,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"distance-weight=<em>number</em>"</dt> <dd>A weight applied based on the minimum distance between matches of this query. Higher weights add to the importance of proximity (as opposed to term matches) when the relevance order is calculated. The default value is 0.0 (no impact of proximity). The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. This parameter has no effect if the <code>word positions</code> index is not enabled. This parameter has no effect on searches that use score-simple, score-random, or score-zero (because those scoring algorithms do not consider term frequency, proximity is irrelevant). </dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expand=<em>value</em>"</dt> <dd>The <em>value</em> is one of <code>full</code>, <code>prefix-postfix</code>, <code>off</code>, or <code>heuristic</code> (the default is <code>heuristic</code>). An option with a value of <code>lexicon-expand=full</code> specifies that wildcards are resolved by expanding the pattern to words in a lexicon (if there is one available), and turning into a series of <code>cts:word-queries</code>, even if this takes a long time to evaluate. An option with a value of <code>lexicon-expand=prefix-postfix</code> specifies that wildcards are resolved by expanding the pattern to the pre- and postfixes of the words in the word lexicon (if there is one), and turning the query into a series of character queries, even if it takes a long time to evaluate. An option with a value of <code>lexicon-expand=off</code> specifies that wildcards are only resolved by looking up character patterns in the search pattern index, not in the lexicon. An option with a value of <code>lexicon-expand=heuristic</code>, which is the default, specifies that wildcards are resolved by using a series of internal rules, such as estimating the number of lexicon entries that need to be scanned, seeing if the estimate crosses certain thresholds, and (if appropriate), using another way besides lexicon expansion to resolve the query. </dd> * <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching elements by name with text content containing a given phrase. Searches only through immediate text node children of the specified element as well as any text node children of child elements defined in the Admin Interface as element-word-query-throughs or phrase-throughs; does not search through any other children of the specified element.
     * <p>
@@ -989,7 +1006,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr elementWordQuery(XsQNameSeqExpr elementName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr elementWordQuery(XsQNameSeqVal elementName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query that matches no fragments.
     * <p>
@@ -1016,7 +1033,7 @@ public interface CtsExpr {
     * @param value  One or more field values to match. When multiple values are specified, the query matches if any value matches. The value must be a type for which there is a range index defined.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a <code>cts:query</code> matching fields by name with a range-index entry equal to a given value. Searches with the <code>cts:field-range-query</code> constructor require a field range index on the specified field name(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -1038,7 +1055,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Use the range index with the collation specified by <em>URI</em>. If not specified, then the default collation from the query is used. If a range index with the specified collation does not exist, an error is thrown.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $value parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching fields by name with a range-index entry equal to a given value. Searches with the <code>cts:field-range-query</code> constructor require a field range index on the specified field name(s); if there is no range index configured, then an exception is thrown.
     * <p>
@@ -1062,7 +1079,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr fieldRangeQuery(XsStringSeqVal fieldName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Creates a reference to a field value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -1078,7 +1095,7 @@ public interface CtsExpr {
     * @param field  A field name.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr fieldReference(XsStringExpr field);
+    public CtsReferenceExpr fieldReference(XsStringVal field);
     /**
     * Creates a reference to a field value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -1096,7 +1113,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"type=<em>type</em>"</dt> <dd>Use the lexicon with the type specified by <em>type</em> (int, unsignedInt, long, unsignedLong, float, double, decimal, dateTime, time, date, gYearMonth, gYear, gMonth, gDay, yearMonthDuration, dayTimeDuration, string, anyURI, point, or long-lat-point)</dd> <dt>"collation=<em>URI</em>"</dt> <dd>Use the lexicon with the collation specified by <em>URI</em>.</dd> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Read the scalar type, collation and coordinate-system info only from the input. Do not check the definition against the context database.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Create a reference to an index or lexicon based on the specified coordinate system. Allowed values: "wgs84", "wgs84/double", "raw", "raw/double". Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Create a reference to an index or lexicon configured with the specified geospatial precision. Allowed values: <code>float</code> and <code>double</code>. Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>. This value takes precedence over the precision implicit in the coordinate system name.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr fieldReference(XsStringExpr field, XsStringSeqExpr options);
+    public CtsReferenceExpr fieldReference(XsStringVal field, XsStringSeqVal options);
     /**
     * Returns a query matching text content containing a given value in the specified field. If the specified field does not exist, <code>cts:field-value-query</code> throws an exception. If the specified field does not have the index setting <code>field value searches</code> enabled, either for the database or for the specified field, then a <code>cts:search</code> with a <code>cts:field-value-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1114,7 +1131,7 @@ public interface CtsExpr {
     * @param text  The values to match. If multiple values are specified, the query matches if any of the values match (or-query semantics). For XML documents, the values should be strings. For JSON, the values can be strings, numbers or booleans. To match null, pass in the empty sequence.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text);
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text);
     /**
     * Returns a query matching text content containing a given value in the specified field. If the specified field does not exist, <code>cts:field-value-query</code> throws an exception. If the specified field does not have the index setting <code>field value searches</code> enabled, either for the database or for the specified field, then a <code>cts:search</code> with a <code>cts:field-value-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1134,7 +1151,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"distance-weight=<em>number</em>"</dt> <dd>A weight applied based on the minimum distance between matches of this query. Higher weights add to the importance of proximity (as opposed to term matches) when the relevance order is calculated. The default value is 0.0 (no impact of proximity). The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. This parameter has no effect if the <code>word positions</code> index is not enabled. This parameter has no effect on searches that use score-simple or score-random (because those scoring algorithms do not consider term frequency, proximity is irrelevant). </dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching text content containing a given value in the specified field. If the specified field does not exist, <code>cts:field-value-query</code> throws an exception. If the specified field does not have the index setting <code>field value searches</code> enabled, either for the database or for the specified field, then a <code>cts:search</code> with a <code>cts:field-value-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1156,7 +1173,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldValueQuery(XsStringSeqExpr fieldName, XsAnyAtomicTypeSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr fieldValueQuery(XsStringSeqVal fieldName, XsAnyAtomicTypeSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query matching text content containing a given phrase in the specified field. If the specified field does not exist, <code>cts:field-word-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1174,7 +1191,7 @@ public interface CtsExpr {
     * @param text  The word or phrase to match. If multiple strings are specified, the query matches if any of the words or phrases match (or-query semantics).
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text);
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text);
     /**
     * Returns a query matching text content containing a given phrase in the specified field. If the specified field does not exist, <code>cts:field-word-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1194,7 +1211,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"distance-weight=<em>number</em>"</dt> <dd>A weight applied based on the minimum distance between matches of this query. Higher weights add to the importance of proximity (as opposed to term matches) when the relevance order is calculated. The default value is 0.0 (no impact of proximity). The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. This parameter has no effect if the <code>word positions</code> index is not enabled. This parameter has no effect on searches that use score-simple, score-random, or score-zero (because those scoring algorithms do not consider term frequency, proximity is irrelevant). </dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expand=<em>value</em>"</dt> <dd>The <em>value</em> is one of <code>full</code>, <code>prefix-postfix</code>, <code>off</code>, or <code>heuristic</code> (the default is <code>heuristic</code>). An option with a value of <code>lexicon-expand=full</code> specifies that wildcards are resolved by expanding the pattern to words in a lexicon (if there is one available), and turning into a series of <code>cts:word-queries</code>, even if this takes a long time to evaluate. An option with a value of <code>lexicon-expand=prefix-postfix</code> specifies that wildcards are resolved by expanding the pattern to the pre- and postfixes of the words in the word lexicon (if there is one), and turning the query into a series of character queries, even if it takes a long time to evaluate. An option with a value of <code>lexicon-expand=off</code> specifies that wildcards are only resolved by looking up character patterns in the search pattern index, not in the lexicon. An option with a value of <code>lexicon-expand=heuristic</code>, which is the default, specifies that wildcards are resolved by using a series of internal rules, such as estimating the number of lexicon entries that need to be scanned, seeing if the estimate crosses certain thresholds, and (if appropriate), using another way besides lexicon expansion to resolve the query. </dd> * <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching text content containing a given phrase in the specified field. If the specified field does not exist, <code>cts:field-word-query</code> throws an exception. A field is a named object that specified elements to include and exclude from a search, and can include score weights for any included elements. You create fields at the database level using the Admin Interface. For details on fields, see the chapter on "Fields Database Settings" in the <em>Administrator's Guide</em>.
     * <p>
@@ -1216,7 +1233,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr fieldWordQuery(XsStringSeqExpr fieldName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr fieldWordQuery(XsStringSeqVal fieldName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1236,7 +1253,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions);
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1258,7 +1275,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>string</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> (default) and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"type=long-lat-point"</dt> <dd>Specifies the format for the point in the data as longitude first, latitude second.</dd> <dt>"type=point"</dt> <dd>Specifies the format for the point in the data as latitude first, longitude second. This is the default format.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1282,7 +1299,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqExpr parentPropertyName, XsStringSeqExpr childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyChildGeospatialQuery(XsStringSeqVal parentPropertyName, XsStringSeqVal childPropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching json properties by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1300,7 +1317,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions);
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching json properties by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1320,7 +1337,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>string</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> (default) and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"type=long-lat-point"</dt> <dd>Specifies the format for the point in the data as longitude first, latitude second.</dd> <dt>"type=point"</dt> <dd>Specifies the format for the point in the data as latitude first, longitude second. This is the default format.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching json properties by name whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1342,7 +1359,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqExpr propertyName, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyGeospatialQuery(XsStringSeqVal propertyName, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific property children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1364,7 +1381,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions);
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific property children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1388,7 +1405,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching json properties by name which has specific property children representing latitude and longitude values for a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1414,7 +1431,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqExpr propertyName, XsStringSeqExpr latitudePropertyNames, XsStringSeqExpr longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyPairGeospatialQuery(XsStringSeqVal propertyName, XsStringSeqVal latitudePropertyNames, XsStringSeqVal longitudePropertyNames, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching JSON properties by name with a range-index entry equal to a given value. Searches with the <code>cts:json-property-range-query</code> constructor require a property range index on the specified names; if there is no range index configured, then an exception is thrown.
     * <p>
@@ -1434,7 +1451,7 @@ public interface CtsExpr {
     * @param value  One or more property values to match. When multiple values are specified, the query matches if any value matches. The value must be a type for which there is a range index defined.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a <code>cts:query</code> matching JSON properties by name with a range-index entry equal to a given value. Searches with the <code>cts:json-property-range-query</code> constructor require a property range index on the specified names; if there is no range index configured, then an exception is thrown.
     * <p>
@@ -1456,7 +1473,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Use the range index with the collation specified by <em>URI</em>. If not specified, then the default collation from the query is used. If a range index with the specified collation does not exist, an error is thrown.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $value parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching JSON properties by name with a range-index entry equal to a given value. Searches with the <code>cts:json-property-range-query</code> constructor require a property range index on the specified names; if there is no range index configured, then an exception is thrown.
     * <p>
@@ -1480,7 +1497,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqVal propertyName, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Creates a reference to a JSON property value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -1496,7 +1513,7 @@ public interface CtsExpr {
     * @param property  A property name.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr jsonPropertyReference(XsStringExpr property);
+    public CtsReferenceExpr jsonPropertyReference(XsStringVal property);
     /**
     * Creates a reference to a JSON property value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -1514,7 +1531,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"type=<em>type</em>"</dt> <dd>Use the lexicon with the type specified by <em>type</em> (int, unsignedInt, long, unsignedLong, float, double, decimal, dateTime, time, date, gYearMonth, gYear, gMonth, gDay, yearMonthDuration, dayTimeDuration, string, anyURI, point, or long-lat-point)</dd> <dt>"collation=<em>URI</em>"</dt> <dd>Use the lexicon with the collation specified by <em>URI</em>.</dd> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Read the scalar type, collation and coordinate-system info only from the input. Do not check the definition against the context database.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Create a reference to an index or lexicon based on the specified coordinate system. Allowed values: "wgs84", "wgs84/double", "raw", "raw/double". Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Create a reference to an index or lexicon configured with the specified geospatial precision. Allowed values: <code>float</code> and <code>double</code>. Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>. This value takes precedence over the precision implicit in the coordinate system name.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr jsonPropertyReference(XsStringExpr property, XsStringSeqExpr options);
+    public CtsReferenceExpr jsonPropertyReference(XsStringVal property, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching JSON properties by name with the content constrained by the given <code>cts:query</code> in the second parameter. Searches for matches in the specified property and all of its descendants.
     * <p>
@@ -1532,7 +1549,7 @@ public interface CtsExpr {
     * @param query  A query for the property to match. If a string is entered, the string is treated as a <code>cts:word-query</code> of the specified string.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyScopeQuery(XsStringSeqExpr propertyName, CtsQueryExpr query);
+    public CtsQueryExpr jsonPropertyScopeQuery(XsStringSeqVal propertyName, CtsQueryExpr query);
     /**
     * Returns a query matching JSON properties by name with value equal the given value. For arrays, the query matches if the value of any elements in the array matches the given value.
     * <p>
@@ -1550,7 +1567,7 @@ public interface CtsExpr {
     * @param value  One or more property values to match. When multiple values are specified, the query matches if any value matches. The values can be strings, numbers or booleans. If the value is the empty sequence, the query matches null.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a query matching JSON properties by name with value equal the given value. For arrays, the query matches if the value of any elements in the array matches the given value.
     * <p>
@@ -1570,7 +1587,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a query matching JSON properties by name with value equal the given value. For arrays, the query matches if the value of any elements in the array matches the given value.
     * <p>
@@ -1592,7 +1609,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqExpr propertyName, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyValueQuery(XsStringSeqVal propertyName, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query matching JSON properties by name with text content containing a given phrase. Searches only through immediate text node children of the specified property.
     * <p>
@@ -1610,7 +1627,7 @@ public interface CtsExpr {
     * @param text  Some words or phrases to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text);
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text);
     /**
     * Returns a query matching JSON properties by name with text content containing a given phrase. Searches only through immediate text node children of the specified property.
     * <p>
@@ -1630,7 +1647,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"distance-weight=<em>number</em>"</dt> <dd>A weight applied based on the minimum distance between matches of this query. Higher weights add to the importance of proximity (as opposed to term matches) when the relevance order is calculated. The default value is 0.0 (no impact of proximity). The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. This parameter has no effect if the <code>word positions</code> index is not enabled. This parameter has no effect on searches that use score-simple, score-random, or score-zero (because those scoring algorithms do not consider term frequency, proximity is irrelevant). </dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expand=<em>value</em>"</dt> <dd>The <em>value</em> is one of <code>full</code>, <code>prefix-postfix</code>, <code>off</code>, or <code>heuristic</code> (the default is <code>heuristic</code>). An option with a value of <code>lexicon-expand=full</code> specifies that wildcards are resolved by expanding the pattern to words in a lexicon (if there is one available), and turning into a series of <code>cts:word-queries</code>, even if this takes a long time to evaluate. An option with a value of <code>lexicon-expand=prefix-postfix</code> specifies that wildcards are resolved by expanding the pattern to the pre- and postfixes of the words in the word lexicon (if there is one), and turning the query into a series of character queries, even if it takes a long time to evaluate. An option with a value of <code>lexicon-expand=off</code> specifies that wildcards are only resolved by looking up character patterns in the search pattern index, not in the lexicon. An option with a value of <code>lexicon-expand=heuristic</code>, which is the default, specifies that wildcards are resolved by using a series of internal rules, such as estimating the number of lexicon entries that need to be scanned, seeing if the estimate crosses certain thresholds, and (if appropriate), using another way besides lexicon expansion to resolve the query. </dd> * <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching JSON properties by name with text content containing a given phrase. Searches only through immediate text node children of the specified property.
     * <p>
@@ -1652,7 +1669,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqExpr propertyName, XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr jsonPropertyWordQuery(XsStringSeqVal propertyName, XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query that matches all documents where <code>query</code> matches document-locks. When searching documents or document-properties, <code>cts:locks-fragment-query</code> provides a convenient way to additionally constrain the search against document-locks fragments.
     * <p>
@@ -1676,7 +1693,7 @@ public interface CtsExpr {
     * @param temporalCollection  The name of the temporal collection.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection);
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection);
     /**
     * Returns only documents before LSQT or a timestamp before LSQT for stable query results.
     * <p>
@@ -1694,7 +1711,7 @@ public interface CtsExpr {
     * @param timestamp  Return only temporal documents with a system start time less than or equal to this value. Default is <code>temporal:get-lsqt($temporal-collection)</code>. Timestamps larger than LSQT are rejected.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp);
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp);
     /**
     * Returns only documents before LSQT or a timestamp before LSQT for stable query results.
     * <p>
@@ -1714,7 +1731,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"cached-incremental"</dt> <dd>Break down the query into sub-queries and then cache each one of them for better performance. This is enabled, by default.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options);
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp, XsStringSeqVal options);
     /**
     * Returns only documents before LSQT or a timestamp before LSQT for stable query results.
     * <p>
@@ -1736,7 +1753,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr lsqtQuery(XsStringVal temporalCollection, XsDateTimeVal timestamp, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query matching all of the specified queries, where the matches occur within the specified distance from each other.
     * <p>
@@ -1770,7 +1787,7 @@ public interface CtsExpr {
     * @param distance  A distance, in number of words, between any two matching queries. The results match if two queries match and the distance between the two matches is equal to or less than the specified distance. A distance of 0 matches when the text is the exact same text or when there is overlapping text (see the third example below). A negative distance is treated as 0. The default value is 10.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance);
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance);
     /**
     * Returns a query matching all of the specified queries, where the matches occur within the specified distance from each other.
     * <p>
@@ -1790,7 +1807,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default value is (). <p> Options include:</p> <blockquote><dl> <dt>"ordered"</dt> <dd>Any near-query matches must occur in the order of the specified sub-queries.</dd> <dt>"unordered"</dt> <dd>Any near-query matches will satisfy the query, regardless of the order they were specified. </dd> <dt>"minimum-distance"</dt> <dd>The minimum distance between two matching queries. The results match if the two queries match and the minimum distance between the two matches is greater than or equal to the specified minimum distance. The default value is zero. A negative distance is treated as 0. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance, XsStringSeqExpr options);
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance, XsStringSeqVal options);
     /**
     * Returns a query matching all of the specified queries, where the matches occur within the specified distance from each other.
     * <p>
@@ -1812,7 +1829,7 @@ public interface CtsExpr {
     * @param distanceWeight  A weight attributed to the distance for this query. Higher weights add to the importance of distance (as opposed to term matches) when the relevance order is calculated. The default value is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score. This parameter has no effect if the <code>word positions</code> index is not enabled.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleExpr distance, XsStringSeqExpr options, XsDoubleExpr distanceWeight);
+    public CtsQueryExpr nearQuery(CtsQuerySeqExpr queries, XsDoubleVal distance, XsStringSeqVal options, XsDoubleVal distanceWeight);
     /**
     * Returns a query matching the first subquery, where those matches do not occur within 0 distance of the other query.
     * <p>
@@ -1863,7 +1880,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is <span>()</span>. <p> Options include: </p> <blockquote><dl> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $queries parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr orQuery(CtsQuerySeqExpr queries, XsStringSeqExpr options);
+    public CtsQueryExpr orQuery(CtsQuerySeqExpr queries, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching path expressions whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1881,7 +1898,7 @@ public interface CtsExpr {
     * @param regions  One or more geographic boxes, circles, polygons, or points. Where multiple regions are specified, the query matches if any region matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions);
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions);
     /**
     * Returns a <code>cts:query</code> matching path expressions whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1901,7 +1918,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p>Options include:</p> <blockquote> <dl> <dt>"coordinate-system=<var>string</var>"</dt> <dd>Use the given coordinate system. Valid values are: <dl> <dt>wgs84</dt><dd>The WGS84 coordinate system.</dd> <dt>wgs84/double</dt><dd>The WGS84 coordinate system at double precision.</dd> <dt>etrs89</dt><dd>The ETRS89 coordinate system.</dd> <dt>etrs89/double</dt><dd>The ETRS89 coordinate system at double precision.</dd> <dt>raw</dt><dd>The raw (unmapped) coordinate system.</dd> <dt>raw/double</dt><dd>The raw coordinate system at double precision.</dd> </dl> </dd> <dt>"units=<em>value</em>"</dt> <dd>Measure distance and the radii of circles in the specified units. Allowed values: <code>miles</code> (default), <code>km</code>, <code>feet</code>, <code>meters</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Use the coordinate system at the given precision. Allowed values: <code>float</code> and <code>double</code>.</dd> <dt>"boundaries-included"</dt> <dd>Points on boxes', circles', and polygons' boundaries are counted as matching. This is the default.</dd> <dt>"boundaries-excluded"</dt> <dd>Points on boxes', circles', and polygons' boundaries are not counted as matching.</dd> <dt>"boundaries-latitude-excluded"</dt> <dd>Points on boxes' latitude boundaries are not counted as matching.</dd> <dt>"boundaries-longitude-excluded"</dt> <dd>Points on boxes' longitude boundaries are not counted as matching.</dd> <dt>"boundaries-south-excluded"</dt> <dd>Points on the boxes' southern boundaries are not counted as matching.</dd> <dt>"boundaries-west-excluded"</dt> <dd>Points on the boxes' western boundaries are not counted as matching.</dd> <dt>"boundaries-north-excluded"</dt> <dd>Points on the boxes' northern boundaries are not counted as matching.</dd> <dt>"boundaries-east-excluded"</dt> <dd>Points on the boxes' eastern boundaries are not counted as matching.</dd> <dt>"boundaries-circle-excluded"</dt> <dd>Points on circles' boundary are not counted as matching.</dd> <dt>"boundaries-endpoints-excluded"</dt> <dd>Points on linestrings' boundary (the endpoints) are not counted as matching.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"type=long-lat-point"</dt> <dd>Specifies the format for the point in the data as longitude first, latitude second.</dd> <dt>"type=point"</dt> <dd>Specifies the format for the point in the data as latitude first, longitude second. This is the default format.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $regions parameter are considered synonyms for scoring purposes. The result is that occurances of more than one of the synonyms are scored as if there are more occurance of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions, XsStringSeqExpr options);
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching path expressions whose content represents a point contained within the given geographic box, circle, or polygon, or equal to the given point. Points that lie between the southern boundary and the northern boundary of a box, travelling northwards, and between the western boundary and the eastern boundary of the box, travelling eastwards, will match. Points contained within the given radius of the center point of a circle will match, using the curved distance on the surface of the Earth. Points contained within the given polygon will match, using great circle arcs over a spherical model of the Earth as edges. An error may result if the polygon is malformed in some way. Points equal to the a given point will match, taking into account the fact that longitudes converge at the poles. Using the geospatial query constructors requires a valid geospatial license key; without a valid license key, searches that include geospatial queries will throw an exception.
     * <p>
@@ -1923,7 +1940,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathGeospatialQuery(XsStringSeqExpr pathExpression, CtsRegionSeqExpr regions, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr pathGeospatialQuery(XsStringSeqVal pathExpression, CtsRegionSeqExpr regions, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a <code>cts:query</code> matching documents where the content addressed by an XPath expression satisfies the specified relationship (=, <, >, etc.) with respect to the input criteria values. A path range index must exist for each path when you perform a search.
     * <p>
@@ -1943,7 +1960,7 @@ public interface CtsExpr {
     * @param value  One or more values to match. These values are compared to the value(s) addressed by the <code>path-expression</code> parameter. When multiple When multiple values are specified, the query matches if any value matches. The value must be a type for which there is a range index defined.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value);
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value);
     /**
     * Returns a <code>cts:query</code> matching documents where the content addressed by an XPath expression satisfies the specified relationship (=, <, >, etc.) with respect to the input criteria values. A path range index must exist for each path when you perform a search.
     * <p>
@@ -1965,7 +1982,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Use the range index with the collation specified by <em>URI</em>. If not specified, then the default collation from the query is used. If a range index with the specified collation does not exist, an error is thrown.</dd> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $value parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options);
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching documents where the content addressed by an XPath expression satisfies the specified relationship (=, <, >, etc.) with respect to the input criteria values. A path range index must exist for each path when you perform a search.
     * <p>
@@ -1989,7 +2006,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr pathRangeQuery(XsStringSeqVal pathExpression, XsStringVal operator, XsAnyAtomicTypeSeqVal value, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Creates a reference to a path value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -2005,7 +2022,7 @@ public interface CtsExpr {
     * @param pathExpression  A path range index expression.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression);
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression);
     /**
     * Creates a reference to a path value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -2023,7 +2040,7 @@ public interface CtsExpr {
     * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"type=<em>type</em>"</dt> <dd>Use the lexicon with the type specified by <em>type</em> (int, unsignedInt, long, unsignedLong, float, double, decimal, dateTime, time, date, gYearMonth, gYear, gMonth, gDay, yearMonthDuration, dayTimeDuration, string, anyURI, point, or long-lat-point)</dd> <dt>"collation=<em>URI</em>"</dt> <dd>Use the lexicon with the collation specified by <em>URI</em>.</dd> <dt>"nullable"</dt> <dd>Allow null values in tuples reported from cts:value-tuples when using this lexicon.</dd> <dt>"unchecked"</dt> <dd>Read the scalar type, collation and coordinate-system info only from the input. Do not check the definition against the context database.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Create a reference to an index or lexicon based on the specified coordinate system. Allowed values: "wgs84", "wgs84/double", "raw", "raw/double". Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>.</dd> <dt>"precision=<em>value</em>"</dt> <dd>Create a reference to an index or lexicon configured with the specified geospatial precision. Allowed values: <code>float</code> and <code>double</code>. Only applicable if the index/lexicon value type is <code>point</code> or <code>long-lat-point</code>. This value takes precedence over the precision implicit in the coordinate system name.</dd> </dl></blockquote>
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options);
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options);
     /**
     * Creates a reference to a path value lexicon, for use as a parameter to cts:value-tuples. Since lexicons are implemented with range indexes, this function will throw an exception if the specified range index does not exist.
     * <p>
@@ -2043,7 +2060,7 @@ public interface CtsExpr {
     * @param map  A map of namespace bindings. The keys should be namespace prefixes and the values should be namespace URIs. These namespace bindings will be added to the in-scope namespace bindings in the interpretation of the path.
     * @return  a CtsReferenceExpr expression
     */
-    public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options, MapMapExpr map);
+    public CtsReferenceExpr pathReference(XsStringVal pathExpression, XsStringSeqVal options, MapMapExpr map);
     /**
     * Creates a period value, for use as a parameter to cts:period-range-query or cts:period-compare-query.
     * <p>
@@ -2061,7 +2078,7 @@ public interface CtsExpr {
     * @param end  The dateTime value indicating end of the period.
     * @return  a CtsPeriodExpr expression
     */
-    public CtsPeriodExpr period(XsDateTimeExpr start, XsDateTimeExpr end);
+    public CtsPeriodExpr period(XsDateTimeVal start, XsDateTimeVal end);
     /**
     * Returns a <code>cts:query</code> matching documents that have relevant pair of period values. Searches with the <code>cts:period-compare-query</code> constructor require two valid names of period, if the either of the specified period does not exist, then an exception is thrown.
     * <p>
@@ -2081,7 +2098,7 @@ public interface CtsExpr {
     * @param axis2  Name of the second period to compare
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2);
+    public CtsQueryExpr periodCompareQuery(XsStringVal axis1, XsStringVal operator, XsStringVal axis2);
     /**
     * Returns a <code>cts:query</code> matching documents that have relevant pair of period values. Searches with the <code>cts:period-compare-query</code> constructor require two valid names of period, if the either of the specified period does not exist, then an exception is thrown.
     * <p>
@@ -2103,7 +2120,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2, XsStringSeqExpr options);
+    public CtsQueryExpr periodCompareQuery(XsStringVal axis1, XsStringVal operator, XsStringVal axis2, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching axis by name with a period value with an operator. Searches with the <code>cts:period-range-query</code> constructor require a axis definition on the axis name; if there is no axis configured, then an exception is thrown.
     * <p>
@@ -2121,7 +2138,7 @@ public interface CtsExpr {
     * @param operator  A comparison operator. <p> Operators include:</p> <blockquote><dl> <dt>"aln_equals"</dt> <dd>Match documents whose period1 equals value.</dd> <dt>"aln_contains"</dt> <dd>Match documents whose period1 contains value. i.e. period1 starts before value starts and ends before value ends.</dd> <dt>"aln_contained_by"</dt> <dd>Match documents whose period1 is contained by value.</dd> <dt>"aln_meets"</dt> <dd>Match documents whose period1 meets value, i.e. period1 ends at value start.</dd> <dt>"aln_met_by"</dt> <dd>Match documents whose period1 meets value, i.e. period1 starts at value end.</dd> <dt>"aln_before"</dt> <dd>Match documents whose period1 is before value, i.e. period1 ends before value starts.</dd> <dt>"aln_after"</dt> <dd>Match documents whose period1 is after value, i.e. period1 starts after value ends.</dd> <dt>"aln_starts"</dt> <dd>Match documents whose period1 starts value, i.e. period1 starts at value start and ends before value ends.</dd> <dt>"aln_started_by"</dt> <dd>Match documents whose value starts period1, i.e. period1 starts at value start and ends after value ends.</dd> <dt>"aln_finishes"</dt> <dd>Match documents whose period1 finishes value, i.e. period1 finishes at value finish and starts after value starts.</dd> <dt>"aln_finished_by"</dt> <dd>Match documents whose value finishes period1, i.e. period1 finishes at value finish and starts before value starts.</dd> <dt>"aln_overlaps"</dt> <dd>Match documents whose period1 overlaps value, i.e. period1 starts before value start and ends before value ends but after value starts.</dd> <dt>"aln_overlapped_by"</dt> <dd>Match documents whose value overlaps period1, i.e. period1 starts after value start but before value ends and ends after value ends.</dd> <dt>"iso_contains"</dt> <dd>Match documents whose period1 contains value in sql 2011 standard. i.e. period1 starts before or at value starts and ends after or at value ends.</dd> <dt>"iso_overlaps"</dt> <dd>Match documents whose period1 overlaps value in sql 2011 standard. i.e. period1 and value have common time period.</dd> <dt>"iso_succeeds"</dt> <dd>Match documents whose period1 succeeds value in sql 2011 standard. i.e. period1 starts at or after value ends</dd> <dt>"iso_precedes"</dt> <dd>Match documents whose period1 precedes value in sql 2011 standard. i.e. period1 ends at or before value ends</dd> <dt>"iso_imm_succeeds"</dt> <dd>Match documents whose period1 immediately succeeds value in sql 2011 standard. i.e. period1 starts at value end</dd> <dt>"iso_imm_precedes"</dt> <dd>Match documents whose period1 immediately precedes value in sql 2011 standard. i.e. period1 ends at value end</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator);
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator);
     /**
     * Returns a <code>cts:query</code> matching axis by name with a period value with an operator. Searches with the <code>cts:period-range-query</code> constructor require a axis definition on the axis name; if there is no axis configured, then an exception is thrown.
     * <p>
@@ -2141,7 +2158,7 @@ public interface CtsExpr {
     * @param period  the cts:period to perform operations on. When multiple values are specified, the query matches if any value matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period);
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator, CtsPeriodSeqExpr period);
     /**
     * Returns a <code>cts:query</code> matching axis by name with a period value with an operator. Searches with the <code>cts:period-range-query</code> constructor require a axis definition on the axis name; if there is no axis configured, then an exception is thrown.
     * <p>
@@ -2163,7 +2180,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> </dl> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period, XsStringSeqExpr options);
+    public CtsQueryExpr periodRangeQuery(XsStringSeqVal axisName, XsStringVal operator, CtsPeriodSeqExpr period, XsStringSeqVal options);
     /**
     * Returns a point value.
     * <p>
@@ -2172,7 +2189,7 @@ public interface CtsExpr {
     * @param longitude  The longitude of the point.
     * @return  a CtsPointExpr expression
     */
-    public CtsPointExpr point(XsDoubleExpr latitude, double longitude);
+    public CtsPointExpr point(double latitude, double longitude);
     /**
     * Returns a point value.
     * <p>
@@ -2181,7 +2198,7 @@ public interface CtsExpr {
     * @param longitude  The longitude of the point.
     * @return  a CtsPointExpr expression
     */
-    public CtsPointExpr point(XsDoubleExpr latitude, XsDoubleExpr longitude);
+    public CtsPointExpr point(XsDoubleVal latitude, XsDoubleVal longitude);
     /**
     * Returns a geospatial polygon value.
     * <p>
@@ -2189,7 +2206,7 @@ public interface CtsExpr {
     * @param vertices  The vertices of the polygon, given in order. No edge may cover more than 180 degrees of either latitude or longitude. The polygon as a whole may not encompass both poles. These constraints are necessary to ensure an unambiguous interpretation of the polygon. There must be at least three vertices. The first vertex should be identical to the last vertex to close the polygon. vertexes.
     * @return  a CtsPolygonExpr expression
     */
-    public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqExpr vertices);
+    public CtsPolygonExpr polygon(XsAnyAtomicTypeSeqVal vertices);
     /**
     * Returns a query that matches all documents where <code>query</code> matches document-properties. When searching documents or document-locks, <code>cts:properties-fragment-query</code> provides a convenient way to additionally constrain the search against document-properties fragments.
     * <p>
@@ -2309,7 +2326,7 @@ public interface CtsExpr {
     * @param object  The objects to look up. When multiple values are specified, the query matches if any value matches. When the empty sequence is specified, then triples with any object are matched.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object);
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object);
     /**
     * Returns a <code>cts:query</code> matching triples with a triple index entry equal to the given values. Searches with the <code>cts:triple-range-query</code> constructor require the triple index; if the triple index is not configured, then an exception is thrown.
     * <p>
@@ -2331,7 +2348,7 @@ public interface CtsExpr {
     * @param operator  If a single string is provided it is treated as the operator for the $object values. If a sequence of three strings are provided, they give the operators for $subject, $predicate and $object in turn. The default operator is "=". <p> Operators include:</p> <blockquote><dl> <dt>"sameTerm"</dt> <dd>Match triple index values which are the same RDF term as $value. This compares aspects of values that are ignored in XML Schema comparison semantics, like timezone and derived type of $value.</dd> <dt>"<"</dt> <dd>Match range index values less than $value.</dd> <dt>"<="</dt> <dd>Match range index values less than or equal to $value.</dd> <dt>">"</dt> <dd>Match range index values greater than $value.</dd> <dt>">="</dt> <dd>Match range index values greater than or equal to $value.</dd> <dt>"="</dt> <dd>Match range index values equal to $value.</dd> <dt>"!="</dt> <dd>Match range index values not equal to $value.</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator);
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator);
     /**
     * Returns a <code>cts:query</code> matching triples with a triple index entry equal to the given values. Searches with the <code>cts:triple-range-query</code> constructor require the triple index; if the triple index is not configured, then an exception is thrown.
     * <p>
@@ -2355,7 +2372,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"cached"</dt> <dd>Cache the results of this query in the list cache.</dd> <dt>"uncached"</dt> <dd>Do not cache the results of this query in the list cache.</dd> <dt>"score-function=<em>function</em>"</dt> <dd>Use the selected scoring function. The score function may be: <dl> <dt>linear</dt><dd>Use a linear function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>reciprocal</dt><dd>Use a reciprocal function of the difference between the specified query value and the matching value in the index to calculate a score for this range query.</dd> <dt>zero</dt><dd>This range query does not contribute to the score. This is the default.</dd> </dl> </dd> <dt>"slope-factor=<em>number</em>"</dt> <dd>Apply the given number as a scaling factor to the slope of the scoring function. The default is 1.0.</dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator, XsStringSeqExpr options);
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options);
     /**
     * Returns a <code>cts:query</code> matching triples with a triple index entry equal to the given values. Searches with the <code>cts:triple-range-query</code> constructor require the triple index; if the triple index is not configured, then an exception is thrown.
     * <p>
@@ -2381,7 +2398,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. The default is 1.0.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqExpr subject, XsAnyAtomicTypeSeqExpr predicate, XsAnyAtomicTypeSeqExpr object, XsStringSeqExpr operator, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr tripleRangeQuery(XsAnyAtomicTypeSeqVal subject, XsAnyAtomicTypeSeqVal predicate, XsAnyAtomicTypeSeqVal object, XsStringSeqVal operator, XsStringSeqVal options, XsDoubleVal weight);
     /**
     * Returns a query that matches all fragments.
     * <p>
@@ -2411,7 +2428,7 @@ public interface CtsExpr {
     * @param text  Some words or phrases to match. When multiple strings are specified, the query matches if any string matches.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text);
+    public CtsQueryExpr wordQuery(XsStringSeqVal text);
     /**
     * Returns a query matching text content containing a given phrase.
     * <p>
@@ -2429,7 +2446,7 @@ public interface CtsExpr {
     * @param options  Options to this query. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"case-sensitive"</dt> <dd>A case-sensitive query.</dd> <dt>"case-insensitive"</dt> <dd>A case-insensitive query.</dd> <dt>"diacritic-sensitive"</dt> <dd>A diacritic-sensitive query.</dd> <dt>"diacritic-insensitive"</dt> <dd>A diacritic-insensitive query.</dd> <dt>"punctuation-sensitive"</dt> <dd>A punctuation-sensitive query.</dd> <dt>"punctuation-insensitive"</dt> <dd>A punctuation-insensitive query.</dd> <dt>"whitespace-sensitive"</dt> <dd>A whitespace-sensitive query.</dd> <dt>"whitespace-insensitive"</dt> <dd>A whitespace-insensitive query.</dd> <dt>"stemmed"</dt> <dd>A stemmed query.</dd> <dt>"unstemmed"</dt> <dd>An unstemmed query.</dd> <dt>"wildcarded"</dt> <dd>A wildcarded query.</dd> <dt>"unwildcarded"</dt> <dd>An unwildcarded query.</dd> <dt>"exact"</dt> <dd>An exact match query. Shorthand for "case-sensitive", "diacritic-sensitive", "punctuation-sensitive", "whitespace-sensitive", "unstemmed", and "unwildcarded". </dd> <dt>"lang=<em>iso639code</em>"</dt> <dd>Specifies the language of the query. The <em>iso639code</em> code portion is case-insensitive, and uses the languages specified by <a>ISO 639</a>. The default is specified in the database configuration.</dd> <dt>"distance-weight=<em>number</em>"</dt> <dd>A weight applied based on the minimum distance between matches of this query. Higher weights add to the importance of proximity (as opposed to term matches) when the relevance order is calculated. The default value is 0.0 (no impact of proximity). The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. This parameter has no effect if the <code>word positions</code> index is not enabled. This parameter has no effect on searches that use score-simple, score-random, or score-zero (because those scoring algorithms do not consider term frequency, proximity is irrelevant). </dd> <dt>"min-occurs=<em>number</em>"</dt> <dd>Specifies the minimum number of occurrences required. If fewer that this number of words occur, the fragment does not match. The default is 1.</dd> <dt>"max-occurs=<em>number</em>"</dt> <dd>Specifies the maximum number of occurrences required. If more than this number of words occur, the fragment does not match. The default is unbounded.</dd> <dt>"synonym"</dt> <dd>Specifies that all of the terms in the $text parameter are considered synonyms for scoring purposes. The result is that occurrences of more than one of the synonyms are scored as if there are more occurrences of the same term (as opposed to having a separate term that contributes to score). </dd> <dt>"lexicon-expand=<em>value</em>"</dt> <dd>The <em>value</em> is one of <code>full</code>, <code>prefix-postfix</code>, <code>off</code>, or <code>heuristic</code> (the default is <code>heuristic</code>). An option with a value of <code>lexicon-expand=full</code> specifies that wildcards are resolved by expanding the pattern to words in a lexicon (if there is one available), and turning into a series of <code>cts:word-queries</code>, even if this takes a long time to evaluate. An option with a value of <code>lexicon-expand=prefix-postfix</code> specifies that wildcards are resolved by expanding the pattern to the pre- and postfixes of the words in the word lexicon (if there is one), and turning the query into a series of character queries, even if it takes a long time to evaluate. An option with a value of <code>lexicon-expand=off</code> specifies that wildcards are only resolved by looking up character patterns in the search pattern index, not in the lexicon. An option with a value of <code>lexicon-expand=heuristic</code>, which is the default, specifies that wildcards are resolved by using a series of internal rules, such as estimating the number of lexicon entries that need to be scanned, seeing if the estimate crosses certain thresholds, and (if appropriate), using another way besides lexicon expansion to resolve the query. </dd> <dt>"lexicon-expansion-limit=<em>number</em>"</dt> <dd>Specifies the limit for lexicon expansion. This puts a restriction on the number of lexicon expansions that can be performed. If the limit is exceeded, the server may raise an error depending on whether the "limit-check" option is set. The default value for this option will be 4096. </dd> <dt>"limit-check"</dt> <dd>Specifies that an error will be raised if the lexicon expansion exceeds the specified limit.</dd> <dt>"no-limit-check"</dt> <dd>Specifies that error will not be raised if the lexicon expansion exceeds the specified limit. The server will try to resolve the wildcard. </dd> </dl></blockquote>
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text, XsStringSeqExpr options);
+    public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options);
     /**
     * Returns a query matching text content containing a given phrase.
     * <p>
@@ -2449,7 +2466,7 @@ public interface CtsExpr {
     * @param weight  A weight for this query. Higher weights move search results up in the relevance order. The default is 1.0. The weight should be between 64 and -16. Weights greater than 64 will have the same effect as a weight of 64. Weights less than the absolute value of 0.0625 (between -0.0625 and 0.0625) are rounded to 0, which means that they do not contribute to the score.
     * @return  a CtsQueryExpr expression
     */
-    public CtsQueryExpr wordQuery(XsStringSeqExpr text, XsStringSeqExpr options, XsDoubleExpr weight);
+    public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
     public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
  
     public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
