@@ -123,6 +123,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex) {
+        if (regex == null) {
+            throw new IllegalArgumentException("regex parameter for analyzeString() cannot be null");
+        }
         return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex });
     }
 
@@ -135,6 +138,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ElementNodeExpr analyzeString(XsStringExpr in, XsStringExpr regex, XsStringExpr flags) {
+        if (regex == null) {
+            throw new IllegalArgumentException("regex parameter for analyzeString() cannot be null");
+        }
+        if (flags == null) {
+            throw new IllegalArgumentException("flags parameter for analyzeString() cannot be null");
+        }
         return new BaseTypeImpl.ElementNodeCallImpl("fn", "analyze-string", new Object[]{ in, regex, flags });
     }
 
@@ -201,6 +210,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsIntegerExpr compare(XsStringExpr comparand1, XsStringExpr comparand2, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for compare() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("fn", "compare", new Object[]{ comparand1, comparand2, collation });
     }
 
@@ -231,6 +243,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr contains(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for contains() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "contains", new Object[]{ parameter1, parameter2, collation });
     }
 
@@ -303,6 +318,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr deepEqual(ItemSeqExpr parameter1, ItemSeqExpr parameter2, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for deepEqual() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "deep-equal", new Object[]{ parameter1, parameter2, collation });
     }
 
@@ -327,6 +345,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsAnyAtomicTypeSeqExpr distinctValues(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for distinctValues() cannot be null");
+        }
         return new XsExprImpl.AnyAtomicTypeSeqCallImpl("fn", "distinct-values", new Object[]{ arg, collation });
     }
 
@@ -369,6 +390,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr endsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for endsWith() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "ends-with", new Object[]{ parameter1, parameter2, collation });
     }
 
@@ -405,6 +429,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDate() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture });
     }
 
@@ -417,6 +444,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDate() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language });
     }
 
@@ -429,6 +459,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDate() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language, calendar });
     }
 
@@ -441,6 +474,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDate(XsDateExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDate() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-date", new Object[]{ value, picture, language, calendar, country });
     }
 
@@ -453,6 +489,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDateTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture });
     }
 
@@ -465,6 +504,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDateTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language });
     }
 
@@ -477,6 +519,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDateTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language, calendar });
     }
 
@@ -489,6 +534,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatDateTime(XsDateTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatDateTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-dateTime", new Object[]{ value, picture, language, calendar, country });
     }
 
@@ -501,6 +549,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatNumber() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-number", new Object[]{ value, picture });
     }
 
@@ -513,6 +564,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr decimalFormatName) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatNumber() cannot be null");
+        }
+        if (decimalFormatName == null) {
+            throw new IllegalArgumentException("decimalFormatName parameter for formatNumber() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-number", new Object[]{ value, picture, decimalFormatName });
     }
 
@@ -525,6 +582,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture });
     }
 
@@ -537,6 +597,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language });
     }
 
@@ -549,6 +612,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language, calendar });
     }
 
@@ -561,6 +627,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr formatTime(XsTimeExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for formatTime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "format-time", new Object[]{ value, picture, language, calendar, country });
     }
 
@@ -603,6 +672,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringSeqExpr inScopePrefixes(ElementNodeExpr element) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for inScopePrefixes() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("fn", "in-scope-prefixes", new Object[]{ element });
     }
 
@@ -615,6 +687,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam) {
+        if (srchParam == null) {
+            throw new IllegalArgumentException("srchParam parameter for indexOf() cannot be null");
+        }
         return new XsExprImpl.IntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam });
     }
 
@@ -627,6 +702,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsIntegerSeqExpr indexOf(XsAnyAtomicTypeSeqExpr seqParam, XsAnyAtomicTypeExpr srchParam, XsStringExpr collationLiteral) {
+        if (srchParam == null) {
+            throw new IllegalArgumentException("srchParam parameter for indexOf() cannot be null");
+        }
+        if (collationLiteral == null) {
+            throw new IllegalArgumentException("collationLiteral parameter for indexOf() cannot be null");
+        }
         return new XsExprImpl.IntegerSeqCallImpl("fn", "index-of", new Object[]{ seqParam, srchParam, collationLiteral });
     }
 
@@ -639,6 +720,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ItemSeqExpr insertBefore(ItemSeqExpr target, XsIntegerExpr position, ItemSeqExpr inserts) {
+        if (position == null) {
+            throw new IllegalArgumentException("position parameter for insertBefore() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "insert-before", new Object[]{ target, position, inserts });
     }
 
@@ -681,6 +765,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for matches() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "matches", new Object[]{ input, pattern });
     }
 
@@ -693,6 +780,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr matches(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for matches() cannot be null");
+        }
+        if (flags == null) {
+            throw new IllegalArgumentException("flags parameter for matches() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "matches", new Object[]{ input, pattern, flags });
     }
 
@@ -711,6 +804,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsAnyAtomicTypeExpr max(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for max() cannot be null");
+        }
         return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "max", new Object[]{ arg, collation });
     }
 
@@ -729,6 +825,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsAnyAtomicTypeExpr min(XsAnyAtomicTypeSeqExpr arg, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for min() cannot be null");
+        }
         return new XsExprImpl.AnyAtomicTypeCallImpl("fn", "min", new Object[]{ arg, collation });
     }
 
@@ -783,6 +882,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsAnyURIExpr namespaceUriForPrefix(XsStringExpr prefix, ElementNodeExpr element) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for namespaceUriForPrefix() cannot be null");
+        }
         return new XsExprImpl.AnyURICallImpl("fn", "namespace-uri-for-prefix", new Object[]{ prefix, element });
     }
 
@@ -825,6 +927,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr normalizeUnicode(XsStringExpr arg, XsStringExpr normalizationForm) {
+        if (normalizationForm == null) {
+            throw new IllegalArgumentException("normalizationForm parameter for normalizeUnicode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "normalize-unicode", new Object[]{ arg, normalizationForm });
     }
 
@@ -855,6 +960,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsQNameExpr QName(XsStringExpr paramURI, XsStringExpr paramQName) {
+        if (paramQName == null) {
+            throw new IllegalArgumentException("paramQName parameter for QName() cannot be null");
+        }
         return new XsExprImpl.QNameCallImpl("fn", "QName", new Object[]{ paramURI, paramQName });
     }
 
@@ -867,6 +975,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ItemSeqExpr remove(ItemSeqExpr target, XsIntegerExpr position) {
+        if (position == null) {
+            throw new IllegalArgumentException("position parameter for remove() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "remove", new Object[]{ target, position });
     }
 
@@ -879,6 +990,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for replace() cannot be null");
+        }
+        if (replacement == null) {
+            throw new IllegalArgumentException("replacement parameter for replace() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement });
     }
 
@@ -891,12 +1008,24 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr replace(XsStringExpr input, XsStringExpr pattern, XsStringExpr replacement, XsStringExpr flags) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for replace() cannot be null");
+        }
+        if (replacement == null) {
+            throw new IllegalArgumentException("replacement parameter for replace() cannot be null");
+        }
+        if (flags == null) {
+            throw new IllegalArgumentException("flags parameter for replace() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "replace", new Object[]{ input, pattern, replacement, flags });
     }
 
     
     @Override
     public XsQNameExpr resolveQName(XsStringExpr qname, ElementNodeExpr element) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for resolveQName() cannot be null");
+        }
         return new XsExprImpl.QNameCallImpl("fn", "resolve-QName", new Object[]{ qname, element });
     }
 
@@ -909,6 +1038,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
+        if (base == null) {
+            throw new IllegalArgumentException("base parameter for resolveUri() cannot be null");
+        }
         return new XsExprImpl.AnyURICallImpl("fn", "resolve-uri", new Object[]{ relative, base });
     }
 
@@ -945,6 +1077,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsNumericExpr roundHalfToEven(XsNumericExpr arg, XsIntegerExpr precision) {
+        if (precision == null) {
+            throw new IllegalArgumentException("precision parameter for roundHalfToEven() cannot be null");
+        }
         return new XsExprImpl.NumericCallImpl("fn", "round-half-to-even", new Object[]{ arg, precision });
     }
 
@@ -987,6 +1122,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsBooleanExpr startsWith(XsStringExpr parameter1, XsStringExpr parameter2, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for startsWith() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("fn", "starts-with", new Object[]{ parameter1, parameter2, collation });
     }
 
@@ -1005,6 +1143,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr stringJoin(XsStringSeqExpr parameter1, XsStringExpr parameter2) {
+        if (parameter2 == null) {
+            throw new IllegalArgumentException("parameter2 parameter for stringJoin() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "string-join", new Object[]{ parameter1, parameter2 });
     }
 
@@ -1029,6 +1170,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc) {
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for subsequence() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "subsequence", new Object[]{ sourceSeq, startingLoc });
     }
 
@@ -1041,6 +1185,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public ItemSeqExpr subsequence(ItemSeqExpr sourceSeq, XsNumericExpr startingLoc, XsNumericExpr length) {
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for subsequence() cannot be null");
+        }
+        if (length == null) {
+            throw new IllegalArgumentException("length parameter for subsequence() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("fn", "subsequence", new Object[]{ sourceSeq, startingLoc, length });
     }
 
@@ -1053,6 +1203,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc) {
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for substring() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc });
     }
 
@@ -1065,6 +1218,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr substring(XsStringExpr sourceString, XsNumericExpr startingLoc, XsNumericExpr length) {
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for substring() cannot be null");
+        }
+        if (length == null) {
+            throw new IllegalArgumentException("length parameter for substring() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "substring", new Object[]{ sourceString, startingLoc, length });
     }
 
@@ -1089,6 +1248,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr substringAfter(XsStringExpr input, XsStringExpr after, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for substringAfter() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "substring-after", new Object[]{ input, after, collation });
     }
 
@@ -1113,6 +1275,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr substringBefore(XsStringExpr input, XsStringExpr before, XsStringExpr collation) {
+        if (collation == null) {
+            throw new IllegalArgumentException("collation parameter for substringBefore() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "substring-before", new Object[]{ input, before, collation });
     }
 
@@ -1167,6 +1332,9 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for tokenize() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern });
     }
 
@@ -1179,6 +1347,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringSeqExpr tokenize(XsStringExpr input, XsStringExpr pattern, XsStringExpr flags) {
+        if (pattern == null) {
+            throw new IllegalArgumentException("pattern parameter for tokenize() cannot be null");
+        }
+        if (flags == null) {
+            throw new IllegalArgumentException("flags parameter for tokenize() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("fn", "tokenize", new Object[]{ input, pattern, flags });
     }
 
@@ -1191,6 +1365,12 @@ class FnExprImpl implements FnExpr {
     
     @Override
     public XsStringExpr translate(XsStringExpr src, XsStringExpr mapString, XsStringExpr transString) {
+        if (mapString == null) {
+            throw new IllegalArgumentException("mapString parameter for translate() cannot be null");
+        }
+        if (transString == null) {
+            throw new IllegalArgumentException("transString parameter for translate() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("fn", "translate", new Object[]{ src, mapString, transString });
     }
 

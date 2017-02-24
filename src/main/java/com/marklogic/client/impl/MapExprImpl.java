@@ -47,18 +47,30 @@ class MapExprImpl implements MapExpr {
     
     @Override
     public XsBooleanExpr contains(MapMapExpr map, XsStringExpr key) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for contains() cannot be null");
+        }
+        if (key == null) {
+            throw new IllegalArgumentException("key parameter for contains() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("map", "contains", new Object[]{ map, key });
     }
 
     
     @Override
     public XsUnsignedIntExpr count(MapMapExpr map) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for count() cannot be null");
+        }
         return new XsExprImpl.UnsignedIntCallImpl("map", "count", new Object[]{ map });
     }
 
     
     @Override
     public MapMapExpr entry(XsStringExpr key, ItemSeqExpr value) {
+        if (key == null) {
+            throw new IllegalArgumentException("key parameter for entry() cannot be null");
+        }
         return new MapCallImpl("map", "entry", new Object[]{ key, value });
     }
 
@@ -71,12 +83,21 @@ class MapExprImpl implements MapExpr {
     
     @Override
     public ItemSeqExpr get(MapMapExpr map, XsStringExpr key) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for get() cannot be null");
+        }
+        if (key == null) {
+            throw new IllegalArgumentException("key parameter for get() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("map", "get", new Object[]{ map, key });
     }
 
     
     @Override
     public XsStringSeqExpr keys(MapMapExpr map) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for keys() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("map", "keys", new Object[]{ map });
     }
 
@@ -89,6 +110,9 @@ class MapExprImpl implements MapExpr {
     
     @Override
     public MapMapExpr map(ElementNodeExpr map) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for map() cannot be null");
+        }
         return new MapCallImpl("map", "map", new Object[]{ map });
     }
 

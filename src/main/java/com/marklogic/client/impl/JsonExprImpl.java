@@ -50,6 +50,9 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public JsonArrayExpr array(ElementNodeExpr array) {
+        if (array == null) {
+            throw new IllegalArgumentException("array parameter for array() cannot be null");
+        }
         return new ArrayCallImpl("json", "array", new Object[]{ array });
     }
 
@@ -62,6 +65,9 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public ItemSeqExpr arrayValues(JsonArrayExpr array) {
+        if (array == null) {
+            throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array });
     }
 
@@ -74,6 +80,9 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public ItemSeqExpr arrayValues(JsonArrayExpr array, XsBooleanExpr flatten) {
+        if (array == null) {
+            throw new IllegalArgumentException("array parameter for arrayValues() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("json", "array-values", new Object[]{ array, flatten });
     }
 
@@ -86,6 +95,9 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public JsonObjectExpr object(ElementNodeExpr map) {
+        if (map == null) {
+            throw new IllegalArgumentException("map parameter for object() cannot be null");
+        }
         return new ObjectCallImpl("json", "object", new Object[]{ map });
     }
 
@@ -110,6 +122,12 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc) {
+        if (array == null) {
+            throw new IllegalArgumentException("array parameter for subarray() cannot be null");
+        }
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for subarray() cannot be null");
+        }
         return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc });
     }
 
@@ -122,6 +140,15 @@ class JsonExprImpl implements JsonExpr {
     
     @Override
     public JsonArrayExpr subarray(JsonArrayExpr array, XsNumericExpr startingLoc, XsNumericExpr length) {
+        if (array == null) {
+            throw new IllegalArgumentException("array parameter for subarray() cannot be null");
+        }
+        if (startingLoc == null) {
+            throw new IllegalArgumentException("startingLoc parameter for subarray() cannot be null");
+        }
+        if (length == null) {
+            throw new IllegalArgumentException("length parameter for subarray() cannot be null");
+        }
         return new ArrayCallImpl("json", "subarray", new Object[]{ array, startingLoc, length });
     }
 

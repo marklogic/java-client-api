@@ -37,6 +37,9 @@ class SpellExprImpl implements SpellExpr {
     
     @Override
     public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
+        if (word == null) {
+            throw new IllegalArgumentException("word parameter for doubleMetaphone() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
     }
 
@@ -49,12 +52,21 @@ class SpellExprImpl implements SpellExpr {
     
     @Override
     public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
+        if (str1 == null) {
+            throw new IllegalArgumentException("str1 parameter for levenshteinDistance() cannot be null");
+        }
+        if (str2 == null) {
+            throw new IllegalArgumentException("str2 parameter for levenshteinDistance() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
     }
 
     
     @Override
     public XsStringExpr romanize(XsStringExpr string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for romanize() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("spell", "romanize", new Object[]{ string });
     }
 

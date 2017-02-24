@@ -53,24 +53,42 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr add64(XsUnsignedLongExpr x, XsUnsignedLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for add64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for add64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "add64", new Object[]{ x, y });
     }
 
     
     @Override
     public XsUnsignedLongExpr and64(XsUnsignedLongExpr x, XsUnsignedLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for and64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for and64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "and64", new Object[]{ x, y });
     }
 
     
     @Override
     public XsStringExpr base64Decode(XsStringExpr encoded) {
+        if (encoded == null) {
+            throw new IllegalArgumentException("encoded parameter for base64Decode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "base64-decode", new Object[]{ encoded });
     }
 
     
     @Override
     public XsStringExpr base64Encode(XsStringExpr plaintext) {
+        if (plaintext == null) {
+            throw new IllegalArgumentException("plaintext parameter for base64Encode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "base64-encode", new Object[]{ plaintext });
     }
 
@@ -83,6 +101,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsBooleanExpr castableAs(XsStringExpr namespaceUri, XsStringExpr localName, ItemExpr item) {
+        if (namespaceUri == null) {
+            throw new IllegalArgumentException("namespaceUri parameter for castableAs() cannot be null");
+        }
+        if (localName == null) {
+            throw new IllegalArgumentException("localName parameter for castableAs() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("xdmp", "castable-as", new Object[]{ namespaceUri, localName, item });
     }
 
@@ -95,12 +119,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr crypt(XsStringExpr password, XsStringExpr salt) {
+        if (password == null) {
+            throw new IllegalArgumentException("password parameter for crypt() cannot be null");
+        }
+        if (salt == null) {
+            throw new IllegalArgumentException("salt parameter for crypt() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "crypt", new Object[]{ password, salt });
     }
 
     
     @Override
     public XsStringExpr crypt2(XsStringExpr password) {
+        if (password == null) {
+            throw new IllegalArgumentException("password parameter for crypt2() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "crypt2", new Object[]{ password });
     }
 
@@ -113,6 +146,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr decodeFromNCName(XsStringExpr name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name parameter for decodeFromNCName() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "decode-from-NCName", new Object[]{ name });
     }
 
@@ -137,18 +173,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr diacriticLess(XsStringExpr string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for diacriticLess() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "diacritic-less", new Object[]{ string });
     }
 
     
     @Override
     public XsStringExpr elementContentType(ElementNodeExpr element) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for elementContentType() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "element-content-type", new Object[]{ element });
     }
 
     
     @Override
     public XsStringExpr encodeForNCName(XsStringExpr name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name parameter for encodeForNCName() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "encode-for-NCName", new Object[]{ name });
     }
 
@@ -251,6 +296,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public ItemSeqExpr fromJson(NodeExpr arg) {
+        if (arg == null) {
+            throw new IllegalArgumentException("arg parameter for fromJson() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("xdmp", "from-json", new Object[]{ arg });
     }
 
@@ -263,24 +311,39 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedIntExpr hash32(XsStringExpr string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for hash32() cannot be null");
+        }
         return new XsExprImpl.UnsignedIntCallImpl("xdmp", "hash32", new Object[]{ string });
     }
 
     
     @Override
     public XsUnsignedLongExpr hash64(XsStringExpr string) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for hash64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "hash64", new Object[]{ string });
     }
 
     
     @Override
     public XsIntegerExpr hexToInteger(XsStringExpr hex) {
+        if (hex == null) {
+            throw new IllegalArgumentException("hex parameter for hexToInteger() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("xdmp", "hex-to-integer", new Object[]{ hex });
     }
 
     
     @Override
     public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacMd5() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacMd5() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-md5", new Object[]{ secretkey, message });
     }
 
@@ -293,12 +356,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacMd5() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacMd5() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for hmacMd5() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-md5", new Object[]{ secretkey, message, encoding });
     }
 
     
     @Override
     public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha1() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha1() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha1", new Object[]{ secretkey, message });
     }
 
@@ -311,12 +389,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha1() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha1() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for hmacSha1() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha1", new Object[]{ secretkey, message, encoding });
     }
 
     
     @Override
     public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha256() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha256() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha256", new Object[]{ secretkey, message });
     }
 
@@ -329,12 +422,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha256() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha256() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for hmacSha256() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha256", new Object[]{ secretkey, message, encoding });
     }
 
     
     @Override
     public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha512() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha512() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha512", new Object[]{ secretkey, message });
     }
 
@@ -347,6 +455,15 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding) {
+        if (secretkey == null) {
+            throw new IllegalArgumentException("secretkey parameter for hmacSha512() cannot be null");
+        }
+        if (message == null) {
+            throw new IllegalArgumentException("message parameter for hmacSha512() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for hmacSha512() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "hmac-sha512", new Object[]{ secretkey, message, encoding });
     }
 
@@ -359,18 +476,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr integerToHex(XsIntegerExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for integerToHex() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "integer-to-hex", new Object[]{ val });
     }
 
     
     @Override
     public XsStringExpr integerToOctal(XsIntegerExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for integerToOctal() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "integer-to-octal", new Object[]{ val });
     }
 
     
     @Override
     public XsStringExpr keyFromQName(XsQNameExpr name) {
+        if (name == null) {
+            throw new IllegalArgumentException("name parameter for keyFromQName() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "key-from-QName", new Object[]{ name });
     }
 
@@ -383,12 +509,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr lshift64(XsUnsignedLongExpr x, XsLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for lshift64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for lshift64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "lshift64", new Object[]{ x, y });
     }
 
     
     @Override
     public XsStringExpr md5(ItemExpr data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for md5() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "md5", new Object[]{ data });
     }
 
@@ -401,6 +536,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr md5(ItemExpr data, XsStringExpr encoding) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for md5() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for md5() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "md5", new Object[]{ data, encoding });
     }
 
@@ -413,24 +554,39 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr mul64(XsUnsignedLongExpr x, XsUnsignedLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for mul64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for mul64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "mul64", new Object[]{ x, y });
     }
 
     
     @Override
     public XsStringSeqExpr nodeCollections(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodeCollections() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("xdmp", "node-collections", new Object[]{ node });
     }
 
     
     @Override
     public XsStringExpr nodeKind(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodeKind() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "node-kind", new Object[]{ node });
     }
 
     
     @Override
     public MapMapExpr nodeMetadata(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodeMetadata() cannot be null");
+        }
         return new MapExprImpl.MapCallImpl("xdmp", "node-metadata", new Object[]{ node });
     }
 
@@ -443,12 +599,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr nodeMetadataValue(NodeExpr uri, XsStringExpr keyName) {
+        if (uri == null) {
+            throw new IllegalArgumentException("uri parameter for nodeMetadataValue() cannot be null");
+        }
+        if (keyName == null) {
+            throw new IllegalArgumentException("keyName parameter for nodeMetadataValue() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "node-metadata-value", new Object[]{ uri, keyName });
     }
 
     
     @Override
     public ItemSeqExpr nodePermissions(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodePermissions() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("xdmp", "node-permissions", new Object[]{ node });
     }
 
@@ -461,30 +626,51 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public ItemSeqExpr nodePermissions(NodeExpr node, XsStringExpr outputKind) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodePermissions() cannot be null");
+        }
+        if (outputKind == null) {
+            throw new IllegalArgumentException("outputKind parameter for nodePermissions() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("xdmp", "node-permissions", new Object[]{ node, outputKind });
     }
 
     
     @Override
     public XsStringExpr nodeUri(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for nodeUri() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "node-uri", new Object[]{ node });
     }
 
     
     @Override
     public XsUnsignedLongExpr not64(XsUnsignedLongExpr x) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for not64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "not64", new Object[]{ x });
     }
 
     
     @Override
     public XsIntegerExpr octalToInteger(XsStringExpr octal) {
+        if (octal == null) {
+            throw new IllegalArgumentException("octal parameter for octalToInteger() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("xdmp", "octal-to-integer", new Object[]{ octal });
     }
 
     
     @Override
     public XsUnsignedLongExpr or64(XsUnsignedLongExpr x, XsUnsignedLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for or64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for or64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "or64", new Object[]{ x, y });
     }
 
@@ -497,6 +683,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseDateTime() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value });
     }
 
@@ -509,6 +701,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseDateTime() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language });
     }
 
@@ -521,6 +719,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseDateTime() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language, calendar });
     }
 
@@ -533,6 +737,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseDateTime() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseDateTime() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-dateTime", new Object[]{ picture, value, language, calendar, country });
     }
 
@@ -545,6 +755,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseYymmdd() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value });
     }
 
@@ -557,6 +773,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseYymmdd() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value, language });
     }
 
@@ -569,6 +791,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseYymmdd() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value, language, calendar });
     }
 
@@ -581,12 +809,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country) {
+        if (picture == null) {
+            throw new IllegalArgumentException("picture parameter for parseYymmdd() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for parseYymmdd() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "parse-yymmdd", new Object[]{ picture, value, language, calendar, country });
     }
 
     
     @Override
     public XsStringExpr path(NodeExpr node) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for path() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "path", new Object[]{ node });
     }
 
@@ -599,6 +836,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr path(NodeExpr node, XsBooleanExpr includeDocument) {
+        if (node == null) {
+            throw new IllegalArgumentException("node parameter for path() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "path", new Object[]{ node, includeDocument });
     }
 
@@ -629,6 +869,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsQNameExpr QNameFromKey(XsStringExpr key) {
+        if (key == null) {
+            throw new IllegalArgumentException("key parameter for QNameFromKey() cannot be null");
+        }
         return new XsExprImpl.QNameCallImpl("xdmp", "QName-from-key", new Object[]{ key });
     }
 
@@ -647,6 +890,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr random(XsUnsignedLongExpr max) {
+        if (max == null) {
+            throw new IllegalArgumentException("max parameter for random() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "random", new Object[]{ max });
     }
 
@@ -659,6 +905,9 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base) {
+        if (base == null) {
+            throw new IllegalArgumentException("base parameter for resolveUri() cannot be null");
+        }
         return new XsExprImpl.AnyURICallImpl("xdmp", "resolve-uri", new Object[]{ relative, base });
     }
 
@@ -671,12 +920,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr rshift64(XsUnsignedLongExpr x, XsLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for rshift64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for rshift64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "rshift64", new Object[]{ x, y });
     }
 
     
     @Override
     public XsStringExpr sha1(ItemExpr data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha1() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha1", new Object[]{ data });
     }
 
@@ -689,12 +947,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr sha1(ItemExpr data, XsStringExpr encoding) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha1() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for sha1() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha1", new Object[]{ data, encoding });
     }
 
     
     @Override
     public XsStringExpr sha256(ItemExpr data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha256() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha256", new Object[]{ data });
     }
 
@@ -707,12 +974,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr sha256(ItemExpr data, XsStringExpr encoding) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha256() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for sha256() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha256", new Object[]{ data, encoding });
     }
 
     
     @Override
     public XsStringExpr sha384(ItemExpr data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha384() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha384", new Object[]{ data });
     }
 
@@ -725,12 +1001,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr sha384(ItemExpr data, XsStringExpr encoding) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha384() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for sha384() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha384", new Object[]{ data, encoding });
     }
 
     
     @Override
     public XsStringExpr sha512(ItemExpr data) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha512() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha512", new Object[]{ data });
     }
 
@@ -743,12 +1028,24 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr sha512(ItemExpr data, XsStringExpr encoding) {
+        if (data == null) {
+            throw new IllegalArgumentException("data parameter for sha512() cannot be null");
+        }
+        if (encoding == null) {
+            throw new IllegalArgumentException("encoding parameter for sha512() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "sha512", new Object[]{ data, encoding });
     }
 
     
     @Override
     public XsUnsignedLongExpr step64(XsUnsignedLongExpr initial, XsUnsignedLongExpr step) {
+        if (initial == null) {
+            throw new IllegalArgumentException("initial parameter for step64() cannot be null");
+        }
+        if (step == null) {
+            throw new IllegalArgumentException("step parameter for step64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "step64", new Object[]{ initial, step });
     }
 
@@ -761,12 +1058,21 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr strftime(XsStringExpr format, XsDateTimeExpr value) {
+        if (format == null) {
+            throw new IllegalArgumentException("format parameter for strftime() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for strftime() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "strftime", new Object[]{ format, value });
     }
 
     
     @Override
     public XsDateTimeExpr timestampToWallclock(XsUnsignedLongExpr timestamp) {
+        if (timestamp == null) {
+            throw new IllegalArgumentException("timestamp parameter for timestampToWallclock() cannot be null");
+        }
         return new XsExprImpl.DateTimeCallImpl("xdmp", "timestamp-to-wallclock", new Object[]{ timestamp });
     }
 
@@ -779,18 +1085,27 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsQNameExpr type(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for type() cannot be null");
+        }
         return new XsExprImpl.QNameCallImpl("xdmp", "type", new Object[]{ value });
     }
 
     
     @Override
     public XsStringExpr urlDecode(XsStringExpr encoded) {
+        if (encoded == null) {
+            throw new IllegalArgumentException("encoded parameter for urlDecode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "url-decode", new Object[]{ encoded });
     }
 
     
     @Override
     public XsStringExpr urlEncode(XsStringExpr plaintext) {
+        if (plaintext == null) {
+            throw new IllegalArgumentException("plaintext parameter for urlEncode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "url-encode", new Object[]{ plaintext });
     }
 
@@ -803,12 +1118,18 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsStringExpr urlEncode(XsStringExpr plaintext, XsBooleanExpr noSpacePlus) {
+        if (plaintext == null) {
+            throw new IllegalArgumentException("plaintext parameter for urlEncode() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("xdmp", "url-encode", new Object[]{ plaintext, noSpacePlus });
     }
 
     
     @Override
     public XsUnsignedLongExpr wallclockToTimestamp(XsDateTimeExpr timestamp) {
+        if (timestamp == null) {
+            throw new IllegalArgumentException("timestamp parameter for wallclockToTimestamp() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "wallclock-to-timestamp", new Object[]{ timestamp });
     }
 
@@ -827,6 +1148,12 @@ class XdmpExprImpl implements XdmpExpr {
     
     @Override
     public XsUnsignedLongExpr xor64(XsUnsignedLongExpr x, XsUnsignedLongExpr y) {
+        if (x == null) {
+            throw new IllegalArgumentException("x parameter for xor64() cannot be null");
+        }
+        if (y == null) {
+            throw new IllegalArgumentException("y parameter for xor64() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("xdmp", "xor64", new Object[]{ x, y });
     }
 

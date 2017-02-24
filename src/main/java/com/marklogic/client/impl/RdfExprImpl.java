@@ -42,12 +42,21 @@ class RdfExprImpl extends RdfValueImpl implements RdfExpr {
     
     @Override
     public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for langString() cannot be null");
+        }
+        if (lang == null) {
+            throw new IllegalArgumentException("lang parameter for langString() cannot be null");
+        }
         return new LangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
     }
 
     
     @Override
     public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for langStringLanguage() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("rdf", "langString-language", new Object[]{ val });
     }
 

@@ -55,6 +55,9 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public SemBlankExpr bnode(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for bnode() cannot be null");
+        }
         return new BlankCallImpl("sem", "bnode", new Object[]{ value });
     }
 
@@ -67,12 +70,18 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public SemIriExpr datatype(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for datatype() cannot be null");
+        }
         return new IriCallImpl("sem", "datatype", new Object[]{ value });
     }
 
     
     @Override
     public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr) {
+        if (condition == null) {
+            throw new IllegalArgumentException("condition parameter for ifExpr() cannot be null");
+        }
         return new BaseTypeImpl.ItemSeqCallImpl("sem", "if", new Object[]{ condition, then, elseExpr });
     }
 
@@ -85,12 +94,21 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for invalid() cannot be null");
+        }
+        if (datatype == null) {
+            throw new IllegalArgumentException("datatype parameter for invalid() cannot be null");
+        }
         return new InvalidCallImpl("sem", "invalid", new Object[]{ string, datatype });
     }
 
     
     @Override
     public SemIriExpr invalidDatatype(SemInvalidExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for invalidDatatype() cannot be null");
+        }
         return new IriCallImpl("sem", "invalid-datatype", new Object[]{ val });
     }
 
@@ -103,36 +121,54 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public XsQNameExpr iriToQName(XsStringExpr arg1) {
+        if (arg1 == null) {
+            throw new IllegalArgumentException("arg1 parameter for iriToQName() cannot be null");
+        }
         return new XsExprImpl.QNameCallImpl("sem", "iri-to-QName", new Object[]{ arg1 });
     }
 
     
     @Override
     public XsBooleanExpr isBlank(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for isBlank() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "isBlank", new Object[]{ value });
     }
 
     
     @Override
     public XsBooleanExpr isIRI(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for isIRI() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "isIRI", new Object[]{ value });
     }
 
     
     @Override
     public XsBooleanExpr isLiteral(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for isLiteral() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "isLiteral", new Object[]{ value });
     }
 
     
     @Override
     public XsBooleanExpr isNumeric(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for isNumeric() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "isNumeric", new Object[]{ value });
     }
 
     
     @Override
     public XsStringExpr lang(XsAnyAtomicTypeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for lang() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sem", "lang", new Object[]{ value });
     }
 
@@ -145,12 +181,21 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public XsBooleanExpr langMatches(XsStringExpr langTag, XsStringExpr langRange) {
+        if (langTag == null) {
+            throw new IllegalArgumentException("langTag parameter for langMatches() cannot be null");
+        }
+        if (langRange == null) {
+            throw new IllegalArgumentException("langRange parameter for langMatches() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "langMatches", new Object[]{ langTag, langRange });
     }
 
     
     @Override
     public SemIriExpr QNameToIri(XsQNameExpr arg1) {
+        if (arg1 == null) {
+            throw new IllegalArgumentException("arg1 parameter for QNameToIri() cannot be null");
+        }
         return new IriCallImpl("sem", "QName-to-iri", new Object[]{ arg1 });
     }
 
@@ -169,12 +214,21 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, XsAnyAtomicTypeExpr b) {
+        if (a == null) {
+            throw new IllegalArgumentException("a parameter for sameTerm() cannot be null");
+        }
+        if (b == null) {
+            throw new IllegalArgumentException("b parameter for sameTerm() cannot be null");
+        }
         return new XsExprImpl.BooleanCallImpl("sem", "sameTerm", new Object[]{ a, b });
     }
 
     
     @Override
     public XsStringExpr timezoneString(XsDateTimeExpr value) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for timezoneString() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sem", "timezone-string", new Object[]{ value });
     }
 
@@ -187,6 +241,12 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, SemIriExpr datatype) {
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for typedLiteral() cannot be null");
+        }
+        if (datatype == null) {
+            throw new IllegalArgumentException("datatype parameter for typedLiteral() cannot be null");
+        }
         return new XsExprImpl.AnyAtomicTypeCallImpl("sem", "typed-literal", new Object[]{ value, datatype });
     }
 
@@ -199,12 +259,21 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     
     @Override
     public SemUnknownExpr unknown(XsStringExpr string, SemIriExpr datatype) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for unknown() cannot be null");
+        }
+        if (datatype == null) {
+            throw new IllegalArgumentException("datatype parameter for unknown() cannot be null");
+        }
         return new UnknownCallImpl("sem", "unknown", new Object[]{ string, datatype });
     }
 
     
     @Override
     public SemIriExpr unknownDatatype(SemUnknownExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for unknownDatatype() cannot be null");
+        }
         return new IriCallImpl("sem", "unknown-datatype", new Object[]{ val });
     }
 

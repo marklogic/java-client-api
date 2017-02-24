@@ -55,18 +55,42 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public ItemExpr dateadd(XsStringExpr datepart, XsIntExpr number, ItemExpr date) {
+        if (datepart == null) {
+            throw new IllegalArgumentException("datepart parameter for dateadd() cannot be null");
+        }
+        if (number == null) {
+            throw new IllegalArgumentException("number parameter for dateadd() cannot be null");
+        }
+        if (date == null) {
+            throw new IllegalArgumentException("date parameter for dateadd() cannot be null");
+        }
         return new BaseTypeImpl.ItemCallImpl("sql", "dateadd", new Object[]{ datepart, number, date });
     }
 
     
     @Override
     public XsIntegerExpr datediff(XsStringExpr datepart, ItemExpr startdate, ItemExpr enddate) {
+        if (datepart == null) {
+            throw new IllegalArgumentException("datepart parameter for datediff() cannot be null");
+        }
+        if (startdate == null) {
+            throw new IllegalArgumentException("startdate parameter for datediff() cannot be null");
+        }
+        if (enddate == null) {
+            throw new IllegalArgumentException("enddate parameter for datediff() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("sql", "datediff", new Object[]{ datepart, startdate, enddate });
     }
 
     
     @Override
     public XsIntegerExpr datepart(XsStringExpr datepart, ItemExpr date) {
+        if (datepart == null) {
+            throw new IllegalArgumentException("datepart parameter for datepart() cannot be null");
+        }
+        if (date == null) {
+            throw new IllegalArgumentException("date parameter for datepart() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("sql", "datepart", new Object[]{ datepart, date });
     }
 
@@ -97,6 +121,18 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsStringExpr insert(XsStringExpr str, XsNumericExpr start, XsNumericExpr length, XsStringExpr str2) {
+        if (str == null) {
+            throw new IllegalArgumentException("str parameter for insert() cannot be null");
+        }
+        if (start == null) {
+            throw new IllegalArgumentException("start parameter for insert() cannot be null");
+        }
+        if (length == null) {
+            throw new IllegalArgumentException("length parameter for insert() cannot be null");
+        }
+        if (str2 == null) {
+            throw new IllegalArgumentException("str2 parameter for insert() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "insert", new Object[]{ str, start, length, str2 });
     }
 
@@ -109,6 +145,12 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsUnsignedIntExpr instr(XsStringExpr str, XsStringExpr n) {
+        if (str == null) {
+            throw new IllegalArgumentException("str parameter for instr() cannot be null");
+        }
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for instr() cannot be null");
+        }
         return new XsExprImpl.UnsignedIntCallImpl("sql", "instr", new Object[]{ str, n });
     }
 
@@ -121,12 +163,18 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsStringExpr left(ItemSeqExpr str, XsNumericExpr n) {
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for left() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "left", new Object[]{ str, n });
     }
 
     
     @Override
     public XsStringExpr ltrim(XsStringExpr str) {
+        if (str == null) {
+            throw new IllegalArgumentException("str parameter for ltrim() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "ltrim", new Object[]{ str });
     }
 
@@ -163,6 +211,9 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsUnsignedLongExpr rand(XsUnsignedLongExpr n) {
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for rand() cannot be null");
+        }
         return new XsExprImpl.UnsignedLongCallImpl("sql", "rand", new Object[]{ n });
     }
 
@@ -175,6 +226,9 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsStringExpr repeat(ItemSeqExpr str, XsNumericExpr n) {
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for repeat() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "repeat", new Object[]{ str, n });
     }
 
@@ -187,12 +241,18 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsStringExpr right(ItemSeqExpr str, XsNumericExpr n) {
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for right() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "right", new Object[]{ str, n });
     }
 
     
     @Override
     public XsStringExpr rtrim(XsStringExpr str) {
+        if (str == null) {
+            throw new IllegalArgumentException("str parameter for rtrim() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "rtrim", new Object[]{ str });
     }
 
@@ -211,6 +271,9 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public XsStringExpr space(XsNumericExpr n) {
+        if (n == null) {
+            throw new IllegalArgumentException("n parameter for space() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "space", new Object[]{ n });
     }
 
@@ -223,18 +286,39 @@ class SqlExprImpl implements SqlExpr {
     
     @Override
     public ItemExpr timestampadd(XsStringExpr dateTimeType, XsIntExpr value, ItemExpr timestamp) {
+        if (dateTimeType == null) {
+            throw new IllegalArgumentException("dateTimeType parameter for timestampadd() cannot be null");
+        }
+        if (value == null) {
+            throw new IllegalArgumentException("value parameter for timestampadd() cannot be null");
+        }
+        if (timestamp == null) {
+            throw new IllegalArgumentException("timestamp parameter for timestampadd() cannot be null");
+        }
         return new BaseTypeImpl.ItemCallImpl("sql", "timestampadd", new Object[]{ dateTimeType, value, timestamp });
     }
 
     
     @Override
     public XsIntegerExpr timestampdiff(XsStringExpr arg1, ItemExpr arg2, ItemExpr arg3) {
+        if (arg1 == null) {
+            throw new IllegalArgumentException("arg1 parameter for timestampdiff() cannot be null");
+        }
+        if (arg2 == null) {
+            throw new IllegalArgumentException("arg2 parameter for timestampdiff() cannot be null");
+        }
+        if (arg3 == null) {
+            throw new IllegalArgumentException("arg3 parameter for timestampdiff() cannot be null");
+        }
         return new XsExprImpl.IntegerCallImpl("sql", "timestampdiff", new Object[]{ arg1, arg2, arg3 });
     }
 
     
     @Override
     public XsStringExpr trim(XsStringExpr str) {
+        if (str == null) {
+            throw new IllegalArgumentException("str parameter for trim() cannot be null");
+        }
         return new XsExprImpl.StringCallImpl("sql", "trim", new Object[]{ str });
     }
 

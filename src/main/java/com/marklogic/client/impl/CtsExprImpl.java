@@ -58,6 +58,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr andNotQuery(CtsQueryExpr positiveQuery, CtsQueryExpr negativeQuery) {
+        if (positiveQuery == null) {
+            throw new IllegalArgumentException("positiveQuery parameter for andNotQuery() cannot be null");
+        }
+        if (negativeQuery == null) {
+            throw new IllegalArgumentException("negativeQuery parameter for andNotQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "and-not-query", new Object[]{ positiveQuery, negativeQuery });
     }
 
@@ -88,6 +94,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr boostQuery(CtsQueryExpr matchingQuery, CtsQueryExpr boostingQuery) {
+        if (matchingQuery == null) {
+            throw new IllegalArgumentException("matchingQuery parameter for boostQuery() cannot be null");
+        }
+        if (boostingQuery == null) {
+            throw new IllegalArgumentException("boostingQuery parameter for boostQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "boost-query", new Object[]{ matchingQuery, boostingQuery });
     }
 
@@ -100,12 +112,30 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsBoxExpr box(XsDoubleExpr south, XsDoubleExpr west, XsDoubleExpr north, XsDoubleExpr east) {
+        if (south == null) {
+            throw new IllegalArgumentException("south parameter for box() cannot be null");
+        }
+        if (west == null) {
+            throw new IllegalArgumentException("west parameter for box() cannot be null");
+        }
+        if (north == null) {
+            throw new IllegalArgumentException("north parameter for box() cannot be null");
+        }
+        if (east == null) {
+            throw new IllegalArgumentException("east parameter for box() cannot be null");
+        }
         return new BoxCallImpl("cts", "box", new Object[]{ south, west, north, east });
     }
 
     
     @Override
     public CtsCircleExpr circle(XsDoubleExpr radius, CtsPointExpr center) {
+        if (radius == null) {
+            throw new IllegalArgumentException("radius parameter for circle() cannot be null");
+        }
+        if (center == null) {
+            throw new IllegalArgumentException("center parameter for circle() cannot be null");
+        }
         return new CircleCallImpl("cts", "circle", new Object[]{ radius, center });
     }
 
@@ -166,6 +196,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr documentFragmentQuery(CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for documentFragmentQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "document-fragment-query", new Object[]{ query });
     }
 
@@ -226,6 +259,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-attribute-range-query", new Object[]{ elementName, attributeName, operator, value });
     }
 
@@ -238,6 +274,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-attribute-range-query", new Object[]{ elementName, attributeName, operator, value, options });
     }
 
@@ -250,6 +289,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementAttributeRangeQuery(XsQNameSeqExpr elementName, XsQNameSeqExpr attributeName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementAttributeRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-attribute-range-query", new Object[]{ elementName, attributeName, operator, value, options, weight });
     }
 
@@ -262,6 +304,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for elementAttributeReference() cannot be null");
+        }
+        if (attribute == null) {
+            throw new IllegalArgumentException("attribute parameter for elementAttributeReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "element-attribute-reference", new Object[]{ element, attribute });
     }
 
@@ -274,6 +322,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementAttributeReference(XsQNameExpr element, XsQNameExpr attribute, XsStringSeqExpr options) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for elementAttributeReference() cannot be null");
+        }
+        if (attribute == null) {
+            throw new IllegalArgumentException("attribute parameter for elementAttributeReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "element-attribute-reference", new Object[]{ element, attribute, options });
     }
 
@@ -466,6 +520,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementQuery(XsQNameSeqExpr elementName, CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for elementQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-query", new Object[]{ elementName, query });
     }
 
@@ -478,6 +535,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-range-query", new Object[]{ elementName, operator, value });
     }
 
@@ -490,6 +550,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-range-query", new Object[]{ elementName, operator, value, options });
     }
 
@@ -502,6 +565,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr elementRangeQuery(XsQNameSeqExpr elementName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for elementRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "element-range-query", new Object[]{ elementName, operator, value, options, weight });
     }
 
@@ -514,6 +580,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementReference(XsQNameExpr element) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for elementReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "element-reference", new Object[]{ element });
     }
 
@@ -526,6 +595,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr elementReference(XsQNameExpr element, XsStringSeqExpr options) {
+        if (element == null) {
+            throw new IllegalArgumentException("element parameter for elementReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "element-reference", new Object[]{ element, options });
     }
 
@@ -628,6 +700,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "field-range-query", new Object[]{ fieldName, operator, value });
     }
 
@@ -640,6 +715,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "field-range-query", new Object[]{ fieldName, operator, value, options });
     }
 
@@ -652,6 +730,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr fieldRangeQuery(XsStringSeqExpr fieldName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for fieldRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "field-range-query", new Object[]{ fieldName, operator, value, options, weight });
     }
 
@@ -664,6 +745,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr fieldReference(XsStringExpr field) {
+        if (field == null) {
+            throw new IllegalArgumentException("field parameter for fieldReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "field-reference", new Object[]{ field });
     }
 
@@ -676,6 +760,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr fieldReference(XsStringExpr field, XsStringSeqExpr options) {
+        if (field == null) {
+            throw new IllegalArgumentException("field parameter for fieldReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "field-reference", new Object[]{ field, options });
     }
 
@@ -868,6 +955,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "json-property-range-query", new Object[]{ propertyName, operator, value });
     }
 
@@ -880,6 +970,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "json-property-range-query", new Object[]{ propertyName, operator, value, options });
     }
 
@@ -892,6 +985,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyRangeQuery(XsStringSeqExpr propertyName, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for jsonPropertyRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "json-property-range-query", new Object[]{ propertyName, operator, value, options, weight });
     }
 
@@ -904,6 +1000,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr jsonPropertyReference(XsStringExpr property) {
+        if (property == null) {
+            throw new IllegalArgumentException("property parameter for jsonPropertyReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "json-property-reference", new Object[]{ property });
     }
 
@@ -916,6 +1015,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr jsonPropertyReference(XsStringExpr property, XsStringSeqExpr options) {
+        if (property == null) {
+            throw new IllegalArgumentException("property parameter for jsonPropertyReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "json-property-reference", new Object[]{ property, options });
     }
 
@@ -928,6 +1030,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr jsonPropertyScopeQuery(XsStringSeqExpr propertyName, CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for jsonPropertyScopeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "json-property-scope-query", new Object[]{ propertyName, query });
     }
 
@@ -1006,6 +1111,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr locksFragmentQuery(CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for locksFragmentQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "locks-fragment-query", new Object[]{ query });
     }
 
@@ -1018,6 +1126,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection) {
+        if (temporalCollection == null) {
+            throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "lsqt-query", new Object[]{ temporalCollection });
     }
 
@@ -1030,6 +1141,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp) {
+        if (temporalCollection == null) {
+            throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "lsqt-query", new Object[]{ temporalCollection, timestamp });
     }
 
@@ -1042,6 +1156,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options) {
+        if (temporalCollection == null) {
+            throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "lsqt-query", new Object[]{ temporalCollection, timestamp, options });
     }
 
@@ -1054,6 +1171,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr lsqtQuery(XsStringExpr temporalCollection, XsDateTimeExpr timestamp, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (temporalCollection == null) {
+            throw new IllegalArgumentException("temporalCollection parameter for lsqtQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "lsqt-query", new Object[]{ temporalCollection, timestamp, options, weight });
     }
 
@@ -1108,12 +1228,21 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr notInQuery(CtsQueryExpr positiveQuery, CtsQueryExpr negativeQuery) {
+        if (positiveQuery == null) {
+            throw new IllegalArgumentException("positiveQuery parameter for notInQuery() cannot be null");
+        }
+        if (negativeQuery == null) {
+            throw new IllegalArgumentException("negativeQuery parameter for notInQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "not-in-query", new Object[]{ positiveQuery, negativeQuery });
     }
 
     
     @Override
     public CtsQueryExpr notQuery(CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for notQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "not-query", new Object[]{ query });
     }
 
@@ -1186,6 +1315,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "path-range-query", new Object[]{ pathExpression, operator, value });
     }
 
@@ -1198,6 +1330,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "path-range-query", new Object[]{ pathExpression, operator, value, options });
     }
 
@@ -1210,6 +1345,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr pathRangeQuery(XsStringSeqExpr pathExpression, XsStringExpr operator, XsAnyAtomicTypeSeqExpr value, XsStringSeqExpr options, XsDoubleExpr weight) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for pathRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "path-range-query", new Object[]{ pathExpression, operator, value, options, weight });
     }
 
@@ -1222,6 +1360,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(XsStringExpr pathExpression) {
+        if (pathExpression == null) {
+            throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression });
     }
 
@@ -1234,6 +1375,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options) {
+        if (pathExpression == null) {
+            throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression, options });
     }
 
@@ -1246,6 +1390,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsReferenceExpr pathReference(XsStringExpr pathExpression, XsStringSeqExpr options, MapMapExpr map) {
+        if (pathExpression == null) {
+            throw new IllegalArgumentException("pathExpression parameter for pathReference() cannot be null");
+        }
         return new ReferenceCallImpl("cts", "path-reference", new Object[]{ pathExpression, options, map });
     }
 
@@ -1258,6 +1405,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsPeriodExpr period(XsDateTimeExpr start, XsDateTimeExpr end) {
+        if (start == null) {
+            throw new IllegalArgumentException("start parameter for period() cannot be null");
+        }
+        if (end == null) {
+            throw new IllegalArgumentException("end parameter for period() cannot be null");
+        }
         return new PeriodCallImpl("cts", "period", new Object[]{ start, end });
     }
 
@@ -1270,6 +1423,15 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2) {
+        if (axis1 == null) {
+            throw new IllegalArgumentException("axis1 parameter for periodCompareQuery() cannot be null");
+        }
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for periodCompareQuery() cannot be null");
+        }
+        if (axis2 == null) {
+            throw new IllegalArgumentException("axis2 parameter for periodCompareQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "period-compare-query", new Object[]{ axis1, operator, axis2 });
     }
 
@@ -1282,6 +1444,15 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodCompareQuery(XsStringExpr axis1, XsStringExpr operator, XsStringExpr axis2, XsStringSeqExpr options) {
+        if (axis1 == null) {
+            throw new IllegalArgumentException("axis1 parameter for periodCompareQuery() cannot be null");
+        }
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for periodCompareQuery() cannot be null");
+        }
+        if (axis2 == null) {
+            throw new IllegalArgumentException("axis2 parameter for periodCompareQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "period-compare-query", new Object[]{ axis1, operator, axis2, options });
     }
 
@@ -1294,6 +1465,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "period-range-query", new Object[]{ axisName, operator });
     }
 
@@ -1306,6 +1480,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "period-range-query", new Object[]{ axisName, operator, period });
     }
 
@@ -1318,6 +1495,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr periodRangeQuery(XsStringSeqExpr axisName, XsStringExpr operator, CtsPeriodSeqExpr period, XsStringSeqExpr options) {
+        if (operator == null) {
+            throw new IllegalArgumentException("operator parameter for periodRangeQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "period-range-query", new Object[]{ axisName, operator, period, options });
     }
 
@@ -1330,6 +1510,12 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsPointExpr point(XsDoubleExpr latitude, XsDoubleExpr longitude) {
+        if (latitude == null) {
+            throw new IllegalArgumentException("latitude parameter for point() cannot be null");
+        }
+        if (longitude == null) {
+            throw new IllegalArgumentException("longitude parameter for point() cannot be null");
+        }
         return new PointCallImpl("cts", "point", new Object[]{ latitude, longitude });
     }
 
@@ -1342,12 +1528,18 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public CtsQueryExpr propertiesFragmentQuery(CtsQueryExpr query) {
+        if (query == null) {
+            throw new IllegalArgumentException("query parameter for propertiesFragmentQuery() cannot be null");
+        }
         return new QueryCallImpl("cts", "properties-fragment-query", new Object[]{ query });
     }
 
     
     @Override
     public XsStringSeqExpr stem(XsStringExpr text) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for stem() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "stem", new Object[]{ text });
     }
 
@@ -1360,6 +1552,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for stem() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "stem", new Object[]{ text, language });
     }
 
@@ -1372,12 +1567,18 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language, XsStringExpr partOfSpeech) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for stem() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "stem", new Object[]{ text, language, partOfSpeech });
     }
 
     
     @Override
     public XsStringSeqExpr tokenize(XsStringExpr text) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "tokenize", new Object[]{ text });
     }
 
@@ -1390,6 +1591,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "tokenize", new Object[]{ text, language });
     }
 
@@ -1402,6 +1606,9 @@ class CtsExprImpl implements CtsExpr {
     
     @Override
     public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language, XsStringExpr field) {
+        if (text == null) {
+            throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
+        }
         return new XsExprImpl.StringSeqCallImpl("cts", "tokenize", new Object[]{ text, language, field });
     }
 
