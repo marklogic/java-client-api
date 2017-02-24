@@ -1400,7 +1400,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 	{
 		System.out.println("In testFromTriplesWithbindParam method");
 
-		/*// Create a new Plan.
+		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
@@ -1455,7 +1455,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		rowMgr.resultDoc(player_plan, jacksonHandle);
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
-		assertTrue("No data should have been returned", jsonResults == null);	*/
+		assertTrue("No data should have been returned", jsonResults == null);	
 	}
 	
 	@AfterClass
