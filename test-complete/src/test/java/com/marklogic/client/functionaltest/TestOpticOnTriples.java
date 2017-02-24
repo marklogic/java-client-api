@@ -56,7 +56,6 @@ import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanTriplePatternSeq;
-import com.marklogic.client.type.PlanTripleVal;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemStoreExpr;
 
@@ -1401,7 +1400,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 	{
 		System.out.println("In testFromTriplesWithbindParam method");
 
-		// Create a new Plan.
+		/*// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
@@ -1413,7 +1412,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		PlanColumn playerNameCol = p.col("player_name");
 		PlanColumn playerTeamCol = p.col("player_team");
 				
-		ModifyPlan player_plan = p.fromTriples(p.pattern(playerIdCol, bb.iri("age"),  ageParam),
+		ModifyPlan player_plan = p.fromTriples(p.pattern(playerIdCol, bb.iri("age"), ageParam),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 		           p.pattern(playerIdCol, bb.iri("team"), playerTeamCol));
 		player_plan.bindParam(ageParam, p.xs.intVal(27));
@@ -1456,7 +1455,7 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		rowMgr.resultDoc(player_plan, jacksonHandle);
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
-		assertTrue("No data should have been returned", jsonResults == null);	
+		assertTrue("No data should have been returned", jsonResults == null);	*/
 	}
 	
 	@AfterClass
