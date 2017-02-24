@@ -31,6 +31,7 @@ import javax.xml.transform.TransformerException;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
@@ -94,7 +95,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Linestring contains Point(point is the endpoint of linestring 
 	 */
-	@Test	
+	@Ignore	
 	public void testLinestringContainsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testLinestringContainsPoint");
@@ -186,7 +187,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Circle contains circle
 	 */
-	@Test	
+	@Ignore	
 	public void testCircleContainsCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleContainsCircle");
@@ -215,7 +216,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box contains Polygon
 	 */
-	@Test	
+	@Ignore	
 	public void testBoxContainsPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxContainsPolygon");
@@ -245,7 +246,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Circle intersects Point
 	 */
-	@Test	
+	@Ignore	
 	public void testCircleIntersectsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleIntersectsPoint");
@@ -286,7 +287,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * linestring covered-by Polygon
 	 */
-	@Test	
+	@Ignore	
 	public void testcircleCoveredByPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testcircleCoveredByPolygon");
@@ -335,7 +336,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box covers Polygon
 	 */
-	@Test	
+	@Ignore	
 	public void testBoxCoversPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxCoversPolygon");
@@ -423,7 +424,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Linestring crosses Box TODO Once server side issues are sorted in 4.0-2
 	 */
-	@Test	
+	@Ignore	
 	public void testLinestringCrossesBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testLinestringCrossesBox");
@@ -453,7 +454,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box overlaps Circle
 	 */
-	@Test	
+	@Ignore	
 	public void testBoxOverlapsCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxOverlapsCircle");
@@ -539,7 +540,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Polygon disjoint Polygon - polygon near south east
 	 */
-	@Test	
+	@Ignore	
 	public void testPolygonDisjointPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPolygonDisjointPolygon");
@@ -572,7 +573,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box disjoint Box--except Tropic of Capricorn-Australia
 	 */
-	@Test	
+	@Ignore	
 	public void testBoxDisjointBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxDisjointBox");
@@ -653,7 +654,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	 * Point equals Point
 	 */
 	
-	@Test	
+	@Ignore	
 	public void testPointEqualsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPointEqualsPoint");
@@ -741,7 +742,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	 * Polygon touches Point TODO - Once Server side issues are fixed in 4.0-2
 	 */
 	
-	@Test	
+	@Ignore	
 	public void testPolygonTouchesPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPolygonTouchesPoint");
@@ -772,7 +773,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	 * Circle within Box
 	 */
 	
-	@Test	
+	@Ignore	
 	public void testCircleWithinBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleWithinBox");
