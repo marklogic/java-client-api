@@ -45,8 +45,8 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 
 	private static String dbName = "TestPOJOQueryBuilderValueSearchDB";
 	private static String [] fNames = {"TestPOJOQueryBuilderValueSearchDB-1"};
-	
-	
+
+
 	private  DatabaseClient client ;
 
 	@BeforeClass
@@ -60,20 +60,19 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		System.out.println("In tear down" );
 		cleanupRESTServer(dbName, fNames);
 	}
+
 	@Before
 	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-
-
 	}
+
 	@After
 	public void tearDown() throws Exception {
 		// release client
 		client.release();
-
 	}
 
-	public Artifact getArtifact(int counter){
+	public Artifact getArtifact(int counter) {
 
 		Artifact cogs = new Artifact();
 		cogs.setId(counter);
@@ -117,16 +116,16 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		cogs.setInventory(1000+counter);
 		return cogs;
 	}
-	public void validateArtifact(Artifact art)
-	{
+
+	public void validateArtifact(Artifact art) {
 		assertNotNull("Artifact object should never be Null",art);
 		assertNotNull("Id should never be Null",art.id);
 		assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
 	}
-	public void loadSimplePojos(PojoRepository products)
-	{
-		for(int i=1;i<111;i++){
-			if(i%2==0){
+
+	public void loadSimplePojos(PojoRepository products) {
+		for(int i=1;i<111;i++) {
+			if(i%2==0) {
 				products.write(this.getArtifact(i),"even","numbers");
 			}
 			else {
@@ -134,6 +133,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 			}
 		}
 	}
+
 	// Below scenario is to test the value query with numbers return correct results
 	@Test
 	public void testPOJOValueSearchWithNumbers() {
@@ -152,8 +152,8 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		assertEquals("total no of pages",5,p.getTotalPages());
 		System.out.println(jh.get().toString());
 		long pageNo=1,count=0;
-		do{
-			count =0;
+		do {
+			count = 0;
 			p = products.search(qd,pageNo);
 			while(p.hasNext()){
 				Artifact a =p.next();
@@ -169,6 +169,7 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
 		assertEquals("Total results from search handle",22,jh.get().path("total").asInt());
 	}
+
 	//Below scenario is to test value query with wild cards in strings
 	@Test
 	public void testPOJOValueSearchWithStrings() {
@@ -183,7 +184,6 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		products.setPageLength(5);
 		p = products.search(qd, 1,jh);
 
-//		assertEquals("total no of pages",3,p.getTotalPages()); since page methods are estimates
 		System.out.println(jh.get().toString());
 		long pageNo=1,count=0;
 		do{
@@ -201,8 +201,8 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		assertEquals("page length from search handle",5,jh.get().path("results").size());
-//		assertEquals("Total results from search handle",11,jh.get().path("total").asInt());
 	}
+
 	//Below scenario is verifying value query from PojoBuilder that matches to no document
 	//Issue 127 is logged for the below scenario
 	@Test
@@ -239,7 +239,6 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		assertEquals("page number after the loop",1,p.getPageNumber());
 		assertEquals("total no of pages",0,p.getTotalPages());
 		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
-//		assertEquals("Total results from search handle",10,jh.get().path("total").asInt());
 	}
 
 	//Below scenario is to test word query without options
@@ -248,7 +247,6 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
 		this.loadSimplePojos(products);
-		//			String[] searchOptions ={"case-sensitive","min-occurs=2"};
 		PojoQueryBuilder qb = products.getQueryBuilder();
 		String[] searchNames = {"counter","special"};
 		PojoQueryDefinition qd = qb.word("name",searchNames);
@@ -296,7 +294,6 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 		p = products.search(qd, 1,jh);
 		setupServerRequestLogging(client,false);
 		System.out.println(jh.get().toString()+ p.getTotalPages());
-//		assertEquals("total no of pages",3,p.getTotalPages());
 
 		long pageNo=1,count=0;
 		do{
@@ -308,63 +305,130 @@ public class TestPOJOQueryBuilderValueQuery extends BasicJavaClientREST {
 				assertTrue("Verifying document id is part of the search ids",a.getId()%5==0);
 				assertTrue("Verifying document has word counter",a.getManufacturer().getName().contains("counter"));
 				count++;
-
 			}
 			System.out.println(jh.get().toString());
 			assertEquals("Page size",count,p.size());
 			pageNo=pageNo+p.getPageSize();
 		}while(!p.isLastPage() && pageNo<=p.getTotalSize());
 		System.out.println( p.getPageNumber());
-//		assertEquals("page number after the loop",3,p.getPageNumber());
-//		assertEquals("total no of pages",3,p.getTotalPages());
 		assertEquals("page length from search handle",5,jh.get().path("page-length").asInt());
-		}
-	
+	}
+
+	/* Verify PojoRepository.count(query) does not scope count with the query  Git Issue #486*/
+	@Test
+	public void testPOJORepoCountWithQuery() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
+		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
+		PojoQueryBuilder qb = products.getQueryBuilder();
+		String[] searchNames = {"Acme spe* *","Widgets spe* *"};
+
+		PojoQueryDefinition qd1 = qb.value("name",searchOptions,100.0,searchNames);
+		long cnt1 = products.count(qd1);
+		System.out.println("Count returned from PojoRepository is " + cnt1);
+		assertEquals("Number of results returned incorrect in response", 110, cnt1);
+		JacksonHandle jh = new JacksonHandle();
+		products.setPageLength(5);
+		p = products.search(qd1, 1,jh);
+
+		JsonNode nodePos = jh.get();
+		// Return 1 node - constraint2.xml
+		assertEquals("Number of results returned incorrect in response", "110", nodePos.path("total").asText());
+
+		PojoQueryDefinition qd2 = qb.value("name",searchOptions,100.0,searchNames).withCriteria("Cogs 101");
+		long cnt2 = products.count(qd2);
+		System.out.println("Count returned from PojoRepository is " + cnt2);
+		assertEquals("Number of results returned incorrect in response", 1, cnt2);
+
+		String[] searchNames3 = {"Cogs 101", "Cogs 110", "Cogs 3"};
+		PojoQueryDefinition qd3 = qb.value("name",searchOptions,100.0,searchNames3);
+		long cnt3 = products.count(qd3);
+		System.out.println("Count returned from PojoRepository is " + cnt3);
+		assertEquals("Number of results returned incorrect in response", 2, cnt3);
+
+		String[] searchNames4 = {"Cogs 3"};
+		PojoQueryDefinition qd4 = qb.value("name",searchOptions,100.0,searchNames4);
+		long cnt4 = products.count(qd4);
+		System.out.println("Count returned from PojoRepository is " + cnt4);
+		assertEquals("Number of results returned incorrect in response", 1, cnt4);
+
+		String[] searchNames5 = {"12345"};
+		PojoQueryDefinition qd5 = qb.value("name",searchOptions,100.0,searchNames5);
+		long cnt5 = products.count(qd5);
+		System.out.println("Count returned from PojoRepository is " + cnt5);
+		assertEquals("Number of results returned incorrect in response", 0, cnt5);
+
+		String[] searchNames6 = {"*"};
+		PojoQueryDefinition qd6 = qb.value("name",searchOptions,100.0,searchNames6);
+		long cnt6 = products.count(qd6);
+		System.out.println("Count returned from PojoRepository is " + cnt6);
+		assertEquals("Number of results returned incorrect in response", 110, cnt6);
+
+		String[] searchNames7 = {" "};
+		PojoQueryDefinition qd7 = qb.value("name",searchOptions,100.0,searchNames7);
+		long cnt7 = products.count(qd7);
+		System.out.println("Count returned from PojoRepository is " + cnt7);
+		assertEquals("Number of results returned incorrect in response", 0, cnt7);
+
+		String[] searchNames8 = {""};
+		PojoQueryDefinition qd8 = qb.value("name",searchOptions,100.0,searchNames8);
+		long cnt8 = products.count(qd8);
+		System.out.println("Count returned from PojoRepository is " + cnt8);
+		assertEquals("Number of results returned incorrect in response", 0, cnt8);
+
+		String[] searchNames9 = {" ", "Cogs 3"};
+		PojoQueryDefinition qd9 = qb.value("name",searchOptions,100.0,searchNames9);
+		long cnt9 = products.count(qd9);
+		System.out.println("Count returned from PojoRepository is " + cnt9);
+		assertEquals("Number of results returned incorrect in response", 1, cnt9);
+	}
+
 	/* Below scenarios are to test setCriteria and withCriteris on query returned from a PojoQueryBuilder.
 	 * Query with wild cards in strings. Same as testPOJOValueSearchWithStrings() method.
 	 */
-		@Test
-		public void testPOJOValueQueryWithCriteria() {
-			PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
-			PojoPage<Artifact> p;
-			this.loadSimplePojos(products);
-			String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
-			PojoQueryBuilder qb = products.getQueryBuilder();
-			String[] searchNames = {"Acme spe* *","Widgets spe* *"};
-			PojoQueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames).withCriteria("Cogs 101");
-				
-			JacksonHandle jh = new JacksonHandle();
-			products.setPageLength(5);
-			p = products.search(qd, 1,jh);
+	@Test
+	public void testPOJOValueQueryWithCriteria() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
+		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
+		PojoQueryBuilder qb = products.getQueryBuilder();
+		String[] searchNames = {"Acme spe* *","Widgets spe* *"};
+		PojoQueryDefinition qd = qb.value("name",searchOptions,100.0,searchNames).withCriteria("Cogs 101");
 
-			JsonNode nodePos = jh.get();
-			// Return 1 node - constraint2.xml
-			assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-			assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
-		}
-		
-		@Test
-		public void testPOJOValueQuerySetCriteria() {
-			PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
-			PojoPage<Artifact> p;
-			this.loadSimplePojos(products);
-			String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
-			PojoQueryBuilder qb = products.getQueryBuilder();
-			String[] searchNames = {"Adme spe* *","Wedgets spe* *"};
-			QueryManager queryMgr = client.newQueryManager();
-			StructuredQueryBuilder strdqb = queryMgr.newStructuredQueryBuilder();
-			
-			StructuredQueryDefinition strutdDef =  qb.word("name", "Widgets 101");
-			strutdDef.setCriteria("Cogs 101");
-			PojoQueryDefinition qd = qb.or(strutdDef, qb.value("name",searchOptions,100.0,searchNames));
-				
-			JacksonHandle jh = new JacksonHandle();
-			products.setPageLength(5);
-			p = products.search(qd, 1,jh);
+		JacksonHandle jh = new JacksonHandle();
+		products.setPageLength(5);
+		p = products.search(qd, 1,jh);
 
-			JsonNode nodePos = jh.get();
-			// Return 1 node - constraint2.xml
-			assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
-			assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
-		}
+		JsonNode nodePos = jh.get();
+		// Return 1 node - constraint2.xml
+		assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+		assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+	}
+
+	@Test
+	public void testPOJOValueQuerySetCriteria() {
+		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
+		PojoPage<Artifact> p;
+		this.loadSimplePojos(products);
+		String[] searchOptions ={"case-sensitive","wildcarded","min-occurs=1"};
+		PojoQueryBuilder qb = products.getQueryBuilder();
+		String[] searchNames = {"Adme spe* *","Wedgets spe* *"};
+		QueryManager queryMgr = client.newQueryManager();
+		StructuredQueryBuilder strdqb = queryMgr.newStructuredQueryBuilder();
+
+		StructuredQueryDefinition strutdDef =  qb.word("name", "Widgets 101");
+		strutdDef.setCriteria("Cogs 101");
+		PojoQueryDefinition qd = qb.or(strutdDef, qb.value("name",searchOptions,100.0,searchNames));
+
+		JacksonHandle jh = new JacksonHandle();
+		products.setPageLength(5);
+		p = products.search(qd, 1,jh);
+
+		JsonNode nodePos = jh.get();
+		// Return 1 node - constraint2.xml
+		assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+		assertEquals("Result returned incorrect in response", "com.marklogic.client.functionaltest.Artifact/101.json", nodePos.path("results").get(0).path("uri").asText());
+	}
 }
