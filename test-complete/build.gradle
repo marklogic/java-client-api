@@ -30,10 +30,7 @@ task testSandbox(type:Test) {
    	include 'com/marklogic/client/functionaltest/TestAppServicesGeoElementChildConstraint.class'   	
    	include 'com/marklogic/client/functionaltest/TestBulkSearchWithStringQueryDef.class'    
     include 'com/marklogic/client/functionaltest/TestOpticOnMixedViews.class'
-    include 'com/marklogic/client/functionaltest/TestPOJOBasicSearch.class'
-    include 'com/marklogic/client/functionaltest/TestQueryOptionBuilderGrammar.class'    
-    include 'com/marklogic/client/functionaltest/TestSparqlQueryManager.class'
-    include 'com/marklogic/client/functionaltest/TestStructuredQuery.class'   
+    include 'com/marklogic/client/functionaltest/TestPOJOBasicSearch.class' 
     include 'com/marklogic/client/functionaltest/TestRawAlert.class'
 }
 
