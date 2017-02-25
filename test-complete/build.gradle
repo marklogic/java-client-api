@@ -30,8 +30,8 @@ task testSandbox(type:Test) {
    	include 'com/marklogic/client/functionaltest/TestAppServicesGeoElementChildConstraint.class'   	
    	include 'com/marklogic/client/functionaltest/TestBulkSearchWithStringQueryDef.class'    
     include 'com/marklogic/client/functionaltest/TestOpticOnMixedViews.class'
-    include 'com/marklogic/client/functionaltest/TestPOJOBasicSearch.class' 
-    include 'com/marklogic/client/functionaltest/TestRawAlert.class'
+    include 'com/marklogic/client/functionaltest/TestPOJOBasicSearch.class'
+	
 }
 
 /* The code repositories to consult for dependencies */
