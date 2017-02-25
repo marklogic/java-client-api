@@ -172,30 +172,31 @@ public class RowManagerTest {
         StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
         RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
         
+        ObjectMapper mapper = new ObjectMapper();
+
         for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
-            try (ReaderHandle readerHandle = new ReaderHandle()) {
-// TODO: also ARRAY
-                rowMgr.setRowStructureStyle(RowStructure.OBJECT);
-// TODO: also HEADER
-                rowMgr.setDatatypeStyle(RowSetPart.ROWS);
-
-                rowMgr.resultDoc(plan, readerHandle.withMimetype("text/csv"));
-                
-                try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
-                    String[] cols = lineReader.readLine().split(",");
-                    assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
-                    
-                    cols = lineReader.readLine().split(",");
-                    assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
-                }
-            }
-
             for (RowStructure rowstruct: rowstructs) {
                 rowMgr.setRowStructureStyle(rowstruct);
 
                 for (RowSetPart datatypeStyle: datatypeStyles) {
                     rowMgr.setDatatypeStyle(datatypeStyle);
                     
+                    if (rowstruct == RowStructure.OBJECT) {
+                        try (ReaderHandle readerHandle = new ReaderHandle()) {
+                            rowMgr.resultDoc(plan, readerHandle.withMimetype("text/csv"));
+                            
+                            try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
+                                String line = lineReader.readLine();
+                                String[] cols = line.split(",");
+                                assertArrayEquals("unexpected header", cols, new String[]{"rowNum","temp"});
+                                
+                                line = lineReader.readLine();
+                                cols = line.split(",");
+                                assertArrayEquals("unexpected data", cols, new String[]{"2","72"});
+                            }
+                        }
+                    }
+
                     DOMHandle domHandle = initNamespaces(rowMgr.resultDoc(plan, new DOMHandle()));
 // domHandle.write(System.out);
 
@@ -243,6 +244,36 @@ public class RowManagerTest {
                         break;
                     default:
                         throw new InternalError("unknown case for RowStructure: "+rowstruct);
+                    }
+
+                    try (ReaderHandle readerHandle = new ReaderHandle()) {
+                        rowMgr.resultDoc(plan, readerHandle.withMimetype("application/json-seq"));
+                        
+                        try (LineNumberReader lineReader = new LineNumberReader(readerHandle.get())) {
+                            int i=0;
+                            for (String line = null; (line = lineReader.readLine()) != null; i++) {
+                                line = line.trim();
+// System.out.println(line);
+                                testNode = mapper.readTree(line);
+                                switch(i) {
+                                case 0:
+                                    switch(rowstruct) {
+                                    case OBJECT:
+                                        checkHeader(testNode.findValue("columns"), datatypeStyle);
+                                        break;
+                                    case ARRAY:
+                                        checkHeader(testNode, datatypeStyle);
+                                        break;
+                                    }
+                                    break;
+                                case 1:
+                                    checkSingleRow(testNode, rowstruct, datatypeStyle);
+                                    break;
+                                }
+                            }
+                            assertEquals("expected one row for json-seq using: "
+                                +rowstruct+", "+datatypeStyle, 2, i);
+                        }
                     }
                 }
             }
