@@ -183,7 +183,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 			}
 					);
 
-			// Run a second batcher, no that DeleteListener has done its work.
+			// Run a second batcher, note that DeleteListener has done its work.
 			// Currently the DB snapshot is at a point, where we do not have any docs.			
 			QueryBatcher batcher2 = dmManager.newQueryBatcher(querydef2)
 					.withConsistentSnapshot()
@@ -234,7 +234,7 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 		QueryManager queryMgr = dbClient.newQueryManager();
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
 		querydef.setCriteria("John AND Bob");
-		StringBuffer batchResults  = new StringBuffer();		
+		StringBuffer batchResults  = new StringBuffer();
 
 		try {			
 			// Listener is setup with withConsistentSnapshot()
@@ -252,7 +252,12 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 					.withConsistentSnapshot()
 					.withBatchSize(10)
 					.onUrisReady(exportListener)
-					.onUrisReady(batch-> {						
+					.onUrisReady(batch-> {
+						if (batch.getJobBatchNumber() == 1) {
+							// Verifying getServerTimestamp with withConsistentSnapshot -  Git Issue 629.
+							System.out.println("Server Time from Batch 1 is " + batch.getServerTimestamp());
+							assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() > 0);
+						}
 						for (String u: batch.getItems()) {
 							batchResults.append(u);
 							batcherList.add(u);
@@ -311,6 +316,60 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 
 		// Doc count should be zero after both batchers are done.
 		assertEquals(0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+	}
+	
+	// Verify getServerTimestamp on the batch with no ConsistentSnapshot - Git Issue 629
+	@Test
+	public void testServerTimestampNoSnapshots() throws Exception {
+		System.out.println("Running testServerTimestampNoSnapshots");
+		Map<String, String> props = new HashMap<String, String>();
+		props.put("merge-timestamp","-6000000000");
+		changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");
+		Thread.currentThread().sleep(5000L);
+
+		List<String> docExporterList = new ArrayList<String>();
+		List<String> batcherList = new ArrayList<String>();
+
+		QueryManager queryMgr = dbClient.newQueryManager();
+		StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		querydef.setCriteria("John AND Bob");
+		StringBuffer batchResults  = new StringBuffer();
+
+		try {			
+			// Listener is setup with no withConsistentSnapshot()
+			ExportListener exportListener = new ExportListener();
+			exportListener
+			.onDocumentReady(doc->{
+				String uriOfDoc = doc.getUri();
+				// Make sure the docs are available. Not deleted from DB.
+				docExporterList.add(uriOfDoc);
+			}
+					);
+			// Batcher is setup with no withConsistentSnapshot()
+			QueryBatcher exportBatcher = dmManager.newQueryBatcher(querydef)
+					.withBatchSize(50)
+					.onUrisReady(exportListener)
+					.onUrisReady(batch-> {
+						System.out.println("Batch # is " + batch.getJobBatchNumber());
+						System.out.println("Server Time from Batch is " + batch.getServerTimestamp());
+						if (batch.getJobBatchNumber() == 1) {
+							assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() < 0);
+						}					
+					})
+					.onQueryFailure(exception -> {
+						System.out.println("Exceptions thrown from testPointInTimeQueryDeterministicSet callback onQueryFailure");
+						exception.printStackTrace(); 
+					});
+			dmManager.startJob(exportBatcher);
+			exportBatcher.awaitCompletion();
+		}
+		catch(Exception ex) {
+			System.out.println("Exceptions from testPointInTimeQueryDeterministicSet method is" + ex.getMessage());
+		}
+		finally {
+			props.put("merge-timestamp","0");
+			changeProperty(props,"/manage/v2/databases/"+dbName+"/properties");	
+		}
 	}
 
 	/*
