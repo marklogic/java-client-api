@@ -108,7 +108,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		
-		childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
+		childNodeObject.put("namespace-uri", "");
 		childNodeObject.put("localname", "city");
 		childNodeObject.put("collation", "http://marklogic.com/collation/");
 		childArray.add(childNodeObject);
@@ -464,9 +464,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 	}
 	
 	/* Checks for cts queries with options on fromLexicons
-	 * TEST 14
-	 * 
-	 * TODO when https://github.com/marklogic/java-client-api/issues/633 is fixed.	
+	 * TEST 14	
 	 * 
 	*/
 	@Test
@@ -500,7 +498,8 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		
 		XsStringSeqVal options = p.xs.stringSeq("wildcarded", "case-sensitive");
 				
-		ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery(propertyName, value, options))
+		//ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery(propertyName, value, options))
+		ModifyPlan output = plan1.where(p.cts.jsonPropertyWordQuery("city", "*k", "wildcarded", "case-sensitive"))
 								 .joinInner(plan2)
 		                         .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
 		                         .orderBy(p.asc(p.col("date")));
@@ -511,10 +510,9 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 
-		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-		// Git Issue 633
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");		
 		assertTrue("Number of Elements after plan execution is incorrect. Should be 1", 1 == jsonBindingsNodes.size());		
-		assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(1).path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myCity.city value incorrect", "new york", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
 	}
 	
 	/*
