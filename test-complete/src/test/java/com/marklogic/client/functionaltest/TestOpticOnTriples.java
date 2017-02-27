@@ -1387,9 +1387,9 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is : " + str.toString());
 		}
-		// Should have SQL-NOCOLUMN exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("Invalid arguments: avg aggregate must specify input column: null"));
+		assertTrue("Exceptions not found", str.toString().contains("column parameter for avg() cannot be null"));
 	}
 	
 	/* This test checks bindParam on triples' subject and object. 
