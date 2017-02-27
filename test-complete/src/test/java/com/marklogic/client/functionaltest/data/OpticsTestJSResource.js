@@ -17,7 +17,7 @@
 // Module that helps tests in TestOpticOnLiterals.class for map functionality
 
 function colorIdMapper(row) {
-	const result = row.toObject();
+	const result = row;
     switch(result.myColorId) { 
       case 1:
     	  result.myColorId = 'RED ROBIN';
@@ -39,7 +39,7 @@ function colorIdMapper(row) {
   
   function fibReducer(previous, row) {
       const i = Array.isArray(previous) ? previous.length : 0;
-      const result = row.toObject();
+      const result = row;
       result.i = i;
       switch(i) {
         case 0:
