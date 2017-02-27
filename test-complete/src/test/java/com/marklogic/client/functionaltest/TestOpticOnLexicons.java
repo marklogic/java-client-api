@@ -108,7 +108,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		
-		childNodeObject.put("namespace-uri", "http://marklogic.com/collation/");
+		childNodeObject.put("namespace-uri", "");
 		childNodeObject.put("localname", "city");
 		childNodeObject.put("collation", "http://marklogic.com/collation/");
 		childArray.add(childNodeObject);
@@ -363,9 +363,9 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		
 		// plan3
 		ModifyPlan plan3 = plan1.joinInner(plan2)
-				                .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-			                    .orderBy(p.asc(p.col("date")))
-			                    .joinDoc(p.col("doc"), p.col("uri2"));
+				                .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))			                    
+			                    .joinDoc(p.col("doc"), p.col("uri2"))
+			                    .orderBy(p.asc(p.col("date")));
 		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -510,11 +510,11 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanColumn cityNameCol = p.col("cityName");
 		PlanColumn cityTeamCol = p.col("cityTeam");
 		// using element reference and viewname
-		ModifyPlan outputNullVname = plan1.joinInner(plan2, p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")))
-			                              .orderBy(p.desc("uri2"))
-			                              .joinDoc(p.col("doc"), p.col("uri1"))
+		ModifyPlan outputNullVname = plan1.joinInner(plan2, p.on(p.viewCol(null, "city"), p.viewCol(null, "cityName")))
+				                          .joinDoc(p.col("doc"), p.col("uri1"))			                              			                              
 			                              .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//city")), uriCol2, cityNameCol, cityTeamCol)
-			                              .where(p.isDefined(p.col("nodes")));
+			                              .where(p.isDefined(p.col("nodes")))
+			                              .orderBy(p.desc("uri2"));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -583,7 +583,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// TEST 20 - join inner with joinInnerDoc and xpath
 		ExportablePlan innerJoinInnerDocXPath = plan1.joinInner(plan2)
                                                      .where(p.eq(p.viewCol("myCity", "city"), p.col("cityName")))
-                                                     .orderBy(p.asc(p.col("date")))
                                                      .joinDoc(p.col("doc"), p.col("uri2"))
                                                      .select(
                                                     		 uriCol1, cityCol, popCol, dateCol, distCol, pointCol, 
@@ -592,7 +591,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
                                                     		 p.viewCol("myTeam", "__docId"), 
                                                     		 p.as("nodes", p.xpath("doc", "/cityTeam"))
                                                     		)
-                                                     .where(p.isDefined(p.col("nodes")));
+                                                     .where(p.isDefined(p.col("nodes")))
+                                                     .orderBy(p.asc(p.col("date")));
         
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1191,9 +1191,10 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		}
 		catch(Exception ex) {
 			str.append(ex.getMessage());
+			System.out.println("Exception message is " + str.toString());
 		}
 		// Should have java.lang.IllegalArgumentException exceptions.
-		assertTrue("Exceptions not found", str.toString().contains("cannot joinDoc() without col() or fragmentIdCol() object for source column: null"));
+		assertTrue("Exceptions not found", str.toString().contains("sourceCol parameter for joinDoc() cannot be null"));
 		
 		//invalid doc on join inner doc
 		try {
