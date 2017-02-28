@@ -35,6 +35,11 @@ import java.util.stream.Stream;
  * Since this does frequent comparision of host names and they compare case
  * insensitive, this converts all host names to lower case.
  *
+ * FilteredForestConfiguration isn't thread-safe, so only one thread should
+ * use one instance.  WriteBatcher.withForestConfig and
+ * QueryBatcher.withForestConfig are thread-safe, however, so any thread can
+ * call those any time to pass in an instance of FilteredForestConfiguration.
+ *
  * As with the provided listeners, this utility will not meet the needs of all
  * applications but the [source code][] for it should serve as helpful sample
  * code so you can write your own custom ForestConfiguration wrapper.
