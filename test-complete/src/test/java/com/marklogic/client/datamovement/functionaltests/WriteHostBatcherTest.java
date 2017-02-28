@@ -16,6 +16,8 @@
 
 package com.marklogic.client.datamovement.functionaltests;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -26,15 +28,20 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -73,10 +80,14 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
+import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.datamovement.impl.WriteJobReportListener;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.BytesHandle;
@@ -134,6 +145,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	private static JsonNode jsonNode;
 	private static JobTicket writeTicket;
 	private static JobTicket testBatchJobTicket;
+	private static FilteredForestConfiguration forestConfigMT;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -707,9 +719,16 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testHostBatcherImmutability() throws Exception{
 		
 		WriteBatcher ihb = dmManager.newWriteBatcher();
+		ServerTransform transform =  null;
+		FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig());
+		
 		ihb.withJobName(null);
 		ihb.withBatchSize(2);
 		ihb.withBatchSize(5);
+		ihb.withTransform(transform);
+		ihb.withThreadCount(5);
+		ihb.withForestConfig(forestConfig);
+		
 		dmManager.startJob(ihb);
 		try{
 			ihb.withJobName("Job 2");
@@ -742,8 +761,40 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		catch (Exception e){
 			Assert.assertTrue(e instanceof IllegalStateException);
 		}
-				
-		ihb.flushAndWait();		
+		
+		TransformExtensionsManager transMgr = 
+                dbClient.newServerConfigManager().newTransformExtensionsManager();
+	    ExtensionMetadata metadata = new ExtensionMetadata();
+	    metadata.setTitle("Adding attribute xquery Transform");
+	    metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
+	    metadata.setProvider("MarkLogic");
+	    metadata.setVersion("0.1");
+	    // get the transform file from add-attr-xquery-transform.xqy
+	    File transformFile = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX+"add-attr-xquery-transform.xqy"));
+	    FileHandle transformHandle = new FileHandle(transformFile);
+	    transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
+	   
+	    
+	    transform = new ServerTransform("add-attr-xquery-transform");
+	    transform.put("name", "Lang");
+	    transform.put("value", "English");
+	    
+	    forestConfig.withWhiteList(hostNames[1]);
+	    
+		try{
+			ihb.withTransform(transform);
+			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
+		}
+		catch (Exception e){
+			Assert.assertTrue(e instanceof IllegalStateException);
+		}
+	    
+	    ihb.withForestConfig(forestConfig);
+	    ihb.add("/local/triple1", stringHandle);		
+		ihb.flushAndWait();
+		final String query1 = "fn:count(fn:doc())";
+
+    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==2);
 	}
 	
 	//ISSUE # 38
@@ -1018,7 +1069,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb1.awaitCompletion();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1500);	
 	}
-	
+		
 	@Test
 	public void testInsertoReadOnlyForest() throws Exception{
 		Map <String, String> properties = new HashMap<>();
@@ -1123,70 +1174,91 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	@Test
 	public void testServerXQueryTransformSuccess() throws Exception
     {      
-		   final String query1 = "fn:count(fn:doc())";
-		   Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
-		   final AtomicInteger successCount = new AtomicInteger(0);
-	       	
-	       final AtomicBoolean failState = new AtomicBoolean(false);
-	       final AtomicInteger failCount = new AtomicInteger(0);
-           TransformExtensionsManager transMgr = 
-                        dbClient.newServerConfigManager().newTransformExtensionsManager();
-           ExtensionMetadata metadata = new ExtensionMetadata();
-           metadata.setTitle("Adding attribute xquery Transform");
-           metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
-           metadata.setProvider("MarkLogic");
-           metadata.setVersion("0.1");
-           // get the transform file from add-attr-xquery-transform.xqy
-           File transformFile = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX+"add-attr-xquery-transform.xqy"));
-           FileHandle transformHandle = new FileHandle(transformFile);
-           transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
-           
-           ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
-           transform.put("name", "Lang");
-           transform.put("value", "English");
-           
-           String xmlStr1 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";
-           String xmlStr2 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so bar</foo>";
-                  
-           //Use WriteBatcher to write the same files.                      
-           WriteBatcher ihb1 =  dmManager.newWriteBatcher();
-	   	   ihb1.withBatchSize(2);
-	   	   ihb1.withTransform(transform);
-	   	   ihb1.onBatchSuccess(
-	   			   batch -> {
-		        	
-	   				   successCount.getAndAdd(batch.getItems().length);
-		        	
-		        	}
-		        )
-		        .onBatchFailure(
-		          (batch, throwable) -> {
-		        	  throwable.printStackTrace();
-		        	  failState.set(true);
-		        	  failCount.getAndAdd(batch.getItems().length);
-		          });
-	   	   dmManager.startJob(ihb1);
-           StringHandle handleFoo = new StringHandle();
-           handleFoo.set(xmlStr1);
-           handleFoo.setFormat(Format.XML);
-           
-           StringHandle handleBar = new StringHandle();
-           handleBar.set(xmlStr2);
-           handleBar.setFormat(Format.XML);
-           
-           String uri1 = null;
-           String uri2 = null;
-         
-           for (int i = 0; i < 4; i++) {
-                  uri1 = "foo" + i + ".xml";
-                  uri2 = "bar" + i + ".xml";
-                  ihb1.addAs(uri1, handleFoo).addAs(uri2, handleBar);
-           }
-           // Flush
-           ihb1.flushAndWait();
-   		   Assert.assertFalse(failState.get());
-   		   Assert.assertTrue(successCount.intValue()==8);
-           Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
+		final String query1 = "fn:count(fn:doc())";
+	   Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==0);
+	   final AtomicInteger successCount = new AtomicInteger(0);
+       	
+       final AtomicBoolean failState = new AtomicBoolean(false);
+       final AtomicInteger failCount = new AtomicInteger(0);
+       TransformExtensionsManager transMgr = 
+                    dbClient.newServerConfigManager().newTransformExtensionsManager();
+       ExtensionMetadata metadata = new ExtensionMetadata();
+       metadata.setTitle("Adding attribute xquery Transform");
+       metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
+       metadata.setProvider("MarkLogic");
+       metadata.setVersion("0.1");
+       // get the transform file from add-attr-xquery-transform.xqy
+       File transformFile = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX+"add-attr-xquery-transform.xqy"));
+       FileHandle transformHandle = new FileHandle(transformFile);
+       transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
+       
+       ServerTransform transform =  null;
+       transform = new ServerTransform("add-attr-xquery-transform");
+       transform.put("name", "Lang");
+       transform.put("value", "English");
+            
+       String xmlStr1 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";
+       String xmlStr2 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so bar</foo>";
+              
+       //Use WriteBatcher to write the same files.                      
+       WriteBatcher ihb1 =  dmManager.newWriteBatcher();
+   	   ihb1.withBatchSize(2);
+   	   ihb1.withTransform(transform);
+   	   ihb1.onBatchSuccess(
+   			   batch -> {
+	        	
+   				   successCount.getAndAdd(batch.getItems().length);
+	        	
+	        	}
+	        )
+	        .onBatchFailure(
+	          (batch, throwable) -> {
+	        	  throwable.printStackTrace();
+	        	  failState.set(true);
+	        	  failCount.getAndAdd(batch.getItems().length);
+	          });
+   	   dmManager.startJob(ihb1);
+       StringHandle handleFoo = new StringHandle();
+       handleFoo.set(xmlStr1);
+       handleFoo.setFormat(Format.XML);
+       
+       StringHandle handleBar = new StringHandle();
+       handleBar.set(xmlStr2);
+       handleBar.setFormat(Format.XML);
+       
+       List<String> uris = new ArrayList<String>();
+       String uri1 = null;
+       String uri2 = null;
+     
+       for (int i = 0; i < 4; i++) {
+              uri1 = "foo" + i + ".xml";
+              uri2 = "bar" + i + ".xml";
+              uris.add(uri1);
+              uris.add(uri2);
+              ihb1.addAs(uri1, handleFoo).addAs(uri2, handleBar);
+       }
+       ihb1.flushAndWait();
+       dmManager.stopJob(ihb1);
+       String [] uriArr = new String[8];
+       uris.toArray(uriArr);
+       int count=0;
+		DocumentPage page = dbClient.newDocumentManager().read(uriArr);
+		DOMHandle dh = new DOMHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			rec.getContent(dh);
+			if (dh.get().getElementsByTagName("foo").item(0).hasAttributes()){
+				System.out.println(dh.get().getElementsByTagName("foo").item(0).getTextContent());
+				System.out.println(count);
+				assertEquals("Attribute value should be English","English",dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
+				count++;
+			}
+		}
+
+	   Assert.assertFalse(failState.get());
+	   Assert.assertTrue(successCount.intValue()==8);
+	   Assert.assertTrue(count == 8);
+       Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==8);
     }
 	
 	@Test
@@ -1774,8 +1846,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	       	  @Override
 	       	  public void run() {
 	       		  try {
-	       			//Sleep for 15 seconds so that the threads are spawned
-					Thread.currentThread().sleep(10000L);
+	       			//Sleep for 4 seconds so that the threads are spawned
+					Thread.currentThread().sleep(4000L);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
@@ -1786,7 +1858,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	       		  while(iter.hasNext()){
 	       			  Thread t =  iter.next();
 	       			  String threadName = t.getName();
-	       			  if(threadName.contains("pool")){
+	       			   if(threadName.contains("pool")){
 	       				  int i = threadName.indexOf('-', 1 + threadName.indexOf('-'));
 	       				  String poolname = threadName.substring(0, i);
 	       				  System.out.println("poolname: "+poolname);
@@ -2361,7 +2433,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        		
   }
 	
-	@Ignore
+	@Test
 	public void testNoHost() throws Exception{
 		Assume.assumeTrue(hostNames.length > 1);
 		
@@ -2369,19 +2441,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			
 		try{
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
-			
+			forestConfigMT = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames[0]);
 			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 			
-			WriteBatcher ihb2 =  dmManager.newWriteBatcher();
-			
-			FilteredForestConfiguration forestConfig = 
-					  new FilteredForestConfiguration(dmManager.readForestConfig())
-					    .withRenamedHost("localhost", "127.0.0.1")
-					    .withBlackList(hostNames[hostNames.length-1]);
-								
-			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			ihbMT =  dmManager.newWriteBatcher();
+		
+			ihbMT.withBatchSize(50);
 				
-			ihb2.onBatchSuccess(
+			ihbMT.onBatchSuccess(
 			        batch -> {
 			        	}
 			        )
@@ -2391,25 +2458,46 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			          
 			          }
 			);
+			
 			for (int j =0 ;j < 1000; j++){
 				String uri ="/local/string-"+ j;
-				ihb2.addAs(uri, meta6 , jsonNode);
+				ihbMT.addAs(uri, meta6 , jsonNode);
 			}
 			
 		
-			ihb2.flushAndWait();
+			ihbMT.flushAndWait();
 		
 			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 			
 			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 	        QueryBatcher getUris =  dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
-	        getUris.withForestConfig(forestConfig);
+			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
+				    .withRenamedHost(hostNames[0],hostNames[1])
+				    .withWhiteList(hostNames[0]);
+			
+	
+	        try{
+	        	getUris.withForestConfig(forestConfig);
+	        	Assert.assertTrue(false);
+	        }
+	        catch (Exception e){
+	        	Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+	        }
 	        
+	        forestConfig =  new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
+	        try{
+	        	getUris.withForestConfig(forestConfig);
+	        	Assert.assertTrue(false);
+	        }
+	        catch (Exception e){
+	        	Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+	        }
+	        forestConfig =  new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames[1]);
 	        getUris.withBatchSize(500)
 	                .withThreadCount(2)
 	                .onUrisReady((batch ->{
 	                	uris.addAll(Arrays.asList(batch.getItems()));
-	                }))
+	                })).withForestConfig(forestConfig)
 	                .onQueryFailure(exception -> exception.printStackTrace());
 	        
 	        dmManager.startJob(getUris);
@@ -2423,6 +2511,348 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 				
 	}
+	
+	@Test
+	public void testNullConfig() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		final String query1 = "fn:count(fn:doc())";
+			
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		QueryBatcher qb2 =  dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
+		
+		FilteredForestConfiguration forestConfig = null;
+							
+		try{
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+		}
+		catch(IllegalArgumentException e){
+			Assert.assertEquals("forestConfig must not be null", e.getMessage());
+		}
+			
+				
+		try{
+			qb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+		}
+		catch(IllegalArgumentException e){
+			Assert.assertEquals("forestConfig must not be null", e.getMessage());
+		}				
+	}
+	
+	@Test
+	public void testQBWhiteList() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		final String query1 = "fn:count(fn:doc())";
+			
+		FilteredForestConfiguration forestConfig = null;
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		
+		ihbMT =  dmManager.newWriteBatcher();
+		ihbMT.withBatchSize(50);
+		
+		ihbMT.onBatchSuccess(
+		        batch -> {
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		          
+		          }
+		);
+		for (int j =0 ;j < 1000; j++){
+			String uri ="/local/string-"+ j;
+			ihbMT.addAs(uri, meta6 , jsonNode);
+		}
+		
+	
+		ihbMT.flushAndWait();
+	
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		
+		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+		QueryBatcher qb = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost")).withBatchSize(25).withThreadCount(10);
+		
+		qb.onUrisReady(batch ->{
+			uris.addAll(Arrays.asList(batch.getItems()));
+		});
+		qb.onQueryFailure(throwable-> throwable.printStackTrace());
+		
+		try{
+			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
+			qb.withBatchSize(50).withForestConfig(forestConfig);
+			
+		}
+		catch(NullPointerException e){
+			e.printStackTrace();
+		}
+		
+		try{
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
+			qb.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+		}
+		
+		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost", "127.0.0.1").
+						withWhiteList(hostNames[hostNames.length-1], null);
+		qb.withForestConfig(forestConfig);
+		dmManager.startJob(qb);
+		qb.awaitCompletion();
+		Assert.assertEquals(1000, uris.size());						
+	}
+	
+	@Test
+	public void testWBWhiteList() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		final String query1 = "fn:count(fn:doc())";
+			
+		FilteredForestConfiguration forestConfig = null;
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		try{
+			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			
+		}
+		catch(NullPointerException e){
+			e.printStackTrace();
+		}
+		
+		try{
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("asdf");
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+		}
+		
+		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost", "127.0.0.1").
+						withWhiteList(hostNames[hostNames.length-1], null);
+		
+		ihb2.withBatchSize(50).withForestConfig(forestConfig);
+				
+		ihb2.onBatchSuccess(
+		        batch -> {
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		          
+		          }
+		);
+		for (int j =0 ;j < 1000; j++){
+			String uri ="/local/string-"+ j;
+			ihb2.addAs(uri, meta6 , jsonNode);
+		}
+		
+	
+		ihb2.flushAndWait();
+	
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);				
+	}
+	
+	@Test
+	public void testQBBlackList() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+	    String clusterHostNames [] = new String[hostNames.length];
+	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
+	    
+	    clusterHostNames[0] = "localhost";
+		
+		final String query1 = "fn:count(fn:doc())";
+			
+		FilteredForestConfiguration forestConfig = null;
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		ihb2.withBatchSize(50);
+		
+		ihb2.onBatchSuccess(
+		        batch -> {
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		          
+		          }
+		);
+		for (int j =0 ;j < 1000; j++){
+			String uri ="/local/string-"+ j;
+			ihb2.addAs(uri, meta6 , jsonNode);
+		}
+		
+	
+		ihb2.flushAndWait();
+	
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+		
+		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+		QueryBatcher qb = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost")).withBatchSize(25).withThreadCount(10);
+		
+		qb.onUrisReady(batch ->{
+			uris.addAll(Arrays.asList(batch.getItems()));
+		});
+		qb.onQueryFailure(throwable-> throwable.printStackTrace());
+		
+		try{
+			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(null);
+			qb.withBatchSize(50).withForestConfig(forestConfig);
+			
+		}
+		catch(NullPointerException e){
+			e.printStackTrace();
+		}
+		
+		try{
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(clusterHostNames);
+			qb.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+		}
+		
+		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost", "127.0.0.1").
+						withBlackList(hostNames[hostNames.length-1], null, "asdf");
+		qb.withForestConfig(forestConfig);
+		dmManager.startJob(qb);
+		qb.awaitCompletion();
+		Assert.assertEquals(1000, uris.size());						
+	}
+	
+	@Test
+	public void testWBBlackList() throws Exception{
+		Assume.assumeTrue(hostNames.length > 1);
+		
+	    String clusterHostNames [] = new String[hostNames.length];
+	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
+	    
+	    clusterHostNames[0] = "localhost";
+	    
+		final String query1 = "fn:count(fn:doc())";
+			
+		FilteredForestConfiguration forestConfig = null;
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		try{
+			forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(null);
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			
+		}
+		catch(NullPointerException e){
+			e.printStackTrace();
+		}
+		
+		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList("asdf");
+		ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			
+		try{
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(clusterHostNames);
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			e.printStackTrace();
+			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+		}
+		
+		
+		try{
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames);
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			e.printStackTrace();
+			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
+		}
+		
+		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost", "127.0.0.1").
+						withBlackList(hostNames[hostNames.length-1], null);
+		ihb2.withBatchSize(50).withForestConfig(forestConfig);
+		
+		
+			
+		ihb2.onBatchSuccess(
+		        batch -> {
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		          
+		          }
+		);
+		for (int j =0 ;j < 1000; j++){
+			String uri ="/local/string-"+ j;
+			ihb2.addAs(uri, meta6 , jsonNode);
+		}
+		
+	
+		ihb2.flushAndWait();
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
+				
+	}
+	@Test
+	public void testBlackWhiteList() throws Exception{
+	
+		FilteredForestConfiguration forestConfig = null;
+		
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+		
+		try{
+			forestConfig  = new   FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList("localhost").withBlackList("localhost");
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			e.printStackTrace();
+			Assert.assertEquals("whiteList already initialized", e.getMessage());
+		}
+		
+		try{
+			forestConfig  = new   FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList("localhost").withWhiteList("localhost");
+			ihb2.withBatchSize(50).withForestConfig(forestConfig);
+			Assert.assertTrue(false);
+			
+		}
+		catch(IllegalStateException e){
+			e.printStackTrace();
+			Assert.assertEquals("blackList already initialized", e.getMessage());
+		}		
+	}
+	
 	
 	@Test
 	public void testNoServer() throws Exception{

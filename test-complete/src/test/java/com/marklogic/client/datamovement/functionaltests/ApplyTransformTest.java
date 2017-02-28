@@ -53,6 +53,7 @@ import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
@@ -793,5 +794,76 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 		Assert.assertEquals(2000,successBatch.size()+skippedBatch.size()+failedBatch.size()+count);
 		Assert.assertEquals(2000-count,successBatch.size());
 
+	}
+	
+	@Test
+	public void jsMasstransformReplaceFiltered() throws Exception{
+
+		ServerTransform transform = new ServerTransform("jsTransform");
+		transform.put("newValue", "new Value");
+
+		ApplyTransformListener listener = new ApplyTransformListener()
+				.withTransform(transform)
+				.withApplyResult(ApplyResult.REPLACE);
+		
+		DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
+		
+				
+		WriteBatcher ihb2 =  dmManager.newWriteBatcher();
+	
+		ihb2.withBatchSize(50);
+			
+		ihb2.onBatchSuccess(
+		        batch -> {
+		        	}
+		        )
+		        .onBatchFailure(
+		          (batch, throwable) -> {
+		        	  throwable.printStackTrace();
+		          
+		          }
+		);
+		for (int j =0 ;j < 1000; j++){
+			String uri ="/local/nohost-"+ j;
+			ihb2.addAs(uri, meta6 , jsonNode);
+		}
+		
+	
+		ihb2.flushAndWait();
+	
+		FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost","127.0.0.1").withWhiteList("127.0.0.1");
+		
+		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+        QueryBatcher getUris =  dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
+        getUris.withForestConfig(forestConfig);
+        
+        getUris.withBatchSize(500)
+                .withThreadCount(2)
+                .onUrisReady((batch ->{
+                	uris.addAll(Arrays.asList(batch.getItems()));
+                })).onUrisReady(listener)
+                .onQueryFailure(exception -> exception.printStackTrace());
+        
+        dmManager.startJob(getUris);
+        
+        getUris.awaitCompletion();
+						
+
+
+		String docuris[] = new String[1000];
+		for(int i =0;i<1000;i++){
+			docuris[i] = "/local/nohost-"+ i;
+		}
+		int count=0;
+		DocumentPage page = dbClient.newDocumentManager().read(docuris);
+		JacksonHandle dh = new JacksonHandle();
+		while(page.hasNext()){
+			DocumentRecord rec = page.next();
+			rec.getContent(dh);
+			assertEquals("Attribute value should be new Value","new Value",dh.get().get("c").asText());
+			count++;
+		}
+
+		assertEquals("document count", 1000,count); 
 	}
 }
