@@ -22,9 +22,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
-import java.net.URI;
-import java.net.URISyntaxException;
-import java.util.HashMap;
 
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -46,40 +43,35 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
-import com.marklogic.xcc.AdhocQuery;
-import com.marklogic.xcc.ContentSource;
-import com.marklogic.xcc.ContentSourceFactory;
-import com.marklogic.xcc.RequestOptions;
-import com.marklogic.xcc.ResultSequence;
-import com.marklogic.xcc.Session;
-import com.marklogic.xcc.exceptions.RequestException;
-import com.marklogic.xcc.exceptions.XccConfigException;
 
 import junit.framework.Assert;
 
 public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 	
-	private static HashMap<String, ContentSource> csMap = new HashMap<String, ContentSource>();
-    private static Session session;
     public static String newLine = System.getProperty("line.separator");
-    public static  ContentSource contentSource;
-    public static String XCC_URI = "xcc://admin:admin@localhost:8000";
     public static String temp = System.getProperty("java.io.tmpdir");
     public static String java_home = System.getProperty("java.home");
     public static String server = "CertServer";
+    public static String setupServer = "App-Services";
     public static int port = 8071;
+    public static int setupPort = 8000;
     public static String host = "localhost";
+    public static DatabaseClient secClient;
+    public static String localHostname = getBootStrapHostFromML(); 
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		
 		createRESTServerWithDB(server, port);
 		createRESTUser("portal", "seekrit", "admin","rest-admin","rest-writer","rest-reader" );
-		associateRESTServerWithDB(server,"Security");
-		createCACert();
+		associateRESTServerWithDB(setupServer,"Security");
+		secClient = DatabaseClientFactory.newClient(host, setupPort,"admin","admin", Authentication.DIGEST);
 		
+		createCACert();
 		createCertTemplate();
 		createHostTemplate();
 		createClientCert("portal");
@@ -96,11 +88,11 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		associateRESTServerWithDB(server,"Security");
+		
 		removeTrustedCert();
 		convertToHTTP();
 		removeCertTemplate();
-		associateRESTServerWithDB(server,"Documents");
+		associateRESTServerWithDB(setupServer,"Documents");
 	}
 
 	@Before
@@ -117,10 +109,10 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 	public void testUserPortal() throws Exception{
 		final String query1 = "fn:count(fn:doc())";
 		
-		InetAddress addr = java.net.InetAddress.getLocalHost();    
-        String hostname = addr.getCanonicalHostName(); 
+		InetAddress addr = java.net.InetAddress.getLocalHost(); 
+        System.out.println("Hostname is : "+addr.getHostName());
 		
-		DatabaseClient client = DatabaseClientFactory.newClient(hostname, port, new CertificateAuthContext(temp+"portal.p12","abc"));
+		DatabaseClient client = DatabaseClientFactory.newClient(localHostname, port, new CertificateAuthContext(temp+"portal.p12","abc"));
 		int count = client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
 		System.out.println(count);
 		TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -139,10 +131,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 	public void testUserBlah() throws Exception{
 		final String query1 = "fn:count(fn:doc())";
 		
-		InetAddress addr = java.net.InetAddress.getLocalHost();    
-        String hostname = addr.getCanonicalHostName(); 
-		
-		DatabaseClient client = DatabaseClientFactory.newClient(hostname, port, new CertificateAuthContext(temp+"blah.p12","abc"));
+		DatabaseClient client = DatabaseClientFactory.newClient(localHostname, port, new CertificateAuthContext(temp+"blah.p12","abc"));
 		try{
 			client.newServerEval().xquery(query1).eval().next().getNumber().intValue();
 		}
@@ -150,33 +139,18 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 			e.printStackTrace();
 			System.out.println("Exception is "+e.getClass().getName());
 			 Assert.assertTrue(e.getClass().getName().equals("com.marklogic.client.FailedRequestException"));
+			 Assert.assertTrue(e.getMessage().equals("Local message: failed to apply resource at eval: Unauthorized. Server Message: Unauthorized"));
 				
 		}
 	}
 	
 	
-	private static ResultSequence runQuery(String query) throws XccConfigException, URISyntaxException, RequestException {
-	        session = getSession();
-	        AdhocQuery aquery = session.newAdhocQuery(query);
-
-	        RequestOptions options = new RequestOptions();
-	        options.setCacheResult(false);
-	        options.setDefaultXQueryVersion("1.0-ml");
-	        aquery.setOptions(options);
-	        return session.submitRequest(aquery);
+	private static void runQuery(String query) throws Exception {
+		secClient.newServerEval().xquery(query).eval();
 	}
-	
-    private static Session getSession() throws XccConfigException, URISyntaxException{
-	   	if (contentSource == null ) {
-	   		contentSource = ContentSourceFactory.newContentSource(new URI(XCC_URI));
-	    	csMap.put(XCC_URI, contentSource);
-	    }
-	   	return csMap.get(XCC_URI).newSession();
-    }
-    
-    
+	 
     public static void createCACert()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
@@ -187,9 +161,9 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("let $pubkey := $keys[2]");
             q.append("let $subject :=");
             q.append(" element x509:subject {");
-            q.append(" element x509:countryName      {\"US\"},");
-            q.append(" element x509:organizationName {\"Acme Corporation\"},");
-            q.append(" element x509:commonName       {\"Acme Corporation CA\"}");
+            q.append(" element x509:countryName{\"US\"},");
+            q.append(" element x509:organizationName{\"Acme Corporation\"},");
+            q.append(" element x509:commonName{\"Acme Corporation CA\"}");
             q.append(" }");
             q.append("let $x509 :=");
             q.append(" element x509:cert {");
@@ -201,13 +175,13 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append(" element x509:notAfter  {fn:current-dateTime() + xs:dayTimeDuration(\"P365D\")}");
             q.append(" },");
             q.append("$subject,");
-            q.append(" element x509:publicKey {$pubkey},");
-            q.append(" element x509:v3ext {");
+            q.append(" element x509:publicKey{$pubkey},");
+            q.append(" element x509:v3ext{");
             q.append(" element x509:basicConstraints {");
             q.append(" attribute critical {\"false\"},");
             q.append(" \"CA:TRUE\"");
             q.append(" },");
-            q.append(" element x509:keyUsage {");
+            q.append(" element x509:keyUsage{");
             q.append(" attribute critical {\"false\"},");
             q.append(" \"Certificate Sign, CRL Sign\"");
             q.append(" },");
@@ -221,15 +195,16 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append(" }");
             q.append(" }");
             q.append(" }");
-            q.append("let $certificate := xdmp:x509-certificate-generate($x509, $privkey)");
-            q.append("let $dum := xdmp:save(\""+temp+"ca.cer\", text{$certificate})");
+            q.append(" let $certificate := xdmp:x509-certificate-generate($x509, $privkey)");
+            q.append(" let $dum := xdmp:save(\""+temp+"ca.cer\", text{$certificate})");
             q.append(" return");
-            q.append(" ( sec:create-credential(");
+            q.append(" (sec:create-credential(");
             q.append(" \"acme-ca\", \"Acme Certificate Authority\",");
-            q.append("	  (), (), $certificate, $privkey,");
+            q.append(" (),(),$certificate, $privkey,");
             q.append("fn:true(), (), xdmp:permission(\"admin\", \"read\")),");
             q.append("pki:insert-trusted-certificates($certificate)");
             q.append(")");
+            System.out.println("Creating CA credential");
             try{
             	runQuery(q.toString());
             }
@@ -240,7 +215,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
         }
     
     public static void createCertTemplate()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
@@ -263,11 +238,12 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("		<subjectKeyIdentifier critical=\"false\">{pki:integer-to-hex(xdmp:random())}</subjectKeyIdentifier>");
             q.append("	  </v3ext>");
             q.append("	</req>))");
+            System.out.println("Creating Certificate template");
             runQuery(q.toString());
         }
     
     public static void createHostTemplate()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
@@ -317,29 +293,29 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("	  <transaction-mode>update-auto-commit</transaction-mode>");
             q.append("	  <isolation>different-transaction</isolation>");
             q.append("	</options>)");
-
+            System.out.println("Creating Host template");
             runQuery(q.toString());
         }
     
     public static void createClientCert(String commonname)
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module namespace sec = \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
             q.append("import module namespace pki = \"http://marklogic.com/xdmp/pki\" at \"/MarkLogic/pki.xqy\";");
             q.append("declare namespace x509 = \"http://marklogic.com/xdmp/x509\";");
-            q.append("let $validity :=   element x509:validity {");
-            q.append("element x509:notBefore {fn:current-dateTime()},");
-            q.append("element x509:notAfter  {fn:current-dateTime() + xs:dayTimeDuration(\"P365D\")}}");
+            q.append("let $validity := element x509:validity {");
+            q.append("element x509:notBefore{fn:current-dateTime()},");
+            q.append("element x509:notAfter{fn:current-dateTime() + xs:dayTimeDuration(\"P365D\")}}");
             q.append(" let $keys := xdmp:rsa-generate()");
             q.append(" let $privkey := $keys[1]");
             q.append(" let $privkeysave := xdmp:save(\""+temp+commonname+"priv.pkey\", text{$privkey})");
             q.append(" let $pubkey := $keys[2]");
             q.append(" let $subject :=");
             q.append("element x509:subject {");
-            q.append("  element x509:countryName{\"US\"},");
-            q.append("  element x509:organizationName{\"Acme Corporation\"},");
-            q.append("  element x509:commonName{\""+commonname+"\"}");
+            q.append("element x509:countryName{\"US\"},");
+            q.append("element x509:organizationName{\"Acme Corporation\"},");
+            q.append("element x509:commonName{\""+commonname+"\"}");
             q.append("}");
             q.append(" let $x509 :=");
             q.append("element x509:cert {");
@@ -356,9 +332,10 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("}");
             q.append("}");
             q.append(" let $certificate := xdmp:x509-certificate-generate($x509, $privkey, <options xmlns=\"ssl:options\"><credential-id>{xdmp:credential-id(\"acme-ca\")}</credential-id></options>)");
-            q.append("return xdmp:save(\""+temp+commonname+".cer\", text{$certificate})");
+            q.append(" return xdmp:save(\""+temp+commonname+".cer\", text{$certificate})");
             
             try{
+            	System.out.println("Creating client credential: "+commonname);
             	 runQuery(q.toString());
             }
             catch(Exception e){
@@ -368,7 +345,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
         }
     
     public static void convertToHTTPS()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";");
@@ -400,7 +377,6 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 		System.out.println(temp+"ca.cer");
 		
 		Runtime rt = Runtime.getRuntime();
-		//Process pr =    rt.exec("keytool -import -trustcacerts -noprompt  -storepass changeit -file "+ temp+"ca.cer -alias Acme");
 		Process pr =    rt.exec(new String[]{"keytool", "-import", "-trustcacerts", "-noprompt","-storepass","changeit", "-file", temp+"ca.cer", "-alias", "Acme", "-keystore", "\""+ java_home+seperator+"lib"+seperator+"security"+seperator+"cacerts"+"\""});
 		System.out.println(pr.waitFor());
 		InputStream is = pr.getInputStream();
@@ -408,6 +384,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 		BufferedReader buff = new BufferedReader (isr);
 
 		String line;
+		System.out.println("Adding CA to trusted certificate: STDOUT");
 		while((line = buff.readLine()) != null)
 		    System.out.println(line);
 
@@ -416,6 +393,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 		BufferedReader buff1 = new BufferedReader (isr1);
 
 		String line1;
+		System.out.println("Adding CA to trusted certificate: ERR");
 		while((line1 = buff1.readLine()) != null)
 		    System.out.println(line1);
 		Thread.currentThread().sleep(5000L);
@@ -446,7 +424,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 	}
     
     public static void convertToHTTP()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("import module namespace sec= \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
             q.append("import module namespace admin= \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";");
@@ -454,7 +432,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("let $cfg := admin:get-configuration()");
             q.append("let $group-id := xdmp:group()");
             q.append("let $app-server-id := admin:appserver-get-id($cfg, $group-id, \""+server+"\")[1]");
-            q.append("let $cfg := admin:appserver-set-authentication($cfg, $app-server-id, \"basic\")");
+            q.append("let $cfg := admin:appserver-set-authentication($cfg, $app-server-id, \"digest\")");
             q.append("let $cfg := admin:appserver-set-ssl-certificate-template($cfg, $app-server-id, 0)");
             q.append("let $cfg := admin:appserver-set-ssl-client-certificate-authorities($cfg, $app-server-id, ())");
             q.append("return admin:save-configuration($cfg)");
@@ -462,11 +440,12 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
     }
     
     public static void removeCertTemplate()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module namespace pki = \"http://marklogic.com/xdmp/pki\" at \"/MarkLogic/pki.xqy\";");
             q.append("pki:delete-template(pki:get-template-by-name(\"cert-template\")/pki:template-id)");
+            System.out.println("Removing Certificate Template");
             runQuery(q.toString());
     }
     
@@ -485,11 +464,12 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
             q.append("declare namespace x509 = \"http://marklogic.com/xdmp/x509\";");
             q.append("( \"acme-ca\"	) ! sec:remove-credential(.), ");
             q.append("pki:delete-certificate(pki:get-certificates(pki:get-trusted-certificate-ids())[pki:authority = fn:true()][x509:cert/x509:subject/x509:commonName = (\"Acme Corporation CA\")]/pki:certificate-id/text())");
+            System.out.println("Removing from Trusted Certificates");
             runQuery(q.toString());
     }
     
     public static void removeCredentials()
-            throws XccConfigException, RequestException, URISyntaxException {
+            throws Exception {
             StringBuilder q = new StringBuilder();
             q.append("xquery version \"1.0-ml\";");
             q.append("import module \"http://marklogic.com/xdmp/security\" at \"/MarkLogic/security.xqy\";");
