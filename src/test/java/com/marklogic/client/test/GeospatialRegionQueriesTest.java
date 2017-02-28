@@ -7,6 +7,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -126,7 +127,7 @@ public class GeospatialRegionQueriesTest {
         Common.adminClient.newServerConfigManager().setQueryValidation(true);
     }
 
-    @Test
+    @Ignore
     public void testGeospatialRegionQuery() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -142,7 +143,7 @@ public class GeospatialRegionQueriesTest {
         }
     }
 
-    @Test
+    @Ignore
     public void testFloatPrecision() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -157,7 +158,7 @@ public class GeospatialRegionQueriesTest {
         assertEquals(2, summaries.length);
     }
 
-    @Test
+    @Ignore
     public void testDoublePrecision() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -172,7 +173,7 @@ public class GeospatialRegionQueriesTest {
         assertEquals(1, summaries.length);
     }
 
-    @Test
+    @Ignore
     public void testGeospatialRegionDoubleQuery() {
         String options = "<options xmlns=\"http://marklogic.com/appservices/search\">"
                        + "    <search-option>filtered</search-option>"
@@ -212,7 +213,7 @@ public class GeospatialRegionQueriesTest {
         optionsMgr.deleteOptions("geodoubleoptions");
     }
 
-    @Test
+    @Ignore
     public void testFloatPrecisionCoordinateSystem() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -227,7 +228,7 @@ public class GeospatialRegionQueriesTest {
         assertEquals(2, summaries.length);
     }
 
-    @Test
+    @Ignore
     public void testDoublePrecisionCoordinateSystem() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -242,7 +243,7 @@ public class GeospatialRegionQueriesTest {
         assertEquals(1, summaries.length);
     }
 
-    @Test
+    @Ignore
     public void testGeospatialRegionQueryConstraint() {
         QueryManager queryMgr = Common.client.newQueryManager();
         StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
@@ -271,7 +272,7 @@ public class GeospatialRegionQueriesTest {
         }
     }
 
-    @Test
+    @Ignore
     public void testGeospatialRegionQueryOptionsConstraint() {
         String options = "<options xmlns=\"http://marklogic.com/appservices/search\">" 
                        + "  <constraint name='geoo'>"
