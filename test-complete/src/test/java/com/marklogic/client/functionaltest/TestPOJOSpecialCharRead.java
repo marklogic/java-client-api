@@ -188,8 +188,7 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 	}
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+	public static void setUpBeforeClass() throws Exception {		
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 	}

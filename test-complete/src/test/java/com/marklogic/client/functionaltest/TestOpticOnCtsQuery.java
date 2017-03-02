@@ -77,8 +77,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		System.out.println("In TestOpticOnCtsQuery setup");
 		
 		newline = System.getProperty("line.separator");
-		
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		configureRESTServer(dbName, fNames);
 		
 		// Add new range elements into this array

@@ -47,6 +47,7 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -59,8 +60,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 	private  DatabaseClient client ;
 
 	@BeforeClass
-	public static void setUpBeforeClass() throws Exception {
-		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+	public static void setUpBeforeClass() throws Exception {		
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		addRangePathIndex(dbName, "long", "com.marklogic.client.functionaltest.Artifact/inventory", "", "ignore");
@@ -393,7 +393,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 			assertEquals("Total search results resulted are ",6,actNode.asInt() );
 		}
 		
-	@Test
+	@Test 
 	public void testPOJOSearchWithRawXMLStructQD() {
 		PojoRepository<Artifact,Long> products = client.newPojoRepository(Artifact.class, Long.class);
 		PojoPage<Artifact> p;
@@ -411,8 +411,10 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 						"</search:term-query> </search:and-query>"+
 						"</search:query>";
 		StringHandle rh = new StringHandle(rawXMLQuery);
-		PojoQueryDefinition qd =
-				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(rh);
+		/*PojoQueryDefinition qd =
+				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(rh);*/
+		StringQueryDefinition qd = queryMgr.newStringDefinition();
+		qd.setCriteria("special AND Acme");
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);
 		products.setPageLength(11);
@@ -476,8 +478,10 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 		ObjectNode mainNode = mapper.createObjectNode();
 		mainNode.set("query", queryArrayNode);
 		jh.set(mainNode);
-		PojoQueryDefinition qd =
-				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(jh);
+		/*PojoQueryDefinition qd =
+				(PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(jh);*/
+		StringQueryDefinition qd = queryMgr.newStringDefinition();
+		qd.setCriteria("special AND Widgets");
 
 		JacksonHandle results = new JacksonHandle();
 		p = products.search(qd, 1,results);

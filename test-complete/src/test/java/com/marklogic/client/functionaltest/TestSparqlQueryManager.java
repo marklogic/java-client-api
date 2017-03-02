@@ -211,8 +211,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		datasource = "src/test/java/com/marklogic/client/functionaltest/data/semantics/";
 		
 		// localGraphName will have the value of beijing in Chinese which is 北京
-		zhlocaleGraphName = new String("北京");
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		zhlocaleGraphName = new String("北京");		
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);

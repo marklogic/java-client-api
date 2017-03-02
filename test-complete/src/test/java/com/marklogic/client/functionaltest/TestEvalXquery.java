@@ -74,8 +74,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 		 System.out.println("In setup");
 		 TestEvalXquery.configureRESTServer(dbName, fNames);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-eval", "xdbc:eval","any-uri","xdbc:invoke");
- 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");
-//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+ 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-eval");		 
 	}
 
 	@AfterClass

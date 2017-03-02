@@ -86,13 +86,6 @@ public class TestBulkWriteSample1 extends BasicJavaClientREST  {
 	{
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
-
-		//To enable client side http logging
-
-		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		//	   System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http", "debug");   
-		//       setupAppServicesConstraint(dbName);	  
-
 	}
 
 	@Before  public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception

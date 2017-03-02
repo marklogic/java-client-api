@@ -2958,9 +2958,6 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // Test LSQT Query using temporalLsqtQuery. Do the query as REST reader
   public void testLsqtQuery() throws Exception {
-    /*System.setProperty(
-        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-        "debug");*/
 
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
@@ -2987,10 +2984,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // Test LSQT Query using temporalLsqtQuery. Do the query as REST admin
   public void testLsqtQueryAsAdmin() throws Exception {
-    /*System.setProperty(
-        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-        "debug");*/
-
+   
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
 

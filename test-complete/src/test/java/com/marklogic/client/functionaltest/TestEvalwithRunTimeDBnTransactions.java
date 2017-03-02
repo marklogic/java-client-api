@@ -66,7 +66,6 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 		 configureRESTServer(dbName, fNames);
  	     createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
  	     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
-//		 System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 	}
 
 	@AfterClass

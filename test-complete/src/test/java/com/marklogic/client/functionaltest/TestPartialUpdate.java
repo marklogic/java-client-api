@@ -64,8 +64,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@BeforeClass
 	public  static void setUp() throws Exception 
 	{
-		System.out.println("In setup");
-		/*System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");*/
+		System.out.println("In setup");		
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
 		

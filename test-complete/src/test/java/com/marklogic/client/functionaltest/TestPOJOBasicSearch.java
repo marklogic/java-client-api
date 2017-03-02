@@ -44,7 +44,6 @@ public class TestPOJOBasicSearch extends BasicJavaClientREST {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		//		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 	}

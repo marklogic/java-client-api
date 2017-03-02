@@ -44,8 +44,7 @@ public class TestBulkSearchWithKeyValQueryDef extends BasicJavaClientREST {
 	}
 
 	@Before
-	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {		
 		//		 create new connection for each test below
 		client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
 	}
