@@ -129,18 +129,23 @@ public class QueryBatcherIteratorTest {
 
     // now we have the uris, let's step through them and do nothing with them
     AtomicInteger successDocs2 = new AtomicInteger(0);
-    BufferedReader reader = new BufferedReader(new FileReader(tempFile));
     StringBuffer failures2 = new StringBuffer();
-    QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
-      .withThreadCount(6)
-      .withBatchSize(19)
-      .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
-      .onQueryFailure( throwable -> {
-        throwable.printStackTrace();
-        failures2.append("ERROR:[" + throwable + "]\n");
-      });
-    moveMgr.startJob(doNothing);
-    doNothing.awaitCompletion();
+    try ( FileReader fileReader = new FileReader(tempFile);
+          BufferedReader reader = new BufferedReader(fileReader); ) 
+    {
+
+	    QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
+	      .withThreadCount(6)
+	      .withBatchSize(19)
+	      .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
+	      .onQueryFailure( throwable -> {
+	        throwable.printStackTrace();
+	        failures2.append("ERROR:[" + throwable + "]\n");
+	      });
+	    moveMgr.startJob(doNothing);
+	    doNothing.awaitCompletion();
+	    moveMgr.stopJob(doNothing);
+    }
 
     if ( failures2.length() > 0 ) fail(failures2.toString());
     assertEquals(numDocs, successDocs2.get());
