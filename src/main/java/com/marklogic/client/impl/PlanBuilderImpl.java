@@ -291,14 +291,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsNumericExpr divide(XsNumericExpr operand1, XsNumericExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for divide() cannot be null");
+    public XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for divide() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for divide() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for divide() cannot be null");
         }
-        return new XsExprImpl.NumericCallImpl("op", "divide", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.NumericCallImpl("op", "divide", new Object[]{ left, right });
     }
 
     
@@ -312,14 +312,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr eq(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for eq() cannot be null");
+    public XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for eq() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for eq() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for eq() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "eq", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "eq", new Object[]{ left, right });
     }
 
     
@@ -429,14 +429,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr ge(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for ge() cannot be null");
+    public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for ge() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for ge() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for ge() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "ge", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "ge", new Object[]{ left, right });
     }
 
     
@@ -474,14 +474,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr gt(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for gt() cannot be null");
+    public XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for gt() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for gt() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for gt() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "gt", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "gt", new Object[]{ left, right });
     }
 
     
@@ -582,26 +582,26 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr le(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for le() cannot be null");
+    public XsBooleanExpr le(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for le() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for le() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for le() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "le", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "le", new Object[]{ left, right });
     }
 
     
     @Override
-    public XsBooleanExpr lt(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for lt() cannot be null");
+    public XsBooleanExpr lt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for lt() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for lt() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for lt() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "lt", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "lt", new Object[]{ left, right });
     }
 
     
@@ -669,14 +669,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr ne(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for ne() cannot be null");
+    public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for ne() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for ne() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for ne() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "ne", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.BooleanCallImpl("op", "ne", new Object[]{ left, right });
     }
 
     
@@ -882,14 +882,14 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsNumericExpr subtract(XsNumericExpr operand1, XsNumericExpr operand2) {
-        if (operand1 == null) {
-            throw new IllegalArgumentException("operand1 parameter for subtract() cannot be null");
+    public XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for subtract() cannot be null");
         }
-        if (operand2 == null) {
-            throw new IllegalArgumentException("operand2 parameter for subtract() cannot be null");
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for subtract() cannot be null");
         }
-        return new XsExprImpl.NumericCallImpl("op", "subtract", new Object[]{ operand1, operand2 });
+        return new XsExprImpl.NumericCallImpl("op", "subtract", new Object[]{ left, right });
     }
 
     

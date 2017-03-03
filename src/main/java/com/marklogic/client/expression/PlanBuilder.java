@@ -135,7 +135,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
     * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an <a>op:col</a> function to identify a column.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:add" target="mlserverdoc">plan:add</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a>
     * @param operand  Two or more boolean expressions, such as <a>op:eq</a> or <a>op:not</a>.
     * @return  a XsNumericExpr expression
     */
@@ -143,7 +143,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns <code>true</code> if the specified expressions all return <code>true</code>. Otherwise, it returns <code>false</code>. You can either compair [need to talk to Erik about the difference between operand and left/right parameters. Seems that either can be specified, but perhaps not both ?????]
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:and" target="mlserverdoc">plan:and</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a>
     * @param operand  Two or more boolean expressions, such as <a>op:eq</a> or <a>op:not</a>.
     * @return  a XsBooleanExpr expression
     */
@@ -151,43 +151,43 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function divides the left <code>numericExpression</code> by the right <code>numericExpression</code> and returns the value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:divide" target="mlserverdoc">plan:divide</a>
-    * @param operand1  The left numeric expression.
-    * @param operand2  The left numeric expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:divide" target="mlserverdoc">op:divide</a>
+    * @param left  The left numeric expression.
+    * @param right  The right numeric expression.
     * @return  a XsNumericExpr expression
     */
-    public abstract XsNumericExpr divide(XsNumericExpr operand1, XsNumericExpr operand2);
+    public abstract XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right);
     /**
     * This function returns <code>true</code> if the left and right expressions return the same value. Otherwise, it returns <code>false</code>. In expressions, the call should pass the result from an <a>op:col</a> function to identify a column.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:eq" target="mlserverdoc">plan:eq</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr eq(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function returns <code>true</code> if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:ge" target="mlserverdoc">plan:ge</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:ge" target="mlserverdoc">op:ge</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr ge(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function returns <code>true</code> if the value of the left expression is greater than the value of the right expression. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:gt" target="mlserverdoc">plan:gt</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:gt" target="mlserverdoc">op:gt</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr gt(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function tests a value expression, <a>op.col</a> or another a column identifier function must be used to test whether a column has a null value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:is-defined" target="mlserverdoc">plan:is-defined</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:is-defined" target="mlserverdoc">op:is-defined</a>
     * @param operand  A boolean expression, such as <a>op:eq</a> or <a>op:not</a>.
     * @return  a XsBooleanExpr expression
     */
@@ -195,25 +195,25 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns <code>true</code> if the value of the left expression is less than or equal to the value of the right expression. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:le" target="mlserverdoc">plan:le</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:le" target="mlserverdoc">op:le</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr le(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr le(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function returns <code>true</code> if the value of the left expression is less than the value of the right expression. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:lt" target="mlserverdoc">plan:lt</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:lt" target="mlserverdoc">op:lt</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr lt(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr lt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function multipies the left <code>numericExpression</code> by the right <code>numericExpression</code> and returns the value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:multiply" target="mlserverdoc">plan:multiply</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a>
     * @param operand  Two or more numeric expressions, such as <a>op:divide</a> or <a>op:subtract</a>.
     * @return  a XsNumericExpr expression
     */
@@ -221,16 +221,16 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns <code>true</code> if the value of the left expression is not equal to the value of the right expression. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:ne" target="mlserverdoc">plan:ne</a>
-    * @param operand1  The left value expression.
-    * @param operand2  The left value expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:ne" target="mlserverdoc">op:ne</a>
+    * @param left  The left value expression.
+    * @param right  The right value expression.
     * @return  a XsBooleanExpr expression
     */
-    public abstract XsBooleanExpr ne(XsAnyAtomicTypeExpr operand1, XsAnyAtomicTypeExpr operand2);
+    public abstract XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
     * This function returns <code>true</code> if neither of the specified boolean expressions return <code>true</code>. Otherwise, it returns <code>false</code>.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:not" target="mlserverdoc">plan:not</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:not" target="mlserverdoc">op:not</a>
     * @param operand  Two or more [ or is it just one????] boolean expressions, such as <a>op:eq</a> or <a>op:not</a>.
     * @return  a XsBooleanExpr expression
     */
@@ -238,7 +238,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns <code>true</code> if the specified expressions all return <code>true</code>. Otherwise, it returns <code>false</code>. You can either compair [need to talk to Erik about the difference between operand and left/right parameters. Seems that either can be specified, but perhaps not both ?????]
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:or" target="mlserverdoc">plan:or</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:or" target="mlserverdoc">op:or</a>
     * @param operand  Two or more boolean expressions, such as <a>op:eq</a> or <a>op:not</a>.
     * @return  a XsBooleanExpr expression
     */
@@ -246,23 +246,23 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function subtracts the right <code>numericExpression</code> from the left <code>numericExpression</code> and returns the value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:subtract" target="mlserverdoc">plan:subtract</a>
-    * @param operand1  The left numeric expression.
-    * @param operand2  The left numeric expression.
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:subtract" target="mlserverdoc">op:subtract</a>
+    * @param left  The left numeric expression.
+    * @param right  The right numeric expression.
     * @return  a XsNumericExpr expression
     */
-    public abstract XsNumericExpr subtract(XsNumericExpr operand1, XsNumericExpr operand2);
+    public abstract XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right);
     /**
     * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The <a>op:result</a> function throws in an error if the binding parameter does not specify a literal value for the parameter.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:param" target="mlserverdoc">plan:param</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a>
     
     */
     public abstract PlanParamExpr param(String name);
     /**
     * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The <a>op:result</a> function throws in an error if the binding parameter does not specify a literal value for the parameter.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:param" target="mlserverdoc">plan:param</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a>
     
     */
     public abstract PlanParamExpr param(XsStringVal name);
@@ -885,7 +885,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns the remainder afer the division of the dividend and divisor expressions. For example: 5/2=2 (modulo 1).
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:modulo" target="mlserverdoc">plan:modulo</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a>
     * @param left  The dividend numeric expression.
     * @param right  The divisor numeric expression.
     * @return  a XsNumericExpr expression
@@ -894,7 +894,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns the remainder afer the division of the dividend and divisor expressions. For example: 5/2=2 (modulo 1).
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:modulo" target="mlserverdoc">plan:modulo</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a>
     * @param left  The dividend numeric expression.
     * @param right  The divisor numeric expression.
     * @return  a XsNumericExpr expression
@@ -903,7 +903,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function returns the specified <code>valueExpression</code> if the specified <code>valueExpression</code> is <code>true</code>. Otherwise, it returns null.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:case" target="mlserverdoc">plan:case</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:case" target="mlserverdoc">op:case</a>
     * @param cases  One or more WHEN expressions.
     * @return  a ItemSeqExpr expression sequence
     */
@@ -926,7 +926,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xpath" target="mlserverdoc">plan:xpath</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a>
     * @param column  The name of the column from which to extract the child nodes.
     * @param path  An XPath (specified as a string) to apply to each node.
     * @return  a NodeSeqExpr expression sequence
@@ -935,7 +935,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xpath" target="mlserverdoc">plan:xpath</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a>
     * @param column  The name of the column from which to extract the child nodes.
     * @param path  An XPath (specified as a string) to apply to each node.
     * @return  a NodeSeqExpr expression sequence
@@ -944,7 +944,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON document with the root content, which must be exactly one JSON object or array node.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-document" target="mlserverdoc">plan:json-document</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-document" target="mlserverdoc">op:json-document</a>
     * @param root  The JSON object or array node used to construct the JSON document.
     * @return  a DocumentNodeExpr expression
     */
@@ -952,7 +952,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON object with the specified properties. The object can be used as the value of a column in a row or passed to a builtin function.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-object" target="mlserverdoc">plan:json-object</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-object" target="mlserverdoc">op:json-object</a>
     * @param property  The properties to be used to contruct the object. This is constructed by the <a>op:prop</a> function.
     * @return  a ObjectNodeExpr expression
     */
@@ -974,7 +974,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON array with the specified JSON nodes as items. The array can be used as the value of a column in a row or passed to a builtin function.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-array" target="mlserverdoc">plan:json-array</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-array" target="mlserverdoc">op:json-array</a>
     * @param property  The JSON nodes for the array.
     * @return  a ArrayNodeExpr expression
     */
@@ -982,7 +982,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON text node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-string" target="mlserverdoc">plan:json-string</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a>
     * @param value  The value of the JSON text node.
     * @return  a TextNodeExpr expression
     */
@@ -990,7 +990,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON text node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-string" target="mlserverdoc">plan:json-string</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a>
     * @param value  The value of the JSON text node.
     * @return  a TextNodeExpr expression
     */
@@ -998,7 +998,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON number node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-number" target="mlserverdoc">plan:json-number</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a>
     * @param value  The value of the JSON number node.
     * @return  a NumberNodeExpr expression
     */
@@ -1006,7 +1006,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON number node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-number" target="mlserverdoc">plan:json-number</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a>
     * @param value  The value of the JSON number node.
     * @return  a NumberNodeExpr expression
     */
@@ -1014,7 +1014,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON boolean node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-boolean" target="mlserverdoc">plan:json-boolean</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a>
     * @param value  The value of the JSON boolean node.
     * @return  a BooleanNodeExpr expression
     */
@@ -1022,7 +1022,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON boolean node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-boolean" target="mlserverdoc">plan:json-boolean</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a>
     * @param value  The value of the JSON boolean node.
     * @return  a BooleanNodeExpr expression
     */
@@ -1030,14 +1030,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs a JSON null node.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:json-null" target="mlserverdoc">plan:json-null</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-null" target="mlserverdoc">op:json-null</a>
     
     */
     public abstract NullNodeExpr jsonNull();
     /**
     * This function constructs an XML document with the root content, which must be exactly one node.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-document" target="mlserverdoc">plan:xml-document</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-document" target="mlserverdoc">op:xml-document</a>
     * @param root  The XML node used to construct the XML document.
     * @return  a DocumentNodeExpr expression
     */
@@ -1045,7 +1045,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @return  a ElementNodeExpr expression
     */
@@ -1053,7 +1053,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @return  a ElementNodeExpr expression
     */
@@ -1061,7 +1061,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @param attributes  Any element attributes returned from <a>op:xml-attribute</a>, or <code>null</code> if no attributes.
     * @return  a ElementNodeExpr expression
@@ -1070,7 +1070,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @param attributes  Any element attributes returned from <a>op:xml-attribute</a>, or <code>null</code> if no attributes.
     * @return  a ElementNodeExpr expression
@@ -1079,7 +1079,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @param attributes  Any element attributes returned from <a>op:xml-attribute</a>, or <code>null</code> if no attributes.
     * @param content  A sequence or array of atomic values or an element, a comment from <a>op:xml-comment</a>, or processing instruction nodes from <a>op:xml-pi</a>.
@@ -1089,7 +1089,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-element" target="mlserverdoc">plan:xml-element</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
     * @param attributes  Any element attributes returned from <a>op:xml-attribute</a>, or <code>null</code> if no attributes.
     * @param content  A sequence or array of atomic values or an element, a comment from <a>op:xml-comment</a>, or processing instruction nodes from <a>op:xml-pi</a>.
@@ -1099,7 +1099,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-attribute" target="mlserverdoc">plan:xml-attribute</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a>
     * @param name  The attribute name.
     * @param value  The attribute value.
     * @return  a AttributeNodeExpr expression
@@ -1108,7 +1108,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-attribute" target="mlserverdoc">plan:xml-attribute</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a>
     * @param name  The attribute name.
     * @param value  The attribute value.
     * @return  a AttributeNodeExpr expression
@@ -1117,7 +1117,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML text node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-text" target="mlserverdoc">plan:xml-text</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a>
     * @param value  The value of the XML text node.
     * @return  a TextNodeExpr expression
     */
@@ -1125,7 +1125,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML text node with the specified value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-text" target="mlserverdoc">plan:xml-text</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a>
     * @param value  The value of the XML text node.
     * @return  a TextNodeExpr expression
     */
@@ -1133,7 +1133,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML comment with the atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-comment" target="mlserverdoc">plan:xml-comment</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a>
     * @param content  The comment text.
     * @return  a CommentNodeExpr expression
     */
@@ -1141,7 +1141,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML comment with the atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-comment" target="mlserverdoc">plan:xml-comment</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a>
     * @param content  The comment text.
     * @return  a CommentNodeExpr expression
     */
@@ -1149,7 +1149,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML processing instruction with the atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-pi" target="mlserverdoc">plan:xml-pi</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a>
     * @param name  The name of the processing instruction.
     * @param value  The value of the processing instruction.
     * @return  a ProcessingInstructionNodeExpr expression
@@ -1158,7 +1158,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     /**
     * This function constructs an XML processing instruction with the atomic value.
     * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/plan:xml-pi" target="mlserverdoc">plan:xml-pi</a>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a>
     * @param name  The name of the processing instruction.
     * @param value  The value of the processing instruction.
     * @return  a ProcessingInstructionNodeExpr expression
