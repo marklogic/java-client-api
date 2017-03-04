@@ -377,12 +377,13 @@ public class RowManagerTest {
         PlanBuilder.ExportablePlan builtPlan =
                 p.fromLiterals(litRows)
                  .joinDoc(p.col("doc"), p.col("uri"))
+// NOTE: workaround for server bug 44875
+                 .where(p.cts.notQuery(p.cts.elementQuery(p.xs.QName("prop:properties"), p.cts.trueQuery())))
                  .orderBy(p.col("rowNum"))
                  .select(p.colSeq("rowNum", "uri", "doc"));
 
         StringHandle planHandle = builtPlan.export(new StringHandle()).withFormat(Format.JSON);
         RawPlanDefinition rawPlan = rowMgr.newRawPlanDefinition(planHandle);
-
         String[] colNames = {"rowNum", "uri", "doc"};
         for (PlanBuilder.Plan plan: new PlanBuilder.Plan[]{builtPlan, rawPlan}) {
             RowSet<DOMHandle> xmlRowSet = rowMgr.resultRows(plan, new DOMHandle());
