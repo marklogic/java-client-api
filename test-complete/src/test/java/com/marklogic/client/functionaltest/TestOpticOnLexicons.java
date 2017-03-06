@@ -16,8 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -421,6 +420,15 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		RowSet<RowRecord> recordRowSet = rowMgr.resultRows(plan3);
 		Iterator<RowRecord> recordRowItr = recordRowSet.iterator();
 		RowRecord recordRow = recordRowItr.next();
+		
+		// Make sure that toString() does not blow up. The toString method is mostly used for debugging.
+		assertNotNull(recordRow.toString());
+		String debugRR = recordRow.toString().trim();
+		
+		assertTrue("Debug Info incorrect", debugRR.contains("myCity.date:{kind: \"ATOMIC_VALUE\", type: \"xs:date\", value: \"1971-12-23\"}"));
+		assertTrue("Debug Info incorrect", debugRR.contains("myCity.uri1:{kind: \"ATOMIC_VALUE\", type: \"xs:string\", value: \"/optic/lexicon/test/doc3.json\""));
+		assertTrue("Debug Info incorrect", debugRR.contains("myCity.distance:{kind: \"ATOMIC_VALUE\", type: \"xs:double\", value: 12.9}"));
+		assertTrue("Debug Info incorrect", debugRR.contains("myCity.point:{kind: \"ATOMIC_VALUE\", type: \"http://marklogic.com/cts#point\", value: \"40.720001,-74.07\"}"));
 				
 		assertEquals("Element 1 (myCity) in date incorrect", "1971-12-23", recordRow.getString("myCity.date"));
 		assertEquals("Element 1 (myCity) in URI1 incorrect", "/optic/lexicon/test/doc3.json",  recordRow.getString("myCity.uri1"));
