@@ -779,9 +779,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	    transform.put("name", "Lang");
 	    transform.put("value", "English");
 	    
-	    forestConfig.withWhiteList(hostNames[1]);
-	    
-		try{
+	    try{
 			ihb.withTransform(transform);
 			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);
 		}
@@ -789,12 +787,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			Assert.assertTrue(e instanceof IllegalStateException);
 		}
 	    
-	    ihb.withForestConfig(forestConfig);
-	    ihb.add("/local/triple1", stringHandle);		
-		ihb.flushAndWait();
-		final String query1 = "fn:count(fn:doc())";
-
-    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==2);
 	}
 	
 	//ISSUE # 38
