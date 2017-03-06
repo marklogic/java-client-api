@@ -119,11 +119,12 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		// Delete database first. Otherwise axis and collection cannot be deleted
 		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
+		deleteRESTUser("eval-readeruser");
 		deleteUserRole("test-eval");
 
 		// Temporal collection needs to be delete before temporal axis associated
 		// with it can be deleted
-		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
+		/*ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalLsqtCollectionName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalCollectionName);
@@ -132,7 +133,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
 				axisValidName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-				axisSystemName);
+				axisSystemName);*/
 	}
 
 	@Before
@@ -140,6 +141,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke","temporal:statement-set-system-time", "temporal-document-protect", "temporal-document-wipe");
 		
 		createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader","temporal-admin");
+		createRESTUser("eval-readeruser", "x","rest-reader");
 		int restPort = getRestServerPort();
 		writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);             
 	}
@@ -1094,7 +1096,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 	public void testProtectWipeWithoutPermission() throws Exception {
 
 		System.out.println("Inside testProtectWipeWithoutPermission");
-		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient adminClient = getDatabaseClientOnDatabase("localhost", getRestServerPort(), dbName, "eval-readeruser", "x", Authentication.DIGEST);
 		ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
 		        temporalLsqtCollectionName, true);
 		
@@ -1112,7 +1114,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		JSONDocumentManager docMgrProtect = adminClient.newJSONDocumentManager();
 		
 		docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, insertTime);	
-		Thread.sleep(5000);
+		Thread.sleep(10000);
 		StringBuilder str = new StringBuilder();
 	    try {
 		//Protect document for 30 sec. Use Duration.
