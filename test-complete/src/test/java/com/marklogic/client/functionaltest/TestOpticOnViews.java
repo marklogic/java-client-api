@@ -1201,25 +1201,27 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		RowManager rowMgr = client.newRowManager();
 		PlanBuilder p = rowMgr.newPlanBuilder();
 		
-		ExportablePlan plan1 = p.fromView("opticFunctionalTest2", "detail")
-				                .union(p.fromView("opticFunctionalTest", "detail"))
-				                .select(
-				                		p.as("unionId", p.schemaCol("opticFunctionalTest2", "detail", "id")),
-				                		p.as("unionId", p.schemaCol("opticFunctionalTest", "detail", "id"))
-				                	   )
-				                	   
-				                 .except(p.fromView("opticFunctionalTest", "master")
-				                		  .union(p.fromView("opticFunctionalTest2", "master"))
-				                		  .select(
-				                				  p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")),
-							                	  p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))
-				                		         ))
-				                .orderBy(p.col("unionId"));	
+		ModifyPlan plan1 =
+		        p.fromView("opticFunctionalTest", "master");
+		ModifyPlan plan2 =
+		        p.fromView("opticFunctionalTest2", "master");
+		ModifyPlan plan3 =
+		        p.fromView("opticFunctionalTest2", "detail");
+		ModifyPlan plan4 =
+		        p.fromView("opticFunctionalTest", "detail");
+		ModifyPlan output =
+		        plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "detail", "id")))
+		        .union(plan4.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "detail", "id"))))
+		        .except(
+		          plan1.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")))
+		          .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
+		        )
+		        .orderBy(p.col("unionId"));
 				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 		
-		rowMgr.resultDoc(plan1, jacksonHandle);
+		rowMgr.resultDoc(output, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 			
@@ -1252,12 +1254,12 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		ModifyPlan plan2 = p.fromView("opticFunctionalTest2", "master");
 		ModifyPlan plan3 = p.fromView("opticFunctionalTest", "detail");
 		
-		ModifyPlan plan4 = plan1.union(plan2)
-				                .select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")),
-                		                p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))
-                	                   )
-                	            .intersect(plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "detail", "id"))))
-                	            .orderBy(p.col("unionId"));	
+		ModifyPlan plan4 = plan1.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "master", "id")))
+				                .union(plan2.select(p.as("unionId", p.schemaCol("opticFunctionalTest2", "master", "id"))))
+				                .intersect(
+						                    plan3.select(p.as("unionId", p.schemaCol("opticFunctionalTest", "detail", "id")))
+						                  )
+						        .orderBy(p.col("unionId"));
 				
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
@@ -1957,25 +1959,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		jsonResults = jacksonHandle.get();
 		// Should have null returned.
 		assertTrue("No nodes should returned. But found some.", jsonResults==null);
-		
-		// Verify with string value.
-		jacksonHandle = new JacksonHandle();
-		jacksonHandle.setMimetype("application/json");
-		rowMgr.resultDoc(plan3.bindParam(idParam, "1"), jacksonHandle);
-		jsonResults = jacksonHandle.get().path("rows");
-		first = jsonResults.path(0);
-
-		assertEquals("Row 1 opticFunctionalTest.detail.id value incorrect", "1", first.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Row 1 opticFunctionalTest.master.id value incorrect", "1", first.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Row 1 opticFunctionalTest.detail.masterId value incorrect", "1", first.path("opticFunctionalTest.detail.masterId").path("value").asText());
-		assertEquals("Row 1 opticFunctionalTest.detail.name value incorrect", "Detail 1", first.path("opticFunctionalTest.detail.name").path("value").asText());
-		
-		// Verify sixth node.
-		sixth = jsonResults.path(5);
-		assertEquals("Row 6 opticFunctionalTest.detail.id value incorrect", "6", sixth.path("opticFunctionalTest.detail.id").path("value").asText());
-		assertEquals("Row 6 opticFunctionalTest.master.id value incorrect", "1", sixth.path("opticFunctionalTest.master.id").path("value").asText());
-		assertEquals("Row 6 opticFunctionalTest.detail.masterId value incorrect", "2", sixth.path("opticFunctionalTest.detail.masterId").path("value").asText());
-		assertEquals("Row 6 opticFunctionalTest.detail.name value incorrect", "Detail 6", sixth.path("opticFunctionalTest.detail.name").path("value").asText());
 		
 		// Verify with double value.
 		PlanParamExpr amtParam  = p.param("AMT");
