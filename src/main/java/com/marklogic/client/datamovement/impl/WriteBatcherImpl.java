@@ -18,22 +18,26 @@ package com.marklogic.client.datamovement.impl;
 import java.io.Closeable;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
+import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -80,14 +84,14 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *   - topology-aware by calling /v1/forestinfo
  *     - get list of hosts which have writeable forests
  *     - each write hits the next writeable host for round-robin network calls
- *   - manage an internal activeThreadPool of size threadCount for network calls
+ *   - manage an internal threadPool of size threadCount for network calls
  *   - when batchSize reached, writes a batch
- *     - using a thread from activeThreadPool
+ *     - using a thread from threadPool
  *     - no synchronization or unnecessary delays while emptying queue
  *     - and calls each successListener (if not using transactions)
  *   - if usingTransactions (transactionSize > 1)
  *     - opens transactions as needed
- *       - using a thread from activeThreadPool
+ *       - using a thread from threadPool
  *       - but not before, lest we increase likelihood of transaction timeout
  *       - threads needing a transaction will open one then make it available to others up to transactionSize
  *     - after each batch write, check if transactionSize reached and if so commit the transaction
@@ -98,7 +102,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - if commit is successful call each successListener for each transaction batch
  *   - when a batch fails, calls each failureListener
  *     - and calls rollback (if using transactions)
- *       - using a thread from activeThreadPool
+ *       - using a thread from threadPool
  *       - then calls each failureListener for each transaction batch
  *   - flush() writes all queued documents whether the last batch is full or not
  *     - and commits the transaction for each batch so nothing is left uncommitted (ignores transactionSize)
@@ -106,8 +110,8 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *     - and finishes any unfinished transactions
  *       - those without error are committed
  *       - those with error are made to rollback
- *   - awaitCompletion allows the calling thread to block until all WriteBatcher threads are finished
- *     writing batches or committing transactions (or calling rollback)
+ *   - awaitCompletion allows the calling thread to block until all tasks queued to that point
+ *     are finished writing batches or committing transactions (or calling rollback)
  *
  * Design
  *   - think asynchronously
@@ -152,13 +156,17 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *     - try to match number of batches in each transaction to transactionSize
  *       - except when any batch fails, then stop writing to that transaction
  *       - except when flush is called, then commit all open transactions
+ *     - when awaitCompletion is called, block until existing tasks are complete but ignore any
+ *       tasks added after awaitCompletion is called
+ *       - for more on the design of awaitCompletion, see comments above CompletableThreadPoolExecutor
+ *         and CompletableRejectedExecutionHandler
  *   - track
  *     - one queue of DocumentToWrite
  *     - batchCounter to decide if it's time to write a batch
  *       - flush resets this so after flush batch sizes will be normal
  *     - batchNumber to decide which host to use next (round-robin)
  *     - initialized to ensure configuration doesn't change after add/addAs are called
- *     - activeThreadPool of threadCount size for most calls to the server
+ *     - threadPool of threadCount size for most calls to the server
  *       - not calls during forestinfo or flush
  *     - each host
  *       - host name
@@ -183,6 +191,11 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - alive = false if the transaction has been finished (commit / rollback)
  *       - queuedForCleanup tracks if the transaction is now in unfinishedTransactions
  *       - any batches waiting for finish (commit/rollback) before calling successListeners or failureListeners
+ *     - each task (Runnable) in the thread pool task queue
+ *       - so we can know which tasks to monitor when awaitCompletion is called
+ *       - we remove each task when it's complete
+ *       - for more details, see comments above CompletableThreadPoolExecutor and
+ *         CompletableRejectedExecutionHandler
  *
  * Known issues
  *   - does not guarantee minimal batch loss on transaction failure
@@ -208,8 +221,7 @@ public class WriteBatcherImpl
   private AtomicLong itemsSoFar = new AtomicLong(0);
   private HostInfo[] hostInfos;
   private boolean initialized = false;
-  private AtomicReference<ThreadPoolExecutor> activeThreadPool = new AtomicReference<>(null);
-  private List<ThreadPoolExecutor> stoppedThreadPools = new ArrayList<>();
+  private CompletableThreadPoolExecutor threadPool = null;
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private boolean usingTransactions = false;
   private JobTicket jobTicket;
@@ -236,7 +248,11 @@ public class WriteBatcherImpl
         withThreadCount( hostInfos.length );
         logger.warn("threadCount should be 1 or greater--setting threadCount to number of hosts ({})", hostInfos.length);
       }
-      activeThreadPool.set(newThreadPool());
+      // create a thread pool where threads are kept alive for up to one minute of inactivity,
+      // max queue size is threadCount * 3, and callers run tasks past the max queue size
+      threadPool = new CompletableThreadPoolExecutor(getThreadCount(), getThreadCount(), 1, TimeUnit.MINUTES,
+        new LinkedBlockingQueue<Runnable>(getThreadCount() * 3));
+      threadPool.allowCoreThreadTimeOut(true);
 
       initialized = true;
 
@@ -244,13 +260,6 @@ public class WriteBatcherImpl
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
     }
-  }
-
-  private ThreadPoolExecutor newThreadPool() {
-    // create a thread pool where threads are kept alive for up to one minute of inactivity,
-    // max queue size is threadCount * 5, and callers run tasks past the max queue size
-    return new ThreadPoolExecutor(getThreadCount(), getThreadCount(), 1, TimeUnit.MINUTES,
-      new LinkedBlockingQueue<Runnable>(getThreadCount() * 5), new ThreadPoolExecutor.CallerRunsPolicy());
   }
 
   @Override
@@ -291,7 +300,7 @@ public class WriteBatcherImpl
       }
       writeSet.setItemsSoFar(itemsSoFar.addAndGet(i));
       if ( writeSet.getWriteSet().size() > 0 ) {
-        activeThreadPool.get().submit( new BatchWriter(writeSet) );
+        threadPool.submit( new BatchWriter(writeSet) );
       }
     }
     return this;
@@ -532,7 +541,7 @@ public class WriteBatcherImpl
         writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
       }
       writeSet.setItemsSoFar(itemsSoFar.addAndGet(j));
-      activeThreadPool.get().submit( new BatchWriter(writeSet) );
+      threadPool.submit( new BatchWriter(writeSet) );
     }
 
     if ( waitForCompletion == true ) awaitCompletion();
@@ -555,7 +564,7 @@ public class WriteBatcherImpl
       if ( waitForCompletion == true ) {
         cleanupTransactions.run();
       } else {
-        activeThreadPool.get().submit( cleanupTransactions );
+        threadPool.submit( cleanupTransactions );
       }
     }
   }
@@ -626,7 +635,6 @@ public class WriteBatcherImpl
 
   public void stop() {
     stopped.set(true);
-    ThreadPoolExecutor threadPool = activeThreadPool.get();
     if ( threadPool != null ) threadPool.shutdownNow();
   }
 
@@ -643,70 +651,7 @@ public class WriteBatcherImpl
 
   @Override
   public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
-    if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
-    long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
-    // create a new thread pool and move the active thread pool to stoppedThreadPools
-    // this way we can wait for the current active thread pool to finish along with
-    // any other stopped thread pools
-    ThreadPoolExecutor oldThreadPool;
-    synchronized(stoppedThreadPools) {
-      oldThreadPool = activeThreadPool.getAndSet(newThreadPool());
-      if ( oldThreadPool != null ) stoppedThreadPools.add( oldThreadPool );
-    }
-    if ( oldThreadPool != null ) {
-      try {
-        // check if this task queue could use the help of the current thread running tasks
-        Callable<Object> emptyQueue = () -> {
-          Runnable task = oldThreadPool.getQueue().poll();
-          while ( task != null ) {
-            try {
-              task.run();
-            } catch (Throwable t) {
-              logger.error("Exception running a task in awaitComplete", t);
-            }
-            task = oldThreadPool.getQueue().poll();
-          }
-          // now that the queue is empty
-          oldThreadPool.shutdown();
-          return (Object) null;
-        };
-        // call via ExecutorService so execution goes to complete but timeout
-        // allows us to move on
-        ExecutorService executor = Executors.newSingleThreadExecutor();
-        try {
-          ArrayList<Callable<Object>> tasks = new ArrayList<>();
-          tasks.add(emptyQueue);
-          List<Future<Object>> futures = executor.invokeAll(tasks, duration, TimeUnit.MILLISECONDS);
-          // return false if invokeAll timed out, otherwise continue
-          if ( futures.get(0).isDone() == false ) {
-            logger.debug("[awaitCompletion] timeout while running tasks");
-            return false;
-          }
-        } finally {
-          executor.shutdown();
-        }
-      } catch (Throwable t) {
-        logger.error("Exception while emptying task queue in awaitComplete", t);
-      }
-    }
-    List<ThreadPoolExecutor> snapshotStoppedThreadPools = new ArrayList<>(stoppedThreadPools);
-    for ( ThreadPoolExecutor stoppedThreadPool : snapshotStoppedThreadPools ) {
-      long startTime = System.currentTimeMillis();
-      if ( stoppedThreadPool.awaitTermination(duration, TimeUnit.MILLISECONDS) ) {
-        // do nothing, this stoppedThreadPool terminated in time
-      } else {
-        logger.debug("[awaitCompletion] timeout while waiting for tasks to complete");
-        // we didn't finish before timeout
-        return false;
-      }
-      duration -= System.currentTimeMillis() - startTime;
-      if ( duration < 0 ) {
-        // times up!  We didn't finish before timeout...
-        logger.debug("[awaitCompletion] timeout");
-        return false;
-      }
-    }
-    return true;
+    return threadPool.awaitCompletion(timeout, unit);
   }
 
   @Override
@@ -822,7 +767,6 @@ public class WriteBatcherImpl
     if ( removedHostInfos.size() > 0 ) {
       // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host
       List<Runnable> tasks = new ArrayList<>();
-      ThreadPoolExecutor threadPool = activeThreadPool.get();
       if ( threadPool != null ) threadPool.getQueue().drainTo(tasks);
       for ( Runnable task : tasks ) {
         if ( task instanceof BatchWriter ) {
@@ -953,7 +897,7 @@ public class WriteBatcherImpl
         if ( transactionInfo.inProcess.get() <= 0 ) {
           if ( transactionInfo.written.get() == true ) {
             transactionInfo.queuedForCleanup.set(true);
-            activeThreadPool.get().submit( () -> {
+            threadPool.submit( () -> {
               if ( completeTransaction(transactionInfo) ) {
                 host.unfinishedTransactions.remove(transactionInfo);
               } else {
@@ -1086,6 +1030,179 @@ public class WriteBatcherImpl
         }
       }
       if ( lastThrowable != null ) throw lastThrowable;
+    }
+  }
+
+  /**
+   * The following classes and CompletableThreadPoolExecutor
+   * CompletableRejectedExecutionHandler exist exclusively to enable the
+   * desired behavior for awaitCompletion.  The desired behavior is that at any
+   * moment one can call awaitCompletion and it will block until all tasks
+   * added up to that point have completed (and if flushAndWait was called, all
+   * documents added up to that point are written to the database).  This is
+   * tricky behavior because tasks will continue to be added asynchronously
+   * after that point, but we only want to wait for the completion of tasks
+   * added up to that point.
+   *
+   * This behavior is desired so a developer can add a document to a
+   * WriteBatcher instance and call awaitCompletion to know that document and
+   * all documents added previously are commited in the database when
+   * awaitCompletion returns (assuming it didn't timeout).  While a developer
+   * could achieve the same behavior asynchronously by checking for documents
+   * in the onBatchSuccess callback, that logic is complex, so we're taking on
+   * that burden for them.
+   *
+   * To achieve this behavior we keep a set of all tasks
+   * (queuedAndExecutingTasks) and we snapshot that set at the point
+   * awaitCompletion is called.  Then we loop through all tasks in the
+   * snapshot, waiting for each to complete.  We know a task has completed when
+   * it has been removed from the snapshot.  We use Object methods wait and
+   * notify so we know when to re-check the snapshot to see if a task has been
+   * removed.
+   *
+   * A task can complete three ways:
+   * 1) Normal execution by a thread from the thread pool
+   * 2) Rejected execution because the task queue is full.  We use
+   *    CallerRunsPolicy so the calling thread performs execution.
+   * 3) Shutdown of the thread pool
+   *
+   * After each of the three cases we remove the task from
+   * queuedAndExecutingTasks and from any active snapshots.  This avoids
+   * accumulation of tasks after they're finished.  To avoid accumulation of
+   * snapshots they remove themselves when they are no longer needed (when the
+   * awaitCompletion call is finished).
+   */
+  public static class CompletableRejectedExecutionHandler extends ThreadPoolExecutor.CallerRunsPolicy {
+    CompletableThreadPoolExecutor threadPool = null;
+
+    public void setThreadPool(CompletableThreadPoolExecutor threadPool) {
+      this.threadPool = threadPool;
+    }
+
+    // After completing the task (Runnable), remove it from
+    // queuedAndExecutingTasks and any active snapshots.  This is called when
+    // the task queue is full.  Since this RejectedExecutionHandler extends
+    // CallerRunsPolicy it first allows the calling thread to execute the task
+    // to completion, then it removes it.
+    public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
+      super.rejectedExecution(r, e);
+      threadPool.taskComplete(r);
+    }
+  }
+
+  public static class CompletableThreadPoolExecutor extends ThreadPoolExecutor {
+    // we use ConcurrentHashMap so modifications are thread-safe but
+    // unsychronized for better performance
+    Set<Runnable> queuedAndExecutingTasks = ConcurrentHashMap.<Runnable>newKeySet();
+
+    // we tried a Set for activeSnapshots, but ConcurrentHashMap instances don't have
+    // a reliable hashCode method, so the Set often overwrote snapshots
+    // thinking they were the same.  So while the thread isn't needed, it works
+    // as a key.  We are trusting that shapshots will always get removed when
+    // each call to awaitCompletion is done.
+    Map<Thread,Set<Runnable>> activeSnapshots = new ConcurrentHashMap<>();
+
+    public CompletableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
+      TimeUnit unit, BlockingQueue<Runnable> queue)
+    {
+      super(corePoolSize, maximumPoolSize, keepAliveTime, unit, queue, new CompletableRejectedExecutionHandler());
+      // now that super() has been called we can reference "this" to add it to
+      // the RejectedExecutionHandler
+      ((CompletableRejectedExecutionHandler) getRejectedExecutionHandler()).setThreadPool(this);
+    }
+
+    // execute is called whenever a task is added to the Executor we tried
+    // overriding submit (since that's what we call) but it seems to wrap the
+    // runnables passed to it, so they aren't the same runnables passed to
+    // afterExecute.  We've had better luck with runnables matching after
+    // overriding execute.
+    public void execute(Runnable r) {
+      queuedAndExecutingTasks.add(r);
+      super.execute(r);
+    }
+
+    // afterExecute is called when a task has run to completion in a thread
+    // from the thread pool
+    protected void afterExecute(Runnable r, Throwable t) {
+      taskComplete(r);
+      super.afterExecute(r, t);
+    }
+
+    public Set<Runnable> snapshotQueuedAndExecutingTasks() {
+      Set<Runnable> snapshot = ConcurrentHashMap.<Runnable>newKeySet();
+      snapshot.addAll(queuedAndExecutingTasks);
+      activeSnapshots.put( Thread.currentThread(), snapshot );
+      return snapshot;
+    }
+
+    public void removeSnapshot() {
+      activeSnapshots.remove(Thread.currentThread());
+    }
+
+    // taskComplete is called when a task finishes by:
+    //   1) Normal execution by a thread from the thread pool
+    //   2) Rejected execution because the task queue is full.  We use
+    //      CallerRunsPolicy so the calling thread performs execution.
+    //   3) Shutdown of the thread pool
+    // taskComplete removes the completed Runnable from queuedAndExecutingTasks
+    // and all active snapshots.
+    public void taskComplete(Runnable r) {
+      boolean removedFromASnapshot = false;
+      queuedAndExecutingTasks.remove(r);
+      for ( Set<Runnable> snapshot : activeSnapshots.values() ) {
+        if ( snapshot.remove(r) ) {
+          removedFromASnapshot = true;
+        }
+      }
+      // if no snapshots contained this task, we can avoid the synchronized block
+      if ( removedFromASnapshot == true ) {
+        synchronized(r) { r.notifyAll(); }
+      }
+    }
+
+    public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
+      if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
+      // get a snapshot so we only look at tasks already queued, not any that
+      // get asynchronously queued after this point
+      Set<Runnable> snapshotQueuedAndExecutingTasks = snapshotQueuedAndExecutingTasks();
+      try {
+        long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
+        // we can iterate even when the underlying set is being modified
+        // since we're using ConcurrentHashMap
+        for ( Runnable task : snapshotQueuedAndExecutingTasks ) {
+          // Lock task before we re-check whether it is in the snapshot.  Thus
+          // there's no way for the notifyAll to sneak in right after our check
+          // and leave us waiting forever.  Also we already have the lock
+          // required to call task.wait().  Normally we religiously avoid any
+          // synchronized blocks, but we couldn't find a way to avoid this.
+          synchronized(task) {
+            while ( snapshotQueuedAndExecutingTasks.contains(task) ) {
+              long startTime = System.currentTimeMillis();
+              // block until task is complete or timeout expires
+              task.wait(duration);
+              duration -= System.currentTimeMillis() - startTime;
+              if ( duration <= 0 ) {
+                // times up!  We didn't finish before timeout...
+                logger.debug("[awaitCompletion] timeout");
+                return false;
+              }
+            }
+          }
+        }
+      } finally {
+        removeSnapshot();
+      }
+      return true;
+    }
+
+    // shutdown the thread pool and remove any unstarted tasks from
+    // queuedAndExecutingTasks and any active snapshots
+    public List<Runnable> shutdownNow() {
+      List<Runnable> tasks = super.shutdownNow();
+      for ( Runnable task : tasks ) {
+        taskComplete(task);
+      }
+      return tasks;
     }
   }
 }
