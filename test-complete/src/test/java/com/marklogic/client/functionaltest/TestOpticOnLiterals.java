@@ -67,13 +67,12 @@ import com.marklogic.client.type.PlanValueOption;
 public class TestOpticOnLiterals extends BasicJavaClientREST {
 	
 	private static String dbName = "TestOpticOnLiteralsDB";
-	private static String modulesdbName = "TestOpticOnLiteralsDB";
+	private static String schemadbName = "TestOpticOnLiteralsSchemaDB";
 	private static String [] fNames = {"TestOpticOnLiteralsDB-1"};
-	private static String [] modulesfNames = {"TestOpticOnLiteralsModulesDB-1"};
+	private static String [] schemafNames = {"TestOpticOnLiteralsSchemaDB-1"};
 	
-	private static int restPort=8011;
 	private static DatabaseClient client;	
-	private static String newline;
+	
 	private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 	private static Map<String, Object>[] literals1 = new HashMap[5];
 	private static Map<String, Object>[] literals2 = new HashMap[4];
@@ -85,8 +84,6 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		System.out.println("In TestOpticOnLiterals setup");
-		
-		newline = System.getProperty("line.separator");
 				
 		configureRESTServer(dbName, fNames);
 		
@@ -112,7 +109,6 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		// Insert word lexicon.
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
-		ObjectNode wordLexicon = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		
@@ -133,17 +129,22 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		enableCollectionLexicon(dbName);
 		// Enable uri lexicon.
 		setDatabaseProperties(dbName,"uri-lexicon",true );
-		//Set the same database as the Schema database. "Schemas" have authorization issues - TBD later
-		setDatabaseProperties(dbName, "schema-database", dbName);
-				
+		// Create schema database	
+		createDB(schemadbName);
+		createForest(schemafNames[0], schemadbName);
+		//Set the schemadbName database as the Schema database.
+		setDatabaseProperties(dbName, "schema-database", schemadbName);
+
+		DatabaseClient schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
+		
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.
 		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin") );
 		// Install the TDE templates
 		// loadFileToDB(client, filename, docURI, collection, document format)
-		loadFileToDB(client, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail4.tdej", "/optic/view/test/masterDetail4.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
 
 		// Load XML data files.
 		loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML",  new String[] {"/optic/view/test"});
@@ -254,7 +255,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 		FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
 		InputStreamHandle handle = new InputStreamHandle(myStream);
 		handle.set (myStream);
-		resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata,getParams);  
+		resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata,getParams);
+		Thread.sleep(10000);
+		schemaDBclient.release();
 	}
 	
 	/**
@@ -1514,6 +1517,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 	public static void tearDownAfterClass() throws Exception
 	{
 		System.out.println("In tear down");
+		// Delete the temp schema DB after resetting the Schema DB on content DB. Else delete fails.
+		setDatabaseProperties(dbName, "schema-database", dbName);
+		deleteDB(schemadbName);
+		deleteForest(schemafNames[0]);
 		// release client		
 		client.release();
 		cleanupRESTServer(dbName, fNames);		

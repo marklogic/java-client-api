@@ -24,7 +24,6 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -44,46 +43,32 @@ import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
-import com.marklogic.client.expression.PlanBuilder.PreparePlan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.row.RowManager;
-import com.marklogic.client.row.RowRecord;
-import com.marklogic.client.row.RowSet;
-import com.marklogic.client.type.ArrayNodeExpr;
 import com.marklogic.client.type.CtsReferenceExpr;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanPrefixer;
 /* The tests here are for sanity checks when we have plans from different sources
  * such as fromLexicons and fromtriples.
  */
-import com.marklogic.client.type.TextNodeExpr;
 
 public class TestOpticOnMixedViews extends BasicJavaClientREST {
 	
 	private static String dbName = "TestOpticOnMixedViewsDB";
-	private static String modulesdbName = "TestOpticOnMixedViewsDB";
+	private static String schemadbName = "TestOpticOnMixedViewsSchemaDB";
 	private static String [] fNames = {"TestOpticOnMixedViewsDB-1"};
-	private static String [] modulesfNames = {"TestOpticOnMixedViewsModulesDB-1"};
+	private static String [] schemafNames = {"TestOpticOnMixedViewsSchemaDB-1"};
 	
-	private static int restPort=8011;
 	private static DatabaseClient client;
-	
-	private static String newline;
 	private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 	
 	@BeforeClass
 	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
-		System.out.println("In TestOpticOnMixedViews setup");
-		
-		newline = System.getProperty("line.separator");
-				
+		System.out.println("In TestOpticOnMixedViews setup");			
 		configureRESTServer(dbName, fNames);
 		
 		// Add new range elements into this array
@@ -129,17 +114,22 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		enableCollectionLexicon(dbName);
 		// Enable uri lexicon.
 		setDatabaseProperties(dbName,"uri-lexicon",true );
-		//Set the same database as the Schema database. "Schemas" have authorization issues - TBD later
-		setDatabaseProperties(dbName, "schema-database", dbName);
+		// Create schema database	
+		createDB(schemadbName);
+		createForest(schemafNames[0], schemadbName);
+		//Set the schemadbName database as the Schema database.
+		setDatabaseProperties(dbName, "schema-database", schemadbName);
+
+		DatabaseClient schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
 				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.		
 		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin") );
 		
 		// Install the TDE templates
 		// loadFileToDB(client, filename, docURI, collection, document format)
-		loadFileToDB(client, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
 		
 		// Load XML data files.
 		loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML",  new String[] {"/optic/view/test"});
@@ -162,6 +152,8 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 		loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		Thread.sleep(10000);
+		schemaDBclient.release();
 	}
 	
 	/**
@@ -539,6 +531,10 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
+		// Delete the temp schema DB after resetting the Schema DB on content DB. Else delete fails.
+		setDatabaseProperties(dbName, "schema-database", dbName);
+		deleteDB(schemadbName);
+		deleteForest(schemafNames[0]);
 		// release client
 		client.release();
 		cleanupRESTServer(dbName, fNames);		
