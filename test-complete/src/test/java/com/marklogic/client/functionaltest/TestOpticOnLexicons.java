@@ -61,22 +61,17 @@ import com.marklogic.client.type.PlanSystemColumn;
 public class TestOpticOnLexicons extends BasicJavaClientREST {
 	
 	private static String dbName = "TestOpticOnLexiconsDB";
-	private static String modulesdbName = "TestOpticOnLexiconsDB";
+	private static String schemadbName = "TestOpticOnLexiconsSchemaDB";
 	private static String [] fNames = {"TestOpticOnLexiconsDB-1"};
-	private static String [] modulesfNames = {"TestOpticOnLexiconsModulesDB-1"};
+	private static String [] schemafNames = {"TestOpticOnLexiconsSchemaDB-1"};
 	
-	private static int restPort=8011;
 	private static DatabaseClient client;
-	
-	private static String newline;
 	private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 	
 	@BeforeClass
 	public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
 	{
 		System.out.println("In TestOpticOnLexicons setup");
-		
-		newline = System.getProperty("line.separator");
 				
 		configureRESTServer(dbName, fNames);
 		
@@ -102,7 +97,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// Insert word lexicon.
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode mainNode = mapper.createObjectNode();
-		ObjectNode wordLexicon = mapper.createObjectNode();
 		ArrayNode childArray = mapper.createArrayNode();
 		ObjectNode childNodeObject = mapper.createObjectNode();
 		
@@ -123,17 +117,22 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		enableCollectionLexicon(dbName);
 		// Enable uri lexicon.
 		setDatabaseProperties(dbName,"uri-lexicon",true );
-		//Set the same database as the Schema database. "Schemas" have authorization issues - TBD later
-		setDatabaseProperties(dbName, "schema-database", dbName);
+		// Create schema database	
+		createDB(schemadbName);
+		createForest(schemafNames[0], schemadbName);
+		//Set the schemadbName database as the Schema database.
+		setDatabaseProperties(dbName, "schema-database", schemadbName);
+
+		DatabaseClient schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
 				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.		
 		client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin") );
 		
 		// Install the TDE templates
 		// loadFileToDB(client, filename, docURI, collection, document format)
-		loadFileToDB(client, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
-		loadFileToDB(client, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail2.tdej", "/optic/view/test/masterDetail2.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
+		loadFileToDB(schemaDBclient, "masterDetail3.tdej", "/optic/view/test/masterDetail3.tdej", "JSON",  new String[] {"http://marklogic.com/xdmp/tde"});
 		
 		// Load XML data files.
 		loadFileToDB(client, "masterDetail.xml", "/optic/view/test/masterDetail.xml", "XML",  new String[] {"/optic/view/test"});
@@ -156,6 +155,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		loadFileToDB(client, "city3.json", "/optic/lexicon/test/city3.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		loadFileToDB(client, "city4.json", "/optic/lexicon/test/city4.json", "JSON",  new String[] {"/optic/lexicon/test"});
 		loadFileToDB(client, "city5.json", "/optic/lexicon/test/city5.json", "JSON",  new String[] {"/optic/lexicon/test"});
+		Thread.sleep(10000);
+		schemaDBclient.release();
 	}
 	
 	/**
@@ -1220,7 +1221,11 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		System.out.println("In tear down");
-		// release client		
+		// Delete the temp schema DB after resetting the Schema DB on content DB. Else delete fails.
+		setDatabaseProperties(dbName, "schema-database", dbName);
+		deleteDB(schemadbName);
+		deleteForest(schemafNames[0]);		
+		// release client
 		client.release();
 		cleanupRESTServer(dbName, fNames);		
 	}

@@ -279,10 +279,15 @@ public class QueryBatcherTest {
     assertEquals(threadCount, queryBatcher.getThreadCount());
     assertFalse("Job should not be stopped yet", queryBatcher.isStopped());
 
+    long minTime = new Date().getTime();
+
     JobTicket ticket = moveMgr.startJob(queryBatcher);
+
     JobReport report = moveMgr.getJobReport(ticket);
     //assertFalse("Job Report has incorrect job completion information", report.isJobComplete());
     boolean finished = queryBatcher.awaitCompletion();
+
+
     if ( finished == false ) {
       fail("Job did not finish, it was interrupted");
     }
@@ -301,10 +306,10 @@ public class QueryBatcherTest {
     assertEquals(numExpected, totalResults.get());
 
     report = moveMgr.getJobReport(ticket);
-    long maxTime = new Date().getTime()+1000;
-    long minTime = new Date().getTime()-1000;
+    long maxTime = new Date().getTime();
     Date batchDate = batchTimestamp.get().getTime();
-    assertTrue("Batch has incorrect timestamp", batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
+    assertTrue("Batch has incorrect timestamp=" + batchDate.getTime() + " should be between " +
+      minTime + " and " + maxTime, batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
     assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
@@ -317,15 +322,17 @@ public class QueryBatcherTest {
     SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
     assertEquals(numExpected, searchResults.getTotalResults());
 
-    // make sure we got the expected results per forest
-    for ( String forest : matchesByForest.keySet() ) {
-      String[] expected = matchesByForest.get(forest);
-      for ( String uri : expected ) {
-        if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
-          for ( String resultsForest : results.keySet() ) {
-            logger.error("Results found for forest {}: {}", resultsForest, results.get(resultsForest));
+    // if there are only the three expected forests, make sure we got the expected results per forest
+    if ( queryBatcher.getForestConfig().listForests().length == 3 ) {
+      for ( String forest : matchesByForest.keySet() ) {
+        String[] expected = matchesByForest.get(forest);
+        for ( String uri : expected ) {
+          if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
+            for ( String resultsForest : results.keySet() ) {
+              logger.error("Results found for forest {}: {}", resultsForest, results.get(resultsForest));
+            }
+            fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
           }
-          fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
         }
       }
     }
@@ -350,7 +357,7 @@ public class QueryBatcherTest {
     RawStructuredQueryDefinition query = client.newQueryManager().newRawStructuredQueryDefinition(
       new StringHandle("<this is not a valid structured query>").withFormat(JSON));
     // we'll see one failure per forest
-    List<String> urisIterator = testQueryExceptions(query, 0, 3);
+    List<String> urisIterator = testQueryExceptions(query, 0, moveMgr.readForestConfig().listForests().length);
     // without any matching uris, there will be no success or failure batches
     testIteratorExceptions(urisIterator, 0, 0);
   }
