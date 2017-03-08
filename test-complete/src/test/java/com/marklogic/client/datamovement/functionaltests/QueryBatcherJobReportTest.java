@@ -257,13 +257,10 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 	@Test
 	public void testNullQdef() throws IOException, InterruptedException
 	{	
-			
 		JsonNode node = null;
-		
 		JacksonHandle jacksonHandle = null;
 		
 		WriteBatcher wbatcher = dmManager.newWriteBatcher().withBatchSize(32).withThreadCount(20);
-		
 		try{
 			wbatcher.addAs("/nulldoc",node);
 			Assert.assertFalse("Exception was not thrown, when it should have been", 1<2);

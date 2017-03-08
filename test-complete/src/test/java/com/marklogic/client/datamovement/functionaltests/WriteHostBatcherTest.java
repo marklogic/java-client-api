@@ -2936,12 +2936,12 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		try{
 			StringBuffer xmlBuff = new StringBuffer(); 	
 			//xmlBuff.append("<forest-properties xmlns=\"http://marklogic.com/manage\">"); 
-			xmlBuff.append("{");
-			 Iterator it = properties.entrySet().iterator();
+			 xmlBuff.append("{");
+			 Iterator<Map.Entry<String,String>> it = properties.entrySet().iterator();
 			 int size = properties.size();
 			 int j = 0;
 			 while (it.hasNext()) {
-		         Map.Entry pair = (Map.Entry)it.next();
+		         Map.Entry<String,String> pair = (Map.Entry<String,String>)it.next();
 		         xmlBuff.append("\"").append(pair.getKey()).append("\":");
 		         if (j == (size -1))
 		        	 xmlBuff.append("\"").append(pair.getValue()).append("\"");
