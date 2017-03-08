@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a server URI expression.
+ */
 public interface XsAnyURIExpr extends XsAnyURISeqExpr, XsAnyAtomicTypeExpr {
 }

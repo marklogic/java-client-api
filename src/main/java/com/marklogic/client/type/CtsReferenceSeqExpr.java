@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of cts.reference expressions.
+ */
 public interface CtsReferenceSeqExpr extends ItemSeqExpr {
 }

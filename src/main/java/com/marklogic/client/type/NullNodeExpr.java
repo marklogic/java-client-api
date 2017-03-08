@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a JSON null node expression.
+ */
 public interface NullNodeExpr extends NodeExpr, NullNodeSeqExpr, JsonContentNodeExpr { }

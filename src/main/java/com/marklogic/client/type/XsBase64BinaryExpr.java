@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a server base 64 binary expression.
+ */
 public interface XsBase64BinaryExpr extends XsBase64BinarySeqExpr, XsAnyAtomicTypeExpr {
 }

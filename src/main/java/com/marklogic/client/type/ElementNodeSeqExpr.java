@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * A sequence of XML element node expressions.
+ */
 public interface ElementNodeSeqExpr extends NodeSeqExpr { }

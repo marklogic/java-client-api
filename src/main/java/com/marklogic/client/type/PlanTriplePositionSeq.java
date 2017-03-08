@@ -16,5 +16,11 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of literal values or columns for positions 
+ * within patterns for projecting rows from triples
+ * in a row pipeline.
+ */
 public interface PlanTriplePositionSeq {
 }

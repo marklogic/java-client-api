@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a JSON number node expression.
+ */
 public interface NumberNodeExpr extends NodeExpr, NumberNodeSeqExpr, JsonContentNodeExpr { }

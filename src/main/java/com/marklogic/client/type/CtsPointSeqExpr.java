@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of cts.point expressions.
+ */
 public interface CtsPointSeqExpr extends CtsRegionSeqExpr {
 }

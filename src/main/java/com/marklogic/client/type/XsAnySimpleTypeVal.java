@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server simple value.
+ */
 public interface XsAnySimpleTypeVal extends XsAnySimpleTypeExpr, ItemVal, XsAnySimpleTypeSeqVal { }

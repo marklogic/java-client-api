@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server boolean values.
+ */
 public interface XsBooleanSeqVal extends XsBooleanSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsBooleanVal[] getBooleanItems();
 }

@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * A sequence of JSON array or object node expressions.
+ */
 public interface JsonRootNodeSeqExpr extends NodeSeqExpr { }

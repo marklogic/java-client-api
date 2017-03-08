@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * A sequence of JSON or XML document node expressions.
+ */
 public interface DocumentNodeSeqExpr extends NodeSeqExpr { }

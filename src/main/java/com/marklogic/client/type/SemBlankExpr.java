@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a semantic bnode (blank node) expression.
+ */
 public interface SemBlankExpr extends SemBlankSeqExpr, ItemExpr {
 }

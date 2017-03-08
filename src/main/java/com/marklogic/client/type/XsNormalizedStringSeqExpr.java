@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server normalized string expressions.
+ */
 public interface XsNormalizedStringSeqExpr extends XsStringSeqExpr {
 }

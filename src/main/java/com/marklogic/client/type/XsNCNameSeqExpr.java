@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server NCName expressions.
+ */
 public interface XsNCNameSeqExpr extends XsNameSeqExpr {
 }

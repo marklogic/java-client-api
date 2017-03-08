@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server untyped atomic values.
+ */
 public interface XsUntypedAtomicSeqVal extends XsUntypedAtomicSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsUntypedAtomicVal[] getUntypedAtomicItems();
 }

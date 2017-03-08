@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server untyped atomic value.
+ */
 public interface XsUntypedAtomicVal extends XsUntypedAtomicExpr, XsAnyAtomicTypeVal, XsUntypedAtomicSeqVal, PlanParamBindingVal {
     public String getString();
 }

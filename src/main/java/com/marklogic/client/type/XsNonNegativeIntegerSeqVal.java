@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of non-negative integer values.
+ */
 public interface XsNonNegativeIntegerSeqVal extends XsNonNegativeIntegerSeqExpr, XsIntegerSeqVal {
     public XsNonNegativeIntegerVal[] getNonNegativeIntegerItems();
 }

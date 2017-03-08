@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server GYearMonth values.
+ */
 public interface XsGYearMonthSeqVal extends XsGYearMonthSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsGYearMonthVal[] getGYearMonthItems();
 }

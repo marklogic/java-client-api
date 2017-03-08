@@ -16,5 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of column expressions returned by as() or col() calls
+ * in a row pipeline.
+ */
 public interface PlanExprColSeq extends PlanAggregateColSeq, PlanSortKeySeq {
 }

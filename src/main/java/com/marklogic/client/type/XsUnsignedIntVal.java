@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server unsigned int value.
+ */
 public interface XsUnsignedIntVal extends XsUnsignedIntExpr, XsUnsignedLongVal, XsUnsignedIntSeqVal, PlanParamBindingVal {
     public int getInt();
 }

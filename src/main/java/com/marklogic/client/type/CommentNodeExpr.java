@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of an XML comment node expression.
+ */
 public interface CommentNodeExpr extends NodeExpr, CommentNodeSeqExpr, XmlContentNodeExpr, XmlRootNodeExpr { }

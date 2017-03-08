@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server expression.
+ */
 public interface ItemExpr extends ItemSeqExpr { }

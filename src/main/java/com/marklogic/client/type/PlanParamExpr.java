@@ -16,5 +16,12 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
-public interface PlanParamExpr extends RdfLangStringExpr, SemIriExpr, XsAnyURIExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanParamSeqExpr, PlanTriplePosition, PlanLongParam {
+
+/**
+ * An instance of a placeholder parameter returned by a call
+ * to the param() function that can represent a literal value
+ * in expressions and can be passed on a bind() call to be
+ * assigned a literal value when invoking a row pipeline.
+ */
+public interface PlanParamExpr extends RdfLangStringExpr, SemIriExpr, XsAnyURIExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanParamSeqExpr, PlanTriplePosition {
 }

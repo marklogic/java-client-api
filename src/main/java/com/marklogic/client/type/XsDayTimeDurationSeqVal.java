@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server day-time duration values.
+ */
 public interface XsDayTimeDurationSeqVal extends XsDayTimeDurationSeqExpr, XsDurationSeqVal {
     public XsDayTimeDurationVal[] getDayTimeDurationItems();
 }

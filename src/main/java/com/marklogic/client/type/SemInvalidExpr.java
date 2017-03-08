@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of an semantic invalid expression.
+ */
 public interface SemInvalidExpr extends SemInvalidSeqExpr, XsAnyAtomicTypeExpr {
 }

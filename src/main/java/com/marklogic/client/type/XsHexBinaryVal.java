@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server hex binary value.
+ */
 public interface XsHexBinaryVal extends XsHexBinaryExpr, XsAnyAtomicTypeVal, XsHexBinarySeqVal {
     public byte[] getBytes();
 }

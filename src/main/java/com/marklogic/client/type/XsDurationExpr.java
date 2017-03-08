@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a server duration expression.
+ */
 public interface XsDurationExpr extends XsDurationSeqExpr, XsAnyAtomicTypeExpr {
 }

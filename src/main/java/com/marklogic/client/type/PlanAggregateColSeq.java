@@ -16,5 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of columns populated by an aggregate expressions
+ * in a row pipeline.
+ */
 public interface PlanAggregateColSeq {
 }

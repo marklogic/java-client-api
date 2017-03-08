@@ -16,5 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a column expression returned by a col() call
+ * in a row pipeline.
+ */
 public interface PlanColumn extends PlanExprCol, RdfLangStringExpr, SemIriExpr, XsAnyURIExpr, XsBase64BinaryExpr, XsBooleanExpr, XsDateExpr, XsDateTimeExpr, XsDecimalExpr, XsIntegerExpr, XsLongExpr, XsIntExpr, XsShortExpr, XsByteExpr, XsUnsignedLongExpr, XsUnsignedIntExpr, XsUnsignedShortExpr, XsUnsignedByteExpr, XsDoubleExpr, XsDayTimeDurationExpr, XsYearMonthDurationExpr, XsFloatExpr, XsGDayExpr, XsGMonthExpr, XsGMonthDayExpr, XsGYearExpr, XsGYearMonthExpr, XsHexBinaryExpr, XsQNameExpr, XsStringExpr, XsTimeExpr, XsUntypedAtomicExpr, PlanTriplePosition, PlanColumnSeq {
 }

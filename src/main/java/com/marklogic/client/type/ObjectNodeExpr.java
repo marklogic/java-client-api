@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a JSON object node expression.
+ */
 public interface ObjectNodeExpr extends NodeExpr, ObjectNodeSeqExpr, JsonContentNodeExpr, JsonRootNodeExpr { }

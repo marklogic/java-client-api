@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a semantic IRI expression.
+ */
 public interface SemIriExpr extends SemIriSeqExpr, XsAnyURIExpr {
 }

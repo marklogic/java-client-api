@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server double expressions.
+ */
 public interface XsDoubleSeqExpr extends XsAnyAtomicTypeSeqExpr, XsNumericSeqExpr {
 }

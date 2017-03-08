@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server unsigned int values.
+ */
 public interface XsUnsignedIntSeqVal extends XsUnsignedIntSeqExpr, XsUnsignedLongSeqVal {
     public XsUnsignedIntVal[] getUnsignedIntItems();
 }

@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a node expression.
+ */
 public interface NodeExpr extends ItemExpr, NodeSeqExpr { }

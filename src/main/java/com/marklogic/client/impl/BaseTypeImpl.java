@@ -47,7 +47,6 @@ import com.marklogic.client.type.ProcessingInstructionNodeSeqExpr;
 import com.marklogic.client.type.TextNodeExpr;
 import com.marklogic.client.type.TextNodeSeqExpr;
 import com.marklogic.client.type.XmlContentNodeSeqExpr;
-import com.marklogic.client.type.XsAnyAtomicTypeMapSeq;
 
 public class BaseTypeImpl {
 	public static interface BaseArgImpl {
@@ -323,13 +322,6 @@ public class BaseTypeImpl {
 
     static class XmlContentNodeSeqListImpl extends ItemSeqListImpl implements XmlContentNodeSeqExpr {
     	XmlContentNodeSeqListImpl(Object[] items) {
-            super(items);
-        }
-    }
-
-// TODO: DELETE???
-    static class XsAnyAtomicTypeMapSeqListImpl extends ItemSeqListImpl implements XsAnyAtomicTypeMapSeq {
-    	XsAnyAtomicTypeMapSeqListImpl(Object[] items) {
             super(items);
         }
     }

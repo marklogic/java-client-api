@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server short expressions.
+ */
 public interface XsShortSeqExpr extends XsIntSeqExpr {
 }

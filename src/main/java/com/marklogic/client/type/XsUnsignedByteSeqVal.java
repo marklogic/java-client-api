@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server unsigned byte values.
+ */
 public interface XsUnsignedByteSeqVal extends XsUnsignedByteSeqExpr, XsUnsignedShortSeqVal {
     public XsUnsignedByteVal[] getUnsignedByteItems();
 }

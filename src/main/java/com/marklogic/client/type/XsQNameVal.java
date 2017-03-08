@@ -17,6 +17,9 @@ package com.marklogic.client.type;
 
 import javax.xml.namespace.QName;
 
+/**
+ * An instance of a server qualified name value.
+ */
 public interface XsQNameVal extends XsQNameExpr, XsAnyAtomicTypeVal, XsQNameSeqVal {
     public QName getQName();
 }

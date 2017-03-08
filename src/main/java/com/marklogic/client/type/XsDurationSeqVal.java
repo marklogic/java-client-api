@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * A sequence of server duration values.
+ */
 public interface XsDurationSeqVal extends XsAnyAtomicTypeSeqVal, XsDurationSeqExpr {
     public XsDurationVal[] getDurationItems();
 }

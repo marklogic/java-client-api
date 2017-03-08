@@ -17,6 +17,9 @@ package com.marklogic.client.type;
 
 import java.util.Calendar;
 
+/**
+ * An instance of a server time value.
+ */
 public interface XsTimeVal extends XsTimeExpr, XsAnyAtomicTypeVal, XsTimeSeqVal, PlanParamBindingVal {
     // follows JAXB rather than XQJ, which uses XMLGregorianCalendar 
     public Calendar getCalendar();

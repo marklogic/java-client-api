@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * A sequence of RDF language string values.
+ */
 public interface RdfLangStringVal extends RdfLangStringExpr, XsStringVal, RdfLangStringSeqVal, PlanParamBindingVal {
     public String getString();
     public String getLang();

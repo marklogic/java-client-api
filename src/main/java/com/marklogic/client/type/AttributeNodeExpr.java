@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of an XML attribute node expression.
+ */
 public interface AttributeNodeExpr extends NodeExpr, AttributeNodeSeqExpr { }

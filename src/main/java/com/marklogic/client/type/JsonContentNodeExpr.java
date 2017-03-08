@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a JSON boolean, null, number, or text node expression.
+ */
 public interface JsonContentNodeExpr extends NodeExpr, JsonContentNodeSeqExpr { }

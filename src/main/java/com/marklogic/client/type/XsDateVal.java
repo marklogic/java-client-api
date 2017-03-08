@@ -17,6 +17,9 @@ package com.marklogic.client.type;
 
 import java.util.Calendar;
 
+/**
+ * An instance of a server date value.
+ */
 public interface XsDateVal extends XsDateExpr, XsAnyAtomicTypeVal, XsDateSeqVal, PlanParamBindingVal {
     // follows JAXB rather than XQJ, which uses XMLGregorianCalendar
     public Calendar getCalendar();

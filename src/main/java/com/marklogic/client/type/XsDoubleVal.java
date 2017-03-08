@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server double value.
+ */
 public interface XsDoubleVal extends XsDoubleExpr, XsAnyAtomicTypeVal, XsNumericVal, XsDoubleSeqVal, PlanParamBindingVal {
     public double getDouble();
 }

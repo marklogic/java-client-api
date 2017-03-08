@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a server negative integer expression.
+ */
 public interface XsNegativeIntegerExpr extends XsNegativeIntegerSeqExpr, XsNonPositiveIntegerExpr {
 }

@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a server year-month duration expression.
+ */
 public interface XsYearMonthDurationExpr extends XsYearMonthDurationSeqExpr, XsDurationExpr {
 }

@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of an RDF language string expression.
+ */
 public interface RdfLangStringExpr extends RdfLangStringSeqExpr, XsStringExpr {
 }

@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server integer values.
+ */
 public interface XsIntegerSeqVal extends XsIntegerSeqExpr, XsDecimalSeqVal {
     public XsIntegerVal[] getIntegerItems();
 }

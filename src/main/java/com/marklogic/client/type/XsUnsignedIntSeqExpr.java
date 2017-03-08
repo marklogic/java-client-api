@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server unsigned int expressions.
+ */
 public interface XsUnsignedIntSeqExpr extends XsUnsignedLongSeqExpr {
 }

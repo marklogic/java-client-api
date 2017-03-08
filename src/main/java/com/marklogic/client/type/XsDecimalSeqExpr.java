@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server decimal expressions.
+ */
 public interface XsDecimalSeqExpr extends XsAnyAtomicTypeSeqExpr, XsNumericSeqExpr {
 }

@@ -16,5 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of PlanValueOption or separator strings for a group concat
+ * aggregate expression in a row pipeline.
+ */
 public interface PlanGroupConcatOptionSeq {
 }

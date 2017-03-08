@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of an XML processing instruction node expression.
+ */
 public interface ProcessingInstructionNodeExpr extends NodeExpr, ProcessingInstructionNodeSeqExpr, XmlContentNodeExpr, XmlRootNodeExpr { }

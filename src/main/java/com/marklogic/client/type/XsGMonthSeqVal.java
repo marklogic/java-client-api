@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server GMonth values.
+ */
 public interface XsGMonthSeqVal extends XsGMonthSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsGMonthVal[] getGMonthItems();
 }

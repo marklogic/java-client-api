@@ -17,6 +17,9 @@ package com.marklogic.client.type;
 
 import java.math.BigInteger;
 
+/**
+ * An instance of a server integer value.
+ */
 public interface XsIntegerVal extends XsIntegerExpr, XsDecimalVal, XsIntegerSeqVal, PlanParamBindingVal {
     public BigInteger getBigInteger();
 }

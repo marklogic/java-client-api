@@ -16,6 +16,10 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * A sequence of server datetime values.
+ */
 public interface XsDateTimeSeqVal extends XsDateTimeSeqExpr, XsAnyAtomicTypeSeqVal {
     public XsDateTimeVal[] getDateTimeItems();
 }

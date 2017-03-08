@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server boolean value.
+ */
 public interface XsBooleanVal extends XsBooleanExpr, XsAnyAtomicTypeVal, XsBooleanSeqVal, PlanParamBindingVal {
     public boolean getBoolean();
 }

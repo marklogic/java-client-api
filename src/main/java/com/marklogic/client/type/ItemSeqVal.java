@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * One or more server values.
+ */
 public interface ItemSeqVal extends ItemSeqExpr {
     public ItemVal[] getItems();
 }

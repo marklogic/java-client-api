@@ -1,5 +1,10 @@
+/**
+ * The package provides interfaces specifying the type of an expression or
+ * value as passed to a {@link com.marklogic.expression.PlanBuilder} method
+ * or returned from a {@link com.marklogic.row.RowRecord} method.
+ */
 /*
- * Copyright 2017 MarkLogic Corporation
+ * Copyright 2016-2017 MarkLogic Corporation
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,7 +19,3 @@
  * limitations under the License.
  */
 package com.marklogic.client.type;
-
-//IMPORTANT: Do not edit. This file is generated.
-public interface PlanLongParam extends PlanLongParamSeq {
-}

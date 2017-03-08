@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a semantic unknown expression.
+ */
 public interface SemUnknownExpr extends SemUnknownSeqExpr, XsAnyAtomicTypeExpr {
 }

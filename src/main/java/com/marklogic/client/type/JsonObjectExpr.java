@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a JSON object expression.
+ */
 public interface JsonObjectExpr extends JsonObjectSeqExpr, MapMapExpr {
 }

@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a semantic IRI value.
+ */
 public interface SemIriVal extends SemIriExpr, XsAnyURIVal, SemIriSeqVal, PlanParamBindingVal {
     public String getString();
 }

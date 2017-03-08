@@ -16,5 +16,9 @@
 package com.marklogic.client.type;
 
 // IMPORTANT: Do not edit. This file is generated.
+
+/**
+ * An instance of a JSON array expression.
+ */
 public interface JsonArrayExpr extends JsonArraySeqExpr, ItemExpr {
 }

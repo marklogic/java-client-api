@@ -15,4 +15,7 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server non-negative integer value.
+ */
 public interface XsNonNegativeIntegerVal extends XsNonNegativeIntegerExpr, XsIntegerVal, XsNonNegativeIntegerSeqVal { }

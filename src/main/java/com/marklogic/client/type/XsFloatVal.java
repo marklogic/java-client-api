@@ -15,6 +15,9 @@
  */
 package com.marklogic.client.type;
 
+/**
+ * An instance of a server float value.
+ */
 public interface XsFloatVal extends XsFloatExpr, XsAnyAtomicTypeVal, XsNumericVal, XsFloatSeqVal, PlanParamBindingVal { 
     public float getFloat();
 }

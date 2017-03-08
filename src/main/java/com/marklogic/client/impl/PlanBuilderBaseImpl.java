@@ -23,7 +23,6 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanLongParam;
 import com.marklogic.client.type.PlanParamExpr;
 
 abstract class PlanBuilderBaseImpl extends PlanBuilder {
@@ -119,15 +118,8 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
             return exportAst(strb).append("}").toString();
         }
 
-// TODO: cleanup
         public PlanColumn col(String column) {
             return pb.col(column);
-        }
-        public PlanColumn exprCol(String column) {
-            return pb.col(column);
-        }
-        public PlanLongParam longParam(long value) {
-            return xs.longVal(value);
         }
     }
 
