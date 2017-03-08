@@ -62,8 +62,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     private static int uberPort = 8000;
 
 	@BeforeClass
-	public  static void setUp() throws Exception 
-	{
+	public  static void setUp() throws Exception {
 		System.out.println("In setup");		
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
@@ -73,15 +72,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@After
-	public  void testCleanUp() throws Exception
-	{
+	public  void testCleanUp() throws Exception {
 		clearDB();
 		System.out.println("Running clear script");
 	}
 
 	@Test
-	public void testPartialUpdateXML() throws IOException
-	{	
+	public void testPartialUpdateXML() throws IOException {	
 		System.out.println("Running testPartialUpdateXML");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
@@ -89,8 +86,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
 		}
 
@@ -109,7 +105,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
 		
 		// Check boolean replaces with XML documents.
-		String xmlDocId = "/replaceBoolXml";
+		String xmlDocId = "/replaceBool.xml";
 		
 		String xmlStr1 = new String("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 		String xmlStr2 = new String("<resources><screen name=\"screen_small\">true</screen><screen name=\"adjust_view_bounds\">false</screen></resources>");
@@ -159,8 +155,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "bad-eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}		
 		// release client
@@ -168,8 +163,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateJSON() throws IOException
-	{	
+	public void testPartialUpdateJSON() throws IOException {	
 		System.out.println("Running testPartialUpdateJSON");
 
 		String[] filenames = {"json-original.json"};
@@ -177,8 +171,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -256,8 +249,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		//Creating Manager
 		XMLDocumentManager xmlDocMgr = client.newXMLDocumentManager();
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-
-
+		
 		////
 		//Updating Content
 		////
@@ -311,7 +303,6 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		//Check
 		assertTrue("Value of amt has not Chenged", contentAfter.contains("<price amt=\"0.5\" xmlns=\"http://cloudbank.com\"/>"));
 
-
 		////
 		//Updating Doc Namespace
 		////
@@ -356,11 +347,11 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		xmlDocMgr.patch(docId, xmlPatch);
 
 		//Delete invalid Path
-		try{
+		try {
 			xmlPatch = xmlPatchBldr.delete("InvalidPath").build();
 			xmlDocMgr.patch(docId, xmlPatch);
 		}
-		catch (Exception e){
+		catch (Exception e) {
 			System.out.println(e.toString());
 			assertTrue("Haven't deleted Invalid path", e.toString().contains(" invalid path: //InvalidPath"));
 		}
@@ -587,8 +578,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		assertTrue("Insertion Failed", content.contains("<modified>2012-11-5</modified>"));
 
 		// release client
-		client.release();		
-
+		client.release();
 	}
 
 	@Test	
@@ -597,8 +587,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		// write docs
 		String[] filenames = {"constraint1.xml", "constraint2.xml"};
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
 		}
 		String docId1= "/partial-update/constraint1.xml";
@@ -630,8 +619,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		System.out.println(" After Updating Document 2 : Transaction Rollback"+ content2);
 
 		// release client
-		client.release();		
-
+		client.release();
 	}
 
 	/* We have Git issue #199 that tracks multiple patch on same JSONPath index.
@@ -645,8 +633,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		// write docs
 		String[] filenames = {"json-original.json"};
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 		String docId = "/partial-update/json-original.json";
@@ -677,8 +664,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		assertFalse("fragment is not deleted",content.contains("{\"firstName\":\"Bob\", \"lastName\":\"Foo\"}"));
 		
 		// release client
-		client.release();	
-
+		client.release();
 	}
 	
 	@Test	
@@ -750,8 +736,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateXMLDscriptor() throws IOException
-	{	
+	public void testPartialUpdateXMLDscriptor() throws IOException {	
 		System.out.println("Running testPartialUpdateXMLDescriptor");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
@@ -759,8 +744,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
 		}
 
@@ -787,8 +771,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateJSONDescriptor() throws IOException
-	{	
+	public void testPartialUpdateJSONDescriptor() throws IOException {	
 		System.out.println("Running testPartialUpdateJSONDescriptor");
 
 		String[] filenames = {"json-original.json"};
@@ -796,12 +779,9 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
-
-
 
 		ObjectMapper mapper = new ObjectMapper();
 		String docId = "/partial-update/json-original.json";
@@ -834,8 +814,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateXMLDscriptorTranc() throws IOException
-	{	
+	public void testPartialUpdateXMLDscriptorTranc() throws IOException {	
 		System.out.println("Running testPartialUpdateXMLDescriptorTranc");
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
@@ -843,8 +822,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
 		}
 
@@ -873,8 +851,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateJSONDescriptorTranc() throws IOException
-	{	
+	public void testPartialUpdateJSONDescriptorTranc() throws IOException {	
 		System.out.println("Running testPartialUpdateJSONDescriptorTranc");
 
 		String[] filenames = {"json-original.json"};
@@ -882,8 +859,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 		ObjectMapper mapper = new ObjectMapper();
@@ -918,8 +894,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 
 	@Test	
-	public void testPartialUpdateCardinality() throws IOException
-	{	
+	public void testPartialUpdateCardinality() throws IOException {	
 		System.out.println("Running testPartialUpdateCardinality");
 
 		String filename = "constraint1.xml";
@@ -980,8 +955,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1024,8 +998,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1068,8 +1041,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1113,8 +1085,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1157,8 +1128,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1202,8 +1172,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 		
 		// write docs
-		for(String filename : filenames)
-		{
+		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "JSON");
 		}
 
@@ -1285,8 +1254,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	}
 	
 	@AfterClass
-	public static void tearDown() throws Exception
-	{
+	public static void tearDown() throws Exception {
 		cleanupRESTServer(dbName, fNames);
 		deleteRESTUser("eval-user");
 		deleteUserRole("test-eval");
