@@ -71,6 +71,7 @@
 					<show>public</show>
 					<doctitle>${javadoc-title}</doctitle>
 					<windowtitle>${javadoc-title}</windowtitle>
+					<maxmemory>3500m</maxmemory>
 					<use/>
 					<doclet>ch.raffael.doclets.pegdown.PegdownDoclet</doclet>
 					<docletArtifact>
