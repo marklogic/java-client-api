@@ -334,7 +334,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
 		        	  for(WriteEvent w: batch.getItems()){
-		        		  System.out.println("Failed URI's are"+ w.getTargetUri());
+		        		  
 		        		  failureBatch.append(w.getTargetUri()+":");
 			        	}
 
@@ -1358,18 +1358,12 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	ihbMT.withBatchSize(100);
        	ihbMT.onBatchSuccess(
 		        batch -> {
-		        	System.out.println("Batch size "+batch.getItems().length);
-		        	for(WriteEvent w:batch.getItems()){
-		        		//System.out.println("Success "+w.getTargetUri());
-		        	}
-		        	}
+		            	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
-		        		for(WriteEvent w:batch.getItems()){
-		        			System.out.println("Failure "+w.getTargetUri());
-		        		}		       
+		        		       
 		});
 		dmManager.startJob(ihbMT);
 
@@ -1380,7 +1374,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
          		
            		for (int j =0 ;j < 100; j++){
     				String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
-    				System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
     				ihbMT.add(uri, fileHandle);
     				
     				
@@ -1434,7 +1427,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
          		
            		for (int j =0 ;j < 100; j++){
     				String uri ="/local/json-"+ j;
-    				//System.out.println("Thread name: "+Thread.currentThread().getName()+"  URI:"+ uri);
     				ihbMT.add(uri, fileHandle);
     			}
            		ihbMT.flushAndWait();
@@ -1474,18 +1466,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	
        	ihbMT.onBatchSuccess(
 		        batch -> {
-		        	System.out.println("Batch size "+batch.getItems().length);
-		        	for(WriteEvent w:batch.getItems()){
-		        		//System.out.println("Success "+w.getTargetUri());
-		        	}
+		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
-		        		for(WriteEvent w:batch.getItems()){
-		        			System.out.println("Failure "+w.getTargetUri());
-		        		}		       
+		        			       
 		});
 		dmManager.startJob(ihbMT);
 
@@ -1568,18 +1555,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
        	
        	ihbMT.onBatchSuccess(
 		        batch -> {
-		        	System.out.println("Batch size "+batch.getItems().length);
-		        	for(WriteEvent w:batch.getItems()){
-		        		//System.out.println("Success "+w.getTargetUri());
-		        	}		        	
+		        		        	
 		        	}
 		        )
 		        .onBatchFailure(
 		          (batch, throwable) -> {
 		        	  throwable.printStackTrace();
-		        		for(WriteEvent w:batch.getItems()){
-		        			System.out.println("Failure "+w.getTargetUri());
-		        		}
+		        		
 		});
 		dmManager.startJob(ihbMT);
 
@@ -1886,6 +1868,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	    	System.out.println("Count : "+ dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	    	// Confirms that 20 threads were spawned
 	    	Assert.assertTrue(count.get());
+	    	
 	    	// Confirms that the number of docs inserted = 50000
 	    	Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue()==25000);
 	    	
@@ -1964,14 +1947,8 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		dmManager.startJob(ihb2);
 		
 		ihb2.onBatchSuccess(
-		        batch -> {
-		        
-		        	System.out.println("Success host : "+batch.getClient().getHost());
-		        	System.out.println(batch.getItems().length);
-		        	System.out.println("Job writes "+batch.getJobWritesSoFar());
+		        batch -> { 
 		        	successCount.getAndAdd(batch.getItems().length);
-		        	
-		        	
 		        	}
 		        )
 		        .onBatchFailure(

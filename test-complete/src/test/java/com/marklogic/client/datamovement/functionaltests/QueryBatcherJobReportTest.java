@@ -396,9 +396,8 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(20).withThreadCount(20);
 		
 		AtomicInteger batchCount = new AtomicInteger(0);
-		AtomicInteger successCount = new AtomicInteger(0);
-		
-		Set uris = Collections.synchronizedSet(new HashSet());
+				
+		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 		
 		batcher.onUrisReady(batch->{
 			uris.addAll(Arrays.asList(batch.getItems()));
@@ -529,9 +528,7 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		
 
 		batcher = batcher.onUrisReady((batch)->{
-			System.out.println(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-			System.out.println("Count: "+dmManager.getJobReport(queryTicket).getSuccessEventsCount() );
-			successCount.set(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+				successCount.set(dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 	     	
 		}).onUrisReady(listener);
 		queryTicket = dmManager.startJob( batcher );
