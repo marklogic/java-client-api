@@ -17,7 +17,6 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -39,9 +38,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -80,10 +76,8 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.WriteFailureListener;
 import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
 import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.document.DocumentPage;
@@ -145,7 +139,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	private static JsonNode jsonNode;
 	private static JobTicket writeTicket;
 	private static JobTicket testBatchJobTicket;
-	private static FilteredForestConfiguration forestConfigMT;
+
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -2433,7 +2427,6 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			
 		try{
 			DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withCollections("NoHost").withQuality(0);
-			forestConfigMT = new FilteredForestConfiguration(dmManager.readForestConfig()).withWhiteList(hostNames[0]);
 			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 			
 			ihbMT =  dmManager.newWriteBatcher();
@@ -2670,8 +2663,14 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	    String clusterHostNames [] = new String[hostNames.length];
 	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
 	    
-	    clusterHostNames[0] = "localhost";
-		
+	    String localHost = getBootStrapHostFromML();
+	    
+	    for (int i = 0; i < clusterHostNames.length; i++){
+	    	if(clusterHostNames[i].equals(localHost)){
+	    		clusterHostNames[i] = "localhost";
+	    	}
+	    }
+	    	
 		final String query1 = "fn:count(fn:doc())";
 			
 		FilteredForestConfiguration forestConfig = null;
@@ -2744,7 +2743,13 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	    String clusterHostNames [] = new String[hostNames.length];
 	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
 	    
-	    clusterHostNames[0] = "localhost";
+	    String localHost = getBootStrapHostFromML();
+	    
+	    for (int i = 0; i < clusterHostNames.length; i++){
+	    	if(clusterHostNames[i].equals(localHost)){
+	    		clusterHostNames[i] = "localhost";
+	    	}
+	    }
 	    
 		final String query1 = "fn:count(fn:doc())";
 			

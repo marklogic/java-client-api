@@ -331,13 +331,13 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 				
 		wbatcher.flushAndWait();
 			
-		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(15).withThreadCount(8);
+		QueryBatcher batcher = dmManager.newQueryBatcher(querydef).withBatchSize(10).withThreadCount(3);
 		batcher.onUrisReady(batch->{
 			batches.incrementAndGet();
 		});
 		batcher.onQueryFailure((throwable)->{
 			try {
-				Thread.currentThread().sleep(15000L);
+				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -352,7 +352,7 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		t1.start();
 		
 		t1.join();
-		Thread.currentThread().sleep(8000L);
+		Thread.currentThread().sleep(2000L);
     	t2.start();
 		
 		t2.join();	
@@ -381,7 +381,7 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
    				
    		  }
    		try {
-			Thread.currentThread().sleep(10000L);
+			Thread.currentThread().sleep(5000L);
 		} catch (InterruptedException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
