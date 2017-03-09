@@ -28,6 +28,8 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.TreeMap;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -48,6 +50,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -69,12 +72,16 @@ import com.marklogic.client.query.ExtractedResult;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 
@@ -90,7 +97,17 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
+		String[][] rangeElements = {
+				//{ scalar-type, namespace-uri, localname, collation, range-value-positions, invalid-values }
+				// If there is a need to add additional fields, then add them to the end of each array
+				// and pass empty strings ("") into an array where the additional field does not have a value.
+				// For example : as in namespace, collections below.
+				// Add new RangeElementIndex as an array below.
+				{"string", "", "animal", "http://marklogic.com/collation/", "false", "reject"}		
+		};
+	
+		// Insert the range indices		
+		addRangeElementIndex(dbName, rangeElements);
 		createRESTUserWithPermissions("usr1", "password",getPermissionNode("flexrep-eval",Capability.READ),getCollectionNode("http://permission-collections/"), "rest-writer","rest-reader" );
 	}
 
@@ -102,8 +119,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 	}
 
 	@Before
-	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-		// System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {		
 		// create new connection for each test below
 		client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
 	}
@@ -558,7 +574,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		}
 	}
 	
-	// This test is to verify extract-document-data & extract-path with  selected=include option query
+	// This test is to verify extract-document-data & extract-path with selected=include option query
 	@Test
 	public void testExtractDocumentData4() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
@@ -722,6 +738,7 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		System.out.println(results.get().toString());
 		assertEquals("Total search results before transaction rollback are ","204",results.get().get("total").asText());
 	}
+	
 	/* Searching for boolean and string in XML element using value query.
 	 * Purpose: To validate QueryBuilder's new value methods (in 8.0) in XML document using an element.
 	 * 
@@ -836,5 +853,283 @@ public class TestBulkSearchWithStrucQueryDef extends BasicJavaClientREST{
 		//Verify that search response has found 4 PERSONA elements under /PLAY/PERSONAE
 		assertXpathEvaluatesTo("fn:doc(\"/1/play-persons.xml\")", "string(//*[local-name()='response']//*[local-name()='result']//@*[local-name()='path'])", resultDocStr);
 		assertXpathEvaluatesTo("4", "count(//*[local-name()='response']//*[local-name()='match'])", resultDocStr);
+	}
+	
+	/* This test is to verify extract-document-data & extract-path with selected=include option query
+	 * category, pageLength/limit, frequency, direction, aggregatePath, and aggregate.
+	 */
+	@Test
+	public void testPageLenOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		this.loadJSONDocuments();
+		
+		DatabaseClient clientTmp  = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>71 OR dog14 OR dog15 OR dog21 OR dog22</search:qtext>";
+		String queryOptionName = "bulkPageOptions";
+		
+		DocumentManager docMgr = clientTmp.newDocumentManager();
+		QueryManager queryMgr = clientTmp.newQueryManager();
+		// create query options manager
+		QueryOptionsManager optionsMgr = clientTmp.newServerConfigManager().newQueryOptionsManager();
+		// This options is dynamic
+		String optionsWithPageLen = "<search:options>" +
+				         "<search:page-length>3</search:page-length>" +
+						 "<search:extract-document-data selected=\"exclude\">" +
+						 "<search:extract-path>//foo</search:extract-path>" +
+						 "<search:extract-path>//says</search:extract-path>" +
+						 "</search:extract-document-data>" +
+						 "</search:options>";
+		
+		String pageLengthOpt = "<options xmlns=\"http://marklogic.com/appservices/search\">" +
+		                       "<page-length>4</page-length></options>";
+		StringHandle handle = new StringHandle(pageLengthOpt);
+	        
+	    // write query options
+	    optionsMgr.writeOptions(queryOptionName, handle);
+		
+		// test XML response with extracted XML and JSON matches
+		String combinedSearch = head + qtext4 + optionsWithPageLen + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+				queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		int nSummariesLen = summaries.length;
+		int nPageLen = results.getPageLength();
+		System.out.println("Page Length from search results is " + nPageLen);
+		System.out.println("Summaries Length is " + nSummariesLen);
+		
+		// 1 - Verify that page length from client takes precedence. Both client and persisted options have page length
+		assertEquals("Page Length from client not taken", 3, nPageLen);
+		assertEquals("Summaries Length incorrect", 3, nSummariesLen);
+		
+		String optionsWithoutPageLen = "<search:options>" +		         
+				"<search:extract-document-data selected=\"exclude\">" +
+				"<search:extract-path>//foo</search:extract-path>" +
+				"<search:extract-path>//says</search:extract-path>" +
+				"</search:extract-document-data>" +
+				"</search:options>";
+		// test XML response with extracted XML and JSON matches
+		String combinedSearchNoPage = head + qtext4 + optionsWithoutPageLen + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinitionNoPage = 
+				queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearchNoPage).withMimetype("application/xml"));
+		SearchHandle resultsNoPage = queryMgr.search(rawCombinedQueryDefinitionNoPage, new SearchHandle());
+		MatchDocumentSummary[] summariesNoPage = resultsNoPage.getMatchResults();
+		assertNotNull(summariesNoPage);
+		int nSummariesLenNP = summariesNoPage.length;
+		int nPageLenNP = resultsNoPage.getPageLength();
+		System.out.println("Page Length from search results is " + nPageLenNP);
+		System.out.println("Summaries Length is " + nSummariesLenNP);
+		// 2 -  Verify that without page length from client precedence is for Server options.
+		assertTrue("Page Length from client not taken", nPageLenNP == 10);
+		
+		// 3 - Search with options - Persisted options take precedence
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+		querydef.setCriteria("woof");
+		SearchHandle searchHandle = new SearchHandle();
+		queryMgr.search(querydef, searchHandle);
+
+		MatchDocumentSummary[] docSummaries = searchHandle.getMatchResults();
+		assertNotNull(docSummaries);
+		int nSummariesLenOpt = docSummaries.length;
+		
+		System.out.println("Summaries Length is " + nSummariesLenOpt);
+		// Verify that page length from client options takes precedence.
+		assertTrue("Page Length from client not taken", nSummariesLenOpt == 4);
+				
+		// 4 - Search WITHOUT options - Persisted options take precedence
+		StringQueryDefinition querydefNoOpts = queryMgr.newStringDefinition();
+		querydefNoOpts.setCriteria("woof");
+		SearchHandle searchHandleNoOpts = new SearchHandle();
+		queryMgr.search(querydefNoOpts, searchHandleNoOpts);
+
+		MatchDocumentSummary[] docSummariesNoOpts = searchHandleNoOpts.getMatchResults();
+		assertNotNull(docSummariesNoOpts);
+		int nSummariesLenNoOpts = docSummaries.length;
+
+		System.out.println("Summaries Length is " + nSummariesLenNoOpts);
+		// Verify that page length from client options takes precedence.
+		assertTrue("Page Length from Server persisted options not taken", nSummariesLenNoOpts == 4);
+	}
+	
+	/* This test is to verify extract-document-data & extract-path with selected=include option query
+	 * category, pageLength/limit, frequency, direction, aggregatePath, and aggregate.
+	 */
+	@Test
+	public void testDirectionOptionsWithBulkSearch() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		this.loadJSONDocuments();
+		
+		DatabaseClient clientTmp  = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+		String tail = "</search:search>";
+		String qtext4 = "<search:qtext>dog10 OR dog14 OR dog15 OR dog21 OR dog22</search:qtext>";
+		String queryOptionName = "bulkSortOptions";
+		
+		DocumentManager docMgr = clientTmp.newDocumentManager();
+		QueryManager queryMgr = clientTmp.newQueryManager();
+		// create query options manager
+		QueryOptionsManager optionsMgr = clientTmp.newServerConfigManager().newQueryOptionsManager();
+		// This options is dynamic. Descending sort order.
+		String optionsWithSortDesc = "<search:options>" +
+				         "<search:page-length>20</search:page-length>" +
+						 "<search:extract-document-data selected=\"exclude\">" +
+						 "<search:extract-path>//foo</search:extract-path>" +
+						 "<search:extract-path>//says</search:extract-path>" +
+						 "</search:extract-document-data>" +
+						 "<search:sort-order direction='descending'>" +
+					        "<search:json-property>animal</search:json-property>" +
+					     "</search:sort-order>" +
+						 "</search:options>";
+		// Ascending sort order
+		String serverAscOpts = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+			    "<search:return-metrics>false</search:return-metrics>" +
+			    "<search:return-qtext>false</search:return-qtext>" +
+			    "<search:sort-order direction='ascending'>" +
+			        "<search:json-property>animal</search:json-property>" +
+			    "</search:sort-order>" +
+			    "<search:transform-results apply='raw'/>" +
+			"</search:options>";
+		StringHandle handle = new StringHandle(serverAscOpts);
+	        
+	    // write query options
+	    optionsMgr.writeOptions(queryOptionName, handle);
+		
+	    // 1 - Verify that client overides server options - descending
+		String combinedSearch = head + qtext4 + optionsWithSortDesc + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinition = 
+				queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+		
+		SearchHandle results = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+		MatchDocumentSummary[] summaries = results.getMatchResults();
+		assertNotNull(summaries);
+		int nSummariesLen = summaries.length;
+		System.out.println("Summaries Length is " + nSummariesLen);
+		assertEquals("Summaries Length incorrect", 5, nSummariesLen);
+		
+		// Make sure we have proper descending sort.
+		LinkedHashMap<String, String> descHashMap = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> exptdHashMap = new LinkedHashMap<String, String>();
+		
+		exptdHashMap.put("dog22", "Content");
+		exptdHashMap.put("dog21", "Content");
+		exptdHashMap.put("dog15", "Content");
+		exptdHashMap.put("dog14", "Content");
+		exptdHashMap.put("dog10", "Content");
+				
+		for (MatchDocumentSummary summary : summaries) {
+			ExtractedResult extracted = summary.getExtracted();
+			if (summary.getFormat() == Format.JSON) {			
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("animal") ) {						
+						descHashMap.put(nodeJsonItem.path("animal").asText(), "Content");
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			else
+			fail("unexpected search result:" + summary.getUri());
+		}
+		
+		assertTrue("Should have summaries returned in descending order.", descHashMap.equals(exptdHashMap));
+		
+		// 2 -  Verify that without sort from client, precedence is for Server options
+		String optionsWithoutSortDesc = "<search:options>" +
+		         "<search:page-length>20</search:page-length>" +
+				 "<search:extract-document-data selected=\"exclude\">" +
+				 "<search:extract-path>//foo</search:extract-path>" +
+				 "<search:extract-path>//says</search:extract-path>" +
+				 "</search:extract-document-data>" +
+				 "</search:options>";
+		String combinedSearchNoSort = head + qtext4 + optionsWithoutSortDesc + tail;
+		RawCombinedQueryDefinition rawCombinedQueryDefinitionNoSort = 
+				queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearchNoSort).withMimetype("application/xml"));
+		
+		SearchHandle resultsNoSort = queryMgr.search(rawCombinedQueryDefinitionNoSort, new SearchHandle());
+		MatchDocumentSummary[] summariesNoSort = resultsNoSort.getMatchResults();
+		assertNotNull(summariesNoSort);
+		int nSummariesNoSortLen = summariesNoSort.length;
+		System.out.println("Summaries Length is " + nSummariesNoSortLen);
+		assertEquals("Summaries Length incorrect", 5, nSummariesNoSortLen);
+		
+		// Make sure we have proper ascending sort.
+		LinkedHashMap<String, String> ascHashMap = new LinkedHashMap<String, String>();
+		LinkedHashMap<String, String> exptdAscHashMap = new LinkedHashMap<String, String>();
+		
+		exptdAscHashMap.put("dog10", "Content");
+		exptdAscHashMap.put("dog14", "Content");
+		exptdAscHashMap.put("dog15", "Content");
+		exptdAscHashMap.put("dog21", "Content");
+		exptdAscHashMap.put("dog22", "Content");
+			
+		for (MatchDocumentSummary summary : summariesNoSort) {
+			ExtractedResult extracted = summary.getExtracted();
+			if (summary.getFormat() == Format.JSON) {				
+				for ( ExtractedItem item : extracted ) {
+					String stringJsonItem = item.getAs(String.class);
+					JsonNode nodeJsonItem = item.getAs(JsonNode.class);
+					if ( nodeJsonItem.has("animal") ) {						
+						ascHashMap.put(nodeJsonItem.path("animal").asText(), "Content");
+						continue;
+					} 
+					fail("unexpected extracted item:" + stringJsonItem);
+				}
+				continue;
+			}
+			else
+			fail("unexpected search result:" + summary.getUri());
+		}
+		// 2 - Verify server options is used - ascending
+		assertTrue("Should have summaries returned in ascending order.", ascHashMap.equals(exptdAscHashMap));
+			
+		// 3 - Search with options - Persisted options take precedence
+		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+		querydef.setCriteria("dog10 OR dog14 OR dog15 OR dog21 OR dog22");
+		SearchHandle searchHandle = new SearchHandle();
+		queryMgr.search(querydef, searchHandle);
+		
+		LinkedHashMap<String, String> WithOptionsAscHashMap = new LinkedHashMap<String, String>();
+
+		MatchDocumentSummary[] docSummaries = searchHandle.getMatchResults();
+		assertNotNull(docSummaries);
+		for (int i=0; i<docSummaries.length;i++) {
+			String str = docSummaries[i].getPath().split(DIRECTORY)[1].split("\\.")[0];	
+			if (str != null) {
+				WithOptionsAscHashMap.put(str, "Content");
+			}
+			else {
+				fail("unexpected search result:");
+			}
+		}
+		
+		// 3 - Verify server options is used - ascending
+		assertTrue("Should have summaries returned in ascending order.", WithOptionsAscHashMap.equals(exptdAscHashMap));
+		
+		// 4 - Search without options - Persisted options take precedence
+		StringQueryDefinition querydefNoOpts = queryMgr.newStringDefinition(queryOptionName);
+		querydefNoOpts.setCriteria("dog10 OR dog14 OR dog15 OR dog21 OR dog22");
+		SearchHandle searchHandleNoOpts = new SearchHandle();
+		queryMgr.search(querydefNoOpts, searchHandleNoOpts);
+
+		LinkedHashMap<String, String> NoOptsAscHashMap = new LinkedHashMap<String, String>();
+
+		MatchDocumentSummary[] docSummariesNoOpts = searchHandleNoOpts.getMatchResults();
+		assertNotNull(docSummariesNoOpts);
+		for (int i=0; i<docSummariesNoOpts.length;i++) {
+			String str = docSummaries[i].getPath().split(DIRECTORY)[1].split("\\.")[0];	
+			if (str != null) {
+				NoOptsAscHashMap.put(str, "Content");
+			}
+			else {
+				fail("unexpected search result:");
+			}
+		}
+
+		// 4 - Verify server options is used - ascending
+		assertTrue("Should have summaries returned in ascending order.", NoOptsAscHashMap.equals(exptdAscHashMap));
 	}
 }
