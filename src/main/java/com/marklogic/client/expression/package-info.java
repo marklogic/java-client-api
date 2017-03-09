@@ -1,8 +1,8 @@
 /**
  * The package provides classes for building Optic plan pipelines and expressions
  * for execution on the REST server.
- * Use {@link com.marklogic.row.RowManager} to create
- * the {@link com.marklogic.expression.PlanBuilder} object.
+ * Use {@link com.marklogic.client.row.RowManager} to create
+ * the {@link com.marklogic.client.expression.PlanBuilder} object.
  */
 /*
  * Copyright 2016-2017 MarkLogic Corporation
