@@ -1158,7 +1158,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 			
 			assertEquals("Master Name RowSet Iterator first node value incorrect", "Master 2", record.getString("MasterName"));
 			assertEquals("Detail Name RowSet Iterator first node value incorrect", "Detail 6", record.getString("DetailName"));
-			assertEquals("Color Name RowSet Iterator first node value incorrect", "green", record.getString("opticFunctionalTest.detail.color"));
+			assertEquals("Color Name RowSet Iterator first node value incorrect", "green", record.getString("color"));
 			assertEquals(60.06, record.getDouble("opticFunctionalTest.detail.amount"), 0.00);
 		}
 		else {
