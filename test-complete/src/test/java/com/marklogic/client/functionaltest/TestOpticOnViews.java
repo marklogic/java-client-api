@@ -25,7 +25,9 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Iterator;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -33,6 +35,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -50,6 +53,7 @@ import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.AccessPlan;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
@@ -2010,6 +2014,93 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		// Should have 1 node returned.
 		assertEquals("One row not returned from testjoinInnerWithBind method ", 1, jsonResults.size());
 		assertEquals("Row 1 opticFunctionalTest.detail.amount value incorrect", "60.06", jsonResults.path(0).path("opticFunctionalTest.detail.amount").path("value").asText());
+	}
+	
+	// Test row serialization as Object. Other tests handle array and Iterator
+	@Test
+	public void testRowRecordAsObject() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	{	
+		System.out.println("In testRowRecordAsObject method");	
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		
+		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", "myDetail");		                    
+		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", "myMaster");
+		PlanColumn masterIdCol1 = p.viewCol("myDetail", "masterId");
+		PlanColumn masterIdCol2 = p.viewCol("myMaster", "id");
+		PlanColumn detailIdCol = p.viewCol("myDetail", "id");
+		PlanColumn detailNameCol = p.viewCol("myDetail", "name");
+		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
+		ModifyPlan plan3 = plan1.joinInner(plan2)
+		                        .where(
+		                        		p.eq(masterIdCol1, masterIdCol2)
+		                        	  )
+		                        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
+		                        .orderBy(p.desc(detailNameCol))
+		                        .offset(1)
+		                        .limit(1);
+
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+		
+		RowSet<JsonNode> jsonResults = rowMgr.resultRowsAs(plan3, JsonNode.class);
+		ArrayList<String> actual = new ArrayList<String>();
+		ArrayList<String> expected = new ArrayList<String>();
+		
+		String[] colNames = jsonResults.getColumnNames();
+		// Verify column names available in the object.
+		for (String cols : colNames) actual.add(cols);
+		Collections.sort(actual);
+		
+		expected.add("myMaster.id");
+		expected.add("myMaster.name");
+		expected.add("myDetail.id");
+		expected.add("myDetail.name");
+		Collections.sort(expected);
+		
+		assertTrue("Column names not equal from JsonNode.class", expected.equals(actual));
+		
+		Iterator<JsonNode> jsonRowItr = jsonResults.iterator();
+		JsonNode first = null;
+		if (jsonRowItr.hasNext()) {
+			first = jsonRowItr.next();
+			System.out.println("Row iterated using JsonNode.class" + first.toString());	
+		}
+		else {
+			fail("No JsonNodes available when JsonNode.class used");
+		}
+		assertEquals("Element 1 myMaster.id value incorrect", "1", first.path("myMaster.id").path("value").asText());
+		assertEquals("Element 1 myMaster.name value incorrect", "Master 1", first.path("myMaster.name").path("value").asText());
+		assertEquals("Element 1 myDetail.id value incorrect", "5", first.path("myDetail.id").path("value").asText());
+		assertEquals("Element 1 myDetail.name value incorrect", "Detail 5", first.path("myDetail.name").path("value").asText());
+		
+		jsonResults.close();
+		
+		RowSet<Document> xmlResults = rowMgr.resultRowsAs(plan3, Document.class);
+			
+		ArrayList<String> actualXmlCol = new ArrayList<String>();
+		String[] colNamesXML = xmlResults.getColumnNames();
+
+		// Verify column names available in the object.
+		for (String cols : colNamesXML) actualXmlCol.add(cols);
+		Collections.sort(actualXmlCol);
+		assertTrue("Column names not equal from Document.class", expected.equals(actualXmlCol));
+		
+		Iterator<Document> xmlRowItr = xmlResults.iterator();
+		DOMHandle firstXML = new DOMHandle();
+		Document firstXMLDoc = null;
+		if (xmlRowItr.hasNext()) {
+			firstXMLDoc = xmlRowItr.next();
+			String rowContents = firstXML.with(firstXMLDoc).toString();
+			System.out.println("Row iterated using Document.class" + rowContents);
+			assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myMaster.id\" type=\"xs:integer\">1</t:cell>"));
+			assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myMaster.name\" type=\"xs:string\">Master 1</t:cell>"));
+			assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myDetail.id\" type=\"xs:integer\">5</t:cell>"));
+			assertTrue("Row contents incorrect", rowContents.contains("<t:cell name=\"myDetail.name\" type=\"xs:string\">Detail 5</t:cell>"));
+		}
+		else {
+			fail("No JsonNodes available when Document.class used");
+		}
 	}
 	
 	@AfterClass
