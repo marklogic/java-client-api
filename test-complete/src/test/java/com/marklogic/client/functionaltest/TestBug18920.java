@@ -96,15 +96,22 @@ public class TestBug18920 extends BasicJavaClientREST {
 		System.out.println(docUri);
 		
 		String exception = "";
+		String statusCode = "";
 		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
-		
+		int expCode = 0;
 		// update document with no content version
 		try {
 			docMgr.write(docUri, handle);
-		} catch (FailedRequestException e) { exception = e.toString(); }
-		System.out.println("Exception is"+ exception);
-		boolean isExceptionThrown = exception.contains(expectedException);
-		assertTrue("Exception is not thrown", isExceptionThrown);
+		} catch (FailedRequestException e) { 
+			exception = e.toString();
+			statusCode = e.getFailedRequest().getMessageCode(); 
+			expCode = e.getFailedRequest().getStatusCode();
+			}
+		System.out.println("Exception is " + exception);
+		System.out.println("Status message --- codenumber are " + statusCode + " --- " + expCode );
+		assertTrue("Status code message is incorrect", statusCode.contains("RESTAPI-CONTENTNOVERSION"));
+		assertTrue("Status code is not 428", expCode == 428);
+		assertTrue("Exception is not thrown", exception.contains(expectedException));
 	}
 	
 	@AfterClass
