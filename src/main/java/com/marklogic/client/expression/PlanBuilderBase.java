@@ -93,7 +93,7 @@ interface PlanBuilderBase {
      */
     public PlanGroupConcatOptionSeq groupConcatOptions(String separator, PlanValueOption option);
 
-    public interface PlanBase {
+    interface PlanBase {
         /**
          * Specifies a boolean primitive value to replace a placeholder parameter during this
          * execution of the plan in all expressions in which the parameter appears.
@@ -159,9 +159,9 @@ interface PlanBuilderBase {
          */
         public PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
     }
-    public interface AccessPlanBase {
+    interface AccessPlanBase {
     }
-    public interface ExportablePlanBase {
+    interface ExportablePlanBase {
         /**
          * This method exports the plan to an AST (Abstract Sytax Tree) 
          * using the specified JSON handle.
@@ -185,7 +185,7 @@ interface PlanBuilderBase {
          */
         public <T> T exportAs(Class<T> as);
     }
-    public interface ModifyPlanBase {
+    interface ModifyPlanBase {
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.
          * @param length  The number of rows to return. 
@@ -257,6 +257,6 @@ interface PlanBuilderBase {
          */
         public PlanBuilder.ModifyPlan where(SemStoreExpr condition);
     }
-    public interface PreparePlanBase {
+    interface PreparePlanBase {
     }
 }

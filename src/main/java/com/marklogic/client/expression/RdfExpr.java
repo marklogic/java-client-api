@@ -21,6 +21,11 @@ import com.marklogic.client.type.RdfLangStringExpr;
 import com.marklogic.client.type.RdfLangStringSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the rdf server library for a row
+ * pipeline and constructs client values with rdf.* server types.
+ */
 public interface RdfExpr extends RdfValue {
     /**
     * Returns an <code>rdf:langString</code> value with the given value and language tag. The <code>rdf:langString</code> type extends <code>xs:string</code>, and represents a language tagged string in RDF. <p>This function is a built-in.

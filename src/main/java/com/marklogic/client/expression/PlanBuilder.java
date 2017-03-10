@@ -104,6 +104,10 @@ import com.marklogic.client.expression.XsExpr;
 import com.marklogic.client.expression.PlanBuilderBase;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds the plan for a row pipeline to execute on the server.
+ */
 public abstract class PlanBuilder implements PlanBuilderBase {
     protected PlanBuilder(
         CtsExpr cts, FnExpr fn, JsonExpr json, MapExpr map, MathExpr math, RdfExpr rdf, SemExpr sem, SpellExpr spell, SqlExpr sql, XdmpExpr xdmp, XsExpr xs
@@ -121,17 +125,50 @@ public abstract class PlanBuilder implements PlanBuilderBase {
          this.xs = xs;
 
     }
-    public final CtsExpr cts;
-     public final FnExpr fn;
-     public final JsonExpr json;
-     public final MapExpr map;
-     public final MathExpr math;
-     public final RdfExpr rdf;
-     public final SemExpr sem;
-     public final SpellExpr spell;
-     public final SqlExpr sql;
-     public final XdmpExpr xdmp;
-     public final XsExpr xs;
+/**
+        * Builds expressions with cts server functions.
+        */
+        public final CtsExpr cts;
+ /**
+        * Builds expressions with fn server functions.
+        */
+        public final FnExpr fn;
+ /**
+        * Builds expressions with json server functions.
+        */
+        public final JsonExpr json;
+ /**
+        * Builds expressions with map server functions.
+        */
+        public final MapExpr map;
+ /**
+        * Builds expressions with math server functions.
+        */
+        public final MathExpr math;
+ /**
+        * Builds expressions with rdf server functions.
+        */
+        public final RdfExpr rdf;
+ /**
+        * Builds expressions with sem server functions.
+        */
+        public final SemExpr sem;
+ /**
+        * Builds expressions with spell server functions.
+        */
+        public final SpellExpr spell;
+ /**
+        * Builds expressions with sql server functions.
+        */
+        public final SqlExpr sql;
+ /**
+        * Builds expressions with xdmp server functions.
+        */
+        public final XdmpExpr xdmp;
+ /**
+        * Builds expressions with xs server functions.
+        */
+        public final XsExpr xs;
 /**
     * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an <a>op:col</a> function to identify a column.
     * <p>
@@ -1167,6 +1204,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     public abstract AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attribute);
     public abstract PlanFunction resolveFunction(String functionName, String modulePath);
     public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
+/**
+ * Provides functions and operations in the access phase
+ * of the plan for executing a row pipeline on the server.
+ */
     public interface AccessPlan extends ModifyPlan, PlanBuilderBase.AccessPlanBase {
         /**
     * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string. Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). <p> In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.  <p> The returned value from this function can be modified by any of the functions described in 'Expression Functions For Processing Column Values' in the <em>Application Developer's Guide</em> 
@@ -1183,11 +1224,19 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     }
 
     
+/**
+ * Provides functions and operations in the exportable phase
+ * of the plan for executing a row pipeline on the server.
+ */
     public interface ExportablePlan extends Plan, PlanBuilderBase.ExportablePlanBase {
         
     }
 
     
+/**
+ * Provides functions and operations in the modify phase
+ * of the plan for executing a row pipeline on the server.
+ */
     public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
         /**
     * This method restricts the left row set to rows where a row with the same columns and values don't exist in the right row set.
@@ -1380,11 +1429,19 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     }
 
     
+/**
+ * Provides functions and operations in the final phase
+ * of the plan for executing a row pipeline on the server.
+ */
     public interface Plan extends PlanBuilderBase.PlanBase {
         public abstract Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal);
     }
 
     
+/**
+ * Provides functions and operations in the prepare phase
+ * of the plan for executing a row pipeline on the server.
+ */
     public interface PreparePlan extends ExportablePlan, PlanBuilderBase.PreparePlanBase {
         /**
     * This method applies the specified function to each row returned by the plan to produce a different result row as with the map method of JavaScript Array. This method can operate on a plan, docuument plan, or prepared plan and should be applied concurrently in multiple threads, preserving the output order.

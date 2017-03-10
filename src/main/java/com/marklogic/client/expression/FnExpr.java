@@ -42,6 +42,11 @@ import com.marklogic.client.type.XsTimeExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the fn server library for a row
+ * pipeline.
+ */
 public interface FnExpr {
     /**
     *  Returns the absolute value of arg. If arg is negative returns -arg otherwise returns arg. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. <p> For xs:float and xs:double arguments, if the argument is positive zero (+0) or negative zero (-0), then positive zero (+0) is returned. If the argument is positive or negative infinity, positive infinity is returned. <p> For detailed type semantics, see Section 7.2.1 The fn:abs, fn:ceiling, fn:floor, fn:round, and fn:round-half-to-even functions of [XQuery 1.0 and XPath 2.0 Formal Semantics]. 

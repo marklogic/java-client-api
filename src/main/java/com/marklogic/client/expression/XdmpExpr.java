@@ -38,6 +38,11 @@ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the xdmp server library for a row
+ * pipeline.
+ */
 public interface XdmpExpr {
     /**
     * Add two 64-bit integer values, discarding overflow.

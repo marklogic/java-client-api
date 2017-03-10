@@ -51,6 +51,11 @@ import com.marklogic.client.type.CtsRegionExpr;
 import com.marklogic.client.type.CtsRegionSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the cts server library for a row
+ * pipeline.
+ */
 public interface CtsExpr {
     /**
     * Returns a query specifying the set difference of the matches specified by two sub-queries.

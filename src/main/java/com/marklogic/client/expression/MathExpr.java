@@ -30,6 +30,11 @@ import com.marklogic.client.type.MathLinearModelExpr;
 import com.marklogic.client.type.MathLinearModelSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the math server library for a row
+ * pipeline.
+ */
 public interface MathExpr {
     /**
     * Returns the arc cosine of x, in radians, in the range from 0 to pi (inclusive).

@@ -26,6 +26,11 @@ import com.marklogic.client.type.MapMapExpr;
 import com.marklogic.client.type.MapMapSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the map server library for a row
+ * pipeline.
+ */
 public interface MapExpr {
     /**
     * Returns true if the key exists in the map.

@@ -101,6 +101,11 @@ import com.marklogic.client.type.XsYearMonthDurationExpr;
 import com.marklogic.client.type.XsYearMonthDurationSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the xs server library for a row
+ * pipeline and constructs client values with xs.* server types.
+ */
 public interface XsExpr extends XsValue {
     public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1);
     public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1);

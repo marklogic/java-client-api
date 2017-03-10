@@ -29,6 +29,11 @@ import com.marklogic.client.type.JsonObjectExpr;
 import com.marklogic.client.type.JsonObjectSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the json server library for a row
+ * pipeline.
+ */
 public interface JsonExpr {
     /**
     * Creates a (JSON) array, which is like a sequence of values, but allows for nesting.

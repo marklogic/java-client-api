@@ -34,6 +34,11 @@ import com.marklogic.client.type.SemUnknownExpr;
 import com.marklogic.client.type.SemUnknownSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the sem server library for a row
+ * pipeline and constructs client values with sem.* server types.
+ */
 public interface SemExpr extends SemValue {
     /**
     * This function returns an identifier for a blank node, allowing the construction of a triple that refers to a blank node. This XQuery function backs up the SPARQL BNODE() function. <p>This function is a built-in.

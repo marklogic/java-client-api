@@ -28,6 +28,11 @@ import com.marklogic.client.type.XsUnsignedLongExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the sql server library for a row
+ * pipeline.
+ */
 public interface SqlExpr {
     /**
     * Returns the length of the string "str" in bits.

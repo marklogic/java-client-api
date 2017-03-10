@@ -22,6 +22,11 @@ import com.marklogic.client.type.XsStringSeqExpr;
 
 
 // IMPORTANT: Do not edit. This file is generated. 
+
+/**
+ * Builds expressions to call functions in the spell server library for a row
+ * pipeline.
+ */
 public interface SpellExpr {
     /**
     * Given a word returns the two metaphone keys. The primary and secondary metaphone keys which represent the phonetic encoding of two words are returned as a sequence of two strings. Double metaphone is an algorithm based on phonetic sounds useful in providing data to spelling correction suggestions.
