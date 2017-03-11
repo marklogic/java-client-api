@@ -2637,17 +2637,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testQBBlackList() throws Exception{
 		Assume.assumeTrue(hostNames.length > 1);
 		
-	    String clusterHostNames [] = new String[hostNames.length];
-	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
-	    
-	    String localHost = getBootStrapHostFromML();
-	    
-	    for (int i = 0; i < clusterHostNames.length; i++){
-	    	if(clusterHostNames[i].equals(localHost)){
-	    		clusterHostNames[i] = "localhost";
-	    	}
-	    }
-	    	
+	   
 		final String query1 = "fn:count(fn:doc())";
 			
 		FilteredForestConfiguration forestConfig = null;
@@ -2696,7 +2686,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		}
 		
 		try{
-			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(clusterHostNames);
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames).withBlackList("localhost");
 			qb.withBatchSize(50).withForestConfig(forestConfig);
 			Assert.assertTrue(false);
 			
@@ -2717,17 +2707,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	public void testWBBlackList() throws Exception{
 		Assume.assumeTrue(hostNames.length > 1);
 		
-	    String clusterHostNames [] = new String[hostNames.length];
-	    System.arraycopy(hostNames, 0, clusterHostNames, 0, hostNames.length);
-	    
-	    String localHost = getBootStrapHostFromML();
-	    
-	    for (int i = 0; i < clusterHostNames.length; i++){
-	    	if(clusterHostNames[i].equals(localHost)){
-	    		clusterHostNames[i] = "localhost";
-	    	}
-	    }
-	    
+	  	    
 		final String query1 = "fn:count(fn:doc())";
 			
 		FilteredForestConfiguration forestConfig = null;
@@ -2749,7 +2729,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 		ihb2.withBatchSize(50).withForestConfig(forestConfig);
 			
 		try{
-			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(clusterHostNames);
+			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames).withBlackList("localhost");
 			ihb2.withBatchSize(50).withForestConfig(forestConfig);
 			Assert.assertTrue(false);
 			
@@ -2759,18 +2739,7 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
 		}
 		
-		
-		try{
-			forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withBlackList(hostNames);
-			ihb2.withBatchSize(50).withForestConfig(forestConfig);
-			Assert.assertTrue(false);
-			
-		}
-		catch(IllegalStateException e){
-			e.printStackTrace();
-			Assert.assertEquals("White list or black list rules are too restrictive: no valid hosts are left", e.getMessage());
-		}
-		
+
 		forestConfig  = new FilteredForestConfiguration(dmManager.readForestConfig()).withRenamedHost("localhost", "127.0.0.1").
 						withBlackList(hostNames[hostNames.length-1], null);
 		ihb2.withBatchSize(50).withForestConfig(forestConfig);

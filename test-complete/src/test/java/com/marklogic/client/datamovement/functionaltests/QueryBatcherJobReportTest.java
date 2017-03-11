@@ -207,11 +207,14 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 				
 		AtomicInteger batchCount = new AtomicInteger(0);
 		AtomicInteger successCount = new AtomicInteger(0);
-		AtomicLong count = new AtomicLong(0);
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(20).withThreadCount(20);			
+		AtomicLong count1 = new AtomicLong(0);
+		AtomicLong count2 = new AtomicLong(0);
+		AtomicLong count3 = new AtomicLong(0);
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500).withThreadCount(20);			
 		batcher.onUrisReady(batch->{
+			System.out.println("Yes");
 			if(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() == batchCount.incrementAndGet()){
-				count.incrementAndGet();
+				count1.incrementAndGet();
 			}
 		});
 		batcher.onQueryFailure(throwable -> throwable.printStackTrace());
@@ -219,10 +222,10 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 		
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(20).withThreadCount(20);
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500).withThreadCount(20);
 		batcher.onUrisReady(batch->{
 			if(dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount.addAndGet(batch.getItems().length)){
-					count.incrementAndGet();
+					count2.incrementAndGet();
 			}
 			
 		});
@@ -231,10 +234,10 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 		
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(20).withThreadCount(20);
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500).withThreadCount(20);
 		batcher.onUrisReady(batch->{
 			if(Math.abs(dmManager.getJobReport(queryTicket).getReportTimestamp().getTime().getTime()-Calendar.getInstance().getTime().getTime()) < 10000){
-				count.incrementAndGet();
+				count3.incrementAndGet();
 			}
 			
 		
@@ -248,7 +251,9 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		Assert.assertEquals(0, dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), batchCount.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() *3, count.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() , count1.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() , count2.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() , count3.get());
 	
 		
 	}
@@ -293,16 +298,11 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 	
 	@Test
 	public void queryFailures() throws Exception{
-
 		
 		Thread t1 = new Thread(new DisabledDBRunnable());
      	t1.setName("Status Check -1");
      	
-     	Thread t2 = new Thread(new DisabledDBRunnable());
-     	t2.setName("Status Check -2");
-
-
-    	QueryManager queryMgr = dbClient.newQueryManager();
+       	QueryManager queryMgr = dbClient.newQueryManager();
 		StringQueryDefinition querydef = queryMgr.newStringDefinition();
     	querydef.setCriteria("John AND Bob");	
 		AtomicInteger batches = new AtomicInteger(0);
@@ -349,16 +349,13 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 		t1.start();
 		
 		t1.join();
-		Thread.currentThread().sleep(2000L);
-    	t2.start();
 		
-		t2.join();	
 		batcher.awaitCompletion();
 			
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		Assert.assertEquals(2* hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		Assert.assertEquals(2* hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+		Assert.assertEquals( hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
+		Assert.assertEquals( hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 	}
 	class DisabledDBRunnable implements Runnable {
 	  Map<String,String> properties = new HashMap<>();
