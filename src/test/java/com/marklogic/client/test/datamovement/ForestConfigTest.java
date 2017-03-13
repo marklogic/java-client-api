@@ -17,6 +17,7 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import org.junit.AfterClass;
@@ -51,7 +52,8 @@ public class ForestConfigTest {
     ForestConfiguration forestConfig = moveMgr.readForestConfig();
     Forest[] forests = forestConfig.listForests();
     String defaultDatabase = forests[0].getDatabaseName();
-    assertEquals(3, forests.length);
+    // expect three forests per node
+    assertTrue(forests.length % 3 == 0);
     for ( Forest forest : forests ) {
       DatabaseClient forestClient = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
       // not all forests for a database are on the same host, so all we
@@ -62,9 +64,8 @@ public class ForestConfigTest {
       assertEquals(defaultDatabase, forest.getDatabaseName());
       assertEquals(defaultAuthContext, forestClient.getSecurityContext().getClass());
       assertEquals(true, forest.isUpdateable());
-      if ( ! "java-unittest-1".equals(forest.getForestName()) &&
-           ! "java-unittest-2".equals(forest.getForestName()) &&
-           ! "java-unittest-3".equals(forest.getForestName()) ) {
+      if ( forest.getForestName() == null ||
+           ! forest.getForestName().startsWith("java-unittest-") ) {
         fail("Unexpected forestName \"" + forest.getForestName() + "\"");
       }
     }
