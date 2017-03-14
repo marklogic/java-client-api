@@ -3336,6 +3336,8 @@ public class JerseyServices implements RESTServices {
 				HandleAccessor.checkHandle(write.getContent(), "write");
 			String contentDispositionTemporal = "";
 			if (temporalDocumentURI != null) {
+				// escape any quotes or back-slashes in the uri
+				temporalDocumentURI = escapeContentDispositionFilename(temporalDocumentURI);
 				contentDispositionTemporal = "; temporal-document="+temporalDocumentURI;
 			}
 			if ( write.getOperationType() == 
@@ -3355,7 +3357,7 @@ public class JerseyServices implements RESTServices {
 					headers.add("Content-Disposition",
 						ContentDisposition
 							.type("attachment")
-							.fileName(write.getUri())
+							.fileName(escapeContentDispositionFilename(write.getUri()))
 							.build().toString() +
 						"; category=metadata"+contentDispositionTemporal
 					);
@@ -3373,7 +3375,7 @@ public class JerseyServices implements RESTServices {
 				headers.add("Content-Disposition",
 					ContentDisposition
 						.type("attachment")
-						.fileName(write.getUri())
+						.fileName(escapeContentDispositionFilename(write.getUri()))
 						.build().toString()+contentDispositionTemporal
 				);
 				headerList.add(headers);
@@ -3393,6 +3395,12 @@ public class JerseyServices implements RESTServices {
 			(AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
 			(Map<String, List<String>>[]) headerList.toArray(new HashMap[0]),
 			output);
+	}
+
+	private String escapeContentDispositionFilename(String str) {
+		if ( str == null ) return null;
+		// escape any quotes or back-slashes
+		return str.replace("\"", "\\\"").replace("\\", "\\\\");
 	}
 
 	public class JerseyEvalResultIterator implements EvalResultIterator {
