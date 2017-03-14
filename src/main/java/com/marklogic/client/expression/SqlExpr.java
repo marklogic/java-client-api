@@ -43,6 +43,24 @@ public interface SqlExpr {
     */
     public XsIntegerExpr bitLength(XsStringExpr str);
     /**
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
+    * @param string  The lexical value.
+    * @param collation  The collation.
+    * @return  a XsStringExpr expression
+    */
+    public XsStringExpr collatedString(XsStringExpr string, String collation);
+    /**
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
+    * @param string  The lexical value.
+    * @param collation  The collation.
+    * @return  a XsStringExpr expression
+    */
+    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collation);
+    /**
     * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:dateadd" target="mlserverdoc">sql:dateadd</a>

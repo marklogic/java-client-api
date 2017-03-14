@@ -233,7 +233,7 @@ class XsExprImpl extends XsValueImpl implements XsExpr {
 
     
     @Override
-    public XsNameExpr name(XsAnyAtomicTypeExpr arg1) {
+    public XsNameExpr Name(XsAnyAtomicTypeExpr arg1) {
         return new NameCallImpl("xs", "Name", new Object[]{ arg1 });
     }
 

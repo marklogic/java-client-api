@@ -127,7 +127,7 @@ public interface XsExpr extends XsValue {
     public XsIntegerExpr integer(XsAnyAtomicTypeExpr arg1);
     public XsLanguageExpr language(XsAnyAtomicTypeExpr arg1);
     public XsLongExpr longExpr(XsAnyAtomicTypeExpr arg1);
-    public XsNameExpr name(XsAnyAtomicTypeExpr arg1);
+    public XsNameExpr Name(XsAnyAtomicTypeExpr arg1);
     public XsNCNameExpr NCName(XsAnyAtomicTypeExpr arg1);
     public XsNegativeIntegerExpr negativeInteger(XsAnyAtomicTypeExpr arg1);
     public XsNMTOKENExpr NMTOKEN(XsAnyAtomicTypeExpr arg1);

@@ -1354,7 +1354,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXsName1Exec() {
-        executeTester("testXsName1", p.xs.name(p.col("1")), "xs:Name(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
+        executeTester("testXsName1", p.xs.Name(p.col("1")), "xs:Name(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
     }
 
     @Test
