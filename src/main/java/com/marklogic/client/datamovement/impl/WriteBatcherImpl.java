@@ -1086,6 +1086,7 @@ public class WriteBatcherImpl
     // to completion, then it removes it.
     public void rejectedExecution(Runnable r, ThreadPoolExecutor e) {
       super.rejectedExecution(r, e);
+logger.debug("rejectedExecution r={}", r);
       threadPool.taskComplete(r);
     }
   }
@@ -1117,6 +1118,7 @@ public class WriteBatcherImpl
     // afterExecute.  We've had better luck with runnables matching after
     // overriding execute.
     public void execute(Runnable r) {
+logger.debug("execute r={}", r);
       queuedAndExecutingTasks.add(r);
       super.execute(r);
     }
@@ -1124,6 +1126,7 @@ public class WriteBatcherImpl
     // afterExecute is called when a task has run to completion in a thread
     // from the thread pool
     protected void afterExecute(Runnable r, Throwable t) {
+logger.debug("afterExecute r={}", r);
       taskComplete(r);
       super.afterExecute(r, t);
     }
@@ -1147,10 +1150,12 @@ public class WriteBatcherImpl
     // taskComplete removes the completed Runnable from queuedAndExecutingTasks
     // and all active snapshots.
     public void taskComplete(Runnable r) {
+logger.debug("taskComplete r={}", r);
       boolean removedFromASnapshot = false;
       queuedAndExecutingTasks.remove(r);
       for ( Set<Runnable> snapshot : activeSnapshots.values() ) {
         if ( snapshot.remove(r) ) {
+logger.debug("taskComplete removed from snapshot={}", snapshot.hashCode());
           removedFromASnapshot = true;
         }
       }
@@ -1164,22 +1169,29 @@ public class WriteBatcherImpl
       if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
       // get a snapshot so we only look at tasks already queued, not any that
       // get asynchronously queued after this point
+logger.debug("1");
       Set<Runnable> snapshotQueuedAndExecutingTasks = snapshotQueuedAndExecutingTasks();
+logger.debug("2");
       try {
+logger.debug("3");
         long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
         // we can iterate even when the underlying set is being modified
         // since we're using ConcurrentHashMap
         for ( Runnable task : snapshotQueuedAndExecutingTasks ) {
+logger.debug("task={}", task);
           // Lock task before we re-check whether it is in the snapshot.  Thus
           // there's no way for the notifyAll to sneak in right after our check
           // and leave us waiting forever.  Also we already have the lock
           // required to call task.wait().  Normally we religiously avoid any
           // synchronized blocks, but we couldn't find a way to avoid this.
           synchronized(task) {
+logger.debug("task 2={}", task);
             while ( snapshotQueuedAndExecutingTasks.contains(task) ) {
               long startTime = System.currentTimeMillis();
               // block until task is complete or timeout expires
+logger.debug("6");
               task.wait(duration);
+logger.debug("7");
               duration -= System.currentTimeMillis() - startTime;
               if ( duration <= 0 ) {
                 // times up!  We didn't finish before timeout...
@@ -1190,8 +1202,10 @@ public class WriteBatcherImpl
           }
         }
       } finally {
+logger.debug("8");
         removeSnapshot();
       }
+logger.debug("9");
       return true;
     }
 
@@ -1200,6 +1214,7 @@ public class WriteBatcherImpl
     public List<Runnable> shutdownNow() {
       List<Runnable> tasks = super.shutdownNow();
       for ( Runnable task : tasks ) {
+logger.debug("shutdownNow tasks={}", tasks);
         taskComplete(task);
       }
       return tasks;
