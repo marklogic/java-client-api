@@ -2392,7 +2392,7 @@ public class JerseyServices implements RESTServices {
 					logger.warn("values definition options take precedence over query definition options");
 			}
 
-			if (queryDef.getCollections() != null) {
+			if (queryDef.getCollections().length > 0) {
 				if (logger.isWarnEnabled())
 					logger.warn("collections scope ignored for values query");
 			}
