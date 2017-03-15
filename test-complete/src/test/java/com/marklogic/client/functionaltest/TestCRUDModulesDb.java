@@ -26,6 +26,7 @@ import java.security.NoSuchAlgorithmException;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -364,19 +365,21 @@ public void testXQueryModuleCRUDXmlFileNegative() throws KeyManagementException,
 
 	// write XQuery file to the modules database
 	try{
-	libsMgr.write(Path, f);
-	}catch(ResourceNotFoundException e){
+		libsMgr.write(Path, f);
+		Assert.assertTrue("Exception was not thrown",false);
+	}catch(IllegalArgumentException e){
 		//Issue 210 logged for meaningful error
-		assertEquals("Local message: Could not write resource at /foo/my/path/to/my/module.xqy. Server Message: Request failed. Error body not received from server" , e.getMessage());
+		assertEquals("libraryPath (the modules database path under which you install an asset) must begin with /ext/" , e.getMessage());
 	}
 	// delete it
 	try{
 		libsMgr.delete(Path);
-	}catch(Exception e){
-		assertEquals("", "Local message: Could not delete resource at /foo/my/path/to/my/module.xqy. Server Message: Request failed. Error body not received from server", e.getMessage());
+		Assert.assertTrue("Exception was not thrown",false);
+	}catch(IllegalArgumentException e){
+		assertEquals("libraryPath (the modules database path under which you install an asset) must begin with /ext/", e.getMessage());
 	}
-		
 }
+
 @AfterClass
 	public static void tearDown() throws Exception
 	{
