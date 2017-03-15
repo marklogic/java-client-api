@@ -155,17 +155,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), false, "xs:date", null, null, "2017-03-15-04:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2017-03-15-04:00", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2017-03-15T11:49:44.156394-04:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2017-03-15T16:28:55.330296-04:00", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "11:49:44-04:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "16:28:55-04:00", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -290,7 +290,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnImplicitTimezone0Exec() {
-        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), false, "xs:dayTimeDuration", null, null, "-PT4H", new ItemSeqExpr[]{  });
+        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), true, "xs:dayTimeDuration", null, null, "-PT4H", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -845,7 +845,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode5527290161782101667", new ItemSeqExpr[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode4338790962750519350", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -920,7 +920,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.149391998778515", new ItemSeqExpr[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.602046231638903", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -945,12 +945,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:eef7c204-d43c-4142-94ce-f431f755718b", new ItemSeqExpr[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:41246b96-19ad-471c-b982-df781ba264cf", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "61de8040-4c0e-42d0-a1f7-f67d78fd1b8a", new ItemSeqExpr[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "c921c625-4b5b-42f8-abd8-2348be4cdc4b", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -1055,7 +1055,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "5249191667287393948", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "16978892415709296463", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1145,7 +1145,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$t9jRhqXBcmjpQRIHd3i340$256$PLLZczTi12GGDs.u", new ItemSeqExpr[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$fgFLmQMM6LOB1pJrOIlL8.$256$x5GvIu15HS9oQj2g", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1345,12 +1345,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpParseDateTime2Exec() {
-        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), false, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00") });
+        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
     public void testXdmpParseYymmdd2Exec() {
-        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), false, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00") });
+        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00") });
     }
 
     @Test
@@ -1375,7 +1375,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "4344941391306976991", new ItemSeqExpr[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "3148015829017544308", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -1440,12 +1440,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpStrftime2Exec() {
-        executeTester("testXdmpStrftime2", p.xdmp.strftime(p.col("1"), p.col("2")), false, null, null, null, "Wed, 06 Jan 2016 20:13:50", new ItemSeqExpr[]{ p.xs.string("%a, %d %b %Y %H:%M:%S"), p.xs.dateTime("2016-01-06T17:13:50.873594-08:00") });
+        executeTester("testXdmpStrftime2", p.xdmp.strftime(p.col("1"), p.col("2")), true, null, null, null, "Wed, 06 Jan 2016 20:13:50", new ItemSeqExpr[]{ p.xs.string("%a, %d %b %Y %H:%M:%S"), p.xs.dateTime("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
     public void testXdmpTimestampToWallclock1Exec() {
-        executeTester("testXdmpTimestampToWallclock1", p.xdmp.timestampToWallclock(p.col("1")), false, "xs:dateTime", null, null, "1969-12-31T19:00:00.0000001", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
+        executeTester("testXdmpTimestampToWallclock1", p.xdmp.timestampToWallclock(p.col("1")), true, "xs:dateTime", null, null, "1969-12-31T19:00:00.0000001", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
