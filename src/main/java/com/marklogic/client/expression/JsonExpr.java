@@ -205,8 +205,14 @@ public interface JsonExpr {
     * @return  a JsonArrayExpr expression
     */
     public JsonArrayExpr toArray(ItemSeqExpr items, XsNumericExpr limit, ItemExpr zero);
+    /**
+     * Constructs a sequence of JsonArrayExpr items.
+     */
     public JsonArraySeqExpr arraySeq(JsonArrayExpr... items);
  
+    /**
+     * Constructs a sequence of JsonObjectExpr items.
+     */
     public JsonObjectSeqExpr objectSeq(JsonObjectExpr... items);
 
 }

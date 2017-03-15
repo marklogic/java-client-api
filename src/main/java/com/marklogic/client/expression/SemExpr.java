@@ -266,12 +266,24 @@ public interface SemExpr extends SemValue {
     
     */
     public XsStringExpr uuidString();
+    /**
+     * Constructs a sequence of SemBlankExpr items.
+     */
     public SemBlankSeqExpr blankSeq(SemBlankExpr... items);
  
+    /**
+     * Constructs a sequence of SemInvalidExpr items.
+     */
     public SemInvalidSeqExpr invalidSeq(SemInvalidExpr... items);
  
+    /**
+     * Constructs a sequence of SemIriExpr items.
+     */
     public SemIriSeqExpr iriSeq(SemIriExpr... items);
  
+    /**
+     * Constructs a sequence of SemUnknownExpr items.
+     */
     public SemUnknownSeqExpr unknownSeq(SemUnknownExpr... items);
 
 }

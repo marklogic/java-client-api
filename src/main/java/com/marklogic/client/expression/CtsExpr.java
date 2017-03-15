@@ -2472,20 +2472,44 @@ public interface CtsExpr {
     * @return  a CtsQueryExpr expression
     */
     public CtsQueryExpr wordQuery(XsStringSeqVal text, XsStringSeqVal options, XsDoubleVal weight);
+    /**
+     * Constructs a sequence of CtsBoxExpr items.
+     */
     public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items);
  
+    /**
+     * Constructs a sequence of CtsCircleExpr items.
+     */
     public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items);
  
+    /**
+     * Constructs a sequence of CtsPeriodExpr items.
+     */
     public CtsPeriodSeqExpr periodSeq(CtsPeriodExpr... items);
  
+    /**
+     * Constructs a sequence of CtsPointExpr items.
+     */
     public CtsPointSeqExpr pointSeq(CtsPointExpr... items);
  
+    /**
+     * Constructs a sequence of CtsPolygonExpr items.
+     */
     public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items);
  
+    /**
+     * Constructs a sequence of CtsQueryExpr items.
+     */
     public CtsQuerySeqExpr querySeq(CtsQueryExpr... items);
  
+    /**
+     * Constructs a sequence of CtsReferenceExpr items.
+     */
     public CtsReferenceSeqExpr referenceSeq(CtsReferenceExpr... items);
  
+    /**
+     * Constructs a sequence of CtsRegionExpr items.
+     */
     public CtsRegionSeqExpr regionSeq(CtsRegionExpr... items);
 
 }

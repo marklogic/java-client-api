@@ -107,126 +107,449 @@ import com.marklogic.client.type.XsYearMonthDurationSeqExpr;
  * pipeline and constructs client values with xs.* server types.
  */
 public interface XsExpr extends XsValue {
+    /**
+    * Constructs or casts an expression to the xs:anyURI server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsAnyURIExpr expression
+    */
     public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:base64Binary server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsBase64BinaryExpr expression
+    */
     public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:boolean server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsBooleanExpr expression
+    */
     public XsBooleanExpr booleanExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:byte server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsByteExpr expression
+    */
     public XsByteExpr byteExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:date server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsDateExpr expression
+    */
     public XsDateExpr date(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:dateTime server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsDateTimeExpr expression
+    */
     public XsDateTimeExpr dateTime(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:dayTimeDuration server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsDayTimeDurationExpr expression
+    */
     public XsDayTimeDurationExpr dayTimeDuration(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:decimal server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsDecimalExpr expression
+    */
     public XsDecimalExpr decimal(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:double server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsDoubleExpr expression
+    */
     public XsDoubleExpr doubleExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:float server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsFloatExpr expression
+    */
     public XsFloatExpr floatExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:gDay server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsGDayExpr expression
+    */
     public XsGDayExpr gDay(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:gMonth server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsGMonthExpr expression
+    */
     public XsGMonthExpr gMonth(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:gMonthDay server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsGMonthDayExpr expression
+    */
     public XsGMonthDayExpr gMonthDay(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:gYear server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsGYearExpr expression
+    */
     public XsGYearExpr gYear(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:gYearMonth server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsGYearMonthExpr expression
+    */
     public XsGYearMonthExpr gYearMonth(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:hexBinary server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsHexBinaryExpr expression
+    */
     public XsHexBinaryExpr hexBinary(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:int server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsIntExpr expression
+    */
     public XsIntExpr intExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:integer server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsIntegerExpr expression
+    */
     public XsIntegerExpr integer(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:language server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsLanguageExpr expression
+    */
     public XsLanguageExpr language(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:long server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsLongExpr expression
+    */
     public XsLongExpr longExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:Name server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNameExpr expression
+    */
     public XsNameExpr Name(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:NCName server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNCNameExpr expression
+    */
     public XsNCNameExpr NCName(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:negativeInteger server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNegativeIntegerExpr expression
+    */
     public XsNegativeIntegerExpr negativeInteger(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:NMTOKEN server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNMTOKENExpr expression
+    */
     public XsNMTOKENExpr NMTOKEN(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:nonNegativeInteger server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNonNegativeIntegerExpr expression
+    */
     public XsNonNegativeIntegerExpr nonNegativeInteger(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:nonPositiveInteger server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNonPositiveIntegerExpr expression
+    */
     public XsNonPositiveIntegerExpr nonPositiveInteger(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:normalizedString server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNormalizedStringExpr expression
+    */
     public XsNormalizedStringExpr normalizedString(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:numeric server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsNumericExpr expression
+    */
     public XsNumericExpr numeric(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:positiveInteger server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsPositiveIntegerExpr expression
+    */
     public XsPositiveIntegerExpr positiveInteger(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:QName server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsQNameExpr expression
+    */
     public XsQNameExpr QName(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:short server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsShortExpr expression
+    */
     public XsShortExpr shortExpr(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:string server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsStringExpr expression
+    */
     public XsStringExpr string(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:time server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsTimeExpr expression
+    */
     public XsTimeExpr time(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:token server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsTokenExpr expression
+    */
     public XsTokenExpr token(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:unsignedByte server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsUnsignedByteExpr expression
+    */
     public XsUnsignedByteExpr unsignedByte(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:unsignedInt server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsUnsignedIntExpr expression
+    */
     public XsUnsignedIntExpr unsignedInt(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:unsignedLong server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsUnsignedLongExpr expression
+    */
     public XsUnsignedLongExpr unsignedLong(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:unsignedShort server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsUnsignedShortExpr expression
+    */
     public XsUnsignedShortExpr unsignedShort(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:untypedAtomic server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsUntypedAtomicExpr expression
+    */
     public XsUntypedAtomicExpr untypedAtomic(XsAnyAtomicTypeExpr arg1);
+    /**
+    * Constructs or casts an expression to the xs:yearMonthDuration server data type.
+    * @param arg1  the expression to construct or cast
+    * @return  a XsYearMonthDurationExpr expression
+    */
     public XsYearMonthDurationExpr yearMonthDuration(XsAnyAtomicTypeExpr arg1);
+    /**
+     * Constructs a sequence of XsAnyAtomicTypeExpr items.
+     */
     public XsAnyAtomicTypeSeqExpr anyAtomicTypeSeq(XsAnyAtomicTypeExpr... items);
  
+    /**
+     * Constructs a sequence of XsAnyURIExpr items.
+     */
     public XsAnyURISeqExpr anyURISeq(XsAnyURIExpr... items);
  
+    /**
+     * Constructs a sequence of XsBase64BinaryExpr items.
+     */
     public XsBase64BinarySeqExpr base64BinarySeq(XsBase64BinaryExpr... items);
  
+    /**
+     * Constructs a sequence of XsBooleanExpr items.
+     */
     public XsBooleanSeqExpr booleanExprSeq(XsBooleanExpr... items);
  
+    /**
+     * Constructs a sequence of XsByteExpr items.
+     */
     public XsByteSeqExpr byteExprSeq(XsByteExpr... items);
  
+    /**
+     * Constructs a sequence of XsDateExpr items.
+     */
     public XsDateSeqExpr dateSeq(XsDateExpr... items);
  
+    /**
+     * Constructs a sequence of XsDateTimeExpr items.
+     */
     public XsDateTimeSeqExpr dateTimeSeq(XsDateTimeExpr... items);
  
+    /**
+     * Constructs a sequence of XsDayTimeDurationExpr items.
+     */
     public XsDayTimeDurationSeqExpr dayTimeDurationSeq(XsDayTimeDurationExpr... items);
  
+    /**
+     * Constructs a sequence of XsDecimalExpr items.
+     */
     public XsDecimalSeqExpr decimalSeq(XsDecimalExpr... items);
  
+    /**
+     * Constructs a sequence of XsDoubleExpr items.
+     */
     public XsDoubleSeqExpr doubleExprSeq(XsDoubleExpr... items);
  
+    /**
+     * Constructs a sequence of XsFloatExpr items.
+     */
     public XsFloatSeqExpr floatExprSeq(XsFloatExpr... items);
  
+    /**
+     * Constructs a sequence of XsGDayExpr items.
+     */
     public XsGDaySeqExpr GDaySeq(XsGDayExpr... items);
  
+    /**
+     * Constructs a sequence of XsGMonthExpr items.
+     */
     public XsGMonthSeqExpr GMonthSeq(XsGMonthExpr... items);
  
+    /**
+     * Constructs a sequence of XsGMonthDayExpr items.
+     */
     public XsGMonthDaySeqExpr GMonthDaySeq(XsGMonthDayExpr... items);
  
+    /**
+     * Constructs a sequence of XsGYearExpr items.
+     */
     public XsGYearSeqExpr GYearSeq(XsGYearExpr... items);
  
+    /**
+     * Constructs a sequence of XsGYearMonthExpr items.
+     */
     public XsGYearMonthSeqExpr GYearMonthSeq(XsGYearMonthExpr... items);
  
+    /**
+     * Constructs a sequence of XsHexBinaryExpr items.
+     */
     public XsHexBinarySeqExpr hexBinarySeq(XsHexBinaryExpr... items);
  
+    /**
+     * Constructs a sequence of XsIntExpr items.
+     */
     public XsIntSeqExpr intExprSeq(XsIntExpr... items);
  
+    /**
+     * Constructs a sequence of XsIntegerExpr items.
+     */
     public XsIntegerSeqExpr integerSeq(XsIntegerExpr... items);
  
+    /**
+     * Constructs a sequence of XsLanguageExpr items.
+     */
     public XsLanguageSeqExpr languageSeq(XsLanguageExpr... items);
  
+    /**
+     * Constructs a sequence of XsLongExpr items.
+     */
     public XsLongSeqExpr longExprSeq(XsLongExpr... items);
  
+    /**
+     * Constructs a sequence of XsNameExpr items.
+     */
     public XsNameSeqExpr NameSeq(XsNameExpr... items);
  
+    /**
+     * Constructs a sequence of XsNCNameExpr items.
+     */
     public XsNCNameSeqExpr NCNameSeq(XsNCNameExpr... items);
  
+    /**
+     * Constructs a sequence of XsNegativeIntegerExpr items.
+     */
     public XsNegativeIntegerSeqExpr negativeIntegerSeq(XsNegativeIntegerExpr... items);
  
+    /**
+     * Constructs a sequence of XsNMTOKENExpr items.
+     */
     public XsNMTOKENSeqExpr NMTOKENSeq(XsNMTOKENExpr... items);
  
+    /**
+     * Constructs a sequence of XsNonNegativeIntegerExpr items.
+     */
     public XsNonNegativeIntegerSeqExpr nonNegativeIntegerSeq(XsNonNegativeIntegerExpr... items);
  
+    /**
+     * Constructs a sequence of XsNonPositiveIntegerExpr items.
+     */
     public XsNonPositiveIntegerSeqExpr nonPositiveIntegerSeq(XsNonPositiveIntegerExpr... items);
  
+    /**
+     * Constructs a sequence of XsNormalizedStringExpr items.
+     */
     public XsNormalizedStringSeqExpr normalizedStringSeq(XsNormalizedStringExpr... items);
  
+    /**
+     * Constructs a sequence of XsNumericExpr items.
+     */
     public XsNumericSeqExpr numericSeq(XsNumericExpr... items);
  
+    /**
+     * Constructs a sequence of XsPositiveIntegerExpr items.
+     */
     public XsPositiveIntegerSeqExpr positiveIntegerSeq(XsPositiveIntegerExpr... items);
  
+    /**
+     * Constructs a sequence of XsQNameExpr items.
+     */
     public XsQNameSeqExpr QNameSeq(XsQNameExpr... items);
  
+    /**
+     * Constructs a sequence of XsShortExpr items.
+     */
     public XsShortSeqExpr shortExprSeq(XsShortExpr... items);
  
+    /**
+     * Constructs a sequence of XsStringExpr items.
+     */
     public XsStringSeqExpr stringSeq(XsStringExpr... items);
  
+    /**
+     * Constructs a sequence of XsTimeExpr items.
+     */
     public XsTimeSeqExpr timeSeq(XsTimeExpr... items);
  
+    /**
+     * Constructs a sequence of XsTokenExpr items.
+     */
     public XsTokenSeqExpr tokenSeq(XsTokenExpr... items);
  
+    /**
+     * Constructs a sequence of XsUnsignedByteExpr items.
+     */
     public XsUnsignedByteSeqExpr unsignedByteSeq(XsUnsignedByteExpr... items);
  
+    /**
+     * Constructs a sequence of XsUnsignedIntExpr items.
+     */
     public XsUnsignedIntSeqExpr unsignedIntSeq(XsUnsignedIntExpr... items);
  
+    /**
+     * Constructs a sequence of XsUnsignedLongExpr items.
+     */
     public XsUnsignedLongSeqExpr unsignedLongSeq(XsUnsignedLongExpr... items);
  
+    /**
+     * Constructs a sequence of XsUnsignedShortExpr items.
+     */
     public XsUnsignedShortSeqExpr unsignedShortSeq(XsUnsignedShortExpr... items);
  
+    /**
+     * Constructs a sequence of XsUntypedAtomicExpr items.
+     */
     public XsUntypedAtomicSeqExpr untypedAtomicSeq(XsUntypedAtomicExpr... items);
  
+    /**
+     * Constructs a sequence of XsYearMonthDurationExpr items.
+     */
     public XsYearMonthDurationSeqExpr yearMonthDurationSeq(XsYearMonthDurationExpr... items);
 
 }

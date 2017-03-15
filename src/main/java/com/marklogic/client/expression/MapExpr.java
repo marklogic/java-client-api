@@ -108,6 +108,9 @@ public interface MapExpr {
     * @return  a MapMapExpr expression
     */
     public MapMapExpr map(ElementNodeExpr map);
+    /**
+     * Constructs a sequence of MapMapExpr items.
+     */
     public MapMapSeqExpr mapSeq(MapMapExpr... items);
 
 }

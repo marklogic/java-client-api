@@ -53,6 +53,9 @@ public interface RdfExpr extends RdfValue {
     * @return  a XsStringExpr expression
     */
     public XsStringExpr langStringLanguage(RdfLangStringExpr val);
+    /**
+     * Constructs a sequence of RdfLangStringExpr items.
+     */
     public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items);
 
 }

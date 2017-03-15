@@ -525,6 +525,9 @@ public interface MathExpr {
     * @return  a XsDoubleExpr expression
     */
     public XsDoubleExpr varianceP(XsDoubleSeqExpr arg);
+    /**
+     * Constructs a sequence of MathLinearModelExpr items.
+     */
     public MathLinearModelSeqExpr linearModelSeq(MathLinearModelExpr... items);
 
 }
