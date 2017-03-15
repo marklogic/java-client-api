@@ -1133,12 +1133,15 @@ logger.debug("afterExecute r={}", r);
 
     public Set<Runnable> snapshotQueuedAndExecutingTasks() {
       Set<Runnable> snapshot = ConcurrentHashMap.<Runnable>newKeySet();
-      snapshot.addAll(queuedAndExecutingTasks);
+logger.debug("new snapshot={}", snapshot.hashCode());
       activeSnapshots.put( Thread.currentThread(), snapshot );
+      snapshot.addAll(queuedAndExecutingTasks);
+logger.debug("added snapshot={}", snapshot.hashCode());
       return snapshot;
     }
 
     public void removeSnapshot() {
+logger.debug("remove snapshot={}", activeSnapshots.get(Thread.currentThread()).hashCode());
       activeSnapshots.remove(Thread.currentThread());
     }
 
@@ -1179,14 +1182,17 @@ logger.debug("3");
         // since we're using ConcurrentHashMap
         for ( Runnable task : snapshotQueuedAndExecutingTasks ) {
 logger.debug("task={}", task);
-          // Lock task before we re-check whether it is in the snapshot.  Thus
-          // there's no way for the notifyAll to sneak in right after our check
-          // and leave us waiting forever.  Also we already have the lock
-          // required to call task.wait().  Normally we religiously avoid any
-          // synchronized blocks, but we couldn't find a way to avoid this.
+          // Lock task before we re-check whether it is queued or executing in
+          // the main set and in the snapshot.  Thus there's no way for the
+          // notifyAll to sneak in right after our check and leave us waiting
+          // forever.  Also we already have the lock required to call
+          // task.wait().  Normally we religiously avoid any synchronized
+          // blocks, but we couldn't find a way to avoid this one.
           synchronized(task) {
 logger.debug("task 2={}", task);
-            while ( snapshotQueuedAndExecutingTasks.contains(task) ) {
+            while ( snapshotQueuedAndExecutingTasks.contains(task) &&
+                    queuedAndExecutingTasks.contains(task) )
+            {
               long startTime = System.currentTimeMillis();
               // block until task is complete or timeout expires
 logger.debug("6");
