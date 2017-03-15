@@ -89,6 +89,7 @@ public class ExtensionLibrariesManagerImpl
 	@Override
 	public <T extends AbstractReadHandle> T read(String modulePath, T readHandle)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		checkPath(modulePath);
 		return services.getResource(requestLogger, modulePath, null, null, readHandle);
 	}
 	@Override
@@ -129,6 +130,7 @@ public class ExtensionLibrariesManagerImpl
 	@Override
 	public void write(String modulePath, AbstractWriteHandle contentHandle)
 	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+		checkPath(modulePath);
 		services.putResource(requestLogger, modulePath, null, null, contentHandle, null);
 	}
 	@Override
@@ -138,12 +140,20 @@ public class ExtensionLibrariesManagerImpl
 		for (Permission perm : modulesDescriptor.getPermissions()) {
 			requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
 		}
+		checkPath(modulesDescriptor.getPath());
 		services.putResource(requestLogger, modulesDescriptor.getPath(), null, requestParams, contentHandle, null);
+	}
+
+	private void checkPath(String libraryPath) {
+		if ( libraryPath == null ) throw new IllegalArgumentException("libraryPath must not be null");
+		if ( ! libraryPath.startsWith("/ext/") ) throw new IllegalArgumentException(
+			"libraryPath (the modules database path under which you install an asset) must begin with /ext/");
 	}
 
 	@Override
 	public void delete(String modulePath)
 	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+		checkPath(modulePath);
 		services.deleteResource(requestLogger, modulePath, null, null, null);
 	}
 	@Override
