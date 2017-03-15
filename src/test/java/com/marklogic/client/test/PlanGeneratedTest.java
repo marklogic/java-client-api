@@ -17,6 +17,7 @@ package com.marklogic.client.test;
 
 import org.junit.Test;
 
+import com.marklogic.client.io.Format;
 import com.marklogic.client.type.ItemSeqExpr;
 
 // IMPORTANT: Do not edit. This file is generated.
@@ -24,1511 +25,1751 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testCtsStem1Exec() {
-        executeTester("testCtsStem1", p.cts.stem(p.col("1")), "\"run\"", new Object[]{p.xs.string("ran")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem1", p.cts.stem(p.col("1")), false, null, null, null, "run", new ItemSeqExpr[]{ p.xs.string("ran") });
     }
 
     @Test
     public void testCtsStem2Exec() {
-        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), "\"run\"", new Object[]{p.xs.string("ran"), p.xs.string("en")}, new ItemSeqExpr[]{});
+        executeTester("testCtsStem2", p.cts.stem(p.col("1"), p.col("2")), false, null, null, null, "run", new ItemSeqExpr[]{ p.xs.string("ran"), p.xs.string("en") });
     }
 
     @Test
     public void testCtsTokenize1Exec() {
-        executeTester("testCtsTokenize1", p.cts.tokenize(p.col("1")), "(cts:word(\"a\"), cts:punctuation(\"-\"), cts:word(\"b\"), cts:space(\" \"), cts:word(\"c\"))", new Object[]{p.xs.string("a-b c")}, new ItemSeqExpr[]{});
+        executeTester("testCtsTokenize1", p.cts.tokenize(p.col("1")), false, null, null, Format.JSON, "[\"a\", \"-\", \"b\", \" \", \"c\"]", new ItemSeqExpr[]{ p.xs.string("a-b c") });
     }
 
     @Test
     public void testCtsTokenize2Exec() {
-        executeTester("testCtsTokenize2", p.cts.tokenize(p.col("1"), p.col("2")), "(cts:word(\"a\"), cts:punctuation(\"-\"), cts:word(\"b\"), cts:space(\" \"), cts:word(\"c\"))", new Object[]{p.xs.string("a-b c"), p.xs.string("en")}, new ItemSeqExpr[]{});
+        executeTester("testCtsTokenize2", p.cts.tokenize(p.col("1"), p.col("2")), false, null, null, Format.JSON, "[\"a\", \"-\", \"b\", \" \", \"c\"]", new ItemSeqExpr[]{ p.xs.string("a-b c"), p.xs.string("en") });
     }
 
     @Test
     public void testFnAbs1Exec() {
-        executeTester("testFnAbs1", p.fn.abs(p.col("1")), "11", new Object[]{p.xs.doubleVal(-11)}, new ItemSeqExpr[]{});
+        executeTester("testFnAbs1", p.fn.abs(p.col("1")), false, null, null, null, "11", new ItemSeqExpr[]{ p.xs.doubleVal(-11) });
     }
 
     @Test
     public void testFnAdjustDateTimeToTimezone1Exec() {
-        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), "xs:dateTime(\"2016-01-02T05:09:08-05:00\")", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustDateTimeToTimezone1", p.fn.adjustDateTimeToTimezone(p.col("1")), true, "xs:dateTime", null, null, "2016-01-02T06:09:08-04:00", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnAdjustDateTimeToTimezone2Exec() {
-        executeTester("testFnAdjustDateTimeToTimezone2", p.fn.adjustDateTimeToTimezone(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-02T00:09:08-10:00\")", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z"), p.xs.dayTimeDuration("-PT10H")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustDateTimeToTimezone2", p.fn.adjustDateTimeToTimezone(p.col("1"), p.col("2")), true, "xs:dateTime", null, null, "2016-01-02T00:09:08-10:00", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z"), p.xs.dayTimeDuration("-PT10H") });
     }
 
     @Test
-    public void testFnAdjustDateToTimezone1Exist() {
-        executeTester("testFnAdjustDateToTimezone1", p.fn.adjustDateToTimezone(p.col("1")), null, new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+    public void testFnAdjustDateToTimezone1Exec() {
+        executeTester("testFnAdjustDateToTimezone1", p.fn.adjustDateToTimezone(p.col("1")), true, "xs:date", null, null, "2016-01-02-04:00", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
-    public void testFnAdjustDateToTimezone2Exist() {
-        executeTester("testFnAdjustDateToTimezone2", p.fn.adjustDateToTimezone(p.col("1"), p.col("2")), null, new Object[]{p.xs.date("2016-01-02"), p.xs.dayTimeDuration("-PT10H")}, new ItemSeqExpr[]{});
+    public void testFnAdjustDateToTimezone2Exec() {
+        executeTester("testFnAdjustDateToTimezone2", p.fn.adjustDateToTimezone(p.col("1"), p.col("2")), true, "xs:date", null, null, "2016-01-02-10:00", new ItemSeqExpr[]{ p.xs.date("2016-01-02"), p.xs.dayTimeDuration("-PT10H") });
     }
 
     @Test
     public void testFnAdjustTimeToTimezone1Exec() {
-        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), "xs:time(\"05:09:08-05:00\")", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustTimeToTimezone1", p.fn.adjustTimeToTimezone(p.col("1")), true, "xs:time", null, null, "06:09:08-04:00", new ItemSeqExpr[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
     public void testFnAdjustTimeToTimezone2Exec() {
-        executeTester("testFnAdjustTimeToTimezone2", p.fn.adjustTimeToTimezone(p.col("1"), p.col("2")), "xs:time(\"00:09:08-10:00\")", new Object[]{p.xs.time("10:09:08Z"), p.xs.dayTimeDuration("-PT10H")}, new ItemSeqExpr[]{});
+        executeTester("testFnAdjustTimeToTimezone2", p.fn.adjustTimeToTimezone(p.col("1"), p.col("2")), true, "xs:time", null, null, "00:09:08-10:00", new ItemSeqExpr[]{ p.xs.time("10:09:08Z"), p.xs.dayTimeDuration("-PT10H") });
     }
 
     @Test
     public void testFnAnalyzeString2Exec() {
-        executeTester("testFnAnalyzeString2", p.fn.analyzeString(p.col("1"), p.col("2")), "<s:analyze-string-result xmlns:s=\"http://www.w3.org/2005/xpath-functions\"><s:non-match>aXb</s:non-match><s:match>y</s:match><s:non-match>c</s:non-match></s:analyze-string-result>", new Object[]{p.xs.string("aXbyc"), p.xs.string("[xy]")}, new ItemSeqExpr[]{});
+        executeTester("testFnAnalyzeString2", p.fn.analyzeString(p.col("1"), p.col("2")), false, null, "element", Format.XML, "<s:analyze-string-result xmlns:s=\"http://www.w3.org/2005/xpath-functions\"><s:non-match>aXb</s:non-match><s:match>y</s:match><s:non-match>c</s:non-match></s:analyze-string-result>", new ItemSeqExpr[]{ p.xs.string("aXbyc"), p.xs.string("[xy]") });
     }
 
     @Test
     public void testFnAnalyzeString3Exec() {
-        executeTester("testFnAnalyzeString3", p.fn.analyzeString(p.col("1"), p.col("2"), p.col("3")), "<s:analyze-string-result xmlns:s=\"http://www.w3.org/2005/xpath-functions\"><s:non-match>a</s:non-match><s:match>X</s:match><s:non-match>b</s:non-match><s:match>y</s:match><s:non-match>c</s:non-match></s:analyze-string-result>", new Object[]{p.xs.string("aXbyc"), p.xs.string("[xy]"), p.xs.string("i")}, new ItemSeqExpr[]{});
+        executeTester("testFnAnalyzeString3", p.fn.analyzeString(p.col("1"), p.col("2"), p.col("3")), false, null, "element", Format.XML, "<s:analyze-string-result xmlns:s=\"http://www.w3.org/2005/xpath-functions\"><s:non-match>a</s:non-match><s:match>X</s:match><s:non-match>b</s:non-match><s:match>y</s:match><s:non-match>c</s:non-match></s:analyze-string-result>", new ItemSeqExpr[]{ p.xs.string("aXbyc"), p.xs.string("[xy]"), p.xs.string("i") });
     }
 
     @Test
-    public void testFnBoolean1Exec() {
-        executeTester("testFnBoolean1", p.fn.booleanExpr(p.col("1")), "fn:true()", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+    public void testFnAvg1Exec() {
+        executeTester("testFnAvg1", p.fn.avg(p.col("1")), false, null, null, null, "5", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(2), p.xs.doubleVal(4), p.xs.doubleVal(6), p.xs.doubleVal(8)) });
+    }
+
+    @Test
+    public void testFnBooleanExpr1Exec() {
+        executeTester("testFnBooleanExpr1", p.fn.booleanExpr(p.col("1")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testFnCeiling1Exec() {
-        executeTester("testFnCeiling1", p.fn.ceiling(p.col("1")), "2", new Object[]{p.xs.doubleVal(1.3)}, new ItemSeqExpr[]{});
+        executeTester("testFnCeiling1", p.fn.ceiling(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.doubleVal(1.3) });
     }
 
     @Test
     public void testFnCodepointEqual2Exec() {
-        executeTester("testFnCodepointEqual2", p.fn.codepointEqual(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testFnCodepointEqual2", p.fn.codepointEqual(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("abc") });
+    }
+
+    @Test
+    public void testFnCodepointsToString1Exec() {
+        executeTester("testFnCodepointsToString1", p.fn.codepointsToString(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.integerSeq(p.xs.integer(97), p.xs.integer(98), p.xs.integer(99)) });
     }
 
     @Test
     public void testFnCompare2Exec() {
-        executeTester("testFnCompare2", p.fn.compare(p.col("1"), p.col("2")), "1", new Object[]{p.xs.string("abz"), p.xs.string("aba")}, new ItemSeqExpr[]{});
+        executeTester("testFnCompare2", p.fn.compare(p.col("1"), p.col("2")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.string("abz"), p.xs.string("aba") });
     }
 
     @Test
     public void testFnCompare3Exec() {
-        executeTester("testFnCompare3", p.fn.compare(p.col("1"), p.col("2"), p.col("3")), "1", new Object[]{p.xs.string("abz"), p.xs.string("aba"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnCompare3", p.fn.compare(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.string("abz"), p.xs.string("aba"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnConcat2Exec() {
-        executeTester("testFnConcat2", p.fn.concat(p.col("1"), p.col("2")), "\"ab\"", new Object[]{p.xs.string("a"), p.xs.string("b")}, new ItemSeqExpr[]{});
+        executeTester("testFnConcat2", p.fn.concat(p.col("1"), p.col("2")), false, null, null, null, "ab", new ItemSeqExpr[]{ p.xs.string("a"), p.xs.string("b") });
     }
 
     @Test
     public void testFnConcat3Exec() {
-        executeTester("testFnConcat3", p.fn.concat(p.col("1"), p.col("2"), p.col("3")), "\"abc\"", new Object[]{p.xs.string("a"), p.xs.string("b"), p.xs.string("c")}, new ItemSeqExpr[]{});
+        executeTester("testFnConcat3", p.fn.concat(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("a"), p.xs.string("b"), p.xs.string("c") });
     }
 
     @Test
     public void testFnContains2Exec() {
-        executeTester("testFnContains2", p.fn.contains(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("b")}, new ItemSeqExpr[]{});
+        executeTester("testFnContains2", p.fn.contains(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("b") });
     }
 
     @Test
     public void testFnContains3Exec() {
-        executeTester("testFnContains3", p.fn.contains(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("b"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnContains3", p.fn.contains(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("b"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
-    public void testFnCurrentDate0Exist() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), null, null, null);
+    public void testFnCount1Exec() {
+        executeTester("testFnCount1", p.fn.count(p.col("1")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3)) });
     }
 
     @Test
-    public void testFnCurrentDateTime0Exist() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), null, null, null);
+    public void testFnCount2Exec() {
+        executeTester("testFnCount2", p.fn.count(p.col("1"), p.col("2")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3)), p.xs.doubleVal(4) });
     }
 
     @Test
-    public void testFnCurrentTime0Exist() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), null, null, null);
+    public void testFnCurrentDate0Exec() {
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), false, "xs:date", null, null, "2017-03-15-04:00", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testFnCurrentDateTime0Exec() {
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2017-03-15T11:49:44.156394-04:00", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testFnCurrentTime0Exec() {
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "11:49:44-04:00", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnDayFromDate1Exec() {
-        executeTester("testFnDayFromDate1", p.fn.dayFromDate(p.col("1")), "2", new Object[]{p.xs.date("2016-01-02-03:04")}, new ItemSeqExpr[]{});
+        executeTester("testFnDayFromDate1", p.fn.dayFromDate(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.date("2016-01-02-03:04") });
     }
 
     @Test
     public void testFnDayFromDateTime1Exec() {
-        executeTester("testFnDayFromDateTime1", p.fn.dayFromDateTime(p.col("1")), "2", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnDayFromDateTime1", p.fn.dayFromDateTime(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnDaysFromDuration1Exec() {
-        executeTester("testFnDaysFromDuration1", p.fn.daysFromDuration(p.col("1")), "3", new Object[]{p.xs.dayTimeDuration("P3DT4H5M6S")}, new ItemSeqExpr[]{});
+        executeTester("testFnDaysFromDuration1", p.fn.daysFromDuration(p.col("1")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.dayTimeDuration("P3DT4H5M6S") });
     }
 
     @Test
     public void testFnDeepEqual2Exec() {
-        executeTester("testFnDeepEqual2", p.fn.deepEqual(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testFnDeepEqual2", p.fn.deepEqual(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("abc") });
     }
 
     @Test
     public void testFnDeepEqual3Exec() {
-        executeTester("testFnDeepEqual3", p.fn.deepEqual(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("abc"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnDeepEqual3", p.fn.deepEqual(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("abc"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
-    public void testFnDefaultCollation0Exist() {
-        executeTester("testFnDefaultCollation0", p.fn.defaultCollation(), null, null, null);
+    public void testFnDefaultCollation0Exec() {
+        executeTester("testFnDefaultCollation0", p.fn.defaultCollation(), true, null, null, null, "http://marklogic.com/collation/codepoint", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testFnDistinctValues1Exec() {
+        executeTester("testFnDistinctValues1", p.fn.distinctValues(p.col("1")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("b"), p.xs.string("c")) });
+    }
+
+    @Test
+    public void testFnDistinctValues2Exec() {
+        executeTester("testFnDistinctValues2", p.fn.distinctValues(p.col("1"), p.col("2")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("b"), p.xs.string("c")), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnEmpty1Exec() {
-        executeTester("testFnEmpty1", p.fn.empty(p.col("1")), "fn:false()", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testFnEmpty1", p.fn.empty(p.col("1")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testFnEncodeForUri1Exec() {
-        executeTester("testFnEncodeForUri1", p.fn.encodeForUri(p.col("1")), "\"http%3A%2F%2Fa%2Fb%3Fc%23d\"", new Object[]{p.xs.string("http://a/b?c#d")}, new ItemSeqExpr[]{});
+        executeTester("testFnEncodeForUri1", p.fn.encodeForUri(p.col("1")), false, null, null, null, "http%3A%2F%2Fa%2Fb%3Fc%23d", new ItemSeqExpr[]{ p.xs.string("http://a/b?c#d") });
     }
 
     @Test
     public void testFnEndsWith2Exec() {
-        executeTester("testFnEndsWith2", p.fn.endsWith(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("c")}, new ItemSeqExpr[]{});
+        executeTester("testFnEndsWith2", p.fn.endsWith(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("c") });
     }
 
     @Test
     public void testFnEndsWith3Exec() {
-        executeTester("testFnEndsWith3", p.fn.endsWith(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("c"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnEndsWith3", p.fn.endsWith(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("c"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnEscapeHtmlUri1Exec() {
-        executeTester("testFnEscapeHtmlUri1", p.fn.escapeHtmlUri(p.col("1")), "\"http://a/b?c#d\"", new Object[]{p.xs.string("http://a/b?c#d")}, new ItemSeqExpr[]{});
+        executeTester("testFnEscapeHtmlUri1", p.fn.escapeHtmlUri(p.col("1")), false, null, null, null, "http://a/b?c#d", new ItemSeqExpr[]{ p.xs.string("http://a/b?c#d") });
     }
 
     @Test
     public void testFnExists1Exec() {
-        executeTester("testFnExists1", p.fn.exists(p.col("1")), "fn:true()", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testFnExists1", p.fn.exists(p.col("1")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
-    public void testFnFalse0Exist() {
-        executeTester("testFnFalse0", p.fn.falseExpr(), null, null, null);
+    public void testFnFalseExpr0Exec() {
+        executeTester("testFnFalseExpr0", p.fn.falseExpr(), false, null, null, null, "false", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnFloor1Exec() {
-        executeTester("testFnFloor1", p.fn.floor(p.col("1")), "1", new Object[]{p.xs.doubleVal(1.7)}, new ItemSeqExpr[]{});
+        executeTester("testFnFloor1", p.fn.floor(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1.7) });
     }
 
     @Test
     public void testFnFormatDate2Exec() {
-        executeTester("testFnFormatDate2", p.fn.formatDate(p.col("1"), p.col("2")), "\"2016/01/02\"", new Object[]{p.xs.date("2016-01-02-03:04"), p.xs.string("[Y0001]/[M01]/[D01]")}, new ItemSeqExpr[]{});
+        executeTester("testFnFormatDate2", p.fn.formatDate(p.col("1"), p.col("2")), false, null, null, null, "2016/01/02", new ItemSeqExpr[]{ p.xs.date("2016-01-02-03:04"), p.xs.string("[Y0001]/[M01]/[D01]") });
     }
 
     @Test
     public void testFnFormatDateTime2Exec() {
-        executeTester("testFnFormatDateTime2", p.fn.formatDateTime(p.col("1"), p.col("2")), "\"2016/01/02 10:09:08:00\"", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z"), p.xs.string("[Y0001]/[M01]/[D01] [H01]:[m01]:[s01]:[f01]")}, new ItemSeqExpr[]{});
+        executeTester("testFnFormatDateTime2", p.fn.formatDateTime(p.col("1"), p.col("2")), false, null, null, null, "2016/01/02 10:09:08:00", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z"), p.xs.string("[Y0001]/[M01]/[D01] [H01]:[m01]:[s01]:[f01]") });
     }
 
     @Test
     public void testFnFormatNumber2Exec() {
-        executeTester("testFnFormatNumber2", p.fn.formatNumber(p.col("1"), p.col("2")), "\"1,234.50\"", new Object[]{p.xs.doubleVal(1234.5), p.xs.string("#,##0.00")}, new ItemSeqExpr[]{});
+        executeTester("testFnFormatNumber2", p.fn.formatNumber(p.col("1"), p.col("2")), false, null, null, null, "1,234.50", new ItemSeqExpr[]{ p.xs.doubleVal(1234.5), p.xs.string("#,##0.00") });
     }
 
     @Test
     public void testFnFormatTime2Exec() {
-        executeTester("testFnFormatTime2", p.fn.formatTime(p.col("1"), p.col("2")), "\"10:09:08:00\"", new Object[]{p.xs.time("10:09:08Z"), p.xs.string("[H01]:[m01]:[s01]:[f01]")}, new ItemSeqExpr[]{});
+        executeTester("testFnFormatTime2", p.fn.formatTime(p.col("1"), p.col("2")), false, null, null, null, "10:09:08:00", new ItemSeqExpr[]{ p.xs.time("10:09:08Z"), p.xs.string("[H01]:[m01]:[s01]:[f01]") });
+    }
+
+    @Test
+    public void testFnHead1Exec() {
+        executeTester("testFnHead1", p.fn.head(p.col("1")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
     }
 
     @Test
     public void testFnHoursFromDateTime1Exec() {
-        executeTester("testFnHoursFromDateTime1", p.fn.hoursFromDateTime(p.col("1")), "10", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnHoursFromDateTime1", p.fn.hoursFromDateTime(p.col("1")), false, null, null, null, "10", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnHoursFromDuration1Exec() {
-        executeTester("testFnHoursFromDuration1", p.fn.hoursFromDuration(p.col("1")), "4", new Object[]{p.xs.dayTimeDuration("P3DT4H5M6S")}, new ItemSeqExpr[]{});
+        executeTester("testFnHoursFromDuration1", p.fn.hoursFromDuration(p.col("1")), false, null, null, null, "4", new ItemSeqExpr[]{ p.xs.dayTimeDuration("P3DT4H5M6S") });
     }
 
     @Test
     public void testFnHoursFromTime1Exec() {
-        executeTester("testFnHoursFromTime1", p.fn.hoursFromTime(p.col("1")), "10", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnHoursFromTime1", p.fn.hoursFromTime(p.col("1")), false, null, null, null, "10", new ItemSeqExpr[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
-    public void testFnImplicitTimezone0Exist() {
-        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), null, null, null);
+    public void testFnImplicitTimezone0Exec() {
+        executeTester("testFnImplicitTimezone0", p.fn.implicitTimezone(), false, "xs:dayTimeDuration", null, null, "-PT4H", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testFnIndexOf2Exec() {
+        executeTester("testFnIndexOf2", p.fn.indexOf(p.col("1"), p.col("2")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")), p.xs.string("b") });
+    }
+
+    @Test
+    public void testFnIndexOf3Exec() {
+        executeTester("testFnIndexOf3", p.fn.indexOf(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")), p.xs.string("b"), p.xs.string("http://marklogic.com/collation/") });
+    }
+
+    @Test
+    public void testFnInsertBefore3Exec() {
+        executeTester("testFnInsertBefore3", p.fn.insertBefore(p.col("1"), p.col("2"), p.col("3")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\", \"d\", \"e\", \"f\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("e"), p.xs.string("f")), p.xs.integer(3), p.xs.stringSeq(p.xs.string("c"), p.xs.string("d")) });
     }
 
     @Test
     public void testFnIriToUri1Exec() {
-        executeTester("testFnIriToUri1", p.fn.iriToUri(p.col("1")), "\"http://a/b?c#d\"", new Object[]{p.xs.string("http://a/b?c#d")}, new ItemSeqExpr[]{});
+        executeTester("testFnIriToUri1", p.fn.iriToUri(p.col("1")), false, null, null, null, "http://a/b?c#d", new ItemSeqExpr[]{ p.xs.string("http://a/b?c#d") });
     }
 
     @Test
-    public void testFnLocalNameFromQName1Exist() {
-        executeTester("testFnLocalNameFromQName1", p.fn.localNameFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
+    public void testFnLocalNameFromQName1Exec() {
+        executeTester("testFnLocalNameFromQName1", p.fn.localNameFromQName(p.col("1")), false, "xs:NCName", null, null, "abc", new ItemSeqExpr[]{ p.xs.QName("abc") });
     }
 
     @Test
     public void testFnLowerCase1Exec() {
-        executeTester("testFnLowerCase1", p.fn.lowerCase(p.col("1")), "\"abc\"", new Object[]{p.xs.string("ABC")}, new ItemSeqExpr[]{});
+        executeTester("testFnLowerCase1", p.fn.lowerCase(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("ABC") });
     }
 
     @Test
     public void testFnMatches2Exec() {
-        executeTester("testFnMatches2", p.fn.matches(p.col("1"), p.col("2")), "fn:false()", new Object[]{p.xs.string("abc"), p.xs.string("^.B")}, new ItemSeqExpr[]{});
+        executeTester("testFnMatches2", p.fn.matches(p.col("1"), p.col("2")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("^.B") });
     }
 
     @Test
     public void testFnMatches3Exec() {
-        executeTester("testFnMatches3", p.fn.matches(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("^.B"), p.xs.string("i")}, new ItemSeqExpr[]{});
+        executeTester("testFnMatches3", p.fn.matches(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("^.B"), p.xs.string("i") });
+    }
+
+    @Test
+    public void testFnMax1Exec() {
+        executeTester("testFnMax1", p.fn.max(p.col("1")), false, null, null, null, "c", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
+    }
+
+    @Test
+    public void testFnMax2Exec() {
+        executeTester("testFnMax2", p.fn.max(p.col("1"), p.col("2")), false, null, null, null, "c", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")), p.xs.string("http://marklogic.com/collation/") });
+    }
+
+    @Test
+    public void testFnMin1Exec() {
+        executeTester("testFnMin1", p.fn.min(p.col("1")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
+    }
+
+    @Test
+    public void testFnMin2Exec() {
+        executeTester("testFnMin2", p.fn.min(p.col("1"), p.col("2")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnMinutesFromDateTime1Exec() {
-        executeTester("testFnMinutesFromDateTime1", p.fn.minutesFromDateTime(p.col("1")), "9", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnMinutesFromDateTime1", p.fn.minutesFromDateTime(p.col("1")), false, null, null, null, "9", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnMinutesFromDuration1Exec() {
-        executeTester("testFnMinutesFromDuration1", p.fn.minutesFromDuration(p.col("1")), "5", new Object[]{p.xs.dayTimeDuration("P3DT4H5M6S")}, new ItemSeqExpr[]{});
+        executeTester("testFnMinutesFromDuration1", p.fn.minutesFromDuration(p.col("1")), false, null, null, null, "5", new ItemSeqExpr[]{ p.xs.dayTimeDuration("P3DT4H5M6S") });
     }
 
     @Test
     public void testFnMinutesFromTime1Exec() {
-        executeTester("testFnMinutesFromTime1", p.fn.minutesFromTime(p.col("1")), "9", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnMinutesFromTime1", p.fn.minutesFromTime(p.col("1")), false, null, null, null, "9", new ItemSeqExpr[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
     public void testFnMonthFromDate1Exec() {
-        executeTester("testFnMonthFromDate1", p.fn.monthFromDate(p.col("1")), "1", new Object[]{p.xs.date("2016-01-02-03:04")}, new ItemSeqExpr[]{});
+        executeTester("testFnMonthFromDate1", p.fn.monthFromDate(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.date("2016-01-02-03:04") });
     }
 
     @Test
     public void testFnMonthFromDateTime1Exec() {
-        executeTester("testFnMonthFromDateTime1", p.fn.monthFromDateTime(p.col("1")), "1", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnMonthFromDateTime1", p.fn.monthFromDateTime(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnMonthsFromDuration1Exec() {
-        executeTester("testFnMonthsFromDuration1", p.fn.monthsFromDuration(p.col("1")), "2", new Object[]{p.xs.yearMonthDuration("P1Y2M")}, new ItemSeqExpr[]{});
+        executeTester("testFnMonthsFromDuration1", p.fn.monthsFromDuration(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.yearMonthDuration("P1Y2M") });
     }
 
     @Test
-    public void testFnNamespaceUriFromQName1Exist() {
-        executeTester("testFnNamespaceUriFromQName1", p.fn.namespaceUriFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
+    public void testFnNamespaceUriFromQName1Exec() {
+        executeTester("testFnNamespaceUriFromQName1", p.fn.namespaceUriFromQName(p.col("1")), false, "xs:anyURI", null, null, "", new ItemSeqExpr[]{ p.xs.QName("abc") });
     }
 
     @Test
     public void testFnNormalizeSpace1Exec() {
-        executeTester("testFnNormalizeSpace1", p.fn.normalizeSpace(p.col("1")), "\"abc 123\"", new Object[]{p.xs.string(" abc  123 ")}, new ItemSeqExpr[]{});
+        executeTester("testFnNormalizeSpace1", p.fn.normalizeSpace(p.col("1")), false, null, null, null, "abc 123", new ItemSeqExpr[]{ p.xs.string(" abc  123 ") });
     }
 
     @Test
     public void testFnNormalizeUnicode1Exec() {
-        executeTester("testFnNormalizeUnicode1", p.fn.normalizeUnicode(p.col("1")), "\" aBc \"", new Object[]{p.xs.string(" aBc ")}, new ItemSeqExpr[]{});
+        executeTester("testFnNormalizeUnicode1", p.fn.normalizeUnicode(p.col("1")), false, null, null, null, "aBc ", new ItemSeqExpr[]{ p.xs.string(" aBc ") });
     }
 
     @Test
     public void testFnNormalizeUnicode2Exec() {
-        executeTester("testFnNormalizeUnicode2", p.fn.normalizeUnicode(p.col("1"), p.col("2")), "\" aBc \"", new Object[]{p.xs.string(" aBc "), p.xs.string("NFC")}, new ItemSeqExpr[]{});
+        executeTester("testFnNormalizeUnicode2", p.fn.normalizeUnicode(p.col("1"), p.col("2")), false, null, null, null, "aBc ", new ItemSeqExpr[]{ p.xs.string(" aBc "), p.xs.string("NFC") });
     }
 
     @Test
     public void testFnNot1Exec() {
-        executeTester("testFnNot1", p.fn.not(p.col("1")), "fn:false()", new Object[]{p.xs.booleanVal(true)}, new ItemSeqExpr[]{});
+        executeTester("testFnNot1", p.fn.not(p.col("1")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.booleanVal(true) });
     }
 
     @Test
     public void testFnNumber1Exec() {
-        executeTester("testFnNumber1", p.fn.number(p.col("1")), "1.1", new Object[]{p.xs.string("1.1")}, new ItemSeqExpr[]{});
+        executeTester("testFnNumber1", p.fn.number(p.col("1")), false, null, null, null, "1.1", new ItemSeqExpr[]{ p.xs.string("1.1") });
     }
 
     @Test
-    public void testFnPrefixFromQName1Exist() {
-        executeTester("testFnPrefixFromQName1", p.fn.prefixFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
+    public void testFnPrefixFromQName1Exec() {
+        executeTester("testFnPrefixFromQName1", p.fn.prefixFromQName(p.col("1")), false, null, null, Format.JSON, null, new ItemSeqExpr[]{ p.xs.QName("abc") });
     }
 
     @Test
     public void testFnQName2Exec() {
-        executeTester("testFnQName2", p.fn.QName(p.col("1"), p.col("2")), "fn:QName(\"http://a/b\",\"c\")", new Object[]{p.xs.string("http://a/b"), p.xs.string("c")}, new ItemSeqExpr[]{});
+        executeTester("testFnQName2", p.fn.QName(p.col("1"), p.col("2")), false, "xs:QName", null, null, "c", new ItemSeqExpr[]{ p.xs.string("http://a/b"), p.xs.string("c") });
+    }
+
+    @Test
+    public void testFnRemove2Exec() {
+        executeTester("testFnRemove2", p.fn.remove(p.col("1"), p.col("2")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("x"), p.xs.string("c")), p.xs.integer(3) });
     }
 
     @Test
     public void testFnReplace3Exec() {
-        executeTester("testFnReplace3", p.fn.replace(p.col("1"), p.col("2"), p.col("3")), "\"axc\"", new Object[]{p.xs.string("axc"), p.xs.string("^(.)X"), p.xs.string("$1b")}, new ItemSeqExpr[]{});
+        executeTester("testFnReplace3", p.fn.replace(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "axc", new ItemSeqExpr[]{ p.xs.string("axc"), p.xs.string("^(.)X"), p.xs.string("$1b") });
     }
 
     @Test
     public void testFnReplace4Exec() {
-        executeTester("testFnReplace4", p.fn.replace(p.col("1"), p.col("2"), p.col("3"), p.col("4")), "\"abc\"", new Object[]{p.xs.string("axc"), p.xs.string("^(.)X"), p.xs.string("$1b"), p.xs.string("i")}, new ItemSeqExpr[]{});
+        executeTester("testFnReplace4", p.fn.replace(p.col("1"), p.col("2"), p.col("3"), p.col("4")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("axc"), p.xs.string("^(.)X"), p.xs.string("$1b"), p.xs.string("i") });
     }
 
     @Test
     public void testFnResolveUri2Exec() {
-        executeTester("testFnResolveUri2", p.fn.resolveUri(p.col("1"), p.col("2")), "xs:anyURI(\"http://a/b?c#d\")", new Object[]{p.xs.string("b?c#d"), p.xs.string("http://a/x")}, new ItemSeqExpr[]{});
+        executeTester("testFnResolveUri2", p.fn.resolveUri(p.col("1"), p.col("2")), false, "xs:anyURI", null, null, "http://a/b?c#d", new ItemSeqExpr[]{ p.xs.string("b?c#d"), p.xs.string("http://a/x") });
+    }
+
+    @Test
+    public void testFnReverse1Exec() {
+        executeTester("testFnReverse1", p.fn.reverse(p.col("1")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("c"), p.xs.string("b"), p.xs.string("a")) });
     }
 
     @Test
     public void testFnRound1Exec() {
-        executeTester("testFnRound1", p.fn.round(p.col("1")), "2", new Object[]{p.xs.doubleVal(1.7)}, new ItemSeqExpr[]{});
+        executeTester("testFnRound1", p.fn.round(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.doubleVal(1.7) });
     }
 
     @Test
     public void testFnRoundHalfToEven1Exec() {
-        executeTester("testFnRoundHalfToEven1", p.fn.roundHalfToEven(p.col("1")), "1234", new Object[]{p.xs.doubleVal(1234.5)}, new ItemSeqExpr[]{});
+        executeTester("testFnRoundHalfToEven1", p.fn.roundHalfToEven(p.col("1")), false, null, null, null, "1234", new ItemSeqExpr[]{ p.xs.doubleVal(1234.5) });
     }
 
     @Test
     public void testFnRoundHalfToEven2Exec() {
-        executeTester("testFnRoundHalfToEven2", p.fn.roundHalfToEven(p.col("1"), p.col("2")), "1200", new Object[]{p.xs.doubleVal(1234.5), p.xs.integer(-2)}, new ItemSeqExpr[]{});
+        executeTester("testFnRoundHalfToEven2", p.fn.roundHalfToEven(p.col("1"), p.col("2")), false, null, null, null, "1200", new ItemSeqExpr[]{ p.xs.doubleVal(1234.5), p.xs.integer(-2) });
     }
 
     @Test
     public void testFnSecondsFromDateTime1Exec() {
-        executeTester("testFnSecondsFromDateTime1", p.fn.secondsFromDateTime(p.col("1")), "8", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnSecondsFromDateTime1", p.fn.secondsFromDateTime(p.col("1")), false, null, null, null, "8", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnSecondsFromDuration1Exec() {
-        executeTester("testFnSecondsFromDuration1", p.fn.secondsFromDuration(p.col("1")), "6", new Object[]{p.xs.dayTimeDuration("P3DT4H5M6S")}, new ItemSeqExpr[]{});
+        executeTester("testFnSecondsFromDuration1", p.fn.secondsFromDuration(p.col("1")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.dayTimeDuration("P3DT4H5M6S") });
     }
 
     @Test
     public void testFnSecondsFromTime1Exec() {
-        executeTester("testFnSecondsFromTime1", p.fn.secondsFromTime(p.col("1")), "8", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnSecondsFromTime1", p.fn.secondsFromTime(p.col("1")), false, null, null, null, "8", new ItemSeqExpr[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
     public void testFnStartsWith2Exec() {
-        executeTester("testFnStartsWith2", p.fn.startsWith(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("a")}, new ItemSeqExpr[]{});
+        executeTester("testFnStartsWith2", p.fn.startsWith(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("a") });
     }
 
     @Test
     public void testFnStartsWith3Exec() {
-        executeTester("testFnStartsWith3", p.fn.startsWith(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("abc"), p.xs.string("a"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnStartsWith3", p.fn.startsWith(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("a"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnString1Exec() {
-        executeTester("testFnString1", p.fn.string(p.col("1")), "\"1\"", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testFnString1", p.fn.string(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
+    }
+
+    @Test
+    public void testFnStringJoin2Exec() {
+        executeTester("testFnStringJoin2", p.fn.stringJoin(p.col("1"), p.col("2")), false, null, null, null, "a+b+c", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")), p.xs.string("+") });
     }
 
     @Test
     public void testFnStringLength1Exec() {
-        executeTester("testFnStringLength1", p.fn.stringLength(p.col("1")), "3", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testFnStringLength1", p.fn.stringLength(p.col("1")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testFnStringToCodepoints1Exec() {
-        executeTester("testFnStringToCodepoints1", p.fn.stringToCodepoints(p.col("1")), "(97, 98, 99)", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testFnStringToCodepoints1", p.fn.stringToCodepoints(p.col("1")), false, null, null, Format.JSON, "[97, 98, 99]", new ItemSeqExpr[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testFnSubsequence2Exec() {
+        executeTester("testFnSubsequence2", p.fn.subsequence(p.col("1"), p.col("2")), false, null, null, Format.JSON, "[\"b\", \"c\", \"d\", \"e\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c"), p.xs.string("d"), p.xs.string("e")), p.xs.doubleVal(2) });
+    }
+
+    @Test
+    public void testFnSubsequence3Exec() {
+        executeTester("testFnSubsequence3", p.fn.subsequence(p.col("1"), p.col("2"), p.col("3")), false, null, null, Format.JSON, "[\"b\", \"c\", \"d\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c"), p.xs.string("d"), p.xs.string("e")), p.xs.doubleVal(2), p.xs.doubleVal(3) });
     }
 
     @Test
     public void testFnSubstring2Exec() {
-        executeTester("testFnSubstring2", p.fn.substring(p.col("1"), p.col("2")), "\"bcd\"", new Object[]{p.xs.string("abcd"), p.xs.doubleVal(2)}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstring2", p.fn.substring(p.col("1"), p.col("2")), false, null, null, null, "bcd", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.doubleVal(2) });
     }
 
     @Test
     public void testFnSubstring3Exec() {
-        executeTester("testFnSubstring3", p.fn.substring(p.col("1"), p.col("2"), p.col("3")), "\"bc\"", new Object[]{p.xs.string("abcd"), p.xs.doubleVal(2), p.xs.doubleVal(2)}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstring3", p.fn.substring(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "bc", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.doubleVal(2), p.xs.doubleVal(2) });
     }
 
     @Test
     public void testFnSubstringAfter2Exec() {
-        executeTester("testFnSubstringAfter2", p.fn.substringAfter(p.col("1"), p.col("2")), "\"cd\"", new Object[]{p.xs.string("abcd"), p.xs.string("ab")}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstringAfter2", p.fn.substringAfter(p.col("1"), p.col("2")), false, null, null, null, "cd", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.string("ab") });
     }
 
     @Test
     public void testFnSubstringAfter3Exec() {
-        executeTester("testFnSubstringAfter3", p.fn.substringAfter(p.col("1"), p.col("2"), p.col("3")), "\"cd\"", new Object[]{p.xs.string("abcd"), p.xs.string("ab"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstringAfter3", p.fn.substringAfter(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "cd", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.string("ab"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testFnSubstringBefore2Exec() {
-        executeTester("testFnSubstringBefore2", p.fn.substringBefore(p.col("1"), p.col("2")), "\"ab\"", new Object[]{p.xs.string("abcd"), p.xs.string("cd")}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstringBefore2", p.fn.substringBefore(p.col("1"), p.col("2")), false, null, null, null, "ab", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.string("cd") });
     }
 
     @Test
     public void testFnSubstringBefore3Exec() {
-        executeTester("testFnSubstringBefore3", p.fn.substringBefore(p.col("1"), p.col("2"), p.col("3")), "\"ab\"", new Object[]{p.xs.string("abcd"), p.xs.string("cd"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testFnSubstringBefore3", p.fn.substringBefore(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "ab", new ItemSeqExpr[]{ p.xs.string("abcd"), p.xs.string("cd"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
-    public void testFnTimezoneFromDate1Exist() {
-        executeTester("testFnTimezoneFromDate1", p.fn.timezoneFromDate(p.col("1")), null, new Object[]{p.xs.date("2016-01-02-03:04")}, new ItemSeqExpr[]{});
+    public void testFnSum1Exec() {
+        executeTester("testFnSum1", p.fn.sum(p.col("1")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3)) });
+    }
+
+    @Test
+    public void testFnTail1Exec() {
+        executeTester("testFnTail1", p.fn.tail(p.col("1")), false, null, null, Format.JSON, "[\"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("a"), p.xs.string("b"), p.xs.string("c")) });
+    }
+
+    @Test
+    public void testFnTimezoneFromDate1Exec() {
+        executeTester("testFnTimezoneFromDate1", p.fn.timezoneFromDate(p.col("1")), true, "xs:dayTimeDuration", null, null, "-PT3H4M", new ItemSeqExpr[]{ p.xs.date("2016-01-02-03:04") });
     }
 
     @Test
     public void testFnTimezoneFromDateTime1Exec() {
-        executeTester("testFnTimezoneFromDateTime1", p.fn.timezoneFromDateTime(p.col("1")), "xs:dayTimeDuration(\"PT0S\")", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnTimezoneFromDateTime1", p.fn.timezoneFromDateTime(p.col("1")), true, "xs:dayTimeDuration", null, null, "PT0S", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnTimezoneFromTime1Exec() {
-        executeTester("testFnTimezoneFromTime1", p.fn.timezoneFromTime(p.col("1")), "xs:dayTimeDuration(\"PT0S\")", new Object[]{p.xs.time("10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnTimezoneFromTime1", p.fn.timezoneFromTime(p.col("1")), true, "xs:dayTimeDuration", null, null, "PT0S", new ItemSeqExpr[]{ p.xs.time("10:09:08Z") });
     }
 
     @Test
     public void testFnTokenize2Exec() {
-        executeTester("testFnTokenize2", p.fn.tokenize(p.col("1"), p.col("2")), "\"axbxc\"", new Object[]{p.xs.string("axbxc"), p.xs.string("X")}, new ItemSeqExpr[]{});
+        executeTester("testFnTokenize2", p.fn.tokenize(p.col("1"), p.col("2")), false, null, null, null, "axbxc", new ItemSeqExpr[]{ p.xs.string("axbxc"), p.xs.string("X") });
     }
 
     @Test
     public void testFnTokenize3Exec() {
-        executeTester("testFnTokenize3", p.fn.tokenize(p.col("1"), p.col("2"), p.col("3")), "(\"a\", \"b\", \"c\")", new Object[]{p.xs.string("axbxc"), p.xs.string("X"), p.xs.string("i")}, new ItemSeqExpr[]{});
+        executeTester("testFnTokenize3", p.fn.tokenize(p.col("1"), p.col("2"), p.col("3")), false, null, null, Format.JSON, "[\"a\", \"b\", \"c\"]", new ItemSeqExpr[]{ p.xs.string("axbxc"), p.xs.string("X"), p.xs.string("i") });
     }
 
     @Test
     public void testFnTranslate3Exec() {
-        executeTester("testFnTranslate3", p.fn.translate(p.col("1"), p.col("2"), p.col("3")), "\"abcd\"", new Object[]{p.xs.string("axcy"), p.xs.string("xy"), p.xs.string("bd")}, new ItemSeqExpr[]{});
+        executeTester("testFnTranslate3", p.fn.translate(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "abcd", new ItemSeqExpr[]{ p.xs.string("axcy"), p.xs.string("xy"), p.xs.string("bd") });
     }
 
     @Test
-    public void testFnTrue0Exist() {
-        executeTester("testFnTrue0", p.fn.trueExpr(), null, null, null);
-    }
-
-    @Test
-    public void testFnUnordered1Exist() {
-        executeTester("testFnUnordered1", p.fn.unordered(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testFnTrueExpr0Exec() {
+        executeTester("testFnTrueExpr0", p.fn.trueExpr(), false, null, null, null, "true", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnUpperCase1Exec() {
-        executeTester("testFnUpperCase1", p.fn.upperCase(p.col("1")), "\"ABC\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testFnUpperCase1", p.fn.upperCase(p.col("1")), false, null, null, null, "ABC", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testFnYearFromDate1Exec() {
-        executeTester("testFnYearFromDate1", p.fn.yearFromDate(p.col("1")), "2016", new Object[]{p.xs.date("2016-01-02-03:04")}, new ItemSeqExpr[]{});
+        executeTester("testFnYearFromDate1", p.fn.yearFromDate(p.col("1")), false, null, null, null, "2016", new ItemSeqExpr[]{ p.xs.date("2016-01-02-03:04") });
     }
 
     @Test
     public void testFnYearFromDateTime1Exec() {
-        executeTester("testFnYearFromDateTime1", p.fn.yearFromDateTime(p.col("1")), "2016", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testFnYearFromDateTime1", p.fn.yearFromDateTime(p.col("1")), false, null, null, null, "2016", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testFnYearsFromDuration1Exec() {
-        executeTester("testFnYearsFromDuration1", p.fn.yearsFromDuration(p.col("1")), "1", new Object[]{p.xs.yearMonthDuration("P1Y2M")}, new ItemSeqExpr[]{});
+        executeTester("testFnYearsFromDuration1", p.fn.yearsFromDuration(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.yearMonthDuration("P1Y2M") });
+    }
+
+    @Test
+    public void testJsonArray0Exec() {
+        executeTester("testJsonArray0", p.json.array(), false, null, null, Format.JSON, "[]", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testJsonToArray0Exec() {
+        executeTester("testJsonToArray0", p.json.toArray(), false, null, null, Format.JSON, "[]", new ItemSeqExpr[]{  });
+    }
+
+    @Test
+    public void testMapEntry2Exec() {
+        executeTester("testMapEntry2", p.map.entry(p.col("1"), p.col("2")), false, null, null, Format.JSON, "{\"one\":\"two\"}", new ItemSeqExpr[]{ p.xs.string("one"), p.xs.string("two") });
+    }
+
+    @Test
+    public void testMapMap0Exec() {
+        executeTester("testMapMap0", p.map.map(), false, null, null, Format.JSON, "{}", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testMathAcos1Exec() {
-        executeTester("testMathAcos1", p.math.acos(p.col("1")), "1.0471975511966", new Object[]{p.xs.doubleVal(0.5)}, new ItemSeqExpr[]{});
+        executeTester("testMathAcos1", p.math.acos(p.col("1")), false, null, null, null, "1.0471975511966", new ItemSeqExpr[]{ p.xs.doubleVal(0.5) });
     }
 
     @Test
     public void testMathAsin1Exec() {
-        executeTester("testMathAsin1", p.math.asin(p.col("1")), "0.523598775598299", new Object[]{p.xs.doubleVal(0.5)}, new ItemSeqExpr[]{});
+        executeTester("testMathAsin1", p.math.asin(p.col("1")), false, null, null, null, "0.523598775598299", new ItemSeqExpr[]{ p.xs.doubleVal(0.5) });
     }
 
     @Test
     public void testMathAtan1Exec() {
-        executeTester("testMathAtan1", p.math.atan(p.col("1")), "1.26262701154934", new Object[]{p.xs.doubleVal(3.14159)}, new ItemSeqExpr[]{});
+        executeTester("testMathAtan1", p.math.atan(p.col("1")), false, null, null, null, "1.26262701154934", new ItemSeqExpr[]{ p.xs.doubleVal(3.14159) });
     }
 
     @Test
     public void testMathAtan22Exec() {
-        executeTester("testMathAtan22", p.math.atan2(p.col("1"), p.col("2")), "1.42732303452594", new Object[]{p.xs.doubleVal(36.23), p.xs.doubleVal(5.234)}, new ItemSeqExpr[]{});
+        executeTester("testMathAtan22", p.math.atan2(p.col("1"), p.col("2")), false, null, null, null, "1.42732303452594", new ItemSeqExpr[]{ p.xs.doubleVal(36.23), p.xs.doubleVal(5.234) });
     }
 
     @Test
     public void testMathCeil1Exec() {
-        executeTester("testMathCeil1", p.math.ceil(p.col("1")), "2", new Object[]{p.xs.doubleVal(1.3)}, new ItemSeqExpr[]{});
+        executeTester("testMathCeil1", p.math.ceil(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.doubleVal(1.3) });
     }
 
     @Test
     public void testMathCos1Exec() {
-        executeTester("testMathCos1", p.math.cos(p.col("1")), "0.00442569798805079", new Object[]{p.xs.doubleVal(11)}, new ItemSeqExpr[]{});
+        executeTester("testMathCos1", p.math.cos(p.col("1")), false, null, null, null, "0.00442569798805079", new ItemSeqExpr[]{ p.xs.doubleVal(11) });
     }
 
     @Test
     public void testMathCosh1Exec() {
-        executeTester("testMathCosh1", p.math.cosh(p.col("1")), "29937.0708659498", new Object[]{p.xs.doubleVal(11)}, new ItemSeqExpr[]{});
+        executeTester("testMathCosh1", p.math.cosh(p.col("1")), false, null, null, null, "29937.0708659498", new ItemSeqExpr[]{ p.xs.doubleVal(11) });
     }
 
     @Test
     public void testMathCot1Exec() {
-        executeTester("testMathCot1", p.math.cot(p.col("1")), "1.31422390103306", new Object[]{p.xs.doubleVal(19.5)}, new ItemSeqExpr[]{});
+        executeTester("testMathCot1", p.math.cot(p.col("1")), false, null, null, null, "1.31422390103306", new ItemSeqExpr[]{ p.xs.doubleVal(19.5) });
     }
 
     @Test
     public void testMathDegrees1Exec() {
-        executeTester("testMathDegrees1", p.math.degrees(p.col("1")), "90.0000000000002", new Object[]{p.xs.doubleVal(1.5707963267949)}, new ItemSeqExpr[]{});
+        executeTester("testMathDegrees1", p.math.degrees(p.col("1")), false, null, null, null, "90.0000000000002", new ItemSeqExpr[]{ p.xs.doubleVal(1.5707963267949) });
     }
 
     @Test
     public void testMathExp1Exec() {
-        executeTester("testMathExp1", p.math.exp(p.col("1")), "1.10517091807565", new Object[]{p.xs.doubleVal(0.1)}, new ItemSeqExpr[]{});
+        executeTester("testMathExp1", p.math.exp(p.col("1")), false, null, null, null, "1.10517091807565", new ItemSeqExpr[]{ p.xs.doubleVal(0.1) });
     }
 
     @Test
     public void testMathFabs1Exec() {
-        executeTester("testMathFabs1", p.math.fabs(p.col("1")), "4.013", new Object[]{p.xs.doubleVal(4.013)}, new ItemSeqExpr[]{});
+        executeTester("testMathFabs1", p.math.fabs(p.col("1")), false, null, null, null, "4.013", new ItemSeqExpr[]{ p.xs.doubleVal(4.013) });
     }
 
     @Test
     public void testMathFloor1Exec() {
-        executeTester("testMathFloor1", p.math.floor(p.col("1")), "1", new Object[]{p.xs.doubleVal(1.7)}, new ItemSeqExpr[]{});
+        executeTester("testMathFloor1", p.math.floor(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1.7) });
     }
 
     @Test
     public void testMathFmod2Exec() {
-        executeTester("testMathFmod2", p.math.fmod(p.col("1"), p.col("2")), "1", new Object[]{p.xs.doubleVal(10), p.xs.doubleVal(3)}, new ItemSeqExpr[]{});
+        executeTester("testMathFmod2", p.math.fmod(p.col("1"), p.col("2")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(10), p.xs.doubleVal(3) });
     }
 
     @Test
     public void testMathFrexp1Exec() {
-        executeTester("testMathFrexp1", p.math.frexp(p.col("1")), "(xs:double(\"0.625\"), 4)", new Object[]{p.xs.doubleVal(10)}, new ItemSeqExpr[]{});
+        executeTester("testMathFrexp1", p.math.frexp(p.col("1")), false, null, null, Format.JSON, "[0.625, 4]", new ItemSeqExpr[]{ p.xs.doubleVal(10) });
     }
 
     @Test
     public void testMathLdexp2Exec() {
-        executeTester("testMathLdexp2", p.math.ldexp(p.col("1"), p.col("2")), "1364.992", new Object[]{p.xs.doubleVal(1.333), p.xs.integer(10)}, new ItemSeqExpr[]{});
+        executeTester("testMathLdexp2", p.math.ldexp(p.col("1"), p.col("2")), false, null, null, null, "1364.992", new ItemSeqExpr[]{ p.xs.doubleVal(1.333), p.xs.integer(10) });
     }
 
     @Test
     public void testMathLog1Exec() {
-        executeTester("testMathLog1", p.math.log(p.col("1")), "6.90775527898214", new Object[]{p.xs.doubleVal(1000)}, new ItemSeqExpr[]{});
+        executeTester("testMathLog1", p.math.log(p.col("1")), false, null, null, null, "6.90775527898214", new ItemSeqExpr[]{ p.xs.doubleVal(1000) });
     }
 
     @Test
     public void testMathLog101Exec() {
-        executeTester("testMathLog101", p.math.log10(p.col("1")), "3", new Object[]{p.xs.doubleVal(1000)}, new ItemSeqExpr[]{});
+        executeTester("testMathLog101", p.math.log10(p.col("1")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.doubleVal(1000) });
     }
 
     @Test
-    public void testMathMedian1Exist() {
-        executeTester("testMathMedian1", p.math.median(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testMathMedian1Exec() {
+        executeTester("testMathMedian1", p.math.median(p.col("1")), false, null, null, null, "1.2", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
+    }
+
+    @Test
+    public void testMathMode1Exec() {
+        executeTester("testMathMode1", p.math.mode(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("abc"), p.xs.string("abc"), p.xs.string("def")) });
+    }
+
+    @Test
+    public void testMathMode2Exec() {
+        executeTester("testMathMode2", p.math.mode(p.col("1"), p.col("2")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.stringSeq(p.xs.string("abc"), p.xs.string("abc"), p.xs.string("def")), p.xs.string("collation=http://marklogic.com/collation/") });
     }
 
     @Test
     public void testMathModf1Exec() {
-        executeTester("testMathModf1", p.math.modf(p.col("1")), "(xs:double(\"0.333\"), xs:double(\"1\"))", new Object[]{p.xs.doubleVal(1.333)}, new ItemSeqExpr[]{});
+        executeTester("testMathModf1", p.math.modf(p.col("1")), false, null, null, Format.JSON, "[0.333, 1]", new ItemSeqExpr[]{ p.xs.doubleVal(1.333) });
     }
 
     @Test
-    public void testMathPi0Exist() {
-        executeTester("testMathPi0", p.math.pi(), null, null, null);
+    public void testMathPercentile2Exec() {
+        executeTester("testMathPercentile2", p.math.percentile(p.col("1"), p.col("2")), false, null, null, Format.JSON, "[1.5, 3.5]", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.doubleVal(1), p.xs.doubleVal(4)), p.xs.doubleSeq(p.xs.doubleVal(0.25), p.xs.doubleVal(0.75)) });
+    }
+
+    @Test
+    public void testMathPercentRank2Exec() {
+        executeTester("testMathPercentRank2", p.math.percentRank(p.col("1"), p.col("2")), false, null, null, null, "0.833333333333333", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(7), p.xs.doubleVal(5), p.xs.doubleVal(5), p.xs.doubleVal(10), p.xs.doubleVal(9)), p.xs.doubleVal(9) });
+    }
+
+    @Test
+    public void testMathPercentRank3Exec() {
+        executeTester("testMathPercentRank3", p.math.percentRank(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "0.333333333333333", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(7), p.xs.doubleVal(5), p.xs.doubleVal(5), p.xs.doubleVal(10), p.xs.doubleVal(9)), p.xs.doubleVal(9), p.xs.string("descending") });
+    }
+
+    @Test
+    public void testMathPi0Exec() {
+        executeTester("testMathPi0", p.math.pi(), false, null, null, null, "3.14159265358979", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testMathPow2Exec() {
-        executeTester("testMathPow2", p.math.pow(p.col("1"), p.col("2")), "1024", new Object[]{p.xs.doubleVal(2), p.xs.doubleVal(10)}, new ItemSeqExpr[]{});
+        executeTester("testMathPow2", p.math.pow(p.col("1"), p.col("2")), false, null, null, null, "1024", new ItemSeqExpr[]{ p.xs.doubleVal(2), p.xs.doubleVal(10) });
     }
 
     @Test
     public void testMathRadians1Exec() {
-        executeTester("testMathRadians1", p.math.radians(p.col("1")), "1.5707963267949", new Object[]{p.xs.doubleVal(90)}, new ItemSeqExpr[]{});
+        executeTester("testMathRadians1", p.math.radians(p.col("1")), false, null, null, null, "1.5707963267949", new ItemSeqExpr[]{ p.xs.doubleVal(90) });
+    }
+
+    @Test
+    public void testMathRank2Exec() {
+        executeTester("testMathRank2", p.math.rank(p.col("1"), p.col("2")), false, null, null, null, "5", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(7), p.xs.doubleVal(5), p.xs.doubleVal(5), p.xs.doubleVal(10), p.xs.doubleVal(9)), p.xs.doubleVal(9) });
+    }
+
+    @Test
+    public void testMathRank3Exec() {
+        executeTester("testMathRank3", p.math.rank(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.doubleSeq(p.xs.doubleVal(1), p.xs.doubleVal(7), p.xs.doubleVal(5), p.xs.doubleVal(5), p.xs.doubleVal(10), p.xs.doubleVal(9)), p.xs.doubleVal(9), p.xs.string("descending") });
     }
 
     @Test
     public void testMathSin1Exec() {
-        executeTester("testMathSin1", p.math.sin(p.col("1")), "0.928959715003869", new Object[]{p.xs.doubleVal(1.95)}, new ItemSeqExpr[]{});
+        executeTester("testMathSin1", p.math.sin(p.col("1")), false, null, null, null, "0.928959715003869", new ItemSeqExpr[]{ p.xs.doubleVal(1.95) });
     }
 
     @Test
     public void testMathSinh1Exec() {
-        executeTester("testMathSinh1", p.math.sinh(p.col("1")), "3.44320675450139", new Object[]{p.xs.doubleVal(1.95)}, new ItemSeqExpr[]{});
+        executeTester("testMathSinh1", p.math.sinh(p.col("1")), false, null, null, null, "3.44320675450139", new ItemSeqExpr[]{ p.xs.doubleVal(1.95) });
     }
 
     @Test
     public void testMathSqrt1Exec() {
-        executeTester("testMathSqrt1", p.math.sqrt(p.col("1")), "2", new Object[]{p.xs.doubleVal(4)}, new ItemSeqExpr[]{});
+        executeTester("testMathSqrt1", p.math.sqrt(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.doubleVal(4) });
     }
 
     @Test
-    public void testMathStddev1Exist() {
-        executeTester("testMathStddev1", p.math.stddev(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testMathStddev1Exec() {
+        executeTester("testMathStddev1", p.math.stddev(p.col("1")), false, null, null, Format.JSON, null, new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
-    public void testMathStddevP1Exist() {
-        executeTester("testMathStddevP1", p.math.stddevP(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testMathStddevP1Exec() {
+        executeTester("testMathStddevP1", p.math.stddevP(p.col("1")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
     public void testMathTan1Exec() {
-        executeTester("testMathTan1", p.math.tan(p.col("1")), "0.760905351982977", new Object[]{p.xs.doubleVal(19.5)}, new ItemSeqExpr[]{});
+        executeTester("testMathTan1", p.math.tan(p.col("1")), false, null, null, null, "0.760905351982977", new ItemSeqExpr[]{ p.xs.doubleVal(19.5) });
     }
 
     @Test
     public void testMathTanh1Exec() {
-        executeTester("testMathTanh1", p.math.tanh(p.col("1")), "0.739783051274004", new Object[]{p.xs.doubleVal(0.95)}, new ItemSeqExpr[]{});
+        executeTester("testMathTanh1", p.math.tanh(p.col("1")), false, null, null, null, "0.739783051274004", new ItemSeqExpr[]{ p.xs.doubleVal(0.95) });
     }
 
     @Test
     public void testMathTrunc1Exec() {
-        executeTester("testMathTrunc1", p.math.trunc(p.col("1")), "123", new Object[]{p.xs.doubleVal(123.456)}, new ItemSeqExpr[]{});
+        executeTester("testMathTrunc1", p.math.trunc(p.col("1")), false, null, null, null, "123", new ItemSeqExpr[]{ p.xs.doubleVal(123.456) });
     }
 
     @Test
     public void testMathTrunc2Exec() {
-        executeTester("testMathTrunc2", p.math.trunc(p.col("1"), p.col("2")), "123.45", new Object[]{p.xs.doubleVal(123.456), p.xs.integer(2)}, new ItemSeqExpr[]{});
+        executeTester("testMathTrunc2", p.math.trunc(p.col("1"), p.col("2")), false, null, null, null, "123.45", new ItemSeqExpr[]{ p.xs.doubleVal(123.456), p.xs.integer(2) });
     }
 
     @Test
-    public void testMathVariance1Exist() {
-        executeTester("testMathVariance1", p.math.variance(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testMathVariance1Exec() {
+        executeTester("testMathVariance1", p.math.variance(p.col("1")), false, null, null, Format.JSON, null, new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
-    public void testMathVarianceP1Exist() {
-        executeTester("testMathVarianceP1", p.math.varianceP(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testMathVarianceP1Exec() {
+        executeTester("testMathVarianceP1", p.math.varianceP(p.col("1")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
     public void testRdfLangString2Exec() {
-        executeTester("testRdfLangString2", p.rdf.langString("abc", "en"), "rdf:langString(\"abc\", \"en\")", null, null);
+        executeTester("testRdfLangString2", p.rdf.langString(p.col("1"), p.col("2")), false, "rdf:langString", null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("en") });
     }
 
     @Test
-    public void testRdfLangStringLanguage1Exist() {
-        executeTester("testRdfLangStringLanguage1", p.rdf.langStringLanguage(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.rdf.langString("abc", "en")});
+    public void testRdfLangStringLanguage1Exec() {
+        executeTester("testRdfLangStringLanguage1", p.rdf.langStringLanguage(p.col("1")), false, null, null, null, "en", new ItemSeqExpr[]{ p.rdf.langString("abc", "en") });
     }
 
     @Test
-    public void testSemBnode0Exist() {
-        executeTester("testSemBnode0", p.sem.bnode(), null, new Object[]{}, new ItemSeqExpr[]{});
-    }
-
-    @Test
-    public void testSemBnode1Exist() {
-        executeTester("testSemBnode1", p.sem.bnode(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSemBnode0Exec() {
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode5527290161782101667", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testSemCoalesce2Exec() {
-        executeTester("testSemCoalesce2", p.sem.coalesce(p.col("1"), p.col("2")), "\"a\"", new Object[]{p.xs.string("a"), p.xs.string("b")}, new ItemSeqExpr[]{});
+        executeTester("testSemCoalesce2", p.sem.coalesce(p.col("1"), p.col("2")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.string("a"), p.xs.string("b") });
     }
 
     @Test
     public void testSemCoalesce3Exec() {
-        executeTester("testSemCoalesce3", p.sem.coalesce(p.col("1"), p.col("2"), p.col("3")), "\"a\"", new Object[]{p.xs.string("a"), p.xs.string("b"), p.xs.string("c")}, new ItemSeqExpr[]{});
+        executeTester("testSemCoalesce3", p.sem.coalesce(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.string("a"), p.xs.string("b"), p.xs.string("c") });
     }
 
     @Test
     public void testSemDatatype1Exec() {
-        executeTester("testSemDatatype1", p.sem.datatype(p.col("1")), "sem:iri(\"http://www.w3.org/2001/XMLSchema#string\")", new Object[]{p.xs.string("a")}, new ItemSeqExpr[]{});
+        executeTester("testSemDatatype1", p.sem.datatype(p.col("1")), false, "sem:iri", null, null, "http://www.w3.org/2001/XMLSchema#string", new ItemSeqExpr[]{ p.xs.string("a") });
     }
 
     @Test
-    public void testSemIf3Exec() {
-        executeTester("testSemIf3", p.sem.ifExpr(p.col("1"), p.col("2"), p.col("3")), "\"a\"", new Object[]{p.xs.booleanVal(true), p.xs.string("a"), p.xs.string("b")}, new ItemSeqExpr[]{});
+    public void testSemIfExpr3Exec() {
+        executeTester("testSemIfExpr3", p.sem.ifExpr(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "a", new ItemSeqExpr[]{ p.xs.booleanVal(true), p.xs.string("a"), p.xs.string("b") });
     }
 
     @Test
-    public void testSemInvalid2Exist() {
-        executeTester("testSemInvalid2", p.sem.invalid(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.sem.iri("http://a/b")});
+    public void testSemInvalid2Exec() {
+        executeTester("testSemInvalid2", p.sem.invalid(p.col("1"), p.col("2")), false, "sem:unknown", null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc"), p.sem.iri("http://a/b") });
     }
 
     @Test
     public void testSemIri1Exec() {
-        executeTester("testSemIri1", p.sem.iri("http://a/b"), "sem:iri(\"http://a/b\")", null, null);
+        executeTester("testSemIri1", p.sem.iri(p.col("1")), false, "sem:iri", null, null, "http://a/b", new ItemSeqExpr[]{ p.xs.string("http://a/b") });
     }
 
     @Test
     public void testSemIriToQName1Exec() {
-        executeTester("testSemIriToQName1", p.sem.iriToQName(p.col("1")), "fn:QName(\"http://a/\",\"b\")", new Object[]{p.xs.string("http://a/b")}, new ItemSeqExpr[]{});
+        executeTester("testSemIriToQName1", p.sem.iriToQName(p.col("1")), false, "xs:QName", null, null, "b", new ItemSeqExpr[]{ p.xs.string("http://a/b") });
     }
 
     @Test
     public void testSemIsBlank1Exec() {
-        executeTester("testSemIsBlank1", p.sem.isBlank(p.col("1")), "fn:false()", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testSemIsBlank1", p.sem.isBlank(p.col("1")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testSemIsIRI1Exec() {
-        executeTester("testSemIsIRI1", p.sem.isIRI(p.col("1")), "fn:false()", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testSemIsIRI1", p.sem.isIRI(p.col("1")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testSemIsLiteral1Exec() {
-        executeTester("testSemIsLiteral1", p.sem.isLiteral(p.col("1")), "fn:true()", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testSemIsLiteral1", p.sem.isLiteral(p.col("1")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testSemIsNumeric1Exec() {
-        executeTester("testSemIsNumeric1", p.sem.isNumeric(p.col("1")), "fn:false()", new Object[]{p.xs.string("a")}, new ItemSeqExpr[]{});
+        executeTester("testSemIsNumeric1", p.sem.isNumeric(p.col("1")), false, null, null, null, "false", new ItemSeqExpr[]{ p.xs.string("a") });
     }
 
     @Test
     public void testSemLang1Exec() {
-        executeTester("testSemLang1", p.sem.lang(p.col("1")), "\"\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testSemLang1", p.sem.lang(p.col("1")), false, null, null, null, "", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
-    public void testSemLangMatches2Exist() {
-        executeTester("testSemLangMatches2", p.sem.langMatches(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.xs.string("abc")});
+    public void testSemLangMatches2Exec() {
+        executeTester("testSemLangMatches2", p.sem.langMatches(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("abc") });
     }
 
     @Test
-    public void testSemQNameToIri1Exist() {
-        executeTester("testSemQNameToIri1", p.sem.QNameToIri(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
+    public void testSemQNameToIri1Exec() {
+        executeTester("testSemQNameToIri1", p.sem.QNameToIri(p.col("1")), false, "sem:iri", null, null, "abc", new ItemSeqExpr[]{ p.xs.QName("abc") });
     }
 
     @Test
-    public void testSemRandom0Exist() {
-        executeTester("testSemRandom0", p.sem.random(), null, null, null);
+    public void testSemRandom0Exec() {
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.149391998778515", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testSemSameTerm2Exec() {
-        executeTester("testSemSameTerm2", p.sem.sameTerm(p.col("1"), p.col("2")), "fn:true()", new Object[]{p.xs.doubleVal(1), p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testSemSameTerm2", p.sem.sameTerm(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(1) });
     }
 
     @Test
     public void testSemTimezoneString1Exec() {
-        executeTester("testSemTimezoneString1", p.sem.timezoneString(p.col("1")), "\"Z\"", new Object[]{p.xs.dateTime("2016-01-02T10:09:08Z")}, new ItemSeqExpr[]{});
+        executeTester("testSemTimezoneString1", p.sem.timezoneString(p.col("1")), false, null, null, null, "Z", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-02T10:09:08Z") });
     }
 
     @Test
-    public void testSemTypedLiteral2Exist() {
-        executeTester("testSemTypedLiteral2", p.sem.typedLiteral(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.sem.iri("http://a/b")});
+    public void testSemTypedLiteral2Exec() {
+        executeTester("testSemTypedLiteral2", p.sem.typedLiteral(p.col("1"), p.col("2")), false, "sem:unknown", null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc"), p.sem.iri("http://a/b") });
     }
 
     @Test
-    public void testSemUnknown2Exist() {
-        executeTester("testSemUnknown2", p.sem.unknown(p.col("1"), p.col("2")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc"), p.sem.iri("http://a/b")});
+    public void testSemUnknown2Exec() {
+        executeTester("testSemUnknown2", p.sem.unknown(p.col("1"), p.col("2")), false, "sem:unknown", null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc"), p.sem.iri("http://a/b") });
     }
 
     @Test
-    public void testSemUuid0Exist() {
-        executeTester("testSemUuid0", p.sem.uuid(), null, null, null);
+    public void testSemUuid0Exec() {
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:eef7c204-d43c-4142-94ce-f431f755718b", new ItemSeqExpr[]{  });
     }
 
     @Test
-    public void testSemUuidString0Exist() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), null, null, null);
+    public void testSemUuidString0Exec() {
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "61de8040-4c0e-42d0-a1f7-f67d78fd1b8a", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testSpellDoubleMetaphone1Exec() {
-        executeTester("testSpellDoubleMetaphone1", p.spell.doubleMetaphone(p.col("1")), "(\"smo\", \"xmt\")", new Object[]{p.xs.string("smith")}, new ItemSeqExpr[]{});
+        executeTester("testSpellDoubleMetaphone1", p.spell.doubleMetaphone(p.col("1")), false, null, null, Format.JSON, "[\"smo\", \"xmt\"]", new ItemSeqExpr[]{ p.xs.string("smith") });
     }
 
     @Test
     public void testSpellLevenshteinDistance2Exec() {
-        executeTester("testSpellLevenshteinDistance2", p.spell.levenshteinDistance(p.col("1"), p.col("2")), "1", new Object[]{p.xs.string("cat"), p.xs.string("cats")}, new ItemSeqExpr[]{});
+        executeTester("testSpellLevenshteinDistance2", p.spell.levenshteinDistance(p.col("1"), p.col("2")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.string("cat"), p.xs.string("cats") });
     }
 
     @Test
-    public void testSpellRomanize1Exist() {
-        executeTester("testSpellRomanize1", p.spell.romanize(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSpellRomanize1Exec() {
+        executeTester("testSpellRomanize1", p.spell.romanize(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
-    public void testSqlBitLength1Exist() {
-        executeTester("testSqlBitLength1", p.sql.bitLength(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSqlBitLength1Exec() {
+        executeTester("testSqlBitLength1", p.sql.bitLength(p.col("1")), false, null, null, null, "24", new ItemSeqExpr[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testSqlCollatedString2Exec() {
+        executeTester("testSqlCollatedString2", p.sql.collatedString(p.col("1"), p.col("2")), false, "sql:collated-string", null, null, "a", new ItemSeqExpr[]{ p.xs.string("a"), p.xs.string("http://marklogic.com/collation/") });
+    }
+
+    @Test
+    public void testSqlDateadd3Exec() {
+        executeTester("testSqlDateadd3", p.sql.dateadd(p.col("1"), p.col("2"), p.col("3")), false, "xs:dateTime", null, null, "2016-01-05T10:09:08Z", new ItemSeqExpr[]{ p.xs.string("day"), p.xs.intVal(3), p.xs.string("2016-01-02T10:09:08Z") });
+    }
+
+    @Test
+    public void testSqlDatediff3Exec() {
+        executeTester("testSqlDatediff3", p.sql.datediff(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.string("day"), p.xs.string("2016-01-02T10:09:08Z"), p.xs.string("2016-01-05T10:09:08Z") });
+    }
+
+    @Test
+    public void testSqlDatepart2Exec() {
+        executeTester("testSqlDatepart2", p.sql.datepart(p.col("1"), p.col("2")), false, null, null, null, "5", new ItemSeqExpr[]{ p.xs.string("day"), p.xs.string("2016-01-05T10:09:08Z") });
+    }
+
+    @Test
+    public void testSqlDay1Exec() {
+        executeTester("testSqlDay1", p.sql.day(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlDayname1Exec() {
+        executeTester("testSqlDayname1", p.sql.dayname(p.col("1")), false, null, null, null, "Saturday", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlHours1Exec() {
+        executeTester("testSqlHours1", p.sql.hours(p.col("1")), false, null, null, null, "10", new ItemSeqExpr[]{ p.xs.string("10:09:08") });
     }
 
     @Test
     public void testSqlInsert4Exec() {
-        executeTester("testSqlInsert4", p.sql.insert(p.col("1"), p.col("2"), p.col("3"), p.col("4")), "\"abcdef\"", new Object[]{p.xs.string("axxxf"), p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.string("bcde")}, new ItemSeqExpr[]{});
+        executeTester("testSqlInsert4", p.sql.insert(p.col("1"), p.col("2"), p.col("3"), p.col("4")), false, null, null, null, "abcdef", new ItemSeqExpr[]{ p.xs.string("axxxf"), p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.string("bcde") });
     }
 
     @Test
     public void testSqlInstr2Exec() {
-        executeTester("testSqlInstr2", p.sql.instr(p.col("1"), p.col("2")), "3", new Object[]{p.xs.string("abcde"), p.xs.string("cd")}, new ItemSeqExpr[]{});
+        executeTester("testSqlInstr2", p.sql.instr(p.col("1"), p.col("2")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.string("abcde"), p.xs.string("cd") });
     }
 
     @Test
     public void testSqlLeft2Exec() {
-        executeTester("testSqlLeft2", p.sql.left(p.col("1"), p.col("2")), "\"abc\"", new Object[]{p.xs.string("abcde"), p.xs.doubleVal(3)}, new ItemSeqExpr[]{});
+        executeTester("testSqlLeft2", p.sql.left(p.col("1"), p.col("2")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abcde"), p.xs.doubleVal(3) });
     }
 
     @Test
-    public void testSqlLtrim1Exist() {
-        executeTester("testSqlLtrim1", p.sql.ltrim(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSqlLtrim1Exec() {
+        executeTester("testSqlLtrim1", p.sql.ltrim(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
-    public void testSqlOctetLength1Exist() {
-        executeTester("testSqlOctetLength1", p.sql.octetLength(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSqlMinutes1Exec() {
+        executeTester("testSqlMinutes1", p.sql.minutes(p.col("1")), false, null, null, null, "9", new ItemSeqExpr[]{ p.xs.string("10:09:08") });
     }
 
     @Test
-    public void testSqlRand1Exist() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.unsignedLong(1)});
+    public void testSqlMonth1Exec() {
+        executeTester("testSqlMonth1", p.sql.month(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlMonthname1Exec() {
+        executeTester("testSqlMonthname1", p.sql.monthname(p.col("1")), false, null, null, null, "January", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlOctetLength1Exec() {
+        executeTester("testSqlOctetLength1", p.sql.octetLength(p.col("1")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testSqlQuarter1Exec() {
+        executeTester("testSqlQuarter1", p.sql.quarter(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlRand1Exec() {
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "5249191667287393948", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
     public void testSqlRepeat2Exec() {
-        executeTester("testSqlRepeat2", p.sql.repeat(p.col("1"), p.col("2")), "\"abcabc\"", new Object[]{p.xs.string("abc"), p.xs.doubleVal(2)}, new ItemSeqExpr[]{});
+        executeTester("testSqlRepeat2", p.sql.repeat(p.col("1"), p.col("2")), false, null, null, null, "abcabc", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.doubleVal(2) });
     }
 
     @Test
     public void testSqlRight2Exec() {
-        executeTester("testSqlRight2", p.sql.right(p.col("1"), p.col("2")), "\"cde\"", new Object[]{p.xs.string("abcde"), p.xs.doubleVal(3)}, new ItemSeqExpr[]{});
+        executeTester("testSqlRight2", p.sql.right(p.col("1"), p.col("2")), false, null, null, null, "cde", new ItemSeqExpr[]{ p.xs.string("abcde"), p.xs.doubleVal(3) });
     }
 
     @Test
-    public void testSqlRtrim1Exist() {
-        executeTester("testSqlRtrim1", p.sql.rtrim(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSqlRtrim1Exec() {
+        executeTester("testSqlRtrim1", p.sql.rtrim(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testSqlSeconds1Exec() {
+        executeTester("testSqlSeconds1", p.sql.seconds(p.col("1")), false, null, null, null, "8", new ItemSeqExpr[]{ p.xs.string("10:09:08") });
     }
 
     @Test
     public void testSqlSign1Exec() {
-        executeTester("testSqlSign1", p.sql.sign(p.col("1")), "-1", new Object[]{p.xs.doubleVal(-3)}, new ItemSeqExpr[]{});
+        executeTester("testSqlSign1", p.sql.sign(p.col("1")), false, null, null, null, "-1", new ItemSeqExpr[]{ p.xs.doubleVal(-3) });
     }
 
     @Test
-    public void testSqlSpace1Exist() {
-        executeTester("testSqlSpace1", p.sql.space(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.doubleVal(1.2)});
+    public void testSqlSpace1Exec() {
+        executeTester("testSqlSpace1", p.sql.space(p.col("1")), false, null, null, null, "", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
-    public void testSqlTrim1Exist() {
-        executeTester("testSqlTrim1", p.sql.trim(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testSqlTrim1Exec() {
+        executeTester("testSqlTrim1", p.sql.trim(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
+    }
+
+    @Test
+    public void testSqlWeek1Exec() {
+        executeTester("testSqlWeek1", p.sql.week(p.col("1")), false, null, null, null, "53", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlWeekday1Exec() {
+        executeTester("testSqlWeekday1", p.sql.weekday(p.col("1")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlYear1Exec() {
+        executeTester("testSqlYear1", p.sql.year(p.col("1")), false, null, null, null, "2016", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
+    }
+
+    @Test
+    public void testSqlYearday1Exec() {
+        executeTester("testSqlYearday1", p.sql.yearday(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
     }
 
     @Test
     public void testXdmpAdd642Exec() {
-        executeTester("testXdmpAdd642", p.xdmp.add64(p.col("1"), p.col("2")), "579", new Object[]{p.xs.unsignedLong(123), p.xs.unsignedLong(456)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpAdd642", p.xdmp.add64(p.col("1"), p.col("2")), false, null, null, null, "579", new ItemSeqExpr[]{ p.xs.unsignedLong(123), p.xs.unsignedLong(456) });
     }
 
     @Test
     public void testXdmpAnd642Exec() {
-        executeTester("testXdmpAnd642", p.xdmp.and64(p.col("1"), p.col("2")), "2", new Object[]{p.xs.unsignedLong(255), p.xs.unsignedLong(2)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpAnd642", p.xdmp.and64(p.col("1"), p.col("2")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.unsignedLong(255), p.xs.unsignedLong(2) });
     }
 
     @Test
     public void testXdmpBase64Decode1Exec() {
-        executeTester("testXdmpBase64Decode1", p.xdmp.base64Decode(p.col("1")), "\"slings and arrows of outrageous fortune\"", new Object[]{p.xs.string("c2xpbmdzIGFuZCBhcnJvd3Mgb2Ygb3V0cmFnZW91cyBmb3J0dW5l")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpBase64Decode1", p.xdmp.base64Decode(p.col("1")), false, null, null, null, "hello, world", new ItemSeqExpr[]{ p.xs.string("aGVsbG8sIHdvcmxk") });
     }
 
     @Test
     public void testXdmpBase64Encode1Exec() {
-        executeTester("testXdmpBase64Encode1", p.xdmp.base64Encode(p.col("1")), "\"c2xpbmdzIGFuZCBhcnJvd3Mgb2Ygb3V0cmFnZW91cyBmb3J0dW5l\"", new Object[]{p.xs.string("slings and arrows of outrageous fortune")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpBase64Encode1", p.xdmp.base64Encode(p.col("1")), false, null, null, null, "aGVsbG8sIHdvcmxk", new ItemSeqExpr[]{ p.xs.string("hello, world") });
     }
 
     @Test
     public void testXdmpCastableAs3Exec() {
-        executeTester("testXdmpCastableAs3", p.xdmp.castableAs(p.col("1"), p.col("2"), p.col("3")), "fn:true()", new Object[]{p.xs.string("http://www.w3.org/2001/XMLSchema"), p.xs.string("int"), p.xs.string("1")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpCastableAs3", p.xdmp.castableAs(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.string("http://www.w3.org/2001/XMLSchema"), p.xs.string("int"), p.xs.string("1") });
     }
 
     @Test
     public void testXdmpCrypt2Exec() {
-        executeTester("testXdmpCrypt2", p.xdmp.crypt(p.col("1"), p.col("2")), "\"arQEnpM6JHR8vY4n3e5gr0\"", new Object[]{p.xs.string("123abc"), p.xs.string("admin")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpCrypt2", p.xdmp.crypt(p.col("1"), p.col("2")), false, null, null, null, "arQEnpM6JHR8vY4n3e5gr0", new ItemSeqExpr[]{ p.xs.string("123abc"), p.xs.string("admin") });
     }
 
     @Test
-    public void testXdmpCrypt21Exist() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testXdmpCrypt21Exec() {
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$t9jRhqXBcmjpQRIHd3i340$256$PLLZczTi12GGDs.u", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpDaynameFromDate1Exec() {
-        executeTester("testXdmpDaynameFromDate1", p.xdmp.daynameFromDate(p.col("1")), "\"Saturday\"", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpDaynameFromDate1", p.xdmp.daynameFromDate(p.col("1")), false, null, null, null, "Saturday", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
     public void testXdmpDecodeFromNCName1Exec() {
-        executeTester("testXdmpDecodeFromNCName1", p.xdmp.decodeFromNCName(p.col("1")), "\"A Name\"", new Object[]{p.xs.string("A_20_Name")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpDecodeFromNCName1", p.xdmp.decodeFromNCName(p.col("1")), false, null, null, null, "A Name", new ItemSeqExpr[]{ p.xs.string("A_20_Name") });
     }
 
     @Test
-    public void testXdmpDescribe1Exist() {
-        executeTester("testXdmpDescribe1", p.xdmp.describe(p.col("1")), null, new Object[]{p.xs.string("123456")}, new ItemSeqExpr[]{});
+    public void testXdmpDescribe1Exec() {
+        executeTester("testXdmpDescribe1", p.xdmp.describe(p.col("1")), false, null, null, null, "\"123456\"", new ItemSeqExpr[]{ p.xs.string("123456") });
     }
 
     @Test
-    public void testXdmpDescribe2Exist() {
-        executeTester("testXdmpDescribe2", p.xdmp.describe(p.col("1"), p.col("2")), null, new Object[]{p.xs.string("123456"), p.xs.unsignedInt(2)}, new ItemSeqExpr[]{});
+    public void testXdmpDescribe2Exec() {
+        executeTester("testXdmpDescribe2", p.xdmp.describe(p.col("1"), p.col("2")), false, null, null, null, "\"123456\"", new ItemSeqExpr[]{ p.xs.string("123456"), p.xs.unsignedInt(2) });
     }
 
     @Test
-    public void testXdmpDescribe3Exist() {
-        executeTester("testXdmpDescribe3", p.xdmp.describe(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{p.xs.string("123456"), p.xs.unsignedInt(2), p.xs.unsignedInt(3)}, new ItemSeqExpr[]{});
+    public void testXdmpDescribe3Exec() {
+        executeTester("testXdmpDescribe3", p.xdmp.describe(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "\"123456\"", new ItemSeqExpr[]{ p.xs.string("123456"), p.xs.unsignedInt(2), p.xs.unsignedInt(3) });
     }
 
     @Test
-    public void testXdmpDiacriticLess1Exist() {
-        executeTester("testXdmpDiacriticLess1", p.xdmp.diacriticLess(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testXdmpDiacriticLess1Exec() {
+        executeTester("testXdmpDiacriticLess1", p.xdmp.diacriticLess(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpEncodeForNCName1Exec() {
-        executeTester("testXdmpEncodeForNCName1", p.xdmp.encodeForNCName(p.col("1")), "\"A_20_Name\"", new Object[]{p.xs.string("A Name")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpEncodeForNCName1", p.xdmp.encodeForNCName(p.col("1")), false, null, null, null, "A_20_Name", new ItemSeqExpr[]{ p.xs.string("A Name") });
     }
 
     @Test
     public void testXdmpFormatNumber1Exec() {
-        executeTester("testXdmpFormatNumber1", p.xdmp.formatNumber(p.col("1")), "\"9\"", new Object[]{p.xs.doubleVal(9)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber1", p.xdmp.formatNumber(p.col("1")), false, null, null, null, "9", new ItemSeqExpr[]{ p.xs.doubleVal(9) });
     }
 
     @Test
     public void testXdmpFormatNumber2Exec() {
-        executeTester("testXdmpFormatNumber2", p.xdmp.formatNumber(p.col("1"), p.col("2")), "\"9\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber2", p.xdmp.formatNumber(p.col("1"), p.col("2")), false, null, null, null, "9", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W") });
     }
 
     @Test
     public void testXdmpFormatNumber3Exec() {
-        executeTester("testXdmpFormatNumber3", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber3", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en") });
     }
 
     @Test
     public void testXdmpFormatNumber4Exec() {
-        executeTester("testXdmpFormatNumber4", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string("")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber4", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string("") });
     }
 
     @Test
     public void testXdmpFormatNumber5Exec() {
-        executeTester("testXdmpFormatNumber5", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string("")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber5", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string("") });
     }
 
     @Test
     public void testXdmpFormatNumber6Exec() {
-        executeTester("testXdmpFormatNumber6", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string("")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber6", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string("") });
     }
 
     @Test
     public void testXdmpFormatNumber7Exec() {
-        executeTester("testXdmpFormatNumber7", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6"), p.col("7")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string(""), p.xs.string(",")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber7", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6"), p.col("7")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string(""), p.xs.string(",") });
     }
 
     @Test
     public void testXdmpFormatNumber8Exec() {
-        executeTester("testXdmpFormatNumber8", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6"), p.col("7"), p.col("8")), "\"NINE\"", new Object[]{p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string(""), p.xs.string(","), p.xs.integer(3)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpFormatNumber8", p.xdmp.formatNumber(p.col("1"), p.col("2"), p.col("3"), p.col("4"), p.col("5"), p.col("6"), p.col("7"), p.col("8")), false, null, null, null, "NINE", new ItemSeqExpr[]{ p.xs.doubleVal(9), p.xs.string("W"), p.xs.string("en"), p.xs.string(""), p.xs.string(""), p.xs.string(""), p.xs.string(","), p.xs.integer(3) });
     }
 
     @Test
-    public void testXdmpGetCurrentUser0Exist() {
-        executeTester("testXdmpGetCurrentUser0", p.xdmp.getCurrentUser(), null, null, null);
+    public void testXdmpGetCurrentUser0Exec() {
+        executeTester("testXdmpGetCurrentUser0", p.xdmp.getCurrentUser(), true, null, null, null, "admin", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testXdmpHash321Exec() {
-        executeTester("testXdmpHash321", p.xdmp.hash32(p.col("1")), "4229403455", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHash321", p.xdmp.hash32(p.col("1")), false, null, null, null, "4229403455", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpHash641Exec() {
-        executeTester("testXdmpHash641", p.xdmp.hash64(p.col("1")), "xs:unsignedLong(\"13056678368508584127\")", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHash641", p.xdmp.hash64(p.col("1")), false, "xs:unsignedLong", null, null, "13056678368508584127", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpHexToInteger1Exec() {
-        executeTester("testXdmpHexToInteger1", p.xdmp.hexToInteger(p.col("1")), "1311768467294899695", new Object[]{p.xs.string("1234567890abcdef")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHexToInteger1", p.xdmp.hexToInteger(p.col("1")), false, "xs:integer", null, null, "1311768467294899695", new ItemSeqExpr[]{ p.xs.string("1234567890abcdef") });
     }
 
     @Test
     public void testXdmpHmacMd52Exec() {
-        executeTester("testXdmpHmacMd52", p.xdmp.hmacMd5(p.col("1"), p.col("2")), "\"debda77b7cc3e7a10ee70104e6717a6b\"", new Object[]{p.xs.string("abc"), p.xs.string("def")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacMd52", p.xdmp.hmacMd5(p.col("1"), p.col("2")), false, null, null, null, "debda77b7cc3e7a10ee70104e6717a6b", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def") });
     }
 
     @Test
     public void testXdmpHmacMd53Exec() {
-        executeTester("testXdmpHmacMd53", p.xdmp.hmacMd5(p.col("1"), p.col("2"), p.col("3")), "\"3r2ne3zD56EO5wEE5nF6aw==\"", new Object[]{p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacMd53", p.xdmp.hmacMd5(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "3r2ne3zD56EO5wEE5nF6aw==", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpHmacSha12Exec() {
-        executeTester("testXdmpHmacSha12", p.xdmp.hmacSha1(p.col("1"), p.col("2")), "\"12554eabbaf7e8e12e4737020f987ca7901016e5\"", new Object[]{p.xs.string("abc"), p.xs.string("def")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha12", p.xdmp.hmacSha1(p.col("1"), p.col("2")), false, null, null, null, "12554eabbaf7e8e12e4737020f987ca7901016e5", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def") });
     }
 
     @Test
     public void testXdmpHmacSha13Exec() {
-        executeTester("testXdmpHmacSha13", p.xdmp.hmacSha1(p.col("1"), p.col("2"), p.col("3")), "\"ElVOq7r36OEuRzcCD5h8p5AQFuU=\"", new Object[]{p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha13", p.xdmp.hmacSha1(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "ElVOq7r36OEuRzcCD5h8p5AQFuU=", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpHmacSha2562Exec() {
-        executeTester("testXdmpHmacSha2562", p.xdmp.hmacSha256(p.col("1"), p.col("2")), "\"20ebc0f09344470134f35040f63ea98b1d8e414212949ee5c500429d15eab081\"", new Object[]{p.xs.string("abc"), p.xs.string("def")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha2562", p.xdmp.hmacSha256(p.col("1"), p.col("2")), false, null, null, null, "20ebc0f09344470134f35040f63ea98b1d8e414212949ee5c500429d15eab081", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def") });
     }
 
     @Test
     public void testXdmpHmacSha2563Exec() {
-        executeTester("testXdmpHmacSha2563", p.xdmp.hmacSha256(p.col("1"), p.col("2"), p.col("3")), "\"IOvA8JNERwE081BA9j6pix2OQUISlJ7lxQBCnRXqsIE=\"", new Object[]{p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha2563", p.xdmp.hmacSha256(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "IOvA8JNERwE081BA9j6pix2OQUISlJ7lxQBCnRXqsIE=", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpHmacSha5122Exec() {
-        executeTester("testXdmpHmacSha5122", p.xdmp.hmacSha512(p.col("1"), p.col("2")), "\"bf93c3deee1eb6660ec00820a285327b3e8b775f641fd7f2ea321b6a241afe7b49a5cca81d2e8e1d206bd3379530e2d9ad3a7b2cc54ca66ea3352ebfee3862e5\"", new Object[]{p.xs.string("abc"), p.xs.string("def")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha5122", p.xdmp.hmacSha512(p.col("1"), p.col("2")), false, null, null, null, "bf93c3deee1eb6660ec00820a285327b3e8b775f641fd7f2ea321b6a241afe7b49a5cca81d2e8e1d206bd3379530e2d9ad3a7b2cc54ca66ea3352ebfee3862e5", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def") });
     }
 
     @Test
     public void testXdmpHmacSha5123Exec() {
-        executeTester("testXdmpHmacSha5123", p.xdmp.hmacSha512(p.col("1"), p.col("2"), p.col("3")), "\"v5PD3u4etmYOwAggooUyez6Ld19kH9fy6jIbaiQa/ntJpcyoHS6OHSBr0zeVMOLZrTp7LMVMpm6jNS6/7jhi5Q==\"", new Object[]{p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpHmacSha5123", p.xdmp.hmacSha512(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "v5PD3u4etmYOwAggooUyez6Ld19kH9fy6jIbaiQa/ntJpcyoHS6OHSBr0zeVMOLZrTp7LMVMpm6jNS6/7jhi5Q==", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("def"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpInitcap1Exec() {
-        executeTester("testXdmpInitcap1", p.xdmp.initcap(p.col("1")), "\"Abc\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpInitcap1", p.xdmp.initcap(p.col("1")), false, null, null, null, "Abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpIntegerToHex1Exec() {
-        executeTester("testXdmpIntegerToHex1", p.xdmp.integerToHex(p.col("1")), "\"7b\"", new Object[]{p.xs.integer(123)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpIntegerToHex1", p.xdmp.integerToHex(p.col("1")), false, null, null, null, "7b", new ItemSeqExpr[]{ p.xs.integer(123) });
     }
 
     @Test
     public void testXdmpIntegerToOctal1Exec() {
-        executeTester("testXdmpIntegerToOctal1", p.xdmp.integerToOctal(p.col("1")), "\"173\"", new Object[]{p.xs.integer(123)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpIntegerToOctal1", p.xdmp.integerToOctal(p.col("1")), false, null, null, null, "173", new ItemSeqExpr[]{ p.xs.integer(123) });
     }
 
     @Test
-    public void testXdmpKeyFromQName1Exist() {
-        executeTester("testXdmpKeyFromQName1", p.xdmp.keyFromQName(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.QName("abc")});
+    public void testXdmpKeyFromQName1Exec() {
+        executeTester("testXdmpKeyFromQName1", p.xdmp.keyFromQName(p.col("1")), false, "xs:NCName", null, null, "abc", new ItemSeqExpr[]{ p.xs.QName("abc") });
     }
 
     @Test
     public void testXdmpLshift642Exec() {
-        executeTester("testXdmpLshift642", p.xdmp.lshift64(p.col("1"), p.col("2")), "1020", new Object[]{p.xs.unsignedLong(255), p.xs.longVal(2)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpLshift642", p.xdmp.lshift64(p.col("1"), p.col("2")), false, null, null, null, "1020", new ItemSeqExpr[]{ p.xs.unsignedLong(255), p.xs.longVal(2) });
     }
 
     @Test
     public void testXdmpMd51Exec() {
-        executeTester("testXdmpMd51", p.xdmp.md5(p.col("1")), "\"900150983cd24fb0d6963f7d28e17f72\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpMd51", p.xdmp.md5(p.col("1")), false, null, null, null, "900150983cd24fb0d6963f7d28e17f72", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpMd52Exec() {
-        executeTester("testXdmpMd52", p.xdmp.md5(p.col("1"), p.col("2")), "\"kAFQmDzST7DWlj99KOF/cg==\"", new Object[]{p.xs.string("abc"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpMd52", p.xdmp.md5(p.col("1"), p.col("2")), false, null, null, null, "kAFQmDzST7DWlj99KOF/cg==", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpMonthNameFromDate1Exec() {
-        executeTester("testXdmpMonthNameFromDate1", p.xdmp.monthNameFromDate(p.col("1")), "\"January\"", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpMonthNameFromDate1", p.xdmp.monthNameFromDate(p.col("1")), false, null, null, null, "January", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
     public void testXdmpMul642Exec() {
-        executeTester("testXdmpMul642", p.xdmp.mul64(p.col("1"), p.col("2")), "56088", new Object[]{p.xs.unsignedLong(123), p.xs.unsignedLong(456)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpMul642", p.xdmp.mul64(p.col("1"), p.col("2")), false, null, null, null, "56088", new ItemSeqExpr[]{ p.xs.unsignedLong(123), p.xs.unsignedLong(456) });
     }
 
     @Test
     public void testXdmpNot641Exec() {
-        executeTester("testXdmpNot641", p.xdmp.not64(p.col("1")), "xs:unsignedLong(\"18446744073709551360\")", new Object[]{p.xs.unsignedLong(255)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpNot641", p.xdmp.not64(p.col("1")), false, "xs:unsignedLong", null, null, "18446744073709551360", new ItemSeqExpr[]{ p.xs.unsignedLong(255) });
     }
 
     @Test
     public void testXdmpOctalToInteger1Exec() {
-        executeTester("testXdmpOctalToInteger1", p.xdmp.octalToInteger(p.col("1")), "2739128", new Object[]{p.xs.string("12345670")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpOctalToInteger1", p.xdmp.octalToInteger(p.col("1")), false, null, null, null, "2739128", new ItemSeqExpr[]{ p.xs.string("12345670") });
     }
 
     @Test
     public void testXdmpOr642Exec() {
-        executeTester("testXdmpOr642", p.xdmp.or64(p.col("1"), p.col("2")), "255", new Object[]{p.xs.unsignedLong(255), p.xs.unsignedLong(2)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpOr642", p.xdmp.or64(p.col("1"), p.col("2")), false, null, null, null, "255", new ItemSeqExpr[]{ p.xs.unsignedLong(255), p.xs.unsignedLong(2) });
     }
 
     @Test
     public void testXdmpParseDateTime2Exec() {
-        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T20:13:50.874-05:00\")", new Object[]{p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpParseDateTime2", p.xdmp.parseDateTime(p.col("1"), p.col("2")), false, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("[Y0001]-[M01]-[D01]T[h01]:[m01]:[s01].[f1][Z]"), p.xs.string("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
     public void testXdmpParseYymmdd2Exec() {
-        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), "xs:dateTime(\"2016-01-06T20:13:50.874-05:00\")", new Object[]{p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpParseYymmdd2", p.xdmp.parseYymmdd(p.col("1"), p.col("2")), false, "xs:dateTime", null, null, "2016-01-06T21:13:50.874-04:00", new ItemSeqExpr[]{ p.xs.string("yyyy-MM-ddThh:mm:ss.Sz"), p.xs.string("2016-01-06T17:13:50.873594-8.00") });
     }
 
     @Test
     public void testXdmpPosition2Exec() {
-        executeTester("testXdmpPosition2", p.xdmp.position(p.col("1"), p.col("2")), "0", new Object[]{p.xs.string("abcdef"), p.xs.string("cd")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpPosition2", p.xdmp.position(p.col("1"), p.col("2")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.string("abcdef"), p.xs.string("cd") });
     }
 
     @Test
     public void testXdmpPosition3Exec() {
-        executeTester("testXdmpPosition3", p.xdmp.position(p.col("1"), p.col("2"), p.col("3")), "0", new Object[]{p.xs.string("abcdef"), p.xs.string("cd"), p.xs.string("http://marklogic.com/collation/")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpPosition3", p.xdmp.position(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.string("abcdef"), p.xs.string("cd"), p.xs.string("http://marklogic.com/collation/") });
     }
 
     @Test
     public void testXdmpQNameFromKey1Exec() {
-        executeTester("testXdmpQNameFromKey1", p.xdmp.QNameFromKey(p.col("1")), "fn:QName(\"http://a/b\",\"c\")", new Object[]{p.xs.string("{http://a/b}c")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpQNameFromKey1", p.xdmp.QNameFromKey(p.col("1")), false, "xs:QName", null, null, "c", new ItemSeqExpr[]{ p.xs.string("{http://a/b}c") });
     }
 
     @Test
     public void testXdmpQuarterFromDate1Exec() {
-        executeTester("testXdmpQuarterFromDate1", p.xdmp.quarterFromDate(p.col("1")), "1", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpQuarterFromDate1", p.xdmp.quarterFromDate(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
-    public void testXdmpRandom0Exist() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), null, new Object[]{}, new ItemSeqExpr[]{});
+    public void testXdmpRandom0Exec() {
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "4344941391306976991", new ItemSeqExpr[]{  });
     }
 
     @Test
-    public void testXdmpRandom1Exist() {
-        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.unsignedLong(1)});
+    public void testXdmpRandom1Exec() {
+        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "1", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
     public void testXdmpResolveUri2Exec() {
-        executeTester("testXdmpResolveUri2", p.xdmp.resolveUri(p.col("1"), p.col("2")), "xs:anyURI(\"/a/b?c#d\")", new Object[]{p.xs.string("b?c#d"), p.xs.string("/a/x")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpResolveUri2", p.xdmp.resolveUri(p.col("1"), p.col("2")), false, "xs:anyURI", null, null, "/a/b?c#d", new ItemSeqExpr[]{ p.xs.string("b?c#d"), p.xs.string("/a/x") });
     }
 
     @Test
     public void testXdmpRshift642Exec() {
-        executeTester("testXdmpRshift642", p.xdmp.rshift64(p.col("1"), p.col("2")), "63", new Object[]{p.xs.unsignedLong(255), p.xs.longVal(2)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpRshift642", p.xdmp.rshift64(p.col("1"), p.col("2")), false, null, null, null, "63", new ItemSeqExpr[]{ p.xs.unsignedLong(255), p.xs.longVal(2) });
     }
 
     @Test
     public void testXdmpSha11Exec() {
-        executeTester("testXdmpSha11", p.xdmp.sha1(p.col("1")), "\"a9993e364706816aba3e25717850c26c9cd0d89d\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha11", p.xdmp.sha1(p.col("1")), false, null, null, null, "a9993e364706816aba3e25717850c26c9cd0d89d", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpSha12Exec() {
-        executeTester("testXdmpSha12", p.xdmp.sha1(p.col("1"), p.col("2")), "\"qZk+NkcGgWq6PiVxeFDCbJzQ2J0=\"", new Object[]{p.xs.string("abc"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha12", p.xdmp.sha1(p.col("1"), p.col("2")), false, null, null, null, "qZk+NkcGgWq6PiVxeFDCbJzQ2J0=", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpSha2561Exec() {
-        executeTester("testXdmpSha2561", p.xdmp.sha256(p.col("1")), "\"ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha2561", p.xdmp.sha256(p.col("1")), false, null, null, null, "ba7816bf8f01cfea414140de5dae2223b00361a396177a9cb410ff61f20015ad", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpSha2562Exec() {
-        executeTester("testXdmpSha2562", p.xdmp.sha256(p.col("1"), p.col("2")), "\"ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=\"", new Object[]{p.xs.string("abc"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha2562", p.xdmp.sha256(p.col("1"), p.col("2")), false, null, null, null, "ungWv48Bz+pBQUDeXa4iI7ADYaOWF3qctBD/YfIAFa0=", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpSha3841Exec() {
-        executeTester("testXdmpSha3841", p.xdmp.sha384(p.col("1")), "\"cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha3841", p.xdmp.sha384(p.col("1")), false, null, null, null, "cb00753f45a35e8bb5a03d699ac65007272c32ab0eded1631a8b605a43ff5bed8086072ba1e7cc2358baeca134c825a7", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpSha3842Exec() {
-        executeTester("testXdmpSha3842", p.xdmp.sha384(p.col("1"), p.col("2")), "\"ywB1P0WjXou1oD1pmsZQBycsMqsO3tFjGotgWkP/W+2AhgcroefMI1i67KE0yCWn\"", new Object[]{p.xs.string("abc"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha3842", p.xdmp.sha384(p.col("1"), p.col("2")), false, null, null, null, "ywB1P0WjXou1oD1pmsZQBycsMqsO3tFjGotgWkP/W+2AhgcroefMI1i67KE0yCWn", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpSha5121Exec() {
-        executeTester("testXdmpSha5121", p.xdmp.sha512(p.col("1")), "\"ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f\"", new Object[]{p.xs.string("abc")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha5121", p.xdmp.sha512(p.col("1")), false, null, null, null, "ddaf35a193617abacc417349ae20413112e6fa4e89a97ea20a9eeee64b55d39a2192992a274fc1a836ba3c23a3feebbd454d4423643ce80e2a9ac94fa54ca49f", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXdmpSha5122Exec() {
-        executeTester("testXdmpSha5122", p.xdmp.sha512(p.col("1"), p.col("2")), "\"3a81oZNherrMQXNJriBBMRLm+k6JqX6iCp7u5ktV05ohkpkqJ0/BqDa6PCOj/uu9RU1EI2Q86A4qmslPpUyknw==\"", new Object[]{p.xs.string("abc"), p.xs.string("base64")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpSha5122", p.xdmp.sha512(p.col("1"), p.col("2")), false, null, null, null, "3a81oZNherrMQXNJriBBMRLm+k6JqX6iCp7u5ktV05ohkpkqJ0/BqDa6PCOj/uu9RU1EI2Q86A4qmslPpUyknw==", new ItemSeqExpr[]{ p.xs.string("abc"), p.xs.string("base64") });
     }
 
     @Test
     public void testXdmpStep642Exec() {
-        executeTester("testXdmpStep642", p.xdmp.step64(p.col("1"), p.col("2")), "8966314677", new Object[]{p.xs.unsignedLong(123), p.xs.unsignedLong(456)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpStep642", p.xdmp.step64(p.col("1"), p.col("2")), false, null, null, null, "8966314677", new ItemSeqExpr[]{ p.xs.unsignedLong(123), p.xs.unsignedLong(456) });
     }
 
     @Test
     public void testXdmpStrftime2Exec() {
-        executeTester("testXdmpStrftime2", p.xdmp.strftime(p.col("1"), p.col("2")), "\"Wed, 06 Jan 2016 20:13:50\"", new Object[]{p.xs.string("%a, %d %b %Y %H:%M:%S"), p.xs.dateTime("2016-01-06T17:13:50.873594-08:00")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpStrftime2", p.xdmp.strftime(p.col("1"), p.col("2")), false, null, null, null, "Wed, 06 Jan 2016 20:13:50", new ItemSeqExpr[]{ p.xs.string("%a, %d %b %Y %H:%M:%S"), p.xs.dateTime("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
-    public void testXdmpTimestampToWallclock1Exist() {
-        executeTester("testXdmpTimestampToWallclock1", p.xdmp.timestampToWallclock(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.unsignedLong(1)});
-    }
-
-    @Test
-    public void testXdmpToJson1Exist() {
-        executeTester("testXdmpToJson1", p.xdmp.toJson(p.col("1")), null, new Object[]{}, new ItemSeqExpr[]{p.xs.string("abc")});
+    public void testXdmpTimestampToWallclock1Exec() {
+        executeTester("testXdmpTimestampToWallclock1", p.xdmp.timestampToWallclock(p.col("1")), false, "xs:dateTime", null, null, "1969-12-31T19:00:00.0000001", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
     public void testXdmpType1Exec() {
-        executeTester("testXdmpType1", p.xdmp.type(p.col("1")), "fn:QName(\"http://www.w3.org/2001/XMLSchema\",\"string\")", new Object[]{p.xs.string("a")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpType1", p.xdmp.type(p.col("1")), false, "xs:QName", null, null, "string", new ItemSeqExpr[]{ p.xs.string("a") });
     }
 
     @Test
     public void testXdmpUrlDecode1Exec() {
-        executeTester("testXdmpUrlDecode1", p.xdmp.urlDecode(p.col("1")), "\"a b\"", new Object[]{p.xs.string("a+b")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpUrlDecode1", p.xdmp.urlDecode(p.col("1")), false, null, null, null, "a b", new ItemSeqExpr[]{ p.xs.string("a+b") });
     }
 
     @Test
     public void testXdmpUrlEncode1Exec() {
-        executeTester("testXdmpUrlEncode1", p.xdmp.urlEncode(p.col("1")), "\"a+b\"", new Object[]{p.xs.string("a b")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpUrlEncode1", p.xdmp.urlEncode(p.col("1")), false, null, null, null, "a+b", new ItemSeqExpr[]{ p.xs.string("a b") });
     }
 
     @Test
-    public void testXdmpWallclockToTimestamp1Exist() {
-        executeTester("testXdmpWallclockToTimestamp1", p.xdmp.wallclockToTimestamp(p.col("1")), null, new Object[]{p.xs.dateTime("2016-01-06T17:13:50.873594-08:00")}, new ItemSeqExpr[]{});
+    public void testXdmpWallclockToTimestamp1Exec() {
+        executeTester("testXdmpWallclockToTimestamp1", p.xdmp.wallclockToTimestamp(p.col("1")), true, "xs:unsignedLong", null, null, "14521292308735940", new ItemSeqExpr[]{ p.xs.dateTime("2016-01-06T17:13:50.873594-08:00") });
     }
 
     @Test
     public void testXdmpWeekdayFromDate1Exec() {
-        executeTester("testXdmpWeekdayFromDate1", p.xdmp.weekdayFromDate(p.col("1")), "6", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpWeekdayFromDate1", p.xdmp.weekdayFromDate(p.col("1")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
     public void testXdmpWeekFromDate1Exec() {
-        executeTester("testXdmpWeekFromDate1", p.xdmp.weekFromDate(p.col("1")), "53", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpWeekFromDate1", p.xdmp.weekFromDate(p.col("1")), false, null, null, null, "53", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
     public void testXdmpXor642Exec() {
-        executeTester("testXdmpXor642", p.xdmp.xor64(p.col("1"), p.col("2")), "253", new Object[]{p.xs.unsignedLong(255), p.xs.unsignedLong(2)}, new ItemSeqExpr[]{});
+        executeTester("testXdmpXor642", p.xdmp.xor64(p.col("1"), p.col("2")), false, null, null, null, "253", new ItemSeqExpr[]{ p.xs.unsignedLong(255), p.xs.unsignedLong(2) });
     }
 
     @Test
     public void testXdmpYeardayFromDate1Exec() {
-        executeTester("testXdmpYeardayFromDate1", p.xdmp.yeardayFromDate(p.col("1")), "2", new Object[]{p.xs.date("2016-01-02")}, new ItemSeqExpr[]{});
+        executeTester("testXdmpYeardayFromDate1", p.xdmp.yeardayFromDate(p.col("1")), false, null, null, null, "2", new ItemSeqExpr[]{ p.xs.date("2016-01-02") });
     }
 
     @Test
     public void testXsAnyURI1Exec() {
-        executeTester("testXsAnyURI1", p.xs.anyURI("http://a/b?c#d"), "xs:anyURI(\"http://a/b?c#d\")", null, null);
+        executeTester("testXsAnyURI1", p.xs.anyURI(p.col("1")), false, "xs:anyURI", null, null, "http://a/b?c#d", new ItemSeqExpr[]{ p.xs.string("http://a/b?c#d") });
     }
 
     @Test
-    public void testXsBoolean1Exec() {
-        executeTester("testXsBoolean1", p.xs.booleanVal(true), "fn:true()", null, null);
+    public void testXsBase64Binary1Exec() {
+        executeTester("testXsBase64Binary1", p.xs.base64Binary(p.col("1")), false, "xs:base64Binary", null, null, "aGVsbG8sIHdvcmxk", new ItemSeqExpr[]{ p.xs.string("aGVsbG8sIHdvcmxk") });
     }
 
     @Test
-    public void testXsByte1Exec() {
-        executeTester("testXsByte1", p.xs.byteVal((byte) 1), "1", null, null);
+    public void testXsBooleanExpr1Exec() {
+        executeTester("testXsBooleanExpr1", p.xs.booleanExpr(p.col("1")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(true) });
+    }
+
+    @Test
+    public void testXsByteExpr1Exec() {
+        executeTester("testXsByteExpr1", p.xs.byteExpr(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsDate1Exec() {
-        executeTester("testXsDate1", p.xs.date("2016-01-02"), "xs:date(\"2016-01-02\")", null, null);
+        executeTester("testXsDate1", p.xs.date(p.col("1")), false, "xs:date", null, null, "2016-01-02", new ItemSeqExpr[]{ p.xs.string("2016-01-02") });
     }
 
     @Test
     public void testXsDateTime1Exec() {
-        executeTester("testXsDateTime1", p.xs.dateTime("2016-01-02T10:09:08Z"), "xs:dateTime(\"2016-01-02T10:09:08Z\")", null, null);
+        executeTester("testXsDateTime1", p.xs.dateTime(p.col("1")), false, "xs:dateTime", null, null, "2016-01-02T10:09:08Z", new ItemSeqExpr[]{ p.xs.string("2016-01-02T10:09:08Z") });
     }
 
     @Test
     public void testXsDayTimeDuration1Exec() {
-        executeTester("testXsDayTimeDuration1", p.xs.dayTimeDuration("P3DT4H5M6S"), "xs:dayTimeDuration(\"P3DT4H5M6S\")", null, null);
+        executeTester("testXsDayTimeDuration1", p.xs.dayTimeDuration(p.col("1")), false, "xs:dayTimeDuration", null, null, "P3DT4H5M6S", new ItemSeqExpr[]{ p.xs.string("P3DT4H5M6S") });
     }
 
     @Test
     public void testXsDecimal1Exec() {
-        executeTester("testXsDecimal1", p.xs.decimal(1.2), "1.2", null, null);
+        executeTester("testXsDecimal1", p.xs.decimal(p.col("1")), false, null, null, null, "1.2", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
-    public void testXsDouble1Exec() {
-        executeTester("testXsDouble1", p.xs.doubleVal(1.2), "1.2", null, null);
+    public void testXsDoubleExpr1Exec() {
+        executeTester("testXsDoubleExpr1", p.xs.doubleExpr(p.col("1")), false, null, null, null, "1.2", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
-    public void testXsFloat1Exec() {
-        executeTester("testXsFloat1", p.xs.floatVal((float) 1), "1", null, null);
+    public void testXsFloatExpr1Exec() {
+        executeTester("testXsFloatExpr1", p.xs.floatExpr(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsGDay1Exec() {
-        executeTester("testXsGDay1", p.xs.gDay("---02"), "xs:gDay(\"---02\")", null, null);
+        executeTester("testXsGDay1", p.xs.gDay(p.col("1")), false, "xs:gDay", null, null, "---02", new ItemSeqExpr[]{ p.xs.string("---02") });
     }
 
     @Test
     public void testXsGMonth1Exec() {
-        executeTester("testXsGMonth1", p.xs.gMonth("--01"), "xs:gMonth(\"--01\")", null, null);
+        executeTester("testXsGMonth1", p.xs.gMonth(p.col("1")), false, "xs:gMonth", null, null, "--01", new ItemSeqExpr[]{ p.xs.string("--01") });
     }
 
     @Test
     public void testXsGMonthDay1Exec() {
-        executeTester("testXsGMonthDay1", p.xs.gMonthDay("--01-02"), "xs:gMonthDay(\"--01-02\")", null, null);
+        executeTester("testXsGMonthDay1", p.xs.gMonthDay(p.col("1")), false, "xs:gMonthDay", null, null, "--01-02", new ItemSeqExpr[]{ p.xs.string("--01-02") });
     }
 
     @Test
     public void testXsGYear1Exec() {
-        executeTester("testXsGYear1", p.xs.gYear("2016"), "xs:gYear(\"2016\")", null, null);
+        executeTester("testXsGYear1", p.xs.gYear(p.col("1")), false, "xs:gYear", null, null, "2016", new ItemSeqExpr[]{ p.xs.string("2016") });
     }
 
     @Test
     public void testXsGYearMonth1Exec() {
-        executeTester("testXsGYearMonth1", p.xs.gYearMonth("2016-01"), "xs:gYearMonth(\"2016-01\")", null, null);
+        executeTester("testXsGYearMonth1", p.xs.gYearMonth(p.col("1")), false, "xs:gYearMonth", null, null, "2016-01", new ItemSeqExpr[]{ p.xs.string("2016-01") });
     }
 
     @Test
-    public void testXsInt1Exec() {
-        executeTester("testXsInt1", p.xs.intVal(1), "1", null, null);
+    public void testXsHexBinary1Exec() {
+        executeTester("testXsHexBinary1", p.xs.hexBinary(p.col("1")), false, "xs:hexBinary", null, null, "68656C6C6F2C20776F726C64", new ItemSeqExpr[]{ p.xs.string("68656c6c6f2c20776f726c64") });
     }
 
     @Test
     public void testXsInteger1Exec() {
-        executeTester("testXsInteger1", p.xs.integer(1), "1", null, null);
+        executeTester("testXsInteger1", p.xs.integer(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
+    }
+
+    @Test
+    public void testXsIntExpr1Exec() {
+        executeTester("testXsIntExpr1", p.xs.intExpr(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsLanguage1Exec() {
-        executeTester("testXsLanguage1", p.xs.language(p.col("1")), "xs:language(\"en-US\")", new Object[]{p.xs.string("en-US")}, new ItemSeqExpr[]{});
+        executeTester("testXsLanguage1", p.xs.language(p.col("1")), false, "xs:language", null, null, "en-US", new ItemSeqExpr[]{ p.xs.string("en-US") });
     }
 
     @Test
-    public void testXsLong1Exec() {
-        executeTester("testXsLong1", p.xs.longVal(1), "1", null, null);
+    public void testXsLongExpr1Exec() {
+        executeTester("testXsLongExpr1", p.xs.longExpr(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsName1Exec() {
-        executeTester("testXsName1", p.xs.Name(p.col("1")), "xs:Name(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
+        executeTester("testXsName1", p.xs.Name(p.col("1")), false, "xs:Name", null, null, "a:b:c", new ItemSeqExpr[]{ p.xs.string("a:b:c") });
     }
 
     @Test
     public void testXsNCName1Exec() {
-        executeTester("testXsNCName1", p.xs.NCName(p.col("1")), "xs:NCName(\"a-b-c\")", new Object[]{p.xs.string("a-b-c")}, new ItemSeqExpr[]{});
+        executeTester("testXsNCName1", p.xs.NCName(p.col("1")), false, "xs:NCName", null, null, "a-b-c", new ItemSeqExpr[]{ p.xs.string("a-b-c") });
     }
 
     @Test
     public void testXsNegativeInteger1Exec() {
-        executeTester("testXsNegativeInteger1", p.xs.negativeInteger(p.col("1")), "-1", new Object[]{p.xs.doubleVal(-1)}, new ItemSeqExpr[]{});
+        executeTester("testXsNegativeInteger1", p.xs.negativeInteger(p.col("1")), false, null, null, null, "-1", new ItemSeqExpr[]{ p.xs.doubleVal(-1) });
     }
 
     @Test
     public void testXsNMTOKEN1Exec() {
-        executeTester("testXsNMTOKEN1", p.xs.NMTOKEN(p.col("1")), "xs:NMTOKEN(\"a:b:c\")", new Object[]{p.xs.string("a:b:c")}, new ItemSeqExpr[]{});
+        executeTester("testXsNMTOKEN1", p.xs.NMTOKEN(p.col("1")), false, "xs:NMTOKEN", null, null, "a:b:c", new ItemSeqExpr[]{ p.xs.string("a:b:c") });
     }
 
     @Test
     public void testXsNonNegativeInteger1Exec() {
-        executeTester("testXsNonNegativeInteger1", p.xs.nonNegativeInteger(p.col("1")), "0", new Object[]{p.xs.string("0")}, new ItemSeqExpr[]{});
+        executeTester("testXsNonNegativeInteger1", p.xs.nonNegativeInteger(p.col("1")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.string("0") });
     }
 
     @Test
     public void testXsNonPositiveInteger1Exec() {
-        executeTester("testXsNonPositiveInteger1", p.xs.nonPositiveInteger(p.col("1")), "0", new Object[]{p.xs.string("0")}, new ItemSeqExpr[]{});
+        executeTester("testXsNonPositiveInteger1", p.xs.nonPositiveInteger(p.col("1")), false, null, null, null, "0", new ItemSeqExpr[]{ p.xs.string("0") });
     }
 
     @Test
     public void testXsNormalizedString1Exec() {
-        executeTester("testXsNormalizedString1", p.xs.normalizedString(p.col("1")), "xs:normalizedString(\"a b c\")", new Object[]{p.xs.string("a b c")}, new ItemSeqExpr[]{});
+        executeTester("testXsNormalizedString1", p.xs.normalizedString(p.col("1")), false, "xs:normalizedString", null, null, "a b c", new ItemSeqExpr[]{ p.xs.string("a b c") });
+    }
+
+    @Test
+    public void testXsNumeric1Exec() {
+        executeTester("testXsNumeric1", p.xs.numeric(p.col("1")), false, null, null, null, "1.2", new ItemSeqExpr[]{ p.xs.doubleVal(1.2) });
     }
 
     @Test
     public void testXsPositiveInteger1Exec() {
-        executeTester("testXsPositiveInteger1", p.xs.positiveInteger(p.col("1")), "1", new Object[]{p.xs.doubleVal(1)}, new ItemSeqExpr[]{});
+        executeTester("testXsPositiveInteger1", p.xs.positiveInteger(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsQName1Exec() {
-        executeTester("testXsQName1", p.xs.QName("abc"), "fn:QName(\"\",\"abc\")", null, null);
+        executeTester("testXsQName1", p.xs.QName(p.col("1")), false, "xs:QName", null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
-    public void testXsShort1Exec() {
-        executeTester("testXsShort1", p.xs.shortVal((short) 1), "1", null, null);
+    public void testXsShortExpr1Exec() {
+        executeTester("testXsShortExpr1", p.xs.shortExpr(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsString1Exec() {
-        executeTester("testXsString1", p.xs.string("abc"), "\"abc\"", null, null);
+        executeTester("testXsString1", p.xs.string(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXsTime1Exec() {
-        executeTester("testXsTime1", p.xs.time("10:09:08Z"), "xs:time(\"10:09:08Z\")", null, null);
+        executeTester("testXsTime1", p.xs.time(p.col("1")), false, "xs:time", null, null, "10:09:08Z", new ItemSeqExpr[]{ p.xs.string("10:09:08Z") });
     }
 
     @Test
     public void testXsToken1Exec() {
-        executeTester("testXsToken1", p.xs.token(p.col("1")), "xs:token(\"a b c\")", new Object[]{p.xs.string("a b c")}, new ItemSeqExpr[]{});
+        executeTester("testXsToken1", p.xs.token(p.col("1")), false, "xs:token", null, null, "a b c", new ItemSeqExpr[]{ p.xs.string("a b c") });
     }
 
     @Test
     public void testXsUnsignedByte1Exec() {
-        executeTester("testXsUnsignedByte1", p.xs.unsignedByte((byte) 1), "1", null, null);
+        executeTester("testXsUnsignedByte1", p.xs.unsignedByte(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsUnsignedInt1Exec() {
-        executeTester("testXsUnsignedInt1", p.xs.unsignedInt(1), "1", null, null);
+        executeTester("testXsUnsignedInt1", p.xs.unsignedInt(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsUnsignedLong1Exec() {
-        executeTester("testXsUnsignedLong1", p.xs.unsignedLong(1), "1", null, null);
+        executeTester("testXsUnsignedLong1", p.xs.unsignedLong(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsUnsignedShort1Exec() {
-        executeTester("testXsUnsignedShort1", p.xs.unsignedShort((short) 1), "1", null, null);
+        executeTester("testXsUnsignedShort1", p.xs.unsignedShort(p.col("1")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(1) });
     }
 
     @Test
     public void testXsUntypedAtomic1Exec() {
-        executeTester("testXsUntypedAtomic1", p.xs.untypedAtomic("abc"), "\"abc\"", null, null);
+        executeTester("testXsUntypedAtomic1", p.xs.untypedAtomic(p.col("1")), false, null, null, null, "abc", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
     public void testXsYearMonthDuration1Exec() {
-        executeTester("testXsYearMonthDuration1", p.xs.yearMonthDuration("P1Y2M"), "xs:yearMonthDuration(\"P1Y2M\")", null, null);
+        executeTester("testXsYearMonthDuration1", p.xs.yearMonthDuration(p.col("1")), false, "xs:yearMonthDuration", null, null, "P1Y2M", new ItemSeqExpr[]{ p.xs.string("P1Y2M") });
     }
 
     @Test
-    public void testOpAdd2Exist() {
-        executeTester("testOpAdd2", p.add(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(2)}, null);
+    public void testOperatorAdd2Exec() {
+        executeTester("testOperatorAdd2", p.add(p.col("1"), p.col("2")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(2) });
     }
 
     @Test
-    public void testOpAdd3Exist() {
-        executeTester("testOpAdd3", p.add(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(2), p.xs.intVal(3)}, null);
+    public void testOperatorAdd3Exec() {
+        executeTester("testOperatorAdd3", p.add(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(2), p.xs.doubleVal(3) });
     }
 
     @Test
-    public void testOpAnd2Exist() {
-        executeTester("testOpAnd2", p.and(p.col("1"), p.col("2")), null, new Object[]{p.xs.booleanVal(true), p.xs.booleanVal(true)}, null);
+    public void testOperatorAnd2Exec() {
+        executeTester("testOperatorAnd2", p.and(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(true), p.xs.booleanVal(true) });
     }
 
     @Test
-    public void testOpAnd3Exist() {
-        executeTester("testOpAnd3", p.and(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{p.xs.booleanVal(true), p.xs.booleanVal(true), p.xs.booleanVal(true)}, null);
+    public void testOperatorAnd3Exec() {
+        executeTester("testOperatorAnd3", p.and(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(true), p.xs.booleanVal(true), p.xs.booleanVal(true) });
     }
 
     @Test
-    public void testOpDivide2Exist() {
-        executeTester("testOpDivide2", p.divide(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(6), p.xs.intVal(2)}, null);
+    public void testOperatorDivide2Exec() {
+        executeTester("testOperatorDivide2", p.divide(p.col("1"), p.col("2")), false, null, null, null, "3", new ItemSeqExpr[]{ p.xs.doubleVal(6), p.xs.doubleVal(2) });
     }
 
     @Test
-    public void testOpEq2Exist() {
-        executeTester("testOpEq2", p.eq(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(1)}, null);
+    public void testOperatorEq2Exec() {
+        executeTester("testOperatorEq2", p.eq(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(1) });
     }
 
     @Test
-    public void testOpGe2Exist() {
-        executeTester("testOpGe2", p.ge(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(1)}, null);
+    public void testOperatorGe2Exec() {
+        executeTester("testOperatorGe2", p.ge(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(1) });
     }
 
     @Test
-    public void testOpGt2Exist() {
-        executeTester("testOpGt2", p.gt(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(2), p.xs.intVal(1)}, null);
+    public void testOperatorGt2Exec() {
+        executeTester("testOperatorGt2", p.gt(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(2), p.xs.doubleVal(1) });
     }
 
     @Test
-    public void testOpLe2Exist() {
-        executeTester("testOpLe2", p.le(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(1)}, null);
+    public void testOperatorLe2Exec() {
+        executeTester("testOperatorLe2", p.le(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(1) });
     }
 
     @Test
-    public void testOpLt2Exist() {
-        executeTester("testOpLt2", p.lt(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(2)}, null);
+    public void testOperatorLt2Exec() {
+        executeTester("testOperatorLt2", p.lt(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(2) });
     }
 
     @Test
-    public void testOpMultiply2Exist() {
-        executeTester("testOpMultiply2", p.multiply(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(2), p.xs.intVal(3)}, null);
+    public void testOperatorMultiply2Exec() {
+        executeTester("testOperatorMultiply2", p.multiply(p.col("1"), p.col("2")), false, null, null, null, "6", new ItemSeqExpr[]{ p.xs.doubleVal(2), p.xs.doubleVal(3) });
     }
 
     @Test
-    public void testOpMultiply3Exist() {
-        executeTester("testOpMultiply3", p.multiply(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{p.xs.intVal(2), p.xs.intVal(3), p.xs.intVal(4)}, null);
+    public void testOperatorMultiply3Exec() {
+        executeTester("testOperatorMultiply3", p.multiply(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "24", new ItemSeqExpr[]{ p.xs.doubleVal(2), p.xs.doubleVal(3), p.xs.doubleVal(4) });
     }
 
     @Test
-    public void testOpNe2Exist() {
-        executeTester("testOpNe2", p.ne(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(1), p.xs.intVal(2)}, null);
+    public void testOperatorNe2Exec() {
+        executeTester("testOperatorNe2", p.ne(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.doubleVal(1), p.xs.doubleVal(2) });
     }
 
     @Test
-    public void testOpNot1Exist() {
-        executeTester("testOpNot1", p.not(p.col("1")), null, new Object[]{p.xs.booleanVal(false)}, null);
+    public void testOperatorNot1Exec() {
+        executeTester("testOperatorNot1", p.not(p.col("1")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(false) });
     }
 
     @Test
-    public void testOpOr2Exist() {
-        executeTester("testOpOr2", p.or(p.col("1"), p.col("2")), null, new Object[]{p.xs.booleanVal(false), p.xs.booleanVal(true)}, null);
+    public void testOperatorOr2Exec() {
+        executeTester("testOperatorOr2", p.or(p.col("1"), p.col("2")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(false), p.xs.booleanVal(true) });
     }
 
     @Test
-    public void testOpOr3Exist() {
-        executeTester("testOpOr3", p.or(p.col("1"), p.col("2"), p.col("3")), null, new Object[]{p.xs.booleanVal(false), p.xs.booleanVal(true), p.xs.booleanVal(false)}, null);
+    public void testOperatorOr3Exec() {
+        executeTester("testOperatorOr3", p.or(p.col("1"), p.col("2"), p.col("3")), false, null, null, null, "true", new ItemSeqExpr[]{ p.xs.booleanVal(false), p.xs.booleanVal(true), p.xs.booleanVal(false) });
     }
 
     @Test
-    public void testOpSubtract2Exist() {
-        executeTester("testOpSubtract2", p.subtract(p.col("1"), p.col("2")), null, new Object[]{p.xs.intVal(3), p.xs.intVal(2)}, null);
+    public void testOperatorSubtract2Exec() {
+        executeTester("testOperatorSubtract2", p.subtract(p.col("1"), p.col("2")), false, null, null, null, "1", new ItemSeqExpr[]{ p.xs.doubleVal(3), p.xs.doubleVal(2) });
     }
 }

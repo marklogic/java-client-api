@@ -772,7 +772,7 @@ class XsExprImpl extends XsValueImpl implements XsExpr {
     }
  
     @Override
-    public XsNameSeqExpr nameSeq(XsNameExpr... items) {
+    public XsNameSeqExpr NameSeq(XsNameExpr... items) {
         return new NameSeqListImpl(items);
     }
     static class NameSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements XsNameSeqExpr {

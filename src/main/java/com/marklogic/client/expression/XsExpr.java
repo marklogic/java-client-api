@@ -189,7 +189,7 @@ public interface XsExpr extends XsValue {
  
     public XsLongSeqExpr longExprSeq(XsLongExpr... items);
  
-    public XsNameSeqExpr nameSeq(XsNameExpr... items);
+    public XsNameSeqExpr NameSeq(XsNameExpr... items);
  
     public XsNCNameSeqExpr NCNameSeq(XsNCNameExpr... items);
  

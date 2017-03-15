@@ -1371,8 +1371,10 @@ public class RowManagerImpl
 					buf.append(colName);
 					buf.append(":{kind: \"");
 					buf.append(colKind.name());
-					buf.append("\", type: \"");
-					buf.append(colType);
+					if (!"cid".equals(colType)) {
+	                    buf.append("\", type: \"");
+	                    buf.append(colType);
+					}
 					buf.append("\", ");
 
 					switch(colKind) {
@@ -1500,7 +1502,7 @@ public class RowManagerImpl
 	    		params = new HashMap<>();
 	    	}
 	    	params.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
-// TODO: return clone with param for immutability
+// TODO: return clone of raw plan with param for immutability
 	    	return this;
 		}
 
