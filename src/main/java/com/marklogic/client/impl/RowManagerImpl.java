@@ -1450,8 +1450,14 @@ public class RowManagerImpl
 		private Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
 		private JSONWriteHandle handle = null;
 		RawPlanDefinitionImpl(JSONWriteHandle handle) {
-			setHandle(handle);
+            setHandle(handle);
 		}
+        private RawPlanDefinitionImpl(
+                JSONWriteHandle handle,
+                Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+            this(handle);
+            this.params = params;
+        }
 
 		@Override
 		public Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> getParams() {
@@ -1498,12 +1504,15 @@ public class RowManagerImpl
 	    	if (!(literal instanceof XsValueImpl.AnyAtomicTypeValImpl)) {
 	    		throw new IllegalArgumentException("cannot set value with unknown implementation");
 	    	}
-	    	if (params == null) {
-	    		params = new HashMap<>();
+
+	    	Map<PlanBuilderBaseImpl.PlanParamBase,BaseTypeImpl.ParamBinder> nextParams = new HashMap<>();
+	    	if (this.params != null) {
+	    	    nextParams.putAll(this.params);
 	    	}
-	    	params.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
-// TODO: return clone of raw plan with param for immutability
-	    	return this;
+
+	    	nextParams.put((PlanBuilderBaseImpl.PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl) literal);
+
+	    	return new RawPlanDefinitionImpl(getHandle(), nextParams);
 		}
 
 		@Override

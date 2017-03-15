@@ -439,10 +439,25 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     static class PlanSubImpl
     extends PlanBuilderImpl.PlanImpl {
+        private PlanBuilderBaseImpl.PlanBaseImpl prior    = null;
+        private String                           fnPrefix = null;
+        private String                           fnName   = null;
+        private Object[]                         fnArgs   = null;
+
         private Map<PlanParamBase,BaseTypeImpl.ParamBinder> params = null;
 
         PlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
             super(prior, fnPrefix, fnName, fnArgs);
+            this.prior    = prior;
+            this.fnPrefix = fnPrefix;
+            this.fnName   = fnName;
+            this.fnArgs   = fnArgs;
+        }
+        private PlanSubImpl(
+                PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs, 
+                Map<PlanParamBase,BaseTypeImpl.ParamBinder> params) {
+            this(prior, fnPrefix, fnName, fnArgs);
+            this.params = params;
         }
 
         @Override
@@ -487,20 +502,23 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
             if (!(param instanceof PlanParamBase)) {
                 throw new IllegalArgumentException("cannot set parameter that doesn't extend base");
             }
-            if (params == null) {
-                params = new HashMap<>();
+
+            Map<PlanParamBase,BaseTypeImpl.ParamBinder> nextParams = new HashMap<>();
+            if (this.params != null) {
+                nextParams.putAll(this.params);
             }
+
             if (literal instanceof XsValueImpl.AnyAtomicTypeValImpl) {
-                params.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)  literal);
+                nextParams.put((PlanParamBase) param, (XsValueImpl.AnyAtomicTypeValImpl)  literal);
             } else if (literal instanceof RdfValueImpl.RdfLangStringValImpl) {
-                params.put((PlanParamBase) param, (RdfValueImpl.RdfLangStringValImpl) literal);
+                nextParams.put((PlanParamBase) param, (RdfValueImpl.RdfLangStringValImpl) literal);
             } else if (literal instanceof SemValueImpl.SemIriValImpl) {
-                params.put((PlanParamBase) param, (SemValueImpl.SemIriValImpl)        literal);
+                nextParams.put((PlanParamBase) param, (SemValueImpl.SemIriValImpl)        literal);
             } else {
                 throw new IllegalArgumentException("cannot set value with unknown implementation");
             }
-// TODO: return clone with param for immutability
-            return this;
+
+            return new PlanSubImpl(this.prior, this.fnPrefix, this.fnName, this.fnArgs, nextParams);
         }
 
     }
