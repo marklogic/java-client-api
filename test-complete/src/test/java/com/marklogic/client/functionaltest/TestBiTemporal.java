@@ -78,7 +78,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   private static String dbName = "TestBiTemporalJava";
   private static String[] fNames = { "TestBiTemporalJava-1" };
-  
+  private static String schemadbName = "TestBiTemporalJavaSchemaDB";
+  private static String [] schemafNames = {"TestBiTemporalJavaSchemaDB-1"};
   
   private static int uberPort = 8000;
   private DatabaseClient adminClient = null;
@@ -112,7 +113,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
-
+    
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
         systemStartERIName);
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
@@ -121,6 +122,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
         validStartERIName);
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
         validEndERIName);
+    createDB(schemadbName);
+	createForest(schemafNames[0], schemadbName);
+	//Set the schemadbName database as the Schema database.
+	setDatabaseProperties(dbName, "schema-database", schemadbName);
 
     // Temporal axis must be created before temporal collection associated with
     // those axes is created
@@ -159,7 +164,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
         axisValidName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
         axisSystemName);
-
+    deleteDB(schemadbName);
+	deleteForest(schemafNames[0]);
   }
 
   @Before

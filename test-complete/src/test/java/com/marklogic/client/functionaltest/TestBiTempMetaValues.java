@@ -59,6 +59,8 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
 	private static String dbName = "TestBiTempMetaValues";
 	private static String[] fNames = { "TestBiTempMetaValues-1" };
+	private static String schemadbName = "TestBiTempMetaValuesSchemaDB";
+	private static String [] schemafNames = {"TestBiTempMetaValuesSchemaDB-1"};
 
 	private DatabaseClient writerClient = null;
 
@@ -94,6 +96,10 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 				validStartERIName);
 		ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
 				validEndERIName);
+		createDB(schemadbName);
+		createForest(schemafNames[0], schemadbName);
+		//Set the schemadbName database as the Schema database.
+		setDatabaseProperties(dbName, "schema-database", schemadbName);
 
 		// Temporal axis must be created before temporal collection associated with
 		// those axes is created
@@ -122,9 +128,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		deleteRESTUser("eval-readeruser");
 		deleteUserRole("test-eval");
 
-		// Temporal collection needs to be delete before temporal axis associated
+		// Temporal collection needs to be deleted before temporal axis associated
 		// with it can be deleted
-		/*ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
+		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalLsqtCollectionName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalCollection(dbName,
 				temporalCollectionName);
@@ -133,7 +139,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
 				axisValidName);
 		ConnectedRESTQA.deleteElementRangeIndexTemporalAxis(dbName,
-				axisSystemName);*/
+				axisSystemName);
+		 deleteDB(schemadbName);
+		deleteForest(schemafNames[0]);
 	}
 
 	@Before
