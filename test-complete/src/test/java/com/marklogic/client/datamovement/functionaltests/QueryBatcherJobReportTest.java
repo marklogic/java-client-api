@@ -333,6 +333,7 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 			batches.incrementAndGet();
 		});
 		batcher.onQueryFailure((throwable)->{
+			System.out.println("queryFailures: ");
 			try {
 				Thread.currentThread().sleep(7000L);
 			} catch (Exception e) {
@@ -501,7 +502,7 @@ public class QueryBatcherJobReportTest extends  DmsdkJavaClientREST {
 					List<String> batchList = Arrays.asList(batch.getItems());
 					successBatch.addAll(batchList);
 					System.out.println("stopTransformJobTest: Success: "+batch.getItems()[0]);
-
+					System.out.println("stopTransformJobTest: Success: "+dbClient.newServerEval().xquery("fn:doc(\""+batch.getItems()[0]+"\")").eval().next().getString());
 				})
 				.onSkipped(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
