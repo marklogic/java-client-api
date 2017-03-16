@@ -49,7 +49,7 @@ public class Common {
 	final public static String EVAL_PASS= "x";
 	final public static String READ_ONLY_USER= "rest-reader";
 	final public static String READ_ONLY_PASS= "x";
-	final public static String READ_PRIVILIGED_USER = "rest-privileged";
+	final public static String READ_PRIVILIGED_USER = "read-privileged";
 	final public static String READ_PRIVILIGED_PASS = "x";
 	final public static String WRITE_PRIVILIGED_USER = "write-privileged";
 	final public static String WRITE_PRIVILIGED_PASS = "x";
