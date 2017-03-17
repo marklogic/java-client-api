@@ -890,8 +890,8 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		// plan1
 		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
 		PreparePlan output = plan1.where(p.gt(popCol, p.xs.string("blah")))
-		        .orderBy(p.asc("date"))
-		        .select(p.colSeq("city", "popularity", "date", "distance", "point"));
+		        .select(p.colSeq("city", "popularity", "date", "distance", "point"))
+		        .orderBy(p.asc("date"));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
@@ -903,6 +903,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 			str.append(ex.getMessage());
 		}
 		// Should have XDMP-CAST exceptions.
+		System.out.println("Exception in testFalseWhereClause method" + str.toString());
 		assertTrue("Exceptions not found", str.toString().contains("XDMP-CAST: (err:FORG0001) \"blah\" cast as xs:int* -- Invalid cast: \"blah\" cast as xs:int"));
 	}
 	

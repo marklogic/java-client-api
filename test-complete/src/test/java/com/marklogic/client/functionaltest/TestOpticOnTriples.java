@@ -45,6 +45,7 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ExportablePlan;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
+import com.marklogic.client.expression.PlanBuilder.Plan;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.JacksonHandle;
@@ -854,10 +855,10 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		jsonBindingsNodes = jsonResults.path("rows");
 		nodeVal = jsonBindingsNodes.path(0);
 
-		// Should have 8 nodes returned.		
-		assertEquals("Eight nodes not returned from testAccessWithQualifier method", 8, jsonBindingsNodes.size());
+		// Should have 7 nodes returned.		
+		assertEquals("Seven nodes not returned from testAccessWithQualifier method", 7, jsonBindingsNodes.size());
 		assertEquals("Row 1 myPlayer.age value incorrect", "34", nodeVal.path("myPlayer.age").path("value").asText());
-		nodeVal = jsonBindingsNodes.path(7);
+		nodeVal = jsonBindingsNodes.path(6);
 		assertEquals("Row 8 myPlayer.age value incorrect", "19", nodeVal.path("myPlayer.age").path("value").asText());
 
 		//access with qualifier and no object		
@@ -1417,11 +1418,11 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		ModifyPlan player_plan = p.fromTriples(p.pattern(playerIdCol, bb.iri("age"), ageParam),
 				p.pattern(playerIdCol, bb.iri("name"), playerNameCol),
 		           p.pattern(playerIdCol, bb.iri("team"), playerTeamCol));
-		player_plan.bindParam(ageParam, p.xs.intVal(27));
+		Plan player_plan1 = player_plan.bindParam(ageParam, p.xs.intVal(27));
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		rowMgr.resultDoc(player_plan, jacksonHandle);
+		rowMgr.resultDoc(player_plan1, jacksonHandle);
 		JsonNode jsonResults = jacksonHandle.get();
 		JsonNode jsonBindingsNodes = jsonResults.path("rows");
 		// Should have 1 nodes returned.
@@ -1430,31 +1431,31 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Row 1 player team value incorrect", "http://marklogic.com/mlb/team/id/001", jsonBindingsNodes.path(0).path("player_team").path("value").asText());
 		
 		// Verify bind value with different types, values.
-		player_plan.bindParam(ageParam, p.xs.intVal(0));
+		Plan player_plan2 = player_plan.bindParam(ageParam, p.xs.intVal(0));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		rowMgr.resultDoc(player_plan, jacksonHandle);
+		rowMgr.resultDoc(player_plan2, jacksonHandle);
 		jsonResults = jacksonHandle.get();
 		
 		assertTrue("No data should have been returned", jsonResults == null);
 		
 		// Should not throw an exception, but return null results
-		player_plan.bindParam(ageParam, p.xs.intVal(-1));
+		Plan player_plan3 = player_plan.bindParam(ageParam, p.xs.intVal(-1));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		rowMgr.resultDoc(player_plan, jacksonHandle);
+		rowMgr.resultDoc(player_plan3, jacksonHandle);
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
 		assertTrue("No data should have been returned", jsonResults == null);
 		
 		// Should not throw an exception, but return null results
-		player_plan.bindParam(ageParam, p.xs.string("abcd"));
+		Plan player_plan4 = player_plan.bindParam(ageParam, p.xs.string("abcd"));
 		jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		rowMgr.resultDoc(player_plan, jacksonHandle);
+		rowMgr.resultDoc(player_plan4, jacksonHandle);
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
 		assertTrue("No data should have been returned", jsonResults == null);	

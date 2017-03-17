@@ -1398,6 +1398,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		PlanColumn masterNameCol = p.viewCol("myMaster", "name");
 		// Pass a double                    
 		ModifyPlan plan3 =  plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.doubleVal(3.0)))
+				.where(p.eq(masterIdCol1, masterIdCol2))
 		        .select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
 		        .orderBy(p.desc(detailNameCol))
 		        .offsetLimit(1, 100);
@@ -1413,6 +1414,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		
 		// Pass a String                    
 		ModifyPlan plan4 =  plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.string("3")))
+				.where(p.eq(masterIdCol1, masterIdCol2))
 				.select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
 				.orderBy(p.desc(detailNameCol))
 				.offsetLimit(1, 100);
@@ -1422,9 +1424,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
 		rowMgr.resultDoc(plan4, jacksonHandleStr);
 		JsonNode jsonResultsStr = jacksonHandleStr.get();
-		JsonNode jsonBindingsNodesStr = jsonResultsStr.path("rows");
-		// Should have 3 nodes returned.
-		assertEquals("Three nodes not returned from testjoinInnerWithDataTypes method ", 3, jsonBindingsNodesStr.size());
+		// Should have 0 nodes returned.
+		assertTrue("No nodes should have returned from testjoinInnerWithDataTypes method ", jsonResultsStr == null);
 		
 		// Pass as a date 
 		try {
@@ -1447,6 +1448,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		// Pass as a decimal 
 				
 		ModifyPlan plan6 =  plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.ge(detailIdCol, p.xs.decimal(3.0)))
+				.where(p.eq(masterIdCol1, masterIdCol2))
 				.select(masterIdCol2, masterNameCol, detailIdCol, detailNameCol)
 				.orderBy(p.desc(detailNameCol))
 				.offsetLimit(1, 100);
