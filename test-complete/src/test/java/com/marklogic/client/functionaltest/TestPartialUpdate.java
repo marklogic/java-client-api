@@ -105,7 +105,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 		assertTrue("fragment is not inserted", content.contains("<modified>2013-03-21</modified></root>"));
 		
 		// Check boolean replaces with XML documents.
-		String xmlDocId = "/replaceBool.xml";
+		String xmlDocId = "/replaceBoolXml";
 		
 		String xmlStr1 = new String("<?xml version=\"1.0\" encoding=\"utf-8\"?>");
 		String xmlStr2 = new String("<resources><screen name=\"screen_small\">true</screen><screen name=\"adjust_view_bounds\">false</screen></resources>");
