@@ -21,6 +21,7 @@ package com.marklogic.client.semantics;
  */
 public enum RDFTypes {
     STRING             ("string"),
+    LANGSTRING         ("langString"),
     BOOLEAN            ("boolean"),
     DECIMAL            ("decimal"),
     INTEGER            ("integer"),
