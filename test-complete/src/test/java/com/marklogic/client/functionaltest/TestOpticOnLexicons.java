@@ -866,12 +866,12 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Test False entry in where clause
+	 * conditional from join doc - TEST31
 	 */	
 	@Test
-	public void testFalseWhereClause() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+	public void testConditionalFromJoinDoc() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
 	{
-		System.out.println("In testFalseWhereClause method");
+		System.out.println("In testConditionalFromJoinDoc method");
 
 		// Create a new Plan.
 		RowManager rowMgr = client.newRowManager();
@@ -880,31 +880,60 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		PlanColumn dateCol = p.col("date");
 		
 		Map<String, CtsReferenceExpr>index1 = new HashMap<String, CtsReferenceExpr>();
-		index1.put("uri", p.cts.uriReference());
+		index1.put("uri1", p.cts.uriReference());
 		index1.put("city", p.cts.jsonPropertyReference("city"));
 		index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
 		index1.put("date", p.cts.jsonPropertyReference("date"));
 		index1.put("distance", p.cts.jsonPropertyReference("distance"));
 		index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
 		
+		Map<String, CtsReferenceExpr>index2 = new HashMap<String, CtsReferenceExpr>();
+		index2.put("uri2", p.cts.uriReference());
+		index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+		index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+		
+		PlanSystemColumn fragIdCol1 = p.fragmentIdCol("fragId1");
+		PlanSystemColumn fragIdCol2 = p.fragmentIdCol("fragId2");
+			
 		// plan1
-		ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
-		PreparePlan output = plan1.where(p.gt(popCol, p.xs.string("blah")))
-		        .select(p.colSeq("city", "popularity", "date", "distance", "point"))
-		        .orderBy(p.asc("date"));
+		ModifyPlan plan1 = p.fromLexicons(index1, "myCity", fragIdCol1);
+		// plan2
+		ModifyPlan plan2 = p.fromLexicons(index2, "myTeam", fragIdCol2);
+				
+		// plan
+		ModifyPlan output = plan1.joinInner(plan2)
+		        .joinDoc(p.col("doc"), p.fragmentIdCol("fragId2"))		        
+		        .select(p.col("uri1"),
+		        		p.col("city"),
+		        		p.col("popularity"),
+		        		p.col("date"),
+		        		p.col("distance"),
+		        		p.col("point"),
+		        		p.as("nodes", p.xpath("doc", "//cityName")),
+		        		p.col("uri2"),
+		        		p.col("cityName"),
+		        		p.col("cityTeam"))
+		        .where(p.eq(p.viewCol("myCity", "city"), p.sql.collatedString(p.col("nodes"), "http://marklogic.com/collation/")))
+		        .orderBy(p.col("uri1"));
+		
 		JacksonHandle jacksonHandle = new JacksonHandle();
 		jacksonHandle.setMimetype("application/json");
 
-		StringBuilder str = new StringBuilder();
-		try {
-			rowMgr.resultDoc(output, jacksonHandle);
-		}
-		catch(Exception ex) {
-			str.append(ex.getMessage());
-		}
-		// Should have XDMP-CAST exceptions.
-		System.out.println("Exception in testFalseWhereClause method" + str.toString());
-		assertTrue("Exceptions not found", str.toString().contains("XDMP-CAST: (err:FORG0001) \"blah\" cast as xs:int* -- Invalid cast: \"blah\" cast as xs:int"));
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		// Should have 5 nodes returned.
+		assertEquals("Five nodes not returned from testConditionalFromJoinDoc method ", 5, jsonBindingsNodes.size());
+		
+		JsonNode node = jsonBindingsNodes.path(0);		
+		assertEquals("Row 1 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 1 myTeam.cityName value incorrect", "london", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 1 myTeam.cityTeam value incorrect", "arsenal", node.path("myTeam.cityTeam").path("value").asText());
+				
+		node = jsonBindingsNodes.path(4);
+		assertEquals("Row 5 myCity.city value incorrect", "cape town", node.path("myCity.city").path("value").asText());
+		assertEquals("Row 5 myTeam.cityName value incorrect", "cape town", node.path("myTeam.cityName").path("value").asText());
+		assertEquals("Row 5 myTeam.cityTeam value incorrect", "pirates", node.path("myTeam.cityTeam").path("value").asText());		
 	}
 	
 	/*
