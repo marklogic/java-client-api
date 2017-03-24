@@ -49,7 +49,7 @@ public class UrisHandle
 
   @Override
   protected Class<Reader> receiveAs() {
-      return Reader.class;
+    return Reader.class;
   }
 
   @Override

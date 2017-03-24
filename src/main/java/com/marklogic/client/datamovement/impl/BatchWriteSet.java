@@ -132,13 +132,13 @@ public class BatchWriteSet {
       .withJobWritesSoFar(itemsSoFar)
       .withJobTicket(batcher.getJobTicket());
     WriteEvent[] writeEvents = getWriteSet().stream()
-            .map(writeOperation ->
-              new WriteEventImpl()
-                .withTargetUri(writeOperation.getUri())
-                .withContent(writeOperation.getContent())
-                .withMetadata(writeOperation.getMetadata())
-            )
-            .toArray(WriteEventImpl[]::new);
+      .map(writeOperation ->
+        new WriteEventImpl()
+          .withTargetUri(writeOperation.getUri())
+          .withContent(writeOperation.getContent())
+          .withMetadata(writeOperation.getMetadata())
+      )
+      .toArray(WriteEventImpl[]::new);
     batch.withItems(writeEvents);
     return batch;
   }

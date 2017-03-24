@@ -50,163 +50,163 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * @see <a href="http://wiki.fasterxml.com/JacksonStreamingApi">Jackson Streaming API</a>
  */
 public class JacksonParserHandle
-    extends JacksonBaseHandle<JsonParser>
-    implements ContentHandle<JsonParser>,
-            OutputStreamSender, BufferableHandle, 
-            JSONReadHandle, JSONWriteHandle,
-            TextReadHandle, TextWriteHandle,
-            XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle,
-            Closeable
+  extends JacksonBaseHandle<JsonParser>
+  implements ContentHandle<JsonParser>,
+    OutputStreamSender, BufferableHandle,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    Closeable
 {
-    static final private Logger logger = LoggerFactory.getLogger(JacksonParserHandle.class);
+  static final private Logger logger = LoggerFactory.getLogger(JacksonParserHandle.class);
 
-    private JsonParser parser = null;
-    private InputStream content = null;
-    private boolean closed = false;
+  private JsonParser parser = null;
+  private InputStream content = null;
+  private boolean closed = false;
 
-	final static private int BUFFER_SIZE = 8192;
+  final static private int BUFFER_SIZE = 8192;
 
-	/**
-	 * Creates a factory to create a JacksonParserHandle instance for a JsonParser.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ JsonParser.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return JsonParser.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new JacksonParserHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a JacksonParserHandle instance for a JsonParser.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ JsonParser.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return JsonParser.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new JacksonParserHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-    public JacksonParserHandle() {
-        super();
-        setFormat(Format.JSON);
-   		setResendable(false);
+  public JacksonParserHandle() {
+    super();
+    setFormat(Format.JSON);
+    setResendable(false);
+  }
+
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public JacksonParserHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
+
+  /**
+   * JsonParser allows streaming access to content as it arrives.
+   * @return the JsonParser over the content (usually received from the server)
+   */
+  @Override
+  public JsonParser get() {
+    if ( parser == null ) {
+      if ( content == null ) {
+        throw new IllegalStateException("Handle is not yet populated with content");
+      }
+      try {
+        parser = getMapper().getFactory().createParser(content);
+      } catch (JsonParseException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
     }
-
-    /**
-     * Specifies the format of the content and returns the handle
-     * as a fluent convenience.
-     * @param format	the format of the content
-     * @return	this handle
-     */
-    public JacksonParserHandle withFormat(Format format) {
-        setFormat(format);
-        return this;
+    return parser;
+  }
+  /**
+   * Available for the edge case that content from a JsonParser must be written.
+   */
+  @Override
+  public void set(JsonParser parser) {
+    this.parser = parser;
+    if ( parser == null ) {
+      content = null;
+    } else if ( parser.getInputSource() instanceof InputStream ) {
+      content = (InputStream) parser.getInputSource();
     }
+  }
 
-    /**
-     * JsonParser allows streaming access to content as it arrives.
-     * @return the JsonParser over the content (usually received from the server)
-     */
-    @Override
-    public JsonParser get() {
-        if ( parser == null ) {
-            if ( content == null ) {
-                throw new IllegalStateException("Handle is not yet populated with content");
-            }
-            try {
-				parser = getMapper().getFactory().createParser(content);
-			} catch (JsonParseException e) {
-                throw new MarkLogicIOException(e);
-			} catch (IOException e) {
-	            throw new MarkLogicIOException(e);
-			}
+  /**
+   * Provides access to the ObjectMapper used internally so you can configure
+   * it to fit your JSON.
+   * @return the ObjectMapper instance
+   */
+  @Override
+  public ObjectMapper getMapper() { return super.getMapper(); }
+  /**
+   * Enables clients to specify their own ObjectMapper instance, including databinding mappers
+   * for formats other than JSON.
+   * For <a href="https://github.com/FasterXML/jackson-dataformat-csv">example</a>:<pre>{@code
+   *ObjectMapper mapper = new CsvMapper();
+   *mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+   *mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
+   *handle.setMapper(mapper);
+   * }</pre>
+   *
+   * Use at your own risk!  Note that you most likely want to set to false the two options we
+   * demonstrate above (JsonGenerator.Feature.AUTO_CLOSE_TARGET and JsonParser.Feature.AUTO_CLOSE_SOURCE)
+   * as we do so your mapper will not close streams which we may need to reuse if we have to
+   * resend a network request.
+   **/
+  @Override
+  public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
+
+  @Override
+  protected void receiveContent(InputStream content) {
+    this.content = content;
+    if (content == null) parser = null;
+  }
+  @Override
+  protected boolean hasContent() {
+    return content != null || parser != null;
+  }
+  @Override
+  public void write(OutputStream out) throws IOException {
+    try {
+      if ( parser != null && parser.nextToken() != null ) {
+        JsonGenerator generator = getMapper().getFactory().createGenerator(out);
+        generator.copyCurrentStructure(parser);
+        generator.close();
+      } else if (content != null) {
+        byte[] b = new byte[BUFFER_SIZE];
+        int len = 0;
+        while ((len = content.read(b)) != -1) {
+          out.write(b, 0, len);
         }
-        return parser;
+        content.close();
+        closed = true;
+      }
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
     }
-    /**
-     * Available for the edge case that content from a JsonParser must be written.
-     */
-    @Override
-    public void set(JsonParser parser) {
-        this.parser = parser;
-        if ( parser == null ) {
-            content = null;
-        } else if ( parser.getInputSource() instanceof InputStream ) {
-            content = (InputStream) parser.getInputSource();
-        }
-    }
+  }
 
-    /**
-     * Provides access to the ObjectMapper used internally so you can configure
-     * it to fit your JSON.
-     * @return the ObjectMapper instance
-     */
-    @Override
-    public ObjectMapper getMapper() { return super.getMapper(); }
-    /**
-     * Enables clients to specify their own ObjectMapper instance, including databinding mappers
-     * for formats other than JSON.
-     * For <a href="https://github.com/FasterXML/jackson-dataformat-csv">example</a>:<pre>{@code
-     *ObjectMapper mapper = new CsvMapper();
-     *mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-     *mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-     *handle.setMapper(mapper);
-     * }</pre>
-     *
-     * Use at your own risk!  Note that you most likely want to set to false the two options we
-     * demonstrate above (JsonGenerator.Feature.AUTO_CLOSE_TARGET and JsonParser.Feature.AUTO_CLOSE_SOURCE)
-     * as we do so your mapper will not close streams which we may need to reuse if we have to
-     * resend a network request.
-     **/
-    @Override
-    public void setMapper(ObjectMapper mapper) { super.setMapper(mapper); }
-
-    @Override
-    protected void receiveContent(InputStream content) {
-        this.content = content;
-        if (content == null) parser = null;
+  /** Always call close() when finished with this handle -- it closes the underlying InputStream.
+   */
+  @Override
+  public void close() {
+    if ( content != null && closed != true ) {
+      try {
+        content.close();
+      } catch (IOException e) {
+        logger.error("Failed to close underlying InputStream",e);
+        throw new MarkLogicIOException(e);
+      }
     }
-    @Override
-    protected boolean hasContent() {
-        return content != null || parser != null;
-    }
-	@Override
-	public void write(OutputStream out) throws IOException {
-        try {
-            if ( parser != null && parser.nextToken() != null ) {
-                JsonGenerator generator = getMapper().getFactory().createGenerator(out);
-                generator.copyCurrentStructure(parser);
-                generator.close();
-            } else if (content != null) {
-                byte[] b = new byte[BUFFER_SIZE];
-                int len = 0;
-                while ((len = content.read(b)) != -1) {
-                    out.write(b, 0, len);
-                }
-                content.close();
-                closed = true;
-            }
-        } catch (IOException e) {
-            throw new MarkLogicIOException(e);
-        }
-    }
-
-    /** Always call close() when finished with this handle -- it closes the underlying InputStream.
-     */
-    @Override
-    public void close() {
-        if ( content != null && closed != true ) {
-            try {
-                content.close();
-            } catch (IOException e) {
-                logger.error("Failed to close underlying InputStream",e);
-                throw new MarkLogicIOException(e);
-            }
-        }
-    }
+  }
 }

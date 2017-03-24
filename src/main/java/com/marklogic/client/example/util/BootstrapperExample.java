@@ -31,25 +31,25 @@ import com.marklogic.client.example.util.Bootstrapper.RESTServer;
  *
  */
 public class BootstrapperExample {
-	public static void main(String[] args)
-	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError
-	{
-		new BootstrapperExample().makeSampleServer();
-	}
-	public void makeSampleServer()
-	throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError
-	{
-		new Bootstrapper().makeServer(
-				new ConfigServer(
-					"localhost", 8002, "admin", "admin", Authentication.DIGEST
-				),
-				new RESTServer(
-					"Documents", "Modules", "Default", "DocuREST", 8014
-				)
-			);
+  public static void main(String[] args)
+    throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError
+  {
+    new BootstrapperExample().makeSampleServer();
+  }
+  public void makeSampleServer()
+    throws ClientProtocolException, IOException, XMLStreamException, FactoryConfigurationError
+  {
+    new Bootstrapper().makeServer(
+      new ConfigServer(
+        "localhost", 8002, "admin", "admin", Authentication.DIGEST
+      ),
+      new RESTServer(
+        "Documents", "Modules", "Default", "DocuREST", 8014
+      )
+    );
 
-		System.out.println(
-				"Created DocuREST server on 8014 port for Documents database"
-				);
-	}
+    System.out.println(
+      "Created DocuREST server on 8014 port for Documents database"
+    );
+  }
 }

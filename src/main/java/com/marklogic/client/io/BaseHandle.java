@@ -33,55 +33,55 @@ import com.marklogic.client.impl.HandleImplementation;
  * @param <W>	a write handle or OperationNotSupported in the com.marklogic.client.io.marker package
  */
 public abstract class BaseHandle<R,W>
-    extends HandleImplementation<R,W>
+  extends HandleImplementation<R,W>
 {
-	private Format format = Format.UNKNOWN;
-	private String mimetype;
-	private long serverTimestamp = -1;
-	private long length = UNKNOWN_LENGTH;
+  private Format format = Format.UNKNOWN;
+  private String mimetype;
+  private long serverTimestamp = -1;
+  private long length = UNKNOWN_LENGTH;
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public BaseHandle() {
-		super();
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public BaseHandle() {
+    super();
+  }
 
-	@Override
-	public Format getFormat() {
-		return format;
-	}
-	@Override
-	public void setFormat(Format format) {
-		this.format = format;
-	}
+  @Override
+  public Format getFormat() {
+    return format;
+  }
+  @Override
+  public void setFormat(Format format) {
+    this.format = format;
+  }
 
-	@Override
-	public String getMimetype() {
-		if (mimetype == null && format != null)
-			return format.getDefaultMimetype();
+  @Override
+  public String getMimetype() {
+    if (mimetype == null && format != null)
+      return format.getDefaultMimetype();
 
-		return mimetype;
-	}
-	@Override
-	public void setMimetype(String mimetype) {
-		this.mimetype = mimetype;
-	}
+    return mimetype;
+  }
+  @Override
+  public void setMimetype(String mimetype) {
+    this.mimetype = mimetype;
+  }
 
-	@Override
-	public long getServerTimestamp() {
-		return super.getServerTimestamp();
-	}
-	public void setServerTimestamp(long serverTimestamp) {
-		super.setPointInTimeQueryTimestamp(serverTimestamp);
-	}
+  @Override
+  public long getServerTimestamp() {
+    return super.getServerTimestamp();
+  }
+  public void setServerTimestamp(long serverTimestamp) {
+    super.setPointInTimeQueryTimestamp(serverTimestamp);
+  }
 
-	@Override
-	public long getByteLength() {
-		return length;
-	}
-	@Override
-	public void setByteLength(long length) {
-		this.length = length;
-	}
+  @Override
+  public long getByteLength() {
+    return length;
+  }
+  @Override
+  public void setByteLength(long length) {
+    this.length = length;
+  }
 }

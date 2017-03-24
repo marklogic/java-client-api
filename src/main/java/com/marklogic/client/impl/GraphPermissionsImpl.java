@@ -24,14 +24,14 @@ import com.marklogic.client.semantics.Capability;
 import com.marklogic.client.semantics.GraphPermissions;
 
 public class GraphPermissionsImpl extends HashMap<String, Set<Capability>> implements GraphPermissions {
-    @Override
-    public GraphPermissions permission(String role, Capability... capabilities) {
-        if ( capabilities == null ) throw new IllegalArgumentException("capabilities cannot be null");
-        if ( this.get(role) == null ) {
-            this.put(role, new HashSet<>(Arrays.asList(capabilities)) );
-        } else {
-            this.get(role).addAll(Arrays.asList(capabilities));
-        }
-        return this;
+  @Override
+  public GraphPermissions permission(String role, Capability... capabilities) {
+    if ( capabilities == null ) throw new IllegalArgumentException("capabilities cannot be null");
+    if ( this.get(role) == null ) {
+      this.put(role, new HashSet<>(Arrays.asList(capabilities)) );
+    } else {
+      this.get(role).addAll(Arrays.asList(capabilities));
     }
+    return this;
+  }
 }

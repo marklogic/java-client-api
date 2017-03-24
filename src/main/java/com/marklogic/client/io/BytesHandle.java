@@ -57,134 +57,134 @@ public class BytesHandle
 		QuadsWriteHandle,
 		TriplesReadHandle, TriplesWriteHandle
 {
-	private byte[] content;
+  private byte[] content;
 
-	/**
-	 * Creates a factory to create a BytesHandle instance for a byte[] array.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ byte[].class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return byte[].class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new BytesHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a BytesHandle instance for a byte[] array.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ byte[].class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return byte[].class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new BytesHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public BytesHandle() {
-		super();
-   		setResendable(true);
-	}
-	/**
-	 * Initializes the handle with a byte array for the content.
-	 * @param content	the byte array
-	 */
-	public BytesHandle(byte[] content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public BytesHandle() {
+    super();
+    setResendable(true);
+  }
+  /**
+   * Initializes the handle with a byte array for the content.
+   * @param content	the byte array
+   */
+  public BytesHandle(byte[] content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns the byte array for the handle content.
-	 * @return	the byte array
-	 */
-	@Override
-	public byte[] get() {
-		return content;
-	}
-	/**
-	 * Assigns a byte array as the content.
-	 * @param content	the byte array
-	 */
-	@Override
-	public void set(byte[] content) {
-		this.content = content;
-	}
-	/**
-	 * Assigns a byte array as the content and returns the handle
-	 * as a fluent convenience.
-	 * @param content	the byte array
-	 * @return	this handle
-	 */
-	public BytesHandle with(byte[] content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns the byte array for the handle content.
+   * @return	the byte array
+   */
+  @Override
+  public byte[] get() {
+    return content;
+  }
+  /**
+   * Assigns a byte array as the content.
+   * @param content	the byte array
+   */
+  @Override
+  public void set(byte[] content) {
+    this.content = content;
+  }
+  /**
+   * Assigns a byte array as the content and returns the handle
+   * as a fluent convenience.
+   * @param content	the byte array
+   * @return	this handle
+   */
+  public BytesHandle with(byte[] content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
-	 */
-	public BytesHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public BytesHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public BytesHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public BytesHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		content = buffer;
-	}
-	@Override
-	public byte[] toBuffer() {
-		return content;
-	}
-	/**
-	 * Returns a byte array as a string with the assumption
-	 * that the bytes are encoded in UTF-8. If the bytes
-	 * have a different encoding, instantiate a String
-	 * directly instead of calling this method.
-	 */
-	@Override
-	public String toString() {
-		try {
-			return new String(content,"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    content = buffer;
+  }
+  @Override
+  public byte[] toBuffer() {
+    return content;
+  }
+  /**
+   * Returns a byte array as a string with the assumption
+   * that the bytes are encoded in UTF-8. If the bytes
+   * have a different encoding, instantiate a String
+   * directly instead of calling this method.
+   */
+  @Override
+  public String toString() {
+    try {
+      return new String(content,"UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-    @Override
-	protected Class<byte[]> receiveAs() {
-		return byte[].class;
-	}
-    @Override
-	protected void receiveContent(byte[] content) {
-		this.content = content;
-	}
-	
-    @Override
-	protected byte[] sendContent() {
-		if (content == null || content.length == 0) {
-			throw new IllegalStateException("No bytes to write");
-		}
+  @Override
+  protected Class<byte[]> receiveAs() {
+    return byte[].class;
+  }
+  @Override
+  protected void receiveContent(byte[] content) {
+    this.content = content;
+  }
 
-		return content;
-	}
+  @Override
+  protected byte[] sendContent() {
+    if (content == null || content.length == 0) {
+      throw new IllegalStateException("No bytes to write");
+    }
+
+    return content;
+  }
 }

@@ -54,298 +54,301 @@ import com.marklogic.client.util.RequestParameters;
  * ResourceExtension installs an extension for managing spelling dictionary resources.
  */
 public class ResourceExtension {
-	public static void main(String[] args)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    run(Util.loadProperties());
+  }
 
-	// install and then use the resource extension
-	public static void run(ExampleProperties props)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		System.out.println("example: "+ResourceExtension.class.getName());
+  // install and then use the resource extension
+  public static void run(ExampleProperties props)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    System.out.println("example: "+ResourceExtension.class.getName());
 
-		installResourceExtension(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
+    installResourceExtension(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		useResource(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
+    useResource(props.host, props.port,
+      props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
+    tearDownExample(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
+  }
 
-	/**
-	 * DictionaryManager provides an example of a class that implements
-	 * a resource extension client, exposing a method for each service.
-	 * Typically, this class would be a top-level class.
-	 */
-	static public class DictionaryManager extends ResourceManager {
-		static final public String NAME = "dictionary";
-		private XMLDocumentManager docMgr;
+  /**
+   * DictionaryManager provides an example of a class that implements
+   * a resource extension client, exposing a method for each service.
+   * Typically, this class would be a top-level class.
+   */
+  static public class DictionaryManager extends ResourceManager {
+    static final public String NAME = "dictionary";
+    private XMLDocumentManager docMgr;
 
-		public DictionaryManager(DatabaseClient client) {
-			super();
+    public DictionaryManager(DatabaseClient client) {
+      super();
 
-			// a Resource Manager must be initialized by a Database Client
-			client.init(NAME, this);
+      // a Resource Manager must be initialized by a Database Client
+      client.init(NAME, this);
 
-			// the Dictionary Manager delegates some services to a document manager
-			docMgr = client.newXMLDocumentManager();
-		}
+      // the Dictionary Manager delegates some services to a document manager
+      docMgr = client.newXMLDocumentManager();
+    }
 
-		public void createDictionary(String uri, String[] words)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-			StringBuilder builder = new StringBuilder();
-			builder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
-			builder.append("<dictionary xmlns='http://marklogic.com/xdmp/spell'>\n");
-			for (String word: words) {
-				builder.append("<word>");
-				builder.append(word);
-				builder.append("</word>\n");
-			}
-			builder.append("</dictionary>\n");
+    public void createDictionary(String uri, String[] words)
+      throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+    {
+      StringBuilder builder = new StringBuilder();
+      builder.append("<?xml version='1.0' encoding='UTF-8'?>\n");
+      builder.append("<dictionary xmlns='http://marklogic.com/xdmp/spell'>\n");
+      for (String word: words) {
+        builder.append("<word>");
+        builder.append(word);
+        builder.append("</word>\n");
+      }
+      builder.append("</dictionary>\n");
 
-			StringHandle writeHandle = new StringHandle();
-			writeHandle.set(builder.toString());
+      StringHandle writeHandle = new StringHandle();
+      writeHandle.set(builder.toString());
 
-			// delegate
-			docMgr.write(uri,writeHandle);
-		}
-		public Document[] checkDictionaries(String... uris) {
-			RequestParameters params = new RequestParameters();
-			params.add("service", "check-dictionary");
-			params.add("uris",    uris);
+      // delegate
+      docMgr.write(uri,writeHandle);
+    }
+    public Document[] checkDictionaries(String... uris) {
+      RequestParameters params = new RequestParameters();
+      params.add("service", "check-dictionary");
+      params.add("uris",    uris);
 
-			// specify the mime type for each expected document returned
-			String[] mimetypes = new String[uris.length];
-			for (int i=0; i < uris.length; i++) {
-				mimetypes[i] = "application/xml";
-			}
+      // specify the mime type for each expected document returned
+      String[] mimetypes = new String[uris.length];
+      for (int i=0; i < uris.length; i++) {
+        mimetypes[i] = "application/xml";
+      }
 
-			// call the service
-			ServiceResultIterator resultItr = getServices().get(params, mimetypes);
+      // call the service
+      ServiceResultIterator resultItr = getServices().get(params, mimetypes);
 
-			// iterate over the results
-			List<Document> documents = new ArrayList<>();
-			DOMHandle readHandle = new DOMHandle();
-			while (resultItr.hasNext()) {
-				ServiceResult result = resultItr.next();
+      // iterate over the results
+      List<Document> documents = new ArrayList<>();
+      DOMHandle readHandle = new DOMHandle();
+      while (resultItr.hasNext()) {
+        ServiceResult result = resultItr.next();
 
-				// get the result content
-				result.getContent(readHandle);
-				documents.add(readHandle.get());
-			}
+        // get the result content
+        result.getContent(readHandle);
+        documents.add(readHandle.get());
+      }
 
-			// release the iterator resources
-			resultItr.close();
+      // release the iterator resources
+      resultItr.close();
 
-			return documents.toArray(new Document[documents.size()]);
-		}
+      return documents.toArray(new Document[documents.size()]);
+    }
 
-		public void getMimetype(String... uris) {
-			RequestParameters params = new RequestParameters();
-			params.add("service", "check-dictionary");
-			params.add("uris", uris);
-			ReaderHandle output = getServices().get(params, new ReaderHandle());
-			System.out.println("Mime " + output.getMimetype());
-		}
+    public void getMimetype(String... uris) {
+      RequestParameters params = new RequestParameters();
+      params.add("service", "check-dictionary");
+      params.add("uris", uris);
+      ReaderHandle output = getServices().get(params, new ReaderHandle());
+      System.out.println("Mime " + output.getMimetype());
+    }
 
-		public boolean isCorrect(String word, String... uris) {
-			try {
-				RequestParameters params = new RequestParameters();
-				params.add("service", "is-correct");
-				params.add("word",    word);
-				params.add("uris",    uris);
+    public boolean isCorrect(String word, String... uris) {
+      try {
+        RequestParameters params = new RequestParameters();
+        params.add("service", "is-correct");
+        params.add("word",    word);
+        params.add("uris",    uris);
 
-				XMLStreamReaderHandle readHandle = new XMLStreamReaderHandle();
+        XMLStreamReaderHandle readHandle = new XMLStreamReaderHandle();
 
-				// call the service
-				getServices().get(params, readHandle);
+        // call the service
+        getServices().get(params, readHandle);
 
-				QName correctName = new QName(XMLConstants.DEFAULT_NS_PREFIX, "correct");
+        QName correctName = new QName(XMLConstants.DEFAULT_NS_PREFIX, "correct");
 
-				XMLStreamReader streamReader = readHandle.get();
-				while (streamReader.hasNext()) {
-					int current = streamReader.next();
-					if (current == XMLStreamReader.START_ELEMENT) {
-						if (correctName.equals(streamReader.getName())) {
-							return "true".equals(streamReader.getElementText());
-						}
-					}
-				}
+        XMLStreamReader streamReader = readHandle.get();
+        while (streamReader.hasNext()) {
+          int current = streamReader.next();
+          if (current == XMLStreamReader.START_ELEMENT) {
+            if (correctName.equals(streamReader.getName())) {
+              return "true".equals(streamReader.getElementText());
+            }
+          }
+        }
 
-				return false;
-			} catch(XMLStreamException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
-		public String[] suggest(String word, Integer maximum, Integer distanceThreshold, String... uris) {
-			try {
-				RequestParameters params = new RequestParameters();
-				params.add("service", "suggest-detailed");
-				params.add("word",    word);
-				params.add("uris",    uris);
-				if (maximum != null)
-					params.add("maximum", String.valueOf(maximum));
-				if (distanceThreshold != null)
-					params.add("distance-threshold", String.valueOf(distanceThreshold));
+        return false;
+      } catch(XMLStreamException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    public String[] suggest(String word, Integer maximum, Integer distanceThreshold, String... uris) {
+      try {
+        RequestParameters params = new RequestParameters();
+        params.add("service", "suggest-detailed");
+        params.add("word",    word);
+        params.add("uris",    uris);
+        if (maximum != null)
+          params.add("maximum", String.valueOf(maximum));
+        if (distanceThreshold != null)
+          params.add("distance-threshold", String.valueOf(distanceThreshold));
 
-				XMLStreamReaderHandle readHandle = new XMLStreamReaderHandle();
+        XMLStreamReaderHandle readHandle = new XMLStreamReaderHandle();
 
-				// call the service
-				getServices().get(params, readHandle);
+        // call the service
+        getServices().get(params, readHandle);
 
-				XMLStreamReader streamReader = readHandle.get();
+        XMLStreamReader streamReader = readHandle.get();
 
-				QName wordName = new QName("http://marklogic.com/xdmp/spell", "word");
+        QName wordName = new QName("http://marklogic.com/xdmp/spell", "word");
 
-				List<String> words  = new ArrayList<>();
+        List<String> words  = new ArrayList<>();
 
-				while (streamReader.hasNext()) {
-					int current = streamReader.next();
-					if (current == XMLStreamReader.START_ELEMENT) {
-						if (wordName.equals(streamReader.getName())) {
-							words.add(streamReader.getElementText());
-						}
-					}
-				}
+        while (streamReader.hasNext()) {
+          int current = streamReader.next();
+          if (current == XMLStreamReader.START_ELEMENT) {
+            if (wordName.equals(streamReader.getName())) {
+              words.add(streamReader.getElementText());
+            }
+          }
+        }
 
-				return words.toArray(new String[words.size()]);
-			} catch(XMLStreamException ex) {
-				throw new RuntimeException(ex);
-			}
-		}
-		public void deleteDictionary(String uri)
-		throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-			// delegate
-			docMgr.delete(uri);
-		}
-	}
+        return words.toArray(new String[words.size()]);
+      } catch(XMLStreamException ex) {
+        throw new RuntimeException(ex);
+      }
+    }
+    public void deleteDictionary(String uri)
+      throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+      // delegate
+      docMgr.delete(uri);
+    }
+  }
 
-	// install the resource extension on the server
-	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) throws IOException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  // install the resource extension on the server
+  public static void installResourceExtension(String host, int port, String user, String password, Authentication authType) throws IOException {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// use either shortcut or strong typed IO
-		installResourceExtensionShortcut(client);
-		installResourceExtensionStrongTyped(client);
+    // use either shortcut or strong typed IO
+    installResourceExtensionShortcut(client);
+    installResourceExtensionStrongTyped(client);
 
-		// release the client
-		client.release();
-	}
-	public static void installResourceExtensionShortcut(DatabaseClient client) throws IOException {
-		// create a manager for resource extensions
-		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+    // release the client
+    client.release();
+  }
+  public static void installResourceExtensionShortcut(DatabaseClient client) throws IOException {
+    // create a manager for resource extensions
+    ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
-		// specify metadata about the resource extension
-		ExtensionMetadata metadata = new ExtensionMetadata();
-		metadata.setTitle("Spelling Dictionary Resource Services");
-		metadata.setDescription("This plugin supports spelling dictionaries");
-		metadata.setProvider("MarkLogic");
-		metadata.setVersion("0.1");
+    // specify metadata about the resource extension
+    ExtensionMetadata metadata = new ExtensionMetadata();
+    metadata.setTitle("Spelling Dictionary Resource Services");
+    metadata.setDescription("This plugin supports spelling dictionaries");
+    metadata.setProvider("MarkLogic");
+    metadata.setVersion("0.1");
 
-		// acquire the resource extension source code
-		InputStream sourceStream = Util.openStream(
-				"scripts"+File.separator+DictionaryManager.NAME+".xqy");
-		if (sourceStream == null)
-			throw new IOException("Could not read example resource extension");
+    // acquire the resource extension source code
+    InputStream sourceStream = Util.openStream(
+      "scripts"+File.separator+DictionaryManager.NAME+".xqy");
+    if (sourceStream == null)
+      throw new IOException("Could not read example resource extension");
 
-		// write the resource extension to the database
-		resourceMgr.writeServicesAs(DictionaryManager.NAME, sourceStream, metadata,
-				new MethodParameters(MethodType.GET));
+    // write the resource extension to the database
+    resourceMgr.writeServicesAs(DictionaryManager.NAME, sourceStream, metadata,
+      new MethodParameters(MethodType.GET));
 
-		System.out.println("(Shortcut) Installed the resource extension on the server");
-	}
-	public static void installResourceExtensionStrongTyped(DatabaseClient client) throws IOException {
-		// create a manager for resource extensions
-		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+    System.out.println("(Shortcut) Installed the resource extension on the server");
+  }
+  public static void installResourceExtensionStrongTyped(DatabaseClient client) throws IOException {
+    // create a manager for resource extensions
+    ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
-		// specify metadata about the resource extension
-		ExtensionMetadata metadata = new ExtensionMetadata();
-		metadata.setTitle("Spelling Dictionary Resource Services");
-		metadata.setDescription("This plugin supports spelling dictionaries");
-		metadata.setProvider("MarkLogic");
-		metadata.setVersion("0.1");
+    // specify metadata about the resource extension
+    ExtensionMetadata metadata = new ExtensionMetadata();
+    metadata.setTitle("Spelling Dictionary Resource Services");
+    metadata.setDescription("This plugin supports spelling dictionaries");
+    metadata.setProvider("MarkLogic");
+    metadata.setVersion("0.1");
 
-		// acquire the resource extension source code
-		InputStream sourceStream = Util.openStream(
-				"scripts"+File.separator+DictionaryManager.NAME+".xqy");
-		if (sourceStream == null)
-			throw new IOException("Could not read example resource extension");
+    // acquire the resource extension source code
+    InputStream sourceStream = Util.openStream(
+      "scripts"+File.separator+DictionaryManager.NAME+".xqy");
+    if (sourceStream == null)
+      throw new IOException("Could not read example resource extension");
 
-		// create a handle on the extension source code
-		InputStreamHandle handle = new InputStreamHandle();
-		handle.set(sourceStream);
+    // create a handle on the extension source code
+    InputStreamHandle handle = new InputStreamHandle();
+    handle.set(sourceStream);
 
-		// write the resource extension to the database
-		resourceMgr.writeServices(DictionaryManager.NAME, handle, metadata,
-				new MethodParameters(MethodType.GET));
+    // write the resource extension to the database
+    resourceMgr.writeServices(DictionaryManager.NAME, handle, metadata,
+      new MethodParameters(MethodType.GET));
 
-		System.out.println("(Strong Typed) Installed the resource extension on the server");
-	}
+    System.out.println("(Strong Typed) Installed the resource extension on the server");
+  }
 
-	// use the resource manager
-	public static void useResource(String host, int port, String user, String password, Authentication authType)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  // use the resource manager
+  public static void useResource(String host, int port, String user, String password, Authentication authType)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create the resource extension client
-		DictionaryManager dictionaryMgr = new DictionaryManager(client);
+    // create the resource extension client
+    DictionaryManager dictionaryMgr = new DictionaryManager(client);
 
-		// specify the identifier for the dictionary
-		String uri = "/example/metasyn.xml";
+    // specify the identifier for the dictionary
+    String uri = "/example/metasyn.xml";
 
-		// create the dictionary
-		String[] words = {
-			"foo", "bar", "baz", "qux", "quux", "wibble", "wobble", "wubble"
-		};
-		dictionaryMgr.createDictionary(uri, words);
+    // create the dictionary
+    String[] words = {
+      "foo", "bar", "baz", "qux", "quux", "wibble", "wobble", "wubble"
+    };
+    dictionaryMgr.createDictionary(uri, words);
 
-		System.out.println("Created a dictionary on the server at "+uri);
+    System.out.println("Created a dictionary on the server at "+uri);
 
-		// check the validity of the dictionary
-		Document[] list = dictionaryMgr.checkDictionaries(uri);
-		if (list == null || list.length == 0)
-			System.out.println("Could not check the validity of the dictionary at "+uri);
-		else
-			System.out.println(
-				"Checked the validity of the dictionary at "+uri+": "+
-				!"invalid".equals(list[0].getDocumentElement().getNodeName())
-				);
+    // check the validity of the dictionary
+    Document[] list = dictionaryMgr.checkDictionaries(uri);
+    if (list == null || list.length == 0)
+      System.out.println("Could not check the validity of the dictionary at "+uri);
+    else
+      System.out.println(
+        "Checked the validity of the dictionary at "+uri+": "+
+          !"invalid".equals(list[0].getDocumentElement().getNodeName())
+      );
 
-		dictionaryMgr.getMimetype(uri);
-		// use a resource service to check the correctness of a word
-		String word = "biz";
-		if (!dictionaryMgr.isCorrect(word, uri)) {
-			System.out.println("Confirmed that '"+word+"' is not in the dictionary at "+uri);
+    dictionaryMgr.getMimetype(uri);
+    // use a resource service to check the correctness of a word
+    String word = "biz";
+    if (!dictionaryMgr.isCorrect(word, uri)) {
+      System.out.println("Confirmed that '"+word+"' is not in the dictionary at "+uri);
 
-			// use a resource service to look up suggestions
-			String[] suggestions = dictionaryMgr.suggest(word, null, null, uri);
+      // use a resource service to look up suggestions
+      String[] suggestions = dictionaryMgr.suggest(word, null, null, uri);
 
-			System.out.println("Nearest matches for '"+word+"' in the dictionary at "+uri);
-			for (String suggestion: suggestions) {
-				System.out.println("    "+suggestion);
-			}
-		}
+      System.out.println("Nearest matches for '"+word+"' in the dictionary at "+uri);
+      for (String suggestion: suggestions) {
+        System.out.println("    "+suggestion);
+      }
+    }
 
-		// delete the dictionary
-		dictionaryMgr.deleteDictionary(uri);
+    // delete the dictionary
+    dictionaryMgr.deleteDictionary(uri);
 
-		// release the client
-		client.release();
-	}
+    // release the client
+    client.release();
+  }
 
-	// clean up by deleting the example resource extension
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType) {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  // clean up by deleting the example resource extension
+  public static void tearDownExample(String host, int port, String user, String password, Authentication authType) {
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+    ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
-		resourceMgr.deleteServices(DictionaryManager.NAME);
+    resourceMgr.deleteServices(DictionaryManager.NAME);
 
-		client.release();
-	}
+    client.release();
+  }
 }

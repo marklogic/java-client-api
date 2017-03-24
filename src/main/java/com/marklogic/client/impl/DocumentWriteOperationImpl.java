@@ -21,53 +21,53 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 public class DocumentWriteOperationImpl implements DocumentWriteOperation {
-	private OperationType operationType;
-	private String uri;
-	private String temporalDocumentURI;
-	private DocumentMetadataWriteHandle metadata;
-	private AbstractWriteHandle content;
+  private OperationType operationType;
+  private String uri;
+  private String temporalDocumentURI;
+  private DocumentMetadataWriteHandle metadata;
+  private AbstractWriteHandle content;
 
-	public DocumentWriteOperationImpl(OperationType type, String uri, 
-		DocumentMetadataWriteHandle metadata, AbstractWriteHandle content)
-	{
-		this.operationType = type;
-		this.uri = uri;
-		this.metadata = metadata;
-		this.content = content;
-		this.temporalDocumentURI = null;
-	}
+  public DocumentWriteOperationImpl(OperationType type, String uri,
+                                    DocumentMetadataWriteHandle metadata, AbstractWriteHandle content)
+  {
+    this.operationType = type;
+    this.uri = uri;
+    this.metadata = metadata;
+    this.content = content;
+    this.temporalDocumentURI = null;
+  }
 
-	public DocumentWriteOperationImpl(OperationType type, String uri,
-			DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
-		this.operationType = type;
-		this.uri = uri;
-		this.metadata = metadata;
-		this.content = content;
-		this.temporalDocumentURI = temporalDocumentURI;
-	}
+  public DocumentWriteOperationImpl(OperationType type, String uri,
+                                    DocumentMetadataWriteHandle metadata, AbstractWriteHandle content, String temporalDocumentURI) {
+    this.operationType = type;
+    this.uri = uri;
+    this.metadata = metadata;
+    this.content = content;
+    this.temporalDocumentURI = temporalDocumentURI;
+  }
 
-    @Override
-    public OperationType getOperationType() {
-		return operationType;
-	}
+  @Override
+  public OperationType getOperationType() {
+    return operationType;
+  }
 
-    @Override
-    public String getUri() {
-		return uri;
-	}
+  @Override
+  public String getUri() {
+    return uri;
+  }
 
-    @Override
-    public String getTemporalDocumentURI() {
-		return temporalDocumentURI;
-	}
+  @Override
+  public String getTemporalDocumentURI() {
+    return temporalDocumentURI;
+  }
 
-    @Override
-    public DocumentMetadataWriteHandle getMetadata() {
-		return metadata;
-	}
+  @Override
+  public DocumentMetadataWriteHandle getMetadata() {
+    return metadata;
+  }
 
-    @Override
-    public AbstractWriteHandle getContent() {
-		return content;
-	}
+  @Override
+  public AbstractWriteHandle getContent() {
+    return content;
+  }
 }

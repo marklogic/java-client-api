@@ -62,7 +62,7 @@ public class InputStreamHandle
 	implements BufferableHandle, ContentHandle<InputStream>,
 		BinaryReadHandle, BinaryWriteHandle,
 		GenericReadHandle, GenericWriteHandle,
-		JSONReadHandle, JSONWriteHandle, 
+		JSONReadHandle, JSONWriteHandle,
 		TextReadHandle, TextWriteHandle,
 		XMLReadHandle, XMLWriteHandle,
 		StructureReadHandle, StructureWriteHandle,
@@ -71,177 +71,177 @@ public class InputStreamHandle
 		Closeable
 
 {
-	static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
+  static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
 
-	private InputStream content;
+  private InputStream content;
 
-	final static private int BUFFER_SIZE = 8192;
+  final static private int BUFFER_SIZE = 8192;
 
-	/**
-	 * Creates a factory to create an InputStreamHandle instance for an input stream.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ InputStream.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return InputStream.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new InputStreamHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create an InputStreamHandle instance for an input stream.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ InputStream.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return InputStream.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new InputStreamHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public InputStreamHandle() {
-		super();
-   		setResendable(false);
-	}
-	/**
-	 * Initializes the handle with an input stream for the content.
-	 * @param content	an input stream
-	 */
-	public InputStreamHandle(InputStream content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public InputStreamHandle() {
+    super();
+    setResendable(false);
+  }
+  /**
+   * Initializes the handle with an input stream for the content.
+   * @param content	an input stream
+   */
+  public InputStreamHandle(InputStream content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns an input stream for a resource read from the database.
-	 * 
-     * When finished with the input stream, close the input stream to release
-     * the response.
-	 * 
-	 * @return	the input stream
-	 */
-	@Override
-	public InputStream get() {
-		return content;
-	}
-	/**
-	 * Assigns an input stream as the content.
-	 * @param content	an input stream
-	 */
-	@Override
-	public void set(InputStream content) {
-		this.content = content;
-	}
-    /**
-	 * Assigns an input stream as the content and returns the handle
-	 * as a fluent convenience.
-	 * @param content	an input stream
-	 * @return	this handle
-     */
-	public InputStreamHandle with(InputStream content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns an input stream for a resource read from the database.
+   *
+   * When finished with the input stream, close the input stream to release
+   * the response.
+   *
+   * @return	the input stream
+   */
+  @Override
+  public InputStream get() {
+    return content;
+  }
+  /**
+   * Assigns an input stream as the content.
+   * @param content	an input stream
+   */
+  @Override
+  public void set(InputStream content) {
+    this.content = content;
+  }
+  /**
+   * Assigns an input stream as the content and returns the handle
+   * as a fluent convenience.
+   * @param content	an input stream
+   * @return	this handle
+   */
+  public InputStreamHandle with(InputStream content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
-	 */
-	public InputStreamHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public InputStreamHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public InputStreamHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public InputStreamHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			content = null;
-		else
-			receiveContent(new ByteArrayInputStream(buffer));
-	}
-	@Override
-	public byte[] toBuffer() {
-		try {
-			if (content == null)
-				return null;
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    if (buffer == null || buffer.length == 0)
+      content = null;
+    else
+      receiveContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] toBuffer() {
+    try {
+      if (content == null)
+        return null;
 
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
 
-			byte[] b = new byte[BUFFER_SIZE];
-			int len = 0;
-			while ((len = content.read(b)) != -1) {
-				buffer.write(b, 0, len);
-			}
-			content.close();
+      byte[] b = new byte[BUFFER_SIZE];
+      int len = 0;
+      while ((len = content.read(b)) != -1) {
+        buffer.write(b, 0, len);
+      }
+      content.close();
 
-			b = buffer.toByteArray();
-			fromBuffer(b);
+      b = buffer.toByteArray();
+      fromBuffer(b);
 
-			return b;
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	/**
-	 * Buffers the input stream and returns the buffer as a string
-	 * with the assumption that the stream is encoded in UTF-8. If
-	 * the stream has a different encoding, use InputStreamReader
-	 * instead of calling this method.
-	 */
-	@Override
-	public String toString() {
-		try {
-			return new String(toBuffer(),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+      return b;
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  /**
+   * Buffers the input stream and returns the buffer as a string
+   * with the assumption that the stream is encoded in UTF-8. If
+   * the stream has a different encoding, use InputStreamReader
+   * instead of calling this method.
+   */
+  @Override
+  public String toString() {
+    try {
+      return new String(toBuffer(),"UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-	@Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
-	@Override
-	protected void receiveContent(InputStream content) {
-		this.content = content;
-	}
-	@Override
-	protected InputStream sendContent() {
-		if (content == null) {
-			throw new IllegalStateException("No stream to write");
-		}
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    this.content = content;
+  }
+  @Override
+  protected InputStream sendContent() {
+    if (content == null) {
+      throw new IllegalStateException("No stream to write");
+    }
 
-		return content;
-	}
+    return content;
+  }
 
-	/** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
-	 */
-    @Override
-	public void close() {
-		if ( content != null ) {
-			try {
-				content.close();
-			} catch (IOException e) {
-				logger.error("Failed to close underlying InputStream",e);
-				throw new MarkLogicIOException(e);
-			}
-		}
-	}
+  /** Either call close() or get().close() when finished with this handle to close the underlying InputStream.
+   */
+  @Override
+  public void close() {
+    if ( content != null ) {
+      try {
+        content.close();
+      } catch (IOException e) {
+        logger.error("Failed to close underlying InputStream",e);
+        throw new MarkLogicIOException(e);
+      }
+    }
+  }
 }

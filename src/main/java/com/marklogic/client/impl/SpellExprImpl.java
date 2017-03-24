@@ -27,47 +27,47 @@ import com.marklogic.client.impl.BaseTypeImpl;
 // IMPORTANT: Do not edit. This file is generated.
 class SpellExprImpl implements SpellExpr {
 
-    final static XsExprImpl xs = XsExprImpl.xs;
+  final static XsExprImpl xs = XsExprImpl.xs;
 
-    final static SpellExprImpl spell = new SpellExprImpl();
+  final static SpellExprImpl spell = new SpellExprImpl();
 
-    SpellExprImpl() {
+  SpellExprImpl() {
+  }
+
+
+  @Override
+  public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
+    if (word == null) {
+      throw new IllegalArgumentException("word parameter for doubleMetaphone() cannot be null");
     }
+    return new XsExprImpl.StringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
+  }
 
-    
-    @Override
-    public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
-        if (word == null) {
-            throw new IllegalArgumentException("word parameter for doubleMetaphone() cannot be null");
-        }
-        return new XsExprImpl.StringSeqCallImpl("spell", "double-metaphone", new Object[]{ word });
-    }
 
-    
-    @Override
-    public XsIntegerExpr levenshteinDistance(XsStringExpr str1, String str2) {
-        return levenshteinDistance(str1, (str2 == null) ? (XsStringExpr) null : xs.string(str2));
-    }
+  @Override
+  public XsIntegerExpr levenshteinDistance(XsStringExpr str1, String str2) {
+    return levenshteinDistance(str1, (str2 == null) ? (XsStringExpr) null : xs.string(str2));
+  }
 
-    
-    @Override
-    public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
-        if (str1 == null) {
-            throw new IllegalArgumentException("str1 parameter for levenshteinDistance() cannot be null");
-        }
-        if (str2 == null) {
-            throw new IllegalArgumentException("str2 parameter for levenshteinDistance() cannot be null");
-        }
-        return new XsExprImpl.IntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
-    }
 
-    
-    @Override
-    public XsStringExpr romanize(XsStringExpr string) {
-        if (string == null) {
-            throw new IllegalArgumentException("string parameter for romanize() cannot be null");
-        }
-        return new XsExprImpl.StringCallImpl("spell", "romanize", new Object[]{ string });
+  @Override
+  public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
+    if (str1 == null) {
+      throw new IllegalArgumentException("str1 parameter for levenshteinDistance() cannot be null");
     }
+    if (str2 == null) {
+      throw new IllegalArgumentException("str2 parameter for levenshteinDistance() cannot be null");
+    }
+    return new XsExprImpl.IntegerCallImpl("spell", "levenshtein-distance", new Object[]{ str1, str2 });
+  }
 
+
+  @Override
+  public XsStringExpr romanize(XsStringExpr string) {
+    if (string == null) {
+      throw new IllegalArgumentException("string parameter for romanize() cannot be null");
     }
+    return new XsExprImpl.StringCallImpl("spell", "romanize", new Object[]{ string });
+  }
+
+}

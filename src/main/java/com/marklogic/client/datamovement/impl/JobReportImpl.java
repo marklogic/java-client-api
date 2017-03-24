@@ -55,11 +55,11 @@ public class JobReportImpl implements JobReport {
     }
     if(writeJobSuccessListener == null || writeJobFailureListener == null) {
       throw new IllegalStateException("WriteJobReportListener should be registered "
-          + "in both the Success and Failure Listeners");
+        + "in both the Success and Failure Listeners");
     }
     if(writeJobSuccessListener != writeJobFailureListener) {
       throw new IllegalStateException("The same WriteJobReportListener should be registered "
-          + "in both the Success and Failure Listeners");
+        + "in both the Success and Failure Listeners");
     }
     successBatchesCount = writeJobSuccessListener.getSuccessBatchesCount();
     failureBatchesCount = writeJobSuccessListener.getFailureBatchesCount();
@@ -88,11 +88,11 @@ public class JobReportImpl implements JobReport {
     }
     if(queryJobSuccessListener == null || queryJobFailureListener == null) {
       throw new IllegalStateException("QueryJobReportListener should be registered "
-          + "in both the Success and Failure Listeners");
+        + "in both the Success and Failure Listeners");
     }
     if(queryJobSuccessListener != queryJobFailureListener) {
       throw new IllegalStateException("The same QueryJobReportListener should be registered "
-          + "in both the Success and Failure Listeners");
+        + "in both the Success and Failure Listeners");
     }
     successBatchesCount = queryJobSuccessListener.getSuccessBatchesCount();
     failureBatchesCount = queryJobSuccessListener.getFailureBatchesCount();

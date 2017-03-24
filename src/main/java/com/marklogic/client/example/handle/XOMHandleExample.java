@@ -37,118 +37,124 @@ import com.marklogic.client.extra.xom.XOMHandle;
  * using the XOM extra library.  You must install the library first.
  */
 public class XOMHandleExample {
-	public static void main(String[] args)
-	throws IOException, ValidityException, ParsingException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ValidityException, ParsingException
+  {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		System.out.println("example: "+XOMHandleExample.class.getName());
+  public static void run(ExampleProperties props)
+    throws ValidityException, ParsingException, IOException
+  {
+    System.out.println("example: "+XOMHandleExample.class.getName());
 
-		// use either shortcut or strong typed IO
-		runShortcut(props);
-		runStrongTyped(props);
-	}
-	public static void runShortcut(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		String filename = "flipper.xml";
+    // use either shortcut or strong typed IO
+    runShortcut(props);
+    runStrongTyped(props);
+  }
 
-		// register the handle from the extra library
-		DatabaseClientFactory.getHandleRegistry().register(
-				XOMHandle.newFactory()
-				);
+  public static void runShortcut(ExampleProperties props)
+    throws ValidityException, ParsingException, IOException
+  {
+    String filename = "flipper.xml";
 
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				props.host, props.port, props.writerUser, props.writerPassword,
-				props.authType);
+    // register the handle from the extra library
+    DatabaseClientFactory.getHandleRegistry().register(
+      XOMHandle.newFactory()
+    );
 
-		// create a manager for documents of any format
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      props.host, props.port, props.writerUser, props.writerPassword,
+      props.authType);
 
-		// read the example file
-		InputStream docStream = Util.openStream("data"+File.separator+filename);
-		if (docStream == null)
-			throw new IOException("Could not read document example");
+    // create a manager for documents of any format
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// create an identifier for the document
-		String docId = "/example/"+filename;
+    // read the example file
+    InputStream docStream = Util.openStream("data"+File.separator+filename);
+    if (docStream == null)
+      throw new IOException("Could not read document example");
 
-		// parse the example file with XOM
-		Document writeDocument = new Builder(false).build(
-				new InputStreamReader(docStream, "UTF-8"));
+    // create an identifier for the document
+    String docId = "/example/"+filename;
 
-		// write the document
-		docMgr.writeAs(docId, writeDocument);
+    // parse the example file with XOM
+    Document writeDocument = new Builder(false).build(
+      new InputStreamReader(docStream, "UTF-8"));
 
-		// ... at some other time ...
+    // write the document
+    docMgr.writeAs(docId, writeDocument);
 
-		// read the document content
-		Document readDocument = docMgr.readAs(docId, Document.class);
+    // ... at some other time ...
 
-		String rootName = readDocument.getRootElement().getQualifiedName();
+    // read the document content
+    Document readDocument = docMgr.readAs(docId, Document.class);
 
-		// delete the document
-		docMgr.delete(docId);
+    String rootName = readDocument.getRootElement().getQualifiedName();
 
-		System.out.println("(Shortcut) Wrote and read /example/"+filename+
-				" content with the <"+rootName+"/> root element using XOM");
+    // delete the document
+    docMgr.delete(docId);
 
-		// release the client
-		client.release();
-	}
-	public static void runStrongTyped(ExampleProperties props)
-	throws ValidityException, ParsingException, IOException {
-		String filename = "flipper.xml";
+    System.out.println("(Shortcut) Wrote and read /example/"+filename+
+      " content with the <"+rootName+"/> root element using XOM");
 
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				props.host, props.port, props.writerUser, props.writerPassword,
-				props.authType);
+    // release the client
+    client.release();
+  }
 
-		// create a manager for documents of any format
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+  public static void runStrongTyped(ExampleProperties props)
+    throws ValidityException, ParsingException, IOException
+  {
+    String filename = "flipper.xml";
 
-		// read the example file
-		InputStream docStream = Util.openStream("data"+File.separator+filename);
-		if (docStream == null)
-			throw new IOException("Could not read document example");
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      props.host, props.port, props.writerUser, props.writerPassword,
+      props.authType);
 
-		// create an identifier for the document
-		String docId = "/example/"+filename;
+    // create a manager for documents of any format
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// create a handle for the document
-		XOMHandle writeHandle = new XOMHandle();
+    // read the example file
+    InputStream docStream = Util.openStream("data"+File.separator+filename);
+    if (docStream == null)
+      throw new IOException("Could not read document example");
 
-		// parse the example file with XOM
-		Document writeDocument = writeHandle.getBuilder().build(
-				new InputStreamReader(docStream, "UTF-8"));
-		writeHandle.set(writeDocument);
+    // create an identifier for the document
+    String docId = "/example/"+filename;
 
-		// write the document
-		docMgr.write(docId, writeHandle);
+    // create a handle for the document
+    XOMHandle writeHandle = new XOMHandle();
 
-		// ... at some other time ...
+    // parse the example file with XOM
+    Document writeDocument = writeHandle.getBuilder().build(
+      new InputStreamReader(docStream, "UTF-8"));
+    writeHandle.set(writeDocument);
 
-		// create a handle to receive the document content
-		XOMHandle readHandle = new XOMHandle();
+    // write the document
+    docMgr.write(docId, writeHandle);
 
-		// read the document content
-		docMgr.read(docId, readHandle);
+    // ... at some other time ...
 
-		// access the document content
-		Document readDocument = readHandle.get();
+    // create a handle to receive the document content
+    XOMHandle readHandle = new XOMHandle();
 
-		String rootName = readDocument.getRootElement().getQualifiedName();
+    // read the document content
+    docMgr.read(docId, readHandle);
 
-		// delete the document
-		docMgr.delete(docId);
+    // access the document content
+    Document readDocument = readHandle.get();
 
-		System.out.println("(Strong Typed) Wrote and read /example/"+filename+
-				" content with the <"+rootName+"/> root element using XOM");
+    String rootName = readDocument.getRootElement().getQualifiedName();
 
-		// release the client
-		client.release();
-	}
+    // delete the document
+    docMgr.delete(docId);
+
+    System.out.println("(Strong Typed) Wrote and read /example/"+filename+
+      " content with the <"+rootName+"/> root element using XOM");
+
+    // release the client
+    client.release();
+  }
 }

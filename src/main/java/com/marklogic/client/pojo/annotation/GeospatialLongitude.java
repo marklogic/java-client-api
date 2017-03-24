@@ -49,7 +49,7 @@ import java.lang.annotation.RetentionPolicy;
  *      }
  *      // ... setter methods ...
  *    }</pre>
-*
+ *
  * or with a public setter method:
  * <pre>
  *    public class MyClass {

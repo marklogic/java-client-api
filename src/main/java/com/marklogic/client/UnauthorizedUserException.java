@@ -22,17 +22,17 @@ package com.marklogic.client;
  */
 @SuppressWarnings("serial")
 public class UnauthorizedUserException extends RuntimeException {
-	public UnauthorizedUserException() {
-		super();
-	}
-	public UnauthorizedUserException(String message) {
-		super(message);
-	}
-	public UnauthorizedUserException(Throwable cause) {
-		super(cause);
-	}
-	public UnauthorizedUserException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public UnauthorizedUserException() {
+    super();
+  }
+  public UnauthorizedUserException(String message) {
+    super(message);
+  }
+  public UnauthorizedUserException(Throwable cause) {
+    super(cause);
+  }
+  public UnauthorizedUserException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

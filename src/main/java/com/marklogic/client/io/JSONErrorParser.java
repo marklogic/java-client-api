@@ -17,29 +17,29 @@ import com.marklogic.client.impl.FailedRequestParser;
  */
 public class JSONErrorParser implements FailedRequestParser {
 
-	@SuppressWarnings("unchecked")
-    @Override
-	public FailedRequest parseFailedRequest(int httpStatus, InputStream content) {
-		FailedRequest failure = new FailedRequest();
-		ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
-		Map<String, Map<String, String>> errorData;
-		try {
-			errorData = mapper.readValue(content, Map.class);
-			Map<String, String> errorBody = errorData.get("errorResponse");
-			failure.setStatusCode(httpStatus);
-			failure.setStatusString(errorBody.get("status"));
-			failure.setMessageCode(errorBody.get("messageCode"));
-			failure.setMessageString(errorBody.get("message"));
-		} catch (JsonParseException e1) {
-			failure.setStatusCode(httpStatus);
-			failure.setMessageString("Request failed. Error body not received from server");
-		} catch (JsonMappingException e1) {
-			failure.setStatusCode(httpStatus);
-			failure.setMessageString("Request failed. Error body not received from server");
-		} catch (IOException e1) {
-			failure.setStatusCode(httpStatus);
-			failure.setMessageString("Request failed. Error body not received from server");
-		}
-		return failure;
-	}
+  @SuppressWarnings("unchecked")
+  @Override
+  public FailedRequest parseFailedRequest(int httpStatus, InputStream content) {
+    FailedRequest failure = new FailedRequest();
+    ObjectMapper mapper = new ObjectMapper(); // can reuse, share globally
+    Map<String, Map<String, String>> errorData;
+    try {
+      errorData = mapper.readValue(content, Map.class);
+      Map<String, String> errorBody = errorData.get("errorResponse");
+      failure.setStatusCode(httpStatus);
+      failure.setStatusString(errorBody.get("status"));
+      failure.setMessageCode(errorBody.get("messageCode"));
+      failure.setMessageString(errorBody.get("message"));
+    } catch (JsonParseException e1) {
+      failure.setStatusCode(httpStatus);
+      failure.setMessageString("Request failed. Error body not received from server");
+    } catch (JsonMappingException e1) {
+      failure.setStatusCode(httpStatus);
+      failure.setMessageString("Request failed. Error body not received from server");
+    } catch (IOException e1) {
+      failure.setStatusCode(httpStatus);
+      failure.setMessageString("Request failed. Error body not received from server");
+    }
+    return failure;
+  }
 }

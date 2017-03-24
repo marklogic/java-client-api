@@ -26,27 +26,27 @@ import com.marklogic.client.semantics.SPARQLBinding;
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
 public class SPARQLBindingImpl implements SPARQLBinding {
-    private String name;
-    private String value;
-    private RDFTypes datatype;
-    private Locale languageTag;
+  private String name;
+  private String value;
+  private RDFTypes datatype;
+  private Locale languageTag;
 
-    public SPARQLBindingImpl(String name, String value, RDFTypes type) {
-        this.name = name;
-        this.value = value;
-        this.datatype = type;
-    }
-    public SPARQLBindingImpl(String name, String value, Locale languageTag) {
-        this.name = name;
-        this.value = value;
-        this.languageTag = languageTag;
-    }
-    @Override
-    public String getName()        { return name;        }
-    @Override
-    public String getValue()       { return value;       }
-    @Override
-    public RDFTypes getDatatype()  { return datatype;    }
-    @Override
-    public Locale getLanguageTag() { return languageTag; }
+  public SPARQLBindingImpl(String name, String value, RDFTypes type) {
+    this.name = name;
+    this.value = value;
+    this.datatype = type;
+  }
+  public SPARQLBindingImpl(String name, String value, Locale languageTag) {
+    this.name = name;
+    this.value = value;
+    this.languageTag = languageTag;
+  }
+  @Override
+  public String getName()        { return name;        }
+  @Override
+  public String getValue()       { return value;       }
+  @Override
+  public RDFTypes getDatatype()  { return datatype;    }
+  @Override
+  public Locale getLanguageTag() { return languageTag; }
 }

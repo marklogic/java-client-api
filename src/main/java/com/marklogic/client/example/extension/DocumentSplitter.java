@@ -31,26 +31,26 @@ import com.marklogic.client.util.RequestParameters;
  * the URI for the document.
  */
 public class DocumentSplitter extends ResourceManager {
-	static final public String NAME = "docsplit";
+  static final public String NAME = "docsplit";
 
-	public DocumentSplitter(DatabaseClient client) {
-		super();
-		client.init(NAME, this);
-	}
+  public DocumentSplitter(DatabaseClient client) {
+    super();
+    client.init(NAME, this);
+  }
 
-	public int split(XMLWriteHandle inputHandle) {
-		if (inputHandle == null)
-			throw new IllegalArgumentException("No input handle");
+  public int split(XMLWriteHandle inputHandle) {
+    if (inputHandle == null)
+      throw new IllegalArgumentException("No input handle");
 
-		DOMHandle errorHandle = new DOMHandle();
-		getServices().post(
-				new RequestParameters(), inputHandle, errorHandle
-				);
+    DOMHandle errorHandle = new DOMHandle();
+    getServices().post(
+      new RequestParameters(), inputHandle, errorHandle
+    );
 
-		Element result = errorHandle.get().getDocumentElement();
-		if (!"split-docs".equals(result.getLocalName()))
-			throw new FailedRequestException(errorHandle.toString());
+    Element result = errorHandle.get().getDocumentElement();
+    if (!"split-docs".equals(result.getLocalName()))
+      throw new FailedRequestException(errorHandle.toString());
 
-		return Integer.parseInt(result.getTextContent());
-	}
+    return Integer.parseInt(result.getTextContent());
+  }
 }

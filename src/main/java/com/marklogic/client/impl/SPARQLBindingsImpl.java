@@ -30,33 +30,33 @@ import com.marklogic.client.semantics.SPARQLBindings;
  * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
  */
 public class SPARQLBindingsImpl extends TreeMap<String, List<SPARQLBinding>> implements SPARQLBindings {
-    @Override
-    public SPARQLBindings bind(String name, String value) {
-        return bind(name, value, (RDFTypes) null);
-    }
+  @Override
+  public SPARQLBindings bind(String name, String value) {
+    return bind(name, value, (RDFTypes) null);
+  }
 
-    @Override
-    public SPARQLBindings bind(String name, String value, RDFTypes type) {
-        if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
-        if ( value == null ) throw new IllegalArgumentException("value cannot be null");
-        add(new SPARQLBindingImpl(name, value, type));
-        return this;
-    }
+  @Override
+  public SPARQLBindings bind(String name, String value, RDFTypes type) {
+    if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
+    if ( value == null ) throw new IllegalArgumentException("value cannot be null");
+    add(new SPARQLBindingImpl(name, value, type));
+    return this;
+  }
 
-    @Override
-    public SPARQLBindings bind(String name, String value, Locale languageTag) {
-        if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
-        if ( value == null ) throw new IllegalArgumentException("value cannot be null");
-        add(new SPARQLBindingImpl(name, value, languageTag));
-        return this;
-    }
+  @Override
+  public SPARQLBindings bind(String name, String value, Locale languageTag) {
+    if ( name == null  ) throw new IllegalArgumentException("name cannot be null");
+    if ( value == null ) throw new IllegalArgumentException("value cannot be null");
+    add(new SPARQLBindingImpl(name, value, languageTag));
+    return this;
+  }
 
-    private void add(SPARQLBinding binding) {
-        String name = binding.getName();
-        List<SPARQLBinding> bindings = this.get(name);
-        if ( bindings == null ) bindings = new ArrayList<>();
-        bindings.add(binding);
-        this.put(name, bindings);
-    }
+  private void add(SPARQLBinding binding) {
+    String name = binding.getName();
+    List<SPARQLBinding> bindings = this.get(name);
+    if ( bindings == null ) bindings = new ArrayList<>();
+    bindings.add(binding);
+    this.put(name, bindings);
+  }
 };
 

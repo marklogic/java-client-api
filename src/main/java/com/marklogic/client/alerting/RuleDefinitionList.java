@@ -37,47 +37,48 @@ import com.marklogic.client.io.marker.RuleListReadHandle;
  *
  */
 public class RuleDefinitionList
-extends BaseHandle<InputStream,OperationNotSupported>
-implements Iterable<RuleDefinition>, RuleListReadHandle {
-	
-	
-	private List<RuleDefinition> rules;
-	
-	/**
-	 * returns an iterator over a set of rules.
-	 * @return an iterator over [matched] rules.
-	 */
-	@Override
-	public Iterator<RuleDefinition> iterator(){ 
-		return rules.iterator();
-	}
+  extends BaseHandle<InputStream,OperationNotSupported>
+  implements Iterable<RuleDefinition>, RuleListReadHandle
+{
 
-	/**
-	 * gets the number of rules in the list.
-	 * @return the number of rules.
-	 */
-	public int size() {
-		return rules.size();
-	}
 
-    @Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
-	
-    @Override
-	protected void receiveContent(InputStream content) {
-		rules = new ArrayList<>();
-		DOMHandle domHandle = new DOMHandle();
-		HandleAccessor.receiveContent(domHandle, content);
-		Document document = domHandle.get();
-		NodeList ruleNodes = document.getElementsByTagNameNS(RequestConstants.RESTAPI_NS, "rule");
-		int ruleNodesLength = ruleNodes.getLength();
-		for (int i=0; i < ruleNodesLength; i++) {
-			Element ruleElement = (Element) ruleNodes.item(i);
-			RuleDefinition ruleDefinition = new RuleDefinition();
-			ruleDefinition.receiveElement(ruleElement);
-			rules.add(ruleDefinition);
-		}
-	}
+  private List<RuleDefinition> rules;
+
+  /**
+   * returns an iterator over a set of rules.
+   * @return an iterator over [matched] rules.
+   */
+  @Override
+  public Iterator<RuleDefinition> iterator(){
+    return rules.iterator();
+  }
+
+  /**
+   * gets the number of rules in the list.
+   * @return the number of rules.
+   */
+  public int size() {
+    return rules.size();
+  }
+
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+
+  @Override
+  protected void receiveContent(InputStream content) {
+    rules = new ArrayList<>();
+    DOMHandle domHandle = new DOMHandle();
+    HandleAccessor.receiveContent(domHandle, content);
+    Document document = domHandle.get();
+    NodeList ruleNodes = document.getElementsByTagNameNS(RequestConstants.RESTAPI_NS, "rule");
+    int ruleNodesLength = ruleNodes.getLength();
+    for (int i=0; i < ruleNodesLength; i++) {
+      Element ruleElement = (Element) ruleNodes.item(i);
+      RuleDefinition ruleDefinition = new RuleDefinition();
+      ruleDefinition.receiveElement(ruleElement);
+      rules.add(ruleDefinition);
+    }
+  }
 }

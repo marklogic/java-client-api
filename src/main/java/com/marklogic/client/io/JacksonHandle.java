@@ -45,124 +45,124 @@ import com.marklogic.client.impl.JacksonBaseHandle;
  * writing JSON documents, JSON structured search, and other JSON input and output.  
  */
 public class JacksonHandle
-		extends JacksonBaseHandle<JsonNode>
-		implements ContentHandle<JsonNode>,
-            OutputStreamSender, BufferableHandle, 
-            JSONReadHandle, JSONWriteHandle,
-            TextReadHandle, TextWriteHandle,
-            XMLReadHandle, XMLWriteHandle,
-            StructureReadHandle, StructureWriteHandle,
-            SPARQLResultsReadHandle
+  extends JacksonBaseHandle<JsonNode>
+  implements ContentHandle<JsonNode>,
+    OutputStreamSender, BufferableHandle,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    SPARQLResultsReadHandle
 {
-	private JsonNode content;
+  private JsonNode content;
 
-	/**
-	 * Creates a factory to create a JacksonHandle instance for a JSON node.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ JsonNode.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return JsonNode.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new JacksonHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a JacksonHandle instance for a JSON node.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ JsonNode.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return JsonNode.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new JacksonHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public JacksonHandle() {
-		super();
-   		setResendable(true);
-	}
-	/**
-	 * Provides a handle on JSON content as a Jackson tree.
-	 * @param content	the JSON root node of the tree.
-	 */
-	public JacksonHandle(JsonNode content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public JacksonHandle() {
+    super();
+    setResendable(true);
+  }
+  /**
+   * Provides a handle on JSON content as a Jackson tree.
+   * @param content	the JSON root node of the tree.
+   */
+  public JacksonHandle(JsonNode content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
-	 */
-	public JacksonHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public JacksonHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
 
-	/**
-	 * Returns the root node of the JSON tree.
-	 * @return	the JSON root node.
-	 */
-	@Override
-	public JsonNode get() {
-		return content;
-	}
-	/**
-	 * Assigns a JSON tree as the content.
-	 * @param content	the JSON root node.
-	 */
-	@Override
-	public void set(JsonNode content) {
-		this.content = content;
-	}
-	/**
-	 * Assigns a JSON tree as the content and returns the handle.
-	 * @param content	the JSON root node.
-	 * @return	the handle on the JSON tree.
-	 */
-	public JacksonHandle with(JsonNode content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns the root node of the JSON tree.
+   * @return	the JSON root node.
+   */
+  @Override
+  public JsonNode get() {
+    return content;
+  }
+  /**
+   * Assigns a JSON tree as the content.
+   * @param content	the JSON root node.
+   */
+  @Override
+  public void set(JsonNode content) {
+    this.content = content;
+  }
+  /**
+   * Assigns a JSON tree as the content and returns the handle.
+   * @param content	the JSON root node.
+   * @return	the handle on the JSON tree.
+   */
+  public JacksonHandle with(JsonNode content) {
+    set(content);
+    return this;
+  }
 
-	@Override
-	protected void receiveContent(InputStream content) {
-		if (content == null)
-			return;
+  @Override
+  protected void receiveContent(InputStream content) {
+    if (content == null)
+      return;
 
-		try {
-			set( getMapper().readValue(
-					new InputStreamReader(content, "UTF-8"), JsonNode.class
-			));
-		} catch (JsonParseException e) {
-			throw new MarkLogicIOException(e);
-		} catch (JsonMappingException e) {
-			throw new MarkLogicIOException(e);
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		} finally {
-			try {
-				content.close();
-			} catch (IOException e) {
-				// ignore.
-			}
-		}
+    try {
+      set( getMapper().readValue(
+        new InputStreamReader(content, "UTF-8"), JsonNode.class
+      ));
+    } catch (JsonParseException e) {
+      throw new MarkLogicIOException(e);
+    } catch (JsonMappingException e) {
+      throw new MarkLogicIOException(e);
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    } finally {
+      try {
+        content.close();
+      } catch (IOException e) {
+        // ignore.
+      }
+    }
 
-	}
-	@Override
-	protected boolean hasContent() {
-		return content != null;
-	}
-	@Override
-	public void write(OutputStream out) throws IOException {
-		getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), get());
-	}
+  }
+  @Override
+  protected boolean hasContent() {
+    return content != null;
+  }
+  @Override
+  public void write(OutputStream out) throws IOException {
+    getMapper().writeValue(new OutputStreamWriter(out, "UTF-8"), get());
+  }
 }

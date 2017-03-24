@@ -18,7 +18,7 @@ package com.marklogic.client.query;
 /** Surfaces the data sent from the server-side XQuery search:search API. Note
  * that the most important function is to provide access to the list of ExtractedItem
  * objects.  For example:
- * <pre>{@code    String combinedSearch = 
+ * <pre>{@code    String combinedSearch =
  *      "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">" +
  *        "<search:qtext>my search terms</search:qtext>" +
  *        "<search:options>" +
@@ -48,34 +48,34 @@ package com.marklogic.client.query;
  **/
 public interface ExtractedResult extends Iterable<ExtractedItem> {
 
-    /** The xquery type of the extracted data.  For XML it will be "element".  For
-     * JSON it will be "object" or "array".  Not always available, returns null if
-     * unavailable.
-     * @return the xquery type of the extracted data
-     */
-    String getKind();
+  /** The xquery type of the extracted data.  For XML it will be "element".  For
+   * JSON it will be "object" or "array".  Not always available, returns null if
+   * unavailable.
+   * @return the xquery type of the extracted data
+   */
+  String getKind();
 
-    /** Returns true if the underlying node is an "extracted-none" XML element or
-     * JSON property.
-     * @return if the underlying node is an "extracted-none" XML element or
-     *         JSON property
-     */
-    boolean isEmpty();
+  /** Returns true if the underlying node is an "extracted-none" XML element or
+   * JSON property.
+   * @return if the underlying node is an "extracted-none" XML element or
+   *         JSON property
+   */
+  boolean isEmpty();
 
-    /** The number of ExtractedItem objects in the Iterator.
-     * @return the number of ExtractedItem object in the Iterator
-     */
-    int size();
+  /** The number of ExtractedItem objects in the Iterator.
+   * @return the number of ExtractedItem object in the Iterator
+   */
+  int size();
 
-    /** Returns the next element in the internal iterator, which is separate
-     *  from any new iterator created by calls to iterator().
-     *  @return the next element in the iteration
-     */
-    ExtractedItem next();
+  /** Returns the next element in the internal iterator, which is separate
+   *  from any new iterator created by calls to iterator().
+   *  @return the next element in the iteration
+   */
+  ExtractedItem next();
 
-    /** Returns true if internal iterator has more elements.
-     *  The internal iterator is separate from any new iterator created by calls to iterator().
-     *  @return true if the internal iterator has more elements
-     */
-    boolean hasNext();
+  /** Returns true if internal iterator has more elements.
+   *  The internal iterator is separate from any new iterator created by calls to iterator().
+   *  @return true if the internal iterator has more elements
+   */
+  boolean hasNext();
 }

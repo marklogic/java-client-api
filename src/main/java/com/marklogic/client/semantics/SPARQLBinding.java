@@ -25,9 +25,9 @@ import java.util.Locale;
  * Developer's Guide</a>.
  */
 public interface SPARQLBinding {
-    String getName();
-    String getValue();
-    RDFTypes getDatatype();
-    Locale getLanguageTag();
+  String getName();
+  String getValue();
+  RDFTypes getDatatype();
+  Locale getLanguageTag();
 }
 

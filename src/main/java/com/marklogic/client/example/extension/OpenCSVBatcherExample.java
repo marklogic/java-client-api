@@ -44,111 +44,115 @@ import com.marklogic.client.io.StringHandle;
  * of a Resource Extension.
  */
 public class OpenCSVBatcherExample {
-	public static void main(String[] args)
-	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    run(Util.loadProperties());
+  }
 
-	// install and then use the resource extension
-	public static void run(ExampleProperties props)
-	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		System.out.println("example: "+OpenCSVBatcherExample.class.getName());
+  // install and then use the resource extension
+  public static void run(ExampleProperties props)
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    System.out.println("example: "+OpenCSVBatcherExample.class.getName());
 
-		installResourceExtension(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
+    installResourceExtension(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		useResource(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
+    useResource(props.host, props.port,
+      props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
+    tearDownExample(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
+  }
 
-	// install the resource extension on the server
-	public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
-	throws IOException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  // install the resource extension on the server
+  public static void installResourceExtension(String host, int port, String user, String password, Authentication authType)
+    throws IOException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for resource extensions
-		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+    // create a manager for resource extensions
+    ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
-		// specify metadata about the resource extension
-		ExtensionMetadata metadata = new ExtensionMetadata();
-		metadata.setTitle("Document Splitter Resource Services");
-		metadata.setDescription("This plugin supports splitting input into multiple documents");
-		metadata.setProvider("MarkLogic");
-		metadata.setVersion("0.1");
+    // specify metadata about the resource extension
+    ExtensionMetadata metadata = new ExtensionMetadata();
+    metadata.setTitle("Document Splitter Resource Services");
+    metadata.setDescription("This plugin supports splitting input into multiple documents");
+    metadata.setProvider("MarkLogic");
+    metadata.setVersion("0.1");
 
-		// acquire the resource extension source code
-		InputStream sourceStream = Util.openStream(
-			"scripts"+File.separator+DocumentSplitter.NAME+".xqy");
-		if (sourceStream == null)
-			throw new RuntimeException("Could not read example resource extension");
+    // acquire the resource extension source code
+    InputStream sourceStream = Util.openStream(
+      "scripts"+File.separator+DocumentSplitter.NAME+".xqy");
+    if (sourceStream == null)
+      throw new RuntimeException("Could not read example resource extension");
 
-		// create a handle on the extension source code
-		InputStreamHandle handle = new InputStreamHandle(sourceStream);
-		handle.set(sourceStream);
+    // create a handle on the extension source code
+    InputStreamHandle handle = new InputStreamHandle(sourceStream);
+    handle.set(sourceStream);
 
-		// write the resource extension to the database
-		resourceMgr.writeServices(DocumentSplitter.NAME, handle, metadata,
-				new MethodParameters(MethodType.POST));
+    // write the resource extension to the database
+    resourceMgr.writeServices(DocumentSplitter.NAME, handle, metadata,
+      new MethodParameters(MethodType.POST));
 
-		System.out.println("Installed the resource extension on the server");
+    System.out.println("Installed the resource extension on the server");
 
-		// release the client
-		client.release();
-	}
+    // release the client
+    client.release();
+  }
 
-	// use the resource manager
-	public static void useResource(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  // use the resource manager
+  public static void useResource(String host, int port, String user, String password, Authentication authType)
+    throws IOException, ParserConfigurationException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create the CSV splitter
-		OpenCSVBatcher splitter = new OpenCSVBatcher(client);
-		splitter.setHasHeader(true);
+    // create the CSV splitter
+    OpenCSVBatcher splitter = new OpenCSVBatcher(client);
+    splitter.setHasHeader(true);
 
-		// acquire the CSV input
-		InputStream listingStream = Util.openStream(
-				"data"+File.separator+"listings.csv");
-		if (listingStream == null)
-			throw new RuntimeException("Could not read example listings");
-		
-		// write the CSV input to the database
-		long docs = splitter.write(
-				new InputStreamReader(listingStream), "/listings/", "listing"
-				);
+    // acquire the CSV input
+    InputStream listingStream = Util.openStream(
+      "data"+File.separator+"listings.csv");
+    if (listingStream == null)
+      throw new RuntimeException("Could not read example listings");
 
-		System.out.println("split CSV file into "+docs+" documents");
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		StringHandle       handle = new StringHandle();
-		for (int i=1; i <= docs; i++) {
-			System.out.println(
-					docMgr.read("/listings/listing"+i+".xml", handle).get()
-					);
-		}
+    // write the CSV input to the database
+    long docs = splitter.write(
+      new InputStreamReader(listingStream), "/listings/", "listing"
+    );
 
-		// release the client
-		client.release();
-	}
+    System.out.println("split CSV file into "+docs+" documents");
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    StringHandle       handle = new StringHandle();
+    for (int i=1; i <= docs; i++) {
+      System.out.println(
+        docMgr.read("/listings/listing"+i+".xml", handle).get()
+      );
+    }
 
-	// clean up by deleting the example resource extension
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    // release the client
+    client.release();
+  }
 
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		for (int i=1; i <= 4; i++) {
-			docMgr.delete("/listings/listing"+i+".xml");
-		}
+  // clean up by deleting the example resource extension
+  public static void tearDownExample(String host, int port, String user, String password, Authentication authType)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    for (int i=1; i <= 4; i++) {
+      docMgr.delete("/listings/listing"+i+".xml");
+    }
 
-		resourceMgr.deleteServices(DocumentSplitter.NAME);
+    ResourceExtensionsManager resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 
-		client.release();
-	}
+    resourceMgr.deleteServices(DocumentSplitter.NAME);
+
+    client.release();
+  }
 }

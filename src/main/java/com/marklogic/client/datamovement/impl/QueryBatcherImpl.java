@@ -283,7 +283,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       threadCountSet = true;
     }
     logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
-        getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
+      getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
     threadPool = new QueryThreadPoolExecutor(1, this);
     threadPool.setCorePoolSize(getThreadCount());
     threadPool.setMaximumPoolSize(getThreadCount());
@@ -394,9 +394,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       logger.warn("adding jobs for forests [{}] to the queue", getForestNames(addedForests));
     }
     for ( Forest forest : addedForests ) {
-        // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
-        // or we wouldn't be here because we wouldn't have a synchronized lock on this
-        threadPool.execute(new QueryTask(moveMgr, this, forest, query, 1, 1));
+      // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
+      // or we wouldn't be here because we wouldn't have a synchronized lock on this
+      threadPool.execute(new QueryTask(moveMgr, this, forest, query, 1, 1));
     }
     if ( restartedForests.size() > 0 ) {
       logger.warn("re-adding jobs related to forests [{}] to the queue", getForestNames(restartedForests));
@@ -544,7 +544,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
-              batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
+            batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
           // now that we have the QueryBatch, let's send it to each onUrisReady listener
           for (QueryBatchListener listener : urisReadyListeners) {
             try {
@@ -651,7 +651,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
                       .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
                     batch = batch.withItems(uris.toArray(new String[uris.size()]));
                     logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
-                        batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+                      batch.getJobBatchNumber(), batch.getJobResultsSoFar());
                     for (QueryBatchListener listener : urisReadyListeners) {
                       try {
                         listener.processEvent(batch);
@@ -742,7 +742,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     public boolean awaitTermination(long timeout, TimeUnit unit) throws InterruptedException {
       boolean returnValue = super.awaitTermination(timeout, unit);
       logger.info("Job complete, jobBatchNumber={}, jobResultsSoFar={}",
-          batchNumber.get(), resultsSoFar.get());
+        batchNumber.get(), resultsSoFar.get());
       return returnValue;
     }
 

@@ -23,22 +23,22 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 
 public class JSONDocumentImpl
-    extends DocumentManagerImpl<JSONReadHandle, JSONWriteHandle> 
-    implements JSONDocumentManager
+  extends DocumentManagerImpl<JSONReadHandle, JSONWriteHandle>
+  implements JSONDocumentManager
 {
-	JSONDocumentImpl(RESTServices services) {
-		super(services,Format.JSON);
-	}
+  JSONDocumentImpl(RESTServices services) {
+    super(services,Format.JSON);
+  }
 
-	@Override
-    public DocumentPatchBuilder newPatchBuilder() {
-    	return new DocumentPatchBuilderImpl(Format.JSON);
-    }
+  @Override
+  public DocumentPatchBuilder newPatchBuilder() {
+    return new DocumentPatchBuilderImpl(Format.JSON);
+  }
 
-    @Override
-	protected RequestParameters getWriteParams() {
-		RequestParameters params = new RequestParameters();
+  @Override
+  protected RequestParameters getWriteParams() {
+    RequestParameters params = new RequestParameters();
 
-		return params;
-	}
+    return params;
+  }
 }

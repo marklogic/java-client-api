@@ -21,15 +21,15 @@ package com.marklogic.client.io.marker;
  * and so on.
  */
 public interface ContentHandle<C>
-extends AbstractReadHandle, AbstractWriteHandle {
-	/**
-	 * Returns the content.
-	 * @return	the content
-	 */
-	C get();
-	/**
-	 * Assigns the content.
-	 * @param content	the content
-	 */
-	void set(C content);
+  extends AbstractReadHandle, AbstractWriteHandle {
+  /**
+   * Returns the content.
+   * @return	the content
+   */
+  C get();
+  /**
+   * Assigns the content.
+   * @param content	the content
+   */
+  void set(C content);
 }

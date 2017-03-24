@@ -59,271 +59,271 @@ public class XMLStreamReaderHandle
 		StructureReadHandle, StructureWriteHandle,
 		Closeable
 {
-	static final private Logger logger = LoggerFactory.getLogger(XMLStreamReaderHandle.class);
+  static final private Logger logger = LoggerFactory.getLogger(XMLStreamReaderHandle.class);
 
-	private XMLResolver     resolver;
-	private XMLStreamReader content;
-	private InputStream contentSource;
-	private XMLInputFactory factory;
+  private XMLResolver     resolver;
+  private XMLStreamReader content;
+  private InputStream contentSource;
+  private XMLInputFactory factory;
 
-	/**
-	 * Creates a factory to create an XMLStreamReaderHandle instance for a StAX stream reader.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ XMLStreamReader.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return XMLStreamReader.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new XMLStreamReaderHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create an XMLStreamReaderHandle instance for a StAX stream reader.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ XMLStreamReader.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return XMLStreamReader.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new XMLStreamReaderHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public XMLStreamReaderHandle() {
-		super();
-		super.setFormat(Format.XML);
-   		setResendable(false);
-	}
-	/**
-	 * Initializes the handle with a StAX stream reader for the content.
-	 * @param content	a StAX stream reader
-	 */
-	public XMLStreamReaderHandle(XMLStreamReader content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public XMLStreamReaderHandle() {
+    super();
+    super.setFormat(Format.XML);
+    setResendable(false);
+  }
+  /**
+   * Initializes the handle with a StAX stream reader for the content.
+   * @param content	a StAX stream reader
+   */
+  public XMLStreamReaderHandle(XMLStreamReader content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns the resolver for resolving references while parsing
-	 * the event reader source.
-	 * @return	the resolver
-	 */
-	public XMLResolver getResolver() {
-		return resolver;
-	}
-	/**
-	 * Specifies the resolver for resolving references while parsing
-	 * the event reader source.
-	 * @param resolver	the reference resolver
-	 */
-	public void setResolver(XMLResolver resolver) {
-		this.resolver = resolver;
-	}
+  /**
+   * Returns the resolver for resolving references while parsing
+   * the event reader source.
+   * @return	the resolver
+   */
+  public XMLResolver getResolver() {
+    return resolver;
+  }
+  /**
+   * Specifies the resolver for resolving references while parsing
+   * the event reader source.
+   * @param resolver	the reference resolver
+   */
+  public void setResolver(XMLResolver resolver) {
+    this.resolver = resolver;
+  }
 
-	/**
-	 * Returns an XML Stream Reader for for reading a resource from the database
-	 * as a StAX pull stream.
-	 * 
-	 * When finished with the stream reader, call {@link #close} to release
-     * the response.
-	 * 
-	 * @return	the XML stream reader
-	 */
-	@Override
-	public XMLStreamReader get() {
-		return content;
-	}
-	/**
-	 * Assigns the stream reader for the content.
-	 * @param content	a StAX stream reader
-	 */
-	@Override
-	public void set(XMLStreamReader content) {
-		this.content = content;
-	}
-    /**
-	 * Assigns an stream reader for the content and returns the handle
-	 * as a fluent convenience.
-	 * @param content	a StAX stream reader
-	 * @return	this handle
-     */
-	public XMLStreamReaderHandle with(XMLStreamReader content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns an XML Stream Reader for for reading a resource from the database
+   * as a StAX pull stream.
+   *
+   * When finished with the stream reader, call {@link #close} to release
+   * the response.
+   *
+   * @return	the XML stream reader
+   */
+  @Override
+  public XMLStreamReader get() {
+    return content;
+  }
+  /**
+   * Assigns the stream reader for the content.
+   * @param content	a StAX stream reader
+   */
+  @Override
+  public void set(XMLStreamReader content) {
+    this.content = content;
+  }
+  /**
+   * Assigns an stream reader for the content and returns the handle
+   * as a fluent convenience.
+   * @param content	a StAX stream reader
+   * @return	this handle
+   */
+  public XMLStreamReaderHandle with(XMLStreamReader content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Restricts the format to XML.
-	 */
-    @Override
-	public void setFormat(Format format) {
-		if (format != Format.XML)
-			throw new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public XMLStreamReaderHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Restricts the format to XML.
+   */
+  @Override
+  public void setFormat(Format format) {
+    if (format != Format.XML)
+      throw new IllegalArgumentException("XMLStreamReaderHandle supports the XML format only");
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public XMLStreamReaderHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			content = null;
-		else
-			receiveContent(new ByteArrayInputStream(buffer));
-	}
-	@Override
-	public byte[] toBuffer() {
-		try {
-			if (content == null)
-				return null;
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    if (buffer == null || buffer.length == 0)
+      content = null;
+    else
+      receiveContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] toBuffer() {
+    try {
+      if (content == null)
+        return null;
 
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			write(buffer);
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      write(buffer);
 
-			byte[] b = buffer.toByteArray();
-			fromBuffer(b);
+      byte[] b = buffer.toByteArray();
+      fromBuffer(b);
 
-			return b;
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	/**
-	 * Closes the XMLStreamReader and the InputStream, if any, used to populate
-	 * the XMLStreamReader.  This method or get().close() should always be called when finished
-	 * with the stream reader.
-	 */
-    @Override
-	public void close() {
-		try {
-			if ( content != null ) content.close();
-		} catch (XMLStreamException e) {
-			logger.error("Failed to close underlying XMLStreamReader",e);
-			throw new MarkLogicIOException(e);
-		// whether that failed or not, attempt to close underlying InputStream
-		} finally {
-			if ( contentSource != null ) {
-				try {
-					contentSource.close();
-				} catch (IOException e) {
-					logger.error("Failed to close underlying InputStream",e);
-					throw new MarkLogicIOException(e);
-				}
-			}
-		}
-	}
-
-	/**
-	 * Buffers the StAX stream and returns the buffer as an XML string.
-	 */
-	@Override
-	public String toString() {
-		try {
-			return new String(toBuffer(),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-
-	/**
-	 * Returns the factory for parsing StAX streams.
-	 * @return	the StAX factory
-	 */
-	public XMLInputFactory getFactory() {
-		if (factory == null)
-			factory = makeXMLInputFactory();
-		return factory;
-	}
-	/**
-	 * Specifies the factory for parsing StAX streams.
-	 * @param factory	the StAX factory
-	 */
-	public void setFactory(XMLInputFactory factory) {
-		this.factory = factory;
-	}
-	protected XMLInputFactory makeXMLInputFactory() {
-		XMLInputFactory factory = XMLInputFactory.newFactory();
-		factory.setProperty("javax.xml.stream.isNamespaceAware", true);
-		factory.setProperty("javax.xml.stream.isValidating",     false);
-
-		return factory;
-	}
-
-	@Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
-	@Override
-	protected void receiveContent(InputStream content) {
-		if (content == null) {
-			this.content = null;
-			return;
-		}
-
-		try {
-			if (logger.isInfoEnabled())
-				logger.info("Parsing StAX stream from input stream");
-
-			XMLInputFactory factory = getFactory();
-			if (factory == null) {
-				throw new MarkLogicInternalException("Failed to make StAX input factory");
-			}
-
-			if (resolver != null)
-				factory.setXMLResolver(resolver);
-
-			this.content = factory.createXMLStreamReader(content, "UTF-8");
-			this.contentSource = content;
-		} catch (XMLStreamException e) {
-			logger.error("Failed to parse StAX stream from input stream",e);
-			throw new MarkLogicInternalException(e);
-		} catch (FactoryConfigurationError e) {
-			logger.error("Failed to parse StAX stream from input stream",e);
-			throw new MarkLogicInternalException(e);
-		}
-	}
-	@Override
-	protected OutputStreamSender sendContent() {
-		if (content == null) {
-			throw new IllegalStateException("No input source to write");
-		}
-
-		return this;
-	}
-	@Override
-	public void write(OutputStream out) throws IOException {
+      return b;
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  /**
+   * Closes the XMLStreamReader and the InputStream, if any, used to populate
+   * the XMLStreamReader.  This method or get().close() should always be called when finished
+   * with the stream reader.
+   */
+  @Override
+  public void close() {
+    try {
+      if ( content != null ) content.close();
+    } catch (XMLStreamException e) {
+      logger.error("Failed to close underlying XMLStreamReader",e);
+      throw new MarkLogicIOException(e);
+      // whether that failed or not, attempt to close underlying InputStream
+    } finally {
+      if ( contentSource != null ) {
         try {
-        	XMLInputFactory inputFactory = getFactory();
-        	if (inputFactory == null) {
-        		throw new MarkLogicInternalException("Failed to make StAX input factory");
-        	}
+          contentSource.close();
+        } catch (IOException e) {
+          logger.error("Failed to close underlying InputStream",e);
+          throw new MarkLogicIOException(e);
+        }
+      }
+    }
+  }
 
-        	// TODO: rework to copy straight from stream reader to stream writer
-        	XMLEventReader reader = inputFactory.createXMLEventReader(content);
+  /**
+   * Buffers the StAX stream and returns the buffer as an XML string.
+   */
+  @Override
+  public String toString() {
+    try {
+      return new String(toBuffer(),"UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-        	XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
-			XMLEventWriter   writer        =
-				outputFactory.createXMLEventWriter(out, "UTF-8");
+  /**
+   * Returns the factory for parsing StAX streams.
+   * @return	the StAX factory
+   */
+  public XMLInputFactory getFactory() {
+    if (factory == null)
+      factory = makeXMLInputFactory();
+    return factory;
+  }
+  /**
+   * Specifies the factory for parsing StAX streams.
+   * @param factory	the StAX factory
+   */
+  public void setFactory(XMLInputFactory factory) {
+    this.factory = factory;
+  }
+  protected XMLInputFactory makeXMLInputFactory() {
+    XMLInputFactory factory = XMLInputFactory.newFactory();
+    factory.setProperty("javax.xml.stream.isNamespaceAware", true);
+    factory.setProperty("javax.xml.stream.isValidating",     false);
 
-			writer.add(reader);
-			writer.flush();
-			writer.close();
+    return factory;
+  }
 
-			content.close();
-		} catch (XMLStreamException e) {
-			logger.error("Failed to parse StAX events from input stream",e);
-			throw new MarkLogicInternalException(e);
-		}
-	}
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    if (content == null) {
+      this.content = null;
+      return;
+    }
+
+    try {
+      if (logger.isInfoEnabled())
+        logger.info("Parsing StAX stream from input stream");
+
+      XMLInputFactory factory = getFactory();
+      if (factory == null) {
+        throw new MarkLogicInternalException("Failed to make StAX input factory");
+      }
+
+      if (resolver != null)
+        factory.setXMLResolver(resolver);
+
+      this.content = factory.createXMLStreamReader(content, "UTF-8");
+      this.contentSource = content;
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse StAX stream from input stream",e);
+      throw new MarkLogicInternalException(e);
+    } catch (FactoryConfigurationError e) {
+      logger.error("Failed to parse StAX stream from input stream",e);
+      throw new MarkLogicInternalException(e);
+    }
+  }
+  @Override
+  protected OutputStreamSender sendContent() {
+    if (content == null) {
+      throw new IllegalStateException("No input source to write");
+    }
+
+    return this;
+  }
+  @Override
+  public void write(OutputStream out) throws IOException {
+    try {
+      XMLInputFactory inputFactory = getFactory();
+      if (inputFactory == null) {
+        throw new MarkLogicInternalException("Failed to make StAX input factory");
+      }
+
+      // TODO: rework to copy straight from stream reader to stream writer
+      XMLEventReader reader = inputFactory.createXMLEventReader(content);
+
+      XMLOutputFactory outputFactory = XMLOutputFactory.newFactory();
+      XMLEventWriter   writer        =
+        outputFactory.createXMLEventWriter(out, "UTF-8");
+
+      writer.add(reader);
+      writer.flush();
+      writer.close();
+
+      content.close();
+    } catch (XMLStreamException e) {
+      logger.error("Failed to parse StAX events from input stream",e);
+      throw new MarkLogicInternalException(e);
+    }
+  }
 }

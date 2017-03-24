@@ -23,142 +23,142 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.util.RequestParameters;
 
 public class ExtensionLibrariesManagerImpl
-	extends AbstractLoggingManager
-	implements ExtensionLibrariesManager
+  extends AbstractLoggingManager
+  implements ExtensionLibrariesManager
 {
-    private RESTServices          services;
-	private HandleFactoryRegistry handleRegistry;
-	
-	public ExtensionLibrariesManagerImpl(RESTServices services) {
-		super();
-		this.services = services;
-	}
+  private RESTServices          services;
+  private HandleFactoryRegistry handleRegistry;
 
-	HandleFactoryRegistry getHandleRegistry() {
-		return handleRegistry;
-	}
-	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-		this.handleRegistry = handleRegistry;
-	}
+  public ExtensionLibrariesManagerImpl(RESTServices services) {
+    super();
+    this.services = services;
+  }
 
-	@Override
-	public ExtensionLibraryDescriptor[] list()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		return list("/ext");
-	}
-	@Override
-	public ExtensionLibraryDescriptor[] list(String directory)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		
-		XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle());
-		
-		XMLEventReader reader = handle.get();
-		List<ExtensionLibraryDescriptor> modules = new ArrayList<>();
-		while (reader.hasNext()) {
-				XMLEvent event;
-				try {
-					event = reader.nextEvent();
-				if (event.isCharacters()) {
-					String modulePath = event.asCharacters().getData();
-					ExtensionLibraryDescriptor module = new ExtensionLibraryDescriptor();
-					module.setPath(modulePath);
-					modules.add(module);
-				}
-				} catch (XMLStreamException e) {
-					throw new MarkLogicIOException(e);
-				}
-				
-			}
-		return modules.toArray(new ExtensionLibraryDescriptor[] {});
-	}
+  HandleFactoryRegistry getHandleRegistry() {
+    return handleRegistry;
+  }
+  void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+    this.handleRegistry = handleRegistry;
+  }
 
-	@Override
-	public <T> T readAs(String modulePath, Class<T> as)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		read(modulePath, handle);
-		return handle.get();
-	}
-	@Override
-	public <T> T read(ExtensionLibraryDescriptor modulesDescriptor, Class<T> as)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		read(modulesDescriptor, handle);
-		return handle.get();
-	}
-	@Override
-	public <T extends AbstractReadHandle> T read(String modulePath, T readHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		checkPath(modulePath);
-		return services.getResource(requestLogger, modulePath, null, null, readHandle);
-	}
-	@Override
-	public <T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor modulesDescriptor, T readHandle)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		return read(modulesDescriptor.getPath(), readHandle);
-	}
+  @Override
+  public ExtensionLibraryDescriptor[] list()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    return list("/ext");
+  }
+  @Override
+  public ExtensionLibraryDescriptor[] list(String directory)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
 
-	@Override
-	public void writeAs(String modulePath, Object content)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		write(modulePath, getContentHandle(content));
-	}
-	@Override
-	public void writeAs(ExtensionLibraryDescriptor modulesDescriptor, Object content)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		write(modulesDescriptor, getContentHandle(content));
-	}
-	private AbstractWriteHandle getContentHandle(Object content) {
-		if (content == null) {
-			throw new IllegalArgumentException("no content to write");
-		}
+    XMLEventReaderHandle handle = services.getResource(requestLogger, directory, null, null, new XMLEventReaderHandle());
 
-		Class<?> as = content.getClass();
+    XMLEventReader reader = handle.get();
+    List<ExtensionLibraryDescriptor> modules = new ArrayList<>();
+    while (reader.hasNext()) {
+      XMLEvent event;
+      try {
+        event = reader.nextEvent();
+        if (event.isCharacters()) {
+          String modulePath = event.asCharacters().getData();
+          ExtensionLibraryDescriptor module = new ExtensionLibraryDescriptor();
+          module.setPath(modulePath);
+          modules.add(module);
+        }
+      } catch (XMLStreamException e) {
+        throw new MarkLogicIOException(e);
+      }
 
-		AbstractWriteHandle contentHandle = null;
-		if (AbstractWriteHandle.class.isAssignableFrom(as)) {
-			contentHandle = (AbstractWriteHandle) content;
-		} else {
-			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
-			Utilities.setHandleContent(handle, content);
-			contentHandle = handle;
-		}
+    }
+    return modules.toArray(new ExtensionLibraryDescriptor[] {});
+  }
 
-		return contentHandle;
-	}
+  @Override
+  public <T> T readAs(String modulePath, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+    read(modulePath, handle);
+    return handle.get();
+  }
+  @Override
+  public <T> T read(ExtensionLibraryDescriptor modulesDescriptor, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+    read(modulesDescriptor, handle);
+    return handle.get();
+  }
+  @Override
+  public <T extends AbstractReadHandle> T read(String modulePath, T readHandle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    checkPath(modulePath);
+    return services.getResource(requestLogger, modulePath, null, null, readHandle);
+  }
+  @Override
+  public <T extends AbstractReadHandle> T read(ExtensionLibraryDescriptor modulesDescriptor, T readHandle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    return read(modulesDescriptor.getPath(), readHandle);
+  }
 
-	@Override
-	public void write(String modulePath, AbstractWriteHandle contentHandle)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		checkPath(modulePath);
-		services.putResource(requestLogger, modulePath, null, null, contentHandle, null);
-	}
-	@Override
-	public void write(ExtensionLibraryDescriptor modulesDescriptor, AbstractWriteHandle contentHandle)
-	throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		RequestParameters requestParams = new RequestParameters();
-		for (Permission perm : modulesDescriptor.getPermissions()) {
-			requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
-		}
-		checkPath(modulesDescriptor.getPath());
-		services.putResource(requestLogger, modulesDescriptor.getPath(), null, requestParams, contentHandle, null);
-	}
+  @Override
+  public void writeAs(String modulePath, Object content)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+    write(modulePath, getContentHandle(content));
+  }
+  @Override
+  public void writeAs(ExtensionLibraryDescriptor modulesDescriptor, Object content)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+    write(modulesDescriptor, getContentHandle(content));
+  }
+  private AbstractWriteHandle getContentHandle(Object content) {
+    if (content == null) {
+      throw new IllegalArgumentException("no content to write");
+    }
 
-	private void checkPath(String libraryPath) {
-		if ( libraryPath == null ) throw new IllegalArgumentException("libraryPath must not be null");
-		if ( ! libraryPath.startsWith("/ext/") ) throw new IllegalArgumentException(
-			"libraryPath (the modules database path under which you install an asset) must begin with /ext/");
-	}
+    Class<?> as = content.getClass();
 
-	@Override
-	public void delete(String modulePath)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		checkPath(modulePath);
-		services.deleteResource(requestLogger, modulePath, null, null, null);
-	}
-	@Override
-	public void delete(ExtensionLibraryDescriptor modulesDescriptor)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		delete(modulesDescriptor.getPath());
-	}
+    AbstractWriteHandle contentHandle = null;
+    if (AbstractWriteHandle.class.isAssignableFrom(as)) {
+      contentHandle = (AbstractWriteHandle) content;
+    } else {
+      ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+      Utilities.setHandleContent(handle, content);
+      contentHandle = handle;
+    }
+
+    return contentHandle;
+  }
+
+  @Override
+  public void write(String modulePath, AbstractWriteHandle contentHandle)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+    checkPath(modulePath);
+    services.putResource(requestLogger, modulePath, null, null, contentHandle, null);
+  }
+  @Override
+  public void write(ExtensionLibraryDescriptor modulesDescriptor, AbstractWriteHandle contentHandle)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
+    RequestParameters requestParams = new RequestParameters();
+    for (Permission perm : modulesDescriptor.getPermissions()) {
+      requestParams.add("perm:" + perm.getRoleName(), perm.getCapability());
+    }
+    checkPath(modulesDescriptor.getPath());
+    services.putResource(requestLogger, modulesDescriptor.getPath(), null, requestParams, contentHandle, null);
+  }
+
+  private void checkPath(String libraryPath) {
+    if ( libraryPath == null ) throw new IllegalArgumentException("libraryPath must not be null");
+    if ( ! libraryPath.startsWith("/ext/") ) throw new IllegalArgumentException(
+      "libraryPath (the modules database path under which you install an asset) must begin with /ext/");
+  }
+
+  @Override
+  public void delete(String modulePath)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    checkPath(modulePath);
+    services.deleteResource(requestLogger, modulePath, null, null, null);
+  }
+  @Override
+  public void delete(ExtensionLibraryDescriptor modulesDescriptor)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    delete(modulesDescriptor.getPath());
+  }
 }

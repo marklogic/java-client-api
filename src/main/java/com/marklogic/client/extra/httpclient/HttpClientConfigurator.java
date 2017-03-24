@@ -25,10 +25,10 @@ import com.marklogic.client.DatabaseClientFactory.ClientConfigurator;
  * after the built-in configuration completes.  Use this class only
  * if testing demonstrates that your environment requires a different
  * HTTP configuration than the default HTTP configuration.
- * 
+ *
  * Note:  If the API moves to a different HTTP communications library or
  * a different protocol, the configurator will no longer be called.
- * 
+ *
  * @see com.marklogic.client.DatabaseClientFactory#addConfigurator(ClientConfigurator)
  */
 public interface HttpClientConfigurator extends ClientConfigurator<HttpClient> {

@@ -60,35 +60,35 @@ import java.util.Map;
  * Developer's Guide</a>.
  */
 public interface SPARQLBindings extends Map<String, List<SPARQLBinding>> {
-    /** <p>Bind a variable of type iri.</p>
-     *
-     * @param name the bound variable name
-     * @param value the iri value
-     *
-     * @return this instance (for method chaining)
-     */
-    SPARQLBindings bind(String name, String value);
+  /** <p>Bind a variable of type iri.</p>
+   *
+   * @param name the bound variable name
+   * @param value the iri value
+   *
+   * @return this instance (for method chaining)
+   */
+  SPARQLBindings bind(String name, String value);
 
-    /** <p>Bind a variable of specified type.</p>
-     *
-     * @param name the bound variable name
-     * @param value the value of the literal
-     * @param datatype the literal type
-     *
-     * @return this instance (for method chaining)
-     */
-    SPARQLBindings bind(String name, String value, RDFTypes datatype);
+  /** <p>Bind a variable of specified type.</p>
+   *
+   * @param name the bound variable name
+   * @param value the value of the literal
+   * @param datatype the literal type
+   *
+   * @return this instance (for method chaining)
+   */
+  SPARQLBindings bind(String name, String value, RDFTypes datatype);
 
-    /** <p>Bind a variable of type
-     * http://www.w3.org/1999/02/22-rdf-syntax-ns#langString with the specified
-     * language tag.  Note that we call {@link Locale#toLanguageTag}
-     * to get compliant IETF BCP 47 language tags.</p>
-     *
-     * @param name the bound variable name
-     * @param value the value as a string
-     * @param languageTag the language and regional modifiers compliant with BCP-47
-     *
-     * @return this instance (for method chaining)
-     */
-    SPARQLBindings bind(String name, String value, Locale languageTag);
+  /** <p>Bind a variable of type
+   * http://www.w3.org/1999/02/22-rdf-syntax-ns#langString with the specified
+   * language tag.  Note that we call {@link Locale#toLanguageTag}
+   * to get compliant IETF BCP 47 language tags.</p>
+   *
+   * @param name the bound variable name
+   * @param value the value as a string
+   * @param languageTag the language and regional modifiers compliant with BCP-47
+   *
+   * @return this instance (for method chaining)
+   */
+  SPARQLBindings bind(String name, String value, Locale languageTag);
 };

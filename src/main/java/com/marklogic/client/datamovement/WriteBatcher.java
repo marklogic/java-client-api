@@ -102,7 +102,7 @@ public interface WriteBatcher extends Batcher {
    * @return WriteBatcher the batcher containing the documents added
    */
   WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
-      AbstractWriteHandle contentHandle);
+                   AbstractWriteHandle contentHandle);
 
   /**
    * Add a document to be batched then written to the server when a batch is full
@@ -118,7 +118,7 @@ public interface WriteBatcher extends Batcher {
    * @return WriteBatcher the batcher containing the documents added
    */
   WriteBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
-      Object content);
+                     Object content);
 
   /**
    * Add docs in the form of WriteEvents.  This is a convenience method for re-adding
@@ -149,12 +149,12 @@ public interface WriteBatcher extends Batcher {
    */
   WriteBatcher onBatchFailure(WriteFailureListener listener);
 
-   /**
-    * Retry in the same thread to send a batch that failed. This method will
-    * throw an Exception if it fails again, so it can be wrapped in a try-catch
-    * block.
-    * @param queryEvent the information about the batch that failed
-    */
+  /**
+   * Retry in the same thread to send a batch that failed. This method will
+   * throw an Exception if it fails again, so it can be wrapped in a try-catch
+   * block.
+   * @param queryEvent the information about the batch that failed
+   */
   public void retry(WriteBatch queryEvent);
 
   /*

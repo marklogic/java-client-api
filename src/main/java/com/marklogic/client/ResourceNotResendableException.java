@@ -23,8 +23,8 @@ package com.marklogic.client;
 @SuppressWarnings("serial")
 public class ResourceNotResendableException extends MarkLogicServerException {
 
-	public ResourceNotResendableException(String message) {
-		super(message);
-	}
+  public ResourceNotResendableException(String message) {
+    super(message);
+  }
 
 }

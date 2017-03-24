@@ -44,7 +44,7 @@ import com.marklogic.client.pojo.PojoRepository;
  *      }
  *      // ... setter methods ...
  *    }</pre>
-*
+ *
  * or with a public setter method:
  * <pre>
  *    public class MyClass {

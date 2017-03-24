@@ -36,188 +36,193 @@ import com.marklogic.client.io.DOMHandle;
  */
 public class OpenCSVBatcher
 {
-	final static public String RESTAPI_NS     = "http://marklogic.com/rest-api";
-	final static public String RESTAPI_PREFIX = "rapi:";
+  final static public String RESTAPI_NS     = "http://marklogic.com/rest-api";
+  final static public String RESTAPI_PREFIX = "rapi:";
 
-	private BatchProcessor processor;
+  private BatchProcessor processor;
 
-	private int     batchSize = 100;
-	private boolean hasHeader = false;
+  private int     batchSize = 100;
+  private boolean hasHeader = false;
 
-	public OpenCSVBatcher(BatchProcessor processor) {
-		super();
-		this.processor = processor;
-	}
-	public OpenCSVBatcher(DatabaseClient client) {
-		this(new BatchSplitter(client));
-	}
+  public OpenCSVBatcher(BatchProcessor processor) {
+    super();
+    this.processor = processor;
+  }
+  public OpenCSVBatcher(DatabaseClient client) {
+    this(new BatchSplitter(client));
+  }
 
-	public int getBatchSize() {
-		return batchSize;
-	}
-	public void setBatchSize(int batchSize) {
-		this.batchSize = batchSize;
-	}
+  public int getBatchSize() {
+    return batchSize;
+  }
+  public void setBatchSize(int batchSize) {
+    this.batchSize = batchSize;
+  }
 
-	public boolean getHasHeader() {
-		return hasHeader;
-	}
-	public void setHasHeader(boolean hasHeader) {
-		this.hasHeader = hasHeader;
-	}
+  public boolean getHasHeader() {
+    return hasHeader;
+  }
+  public void setHasHeader(boolean hasHeader) {
+    this.hasHeader = hasHeader;
+  }
 
-	protected CSVReader makeParser(Reader content) {
-		return new CSVReader(content);
-	}
+  protected CSVReader makeParser(Reader content) {
+    return new CSVReader(content);
+  }
 
-	public long write(Reader content)
-	throws IOException, ParserConfigurationException {
-		return write(content, null, (QName) null, (QName[]) null);
-	}
-	public long write(Reader content, String directory)
-	throws IOException, ParserConfigurationException {
-		return write(content, directory, (QName) null, (QName[]) null);
-	}
-	public long write(Reader content, QName rowName)
-	throws IOException, ParserConfigurationException {
-		return write(content, null, rowName, (QName[]) null);
-	}
-	public long write(Reader content, String directory, String rowName)
-	throws IOException, ParserConfigurationException {
-		return write(content, directory, new QName(rowName), (QName[]) null);
-	}
-	public long write(Reader content, String directory, QName rowName)
-	throws IOException, ParserConfigurationException {
-		return write(content, directory, rowName, (QName[]) null);
-	}
-	public long write(
-			Reader content, String directory, String rowName, QName... colNames
-	) throws IOException, ParserConfigurationException {
-		return write(content, directory, new QName(rowName), colNames);
-	}
-	public long write(
-			Reader content, String directory, QName rowName, QName... colNames
-	) throws IOException, ParserConfigurationException {
-		if (rowName == null)
-			rowName = new QName("row");
-		if (directory == null)
-			directory = "/"+rowName.getLocalPart()+"-docs/";
-		else if (!directory.endsWith("/"))
-			directory = directory+"/";
+  public long write(Reader content)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, null, (QName) null, (QName[]) null);
+  }
+  public long write(Reader content, String directory)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, directory, (QName) null, (QName[]) null);
+  }
+  public long write(Reader content, QName rowName)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, null, rowName, (QName[]) null);
+  }
+  public long write(Reader content, String directory, String rowName)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, directory, new QName(rowName), (QName[]) null);
+  }
+  public long write(Reader content, String directory, QName rowName)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, directory, rowName, (QName[]) null);
+  }
+  public long write(Reader content, String directory, String rowName, QName... colNames)
+    throws IOException, ParserConfigurationException
+  {
+    return write(content, directory, new QName(rowName), colNames);
+  }
+  public long write(Reader content, String directory, QName rowName, QName... colNames)
+    throws IOException, ParserConfigurationException
+  {
+    if (rowName == null)
+      rowName = new QName("row");
+    if (directory == null)
+      directory = "/"+rowName.getLocalPart()+"-docs/";
+    else if (!directory.endsWith("/"))
+      directory = directory+"/";
 
-		CSVReader parser = makeParser(content);
+    CSVReader parser = makeParser(content);
 
-		// Potential improvement:
-		// configure a list of xsi:types for validating and annotating
+    // Potential improvement:
+    // configure a list of xsi:types for validating and annotating
 
-		if (hasHeader) {
-			String[] headerNames = parser.readNext();
-			if (headerNames == null || headerNames.length == 0)
-				throw new IllegalArgumentException("empty header");
-			colNames = new QName[headerNames.length];
-			for (int i=0; i < headerNames.length; i++) {
-				colNames[i] = new QName(
-						NameConverter.mangleToNCName(headerNames[i])
-						);
-			}
-		}
+    if (hasHeader) {
+      String[] headerNames = parser.readNext();
+      if (headerNames == null || headerNames.length == 0)
+        throw new IllegalArgumentException("empty header");
+      colNames = new QName[headerNames.length];
+      for (int i=0; i < headerNames.length; i++) {
+        colNames[i] = new QName(
+          NameConverter.mangleToNCName(headerNames[i])
+        );
+      }
+    }
 
-		DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
+    DocumentBuilder docBuilder = DocumentBuilderFactory.newInstance().newDocumentBuilder();
 
-		String path = directory + rowName;
+    String path = directory + rowName;
 
-		long docs = 0;
+    long docs = 0;
 
-		boolean hasNext = true;
-		while (hasNext) {
-			Document document  = null;
-			Element  batchRoot = null;
-			for (int i=0; i < getBatchSize(); i++) {
-				String[] line = parser.readNext();
-				hasNext = (line != null);
-				if (!hasNext)
-					break;
-				if (line.length == 0)
-					continue;
+    boolean hasNext = true;
+    while (hasNext) {
+      Document document  = null;
+      Element  batchRoot = null;
+      for (int i=0; i < getBatchSize(); i++) {
+        String[] line = parser.readNext();
+        hasNext = (line != null);
+        if (!hasNext)
+          break;
+        if (line.length == 0)
+          continue;
 
-				if (document == null) {
-					document  = docBuilder.newDocument();
-					batchRoot = document.createElementNS(RESTAPI_NS, RESTAPI_PREFIX+"root");
-					document.appendChild(batchRoot);
-				}
+        if (document == null) {
+          document  = docBuilder.newDocument();
+          batchRoot = document.createElementNS(RESTAPI_NS, RESTAPI_PREFIX+"root");
+          document.appendChild(batchRoot);
+        }
 
-				// Potential improvement:
-				// configure key columns for deriving uris from data
+        // Potential improvement:
+        // configure key columns for deriving uris from data
 
-				docs++;
+        docs++;
 
-				String uri = path+docs+".xml";
+        String uri = path+docs+".xml";
 
-				Element row = createElement(document, rowName);
-				row.setAttributeNS(RESTAPI_NS, RESTAPI_PREFIX+"uri", uri);
-				row.setAttribute("docnum", String.valueOf(docs));
-				batchRoot.appendChild(row);
+        Element row = createElement(document, rowName);
+        row.setAttributeNS(RESTAPI_NS, RESTAPI_PREFIX+"uri", uri);
+        row.setAttribute("docnum", String.valueOf(docs));
+        batchRoot.appendChild(row);
 
-				for (int j=0; j < line.length; j++) {
-					Element column =
-						(colNames == null || colNames.length < j) ?
-						document.createElement("column"+j) :
-						createElement(document, colNames[j]);
-					column.setTextContent(line[j]);
-					row.appendChild(column);
-				}
-			}
+        for (int j=0; j < line.length; j++) {
+          Element column =
+            (colNames == null || colNames.length < j) ?
+              document.createElement("column"+j) :
+              createElement(document, colNames[j]);
+          column.setTextContent(line[j]);
+          row.appendChild(column);
+        }
+      }
 
-			if (document == null)
-				break;
+      if (document == null)
+        break;
 
-			if (!processor.processAndContinue(document))
-				break;
-		}
+      if (!processor.processAndContinue(document))
+        break;
+    }
 
-		content.close();
+    content.close();
 
-		return docs;
-	}
+    return docs;
+  }
 
-	private Element createElement(Document document, QName name) {
-		String local = name.getLocalPart();
+  private Element createElement(Document document, QName name) {
+    String local = name.getLocalPart();
 
-		String ns = name.getNamespaceURI();
-		if (ns == null || ns.length() == 0)
-			return document.createElement(local);
+    String ns = name.getNamespaceURI();
+    if (ns == null || ns.length() == 0)
+      return document.createElement(local);
 
-		String prefix = name.getPrefix();
-		if (prefix == null || prefix.length() == 0)
-			return document.createElementNS(ns, local);
+    String prefix = name.getPrefix();
+    if (prefix == null || prefix.length() == 0)
+      return document.createElementNS(ns, local);
 
-		return document.createElementNS(ns, prefix + ":" + local);
-	}
+    return document.createElementNS(ns, prefix + ":" + local);
+  }
 
-	/**
-	 * A processor for a batch of CSV rows.
-	 */
-	static public interface BatchProcessor {
-		public boolean processAndContinue(Document batch);
-	}
+  /**
+   * A processor for a batch of CSV rows.
+   */
+  static public interface BatchProcessor {
+    public boolean processAndContinue(Document batch);
+  }
 
-	/**
-	 * BatchSplitter processes a batch of CSV rows by using DocumentSplitter
-	 * to split them into separate documents on the server. 
-	 */
-	static public class BatchSplitter implements BatchProcessor {
-		private DocumentSplitter splitter;
+  /**
+   * BatchSplitter processes a batch of CSV rows by using DocumentSplitter
+   * to split them into separate documents on the server.
+   */
+  static public class BatchSplitter implements BatchProcessor {
+    private DocumentSplitter splitter;
 
-		public BatchSplitter(DatabaseClient client) {
-			super();
-			splitter = new DocumentSplitter(client);
-		}
+    public BatchSplitter(DatabaseClient client) {
+      super();
+      splitter = new DocumentSplitter(client);
+    }
 
-		@Override
-		public boolean processAndContinue(Document batch) {
-			splitter.split(new DOMHandle(batch));
-			return true;
-		}
+    @Override
+    public boolean processAndContinue(Document batch) {
+      splitter.split(new DOMHandle(batch));
+      return true;
+    }
 
-	}
+  }
 }

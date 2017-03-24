@@ -23,6 +23,6 @@ package com.marklogic.client.io.marker;
  * to read search results and not to write anything to the database.
  */
 public class OperationNotSupported {
-	private OperationNotSupported() {
-	}
+  private OperationNotSupported() {
+  }
 }

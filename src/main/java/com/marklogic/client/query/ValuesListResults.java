@@ -21,11 +21,11 @@ import java.util.HashMap;
  * A ValuesListResults represents the results of a values query.
  */
 public interface ValuesListResults {
-    /**
-     * Returns the map of value results.
-     * @return The map.
-     */
-    HashMap<String, String> getValuesMap();
+  /**
+   * Returns the map of value results.
+   * @return The map.
+   */
+  HashMap<String, String> getValuesMap();
 }
 
 

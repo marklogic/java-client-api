@@ -34,133 +34,133 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 class BinaryDocumentImpl
-	extends DocumentManagerImpl<BinaryReadHandle, BinaryWriteHandle>
-	implements BinaryDocumentManager
+  extends DocumentManagerImpl<BinaryReadHandle, BinaryWriteHandle>
+  implements BinaryDocumentManager
 {
-	static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
+  static final private Logger logger = LoggerFactory.getLogger(BinaryDocumentImpl.class);
 
-	private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;
+  private MetadataExtraction metadataExtraction = MetadataExtraction.NONE;
 
-	BinaryDocumentImpl(RESTServices services) {
-		super(services, Format.BINARY);
-	}
+  BinaryDocumentImpl(RESTServices services) {
+    super(services, Format.BINARY);
+  }
 
-	// shortcut readers
-	@Override
-	public <T> T readAs(String uri, Class<T> as, long start, long length)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		return readAs(uri, null, as, start, length);
-	}
-	@Override
-	public <T> T readAs(String uri, DocumentMetadataReadHandle metadataHandle, Class<T> as, long start, long length)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+  // shortcut readers
+  @Override
+  public <T> T readAs(String uri, Class<T> as, long start, long length)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    return readAs(uri, null, as, start, length);
+  }
+  @Override
+  public <T> T readAs(String uri, DocumentMetadataReadHandle metadataHandle, Class<T> as, long start, long length)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
 
-		if (null == read(uri, metadataHandle, castAbstractReadHandle(as, handle), start, length)) {
-			return null;
-		}
+    if (null == read(uri, metadataHandle, castAbstractReadHandle(as, handle), start, length)) {
+      return null;
+    }
 
-		return handle.get();
-	}
+    return handle.get();
+  }
 
-	// strongly typed readers
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length) {
-		return read(uri, null, contentHandle, null, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(uri, null, contentHandle, transform, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
-		return read(uri, metadataHandle, contentHandle, null, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(uri, metadataHandle, contentHandle, transform, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length, Transaction transaction) {
-		return read(uri, null, contentHandle, null, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		return read(uri, null, contentHandle, transform, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
-		return read(uri, metadataHandle, contentHandle, null, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		return read(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, start, length, transaction);
-	}
+  // strongly typed readers
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length) {
+    return read(uri, null, contentHandle, null, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length) {
+    return read(uri, null, contentHandle, transform, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
+    return read(uri, metadataHandle, contentHandle, null, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
+    return read(uri, metadataHandle, contentHandle, transform, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, T contentHandle, long start, long length, Transaction transaction) {
+    return read(uri, null, contentHandle, null, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+    return read(uri, null, contentHandle, transform, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+    return read(uri, metadataHandle, contentHandle, null, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(String uri, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+    return read(new DocumentDescriptorImpl(uri, true), metadataHandle, contentHandle, transform, start, length, transaction);
+  }
 
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length) {
-		return read(desc, null, contentHandle, null, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(desc, null, contentHandle, transform, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
-		return read(desc, metadataHandle, contentHandle, null, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
-		return read(desc, metadataHandle, contentHandle, transform, start, length, null);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction) {
-		return read(desc, null, contentHandle, null, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		return read(desc, null, contentHandle, transform, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
-		return read(desc, metadataHandle, contentHandle, null, start, length, transaction);
-	}
-	@Override
-	public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
-		if (logger.isInfoEnabled())
-			logger.info("Reading range of binary content for {}",desc.getUri());
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length) {
+    return read(desc, null, contentHandle, null, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length) {
+    return read(desc, null, contentHandle, transform, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length) {
+    return read(desc, metadataHandle, contentHandle, null, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length) {
+    return read(desc, metadataHandle, contentHandle, transform, start, length, null);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, long start, long length, Transaction transaction) {
+    return read(desc, null, contentHandle, null, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+    return read(desc, null, contentHandle, transform, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, long start, long length, Transaction transaction) {
+    return read(desc, metadataHandle, contentHandle, null, start, length, transaction);
+  }
+  @Override
+  public <T extends BinaryReadHandle> T read(DocumentDescriptor desc, DocumentMetadataReadHandle metadataHandle, T contentHandle, ServerTransform transform, long start, long length, Transaction transaction) {
+    if (logger.isInfoEnabled())
+      logger.info("Reading range of binary content for {}",desc.getUri());
 
-		RequestParameters extraParams = new RequestParameters();
-		if (length > 0)
-			extraParams.put("range", "bytes="+start+"-"+(start + length - 1));
-		else
-			extraParams.put("range", "bytes="+String.valueOf(start));
+    RequestParameters extraParams = new RequestParameters();
+    if (length > 0)
+      extraParams.put("range", "bytes="+start+"-"+(start + length - 1));
+    else
+      extraParams.put("range", "bytes="+String.valueOf(start));
 
-		return read(desc, metadataHandle, contentHandle, transform, transaction, null, extraParams);
-	}
+    return read(desc, metadataHandle, contentHandle, transform, transaction, null, extraParams);
+  }
 
-    @Override
-	public MetadataExtraction getMetadataExtraction() {
-		return metadataExtraction;
-	}
-    @Override
-	public void setMetadataExtraction(MetadataExtraction policy) {
-		metadataExtraction = policy;	
-	}
+  @Override
+  public MetadataExtraction getMetadataExtraction() {
+    return metadataExtraction;
+  }
+  @Override
+  public void setMetadataExtraction(MetadataExtraction policy) {
+    metadataExtraction = policy;
+  }
 
-    @Override
-	protected RequestParameters getWriteParams() {
-		if (metadataExtraction == null || metadataExtraction == MetadataExtraction.NONE)
-			return null;
+  @Override
+  protected RequestParameters getWriteParams() {
+    if (metadataExtraction == null || metadataExtraction == MetadataExtraction.NONE)
+      return null;
 
-		RequestParameters params = new RequestParameters();
-		if (metadataExtraction == MetadataExtraction.PROPERTIES)
-			params.put("extract", "properties");
-		else if (metadataExtraction == MetadataExtraction.DOCUMENT)
-			params.put("extract", "document");
-		else
-			throw new MarkLogicInternalException("Internal error - unknown metadata extraction policy: "+metadataExtraction.name());
+    RequestParameters params = new RequestParameters();
+    if (metadataExtraction == MetadataExtraction.PROPERTIES)
+      params.put("extract", "properties");
+    else if (metadataExtraction == MetadataExtraction.DOCUMENT)
+      params.put("extract", "document");
+    else
+      throw new MarkLogicInternalException("Internal error - unknown metadata extraction policy: "+metadataExtraction.name());
 
-		return params;
-	}
+    return params;
+  }
 }

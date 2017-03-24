@@ -58,110 +58,110 @@ public class FileHandle
 		QuadsWriteHandle,
 		TriplesReadHandle, TriplesWriteHandle
 {
-	private File content;
+  private File content;
 
-	/**
-	 * Creates a factory to create a FileHandle for a file.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ File.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return File.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new FileHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a FileHandle for a file.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ File.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return File.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+          (ContentHandle<C>) new FileHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public FileHandle() {
-		super();
-   		setResendable(true);
-	}
-	/**
-	 * Initializes the handle with a file containing the content.
-	 * @param content	the file
-	 */
-	public FileHandle(File content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public FileHandle() {
+    super();
+    setResendable(true);
+  }
+  /**
+   * Initializes the handle with a file containing the content.
+   * @param content	the file
+   */
+  public FileHandle(File content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns the file for the handle content.
-	 * @return	the file
-	 */
-	@Override
-	public File get() {
-		return content;
-	}
-	/**
-	 * Assigns a file as the content.
-	 * @param content	the file
-	 */
-	@Override
-	public void set(File content) {
-		this.content = content;
-	}
-	/**
-	 * Assigns a file as the content and returns the handle
-	 * as a fluent convenience.
-	 * @param content	the file
-	 * @return	this handle
-	 */
-	public FileHandle with(File content) {
-		set(content);
-    	return this;
-	}
+  /**
+   * Returns the file for the handle content.
+   * @return	the file
+   */
+  @Override
+  public File get() {
+    return content;
+  }
+  /**
+   * Assigns a file as the content.
+   * @param content	the file
+   */
+  @Override
+  public void set(File content) {
+    this.content = content;
+  }
+  /**
+   * Assigns a file as the content and returns the handle
+   * as a fluent convenience.
+   * @param content	the file
+   * @return	this handle
+   */
+  public FileHandle with(File content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
-	 */
-	public FileHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public FileHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public FileHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public FileHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	protected Class<File> receiveAs() {
-		return File.class;
-	}
-	@Override
-	protected void receiveContent(File content) {
-		this.content = content;
-	}
-	@Override
-	protected File sendContent() {
-		if (content == null) {
-			throw new IllegalStateException("No file to write");
-		}
+  @Override
+  protected Class<File> receiveAs() {
+    return File.class;
+  }
+  @Override
+  protected void receiveContent(File content) {
+    this.content = content;
+  }
+  @Override
+  protected File sendContent() {
+    if (content == null) {
+      throw new IllegalStateException("No file to write");
+    }
 
-		return content;
-	}
+    return content;
+  }
 }

@@ -37,17 +37,17 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  *      &gt; <a href="http://docs.marklogic.com/guide/java/searches#id_33275">Prototype a Query Using Query By Example</a>
  */
 public interface RawQueryByExampleDefinition extends RawQueryDefinition {
-	/**
-	 * The namespace of the built-in vocabulary for an Query by Example
-	 * in XML format.
-	 */
-	String QBE_NS = "http://marklogic.com/appservices/querybyexample";
+  /**
+   * The namespace of the built-in vocabulary for an Query by Example
+   * in XML format.
+   */
+  String QBE_NS = "http://marklogic.com/appservices/querybyexample";
 
-	/**
-	 * Specifies the handle for the JSON or XML representation
-	 * of a query by example and returns the query definition.
-	 * @param handle	the JSON or XML handle.
-	 * @return	the query definition.
-	 */
-	RawQueryByExampleDefinition withHandle(StructureWriteHandle handle);
+  /**
+   * Specifies the handle for the JSON or XML representation
+   * of a query by example and returns the query definition.
+   * @param handle	the JSON or XML handle.
+   * @return	the query definition.
+   */
+  RawQueryByExampleDefinition withHandle(StructureWriteHandle handle);
 }

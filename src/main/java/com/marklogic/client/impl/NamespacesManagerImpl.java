@@ -40,153 +40,153 @@ import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.ResourceNotFoundException;
 
 class NamespacesManagerImpl
-    extends AbstractLoggingManager
-    implements NamespacesManager
+  extends AbstractLoggingManager
+  implements NamespacesManager
 {
-	static final private Logger logger = LoggerFactory.getLogger(NamespacesManagerImpl.class);
+  static final private Logger logger = LoggerFactory.getLogger(NamespacesManagerImpl.class);
 
-	static final private Pattern NAMESPACE_PATTERN = Pattern.compile(
-		"<([^: >]+:)?uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?uri>"
-		);
+  static final private Pattern NAMESPACE_PATTERN = Pattern.compile(
+    "<([^: >]+:)?uri(\\s[^>]+)?>([^<>]+)</([^: >]+:)?uri>"
+  );
 
-	private RESTServices services;
+  private RESTServices services;
 
-	NamespacesManagerImpl(RESTServices services) {
-		super();
-		this.services = services;
-	}
+  NamespacesManagerImpl(RESTServices services) {
+    super();
+    this.services = services;
+  }
 
-	@Override
-	public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException {
-		if (prefix == null)
-			throw new IllegalArgumentException("Cannot read namespace for null prefix");
-		if (prefix.length() == 0)
-			throw new IllegalArgumentException("Server does not maintain a default namespace");
+  @Override
+  public String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException {
+    if (prefix == null)
+      throw new IllegalArgumentException("Cannot read namespace for null prefix");
+    if (prefix.length() == 0)
+      throw new IllegalArgumentException("Server does not maintain a default namespace");
 
-		String binding = services.getValue(
-				requestLogger, "config/namespaces", prefix, true, "application/xml", String.class);
-		if (binding == null)
-			return null;
+    String binding = services.getValue(
+      requestLogger, "config/namespaces", prefix, true, "application/xml", String.class);
+    if (binding == null)
+      return null;
 
-		Matcher matcher = NAMESPACE_PATTERN.matcher(binding);
-		if (!matcher.find()) {
-			if (logger.isWarnEnabled())
-				logger.warn("Failed to extract namespace from {}", binding);
-			return null;
-		}
+    Matcher matcher = NAMESPACE_PATTERN.matcher(binding);
+    if (!matcher.find()) {
+      if (logger.isWarnEnabled())
+        logger.warn("Failed to extract namespace from {}", binding);
+      return null;
+    }
 
-		return matcher.toMatchResult().group(3);
-	}
-	@Override
-	public NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException {
-		EditableNamespaceContext context = new EditableNamespaceContext();
+    return matcher.toMatchResult().group(3);
+  }
+  @Override
+  public NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException {
+    EditableNamespaceContext context = new EditableNamespaceContext();
 
-		try {
-			InputStream stream = services.getValues(requestLogger, "config/namespaces", "application/xml", InputStream.class);
-			if (stream == null)
-				return null;
+    try {
+      InputStream stream = services.getValues(requestLogger, "config/namespaces", "application/xml", InputStream.class);
+      if (stream == null)
+        return null;
 
-			DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-			factory.setNamespaceAware(true);
-			factory.setValidating(false);
+      DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+      factory.setNamespaceAware(true);
+      factory.setValidating(false);
 
-			Document document = factory.newDocumentBuilder().parse(stream);
-			NodeList bindings =
-				document.getElementsByTagNameNS("http://marklogic.com/rest-api", "namespace");
-			if (bindings == null)
-				return null;
-	
-			int bindingsCount = bindings.getLength();
-			if (bindingsCount < 1)
-				return null;
+      Document document = factory.newDocumentBuilder().parse(stream);
+      NodeList bindings =
+        document.getElementsByTagNameNS("http://marklogic.com/rest-api", "namespace");
+      if (bindings == null)
+        return null;
 
-			for (int i=0; i < bindingsCount; i++) {
-				Node binding = bindings.item(i);
+      int bindingsCount = bindings.getLength();
+      if (bindingsCount < 1)
+        return null;
 
-				NodeList children = binding.getChildNodes();
-				if (children == null)
-					continue;
+      for (int i=0; i < bindingsCount; i++) {
+        Node binding = bindings.item(i);
 
-				String prefix = null;
-				String namespaceUri = null;
-				for (int j=0; j < children.getLength(); j++) {
-					Node child = children.item(j);
-					if (child.getNodeType() != Node.ELEMENT_NODE)
-						continue;
+        NodeList children = binding.getChildNodes();
+        if (children == null)
+          continue;
 
-					Element element = (Element) child;
-					if ("prefix".equals(element.getLocalName()))
-						prefix = element.getTextContent();
-					else if ("uri".equals(element.getLocalName()))
-						namespaceUri = element.getTextContent();
-				}
-				if (prefix == null || namespaceUri == null)
-					continue;
+        String prefix = null;
+        String namespaceUri = null;
+        for (int j=0; j < children.getLength(); j++) {
+          Node child = children.item(j);
+          if (child.getNodeType() != Node.ELEMENT_NODE)
+            continue;
 
-				context.put(prefix, namespaceUri);
-			}
-		} catch (SAXException e) {
-			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new MarkLogicInternalException(e);
-		} catch (IOException e) {
-			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new MarkLogicInternalException(e);
-		} catch (ParserConfigurationException e) {
-			logger.error("Failed to parse DOM document for namespace bindings",e);
-			throw new MarkLogicInternalException(e);
-		}
+          Element element = (Element) child;
+          if ("prefix".equals(element.getLocalName()))
+            prefix = element.getTextContent();
+          else if ("uri".equals(element.getLocalName()))
+            namespaceUri = element.getTextContent();
+        }
+        if (prefix == null || namespaceUri == null)
+          continue;
 
-		return context;
-	}
-	@Override
-	public void addPrefix(String prefix, String namespaceUri) throws ForbiddenUserException, FailedRequestException {
-		if (prefix == null)
-			throw new IllegalArgumentException("Cannot write binding for null prefix");
-		if (prefix.length() == 0)
-			throw new IllegalArgumentException("Cannot specify a default namespace");
-		if (namespaceUri == null)
-			throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
+        context.put(prefix, namespaceUri);
+      }
+    } catch (SAXException e) {
+      logger.error("Failed to parse DOM document for namespace bindings",e);
+      throw new MarkLogicInternalException(e);
+    } catch (IOException e) {
+      logger.error("Failed to parse DOM document for namespace bindings",e);
+      throw new MarkLogicInternalException(e);
+    } catch (ParserConfigurationException e) {
+      logger.error("Failed to parse DOM document for namespace bindings",e);
+      throw new MarkLogicInternalException(e);
+    }
 
-		String structure =
-			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
-			"<namespace-bindings xmlns=\"http://marklogic.com/rest-api\">" +
-			"<namespace>\n"+
-			"    <prefix>"+prefix+"</prefix>\n"+
-			"    <uri>"+namespaceUri+"</uri>\n"+
-			"</namespace>\n"+
-			"</namespace-bindings>";
+    return context;
+  }
+  @Override
+  public void addPrefix(String prefix, String namespaceUri) throws ForbiddenUserException, FailedRequestException {
+    if (prefix == null)
+      throw new IllegalArgumentException("Cannot write binding for null prefix");
+    if (prefix.length() == 0)
+      throw new IllegalArgumentException("Cannot specify a default namespace");
+    if (namespaceUri == null)
+      throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
 
-		services.postValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
-	}
-	@Override
-	public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (prefix == null)
-			throw new IllegalArgumentException("Cannot write binding for null prefix");
-		if (prefix.length() == 0)
-			throw new IllegalArgumentException("Cannot specify a default namespace");
-		if (namespaceUri == null)
-			throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
+    String structure =
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
+        "<namespace-bindings xmlns=\"http://marklogic.com/rest-api\">" +
+        "<namespace>\n"+
+        "    <prefix>"+prefix+"</prefix>\n"+
+        "    <uri>"+namespaceUri+"</uri>\n"+
+        "</namespace>\n"+
+        "</namespace-bindings>";
 
-		String structure =
-			"<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
-			"<namespace xmlns=\"http://marklogic.com/rest-api\">\n"+
-			"    <prefix>"+prefix+"</prefix>\n"+
-			"    <uri>"+namespaceUri+"</uri>\n"+
-			"</namespace>\n";
+    services.postValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
+  }
+  @Override
+  public void updatePrefix(String prefix, String namespaceUri) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    if (prefix == null)
+      throw new IllegalArgumentException("Cannot write binding for null prefix");
+    if (prefix.length() == 0)
+      throw new IllegalArgumentException("Cannot specify a default namespace");
+    if (namespaceUri == null)
+      throw new IllegalArgumentException("Cannot write binding for null namespaceUri");
 
-		services.putValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
-	}
-	@Override
-	public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		if (prefix == null)
-			throw new IllegalArgumentException("Cannot delete binding for null prefix");
-		if (prefix.length() == 0)
-			throw new IllegalArgumentException("Server does not maintain a default namespace");
+    String structure =
+      "<?xml version=\"1.0\" encoding=\"utf-8\"?>\n"+
+        "<namespace xmlns=\"http://marklogic.com/rest-api\">\n"+
+        "    <prefix>"+prefix+"</prefix>\n"+
+        "    <uri>"+namespaceUri+"</uri>\n"+
+        "</namespace>\n";
 
-		services.deleteValue(requestLogger, "config/namespaces", prefix);
-	}
-	@Override
-	public void deleteAll() throws ForbiddenUserException, FailedRequestException {
-		services.deleteValues(requestLogger, "config/namespaces");
-	}
+    services.putValue(requestLogger, "config/namespaces", prefix, "application/xml", structure);
+  }
+  @Override
+  public void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    if (prefix == null)
+      throw new IllegalArgumentException("Cannot delete binding for null prefix");
+    if (prefix.length() == 0)
+      throw new IllegalArgumentException("Server does not maintain a default namespace");
+
+    services.deleteValue(requestLogger, "config/namespaces", prefix);
+  }
+  @Override
+  public void deleteAll() throws ForbiddenUserException, FailedRequestException {
+    services.deleteValues(requestLogger, "config/namespaces");
+  }
 }

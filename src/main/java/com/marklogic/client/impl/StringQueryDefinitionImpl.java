@@ -18,25 +18,25 @@ package com.marklogic.client.impl;
 import com.marklogic.client.query.StringQueryDefinition;
 
 public class StringQueryDefinitionImpl extends AbstractQueryDefinition implements StringQueryDefinition {
-    protected String criteria = null;
+  protected String criteria = null;
 
-    public StringQueryDefinitionImpl(String uri) {
-        optionsUri = uri;
-    }
+  public StringQueryDefinitionImpl(String uri) {
+    optionsUri = uri;
+  }
 
-    @Override
-    public String getCriteria() {
-        return criteria;
-    }
+  @Override
+  public String getCriteria() {
+    return criteria;
+  }
 
-    @Override
-    public void setCriteria(String criteria) {
-        this.criteria = criteria;
-    }
+  @Override
+  public void setCriteria(String criteria) {
+    this.criteria = criteria;
+  }
 
-    @Override
-    public StringQueryDefinition withCriteria(String criteria) {
-    	setCriteria(criteria);
-    	return this;
-    }
+  @Override
+  public StringQueryDefinition withCriteria(String criteria) {
+    setCriteria(criteria);
+    return this;
+  }
 }

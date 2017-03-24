@@ -19,7 +19,7 @@ package com.marklogic.client.datamovement;
  * JobTicket is used to uniquely identify a job. This is given as input
  * when we want to generate a JobReport. The JobReport given the JobTicket
  * would generate the report for that particular job
- * 
+ *
  */
 public interface JobTicket {
   /**

@@ -25,19 +25,19 @@ import com.sun.jersey.api.client.filter.ClientFilter;
  * DigestChallengeFilter is a work around for a Jersey bug: http://java.net/jira/browse/JERSEY-1445
  */
 class DigestChallengeFilter extends ClientFilter {
-	DigestChallengeFilter() {
-		super();
-	}
+  DigestChallengeFilter() {
+    super();
+  }
 
-	@Override
-	public ClientResponse handle(ClientRequest request) throws ClientHandlerException {
-        ClientResponse response = getNext().handle(request);
+  @Override
+  public ClientResponse handle(ClientRequest request) throws ClientHandlerException {
+    ClientResponse response = getNext().handle(request);
 
-        if (response.getClientResponseStatus() == Status.UNAUTHORIZED) {
-        	// NOTE: ApacheHttpClient4Handler.handle() also calls response.bufferEntity()
-        	response.close();
-        }
+    if (response.getClientResponseStatus() == Status.UNAUTHORIZED) {
+      // NOTE: ApacheHttpClient4Handler.handle() also calls response.bufferEntity()
+      response.close();
+    }
 
-		return response;
-	}
+    return response;
+  }
 }

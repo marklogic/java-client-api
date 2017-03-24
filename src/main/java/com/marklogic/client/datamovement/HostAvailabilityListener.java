@@ -91,7 +91,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withSuspendTimeForHostUnavailable(Duration
-  duration) {
+                                                                      duration) {
     if (duration == null) throw new IllegalArgumentException("duration must not be null");
     this.suspendTimeForHostUnavailable = duration;
     return this;

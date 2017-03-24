@@ -24,25 +24,25 @@ import javax.xml.datatype.Duration;
  * A CountedDistinctValue is a value that includes a frequency.
  */
 public class ValuesMetricImpl {
-    private static Calendar now = Calendar.getInstance();
+  private static Calendar now = Calendar.getInstance();
 
-    public ValuesMetricImpl() {
-    }
+  public ValuesMetricImpl() {
+  }
 
-    @XmlValue
-    String value;
+  @XmlValue
+  String value;
 
-    /**
-     * Returns the metric as a long number of milliseconds.
-     *
-     * @return The metric.
-     */
-    public long getValue() {
-        return parseTime(value);
-    }
+  /**
+   * Returns the metric as a long number of milliseconds.
+   *
+   * @return The metric.
+   */
+  public long getValue() {
+    return parseTime(value);
+  }
 
-    private long parseTime(String time) {
-        Duration d = Utilities.getDatatypeFactory().newDurationDayTime(time);
-        return d.getTimeInMillis(now);
-    }
+  private long parseTime(String time) {
+    Duration d = Utilities.getDatatypeFactory().newDurationDayTime(time);
+    return d.getTimeInMillis(now);
+  }
 }

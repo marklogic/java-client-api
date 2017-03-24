@@ -79,20 +79,20 @@ public class WriteandReadPOJOs {
 
   public void writeBulkPOJOS() throws JAXBException {
     WriteBatcher batcher = moveMgr.newWriteBatcher()
-        // normally a batch would be at least 100 docs at a time. We're
-        // making this number small in order to demonstrate this example.
-        .withBatchSize(batchSize)
-        // the number of threads writing depends on how fast you have documents available
-        // and how many nodes are in your MarkLogic cluster
-        .withThreadCount(threadCount)
-        // create an action you want to do once a batch is successfully
-        // written here. It will be called for each successful batch.
-        .onBatchSuccess(batch -> {
-          logger.info("Batch {} wrote, {} so far", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
-        })
-        // create an action you want to do when the batch fails. It will
-        // be called for every batch that fails.
-        .onBatchFailure((batch, throwable) -> throwable.printStackTrace() );
+      // normally a batch would be at least 100 docs at a time. We're
+      // making this number small in order to demonstrate this example.
+      .withBatchSize(batchSize)
+      // the number of threads writing depends on how fast you have documents available
+      // and how many nodes are in your MarkLogic cluster
+      .withThreadCount(threadCount)
+      // create an action you want to do once a batch is successfully
+      // written here. It will be called for each successful batch.
+      .onBatchSuccess(batch -> {
+        logger.info("Batch {} wrote, {} so far", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
+      })
+      // create an action you want to do when the batch fails. It will
+      // be called for every batch that fails.
+      .onBatchFailure((batch, throwable) -> throwable.printStackTrace() );
     moveMgr.startJob(batcher);
 
     for(int i=0;i<50;i++) {
@@ -114,7 +114,7 @@ public class WriteandReadPOJOs {
       // Write the instance of the POJO class into the database
       // along with the metadata created above
       batcher.addAs(docId, metadataHandle, product);
-      
+
     }
     // any docs in an incomplete batch need to be written
     batcher.flushAndWait();
@@ -128,25 +128,25 @@ public class WriteandReadPOJOs {
     // Create a QueryBatcher in order to retrieve bulk POJOs 
     // from the database matching the query definition
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
-        .withBatchSize(batchSize)
-        .withThreadCount(threadCount)
-        // You can configure to do some action whenever a batch 
-        // of uris are retrieved and ready to process
-        .onUrisReady(
-          batch -> {
-            // Read the URIs and display them
-            XMLDocumentManager docMgr = batch.getClient().newXMLDocumentManager();
-            DocumentPage documents = docMgr.read(batch.getItems());
-            for ( DocumentRecord record : documents ) {
-              ProductDetails product = record.getContentAs(ProductDetails.class);
-              System.out.println("Product ID : "+ product.getId());
-            }
-            
+      .withBatchSize(batchSize)
+      .withThreadCount(threadCount)
+      // You can configure to do some action whenever a batch
+      // of uris are retrieved and ready to process
+      .onUrisReady(
+        batch -> {
+          // Read the URIs and display them
+          XMLDocumentManager docMgr = batch.getClient().newXMLDocumentManager();
+          DocumentPage documents = docMgr.read(batch.getItems());
+          for ( DocumentRecord record : documents ) {
+            ProductDetails product = record.getContentAs(ProductDetails.class);
+            System.out.println("Product ID : "+ product.getId());
           }
-        )
-        // Add a listener to do some action when the batch fails to retrieve
-        .onQueryFailure(throwable -> throwable.printStackTrace());
-    
+
+        }
+      )
+      // Add a listener to do some action when the batch fails to retrieve
+      .onQueryFailure(throwable -> throwable.printStackTrace());
+
     moveMgr.startJob(queryBatcher);
     // Wait till the batch completes
     queryBatcher.awaitCompletion();
@@ -161,10 +161,10 @@ public class WriteandReadPOJOs {
     // all documents are exported at a consistent point-in-time using
     // withConsistentSnapshot.
     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
-        .withBatchSize(batchSize)
-        .withThreadCount(threadCount)
-        .onUrisReady(
-          new ExportListener()
+      .withBatchSize(batchSize)
+      .withThreadCount(threadCount)
+      .onUrisReady(
+        new ExportListener()
           .withConsistentSnapshot()
           // Configure a listener to do some action for each document
           // in the batch when each batch is ready
@@ -173,9 +173,9 @@ public class WriteandReadPOJOs {
               System.out.println("Product ID with Export Listener : "+ doc.getContentAs(ProductDetails.class).getId());
             }
           )
-        )
-        .onQueryFailure(throwable -> throwable.printStackTrace());
-    
+      )
+      .onQueryFailure(throwable -> throwable.printStackTrace());
+
     moveMgr.startJob(exportBatcher);
     exportBatcher.awaitCompletion();
     moveMgr.stopJob(exportBatcher);
@@ -183,8 +183,8 @@ public class WriteandReadPOJOs {
 
   public void deleteDocuments() {
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
-        new StructuredQueryBuilder().collection("products-collection1", "products-collection2")
-      )
+      new StructuredQueryBuilder().collection("products-collection1", "products-collection2")
+    )
       .withBatchSize(batchSize)
       .onUrisReady(new DeleteListener()) // Sends a bulk delete for all the documents in each batch
       .withConsistentSnapshot()

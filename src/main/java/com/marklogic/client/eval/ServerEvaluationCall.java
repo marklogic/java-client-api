@@ -88,127 +88,127 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * with {@link #eval() multiple responses expected}.
  */
 public interface ServerEvaluationCall {
-    /** Initialize this server-side eval with xquery-syntax source code.
-     * @param xquery the xquery-syntax source code to eval on the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall xquery(String xquery);
+  /** Initialize this server-side eval with xquery-syntax source code.
+   * @param xquery the xquery-syntax source code to eval on the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall xquery(String xquery);
 
-    /** Initialize this server-side eval with xquery-syntax source code.
-     * @param xquery a handle containing the xquery-syntax source code to eval on the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall xquery(TextWriteHandle xquery);
+  /** Initialize this server-side eval with xquery-syntax source code.
+   * @param xquery a handle containing the xquery-syntax source code to eval on the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall xquery(TextWriteHandle xquery);
 
-    /** Initialize this server-side eval with javascript-syntax source code.
-     * @param javascript the javascript-syntax source code to eval on the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall javascript(String javascript);
+  /** Initialize this server-side eval with javascript-syntax source code.
+   * @param javascript the javascript-syntax source code to eval on the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall javascript(String javascript);
 
-    /** Initialize this server-side eval call with javascript-syntax source code.
-     * @param javascript a handle containing the javascript-syntax source code to eval on the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall javascript(TextWriteHandle javascript);
+  /** Initialize this server-side eval call with javascript-syntax source code.
+   * @param javascript a handle containing the javascript-syntax source code to eval on the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall javascript(TextWriteHandle javascript);
 
-    /** Initialize this server-side invoke call with a path to the module to invoke.
-     * @param modulePath a path to a module previously installed in the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall modulePath(String modulePath);
+  /** Initialize this server-side invoke call with a path to the module to invoke.
+   * @param modulePath a path to a module previously installed in the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall modulePath(String modulePath);
 
-    /** Set a variable name-value pair to pass to the code executing server-side.
-     * @param name the variable name, including a namespace prefix if the prefix is
-     *      mapped to a uri in the {@link #namespaceContext namespace context}
-     * @param value the atomic variable value
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addVariable(String name, String value);
+  /** Set a variable name-value pair to pass to the code executing server-side.
+   * @param name the variable name, including a namespace prefix if the prefix is
+   *      mapped to a uri in the {@link #namespaceContext namespace context}
+   * @param value the atomic variable value
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addVariable(String name, String value);
 
-    /** Set a variable name-value pair to pass to the code executing server-side.
-     * @param name the variable name, including a namespace prefix if the prefix is
-     *      mapped to a uri in the {@link #namespaceContext namespace context}
-     * @param value the atomic variable value
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addVariable(String name, Number value);
+  /** Set a variable name-value pair to pass to the code executing server-side.
+   * @param name the variable name, including a namespace prefix if the prefix is
+   *      mapped to a uri in the {@link #namespaceContext namespace context}
+   * @param value the atomic variable value
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addVariable(String name, Number value);
 
-    /** Set a variable name-value pair to pass to the code executing server-side.
-     * @param name the variable name, including a namespace prefix if the prefix is
-     *      mapped to a uri in the {@link #namespaceContext namespace context}
-     * @param value the atomic variable value
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addVariable(String name, Boolean value);
+  /** Set a variable name-value pair to pass to the code executing server-side.
+   * @param name the variable name, including a namespace prefix if the prefix is
+   *      mapped to a uri in the {@link #namespaceContext namespace context}
+   * @param value the atomic variable value
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addVariable(String name, Boolean value);
 
-    /** Set a variable name-value pair to pass to the code executing server-side.
-     * @param name the variable name, including a namespace prefix if the prefix is
-     *      mapped to a uri in the {@link #namespaceContext namespace context}
-     * @param value the handle containing the variable value, most likely XML or JSON
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addVariable(String name, AbstractWriteHandle value);
+  /** Set a variable name-value pair to pass to the code executing server-side.
+   * @param name the variable name, including a namespace prefix if the prefix is
+   *      mapped to a uri in the {@link #namespaceContext namespace context}
+   * @param value the handle containing the variable value, most likely XML or JSON
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addVariable(String name, AbstractWriteHandle value);
 
-    /** Convenience method to set a variable of a type mapped to an io handle.  Like other
-     * <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
-     * *As convenience methods</a> throughout the API, the Object value
-     *  is provided by the handle registered for that Class.
-     *
-     * @param name the variable name, including a namespace prefix if the prefix is
-     *      mapped to a uri in the {@link #namespaceContext namespace context}
-     * @param value the handle containing the variable value
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addVariableAs(String name, Object value);
+  /** Convenience method to set a variable of a type mapped to an io handle.  Like other
+   * <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
+   * *As convenience methods</a> throughout the API, the Object value
+   *  is provided by the handle registered for that Class.
+   *
+   * @param name the variable name, including a namespace prefix if the prefix is
+   *      mapped to a uri in the {@link #namespaceContext namespace context}
+   * @param value the handle containing the variable value
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addVariableAs(String name, Object value);
 
-    /** Initialize this call with a transaction under which server-side execution should occur.
-     * @param transaction the open transaction under which to run this call in the server
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall transaction(Transaction transaction);
+  /** Initialize this call with a transaction under which server-side execution should occur.
+   * @param transaction the open transaction under which to run this call in the server
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall transaction(Transaction transaction);
 
-    /** Add a single namespace prefix-to-uri mapping to the namespace context.
-     * @param prefix the prefix for this mapping
-     * @param namespaceURI the uri for this mapping
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall addNamespace(String prefix, String namespaceURI);
+  /** Add a single namespace prefix-to-uri mapping to the namespace context.
+   * @param prefix the prefix for this mapping
+   * @param namespaceURI the uri for this mapping
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall addNamespace(String prefix, String namespaceURI);
 
-    /** Initialize this call with namespaces so variables with prefixes can be sent with
-     * their prefixes translated to uris that will match the uris in the code to be
-     * executed on the server.
-     * @param namespaces a namespace context specifying the mapping from prefixes to namespaces
-     * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
-     */
-    ServerEvaluationCall namespaceContext(EditableNamespaceContext namespaces);
+  /** Initialize this call with namespaces so variables with prefixes can be sent with
+   * their prefixes translated to uris that will match the uris in the code to be
+   * executed on the server.
+   * @param namespaces a namespace context specifying the mapping from prefixes to namespaces
+   * @return a reference to this ServerEvaluationCall instance for use as a fluent-style builder
+   */
+  ServerEvaluationCall namespaceContext(EditableNamespaceContext namespaces);
 
-    /** Conveneince method to get the response serialized to a particular type by an io handle.
-     * Like other <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
-     * *As convenience methods</a> throughout the API, the return value
-     *  is provided by the handle registered for the provided responseType.
-     *
-     * @param responseType the type desired for the response.  Must be a Class registered
-     *      to a handle.
-     * @param <T> the type of object that will be returned by the handle registered for it
-     * @return the result deserialized by the implicit handle mapped to this responseType
-     */
-    <T> T evalAs(Class<T> responseType)
-        throws ForbiddenUserException, FailedRequestException;
+  /** Conveneince method to get the response serialized to a particular type by an io handle.
+   * Like other <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
+   * *As convenience methods</a> throughout the API, the return value
+   *  is provided by the handle registered for the provided responseType.
+   *
+   * @param responseType the type desired for the response.  Must be a Class registered
+   *      to a handle.
+   * @param <T> the type of object that will be returned by the handle registered for it
+   * @return the result deserialized by the implicit handle mapped to this responseType
+   */
+  <T> T evalAs(Class<T> responseType)
+    throws ForbiddenUserException, FailedRequestException;
 
-    /** Provides the single result of the server-side eval or invoke call, wrapped in an io
-     * handle.
-     * @param responseHandle the type of handle appropriate for the expected single result
-     * @param <H> the type of AbstractReadHandle to return
-     * @return the handle which wraps the response
-     */
-    <H extends AbstractReadHandle> H eval(H responseHandle)
-        throws ForbiddenUserException, FailedRequestException;
+  /** Provides the single result of the server-side eval or invoke call, wrapped in an io
+   * handle.
+   * @param responseHandle the type of handle appropriate for the expected single result
+   * @param <H> the type of AbstractReadHandle to return
+   * @return the handle which wraps the response
+   */
+  <H extends AbstractReadHandle> H eval(H responseHandle)
+    throws ForbiddenUserException, FailedRequestException;
 
-    /** Provides all results returned by the server-side eval or invoke call.
-     * @return an EvalResultIterator which provides access to all the results returned by 
-     *      the server-side eval or invoke call.
-     */
-    EvalResultIterator eval()
-        throws ForbiddenUserException, FailedRequestException;
+  /** Provides all results returned by the server-side eval or invoke call.
+   * @return an EvalResultIterator which provides access to all the results returned by
+   *      the server-side eval or invoke call.
+   */
+  EvalResultIterator eval()
+    throws ForbiddenUserException, FailedRequestException;
 }

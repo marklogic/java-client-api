@@ -67,248 +67,248 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * receives written database content from a URI.
  */
 public class URIHandle
-	extends BaseHandle<InputStream, InputStream>
-	implements
-		BinaryReadHandle, BinaryWriteHandle,
-    	GenericReadHandle, GenericWriteHandle,
-    	JSONReadHandle, JSONWriteHandle, 
-    	TextReadHandle, TextWriteHandle,
-    	XMLReadHandle, XMLWriteHandle
+  extends BaseHandle<InputStream, InputStream>
+  implements
+    BinaryReadHandle, BinaryWriteHandle,
+    GenericReadHandle, GenericWriteHandle,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle
 {
-	private HttpClient  client;
-	private HttpContext context;
-	private URI         baseUri;
-	private URI         currentUri;
-	private boolean     usePut = true;
+  private HttpClient  client;
+  private HttpContext context;
+  private URI         baseUri;
+  private URI         currentUri;
+  private boolean     usePut = true;
 
-	public URIHandle(HttpClient client) {
-		super();
-   		setResendable(true);
-		setClient(client);
-	}
-	public URIHandle(HttpClient client, URI baseUri) {
-		this(client);
-		setBaseUri(baseUri);
-	}
-	public URIHandle(HttpClient client, String baseUri) {
-		this(client);
-		setBaseUri(baseUri);
-	}
-	public URIHandle(String host, int port, String user, String password, Authentication authType) {
-		super();
+  public URIHandle(HttpClient client) {
+    super();
+    setResendable(true);
+    setClient(client);
+  }
+  public URIHandle(HttpClient client, URI baseUri) {
+    this(client);
+    setBaseUri(baseUri);
+  }
+  public URIHandle(HttpClient client, String baseUri) {
+    this(client);
+    setBaseUri(baseUri);
+  }
+  public URIHandle(String host, int port, String user, String password, Authentication authType) {
+    super();
 
-		SchemeRegistry schemeRegistry = new SchemeRegistry();
-		schemeRegistry.register(
-				new Scheme("http", port, PlainSocketFactory.getSocketFactory())
-				);
+    SchemeRegistry schemeRegistry = new SchemeRegistry();
+    schemeRegistry.register(
+      new Scheme("http", port, PlainSocketFactory.getSocketFactory())
+    );
 
-		// PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(  // 4.2
-        ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
-				schemeRegistry);
-		connMgr.setDefaultMaxPerRoute(100);
+    // PoolingClientConnectionManager connMgr = new PoolingClientConnectionManager(  // 4.2
+    ThreadSafeClientConnManager connMgr = new ThreadSafeClientConnManager(
+      schemeRegistry);
+    connMgr.setDefaultMaxPerRoute(100);
 
-        DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
+    DefaultHttpClient defaultClient = new DefaultHttpClient(connMgr);
 
-        List<String> prefList = new ArrayList<>();
-		if (authType == Authentication.BASIC)
-			prefList.add(AuthPolicy.BASIC);
-		else if (authType == Authentication.DIGEST)
-			prefList.add(AuthPolicy.DIGEST);
-		else
-			throw new IllegalArgumentException("Unknown authentication type "+authType.name());
+    List<String> prefList = new ArrayList<>();
+    if (authType == Authentication.BASIC)
+      prefList.add(AuthPolicy.BASIC);
+    else if (authType == Authentication.DIGEST)
+      prefList.add(AuthPolicy.DIGEST);
+    else
+      throw new IllegalArgumentException("Unknown authentication type "+authType.name());
 
-		defaultClient.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, prefList);
+    defaultClient.getParams().setParameter(AuthPNames.PROXY_AUTH_PREF, prefList);
 
-		defaultClient.getCredentialsProvider().setCredentials(
-		        new AuthScope(host, port), 
-		        new UsernamePasswordCredentials(user, password)
-		        );
+    defaultClient.getCredentialsProvider().setCredentials(
+      new AuthScope(host, port),
+      new UsernamePasswordCredentials(user, password)
+    );
 
-		setClient(defaultClient);
-	}
+    setClient(defaultClient);
+  }
 
-	public URI get() {
-		return currentUri;
-	}
-	public void set(URI uri) {
-		this.currentUri = makeUri(uri);
-	}
-	public void set(String uri) {
-		this.currentUri = makeUri(uri);
-	}
-	public URIHandle with(URI uri) {
-		set(uri);
-		return this;
-	}
-	public URIHandle with(String uri) {
-		set(uri);
-		return this;
-	}
+  public URI get() {
+    return currentUri;
+  }
+  public void set(URI uri) {
+    this.currentUri = makeUri(uri);
+  }
+  public void set(String uri) {
+    this.currentUri = makeUri(uri);
+  }
+  public URIHandle with(URI uri) {
+    set(uri);
+    return this;
+  }
+  public URIHandle with(String uri) {
+    set(uri);
+    return this;
+  }
 
-	public URI getBaseUri() {
-		return baseUri;
-	}
-	public void setBaseUri(URI baseUri) {
-		this.baseUri = baseUri;
-	}
-	public void setBaseUri(String uri) {
-		setBaseUri(makeUri(uri));
-	}
+  public URI getBaseUri() {
+    return baseUri;
+  }
+  public void setBaseUri(URI baseUri) {
+    this.baseUri = baseUri;
+  }
+  public void setBaseUri(String uri) {
+    setBaseUri(makeUri(uri));
+  }
 
-	public URIHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
+  public URIHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
 
-	public HttpClient getClient() {
-		return client;
-	}
-	public void setClient(HttpClient client) {
-		this.client = client;
-	}
+  public HttpClient getClient() {
+    return client;
+  }
+  public void setClient(HttpClient client) {
+    this.client = client;
+  }
 
-	public HttpContext getContext() {
-		if (context == null)
-			context = new BasicHttpContext();
-		return context;
-	}
-	public void setContext(HttpContext context) {
-		this.context = context;
-	}
+  public HttpContext getContext() {
+    if (context == null)
+      context = new BasicHttpContext();
+    return context;
+  }
+  public void setContext(HttpContext context) {
+    this.context = context;
+  }
 
-	public boolean isUsePut() {
-		return usePut;
-	}
-	public void setUsePut(boolean usePut) {
-		this.usePut = usePut;
-	}
+  public boolean isUsePut() {
+    return usePut;
+  }
+  public void setUsePut(boolean usePut) {
+    this.usePut = usePut;
+  }
 
-	public boolean check() {
-		return checkImpl(currentUri);
-	}
-	public boolean check(String uri) {
-		return checkImpl(makeUri(uri));
-	}
-	public boolean check(URI uri) {
-		return checkImpl(makeUri(uri));
-	}
-	private boolean checkImpl(URI uri) {
-		try {
-			HttpHead method = new HttpHead(uri);
+  public boolean check() {
+    return checkImpl(currentUri);
+  }
+  public boolean check(String uri) {
+    return checkImpl(makeUri(uri));
+  }
+  public boolean check(URI uri) {
+    return checkImpl(makeUri(uri));
+  }
+  private boolean checkImpl(URI uri) {
+    try {
+      HttpHead method = new HttpHead(uri);
 
-			HttpResponse response = client.execute(method, getContext());
+      HttpResponse response = client.execute(method, getContext());
 
-			StatusLine status = response.getStatusLine();
+      StatusLine status = response.getStatusLine();
 
-			return status.getStatusCode() == 200;
-		} catch(ClientProtocolException e) {
-			throw new MarkLogicIOException(e);
-		} catch(IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+      return status.getStatusCode() == 200;
+    } catch(ClientProtocolException e) {
+      throw new MarkLogicIOException(e);
+    } catch(IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-	@Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
-	@Override
-	protected void receiveContent(InputStream content) {
-		if (content == null) {
-			return;
-		}
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    if (content == null) {
+      return;
+    }
 
-		try {
-			URI uri = get();
-			if (uri == null) {
-				throw new IllegalStateException("No uri for output");
-			}
+    try {
+      URI uri = get();
+      if (uri == null) {
+        throw new IllegalStateException("No uri for output");
+      }
 
-			HttpUriRequest method = null;
-			HttpEntityEnclosingRequestBase receiver = null;
-			if (isUsePut()) {
-				HttpPut putter = new HttpPut(uri);
-				method         = putter;
-				receiver       = putter;
-			} else {
-				HttpPost poster = new HttpPost(uri);
-				method          = poster;
-				receiver        = poster;
-			}
+      HttpUriRequest method = null;
+      HttpEntityEnclosingRequestBase receiver = null;
+      if (isUsePut()) {
+        HttpPut putter = new HttpPut(uri);
+        method         = putter;
+        receiver       = putter;
+      } else {
+        HttpPost poster = new HttpPost(uri);
+        method          = poster;
+        receiver        = poster;
+      }
 
-			InputStreamEntity entity = new InputStreamEntity(content, -1);
+      InputStreamEntity entity = new InputStreamEntity(content, -1);
 
-			receiver.setEntity(entity);
+      receiver.setEntity(entity);
 
-			HttpResponse response = client.execute(method, getContext());
-			content.close();
+      HttpResponse response = client.execute(method, getContext());
+      content.close();
 
-			StatusLine status = response.getStatusLine();
+      StatusLine status = response.getStatusLine();
 
-			if (!method.isAborted()) {
-				method.abort();
-			}
+      if (!method.isAborted()) {
+        method.abort();
+      }
 
-			if (status.getStatusCode() >= 300) {
-				throw new MarkLogicIOException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
-			}
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	@Override
-	protected InputStream sendContent() {
-		try {
-			URI uri = get();
-			if (uri == null) {
-				throw new IllegalStateException("No uri for input");
-			}
+      if (status.getStatusCode() >= 300) {
+        throw new MarkLogicIOException("Could not write to "+uri.toString()+": "+status.getReasonPhrase());
+      }
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  @Override
+  protected InputStream sendContent() {
+    try {
+      URI uri = get();
+      if (uri == null) {
+        throw new IllegalStateException("No uri for input");
+      }
 
-			HttpGet method = new HttpGet(uri);
+      HttpGet method = new HttpGet(uri);
 
-			HttpResponse response = client.execute(method, getContext());
+      HttpResponse response = client.execute(method, getContext());
 
-			StatusLine status = response.getStatusLine();
-			if (status.getStatusCode() >= 300) {
-				if (!method.isAborted()) {
-					method.abort();
-				}
+      StatusLine status = response.getStatusLine();
+      if (status.getStatusCode() >= 300) {
+        if (!method.isAborted()) {
+          method.abort();
+        }
 
-				throw new MarkLogicIOException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
-			}
+        throw new MarkLogicIOException("Could not read from "+uri.toString()+": "+status.getReasonPhrase());
+      }
 
-			HttpEntity entity = response.getEntity();
-			if (entity == null) {
-				if (!method.isAborted()) {
-					method.abort();
-				}
+      HttpEntity entity = response.getEntity();
+      if (entity == null) {
+        if (!method.isAborted()) {
+          method.abort();
+        }
 
-				throw new MarkLogicIOException("Received empty response to write for "+uri.toString());
-			}
+        throw new MarkLogicIOException("Received empty response to write for "+uri.toString());
+      }
 
-			InputStream stream = entity.getContent();
-			if (stream == null) {
-				if (!method.isAborted()) {
-					method.abort();
-				}
+      InputStream stream = entity.getContent();
+      if (stream == null) {
+        if (!method.isAborted()) {
+          method.abort();
+        }
 
-				throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
-			}
+        throw new MarkLogicIOException("Could not get stream to write for "+uri.toString());
+      }
 
-			return stream;
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+      return stream;
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-	private URI makeUri(URI uri) {
-		return (baseUri != null) ? baseUri.resolve(uri) : uri;
-	}
-	private URI makeUri(String uri) {
-		try {
-			return (baseUri != null) ? baseUri.resolve(uri) : new URI(uri);
-		} catch (URISyntaxException e) {
-			throw new IllegalArgumentException(e);
-		}
-	}
+  private URI makeUri(URI uri) {
+    return (baseUri != null) ? baseUri.resolve(uri) : uri;
+  }
+  private URI makeUri(String uri) {
+    try {
+      return (baseUri != null) ? baseUri.resolve(uri) : new URI(uri);
+    } catch (URISyntaxException e) {
+      throw new IllegalArgumentException(e);
+    }
+  }
 }

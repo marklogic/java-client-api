@@ -23,16 +23,16 @@ import javax.ws.rs.core.MultivaluedMap;
 import com.sun.jersey.core.util.MultivaluedMapImpl;
 
 public abstract class RequestParametersImplementation {
-	private MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+  private MultivaluedMap<String, String> map = new MultivaluedMapImpl();
 
-	protected RequestParametersImplementation() {
-		super();
-	}
+  protected RequestParametersImplementation() {
+    super();
+  }
 
-	protected Map<String,List<String>> getMap() {
-		return map;
-	}
-	final MultivaluedMap<String, String> getMapImpl() {
-		return map;
-	}
+  protected Map<String,List<String>> getMap() {
+    return map;
+  }
+  final MultivaluedMap<String, String> getMapImpl() {
+    return map;
+  }
 }

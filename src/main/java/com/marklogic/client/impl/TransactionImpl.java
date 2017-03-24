@@ -26,86 +26,86 @@ import java.util.Calendar;
 import java.util.List;
 
 class TransactionImpl implements Transaction {
-	final static int DEFAULT_TIMELIMIT = -1;
+  final static int DEFAULT_TIMELIMIT = -1;
 
-	private RESTServices    services;
-	private String          transactionId;
-	private String          hostId;
-	// we keep cookies scoped with each tranasaction to work with load balancers
-	// that need to keep requests for one transaction on a specific MarkLogic Server host
-	private List<NewCookie> cookies = new ArrayList<>();
-	private Calendar        created = Calendar.getInstance();
+  private RESTServices    services;
+  private String          transactionId;
+  private String          hostId;
+  // we keep cookies scoped with each tranasaction to work with load balancers
+  // that need to keep requests for one transaction on a specific MarkLogic Server host
+  private List<NewCookie> cookies = new ArrayList<>();
+  private Calendar        created = Calendar.getInstance();
 
-	TransactionImpl(RESTServices services, String transactionId, List<NewCookie> cookies) {
-		this.services      = services;
-		this.transactionId = transactionId;
-		if ( cookies != null ) {
-			for ( NewCookie cookie : cookies ) {
-				// make a clone to ensure we're not holding on to any resources
-				// related to an HTTP connection that need to be released
-				this.cookies.add(new NewCookie(cookie));
-				if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
-					hostId =  cookie.getValue();
-				}
-			}
-		}
-	}
+  TransactionImpl(RESTServices services, String transactionId, List<NewCookie> cookies) {
+    this.services      = services;
+    this.transactionId = transactionId;
+    if ( cookies != null ) {
+      for ( NewCookie cookie : cookies ) {
+        // make a clone to ensure we're not holding on to any resources
+        // related to an HTTP connection that need to be released
+        this.cookies.add(new NewCookie(cookie));
+        if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
+          hostId =  cookie.getValue();
+        }
+      }
+    }
+  }
 
-    @Override
-	public String getTransactionId() {
-		return transactionId;
-	}
-	public void setTransactionId(String transactionId) {
-		this.transactionId = transactionId;
-	}
+  @Override
+  public String getTransactionId() {
+    return transactionId;
+  }
+  public void setTransactionId(String transactionId) {
+    this.transactionId = transactionId;
+  }
 
-    @Override
-	public List<NewCookie> getCookies() {
-		return cookies;
-	}
+  @Override
+  public List<NewCookie> getCookies() {
+    return cookies;
+  }
 
-    @Override
-	public String getHostId() {
-		return hostId;
-	}
-	protected void setHostId(String hostId) {
-		this.hostId = hostId;
-	}
+  @Override
+  public String getHostId() {
+    return hostId;
+  }
+  protected void setHostId(String hostId) {
+    this.hostId = hostId;
+  }
 
-	public Calendar getCreatedTimestamp() {
-		return created;
-	}
+  public Calendar getCreatedTimestamp() {
+    return created;
+  }
 
-	@Override
-    @SuppressWarnings({ "rawtypes", "unchecked" })
-	public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException {
-		if (handle == null)
-			throw new IllegalArgumentException("reading transaction status with null handle");
+  @Override
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public <T extends StructureReadHandle> T readStatus(T handle) throws ForbiddenUserException, FailedRequestException {
+    if (handle == null)
+      throw new IllegalArgumentException("reading transaction status with null handle");
 
-		HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "structure");
+    HandleImplementation handleBase = HandleAccessor.checkHandle(handle, "structure");
 
-		handleBase.receiveContent(
-				services.getValue(
-						null,
-						"transactions",
-						getTransactionId(),
-						false,
-						handleBase.getMimetype(),
-						handleBase.receiveAs()
-						)
-				);
+    handleBase.receiveContent(
+      services.getValue(
+        null,
+        "transactions",
+        getTransactionId(),
+        false,
+        handleBase.getMimetype(),
+        handleBase.receiveAs()
+      )
+    );
 
-		return handle;
-	}
+    return handle;
+  }
 
-	@Override
-	public void commit() throws ForbiddenUserException, FailedRequestException {
-		services.commitTransaction(this);
-	}
+  @Override
+  public void commit() throws ForbiddenUserException, FailedRequestException {
+    services.commitTransaction(this);
+  }
 
-	@Override
-	public void rollback() throws ForbiddenUserException, FailedRequestException {
-		services.rollbackTransaction(this);
-	}
+  @Override
+  public void rollback() throws ForbiddenUserException, FailedRequestException {
+    services.rollbackTransaction(this);
+  }
 
 }

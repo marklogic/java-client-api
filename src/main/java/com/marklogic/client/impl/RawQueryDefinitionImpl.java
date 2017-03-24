@@ -22,110 +22,110 @@ import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 
 abstract public class RawQueryDefinitionImpl
-extends AbstractQueryDefinition
-implements RawQueryDefinition
+  extends AbstractQueryDefinition
+  implements RawQueryDefinition
 {
-	static public class Combined
-	extends RawQueryDefinitionImpl
-	implements RawCombinedQueryDefinition {
-		Combined(StructureWriteHandle handle) {
-			super(handle);
-		}
-		Combined(StructureWriteHandle handle, String optionsName) {
-			super(handle, optionsName);
-		}
+  static public class Combined
+    extends RawQueryDefinitionImpl
+    implements RawCombinedQueryDefinition {
+    Combined(StructureWriteHandle handle) {
+      super(handle);
+    }
+    Combined(StructureWriteHandle handle, String optionsName) {
+      super(handle, optionsName);
+    }
 
-		@Override
-		public RawCombinedQueryDefinition withHandle(StructureWriteHandle handle) {
-			setHandle(handle);
-			return this;
-		}		
-	}
+    @Override
+    public RawCombinedQueryDefinition withHandle(StructureWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+  }
 
-	static public class Structured
-	extends RawQueryDefinitionImpl
-	implements RawStructuredQueryDefinition {
-		private String criteria = null;
+  static public class Structured
+    extends RawQueryDefinitionImpl
+    implements RawStructuredQueryDefinition {
+    private String criteria = null;
 
-		public Structured(StructureWriteHandle handle) {
-			super(handle);
-		}
-		public Structured(StructureWriteHandle handle, String optionsName) {
-			super(handle, optionsName);
-		}
+    public Structured(StructureWriteHandle handle) {
+      super(handle);
+    }
+    public Structured(StructureWriteHandle handle, String optionsName) {
+      super(handle, optionsName);
+    }
 
-		@Override
-		public RawStructuredQueryDefinition withHandle(StructureWriteHandle handle) {
-			setHandle(handle);
-			return this;
-		}		
+    @Override
+    public RawStructuredQueryDefinition withHandle(StructureWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
 
-		public String serialize() {
-			if (getHandle() == null) return "";
-			return HandleAccessor.contentAsString(getHandle());
-		}
+    public String serialize() {
+      if (getHandle() == null) return "";
+      return HandleAccessor.contentAsString(getHandle());
+    }
 
-		@Override
-		public String getCriteria() {
-			return criteria;
-		}
+    @Override
+    public String getCriteria() {
+      return criteria;
+    }
 
-		@Override
-		public void setCriteria(String criteria) {
-			this.criteria = criteria;
-		}
+    @Override
+    public void setCriteria(String criteria) {
+      this.criteria = criteria;
+    }
 
-		@Override
-		public RawStructuredQueryDefinition withCriteria(String criteria) {
-			setCriteria(criteria);
-			return this;
-		}
-	}
+    @Override
+    public RawStructuredQueryDefinition withCriteria(String criteria) {
+      setCriteria(criteria);
+      return this;
+    }
+  }
 
-	static public class ByExample
-	extends RawQueryDefinitionImpl
-	implements RawQueryByExampleDefinition {
-		ByExample(StructureWriteHandle handle) {
-			super(handle);
-		}
-		ByExample(StructureWriteHandle handle, String optionsName) {
-			super(handle, optionsName);
-		}
+  static public class ByExample
+    extends RawQueryDefinitionImpl
+    implements RawQueryByExampleDefinition {
+    ByExample(StructureWriteHandle handle) {
+      super(handle);
+    }
+    ByExample(StructureWriteHandle handle, String optionsName) {
+      super(handle, optionsName);
+    }
 
-		@Override
-		public RawQueryByExampleDefinition withHandle(StructureWriteHandle handle) {
-			setHandle(handle);
-			return this;
-		}		
-	}
+    @Override
+    public RawQueryByExampleDefinition withHandle(StructureWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+  }
 
-	private StructureWriteHandle handle;
+  private StructureWriteHandle handle;
 
-	RawQueryDefinitionImpl(StructureWriteHandle handle) {
-		super();
-		setHandle(handle);
-	}
-	RawQueryDefinitionImpl(StructureWriteHandle handle, String optionsName) {
-		this(handle);
-		setOptionsName(optionsName);
-	}
+  RawQueryDefinitionImpl(StructureWriteHandle handle) {
+    super();
+    setHandle(handle);
+  }
+  RawQueryDefinitionImpl(StructureWriteHandle handle, String optionsName) {
+    this(handle);
+    setOptionsName(optionsName);
+  }
 
-	@Override
-	public StructureWriteHandle getHandle() {
-		return handle;
-	}
+  @Override
+  public StructureWriteHandle getHandle() {
+    return handle;
+  }
 
-	@Override
-	public void setHandle(StructureWriteHandle handle) {
-		this.handle = handle;
-	}
+  @Override
+  public void setHandle(StructureWriteHandle handle) {
+    this.handle = handle;
+  }
 
-	@Override
-	public String toString() {
-		if (handle == null) {
-			return "";
-		}
-		return handle.toString();
-	}
+  @Override
+  public String toString() {
+    if (handle == null) {
+      return "";
+    }
+    return handle.toString();
+  }
 
 }

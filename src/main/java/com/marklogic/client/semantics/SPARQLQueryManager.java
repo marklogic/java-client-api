@@ -79,154 +79,154 @@ import com.marklogic.client.io.marker.XMLReadHandle;
  * <a href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics Developer's Guide</a>.
  */
 public interface SPARQLQueryManager  {
-    /** Instantiate a new SPARQLQueryDefinition.
-     *
-     * @return an empty SPARQLQueryDefinition
-     */
-    SPARQLQueryDefinition newQueryDefinition();
+  /** Instantiate a new SPARQLQueryDefinition.
+   *
+   * @return an empty SPARQLQueryDefinition
+   */
+  SPARQLQueryDefinition newQueryDefinition();
 
-    /** Instantiate a new SPARQLQueryDefinition with provided SPARQL.
-     *
-     * @param sparql a sparql query as text
-     * @return the query as SPARQLQueryDefinition
-     */
-    SPARQLQueryDefinition newQueryDefinition(String sparql);
+  /** Instantiate a new SPARQLQueryDefinition with provided SPARQL.
+   *
+   * @param sparql a sparql query as text
+   * @return the query as SPARQLQueryDefinition
+   */
+  SPARQLQueryDefinition newQueryDefinition(String sparql);
 
-    /** Instantiate a new SPARQLQueryDefinition with the SPARQL from
-     * the provided TextWriteHandle.
-     *
-     * @param sparql the handle containing a sparql query as text
-     * @return the query as SPARQLQueryDefinition
-     */
-    SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql);
+  /** Instantiate a new SPARQLQueryDefinition with the SPARQL from
+   * the provided TextWriteHandle.
+   *
+   * @param sparql the handle containing a sparql query as text
+   * @return the query as SPARQLQueryDefinition
+   */
+  SPARQLQueryDefinition newQueryDefinition(TextWriteHandle sparql);
 
-    /** Execute a SPARQL "SELECT" query.
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
-     * @param <T> the type of SPARQLResultsReadHandle to return
-     * @return the results in the provided SPARQLResultsReadHandle
-     */
-    <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
+  /** Execute a SPARQL "SELECT" query.
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
+   * @param <T> the type of SPARQLResultsReadHandle to return
+   * @return the results in the provided SPARQLResultsReadHandle
+   */
+  <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle);
 
-    /** Execute a SPARQL "SELECT" query.
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
-     * @param tx the transaction context for this operation
-     * @param <T> the type of SPARQLResultsReadHandle to return
-     * @return the results in the provided SPARQLResultsReadHandle
-     */
-    <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);
+  /** Execute a SPARQL "SELECT" query.
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
+   * @param tx the transaction context for this operation
+   * @param <T> the type of SPARQLResultsReadHandle to return
+   * @return the results in the provided SPARQLResultsReadHandle
+   */
+  <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, Transaction tx);
 
-    /** Execute a SPARQL "SELECT" query.
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
-     * @param start when paging through results, the first result of this page--must be &gt; 0.
-     *     Use together with {@link #setPageLength}.
-     * @param <T> the type of SPARQLResultsReadHandle to return
-     * @return the results in the provided SPARQLResultsReadHandle
-     */
-    <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start);
+  /** Execute a SPARQL "SELECT" query.
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
+   * @param start when paging through results, the first result of this page--must be &gt; 0.
+   *     Use together with {@link #setPageLength}.
+   * @param <T> the type of SPARQLResultsReadHandle to return
+   * @return the results in the provided SPARQLResultsReadHandle
+   */
+  <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start);
 
-    /** Execute a SPARQL "SELECT" query.
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
-     * @param start when paging through results, the first result of this page--must be &gt; 0.
-     *     Use together with {@link #setPageLength}.
-     * @param tx the transaction context for this operation
-     * @param <T> the type of SPARQLResultsReadHandle to return
-     * @return the results in the provided SPARQLResultsReadHandle
-     */
-    <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, Transaction tx);
+  /** Execute a SPARQL "SELECT" query.
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link SPARQLMimeTypes sparql results}
+   * @param start when paging through results, the first result of this page--must be &gt; 0.
+   *     Use together with {@link #setPageLength}.
+   * @param tx the transaction context for this operation
+   * @param <T> the type of SPARQLResultsReadHandle to return
+   * @return the results in the provided SPARQLResultsReadHandle
+   */
+  <T extends SPARQLResultsReadHandle> T executeSelect(SPARQLQueryDefinition qdef, T handle, long start, Transaction tx);
 
-    /** @return the currently set pageLength or -1 if no page length has been set */
-    long getPageLength();
+  /** @return the currently set pageLength or -1 if no page length has been set */
+  long getPageLength();
 
-    /** Set a page length for all SPARQL "SELECT" queries sent by this instance.
-     * @param pageLength the non-negative number of results per page
-     */
-    void setPageLength(long pageLength);
+  /** Set a page length for all SPARQL "SELECT" queries sent by this instance.
+   * @param pageLength the non-negative number of results per page
+   */
+  void setPageLength(long pageLength);
 
-    /** Reset this instance to have no page length set. */
-    void clearPageLength();
+  /** Reset this instance to have no page length set. */
+  void clearPageLength();
 
-    /** Execute a SPARQL "CONSTRUCT" statement.
-     * @param qdef the SPARQL "CONSTRUCT" statement
-     * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
-     * @param <T> the type of TriplesReadHandle to return
-     * @return the results in the provided TriplesReadHandle
-     */
-    <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle);
+  /** Execute a SPARQL "CONSTRUCT" statement.
+   * @param qdef the SPARQL "CONSTRUCT" statement
+   * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+   * @param <T> the type of TriplesReadHandle to return
+   * @return the results in the provided TriplesReadHandle
+   */
+  <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle);
 
-    /** Execute a SPARQL "CONSTRUCT" statement.
-     * @param qdef the SPARQL "CONSTRUCT" statement
-     * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
-     * @param tx the transaction context for this query
-     * @param <T> the type of TriplesReadHandle to return
-     * @return the results in the provided TriplesReadHandle
-     */
-    <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle, Transaction tx);
+  /** Execute a SPARQL "CONSTRUCT" statement.
+   * @param qdef the SPARQL "CONSTRUCT" statement
+   * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+   * @param tx the transaction context for this query
+   * @param <T> the type of TriplesReadHandle to return
+   * @return the results in the provided TriplesReadHandle
+   */
+  <T extends TriplesReadHandle> T executeConstruct(SPARQLQueryDefinition qdef, T handle, Transaction tx);
 
-    /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
-     * @param <T> the type of TriplesReadHandle to return
-     * @return the results in the provided TriplesReadHandle
-     */
-    <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle);
+  /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+   * @param <T> the type of TriplesReadHandle to return
+   * @return the results in the provided TriplesReadHandle
+   */
+  <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle);
 
-    /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
-     * @param qdef the query
-     * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
-     * @param tx the transaction context for this query
-     * @param <T> the type of TriplesReadHandle to return
-     * @return the results in the provided TriplesReadHandle
-     */
-    <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle, Transaction tx);
+  /** Execute a SPARQL "DESCRIBE" query (which implements the Concise Bounded Description specification).
+   * @param qdef the query
+   * @param handle the handle capable of reading {@link RDFMimeTypes triples or quads results}
+   * @param tx the transaction context for this query
+   * @param <T> the type of TriplesReadHandle to return
+   * @return the results in the provided TriplesReadHandle
+   */
+  <T extends TriplesReadHandle> T executeDescribe(SPARQLQueryDefinition qdef, T handle, Transaction tx);
 
-    /** Execute a SPARQL "ASK" statement.
-     * @param qdef the SPARQL "CONSTRUCT" statement
-     * @return the answer as Boolean
-     */
-    Boolean executeAsk(SPARQLQueryDefinition qdef);
+  /** Execute a SPARQL "ASK" statement.
+   * @param qdef the SPARQL "CONSTRUCT" statement
+   * @return the answer as Boolean
+   */
+  Boolean executeAsk(SPARQLQueryDefinition qdef);
 
-    /** Execute a SPARQL "ASK" statement.
-     * @param qdef the SPARQL "CONSTRUCT" statement
-     * @param tx the transaction context for this query
-     * @return the answer as Boolean
-     */
-    Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx);
+  /** Execute a SPARQL "ASK" statement.
+   * @param qdef the SPARQL "CONSTRUCT" statement
+   * @param tx the transaction context for this query
+   * @return the answer as Boolean
+   */
+  Boolean executeAsk(SPARQLQueryDefinition qdef, Transaction tx);
 
-    /** Execute a SPARQL update statement.  For an example of using with
-     * permisisons see {@link #permission}.
-     *
-     * @param qdef the SPARQL update statement
-     */
-    void executeUpdate(SPARQLQueryDefinition qdef);
+  /** Execute a SPARQL update statement.  For an example of using with
+   * permisisons see {@link #permission}.
+   *
+   * @param qdef the SPARQL update statement
+   */
+  void executeUpdate(SPARQLQueryDefinition qdef);
 
-    /** Execute a SPARQL update statement.  For an example of using with
-     * permisisons see {@link #permission}.
-     *
-     * @param qdef the SPARQL update statement
-     * @param tx the transaction context for this operation
-     */
-    void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx);
+  /** Execute a SPARQL update statement.  For an example of using with
+   * permisisons see {@link #permission}.
+   *
+   * @param qdef the SPARQL update statement
+   * @param tx the transaction context for this operation
+   */
+  void executeUpdate(SPARQLQueryDefinition qdef, Transaction tx);
 
 
-    /** <p>For use with SPARQL update, where specified permissions will apply
-     * to any records created by the update.  Create a GraphPermissions builder
-     * object with the specified role and capabilities.</p>
-     *
-     * <p>For example:</p>
-     *
-     * <pre>    String sparqlUpdate = "INSERT DATA { &lt;a&gt; &lt;b&gt; &lt;c&gt; }";
-     *    SPARQLQueryDefinition qdef = sparqlMgr.newQueryDefinition(sparqlUpdate);
-     *    qdef.setUpdatePermissions(sparqlMgr.permission("rest-reader", Capability.UPDATE));
-     *    sparqlMgr.executeUpdate(qdef);</pre>
-     *
-     * @param role the name of the role receiving these capabilities
-     * @param capabilities the capabilities (READ, UPDATE, or EXECUTE) granted to this role
-     * @return the new GraphPermissions object with these capabilities set
-     */
-    GraphPermissions permission(String role, Capability... capabilities);
+  /** <p>For use with SPARQL update, where specified permissions will apply
+   * to any records created by the update.  Create a GraphPermissions builder
+   * object with the specified role and capabilities.</p>
+   *
+   * <p>For example:</p>
+   *
+   * <pre>    String sparqlUpdate = "INSERT DATA { &lt;a&gt; &lt;b&gt; &lt;c&gt; }";
+   *    SPARQLQueryDefinition qdef = sparqlMgr.newQueryDefinition(sparqlUpdate);
+   *    qdef.setUpdatePermissions(sparqlMgr.permission("rest-reader", Capability.UPDATE));
+   *    sparqlMgr.executeUpdate(qdef);</pre>
+   *
+   * @param role the name of the role receiving these capabilities
+   * @param capabilities the capabilities (READ, UPDATE, or EXECUTE) granted to this role
+   * @return the new GraphPermissions object with these capabilities set
+   */
+  GraphPermissions permission(String role, Capability... capabilities);
 
 }

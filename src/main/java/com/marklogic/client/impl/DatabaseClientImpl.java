@@ -50,195 +50,195 @@ import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import javax.net.ssl.SSLContext;
 
 public class DatabaseClientImpl implements DatabaseClient {
-	static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
+  static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
 
-	private RESTServices          services;
-	private String                host;
-	private int                   port;
-	private String                database;
-	private HandleFactoryRegistry handleRegistry;
-	private SecurityContext       securityContext;
+  private RESTServices          services;
+  private String                host;
+  private int                   port;
+  private String                database;
+  private HandleFactoryRegistry handleRegistry;
+  private SecurityContext       securityContext;
 
-	public DatabaseClientImpl(RESTServices services, String host, int port, String database, SecurityContext securityContext)
-	{
-		this.services = services;
-		this.host     = host;
-		this.port     = port;
-		this.database = database;
-		this.securityContext = securityContext;
-		services.setDatabaseClient(this);
-	}
+  public DatabaseClientImpl(RESTServices services, String host, int port, String database, SecurityContext securityContext)
+  {
+    this.services = services;
+    this.host     = host;
+    this.port     = port;
+    this.database = database;
+    this.securityContext = securityContext;
+    services.setDatabaseClient(this);
+  }
 
-	public HandleFactoryRegistry getHandleRegistry() {
-		return handleRegistry;
-	}
-	public void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-		this.handleRegistry = handleRegistry;
-	}
+  public HandleFactoryRegistry getHandleRegistry() {
+    return handleRegistry;
+  }
+  public void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+    this.handleRegistry = handleRegistry;
+  }
 
-	@Override
-	public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException {
-		return services.openTransaction(null, TransactionImpl.DEFAULT_TIMELIMIT);
-	}
+  @Override
+  public Transaction openTransaction() throws ForbiddenUserException, FailedRequestException {
+    return services.openTransaction(null, TransactionImpl.DEFAULT_TIMELIMIT);
+  }
 
-	@Override
-	public Transaction openTransaction(String name) throws ForbiddenUserException, FailedRequestException {
-		return services.openTransaction(name, TransactionImpl.DEFAULT_TIMELIMIT);
-	}
+  @Override
+  public Transaction openTransaction(String name) throws ForbiddenUserException, FailedRequestException {
+    return services.openTransaction(name, TransactionImpl.DEFAULT_TIMELIMIT);
+  }
 
-	@Override
-	public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException{
-		return services.openTransaction(name, timeLimit);
-	}
+  @Override
+  public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException{
+    return services.openTransaction(name, timeLimit);
+  }
 
-	@Override
-	public GenericDocumentManager newDocumentManager() {
-		GenericDocumentImpl docMgr = new GenericDocumentImpl(services);
-		docMgr.setHandleRegistry(getHandleRegistry());
-		return docMgr;
-	}
-	@Override
-	public BinaryDocumentManager newBinaryDocumentManager() {
-		BinaryDocumentImpl docMgr = new BinaryDocumentImpl(services);
-		docMgr.setHandleRegistry(getHandleRegistry());
-		return docMgr;
-	}
-	@Override
-	public JSONDocumentManager newJSONDocumentManager() {
-		JSONDocumentImpl docMgr = new JSONDocumentImpl(services);
-		docMgr.setHandleRegistry(getHandleRegistry());
-		return docMgr;
-	}
-	@Override
-	public TextDocumentManager newTextDocumentManager() {
-		TextDocumentImpl docMgr = new TextDocumentImpl(services);
-		docMgr.setHandleRegistry(getHandleRegistry());
-		return docMgr;
-	}
-	@Override
-	public XMLDocumentManager newXMLDocumentManager() {
-		XMLDocumentImpl docMgr = new XMLDocumentImpl(services);
-		docMgr.setHandleRegistry(getHandleRegistry());
-		return docMgr;
-	}
+  @Override
+  public GenericDocumentManager newDocumentManager() {
+    GenericDocumentImpl docMgr = new GenericDocumentImpl(services);
+    docMgr.setHandleRegistry(getHandleRegistry());
+    return docMgr;
+  }
+  @Override
+  public BinaryDocumentManager newBinaryDocumentManager() {
+    BinaryDocumentImpl docMgr = new BinaryDocumentImpl(services);
+    docMgr.setHandleRegistry(getHandleRegistry());
+    return docMgr;
+  }
+  @Override
+  public JSONDocumentManager newJSONDocumentManager() {
+    JSONDocumentImpl docMgr = new JSONDocumentImpl(services);
+    docMgr.setHandleRegistry(getHandleRegistry());
+    return docMgr;
+  }
+  @Override
+  public TextDocumentManager newTextDocumentManager() {
+    TextDocumentImpl docMgr = new TextDocumentImpl(services);
+    docMgr.setHandleRegistry(getHandleRegistry());
+    return docMgr;
+  }
+  @Override
+  public XMLDocumentManager newXMLDocumentManager() {
+    XMLDocumentImpl docMgr = new XMLDocumentImpl(services);
+    docMgr.setHandleRegistry(getHandleRegistry());
+    return docMgr;
+  }
 
-	@Override
-	public RuleManager newRuleManager() {
-		RuleManagerImpl ruleMgr = new RuleManagerImpl(services);
-		ruleMgr.setHandleRegistry(getHandleRegistry());
-		return ruleMgr;
-	}
-	@Override
-	public QueryManager newQueryManager() {
-		QueryManagerImpl queryMgr = new QueryManagerImpl(services);
-		queryMgr.setHandleRegistry(getHandleRegistry());
-		return queryMgr;
-	}
-	@Override
-	public DataMovementManager newDataMovementManager() {
-		DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
-		return moveMgr;
-	}
-	@Override
-	public RowManager newRowManager() {
-		RowManagerImpl rowMgr = new RowManagerImpl(services);
-		rowMgr.setHandleRegistry(getHandleRegistry());
-		return rowMgr;
-	}
-	@Override
-	public ServerConfigurationManager newServerConfigManager() {
-		ServerConfigurationManagerImpl configMgr =
-			new ServerConfigurationManagerImpl(services);
-		configMgr.setHandleRegistry(getHandleRegistry());
-		return configMgr;
-	}
-	@Override
-	public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass) {
-		return new PojoRepositoryImpl<>(this, clazz, idClass);
+  @Override
+  public RuleManager newRuleManager() {
+    RuleManagerImpl ruleMgr = new RuleManagerImpl(services);
+    ruleMgr.setHandleRegistry(getHandleRegistry());
+    return ruleMgr;
+  }
+  @Override
+  public QueryManager newQueryManager() {
+    QueryManagerImpl queryMgr = new QueryManagerImpl(services);
+    queryMgr.setHandleRegistry(getHandleRegistry());
+    return queryMgr;
+  }
+  @Override
+  public DataMovementManager newDataMovementManager() {
+    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
+    return moveMgr;
+  }
+  @Override
+  public RowManager newRowManager() {
+    RowManagerImpl rowMgr = new RowManagerImpl(services);
+    rowMgr.setHandleRegistry(getHandleRegistry());
+    return rowMgr;
+  }
+  @Override
+  public ServerConfigurationManager newServerConfigManager() {
+    ServerConfigurationManagerImpl configMgr =
+      new ServerConfigurationManagerImpl(services);
+    configMgr.setHandleRegistry(getHandleRegistry());
+    return configMgr;
+  }
+  @Override
+  public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass) {
+    return new PojoRepositoryImpl<>(this, clazz, idClass);
 
-	}
+  }
 
-	@Override
-	public RequestLogger newLogger(OutputStream out) {
-		return new RequestLoggerImpl(out);
-	}
+  @Override
+  public RequestLogger newLogger(OutputStream out) {
+    return new RequestLoggerImpl(out);
+  }
 
-	@Override
-    public <T extends ResourceManager> T init(String resourceName, T resourceManager) {
-		if (resourceManager == null)
-			throw new IllegalArgumentException("Cannot initialize null resource manager");
-		if (resourceName == null)
-			throw new IllegalArgumentException("Cannot initialize resource manager with null resource name");
-		if (resourceName.length() == 0)
-			throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
+  @Override
+  public <T extends ResourceManager> T init(String resourceName, T resourceManager) {
+    if (resourceManager == null)
+      throw new IllegalArgumentException("Cannot initialize null resource manager");
+    if (resourceName == null)
+      throw new IllegalArgumentException("Cannot initialize resource manager with null resource name");
+    if (resourceName.length() == 0)
+      throw new IllegalArgumentException("Cannot initialize resource manager with empty resource name");
 
-		((ResourceManagerImplementation) resourceManager).init(
-				new ResourceServicesImpl(services,resourceName)
-				);
+    ((ResourceManagerImplementation) resourceManager).init(
+      new ResourceServicesImpl(services,resourceName)
+    );
 
-		return resourceManager;
-	}
+    return resourceManager;
+  }
 
-	@Override
-	public void release() {
-		if (logger.isInfoEnabled())
-			logger.info("Releasing connection");
+  @Override
+  public void release() {
+    if (logger.isInfoEnabled())
+      logger.info("Releasing connection");
 
-		if (services != null)
-			services.release();
-	}
+    if (services != null)
+      services.release();
+  }
 
-	@Override
-	protected void finalize() throws Throwable {
-		release();
-		super.finalize();
-	}
+  @Override
+  protected void finalize() throws Throwable {
+    release();
+    super.finalize();
+  }
 
-	@Override
-	public Object getClientImplementation() {
-		if (services == null)
-			return null;
-		return services.getClientImplementation();
-	}
+  @Override
+  public Object getClientImplementation() {
+    if (services == null)
+      return null;
+    return services.getClientImplementation();
+  }
 
-	// undocumented backdoor access to JerseyServices
-	public RESTServices getServices() {
-		return services;
-	}
+  // undocumented backdoor access to JerseyServices
+  public RESTServices getServices() {
+    return services;
+  }
 
-	@Override
-	public ServerEvaluationCall newServerEval() {
-		return new ServerEvaluationCallImpl(services, getHandleRegistry());
-	}
+  @Override
+  public ServerEvaluationCall newServerEval() {
+    return new ServerEvaluationCallImpl(services, getHandleRegistry());
+  }
 
-	@Override
-	public GraphManager newGraphManager() {
-		return new GraphManagerImpl<>(services, getHandleRegistry());
-	}
+  @Override
+  public GraphManager newGraphManager() {
+    return new GraphManagerImpl<>(services, getHandleRegistry());
+  }
 
-	@Override
-	public SPARQLQueryManager newSPARQLQueryManager() {
-		// TODO Auto-generated method stub
-		return new SPARQLQueryManagerImpl(services);
-	}
+  @Override
+  public SPARQLQueryManager newSPARQLQueryManager() {
+    // TODO Auto-generated method stub
+    return new SPARQLQueryManagerImpl(services);
+  }
 
-	@Override
-	public String getHost() {
-		return host;
-	}
+  @Override
+  public String getHost() {
+    return host;
+  }
 
-	@Override
-	public int getPort() {
-		return port;
-	}
+  @Override
+  public int getPort() {
+    return port;
+  }
 
-	@Override
-	public String getDatabase() {
-		return database;
-	}
+  @Override
+  public String getDatabase() {
+    return database;
+  }
 
-	@Override
-	public SecurityContext getSecurityContext() {
-		return securityContext;
-	}
+  @Override
+  public SecurityContext getSecurityContext() {
+    return securityContext;
+  }
 }

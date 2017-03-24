@@ -21,11 +21,11 @@ import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 
 public class GenericDocumentImpl
-    extends DocumentManagerImpl<GenericReadHandle, GenericWriteHandle>
-    implements GenericDocumentManager
+  extends DocumentManagerImpl<GenericReadHandle, GenericWriteHandle>
+  implements GenericDocumentManager
 {
-	GenericDocumentImpl(RESTServices services) {
-		super(services, Format.UNKNOWN);
-	}
+  GenericDocumentImpl(RESTServices services) {
+    super(services, Format.UNKNOWN);
+  }
 
 }

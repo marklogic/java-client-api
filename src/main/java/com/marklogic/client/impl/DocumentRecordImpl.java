@@ -28,76 +28,76 @@ import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 
 public class DocumentRecordImpl implements DocumentRecord {
-	private static final Logger logger = LoggerFactory.getLogger(DocumentRecordImpl.class);
-	private String uri;
-	private Format format;
-	private String mimetype;
-	private InputStream metadata; 
-	private InputStream content; 
+  private static final Logger logger = LoggerFactory.getLogger(DocumentRecordImpl.class);
+  private String uri;
+  private Format format;
+  private String mimetype;
+  private InputStream metadata;
+  private InputStream content;
 
-	DocumentRecordImpl(String uri, Format format, String mimetype, InputStream metadata, InputStream content) {
-		this.uri = uri;
-		this.format = format;
-		this.mimetype = mimetype;
-		this.metadata = metadata;
-		this.content = content;
-	}
+  DocumentRecordImpl(String uri, Format format, String mimetype, InputStream metadata, InputStream content) {
+    this.uri = uri;
+    this.format = format;
+    this.mimetype = mimetype;
+    this.metadata = metadata;
+    this.content = content;
+  }
 
-    @Override
-    public String getUri() {
-		return uri;
-	}
+  @Override
+  public String getUri() {
+    return uri;
+  }
 
-    @Override
-    public Format getFormat() {
-		return format;
-	}
+  @Override
+  public Format getFormat() {
+    return format;
+  }
 
-    @Override
-    public String getMimetype() {
-		return mimetype;
-	}
+  @Override
+  public String getMimetype() {
+    return mimetype;
+  }
 
-    @Override
-    public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
-		HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
-		Format metadataFormat = metadataBase.getFormat();
-		if (metadataFormat == null || (metadataFormat != Format.XML)) {
-			if (logger.isWarnEnabled())
-				logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
-			metadataBase.setFormat(Format.XML);
-		}
-		HandleAccessor.receiveContent(metadataHandle, metadata);
-		return metadataHandle;
-	}
+  @Override
+  public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
+    HandleImplementation metadataBase = HandleAccessor.checkHandle(metadataHandle, "metadata");
+    Format metadataFormat = metadataBase.getFormat();
+    if (metadataFormat == null || (metadataFormat != Format.XML)) {
+      if (logger.isWarnEnabled())
+        logger.warn("Unsupported metadata format {}, using XML",metadataFormat.name());
+      metadataBase.setFormat(Format.XML);
+    }
+    HandleAccessor.receiveContent(metadataHandle, metadata);
+    return metadataHandle;
+  }
 
-    @Override
-	public <T> T getMetadataAs(Class<T> clazz) {
-		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
-		if ( readHandle instanceof DocumentMetadataReadHandle ) {
-			DocumentMetadataReadHandle metadataHandle = (DocumentMetadataReadHandle) readHandle;
-			metadataHandle = getMetadata(metadataHandle);
-			if ( metadataHandle == null ) return null;
-			return readHandle.get();
-		} else {
-			throw new IllegalArgumentException("Class \"" + clazz.getName() + "\" uses handle " +
-				readHandle.getClass() + " which is not a DocumentMetadataReadHandle");
-		}
-	}
+  @Override
+  public <T> T getMetadataAs(Class<T> clazz) {
+    ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+    if ( readHandle instanceof DocumentMetadataReadHandle ) {
+      DocumentMetadataReadHandle metadataHandle = (DocumentMetadataReadHandle) readHandle;
+      metadataHandle = getMetadata(metadataHandle);
+      if ( metadataHandle == null ) return null;
+      return readHandle.get();
+    } else {
+      throw new IllegalArgumentException("Class \"" + clazz.getName() + "\" uses handle " +
+        readHandle.getClass() + " which is not a DocumentMetadataReadHandle");
+    }
+  }
 
-    @Override
-    public <T extends AbstractReadHandle> T getContent(T contentHandle) {
-		HandleAccessor.checkHandle(contentHandle, "content");
-		HandleAccessor.receiveContent(contentHandle, content);
-		return contentHandle;
-	}
+  @Override
+  public <T extends AbstractReadHandle> T getContent(T contentHandle) {
+    HandleAccessor.checkHandle(contentHandle, "content");
+    HandleAccessor.receiveContent(contentHandle, content);
+    return contentHandle;
+  }
 
-    @Override
-	public <T> T getContentAs(Class<T> clazz) {
-		ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
-		readHandle = getContent(readHandle);
-		if ( readHandle == null ) return null;
-		return readHandle.get();
-	}
+  @Override
+  public <T> T getContentAs(Class<T> clazz) {
+    ContentHandle<T> readHandle = DatabaseClientFactory.getHandleRegistry().makeHandle(clazz);
+    readHandle = getContent(readHandle);
+    if ( readHandle == null ) return null;
+    return readHandle.get();
+  }
 }
 

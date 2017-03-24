@@ -22,46 +22,46 @@ import com.marklogic.client.impl.FailedRequest;
  * A REST instance wraps error messages into an XML or JSON structure that can be parsed and turned into
  * the FailedRequest Java object.  The MarkLogicServerException contains the FailedRequest object which
  * is incorporated into getMessage() or can be examined via getFailedRequest()
- * 
+ *
  * @see FailedRequest
  *
  */
 @SuppressWarnings("serial")
 public abstract class MarkLogicServerException extends RuntimeException {
-	// NOTE:  to verify that exceptions are declared, switch extends
-	// temporarily from RuntimeException to Exception
-	private FailedRequest failedRequest;
-	
-	/**
-	 * @param localMessage message describing the exception
-	 * @param failedRequest details about the failed request behind this exception
-	 */
-	public MarkLogicServerException(String localMessage, FailedRequest failedRequest) {
-		super(localMessage);
-		this.failedRequest = failedRequest;
-	}
+  // NOTE:  to verify that exceptions are declared, switch extends
+  // temporarily from RuntimeException to Exception
+  private FailedRequest failedRequest;
 
-	public MarkLogicServerException(String localMessage) {
-		super(localMessage);
-	}
-	
-	public MarkLogicServerException(String localMessage, Throwable cause) {
-		super(localMessage, cause);
-	}
+  /**
+   * @param localMessage message describing the exception
+   * @param failedRequest details about the failed request behind this exception
+   */
+  public MarkLogicServerException(String localMessage, FailedRequest failedRequest) {
+    super(localMessage);
+    this.failedRequest = failedRequest;
+  }
 
-	@Override
-	public String getMessage() {
-		if (super.getMessage() != null && failedRequest != null) {
-			return "Local message: " + super.getMessage() + ". Server Message: " + failedRequest.getMessage();
-		}
-		else if (failedRequest != null) {
-			return failedRequest.getMessage();
-		}
-		else return super.getMessage();
-	}
-	
-	public FailedRequest getFailedRequest() {
-		return failedRequest;
-	}
+  public MarkLogicServerException(String localMessage) {
+    super(localMessage);
+  }
+
+  public MarkLogicServerException(String localMessage, Throwable cause) {
+    super(localMessage, cause);
+  }
+
+  @Override
+  public String getMessage() {
+    if (super.getMessage() != null && failedRequest != null) {
+      return "Local message: " + super.getMessage() + ". Server Message: " + failedRequest.getMessage();
+    }
+    else if (failedRequest != null) {
+      return failedRequest.getMessage();
+    }
+    else return super.getMessage();
+  }
+
+  public FailedRequest getFailedRequest() {
+    return failedRequest;
+  }
 }
 

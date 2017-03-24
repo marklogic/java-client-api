@@ -24,150 +24,150 @@ import java.util.Map;
 import java.util.Vector;
 
 public class QueryOptionsTransformExtractNS extends XMLFilterImpl {
-    private static final String SEARCH_NS = "http://marklogic.com/appservices/search";
-    private Map<String, String> nsmap = new HashMap<> ();
+  private static final String SEARCH_NS = "http://marklogic.com/appservices/search";
+  private Map<String, String> nsmap = new HashMap<> ();
 
-    public QueryOptionsTransformExtractNS() {
+  public QueryOptionsTransformExtractNS() {
+  }
+
+  @Override
+  public void startPrefixMapping(String prefix, String uri) throws SAXException {
+    nsmap.put(prefix, uri);
+    super.startPrefixMapping(prefix, uri);
+  }
+
+  @Override
+  public void endPrefixMapping(String prefix) throws SAXException {
+    super.endPrefixMapping(prefix);
+  }
+
+  @Override
+  public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    String ename = "namespace-bindings";
+
+    if (SEARCH_NS.equals(uri) && ("path-index".equals(localName) || "searchable-expression".equals(localName))) {
+      if ("searchable-expression".equals(localName)) {
+        //ename = "searchable-expression-bindings";
+      }
+
+      super.startElement(SEARCH_NS, ename, ename, null);
+      for (Map.Entry<String,String> entry : nsmap.entrySet()) {
+        BindingAttributes attrs = new BindingAttributes();
+        attrs.addAttribute("prefix", entry.getKey());
+        attrs.addAttribute("namespace-uri", entry.getValue());
+        super.startElement(SEARCH_NS, "binding", "binding", attrs);
+        super.endElement(SEARCH_NS, "binding", "binding");
+      }
+      super.endElement(SEARCH_NS, ename, ename);
+    }
+
+    super.startElement(uri, localName, qName, attributes);
+    nsmap.clear();
+  }
+
+  private static class BindingAttributes implements Attributes {
+    private Vector<String> names = new Vector<> ();
+    private Vector<String> values = new Vector<> ();
+
+    public BindingAttributes() {
+    }
+
+    public void addAttribute(String prefix, String uri) {
+      names.add(prefix);
+      values.add(uri);
     }
 
     @Override
-    public void startPrefixMapping(String prefix, String uri) throws SAXException {
-        nsmap.put(prefix, uri);
-        super.startPrefixMapping(prefix, uri);
+    public int getLength() {
+      return names.size();
     }
 
     @Override
-    public void endPrefixMapping(String prefix) throws SAXException {
-        super.endPrefixMapping(prefix);
+    public String getURI(int i) {
+      return values.get(i);
     }
 
     @Override
-    public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        String ename = "namespace-bindings";
-
-        if (SEARCH_NS.equals(uri) && ("path-index".equals(localName) || "searchable-expression".equals(localName))) {
-            if ("searchable-expression".equals(localName)) {
-                //ename = "searchable-expression-bindings";
-            }
-
-            super.startElement(SEARCH_NS, ename, ename, null);
-            for (Map.Entry<String,String> entry : nsmap.entrySet()) {
-                BindingAttributes attrs = new BindingAttributes();
-                attrs.addAttribute("prefix", entry.getKey());
-                attrs.addAttribute("namespace-uri", entry.getValue());
-                super.startElement(SEARCH_NS, "binding", "binding", attrs);
-                super.endElement(SEARCH_NS, "binding", "binding");
-            }
-            super.endElement(SEARCH_NS, ename, ename);
-        }
-
-        super.startElement(uri, localName, qName, attributes);
-        nsmap.clear();
+    public String getLocalName(int i) {
+      return names.get(i);
     }
 
-    private static class BindingAttributes implements Attributes {
-        private Vector<String> names = new Vector<> ();
-        private Vector<String> values = new Vector<> ();
-
-        public BindingAttributes() {
-        }
-
-        public void addAttribute(String prefix, String uri) {
-            names.add(prefix);
-            values.add(uri);
-        }
-
-        @Override
-        public int getLength() {
-            return names.size();
-        }
-
-        @Override
-        public String getURI(int i) {
-            return values.get(i);
-        }
-
-        @Override
-        public String getLocalName(int i) {
-            return names.get(i);
-        }
-
-        @Override
-        public String getQName(int i) {
-            return names.get(i);
-        }
-
-        @Override
-        public String getType(int i) {
-            return "CDATA";
-        }
-
-        @Override
-        public String getValue(int i) {
-            return values.get(i);
-        }
-
-        @Override
-        public int getIndex(String uri, String localName) {
-            if (uri != null && !"".equals(uri)) {
-                return -1;
-            }
-
-            for (int i = 0; i < names.size(); i++) {
-                if (localName.equals(names.get(i))) {
-                    return i;
-                }
-            }
-
-            return -1;
-        }
-
-        @Override
-        public int getIndex(String qName) {
-            for (int i = 0; i < names.size(); i++) {
-                if (qName.equals(names.get(i))) {
-                    return i;
-                }
-            }
-            return -1;
-        }
-
-        @Override
-        public String getType(String uri, String localName) {
-            if (getIndex(uri, localName) >= 0) {
-                return "CDATA";
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public String getType(String qName) {
-            if (getIndex(qName) >= 0) {
-                return "CDATA";
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public String getValue(String uri, String localName) {
-            int pos = getIndex(uri, localName);
-            if (pos >= 0) {
-                return getValue(pos);
-            } else {
-                return null;
-            }
-        }
-
-        @Override
-        public String getValue(String qName) {
-            int pos = getIndex(qName);
-            if (pos >= 0) {
-                return getValue(pos);
-            } else {
-                return null;
-            }
-        }
+    @Override
+    public String getQName(int i) {
+      return names.get(i);
     }
+
+    @Override
+    public String getType(int i) {
+      return "CDATA";
+    }
+
+    @Override
+    public String getValue(int i) {
+      return values.get(i);
+    }
+
+    @Override
+    public int getIndex(String uri, String localName) {
+      if (uri != null && !"".equals(uri)) {
+        return -1;
+      }
+
+      for (int i = 0; i < names.size(); i++) {
+        if (localName.equals(names.get(i))) {
+          return i;
+        }
+      }
+
+      return -1;
+    }
+
+    @Override
+    public int getIndex(String qName) {
+      for (int i = 0; i < names.size(); i++) {
+        if (qName.equals(names.get(i))) {
+          return i;
+        }
+      }
+      return -1;
+    }
+
+    @Override
+    public String getType(String uri, String localName) {
+      if (getIndex(uri, localName) >= 0) {
+        return "CDATA";
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public String getType(String qName) {
+      if (getIndex(qName) >= 0) {
+        return "CDATA";
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public String getValue(String uri, String localName) {
+      int pos = getIndex(uri, localName);
+      if (pos >= 0) {
+        return getValue(pos);
+      } else {
+        return null;
+      }
+    }
+
+    @Override
+    public String getValue(String qName) {
+      int pos = getIndex(qName);
+      if (pos >= 0) {
+        return getValue(pos);
+      } else {
+        return null;
+      }
+    }
+  }
 }

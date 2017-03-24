@@ -18,19 +18,19 @@ package com.marklogic.client.impl;
 import com.marklogic.client.query.ValuesListDefinition;
 
 public class ValuesListDefinitionImpl implements ValuesListDefinition {
-    private String options = null;
+  private String options = null;
 
-    public ValuesListDefinitionImpl(String optionsName) {
-        options = optionsName;
-    }
+  public ValuesListDefinitionImpl(String optionsName) {
+    options = optionsName;
+  }
 
-    @Override
-    public String getOptionsName() {
-        return options;
-    }
+  @Override
+  public String getOptionsName() {
+    return options;
+  }
 
-    @Override
-    public void setOptionsName(String optname) {
-        options = optname;
-    }
+  @Override
+  public void setOptionsName(String optname) {
+    options = optname;
+  }
 }

@@ -42,167 +42,174 @@ import com.marklogic.client.query.StringQueryDefinition;
  * a search.  The transformed result here is output as serialized HTML
  */
 public class SearchResponseTransform {
-	static final private String OPTIONS_NAME = "products";
-	static final private String TRANSFORM_NAME = "search2html";
+  static final private String OPTIONS_NAME = "products";
+  static final private String TRANSFORM_NAME = "search2html";
 
-	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
+  static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
-	public static void main(String[] args)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		System.out.println("example: "+SearchResponseTransform.class.getName());
+  public static void run(ExampleProperties props)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    System.out.println("example: "+SearchResponseTransform.class.getName());
 
-		configure(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-		
-		// install the server transform
-		installTransform(props.host, props.port,
-						props.adminUser, props.adminPassword, props.authType);
+    configure(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		search(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
+    // install the server transform
+    installTransform(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
+    search(props.host, props.port,
+      props.writerUser, props.writerPassword, props.authType);
 
-	public static void installTransform(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				host, port, user, password, authType);
+    tearDownExample(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
+  }
 
-		// create a manager for transform extensions
-		TransformExtensionsManager transMgr = client.newServerConfigManager().newTransformExtensionsManager();
+  public static void installTransform(String host, int port, String user, String password, Authentication authType)
+    throws IOException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      host, port, user, password, authType);
 
-		// specify metadata about the transform extension
-		ExtensionMetadata metadata = new ExtensionMetadata();
-		metadata.setTitle("Search-Response-TO-HTML XSLT Transform");
-		metadata.setDescription("This plugin transforms a Search Response document to HTML");
-		metadata.setProvider("MarkLogic");
-		metadata.setVersion("0.1");
+    // create a manager for transform extensions
+    TransformExtensionsManager transMgr = client.newServerConfigManager().newTransformExtensionsManager();
 
-		// acquire the transform source code
-		InputStream transStream = Util.openStream(
-			"scripts"+File.separator+TRANSFORM_NAME+".xsl");
-		if (transStream == null)
-			throw new IOException("Could not read example transform");
+    // specify metadata about the transform extension
+    ExtensionMetadata metadata = new ExtensionMetadata();
+    metadata.setTitle("Search-Response-TO-HTML XSLT Transform");
+    metadata.setDescription("This plugin transforms a Search Response document to HTML");
+    metadata.setProvider("MarkLogic");
+    metadata.setVersion("0.1");
 
-		// create a handle on the transform source code
-		InputStreamHandle handle = new InputStreamHandle();
-		handle.set(transStream);
+    // acquire the transform source code
+    InputStream transStream = Util.openStream(
+      "scripts"+File.separator+TRANSFORM_NAME+".xsl");
+    if (transStream == null)
+      throw new IOException("Could not read example transform");
 
-		// write the transform extension to the database
-		transMgr.writeXSLTransform(TRANSFORM_NAME, handle, metadata);
+    // create a handle on the transform source code
+    InputStreamHandle handle = new InputStreamHandle();
+    handle.set(transStream);
 
-		System.out.println("Installed the "+TRANSFORM_NAME+" transform");
+    // write the transform extension to the database
+    transMgr.writeXSLTransform(TRANSFORM_NAME, handle, metadata);
 
-		// release the client
-		client.release();
-	}
-	
-	public static void configure(String host, int port, String user, String password, Authentication authType)
-	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    System.out.println("Installed the "+TRANSFORM_NAME+" transform");
 
-		
-		// create a manager for writing query options
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // release the client
+    client.release();
+  }
 
-		// construct the query options
-        String options =
-        	"<search:options "+
-                	"xmlns:search='http://marklogic.com/appservices/search'>"+
-                "<search:constraint name='industry'>"+
-                	"<search:value>"+
-                		"<search:element name='industry' ns=''/>"+
-                	"</search:value>"+
-                "</search:constraint>"+
-               "</search:options>";
+  public static void configure(String host, int port, String user, String password, Authentication authType)
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-        // create a handle to send the query options
-		StringHandle writeHandle = new StringHandle(options);
-		
-		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
-		// release the client
-		client.release();
-	}
+    // create a manager for writing query options
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-	public static void search(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    // construct the query options
+    String options =
+      "<search:options "+
+        "xmlns:search='http://marklogic.com/appservices/search'>"+
+        "<search:constraint name='industry'>"+
+        "<search:value>"+
+        "<search:element name='industry' ns=''/>"+
+        "</search:value>"+
+        "</search:constraint>"+
+        "</search:options>";
 
-		setUpExample(client);
+    // create a handle to send the query options
+    StringHandle writeHandle = new StringHandle(options);
 
-		// create a manager for searching
-		QueryManager queryMgr = client.newQueryManager();
+    // write the query options to the database
+    optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
-		// create a search definition
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
-		querydef.setCriteria("neighborhood industry:\"Real Estate\"");
-		
-		// set the response transform name
-		querydef.setResponseTransform(new ServerTransform(TRANSFORM_NAME));
-		
-		// create a raw content handle for the search results
-		StringHandle resultsHandle = new StringHandle();
+    // release the client
+    client.release();
+  }
 
-		// run the search
-		queryMgr.search(querydef, resultsHandle);
+  public static void search(String host, int port, String user, String password, Authentication authType)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		System.out.println("Matched documents with '"+querydef.getCriteria()+"'\n");
+    setUpExample(client);
 
-		// all we can do is output the result.
-		System.out.println(resultsHandle.get());
-		
-		// release the client
-		client.release();
-	}
+    // create a manager for searching
+    QueryManager queryMgr = client.newQueryManager();
 
-	// set up by writing the document content and options used in the example query
-	public static void setUpExample(DatabaseClient client)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // create a search definition
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
+    querydef.setCriteria("neighborhood industry:\"Real Estate\"");
 
-		InputStreamHandle contentHandle = new InputStreamHandle();
+    // set the response transform name
+    querydef.setResponseTransform(new ServerTransform(TRANSFORM_NAME));
 
-		for (String filename: filenames) {
-			InputStream docStream = Util.openStream("data"+File.separator+filename);
-			if (docStream == null)
-				throw new IOException("Could not read document example");
+    // create a raw content handle for the search results
+    StringHandle resultsHandle = new StringHandle();
 
-			contentHandle.set(docStream);
+    // run the search
+    queryMgr.search(querydef, resultsHandle);
 
-			docMgr.write("/example/"+filename, contentHandle);
-		}
-		
-		
-	}
+    System.out.println("Matched documents with '"+querydef.getCriteria()+"'\n");
 
-	// clean up by deleting the documents and query options used in the example query
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    // all we can do is output the result.
+    System.out.println(resultsHandle.get());
 
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // release the client
+    client.release();
+  }
 
-		for (String filename: filenames) {
-			docMgr.delete("/example/"+filename);
-		}
+  // set up by writing the document content and options used in the example query
+  public static void setUpExample(DatabaseClient client)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    InputStreamHandle contentHandle = new InputStreamHandle();
 
-		optionsMgr.deleteOptions(OPTIONS_NAME);
+    for (String filename: filenames) {
+      InputStream docStream = Util.openStream("data"+File.separator+filename);
+      if (docStream == null)
+        throw new IOException("Could not read document example");
 
-		client.release();
-	}
+      contentHandle.set(docStream);
+
+      docMgr.write("/example/"+filename, contentHandle);
+    }
+
+
+  }
+
+  // clean up by deleting the documents and query options used in the example query
+  public static void tearDownExample(
+    String host, int port, String user, String password, Authentication authType)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+    for (String filename: filenames) {
+      docMgr.delete("/example/"+filename);
+    }
+
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    optionsMgr.deleteOptions(OPTIONS_NAME);
+
+    client.release();
+  }
 }

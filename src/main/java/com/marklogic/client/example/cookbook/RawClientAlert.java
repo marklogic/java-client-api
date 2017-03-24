@@ -36,129 +36,129 @@ import com.marklogic.client.query.StringQueryDefinition;
  * RawClientAlert illustrates defining and finding rules that match documents.
  */
 public class RawClientAlert {
-	static final private String RULE_NAME = "real-estate";
+  static final private String RULE_NAME = "real-estate";
 
-	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
+  static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
-	public static void main(String[] args) throws IOException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args) throws IOException {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props) throws IOException {
-		System.out.println("example: "+RawClientAlert.class.getName());
+  public static void run(ExampleProperties props) throws IOException {
+    System.out.println("example: "+RawClientAlert.class.getName());
 
-		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				props.host, props.port, props.writerUser, props.writerPassword,
-				props.authType);
+    // connect the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      props.host, props.port, props.writerUser, props.writerPassword,
+      props.authType);
 
-		setUpExample(client);
+    setUpExample(client);
 
-		configure(client);
+    configure(client);
 
-		match(client);
+    match(client);
 
-		tearDownExample(client);
+    tearDownExample(client);
 
-		// release the client
-		client.release();
-	}
+    // release the client
+    client.release();
+  }
 
-	// set up alert rules 
-	public static void configure(DatabaseClient client) throws IOException {
-		// create a manager for configuring rules
-		RuleManager ruleMgr = client.newRuleManager();
+  // set up alert rules
+  public static void configure(DatabaseClient client) throws IOException {
+    // create a manager for configuring rules
+    RuleManager ruleMgr = client.newRuleManager();
 
 
-		// specify a rule in raw XML (raw JSON is also supported
-		// as well as a POJO rule definition)
-		String rawRule =
-    	    "<rapi:rule xmlns:rapi='http://marklogic.com/rest-api'>"+
-    	    "<rapi:name>"+RULE_NAME+"</rapi:name>"+
-    	    "<rapi:description>industry of Real Estate</rapi:description>"+
-			"<search:search "+
-    	            "xmlns:search='http://marklogic.com/appservices/search'>"+
-    	    "<search:query>"+
-   	            "<search:value-constraint-query>"+
-   	                "<search:constraint-name>industry</search:constraint-name>"+
-   	                "<search:text>Real Estate</search:text>"+
-   	            "</search:value-constraint-query>"+
-	        "</search:query>"+
-    	    "<search:options>"+
-                "<search:constraint name='industry'>"+
-    	            "<search:value>"+
-    		            "<search:element name='industry' ns=''/>"+
-    	            "</search:value>"+
-                "</search:constraint>"+
-            "</search:options>"+
-            "</search:search>"+
-            "<rapi:rule-metadata>"+
-                "<correlate-with>/demographic-statistics?zipcode=</correlate-with>"+
-            "</rapi:rule-metadata>"+
-    	    "</rapi:rule>";
+    // specify a rule in raw XML (raw JSON is also supported
+    // as well as a POJO rule definition)
+    String rawRule =
+      "<rapi:rule xmlns:rapi='http://marklogic.com/rest-api'>"+
+        "<rapi:name>"+RULE_NAME+"</rapi:name>"+
+        "<rapi:description>industry of Real Estate</rapi:description>"+
+        "<search:search "+
+        "xmlns:search='http://marklogic.com/appservices/search'>"+
+        "<search:query>"+
+        "<search:value-constraint-query>"+
+        "<search:constraint-name>industry</search:constraint-name>"+
+        "<search:text>Real Estate</search:text>"+
+        "</search:value-constraint-query>"+
+        "</search:query>"+
+        "<search:options>"+
+        "<search:constraint name='industry'>"+
+        "<search:value>"+
+        "<search:element name='industry' ns=''/>"+
+        "</search:value>"+
+        "</search:constraint>"+
+        "</search:options>"+
+        "</search:search>"+
+        "<rapi:rule-metadata>"+
+        "<correlate-with>/demographic-statistics?zipcode=</correlate-with>"+
+        "</rapi:rule-metadata>"+
+        "</rapi:rule>";
 
-		// create a handle for writing the rule
-		StringHandle writeHandle = new StringHandle(rawRule);
+    // create a handle for writing the rule
+    StringHandle writeHandle = new StringHandle(rawRule);
 
-		// write the rule to the database
-		ruleMgr.writeRule(RULE_NAME, writeHandle);
-	}
+    // write the rule to the database
+    ruleMgr.writeRule(RULE_NAME, writeHandle);
+  }
 
-	// match documents against the alert rules
-	public static void match(DatabaseClient client) throws IOException {
-		// create a manager for document search criteria
-		QueryManager queryMgr = client.newQueryManager();
+  // match documents against the alert rules
+  public static void match(DatabaseClient client) throws IOException {
+    // create a manager for document search criteria
+    QueryManager queryMgr = client.newQueryManager();
 
-		// specify the search criteria for the documents
-		String criteria = "neighborhoods";
-		StringQueryDefinition querydef = queryMgr.newStringDefinition();
-		querydef.setCriteria(criteria);
+    // specify the search criteria for the documents
+    String criteria = "neighborhoods";
+    StringQueryDefinition querydef = queryMgr.newStringDefinition();
+    querydef.setCriteria(criteria);
 
-		// create a manager for matching rules
-		RuleManager ruleMgr = client.newRuleManager();
+    // create a manager for matching rules
+    RuleManager ruleMgr = client.newRuleManager();
 
-        // match the rules against the documents qualified by the criteria
-		RuleDefinitionList matchedRules = ruleMgr.match(querydef, new RuleDefinitionList());
+    // match the rules against the documents qualified by the criteria
+    RuleDefinitionList matchedRules = ruleMgr.match(querydef, new RuleDefinitionList());
 
-        // iterate over the matched rules
-		Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
-		while (ruleItr.hasNext()) {
-			RuleDefinition rule = ruleItr.next();
-			System.out.println(
-					"document criteria "+criteria+" matched rule "+
-					rule.getName()+" with metadata "+rule.getMetadata()
-					);
-		}
-	}
+    // iterate over the matched rules
+    Iterator<RuleDefinition> ruleItr = matchedRules.iterator();
+    while (ruleItr.hasNext()) {
+      RuleDefinition rule = ruleItr.next();
+      System.out.println(
+        "document criteria "+criteria+" matched rule "+
+          rule.getName()+" with metadata "+rule.getMetadata()
+      );
+    }
+  }
 
-	// set up by writing the document content used in the example query
-	public static void setUpExample(DatabaseClient client) throws IOException {
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+  // set up by writing the document content used in the example query
+  public static void setUpExample(DatabaseClient client) throws IOException {
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		InputStreamHandle contentHandle = new InputStreamHandle();
+    InputStreamHandle contentHandle = new InputStreamHandle();
 
-		for (String filename: filenames) {
-			InputStream docStream = Util.openStream("data"+File.separator+filename);
-			if (docStream == null)
-				throw new IOException("Could not read document example");
+    for (String filename: filenames) {
+      InputStream docStream = Util.openStream("data"+File.separator+filename);
+      if (docStream == null)
+        throw new IOException("Could not read document example");
 
-			contentHandle.set(docStream);
+      contentHandle.set(docStream);
 
-			docMgr.write("/example/"+filename, contentHandle);
-		}
-	}
+      docMgr.write("/example/"+filename, contentHandle);
+    }
+  }
 
-	// clean up by deleting the documents used in the example query and
-	// the rules used for matching
-	public static void tearDownExample(DatabaseClient client) {
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+  // clean up by deleting the documents used in the example query and
+  // the rules used for matching
+  public static void tearDownExample(DatabaseClient client) {
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		for (String filename: filenames) {
-			docMgr.delete("/example/"+filename);
-		}
+    for (String filename: filenames) {
+      docMgr.delete("/example/"+filename);
+    }
 
-		RuleManager ruleMgr = client.newRuleManager();
+    RuleManager ruleMgr = client.newRuleManager();
 
-		ruleMgr.delete(RULE_NAME);
-	}
+    ruleMgr.delete(RULE_NAME);
+  }
 }

@@ -42,7 +42,7 @@ import java.lang.annotation.RetentionPolicy;
  *      }
  *      // ... setter methods ...
  *    }</pre>
-*
+ *
  * or with a public setter method:
  * <pre>
  *    public class MyClass {
@@ -63,34 +63,34 @@ import java.lang.annotation.RetentionPolicy;
  */
 @Retention(RetentionPolicy.RUNTIME)
 public @interface PathIndexProperty {
-    ScalarType scalarType();
+  ScalarType scalarType();
 
-    public enum ScalarType {
-        STRING            ("string"),
-        INT               ("int"),
-        UNSIGNED_INT      ("unsignedInt"),
-        LONG              ("long"),
-        UNSIGNED_LONG     ("unsignedLong"),
-        FLOAT             ("float"),
-        DOUBLE            ("double"),
-        DECIMAL           ("decimal"),
-        DATETIME          ("dateTime"),
-        TIME              ("time"),
-        DATE              ("date"),
-        GYEARMONTH        ("gYearMonth"),
-        GYEAR             ("gYear"),
-        GMONTH            ("gMonth"),
-        GDAY              ("gDay"),
-        YEARMONTH_DURATION("yearMonthDuration"),
-        DAYTIME_DURATION  ("dayTimeDuration"),
-        ANYURI            ("anyURI");
+  public enum ScalarType {
+    STRING            ("string"),
+    INT               ("int"),
+    UNSIGNED_INT      ("unsignedInt"),
+    LONG              ("long"),
+    UNSIGNED_LONG     ("unsignedLong"),
+    FLOAT             ("float"),
+    DOUBLE            ("double"),
+    DECIMAL           ("decimal"),
+    DATETIME          ("dateTime"),
+    TIME              ("time"),
+    DATE              ("date"),
+    GYEARMONTH        ("gYearMonth"),
+    GYEAR             ("gYear"),
+    GMONTH            ("gMonth"),
+    GDAY              ("gDay"),
+    YEARMONTH_DURATION("yearMonthDuration"),
+    DAYTIME_DURATION  ("dayTimeDuration"),
+    ANYURI            ("anyURI");
 
-        private String string;
-        private ScalarType(String string) {
-            this.string = string;
-        };
-
-        @Override
-        public String toString() { return string; };
+    private String string;
+    private ScalarType(String string) {
+      this.string = string;
     };
+
+    @Override
+    public String toString() { return string; };
+  };
 }

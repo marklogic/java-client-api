@@ -22,48 +22,48 @@ import com.marklogic.client.query.QueryDefinition;
 import java.util.Set;
 
 public abstract class AbstractQueryDefinition implements QueryDefinition {
-    protected String optionsUri = null;
-    private Set<String> collections = new HashSet<>();
-    private String          directory   = null;
-	private ServerTransform transform   = null;
+  protected String optionsUri = null;
+  private Set<String> collections = new HashSet<>();
+  private String          directory   = null;
+  private ServerTransform transform   = null;
 
-    @Override
-    public String getOptionsName() {
-        return optionsUri;
-    }
-    @Override
-    public void setOptionsName(String uri) {
-        optionsUri = uri;
-    }
+  @Override
+  public String getOptionsName() {
+    return optionsUri;
+  }
+  @Override
+  public void setOptionsName(String uri) {
+    optionsUri = uri;
+  }
 
-    @Override
-    public String[] getCollections() {
-        return collections.toArray(new String[0]);
-    }
-    @Override
-    public void setCollections(String... collections) {
-        this.collections.clear();
+  @Override
+  public String[] getCollections() {
+    return collections.toArray(new String[0]);
+  }
+  @Override
+  public void setCollections(String... collections) {
+    this.collections.clear();
 
-        for (String collection : collections) {
-            this.collections.add(collection);
-        }
+    for (String collection : collections) {
+      this.collections.add(collection);
     }
+  }
 
-    @Override
-    public String getDirectory() {
-        return directory;
-    }
-    @Override
-    public void setDirectory(String directory) {
-        this.directory = directory;
-    }
+  @Override
+  public String getDirectory() {
+    return directory;
+  }
+  @Override
+  public void setDirectory(String directory) {
+    this.directory = directory;
+  }
 
-    @Override
-	public ServerTransform getResponseTransform() {
-		return transform;
-	}
-	@Override
-	public void setResponseTransform(ServerTransform transform) {
-		this.transform = transform;
-	}
+  @Override
+  public ServerTransform getResponseTransform() {
+    return transform;
+  }
+  @Override
+  public void setResponseTransform(ServerTransform transform) {
+    this.transform = transform;
+  }
 }

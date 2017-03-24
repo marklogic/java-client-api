@@ -24,9 +24,9 @@ import javax.xml.namespace.NamespaceContext;
  * introspection of unknown namespace bindings.
  */
 public interface IterableNamespaceContext extends NamespaceContext {
-    /**
-     * Returns all bound prefixes.
-     * @return	the set of prefixes
-     */
-	Collection<String> getAllPrefixes();
+  /**
+   * Returns all bound prefixes.
+   * @return	the set of prefixes
+   */
+  Collection<String> getAllPrefixes();
 }

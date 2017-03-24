@@ -13,7 +13,7 @@ import com.marklogic.client.io.JAXBHandle;
 
 public class DatabaseClientSingleton {
   private static DatabaseClient client = null;
-  
+
   private DatabaseClientSingleton() {}
 
   public static void register(Class<?>...pojoClasses) throws JAXBException {
@@ -32,7 +32,7 @@ public class DatabaseClientSingleton {
         e.printStackTrace();
       }
       client = DatabaseClientFactory.newClient(properties.host, properties.port,
-          new DigestAuthContext(properties.writerUser, properties.writerPassword));
+        new DigestAuthContext(properties.writerUser, properties.writerPassword));
     }
     return client;
   }

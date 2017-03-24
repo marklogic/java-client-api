@@ -22,7 +22,7 @@ import java.io.Closeable;
  * PojoRepository read and search methods.
  */
 public interface PojoPage<T> extends Page<T>, Closeable {
-    /** Frees the underlying resources, including the http connection. */
-    @Override
-    void close();
+  /** Frees the underlying resources, including the http connection. */
+  @Override
+  void close();
 }

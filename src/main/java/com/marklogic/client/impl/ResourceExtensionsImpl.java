@@ -34,187 +34,187 @@ import com.marklogic.client.util.RequestParameters;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 class ResourceExtensionsImpl
-	extends AbstractLoggingManager
-	implements ResourceExtensionsManager
+  extends AbstractLoggingManager
+  implements ResourceExtensionsManager
 {
-	static final private Logger logger = LoggerFactory.getLogger(ResourceExtensionsImpl.class);
+  static final private Logger logger = LoggerFactory.getLogger(ResourceExtensionsImpl.class);
 
-    private RESTServices          services;
-	private HandleFactoryRegistry handleRegistry;
+  private RESTServices          services;
+  private HandleFactoryRegistry handleRegistry;
 
-	ResourceExtensionsImpl(RESTServices services) {
-		super();
-		this.services = services;
-	}
+  ResourceExtensionsImpl(RESTServices services) {
+    super();
+    this.services = services;
+  }
 
-	HandleFactoryRegistry getHandleRegistry() {
-		return handleRegistry;
-	}
-	void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
-		this.handleRegistry = handleRegistry;
-	}
+  HandleFactoryRegistry getHandleRegistry() {
+    return handleRegistry;
+  }
+  void setHandleRegistry(HandleFactoryRegistry handleRegistry) {
+    this.handleRegistry = handleRegistry;
+  }
 
-    @Override
-    public <T> T listServicesAs(Format format, Class<T> as) {
-		return listServicesAs(format, as, true);
-    }
-    @Override
-    public <T> T listServicesAs(Format format, Class<T> as, boolean refresh) {
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		if (!StructureReadHandle.class.isAssignableFrom(handle.getClass())) {
-			throw new IllegalArgumentException(
-					"Handle "+handle.getClass().getName()+
-					" cannot be used to list resource services as "+as.getName()
-					);
-		}
-
-		Utilities.setHandleStructuredFormat(handle, format);
-
-		listServices((StructureReadHandle) handle, refresh);
-
-		return handle.get();
+  @Override
+  public <T> T listServicesAs(Format format, Class<T> as) {
+    return listServicesAs(format, as, true);
+  }
+  @Override
+  public <T> T listServicesAs(Format format, Class<T> as, boolean refresh) {
+    ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+    if (!StructureReadHandle.class.isAssignableFrom(handle.getClass())) {
+      throw new IllegalArgumentException(
+        "Handle "+handle.getClass().getName()+
+          " cannot be used to list resource services as "+as.getName()
+      );
     }
 
-    @Override
-	public <T extends StructureReadHandle> T listServices(T listHandle) {
-		return listServices(listHandle, true);
-	}
-	@Override
-	public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh) {
-		if (listHandle == null)
-			throw new IllegalArgumentException("null handle for listing resource services");
+    Utilities.setHandleStructuredFormat(handle, format);
 
-		if (logger.isInfoEnabled())
-			logger.info("Reading resource services list");
+    listServices((StructureReadHandle) handle, refresh);
 
-		HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "resource");
+    return handle.get();
+  }
 
-		Format listFormat = listBase.getFormat();
-		if (!(Format.JSON == listFormat || Format.XML == listFormat))
-			throw new IllegalArgumentException(
-					"list handle for unsupported format: "+listFormat.getClass().getName());
+  @Override
+  public <T extends StructureReadHandle> T listServices(T listHandle) {
+    return listServices(listHandle, true);
+  }
+  @Override
+  public <T extends StructureReadHandle> T listServices(T listHandle, boolean refresh) {
+    if (listHandle == null)
+      throw new IllegalArgumentException("null handle for listing resource services");
 
-		RequestParameters extraParams = null;
-		if (!refresh) {
-			extraParams = new RequestParameters();
-			extraParams.put("refresh", "false");
-		}
+    if (logger.isInfoEnabled())
+      logger.info("Reading resource services list");
 
-		listBase.receiveContent(
-				services.getValues(requestLogger, "config/resources", extraParams,
-						listFormat.getDefaultMimetype(), listBase.receiveAs())
-				);
+    HandleImplementation listBase = HandleAccessor.checkHandle(listHandle, "resource");
 
-		return listHandle;
-	}
+    Format listFormat = listBase.getFormat();
+    if (!(Format.JSON == listFormat || Format.XML == listFormat))
+      throw new IllegalArgumentException(
+        "list handle for unsupported format: "+listFormat.getClass().getName());
 
-	@Override
-	public <T> T readServicesAs(String resourceName, Class<T> as) {
-		ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
-		if (!TextReadHandle.class.isAssignableFrom(handle.getClass())) {
-			throw new IllegalArgumentException(
-					"Handle "+handle.getClass().getName()+
-					" cannot be used to read resource service source as "+as.getName()
-					);
-		}
+    RequestParameters extraParams = null;
+    if (!refresh) {
+      extraParams = new RequestParameters();
+      extraParams.put("refresh", "false");
+    }
 
-		readServices(resourceName, (TextReadHandle) handle);
+    listBase.receiveContent(
+      services.getValues(requestLogger, "config/resources", extraParams,
+        listFormat.getDefaultMimetype(), listBase.receiveAs())
+    );
 
-		return handle.get();
-	}
-	@Override
-	public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle) {
-		if (resourceName == null)
-			throw new IllegalArgumentException("Reading resource services source with null name");
+    return listHandle;
+  }
 
-		if (logger.isInfoEnabled())
-			logger.info("Reading resource services source for {}", resourceName);
+  @Override
+  public <T> T readServicesAs(String resourceName, Class<T> as) {
+    ContentHandle<T> handle = getHandleRegistry().makeHandle(as);
+    if (!TextReadHandle.class.isAssignableFrom(handle.getClass())) {
+      throw new IllegalArgumentException(
+        "Handle "+handle.getClass().getName()+
+          " cannot be used to read resource service source as "+as.getName()
+      );
+    }
 
-		HandleImplementation sourceBase =
-			HandleAccessor.checkHandle(sourceHandle, "resource");
+    readServices(resourceName, (TextReadHandle) handle);
 
-		sourceBase.receiveContent(
-				services.getValue(requestLogger, "config/resources", resourceName, true,
-				sourceBase.getMimetype(), sourceBase.receiveAs())
-				);
+    return handle.get();
+  }
+  @Override
+  public <T extends TextReadHandle> T readServices(String resourceName, T sourceHandle) {
+    if (resourceName == null)
+      throw new IllegalArgumentException("Reading resource services source with null name");
 
-		return sourceHandle;
-	}
+    if (logger.isInfoEnabled())
+      logger.info("Reading resource services source for {}", resourceName);
 
-	@Override
-	public void writeServicesAs(
-		String resourceName, Object source, ExtensionMetadata metadata, MethodParameters... methodParams
-	) {
-		if (source == null) {
-			throw new IllegalArgumentException("no source to write");
-		}
+    HandleImplementation sourceBase =
+      HandleAccessor.checkHandle(sourceHandle, "resource");
 
-		Class<?> as = source.getClass();
+    sourceBase.receiveContent(
+      services.getValue(requestLogger, "config/resources", resourceName, true,
+        sourceBase.getMimetype(), sourceBase.receiveAs())
+    );
 
-		TextWriteHandle sourceHandle = null;
-		if (TextWriteHandle.class.isAssignableFrom(as)) {
-			sourceHandle = (TextWriteHandle) source;
-		} else {
-			ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
-			if (!TextWriteHandle.class.isAssignableFrom(handle.getClass())) {
-				throw new IllegalArgumentException(
-						"Handle "+handle.getClass().getName()+
-						" cannot be used to write resource service source as "+as.getName()
-						);
-			}
-			Utilities.setHandleContent(handle, source);
-			sourceHandle = (TextWriteHandle) handle;
-		}
+    return sourceHandle;
+  }
 
-		writeServices(resourceName, sourceHandle, metadata, methodParams);
-	}
-	@Override
-	public void writeServices(
-		String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams
-	) {
-		if (resourceName == null)
-			throw new IllegalArgumentException("Writing resource services with null name");
+  @Override
+  public void writeServicesAs(
+    String resourceName, Object source, ExtensionMetadata metadata, MethodParameters... methodParams
+  ) {
+    if (source == null) {
+      throw new IllegalArgumentException("no source to write");
+    }
 
-		if (logger.isInfoEnabled())
-			logger.info("Writing resource services source for {}", resourceName);
+    Class<?> as = source.getClass();
 
-		HandleImplementation sourceBase =
-			HandleAccessor.checkHandle(sourceHandle, "resource");
+    TextWriteHandle sourceHandle = null;
+    if (TextWriteHandle.class.isAssignableFrom(as)) {
+      sourceHandle = (TextWriteHandle) source;
+    } else {
+      ContentHandle<?> handle = getHandleRegistry().makeHandle(as);
+      if (!TextWriteHandle.class.isAssignableFrom(handle.getClass())) {
+        throw new IllegalArgumentException(
+          "Handle "+handle.getClass().getName()+
+            " cannot be used to write resource service source as "+as.getName()
+        );
+      }
+      Utilities.setHandleContent(handle, source);
+      sourceHandle = (TextWriteHandle) handle;
+    }
 
-		RequestParameters extraParams =
-			(metadata != null) ? metadata.asParameters() : new RequestParameters();
-		if (methodParams != null) {
-			for (MethodParameters params : methodParams) {
-				String method = params.getMethod().toString().toLowerCase();
-				extraParams.add("method", method);
-				String prefix = method+":";
-				for (Map.Entry<String,List<String>> entry: params.entrySet()) {
-					extraParams.put(prefix+entry.getKey(), entry.getValue());
-				}
-			}
-		}
-		String contentType = null;
-		if ( metadata == null ) {
-		} else if ( metadata.getScriptLanguage() == null ) {
-			throw new IllegalArgumentException("scriptLanguage cannot be null");
-		} else if ( metadata.getScriptLanguage() == ScriptLanguage.JAVASCRIPT ) {
-			contentType = "application/vnd.marklogic-javascript";
-		} else if ( metadata.getScriptLanguage() == ScriptLanguage.XQUERY ) {
-			contentType = "application/xquery";
-		} 
+    writeServices(resourceName, sourceHandle, metadata, methodParams);
+  }
+  @Override
+  public void writeServices(
+    String resourceName, TextWriteHandle sourceHandle, ExtensionMetadata metadata, MethodParameters... methodParams
+  ) {
+    if (resourceName == null)
+      throw new IllegalArgumentException("Writing resource services with null name");
 
-		services.putValue(requestLogger, "config/resources", resourceName, extraParams,
-				contentType, sourceBase);
-	}
+    if (logger.isInfoEnabled())
+      logger.info("Writing resource services source for {}", resourceName);
 
-	@Override
-	public void deleteServices(String resourceName) {
-		if (resourceName == null)
-			throw new IllegalArgumentException("Deleting resource services with null name");
+    HandleImplementation sourceBase =
+      HandleAccessor.checkHandle(sourceHandle, "resource");
 
-		if (logger.isInfoEnabled())
-			logger.info("Deleting resource services for {}", resourceName);
+    RequestParameters extraParams =
+      (metadata != null) ? metadata.asParameters() : new RequestParameters();
+    if (methodParams != null) {
+      for (MethodParameters params : methodParams) {
+        String method = params.getMethod().toString().toLowerCase();
+        extraParams.add("method", method);
+        String prefix = method+":";
+        for (Map.Entry<String,List<String>> entry: params.entrySet()) {
+          extraParams.put(prefix+entry.getKey(), entry.getValue());
+        }
+      }
+    }
+    String contentType = null;
+    if ( metadata == null ) {
+    } else if ( metadata.getScriptLanguage() == null ) {
+      throw new IllegalArgumentException("scriptLanguage cannot be null");
+    } else if ( metadata.getScriptLanguage() == ScriptLanguage.JAVASCRIPT ) {
+      contentType = "application/vnd.marklogic-javascript";
+    } else if ( metadata.getScriptLanguage() == ScriptLanguage.XQUERY ) {
+      contentType = "application/xquery";
+    }
 
-		services.deleteValue(requestLogger, "config/resources", resourceName);
-	}
+    services.putValue(requestLogger, "config/resources", resourceName, extraParams,
+      contentType, sourceBase);
+  }
+
+  @Override
+  public void deleteServices(String resourceName) {
+    if (resourceName == null)
+      throw new IllegalArgumentException("Deleting resource services with null name");
+
+    if (logger.isInfoEnabled())
+      logger.info("Deleting resource services for {}", resourceName);
+
+    services.deleteValue(requestLogger, "config/resources", resourceName);
+  }
 }

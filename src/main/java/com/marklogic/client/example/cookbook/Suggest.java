@@ -36,129 +36,129 @@ import com.marklogic.client.query.SuggestDefinition;
 
 /**
  * Suggest illustrates getting suggestions for words to find in an element.
- * 
+ *
  * NOTE:  To get suggestions, you must configure the database with an element
  * word lexicon on the description element before running this example.  You
  * can configure an element word lexicon using the Admin UI on port 8000.
  */
 public class Suggest {
-	static final private String OPTIONS_NAME = "description";
+  static final private String OPTIONS_NAME = "description";
 
-	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
+  static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
-	public static void main(String[] args)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		System.out.println("example: "+Suggest.class.getName());
+  public static void run(ExampleProperties props)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
+    System.out.println("example: "+Suggest.class.getName());
 
-		configure(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
+    configure(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		suggest(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
+    suggest(props.host, props.port,
+      props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
+    tearDownExample(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
+  }
 
-	public static void configure(String host, int port, String user, String password, Authentication authType)
-	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  public static void configure(String host, int port, String user, String password, Authentication authType)
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for writing query options
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // create a manager for writing query options
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// construct the query options
-        String options =
-        	"<search:options "+
-                	"xmlns:search='http://marklogic.com/appservices/search'>"+
-                "<search:default-suggestion-source>"+
-    				"<search:word>"+
-    					"<search:element ns='' name='description'/>"+
-    				"</search:word>"+
-    			"</search:default-suggestion-source>"+
-            "</search:options>";
+    // construct the query options
+    String options =
+      "<search:options "+
+        "xmlns:search='http://marklogic.com/appservices/search'>"+
+        "<search:default-suggestion-source>"+
+        "<search:word>"+
+        "<search:element ns='' name='description'/>"+
+        "</search:word>"+
+        "</search:default-suggestion-source>"+
+        "</search:options>";
 
-        // create a handle to send the query options
-		StringHandle writeHandle = new StringHandle(options);
-		
-		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
+    // create a handle to send the query options
+    StringHandle writeHandle = new StringHandle(options);
 
-		// release the client
-		client.release();
-	}
+    // write the query options to the database
+    optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
-	public static void suggest(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    // release the client
+    client.release();
+  }
 
-		setUpExample(client);
+  public static void suggest(String host, int port, String user, String password, Authentication authType)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for getting suggestions
-		QueryManager queryMgr = client.newQueryManager();
+    setUpExample(client);
 
-		// specify the partial criteria for the suggestions and the options
-		//     that define the source of the suggestion words
-		String partialCriteria = "tr";
-		SuggestDefinition def = queryMgr.newSuggestDefinition(
-				partialCriteria, OPTIONS_NAME);
+    // create a manager for getting suggestions
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the suggestions
-		String[] suggestions = queryMgr.suggest(def);
+    // specify the partial criteria for the suggestions and the options
+    //     that define the source of the suggestion words
+    String partialCriteria = "tr";
+    SuggestDefinition def = queryMgr.newSuggestDefinition(
+      partialCriteria, OPTIONS_NAME);
 
-		System.out.println("'"+partialCriteria+"' criteria matched "+
-				suggestions.length+" suggestions:");
+    // get the suggestions
+    String[] suggestions = queryMgr.suggest(def);
 
-		// iterate over the suggestions
-		for (String suggestion: suggestions) {
-			System.out.println("    "+suggestion);
-		}
+    System.out.println("'"+partialCriteria+"' criteria matched "+
+      suggestions.length+" suggestions:");
 
-		// release the client
-		client.release();
-	}
+    // iterate over the suggestions
+    for (String suggestion: suggestions) {
+      System.out.println("    "+suggestion);
+    }
 
-	// set up by writing the document content and options used in the example query
-	public static void setUpExample(DatabaseClient client)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // release the client
+    client.release();
+  }
 
-		InputStreamHandle contentHandle = new InputStreamHandle();
+  // set up by writing the document content and options used in the example query
+  public static void setUpExample(DatabaseClient client)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		for (String filename: filenames) {
-			InputStream docStream = Util.openStream("data"+File.separator+filename);
-			if (docStream == null)
-				throw new IOException("Could not read document example");
+    InputStreamHandle contentHandle = new InputStreamHandle();
 
-			contentHandle.set(docStream);
+    for (String filename: filenames) {
+      InputStream docStream = Util.openStream("data"+File.separator+filename);
+      if (docStream == null)
+        throw new IOException("Could not read document example");
 
-			docMgr.write("/example/"+filename, contentHandle);
-		}
-	}
+      contentHandle.set(docStream);
 
-	// clean up by deleting the documents and query options used in the example query
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+      docMgr.write("/example/"+filename, contentHandle);
+    }
+  }
 
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+  // clean up by deleting the documents and query options used in the example query
+  public static void tearDownExample(
+    String host, int port, String user, String password, Authentication authType)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		for (String filename: filenames) {
-			docMgr.delete("/example/"+filename);
-		}
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    for (String filename: filenames) {
+      docMgr.delete("/example/"+filename);
+    }
 
-		optionsMgr.deleteOptions(OPTIONS_NAME);
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		client.release();
-	}
+    optionsMgr.deleteOptions(OPTIONS_NAME);
+
+    client.release();
+  }
 }

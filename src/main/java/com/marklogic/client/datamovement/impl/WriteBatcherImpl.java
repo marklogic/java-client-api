@@ -149,7 +149,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *   - try to do what's expected
  *     - try to write documents in the order they are sent to add/addAs
  *       - accepting that asynchronous threads will proceed unpredictably
- *         - for example, thread A might start before thread B and perform less work, but 
+ *         - for example, thread A might start before thread B and perform less work, but
  *           thread B might still complete first
  *     - try to match batch sizes to batchSize
  *       - except when flush is called, then immediately write all queued docs
@@ -275,7 +275,7 @@ public class WriteBatcherImpl
 
   @Override
   public WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
-      AbstractWriteHandle contentHandle)
+                          AbstractWriteHandle contentHandle)
   {
     if ( uri == null ) throw new IllegalArgumentException("uri must not be null");
     if ( contentHandle == null ) throw new IllegalArgumentException("contentHandle must not be null");
@@ -316,7 +316,7 @@ public class WriteBatcherImpl
 
   @Override
   public WriteBatcher addAs(String uri, DocumentMetadataWriteHandle metadataHandle,
-      Object content) {
+                            Object content) {
     if (content == null) throw new IllegalArgumentException("content must not be null");
 
     AbstractWriteHandle handle;
@@ -381,44 +381,44 @@ public class WriteBatcherImpl
       });
     }
     batchWriteSet.onSuccess( () -> {
-        // if we're not using transactions then timeToCommit is always true
-        boolean timeToCommit = true;
-        boolean committed = false;
-        if ( usingTransactions ) {
-          TransactionInfo transactionInfo = batchWriteSet.getTransactionInfo();
-          long batchNumFinished = transactionInfo.batchesFinished.incrementAndGet();
-          timeToCommit = (batchNumFinished == getTransactionSize());
-          if ( forceNewTransaction || timeToCommit ) {
-            // this is the last batch in the transaction
-            if ( transactionInfo.alive.get() == true ) {
-              // if we're the only thread currently processing this transaction
-              if ( transactionInfo.inProcess.get() <= 1 ) {
-                // we're about to commit so let's restart transactionCounter
-                host.transactionCounter.set(0);
-                transactionInfo.transaction.commit();
-                committed = true;
-                sendSuccessToListeners(transactionInfo.batches);
-              } else {
-                // we chose not to commit because another thread is still processing,
-                // so queue up this batchWriteSet
-                transactionInfo.batches.add(batchWriteSet);
-                // and queue up this commit
-                host.unfinishedTransactions.add(transactionInfo);
-                timeToCommit = false;
-              }
+      // if we're not using transactions then timeToCommit is always true
+      boolean timeToCommit = true;
+      boolean committed = false;
+      if ( usingTransactions ) {
+        TransactionInfo transactionInfo = batchWriteSet.getTransactionInfo();
+        long batchNumFinished = transactionInfo.batchesFinished.incrementAndGet();
+        timeToCommit = (batchNumFinished == getTransactionSize());
+        if ( forceNewTransaction || timeToCommit ) {
+          // this is the last batch in the transaction
+          if ( transactionInfo.alive.get() == true ) {
+            // if we're the only thread currently processing this transaction
+            if ( transactionInfo.inProcess.get() <= 1 ) {
+              // we're about to commit so let's restart transactionCounter
+              host.transactionCounter.set(0);
+              transactionInfo.transaction.commit();
+              committed = true;
+              sendSuccessToListeners(transactionInfo.batches);
+            } else {
+              // we chose not to commit because another thread is still processing,
+              // so queue up this batchWriteSet
+              transactionInfo.batches.add(batchWriteSet);
+              // and queue up this commit
+              host.unfinishedTransactions.add(transactionInfo);
+              timeToCommit = false;
             }
-          } else {
-            // this is *not* the last batch in the transaction
-            // so queue up this batchWriteSet
-            transactionInfo.batches.add(batchWriteSet);
           }
-          transactionInfo.inProcess.decrementAndGet();
         } else {
-          committed = true;
+          // this is *not* the last batch in the transaction
+          // so queue up this batchWriteSet
+          transactionInfo.batches.add(batchWriteSet);
         }
-        if ( committed ) {
-          sendSuccessToListeners(batchWriteSet);
-        }
+        transactionInfo.inProcess.decrementAndGet();
+      } else {
+        committed = true;
+      }
+      if ( committed ) {
+        sendSuccessToListeners(batchWriteSet);
+      }
     });
     batchWriteSet.onFailure( (throwable) -> {
       // reset the transactionCounter so the next write will start a new transaction
@@ -572,9 +572,9 @@ public class WriteBatcherImpl
   public boolean completeTransaction(TransactionInfo transactionInfo) {
     boolean completed = false;
     try {
-      if ( transactionInfo.alive.get() == true && 
-              transactionInfo.inProcess.get() <= 0 && 
-              transactionInfo.written.get() == true ) {
+      if ( transactionInfo.alive.get() == true &&
+        transactionInfo.inProcess.get() <= 0 &&
+        transactionInfo.written.get() == true ) {
         if ( transactionInfo.throwable.get() != null ) {
           transactionInfo.transaction.rollback();
           sendThrowableToListeners(transactionInfo.throwable.get(), "Failure during transaction: {}",
@@ -828,31 +828,31 @@ public class WriteBatcherImpl
     }
 
     private TransactionInfo getTransactionInfo() {
-        // if any more batches can be written for this transaction then transactionPermits
-        // can be acquired and this transaction is available
-        // otherwise block until a new transaction is available with new permits
-        // get one off the queue if available, if not then block until one is avialable
-        TransactionInfo transactionInfo = transactionInfos.poll();
-        if ( transactionInfo == null ) return null;
-        // remove one permit
-        int permits = transactionInfo.transactionPermits.decrementAndGet();
-        // if there are permits left, push this back onto the queue
-        if ( permits >= 0 ) {
-          if ( permits > 0 ) {
-            // there are more permits left, so push it back onto the front of the queue
-            transactionInfos.addFirst(transactionInfo);
-          } else {
-            // this is the last permit, make sure this transaction gets completed
-            unfinishedTransactions.add(transactionInfo);
-          }
-          return transactionInfo;
+      // if any more batches can be written for this transaction then transactionPermits
+      // can be acquired and this transaction is available
+      // otherwise block until a new transaction is available with new permits
+      // get one off the queue if available, if not then block until one is avialable
+      TransactionInfo transactionInfo = transactionInfos.poll();
+      if ( transactionInfo == null ) return null;
+      // remove one permit
+      int permits = transactionInfo.transactionPermits.decrementAndGet();
+      // if there are permits left, push this back onto the queue
+      if ( permits >= 0 ) {
+        if ( permits > 0 ) {
+          // there are more permits left, so push it back onto the front of the queue
+          transactionInfos.addFirst(transactionInfo);
         } else {
-          // somehow this transaction was on the queue with no permits left
-          // make sure this transaction gets completed
+          // this is the last permit, make sure this transaction gets completed
           unfinishedTransactions.add(transactionInfo);
-          // let's return a different transaction that has permits
-          return getTransactionInfo();
         }
+        return transactionInfo;
+      } else {
+        // somehow this transaction was on the queue with no permits left
+        // make sure this transaction gets completed
+        unfinishedTransactions.add(transactionInfo);
+        // let's return a different transaction that has permits
+        return getTransactionInfo();
+      }
     }
 
     public void addTransactionInfo(TransactionInfo transactionInfo) {
@@ -1103,7 +1103,7 @@ public class WriteBatcherImpl
     Map<Thread,Set<Runnable>> activeSnapshots = new ConcurrentHashMap<>();
 
     public CompletableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
-      TimeUnit unit, BlockingQueue<Runnable> queue)
+                                         TimeUnit unit, BlockingQueue<Runnable> queue)
     {
       super(corePoolSize, maximumPoolSize, keepAliveTime, unit, queue, new CompletableRejectedExecutionHandler());
       // now that super() has been called we can reference "this" to add it to
@@ -1178,7 +1178,7 @@ public class WriteBatcherImpl
           // blocks, but we couldn't find a way to avoid this one.
           synchronized(task) {
             while ( snapshotQueuedAndExecutingTasks.contains(task) &&
-                    queuedAndExecutingTasks.contains(task) )
+              queuedAndExecutingTasks.contains(task) )
             {
               long startTime = System.currentTimeMillis();
               // block until task is complete or timeout expires

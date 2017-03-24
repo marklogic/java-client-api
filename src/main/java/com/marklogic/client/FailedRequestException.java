@@ -24,17 +24,17 @@ import com.marklogic.client.impl.FailedRequest;
  */
 @SuppressWarnings("serial")
 public class FailedRequestException extends MarkLogicServerException {
-	
-	public FailedRequestException(String message) {
-		super(message);
-	}
-	
-	public FailedRequestException(String localMessage, Throwable cause) {
-		super(localMessage, cause);
-	}
 
-	public FailedRequestException(String localMessage, FailedRequest failedRequest) {
-		super(localMessage, failedRequest);
-	}
+  public FailedRequestException(String message) {
+    super(message);
+  }
+
+  public FailedRequestException(String localMessage, Throwable cause) {
+    super(localMessage, cause);
+  }
+
+  public FailedRequestException(String localMessage, FailedRequest failedRequest) {
+    super(localMessage, failedRequest);
+  }
 
 }

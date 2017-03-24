@@ -21,17 +21,17 @@ package com.marklogic.client;
 @SuppressWarnings("serial")
 public class MarkLogicInternalException extends RuntimeException {
 
-	public MarkLogicInternalException(String message) {
-		super(message);
-	}
+  public MarkLogicInternalException(String message) {
+    super(message);
+  }
 
-	public MarkLogicInternalException(Throwable cause) {
-		super(cause);
-	}
+  public MarkLogicInternalException(Throwable cause) {
+    super(cause);
+  }
 
-	public MarkLogicInternalException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public MarkLogicInternalException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 
 }

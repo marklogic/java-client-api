@@ -25,12 +25,12 @@ import com.marklogic.client.impl.FailedRequest;
 @SuppressWarnings("serial")
 public class ResourceNotFoundException extends MarkLogicServerException {
 
-	public ResourceNotFoundException(String message) {
-		super(message);
-	}
-	public ResourceNotFoundException(String localMessage,
-			FailedRequest failedRequest) {
-		super(localMessage, failedRequest);
-	}
+  public ResourceNotFoundException(String message) {
+    super(message);
+  }
+  public ResourceNotFoundException(String localMessage,
+                                   FailedRequest failedRequest) {
+    super(localMessage, failedRequest);
+  }
 
 }

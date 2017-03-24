@@ -23,66 +23,66 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * {@link DocumentWriteSet#disableDefault disableDefault}.
  */
 public interface DocumentWriteOperation {
-    public enum OperationType {
-        /** This write operation (REST API mime part) sets the defaults for the 
-         * rest of the request.
-         * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
-         *     REST API Guide -&gt; Constructing a Metadata Part</a>
-         */
-        METADATA_DEFAULT,
-        /** This write operation (REST API mime part) clears the defaults for the
-         * rest of the request.  While this removes defaults set previously on the
-         * request, this does not completely restore server-side defaults.  For
-         * more information see the 
-         * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
-         * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
-         */
-        DISABLE_METADATA_DEFAULT,
-        /** This write operation (REST API mime part) creates or overwrites
-         * one document and/or document metadata.
-         * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_33756">
-         *     REST API Guide -&gt; Constructing a Content Part</a>
-         * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
-         *     REST API Guide -&gt; Constructing a Metadata Part</a>
-         * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_89876">
-         *     REST API Guide -&gt; Understanding When Metadata is Preserved or Replaced</a>
-         */
-        DOCUMENT_WRITE
-    };
-
-    /** Returns the {@link DocumentWriteOperation.OperationType} set implicitly by your call to
-     * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
-     * {@link DocumentWriteSet#disableDefault disableDefault}.
-     * @return the operation type which was set implicitly
+  public enum OperationType {
+    /** This write operation (REST API mime part) sets the defaults for the
+     * rest of the request.
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
+     *     REST API Guide -&gt; Constructing a Metadata Part</a>
      */
-    OperationType getOperationType();
-
-    // The uri for this document, whether set explicitly or received from the
-    // server after a write with a DocumentDescriptor.
-    /** The uri for this document if set explicitly by your call to
-     * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add(String, ...)}
-     * @return the uri
+    METADATA_DEFAULT,
+    /** This write operation (REST API mime part) clears the defaults for the
+     * rest of the request.  While this removes defaults set previously on the
+     * request, this does not completely restore server-side defaults.  For
+     * more information see the
+     * <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_54554">
+     * REST API Guide -&gt; Example: Reverting to System Default Metadata</a>
      */
-    String getUri();
-
-    /** The handle with the metadata as set by your call to
-     * {@link DocumentWriteSet#add(String, DocumentMetadataWriteHandle, AbstractWriteHandle) add} or
-     * {@link DocumentWriteSet#add(DocumentDescriptor, DocumentMetadataWriteHandle, AbstractWriteHandle) add}.
-     * @return the handle with the metadata
+    DISABLE_METADATA_DEFAULT,
+    /** This write operation (REST API mime part) creates or overwrites
+     * one document and/or document metadata.
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_33756">
+     *     REST API Guide -&gt; Constructing a Content Part</a>
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_56498">
+     *     REST API Guide -&gt; Constructing a Metadata Part</a>
+     * @see <a href="http://docs.marklogic.com/guide/rest-dev/bulk#id_89876">
+     *     REST API Guide -&gt; Understanding When Metadata is Preserved or Replaced</a>
      */
-    DocumentMetadataWriteHandle getMetadata();
+    DOCUMENT_WRITE
+  };
 
-    /** The handle with the content as set by your call to
-     * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add} or
-     * {@link DocumentWriteSet#add(DocumentDescriptor, AbstractWriteHandle) add}.
-     * @return the handle with the content
-     */
-    AbstractWriteHandle getContent();
+  /** Returns the {@link DocumentWriteOperation.OperationType} set implicitly by your call to
+   * {@link DocumentWriteSet#add add}, {@link DocumentWriteSet#addDefault addDefault}, or
+   * {@link DocumentWriteSet#disableDefault disableDefault}.
+   * @return the operation type which was set implicitly
+   */
+  OperationType getOperationType();
 
-    /**
-     * The logical temporal document URI of the document as set by your call to
-     * one of the 'add' methods which adds a document to a {@link DocumentWriteSet}
-     * @return the logical temporal document URI
-     */
-    String getTemporalDocumentURI();
+  // The uri for this document, whether set explicitly or received from the
+  // server after a write with a DocumentDescriptor.
+  /** The uri for this document if set explicitly by your call to
+   * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add(String, ...)}
+   * @return the uri
+   */
+  String getUri();
+
+  /** The handle with the metadata as set by your call to
+   * {@link DocumentWriteSet#add(String, DocumentMetadataWriteHandle, AbstractWriteHandle) add} or
+   * {@link DocumentWriteSet#add(DocumentDescriptor, DocumentMetadataWriteHandle, AbstractWriteHandle) add}.
+   * @return the handle with the metadata
+   */
+  DocumentMetadataWriteHandle getMetadata();
+
+  /** The handle with the content as set by your call to
+   * {@link DocumentWriteSet#add(String, AbstractWriteHandle) add} or
+   * {@link DocumentWriteSet#add(DocumentDescriptor, AbstractWriteHandle) add}.
+   * @return the handle with the content
+   */
+  AbstractWriteHandle getContent();
+
+  /**
+   * The logical temporal document URI of the document as set by your call to
+   * one of the 'add' methods which adds a document to a {@link DocumentWriteSet}
+   * @return the logical temporal document URI
+   */
+  String getTemporalDocumentURI();
 }

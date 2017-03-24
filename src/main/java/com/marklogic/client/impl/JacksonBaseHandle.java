@@ -31,83 +31,83 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
 
 public abstract class JacksonBaseHandle<T>
-    extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender
+  extends BaseHandle<InputStream, OutputStreamSender>
+  implements OutputStreamSender
 {
-    private ObjectMapper mapper;
+  private ObjectMapper mapper;
 
-    protected JacksonBaseHandle() {
-        super();
-        super.setFormat(Format.JSON);
+  protected JacksonBaseHandle() {
+    super();
+    super.setFormat(Format.JSON);
+  }
+
+  public ObjectMapper getMapper() {
+    if (mapper == null) {
+      mapper = new ObjectMapper();
+      // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
+      mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
+      mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
     }
+    return mapper;
+  }
 
-    public ObjectMapper getMapper() {
-        if (mapper == null) {
-            mapper = new ObjectMapper();
-            // if we don't do the next two lines Jackson will automatically close our streams which is undesirable
-            mapper.configure(JsonGenerator.Feature.AUTO_CLOSE_TARGET, false);
-            mapper.configure(JsonParser.Feature.AUTO_CLOSE_SOURCE, false);
-        }
-        return mapper;
+  public void setMapper(ObjectMapper mapper) {
+    this.mapper = mapper;
+  }
+
+  public abstract void set(T content);
+
+  public void fromBuffer(byte[] buffer) {
+    if (buffer == null || buffer.length == 0)
+      set(null);
+    else
+      receiveContent(new ByteArrayInputStream(buffer));
+  }
+
+  public byte[] toBuffer() {
+    try {
+      if ( ! hasContent() )
+        return null;
+
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      write(buffer);
+
+      return buffer.toByteArray();
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
     }
+  }
 
-    public void setMapper(ObjectMapper mapper) {
-        this.mapper = mapper;
+  /**
+   * Returns the JSON as a string.
+   */
+
+  @Override
+  public String toString() {
+    try {
+      return new String(toBuffer(),"UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
     }
+  }
 
-    public abstract void set(T content);
-    
-    public void fromBuffer(byte[] buffer) {
-        if (buffer == null || buffer.length == 0)
-            set(null);
-        else
-            receiveContent(new ByteArrayInputStream(buffer));
+
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+
+  @Override
+  protected OutputStreamSender sendContent() {
+    if ( ! hasContent() ) {
+      throw new IllegalStateException("No document to write");
     }
-    
-    public byte[] toBuffer() {
-        try {
-            if ( ! hasContent() )
-                return null;
+    return this;
+  }
 
-            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-            write(buffer);
+  protected abstract boolean hasContent();
 
-            return buffer.toByteArray();
-        } catch (IOException e) {
-            throw new MarkLogicIOException(e);
-        }
-    }
-
-    /**
-     * Returns the JSON as a string.
-     */
-    
-    @Override
-    public String toString() {
-        try {
-            return new String(toBuffer(),"UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            throw new MarkLogicIOException(e);
-        }
-    }
-
-    
-    @Override
-    protected Class<InputStream> receiveAs() {
-        return InputStream.class;
-    }
-    
-    @Override
-    protected OutputStreamSender sendContent() {
-        if ( ! hasContent() ) {
-            throw new IllegalStateException("No document to write");
-        }
-        return this;
-    }
-
-    protected abstract boolean hasContent();
-
-    @Override
-    public abstract void write(OutputStream out) throws IOException;
+  @Override
+  public abstract void write(OutputStream out) throws IOException;
 }
 

@@ -37,149 +37,149 @@ import com.marklogic.client.util.RequestParameters;
  * results but need not return snippets.
  */
 public class SearchCollector extends ResourceManager {
-	static final public String NAME = "searchcollect";
+  static final public String NAME = "searchcollect";
 
-	private long pageLength = QueryManager.DEFAULT_PAGE_LENGTH;
+  private long pageLength = QueryManager.DEFAULT_PAGE_LENGTH;
 
-	public SearchCollector(DatabaseClient client) {
-		super();
-		client.init(NAME, this);
-	}
+  public SearchCollector(DatabaseClient client) {
+    super();
+    client.init(NAME, this);
+  }
 
-	public long getPageLength() {
-		return pageLength;
-	}
-	public void setPageLength(long pageLength) {
-		this.pageLength = pageLength;
-	}
+  public long getPageLength() {
+    return pageLength;
+  }
+  public void setPageLength(long pageLength) {
+    this.pageLength = pageLength;
+  }
 
-	// Potential improvements:
-	// allow collection, directory criteria
-	// support facet and metadata views
-	public CollectorResults collect(String criteria, long start) {
-		return collect(criteria, start, null);
-	}
-	public CollectorResults collect(String criteria, long start, String optionsName) {
-		if (criteria == null)
-			throw new IllegalArgumentException("null query criteria");
-		if (criteria.length() == 0)
-			throw new IllegalArgumentException("empty query criteria");
+  // Potential improvements:
+  // allow collection, directory criteria
+  // support facet and metadata views
+  public CollectorResults collect(String criteria, long start) {
+    return collect(criteria, start, null);
+  }
+  public CollectorResults collect(String criteria, long start, String optionsName) {
+    if (criteria == null)
+      throw new IllegalArgumentException("null query criteria");
+    if (criteria.length() == 0)
+      throw new IllegalArgumentException("empty query criteria");
 
-		RequestParameters params = initParams(optionsName, start);
-		params.add("q", criteria);
+    RequestParameters params = initParams(optionsName, start);
+    params.add("q", criteria);
 
-		return getResults(params);
-	}
-	public CollectorResults collect(StructuredQueryDefinition def, long start) {
-		if (def == null)
-			throw new IllegalArgumentException("null query definition");
+    return getResults(params);
+  }
+  public CollectorResults collect(StructuredQueryDefinition def, long start) {
+    if (def == null)
+      throw new IllegalArgumentException("null query definition");
 
-		String criteria = def.serialize();
-		if (criteria == null)
-			throw new IllegalArgumentException("null query criteria");
-		if (criteria.length() == 0)
-			throw new IllegalArgumentException("empty query criteria");
+    String criteria = def.serialize();
+    if (criteria == null)
+      throw new IllegalArgumentException("null query criteria");
+    if (criteria.length() == 0)
+      throw new IllegalArgumentException("empty query criteria");
 
-		RequestParameters params = initParams(def.getOptionsName(), start);
+    RequestParameters params = initParams(def.getOptionsName(), start);
 
-		StringHandle criteriaHandle = new StringHandle(criteria);
-		criteriaHandle.setFormat(Format.XML);
+    StringHandle criteriaHandle = new StringHandle(criteria);
+    criteriaHandle.setFormat(Format.XML);
 
-		ServiceResultIterator resultItr =
-			getServices().post(params, criteriaHandle);
-		if (resultItr == null || ! resultItr.hasNext())
-			return null;
+    ServiceResultIterator resultItr =
+      getServices().post(params, criteriaHandle);
+    if (resultItr == null || ! resultItr.hasNext())
+      return null;
 
-		return new CollectorResults(resultItr);
-	}
+    return new CollectorResults(resultItr);
+  }
 
-	private RequestParameters initParams(String optionsName, long start) {
-		RequestParameters params = new RequestParameters();
-		params.add("format", "xml");
-		params.add("start",  String.valueOf(start));
+  private RequestParameters initParams(String optionsName, long start) {
+    RequestParameters params = new RequestParameters();
+    params.add("format", "xml");
+    params.add("start",  String.valueOf(start));
 
-		if (optionsName != null && optionsName.length() > 0)
-			params.add("options", optionsName);
-		if (pageLength != QueryManager.DEFAULT_PAGE_LENGTH)
-			params.add("pageLength", String.valueOf(pageLength));
+    if (optionsName != null && optionsName.length() > 0)
+      params.add("options", optionsName);
+    if (pageLength != QueryManager.DEFAULT_PAGE_LENGTH)
+      params.add("pageLength", String.valueOf(pageLength));
 
-		return params;
-	}
-	private CollectorResults getResults(RequestParameters params) {
-		ServiceResultIterator resultItr = getServices().get(params);
-		if (resultItr == null || ! resultItr.hasNext())
-			return null;
+    return params;
+  }
+  private CollectorResults getResults(RequestParameters params) {
+    ServiceResultIterator resultItr = getServices().get(params);
+    if (resultItr == null || ! resultItr.hasNext())
+      return null;
 
-		return new CollectorResults(resultItr);
-	}
+    return new CollectorResults(resultItr);
+  }
 
-	static public class CollectorResults implements Iterator<ServiceResult> {
-		private ServiceResultIterator resultItr;
-		private ServiceResult         searchResult;
+  static public class CollectorResults implements Iterator<ServiceResult> {
+    private ServiceResultIterator resultItr;
+    private ServiceResult         searchResult;
 
-		CollectorResults(ServiceResultIterator resultItr) {
-			super();
-			if (resultItr != null) {
-				if (resultItr.hasNext())
-					searchResult = resultItr.next();
-				this.resultItr = resultItr;
-			}
-		}
+    CollectorResults(ServiceResultIterator resultItr) {
+      super();
+      if (resultItr != null) {
+        if (resultItr.hasNext())
+          searchResult = resultItr.next();
+        this.resultItr = resultItr;
+      }
+    }
 
-		public <R extends XMLReadHandle> R getSearchResult(R handle) {
-			if (searchResult == null)
-				return null;
-			return searchResult.getContent(handle);
-		}
+    public <R extends XMLReadHandle> R getSearchResult(R handle) {
+      if (searchResult == null)
+        return null;
+      return searchResult.getContent(handle);
+    }
 
-		@Override
-		public boolean hasNext() {
-			if (resultItr == null)
-				return false;
+    @Override
+    public boolean hasNext() {
+      if (resultItr == null)
+        return false;
 
-			if (!resultItr.hasNext()) {
-				resultItr.close();
-				resultItr    = null;
-				searchResult = null;
-				return false;
-			}
+      if (!resultItr.hasNext()) {
+        resultItr.close();
+        resultItr    = null;
+        searchResult = null;
+        return false;
+      }
 
-			return true;
-		}
-		@Override
-		public ServiceResult next() {
-			if (!hasNext())
-				return null;
+      return true;
+    }
+    @Override
+    public ServiceResult next() {
+      if (!hasNext())
+        return null;
 
-			return resultItr.next();
-		}
-		public <R extends AbstractReadHandle> R next(R handle) {
-			if (!hasNext())
-				return null;
+      return resultItr.next();
+    }
+    public <R extends AbstractReadHandle> R next(R handle) {
+      if (!hasNext())
+        return null;
 
-			return resultItr.next().getContent(handle);
-		}
+      return resultItr.next().getContent(handle);
+    }
 
-		@Override
-		public void remove() {
-			throw new UnsupportedOperationException("cannot remove result");
-		}
+    @Override
+    public void remove() {
+      throw new UnsupportedOperationException("cannot remove result");
+    }
 
-		public void close() {
-			if (resultItr != null) {
-				resultItr.close();
-				resultItr = null;
-			}
+    public void close() {
+      if (resultItr != null) {
+        resultItr.close();
+        resultItr = null;
+      }
 
-			if (searchResult != null) {
-				searchResult = null;
-			}
-		}
+      if (searchResult != null) {
+        searchResult = null;
+      }
+    }
 
-		@Override
-		protected void finalize() throws Throwable {
-			close();
-			super.finalize();
-		}
-	}
+    @Override
+    protected void finalize() throws Throwable {
+      close();
+      super.finalize();
+    }
+  }
 }

@@ -22,15 +22,15 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
  * in a JSON or XML representation.
  */
 public interface RawQueryDefinition extends QueryDefinition {
-	/**
-	 * Returns the handle for the JSON or XML representation of the query.
-	 * @return	the JSON or XML handle.
-	 */
-	StructureWriteHandle getHandle();
+  /**
+   * Returns the handle for the JSON or XML representation of the query.
+   * @return	the JSON or XML handle.
+   */
+  StructureWriteHandle getHandle();
 
-	/**
-	 * Specifies the handle for the JSON or XML representation of the query.
-	 * @param handle	the JSON or XML handle.
-	 */
-	void setHandle(StructureWriteHandle handle);
+  /**
+   * Specifies the handle for the JSON or XML representation of the query.
+   * @param handle	the JSON or XML handle.
+   */
+  void setHandle(StructureWriteHandle handle);
 }

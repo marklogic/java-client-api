@@ -21,16 +21,16 @@ import com.marklogic.client.pojo.PojoQueryDefinition;
 import com.marklogic.client.io.Format;
 
 public interface CombinedQueryDefinition
-    extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition
+  extends QueryDefinition, ValueQueryDefinition, PojoQueryDefinition
 {
-    /**
-     * Returns the combined query definition as a serialized XML or JSON string.
-     * 
-     * @return The serialized definition.
-     */
-    String serialize();
+  /**
+   * Returns the combined query definition as a serialized XML or JSON string.
+   *
+   * @return The serialized definition.
+   */
+  String serialize();
 
-    Format getFormat();
+  Format getFormat();
 }
 
 

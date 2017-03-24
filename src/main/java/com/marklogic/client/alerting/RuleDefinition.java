@@ -71,421 +71,422 @@ import com.marklogic.client.util.NameMap;
  * A RuleDefinition represents a set of criteria that describe a named condition.
  */
 public class RuleDefinition extends BaseHandle<InputStream, OutputStreamSender>
-		implements OutputStreamSender, RuleReadHandle, RuleWriteHandle {
+  implements OutputStreamSender, RuleReadHandle, RuleWriteHandle
+{
 
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(RuleDefinition.class);
+  private static final Logger logger = (Logger) LoggerFactory
+    .getLogger(RuleDefinition.class);
 
-	private static XMLOutputFactory factory = XMLOutputFactory.newFactory();
-	
-	/**
-	 * A RuleMetadata represents optional client-supplied metadata that is stored alongside a RuleDefinition.
-	 */
-	public interface RuleMetadata extends NameMap<Object> {
-	}
+  private static XMLOutputFactory factory = XMLOutputFactory.newFactory();
 
-	@SuppressWarnings("serial")
-	private static class RuleMetadataImpl extends ClientPropertiesImpl implements
-			RuleMetadata {
-		private RuleMetadataImpl() {
-			super();
-		}
+  /**
+   * A RuleMetadata represents optional client-supplied metadata that is stored alongside a RuleDefinition.
+   */
+  public interface RuleMetadata extends NameMap<Object> {
+  }
 
-	}
+  @SuppressWarnings("serial")
+  private static class RuleMetadataImpl extends ClientPropertiesImpl implements
+    RuleMetadata {
+    private RuleMetadataImpl() {
+      super();
+    }
 
-	private ValueSerializer valueSerializer;
+  }
 
-	private String name;
-	private String description;
-	private List<XMLEvent> queryPayload;
-	private RuleMetadata metadata;
+  private ValueSerializer valueSerializer;
 
-	/**
-	 * Make a new rule definition
-	 * 
-	 * @param name
-	 *            The name of the rule. Should be unique among rule names on the
-	 *            REST server.
-	 * @param description
-	 *            Text description of the rule.
-	 */
-	public RuleDefinition(String name, String description) {
-		this();
-		this.setName(name);
-		this.setDescription(description);
-	}
+  private String name;
+  private String description;
+  private List<XMLEvent> queryPayload;
+  private RuleMetadata metadata;
 
-	/**
-	 * Make a new rule definition, no argument constructor.
-	 */
-	public RuleDefinition() {
-		factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
-		this.metadata = new RuleMetadataImpl();
-	}
+  /**
+   * Make a new rule definition
+   *
+   * @param name
+   *            The name of the rule. Should be unique among rule names on the
+   *            REST server.
+   * @param description
+   *            Text description of the rule.
+   */
+  public RuleDefinition(String name, String description) {
+    this();
+    this.setName(name);
+    this.setDescription(description);
+  }
 
-	/**
-	 * Sets the name of the rule.
-	 * 
-	 * @param name
-	 *            The rule's name.
-	 */
-	public void setName(String name) {
-		this.name = name;
-	}
+  /**
+   * Make a new rule definition, no argument constructor.
+   */
+  public RuleDefinition() {
+    factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
+    this.metadata = new RuleMetadataImpl();
+  }
 
-	/**
-	 * Gets the name of the rule.
-	 * 
-	 * @return The rule's name.
-	 */
-	public String getName() {
-		return this.name;
-	}
+  /**
+   * Sets the name of the rule.
+   *
+   * @param name
+   *            The rule's name.
+   */
+  public void setName(String name) {
+    this.name = name;
+  }
 
-	/**
-	 * Sets the description of the rule.
-	 * 
-	 * @param description
-	 *            The rule's description.
-	 */
-	public void setDescription(String description) {
-		this.description = description;
-	}
+  /**
+   * Gets the name of the rule.
+   *
+   * @return The rule's name.
+   */
+  public String getName() {
+    return this.name;
+  }
 
-	/**
-	 * Returns the rule's definition.
-	 * 
-	 * @return The definition.
-	 */
-	public String getDescription() {
-		return this.description;
-	}
+  /**
+   * Sets the description of the rule.
+   *
+   * @param description
+   *            The rule's description.
+   */
+  public void setDescription(String description) {
+    this.description = description;
+  }
 
-	/**
-	 * Imports an XML combined search definition that defines the matching
-	 * criteria for this rule.
-	 * 
-	 * @param queryDef
-	 *            A combined raw query definition serialized as XML.
-	 */
-	public void importQueryDefinition(XMLWriteHandle queryDef) {
-		List<XMLEvent> importedList = Utilities.importFromHandle(queryDef);
-		// modify XMLEvent list if the imported XML was a structured query.
-		XMLEvent firstEvent = importedList.get(0);
-		if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
-			StartElement startElement = firstEvent.asStartElement();
-			if (RequestConstants.SEARCH_NS.equals(startElement.getName().getNamespaceURI()) &&
-					startElement.getName().getLocalPart().equals("query")) {
-				//wrap in search.
-				List<XMLEvent> wrappedList = new ArrayList<>();
-				XMLEventFactory  eventFactory = XMLEventFactory.newInstance();
-				XMLEvent startSearchElement = eventFactory.createStartElement("search", RequestConstants.SEARCH_NS, "search");
-				XMLEvent endSearchElement = eventFactory.createEndElement("search", RequestConstants.SEARCH_NS, "search");
-				
-				wrappedList.add(startSearchElement);
-				wrappedList.addAll(importedList);
-				wrappedList.add(endSearchElement);
-				this.queryPayload = wrappedList;
-			}
-			else {
-				this.queryPayload = importedList;
-			}		
-		}
-		else {
-			logger.warn("Expected imported XML to be an element, but it's not.");
-			this.queryPayload = importedList;
-		}
-			
-	}
+  /**
+   * Returns the rule's definition.
+   *
+   * @return The definition.
+   */
+  public String getDescription() {
+    return this.description;
+  }
 
-	/**
-	 * Exports the embedded query definitions and options to a handle
-	 * 
-	 * @param handle
-	 *            The handle to use for export.
-	 * @param <T> the type of XMLReadHandle to return
-	 * @return The handle, with a combined query and options included as XML.
-	 */
-	public <T extends XMLReadHandle> T exportQueryDefinition(T handle) {
-		return Utilities.exportToHandle(this.queryPayload, handle);
-	}
+  /**
+   * Imports an XML combined search definition that defines the matching
+   * criteria for this rule.
+   *
+   * @param queryDef
+   *            A combined raw query definition serialized as XML.
+   */
+  public void importQueryDefinition(XMLWriteHandle queryDef) {
+    List<XMLEvent> importedList = Utilities.importFromHandle(queryDef);
+    // modify XMLEvent list if the imported XML was a structured query.
+    XMLEvent firstEvent = importedList.get(0);
+    if (firstEvent.getEventType() ==  XMLStreamConstants.START_ELEMENT) {
+      StartElement startElement = firstEvent.asStartElement();
+      if (RequestConstants.SEARCH_NS.equals(startElement.getName().getNamespaceURI()) &&
+        startElement.getName().getLocalPart().equals("query")) {
+        //wrap in search.
+        List<XMLEvent> wrappedList = new ArrayList<>();
+        XMLEventFactory  eventFactory = XMLEventFactory.newInstance();
+        XMLEvent startSearchElement = eventFactory.createStartElement("search", RequestConstants.SEARCH_NS, "search");
+        XMLEvent endSearchElement = eventFactory.createEndElement("search", RequestConstants.SEARCH_NS, "search");
 
-	/**
-	 * Gets the metadata object associated with this rule
-	 * 
-	 * @return The metadata.
-	 */
-	public RuleMetadata getMetadata() {
-		return metadata;
-	}
+        wrappedList.add(startSearchElement);
+        wrappedList.addAll(importedList);
+        wrappedList.add(endSearchElement);
+        this.queryPayload = wrappedList;
+      }
+      else {
+        this.queryPayload = importedList;
+      }
+    }
+    else {
+      logger.warn("Expected imported XML to be an element, but it's not.");
+      this.queryPayload = importedList;
+    }
 
-	/**
-	 * Sets the metadata object for this rule.
-	 * 
-	 * @param metadata
-	 *            The metadata
-	 */
-	public void setMetadata(RuleMetadata metadata) {
-		this.metadata = metadata;
-	}
+  }
 
-	/**
-	 * Writes a serialized RuleDefinition to an OutputStream as XML.
-	 */
-	@Override
-	public void write(OutputStream out) throws IOException {
-		try {
-			valueSerializer = null;
+  /**
+   * Exports the embedded query definitions and options to a handle
+   *
+   * @param handle
+   *            The handle to use for export.
+   * @param <T> the type of XMLReadHandle to return
+   * @return The handle, with a combined query and options included as XML.
+   */
+  public <T extends XMLReadHandle> T exportQueryDefinition(T handle) {
+    return Utilities.exportToHandle(this.queryPayload, handle);
+  }
 
-			XMLStreamWriter serializer = factory.createXMLStreamWriter(out,
-					"UTF-8");
-			serializer.setPrefix(RequestConstants.RESTAPI_PREFIX,
-					RequestConstants.RESTAPI_NS);
-			serializer.setPrefix(RequestConstants.SEARCH_PREFIX,
-					RequestConstants.SEARCH_NS);
-			serializer.setPrefix("xsi",
-					XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
-			serializer.setPrefix("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
+  /**
+   * Gets the metadata object associated with this rule
+   *
+   * @return The metadata.
+   */
+  public RuleMetadata getMetadata() {
+    return metadata;
+  }
 
-			serializer.writeStartDocument("utf-8", "1.0");
+  /**
+   * Sets the metadata object for this rule.
+   *
+   * @param metadata
+   *            The metadata
+   */
+  public void setMetadata(RuleMetadata metadata) {
+    this.metadata = metadata;
+  }
 
-			serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
-					"rule", RequestConstants.RESTAPI_NS);
+  /**
+   * Writes a serialized RuleDefinition to an OutputStream as XML.
+   */
+  @Override
+  public void write(OutputStream out) throws IOException {
+    try {
+      valueSerializer = null;
 
-			serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
-					"name", RequestConstants.RESTAPI_NS);
-			serializer.writeCharacters(getName());
-			serializer.writeEndElement();
+      XMLStreamWriter serializer = factory.createXMLStreamWriter(out,
+        "UTF-8");
+      serializer.setPrefix(RequestConstants.RESTAPI_PREFIX,
+        RequestConstants.RESTAPI_NS);
+      serializer.setPrefix(RequestConstants.SEARCH_PREFIX,
+        RequestConstants.SEARCH_NS);
+      serializer.setPrefix("xsi",
+        XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI);
+      serializer.setPrefix("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-			serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
-					"description", RequestConstants.RESTAPI_NS);
-			String description = getDescription();
-			if ( description != null ) serializer.writeCharacters(description);
-			serializer.writeEndElement();
-			serializer.flush();
+      serializer.writeStartDocument("utf-8", "1.0");
 
-			// logger.debug("Send: " + new String(queryPayload));
-			XMLEventWriter eventWriter = factory.createXMLEventWriter(out);
-			for (XMLEvent event : this.queryPayload) {
-				eventWriter.add(event);
-			}
-			eventWriter.flush();
-			out.flush();
+      serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
+        "rule", RequestConstants.RESTAPI_NS);
 
-			writeMetadataElement(serializer);
+      serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
+        "name", RequestConstants.RESTAPI_NS);
+      serializer.writeCharacters(getName());
+      serializer.writeEndElement();
 
-			serializer.writeEndElement();
-			serializer.writeEndDocument();
-		} catch (XMLStreamException e) {
-			throw new MarkLogicIOException("Failed to serialize rule", e);
-		} catch (TransformerFactoryConfigurationError e) {
-			throw new MarkLogicIOException("Failed to serialize rule", e);
-		} catch (TransformerException e) {
-			throw new MarkLogicIOException("Failed to serialize rule", e);
-		} finally {
-			valueSerializer = null;
-		}
+      serializer.writeStartElement(RequestConstants.RESTAPI_PREFIX,
+        "description", RequestConstants.RESTAPI_NS);
+      String description = getDescription();
+      if ( description != null ) serializer.writeCharacters(description);
+      serializer.writeEndElement();
+      serializer.flush();
 
-	}
+      // logger.debug("Send: " + new String(queryPayload));
+      XMLEventWriter eventWriter = factory.createXMLEventWriter(out);
+      for (XMLEvent event : this.queryPayload) {
+        eventWriter.add(event);
+      }
+      eventWriter.flush();
+      out.flush();
 
-	private Element getChildByName(Element element, String ns, String localName) {
-		NodeList nl = element.getElementsByTagNameNS(ns, localName);
-		if (nl.getLength() == 1) {
-			return (Element) nl.item(0);
-		} else {
-			throw new MarkLogicBindingException(
-					"Invalid rule - must have one element only named "
-							+ localName);
-		}
-	}
+      writeMetadataElement(serializer);
 
-    @Override
-	protected void receiveContent(InputStream content) {
-		DOMHandle handle = new DOMHandle();
-		HandleAccessor.receiveContent(handle, content);
-		Element ruleElement = handle.get().getDocumentElement();
-		receiveElement(ruleElement);
-	}
+      serializer.writeEndElement();
+      serializer.writeEndDocument();
+    } catch (XMLStreamException e) {
+      throw new MarkLogicIOException("Failed to serialize rule", e);
+    } catch (TransformerFactoryConfigurationError e) {
+      throw new MarkLogicIOException("Failed to serialize rule", e);
+    } catch (TransformerException e) {
+      throw new MarkLogicIOException("Failed to serialize rule", e);
+    } finally {
+      valueSerializer = null;
+    }
 
-	void receiveElement(Element ruleElement) {
-		Element nameElement = getChildByName(ruleElement,
-				RequestConstants.RESTAPI_NS, "name");
-		this.setName(nameElement.getTextContent());
-		Element descElement = getChildByName(ruleElement,
-				RequestConstants.RESTAPI_NS, "description");
-		this.setDescription(descElement.getTextContent());
+  }
 
-		Element searchElement = getChildByName(ruleElement,
-				RequestConstants.SEARCH_NS, "search");
+  private Element getChildByName(Element element, String ns, String localName) {
+    NodeList nl = element.getElementsByTagNameNS(ns, localName);
+    if (nl.getLength() == 1) {
+      return (Element) nl.item(0);
+    } else {
+      throw new MarkLogicBindingException(
+        "Invalid rule - must have one element only named "
+          + localName);
+    }
+  }
 
-		try {
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			TransformerFactory transfac = TransformerFactory.newInstance();
-			Transformer trans = transfac.newTransformer();
-			trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
-			trans.setOutputProperty(OutputKeys.VERSION, "1.0");
-			trans.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
-			trans.setOutputProperty(OutputKeys.INDENT, "no");
+  @Override
+  protected void receiveContent(InputStream content) {
+    DOMHandle handle = new DOMHandle();
+    HandleAccessor.receiveContent(handle, content);
+    Element ruleElement = handle.get().getDocumentElement();
+    receiveElement(ruleElement);
+  }
 
-			trans.transform(new DOMSource(searchElement),
-					new StreamResult(baos));
-			importQueryDefinition(new BytesHandle(baos.toByteArray())
-					.withFormat(Format.XML));
-		} catch (TransformerConfigurationException e) {
-			throw new MarkLogicIOException(
-					"Could not get query from rule payload");
-		} catch (TransformerException e) {
-			throw new MarkLogicIOException(
-					"Could not get query from rule payload");
-		}
+  void receiveElement(Element ruleElement) {
+    Element nameElement = getChildByName(ruleElement,
+      RequestConstants.RESTAPI_NS, "name");
+    this.setName(nameElement.getTextContent());
+    Element descElement = getChildByName(ruleElement,
+      RequestConstants.RESTAPI_NS, "description");
+    this.setDescription(descElement.getTextContent());
 
-		receiveRuleMetadataImpl(ruleElement);
-	}
+    Element searchElement = getChildByName(ruleElement,
+      RequestConstants.SEARCH_NS, "search");
 
-	private void receiveRuleMetadataImpl(Element ruleElement) {
-		RuleMetadata ruleMetadata = getMetadata();
-		ruleMetadata.clear();
+    try {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      TransformerFactory transfac = TransformerFactory.newInstance();
+      Transformer trans = transfac.newTransformer();
+      trans.setOutputProperty(OutputKeys.OMIT_XML_DECLARATION, "yes");
+      trans.setOutputProperty(OutputKeys.VERSION, "1.0");
+      trans.setOutputProperty(OutputKeys.ENCODING, "UTF-8");
+      trans.setOutputProperty(OutputKeys.INDENT, "no");
 
-		Node metadataContainer = ruleElement.getElementsByTagNameNS(
-				RequestConstants.RESTAPI_NS, "rule-metadata").item(0);
-		if (metadataContainer == null)
-			return;
+      trans.transform(new DOMSource(searchElement),
+        new StreamResult(baos));
+      importQueryDefinition(new BytesHandle(baos.toByteArray())
+        .withFormat(Format.XML));
+    } catch (TransformerConfigurationException e) {
+      throw new MarkLogicIOException(
+        "Could not get query from rule payload");
+    } catch (TransformerException e) {
+      throw new MarkLogicIOException(
+        "Could not get query from rule payload");
+    }
 
-		NodeList metadataIn = metadataContainer.getChildNodes();
-		for (int i = 0; i < metadataIn.getLength(); i++) {
-			Node node = metadataIn.item(i);
-			if (node.getNodeType() != Node.ELEMENT_NODE)
-				continue;
-			Element metadataElement = (Element) node;
+    receiveRuleMetadataImpl(ruleElement);
+  }
 
-			QName metadataPropertyName = null;
+  private void receiveRuleMetadataImpl(Element ruleElement) {
+    RuleMetadata ruleMetadata = getMetadata();
+    ruleMetadata.clear();
 
-			String namespaceURI = metadataElement.getNamespaceURI();
-			if (namespaceURI != null) {
-				String prefix = metadataElement.getPrefix();
-				if (prefix != null) {
-					metadataPropertyName = new QName(namespaceURI,
-							metadataElement.getLocalName(), prefix);
-				} else {
-					metadataPropertyName = new QName(namespaceURI,
-							metadataElement.getTagName());
-				}
-			} else {
-				metadataPropertyName = new QName(metadataElement.getTagName());
-			}
+    Node metadataContainer = ruleElement.getElementsByTagNameNS(
+      RequestConstants.RESTAPI_NS, "rule-metadata").item(0);
+    if (metadataContainer == null)
+      return;
 
-			if (!metadataElement.hasChildNodes()) {
-				metadata.put(metadataPropertyName, (String) null);
-				continue;
-			}
+    NodeList metadataIn = metadataContainer.getChildNodes();
+    for (int i = 0; i < metadataIn.getLength(); i++) {
+      Node node = metadataIn.item(i);
+      if (node.getNodeType() != Node.ELEMENT_NODE)
+        continue;
+      Element metadataElement = (Element) node;
 
-			NodeList children = metadataElement.getChildNodes();
-			boolean hasChildElements = false;
-			int childCount = children.getLength();
-			for (int j = 0; j < childCount; j++) {
-				Node child = children.item(j);
-				if (child.getNodeType() == Node.ELEMENT_NODE) {
-					hasChildElements = true;
-					break;
-				}
-			}
-			if (hasChildElements) {
-				metadata.put(metadataPropertyName, children);
-				continue;
-			}
+      QName metadataPropertyName = null;
 
-			String value = metadataElement.getTextContent();
-			if (metadataElement.hasAttributeNS(
-					XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
-				String type = metadataElement.getAttributeNS(
-						XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
-				metadata.put(metadataPropertyName,
-						ValueConverter.convertToJava(type, value));
-				continue;
-			} else {
-				metadata.put(metadataPropertyName, value);
-			}
+      String namespaceURI = metadataElement.getNamespaceURI();
+      if (namespaceURI != null) {
+        String prefix = metadataElement.getPrefix();
+        if (prefix != null) {
+          metadataPropertyName = new QName(namespaceURI,
+            metadataElement.getLocalName(), prefix);
+        } else {
+          metadataPropertyName = new QName(namespaceURI,
+            metadataElement.getTagName());
+        }
+      } else {
+        metadataPropertyName = new QName(metadataElement.getTagName());
+      }
 
-			metadata.put(metadataPropertyName, value);
-		}
-	}
+      if (!metadataElement.hasChildNodes()) {
+        metadata.put(metadataPropertyName, (String) null);
+        continue;
+      }
 
-	private void writeMetadataElement(final XMLStreamWriter serializer)
-			throws XMLStreamException, TransformerFactoryConfigurationError,
-			TransformerException {
-		serializer.writeStartElement("rapi", "rule-metadata",
-				RequestConstants.RESTAPI_NS);
-		serializer.writeNamespace("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
+      NodeList children = metadataElement.getChildNodes();
+      boolean hasChildElements = false;
+      int childCount = children.getLength();
+      for (int j = 0; j < childCount; j++) {
+        Node child = children.item(j);
+        if (child.getNodeType() == Node.ELEMENT_NODE) {
+          hasChildElements = true;
+          break;
+        }
+      }
+      if (hasChildElements) {
+        metadata.put(metadataPropertyName, children);
+        continue;
+      }
 
-		for (Map.Entry<QName, Object> metadataProperty : getMetadata()
-				.entrySet()) {
-			QName propertyName = metadataProperty.getKey();
-			Object value = metadataProperty.getValue();
+      String value = metadataElement.getTextContent();
+      if (metadataElement.hasAttributeNS(
+        XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type")) {
+        String type = metadataElement.getAttributeNS(
+          XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type");
+        metadata.put(metadataPropertyName,
+          ValueConverter.convertToJava(type, value));
+        continue;
+      } else {
+        metadata.put(metadataPropertyName, value);
+      }
 
-			boolean hasNodeValue = value instanceof NodeList;
+      metadata.put(metadataPropertyName, value);
+    }
+  }
 
-			String namespaceURI = propertyName.getNamespaceURI();
-			String prefix = null;
-			String localPart = propertyName.getLocalPart();
-			if (namespaceURI != null && namespaceURI.length() > 0) {
-				if (RequestConstants.RESTAPI_NS.equals(namespaceURI))
-					continue;
+  private void writeMetadataElement(final XMLStreamWriter serializer)
+    throws XMLStreamException, TransformerFactoryConfigurationError,
+    TransformerException {
+    serializer.writeStartElement("rapi", "rule-metadata",
+      RequestConstants.RESTAPI_NS);
+    serializer.writeNamespace("xs", XMLConstants.W3C_XML_SCHEMA_NS_URI);
 
-				prefix = propertyName.getPrefix();
+    for (Map.Entry<QName, Object> metadataProperty : getMetadata()
+      .entrySet()) {
+      QName propertyName = metadataProperty.getKey();
+      Object value = metadataProperty.getValue();
 
-				serializer.writeStartElement(prefix, localPart, namespaceURI);
-			} else {
-				serializer.writeStartElement(localPart);
-			}
+      boolean hasNodeValue = value instanceof NodeList;
 
-			if (!hasNodeValue) {
-				if (valueSerializer == null)
-					valueSerializer = new ValueSerializer(serializer);
+      String namespaceURI = propertyName.getNamespaceURI();
+      String prefix = null;
+      String localPart = propertyName.getLocalPart();
+      if (namespaceURI != null && namespaceURI.length() > 0) {
+        if (RequestConstants.RESTAPI_NS.equals(namespaceURI))
+          continue;
 
-				ValueConverter.convertFromJava(value, valueSerializer);
-			} else {
-				new DOMWriter(serializer).serializeNodeList((NodeList) value);
-			}
+        prefix = propertyName.getPrefix();
 
-			serializer.writeEndElement();
-		}
+        serializer.writeStartElement(prefix, localPart, namespaceURI);
+      } else {
+        serializer.writeStartElement(localPart);
+      }
 
-		serializer.writeEndElement();
-	}
+      if (!hasNodeValue) {
+        if (valueSerializer == null)
+          valueSerializer = new ValueSerializer(serializer);
 
-	static private class ValueSerializer implements
-			ValueConverter.ValueProcessor {
-		private XMLStreamWriter serializer;
+        ValueConverter.convertFromJava(value, valueSerializer);
+      } else {
+        new DOMWriter(serializer).serializeNodeList((NodeList) value);
+      }
 
-		public ValueSerializer(XMLStreamWriter serializer) {
-			super();
-			this.serializer = serializer;
-		}
+      serializer.writeEndElement();
+    }
 
-		@Override
-		public void process(Object original, String type, String value) {
-			if (original == null)
-				return;
-			try {
-				serializer.writeAttribute("xsi",
-						XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
-						type);
-				serializer.writeCharacters(value);
-			} catch (XMLStreamException e) {
-				throw new MarkLogicIOException(e);
-			}
-		}
+    serializer.writeEndElement();
+  }
 
-	}
+  static private class ValueSerializer implements
+    ValueConverter.ValueProcessor {
+    private XMLStreamWriter serializer;
+
+    public ValueSerializer(XMLStreamWriter serializer) {
+      super();
+      this.serializer = serializer;
+    }
 
     @Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
+    public void process(Object original, String type, String value) {
+      if (original == null)
+        return;
+      try {
+        serializer.writeAttribute("xsi",
+          XMLConstants.W3C_XML_SCHEMA_INSTANCE_NS_URI, "type",
+          type);
+        serializer.writeCharacters(value);
+      } catch (XMLStreamException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
 
-    @Override
-	protected OutputStreamSender sendContent() {
-		return this;
-	}
+  }
+
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+
+  @Override
+  protected OutputStreamSender sendContent() {
+    return this;
+  }
 
 }

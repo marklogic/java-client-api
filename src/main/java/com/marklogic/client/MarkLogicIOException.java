@@ -24,16 +24,16 @@ package com.marklogic.client;
 public class MarkLogicIOException extends RuntimeException {
 
 
-	public MarkLogicIOException(String message) {
-		super(message);
-	}
+  public MarkLogicIOException(String message) {
+    super(message);
+  }
 
-	public MarkLogicIOException(Throwable cause) {
-		super(cause);
-	}
+  public MarkLogicIOException(Throwable cause) {
+    super(cause);
+  }
 
-	public MarkLogicIOException(String message, Throwable cause) {
-		super(message, cause);
-	}
+  public MarkLogicIOException(String message, Throwable cause) {
+    super(message, cause);
+  }
 
 }

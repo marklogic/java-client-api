@@ -10,9 +10,9 @@ import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
  */
 public final class SPARQLMimeTypes {
 
-    public final static String SPARQL_XML    = "application/sparql-results+xml";
-    public final static String SPARQL_JSON   = "application/sparql-results+json";
-    public final static String SPARQL_CSV    = "text/csv";
+  public final static String SPARQL_XML    = "application/sparql-results+xml";
+  public final static String SPARQL_JSON   = "application/sparql-results+json";
+  public final static String SPARQL_CSV    = "text/csv";
 
 }
 

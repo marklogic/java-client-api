@@ -105,563 +105,563 @@ import com.marklogic.client.io.BaseHandle;
  * <a href="https://docs.marklogic.com/guide/semantics" target="_top">Semantics Developer's Guide</a>
  */
 public interface GraphManager {
-    /** <p>Use with any GraphManager method in place of the uri to work against
-     * the default graph.  The string value is not important and for
-     * java-client internal use only--it is never sent to the database.</p>
-     *
-     * <p>Example:</p>
-     * <pre>    StringHandle stringHandle = new StringHandle()
-     *        .with("&lt;http://example.org/subject2&gt; &lt;http://example.org/predicate2&gt; &lt;http://example.org/object2&gt; .")
-     *        .withMimetype(RDFMimeTypes.NTRIPLES);
-     *    graphMgr.merge(DEFAULT_GRAPH, stringHandle);</pre>
-     */
-    String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
+  /** <p>Use with any GraphManager method in place of the uri to work against
+   * the default graph.  The string value is not important and for
+   * java-client internal use only--it is never sent to the database.</p>
+   *
+   * <p>Example:</p>
+   * <pre>    StringHandle stringHandle = new StringHandle()
+   *        .with("&lt;http://example.org/subject2&gt; &lt;http://example.org/predicate2&gt; &lt;http://example.org/object2&gt; .")
+   *        .withMimetype(RDFMimeTypes.NTRIPLES);
+   *    graphMgr.merge(DEFAULT_GRAPH, stringHandle);</pre>
+   */
+  String DEFAULT_GRAPH = "com.marklogic.client.semantics.GraphManager.DEFAULT_GRAPH";
 
-    /** <p>Get the uri for available graphs.</p>
-     *
-     * <p>Example:</p>
-     * <pre>    Iterator&lt;String&gt; iter = graphMgr.listGraphUris();
-     *    while ( iter.hasNext() ) {
-     *        String uri = iter.next();
-     *        ...
-     *    }</pre>
-     *
-     * @return the graph uris
-     */
-    Iterator<String> listGraphUris();
+  /** <p>Get the uri for available graphs.</p>
+   *
+   * <p>Example:</p>
+   * <pre>    Iterator&lt;String&gt; iter = graphMgr.listGraphUris();
+   *    while ( iter.hasNext() ) {
+   *        String uri = iter.next();
+   *        ...
+   *    }</pre>
+   *
+   * @return the graph uris
+   */
+  Iterator<String> listGraphUris();
 
-    /** <p>Read triples from the server.  The server can serialize the triples
-     * using any RDFMimeTypes except TRIG.  Specify the desired serialization
-     * mimetype by calling {@link #setDefaultMimetype setDefaultMimetype} or
-     * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle to populate and return, set with the desired
-     *     mimetype from RDFMimeTypes
-     * @param <T> the type of TriplesReadHandle to return
-     *
-     * @return the populated handle
-     *
-     * @see GraphManager example usage in class javadoc
-     */
-    <T extends TriplesReadHandle> T read(String uri, T handle)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Read triples from the server.  The server can serialize the triples
+   * using any RDFMimeTypes except TRIG.  Specify the desired serialization
+   * mimetype by calling {@link #setDefaultMimetype setDefaultMimetype} or
+   * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle to populate and return, set with the desired
+   *     mimetype from RDFMimeTypes
+   * @param <T> the type of TriplesReadHandle to return
+   *
+   * @return the populated handle
+   *
+   * @see GraphManager example usage in class javadoc
+   */
+  <T extends TriplesReadHandle> T read(String uri, T handle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Read triples from the server.  The server can serialize the triples
-     * using any RDFMimeTypes except TRIG.  Specify the desired serialization
-     * mimetype by calling {@link #setDefaultMimetype setDefaultMimetype} or
-     * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle to populate and return with the desired
-     *     mimetype from RDFMimeTypes
-     *     mimetype from RDFMimeTypes
-     * @param transaction the open transaction to read from
-     * @param <T> the type of TriplesReadHandle to return
-     *
-     * @return the populated handle
-     */
-    <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Read triples from the server.  The server can serialize the triples
+   * using any RDFMimeTypes except TRIG.  Specify the desired serialization
+   * mimetype by calling {@link #setDefaultMimetype setDefaultMimetype} or
+   * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle to populate and return with the desired
+   *     mimetype from RDFMimeTypes
+   *     mimetype from RDFMimeTypes
+   * @param transaction the open transaction to read from
+   * @param <T> the type of TriplesReadHandle to return
+   *
+   * @return the populated handle
+   */
+  <T extends TriplesReadHandle> T read(String uri, T handle, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Read triples from the server as the specified type.  The server can
-     * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
-     * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param as the type to populate and return. This type must be registered by an io handle.
-     * @param <T> the type of object that will be returned by the handle registered for it
-     *
-     * @return the retrieved triples as the specified type
-     *
-     * @see GraphManager example usage in class javadoc
-     */
-    <T> T readAs(String uri, Class<T> as)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Read triples from the server as the specified type.  The server can
+   * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
+   * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param as the type to populate and return. This type must be registered by an io handle.
+   * @param <T> the type of object that will be returned by the handle registered for it
+   *
+   * @return the retrieved triples as the specified type
+   *
+   * @see GraphManager example usage in class javadoc
+   */
+  <T> T readAs(String uri, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Read triples from the server as the specified type.  The server can
-     * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
-     * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param as the type to populate and return. This type must be registered by an io handle.
-     * @param transaction the open transaction to read from
-     * @param <T> the type of object that will be returned by the handle registered for it
-     *
-     * @return the retrieved triples as the specified type
-     */
-    <T> T readAs(String uri, Class<T> as, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Read triples from the server as the specified type.  The server can
+   * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
+   * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param as the type to populate and return. This type must be registered by an io handle.
+   * @param transaction the open transaction to read from
+   * @param <T> the type of object that will be returned by the handle registered for it
+   *
+   * @return the retrieved triples as the specified type
+   */
+  <T> T readAs(String uri, Class<T> as, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Retrieve permissions for a graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     *
-     * @return the retrieved GraphPermissions
-     */
-    GraphPermissions getPermissions(String uri)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Retrieve permissions for a graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   *
+   * @return the retrieved GraphPermissions
+   */
+  GraphPermissions getPermissions(String uri)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Retrieve permissions for a graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param transaction the open transaction to read from
-     *
-     * @return the retrieved GraphPermissions
-     */
-    GraphPermissions getPermissions(String uri, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Retrieve permissions for a graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param transaction the open transaction to read from
+   *
+   * @return the retrieved GraphPermissions
+   */
+  GraphPermissions getPermissions(String uri, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Delete all permissions for the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     */
-    void deletePermissions(String uri)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Delete all permissions for the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   */
+  void deletePermissions(String uri)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Delete all permissions for the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param transaction the open transaction to delete in
-     */
-    void deletePermissions(String uri, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Delete all permissions for the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param transaction the open transaction to delete in
+   */
+  void deletePermissions(String uri, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite all permissions for the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param permissions the permissions to set for this graph
-     */
-    void writePermissions(String uri, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite all permissions for the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param permissions the permissions to set for this graph
+   */
+  void writePermissions(String uri, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite all permissions for the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param permissions the permissions to set for this graph
-     * @param transaction the open transaction to write in
-     */
-    void writePermissions(String uri, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite all permissions for the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param permissions the permissions to set for this graph
+   * @param transaction the open transaction to write in
+   */
+  void writePermissions(String uri, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add to permissions on the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param permissions the permissions to add to this graph
-     */
-    void mergePermissions(String uri, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add to permissions on the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param permissions the permissions to add to this graph
+   */
+  void mergePermissions(String uri, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add to permissions on the graph.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param permissions the permissions to add to this graph
-     * @param transaction the open transaction to write in
-     */
-    void mergePermissions(String uri, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add to permissions on the graph.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param permissions the permissions to add to this graph
+   * @param transaction the open transaction to write in
+   */
+  void mergePermissions(String uri, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** Create a GraphPermissions builder object with the specified role and capabilities.
-     *
-     * @param role the name of the role receiving these capabilities
-     * @param capabilities the capabilities (READ, UPDATE, or EXECUTE) granted to this role
-     *
-     * @return the new GraphPermissions object with these capabilities set
-     */
-    GraphPermissions permission(String role, Capability... capabilities);
+  /** Create a GraphPermissions builder object with the specified role and capabilities.
+   *
+   * @param role the name of the role receiving these capabilities
+   * @param capabilities the capabilities (READ, UPDATE, or EXECUTE) granted to this role
+   *
+   * @return the new GraphPermissions object with these capabilities set
+   */
+  GraphPermissions permission(String role, Capability... capabilities);
 
-    /** <p>Add triples from the handle to the specified graph.  The server can
-     * receive the triples as any of the {@link RDFMimeTypes}.  Specify the
-     * mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     *
-     * @see GraphManager example usage in class javadoc
-     */
-    void merge(String uri, TriplesWriteHandle handle)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the handle to the specified graph.  The server can
+   * receive the triples as any of the {@link RDFMimeTypes}.  Specify the
+   * mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   *
+   * @see GraphManager example usage in class javadoc
+   */
+  void merge(String uri, TriplesWriteHandle handle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the handle to the specified graph.  The server can
-     * receive the triples as any of the {@link RDFMimeTypes}.  Specify the
-     * mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param transaction the open transaction to write in
-     */
-    void merge(String uri, TriplesWriteHandle handle, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the handle to the specified graph.  The server can
+   * receive the triples as any of the {@link RDFMimeTypes}.  Specify the
+   * mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param transaction the open transaction to write in
+   */
+  void merge(String uri, TriplesWriteHandle handle, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the handle and add specified permissions to the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link
-     * BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param permissions the permissions to add to this graph
-     */
-    void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the handle and add specified permissions to the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link
+   * BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param permissions the permissions to add to this graph
+   */
+  void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the handle and add specified permissions to the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link
-     * BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param permissions the permissions to add to this graph
-     * @param transaction the open transaction to write in
-     */
-    void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the handle and add specified permissions to the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link
+   * BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param permissions the permissions to add to this graph
+   * @param transaction the open transaction to write in
+   */
+  void merge(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the graphData object to the specified graph.  The
-     * server can receive the triples as any of the {@link RDFMimeTypes}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of appropriate RDFMimeTypesMimetype}
-     */
-    void mergeAs(String uri, Object graphData)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the graphData object to the specified graph.  The
+   * server can receive the triples as any of the {@link RDFMimeTypes}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of appropriate RDFMimeTypesMimetype}
+   */
+  void mergeAs(String uri, Object graphData)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the graphData object to the specified graph.  The
-     * server can receive the triples as any of the {@link RDFMimeTypes}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param transaction the open transaction to write in
-     */
-    void mergeAs(String uri, Object graphData, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the graphData object to the specified graph.  The
+   * server can receive the triples as any of the {@link RDFMimeTypes}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param transaction the open transaction to write in
+   */
+  void mergeAs(String uri, Object graphData, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
 
-    /** <p>Add triples from the graphData object and add specified permissions
-     * to the specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param permissions the permissions to add to this graph
-     */
-    void mergeAs(String uri, Object graphData, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the graphData object and add specified permissions
+   * to the specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param permissions the permissions to add to this graph
+   */
+  void mergeAs(String uri, Object graphData, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add triples from the graphData object and add specified permissions
-     * to the specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param permissions the permissions to add to this graph
-     * @param transaction the open transaction to write in
-     */
-    void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add triples from the graphData object and add specified permissions
+   * to the specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param permissions the permissions to add to this graph
+   * @param transaction the open transaction to write in
+   */
+  void mergeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the handle as the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     *
-     * @see GraphManager example usage in class javadoc
-     */
-    void write(String uri, TriplesWriteHandle handle)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the handle as the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   *
+   * @see GraphManager example usage in class javadoc
+   */
+  void write(String uri, TriplesWriteHandle handle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the handle as the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param transaction the open transaction to write in
-     */
-    void write(String uri, TriplesWriteHandle handle, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the handle as the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param transaction the open transaction to write in
+   */
+  void write(String uri, TriplesWriteHandle handle, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the handle and specified permissions as the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param permissions the permissions to ovewrite for this graph
-     *
-     * @see GraphManager example usage in class javadoc
-     */
-    void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the handle and specified permissions as the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param permissions the permissions to ovewrite for this graph
+   *
+   * @see GraphManager example usage in class javadoc
+   */
+  void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the handle and specified permissions as the
-     * specified graph.  The server can receive the triples as any of the
-     * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
-     * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param handle the handle containing triples of appropriate RDFMimeTypes
-     * @param permissions the permissions to ovewrite for this graph
-     * @param transaction the open transaction to write in
-     */
-    void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the handle and specified permissions as the
+   * specified graph.  The server can receive the triples as any of the
+   * {@link RDFMimeTypes}.  Specify the mimetype appropriate for your content
+   * by calling {@link #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param handle the handle containing triples of appropriate RDFMimeTypes
+   * @param permissions the permissions to ovewrite for this graph
+   * @param transaction the open transaction to write in
+   */
+  void write(String uri, TriplesWriteHandle handle, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the graphData object as the specified graph.
-     * The server can receive the triples as any of the {@link RDFMimeTypes}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     */    
-    void writeAs(String uri, Object graphData)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the graphData object as the specified graph.
+   * The server can receive the triples as any of the {@link RDFMimeTypes}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   */
+  void writeAs(String uri, Object graphData)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the graphData object as the specified graph.
-     * The server can receive the triples as any of the {@link RDFMimeTypes}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param transaction the open transaction to write in
-     */    
-    void writeAs(String uri, Object graphData, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the graphData object as the specified graph.
+   * The server can receive the triples as any of the {@link RDFMimeTypes}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param transaction the open transaction to write in
+   */
+  void writeAs(String uri, Object graphData, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the graphData object and specified
-     * permissions as the specified graph.  The server can receive the triples
-     * as any of the {@link RDFMimeTypes}.  Specify the mimetype appropriate
-     * for your content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param permissions the permissions to ovewrite for this graph
-     */    
-    void writeAs(String uri, Object graphData, GraphPermissions permissions)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the graphData object and specified
+   * permissions as the specified graph.  The server can receive the triples
+   * as any of the {@link RDFMimeTypes}.  Specify the mimetype appropriate
+   * for your content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param permissions the permissions to ovewrite for this graph
+   */
+  void writeAs(String uri, Object graphData, GraphPermissions permissions)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Overwrite triples from the graphData object and specified
-     * permissions as the specified graph.  The server can receive the triples
-     * as any of the {@link RDFMimeTypes}.  Specify the mimetype appropriate
-     * for your content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param graphData the object containing triples of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param permissions the permissions to ovewrite for this graph
-     * @param transaction the open transaction to write in
-     */
-    void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Overwrite triples from the graphData object and specified
+   * permissions as the specified graph.  The server can receive the triples
+   * as any of the {@link RDFMimeTypes}.  Specify the mimetype appropriate
+   * for your content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param graphData the object containing triples of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param permissions the permissions to ovewrite for this graph
+   * @param transaction the open transaction to write in
+   */
+  void writeAs(String uri, Object graphData, GraphPermissions permissions, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Permanently delete the specified graph from the server.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     */
-    void delete(String uri)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Permanently delete the specified graph from the server.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   */
+  void delete(String uri)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Permanently delete the specified graph from the server.</p>
-     *
-     * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
-     * @param transaction the open transaction to delete in
-     */
-    void delete(String uri, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Permanently delete the specified graph from the server.</p>
+   *
+   * @param uri the graph uri or {@link #DEFAULT_GRAPH} constant
+   * @param transaction the open transaction to delete in
+   */
+  void delete(String uri, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Retrieves all triples related to specified subject or object iris.
-     * The server can serialize the triples using any RDFMimeTypes except TRIG.
-     * Specify the desired serialization mimetype by calling {@link
-     * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param handle the handle to populate and return with the desired
-     *     mimetype from RDFMimeTypes
-     * @param iris the subject or object iris to retrieve
-     * @param <T> the type of TriplesReadHandle to return
-     *
-     * @return the populated handle
-     */
-    <T extends TriplesReadHandle> T things(T handle, String... iris)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Retrieves all triples related to specified subject or object iris.
+   * The server can serialize the triples using any RDFMimeTypes except TRIG.
+   * Specify the desired serialization mimetype by calling {@link
+   * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param handle the handle to populate and return with the desired
+   *     mimetype from RDFMimeTypes
+   * @param iris the subject or object iris to retrieve
+   * @param <T> the type of TriplesReadHandle to return
+   *
+   * @return the populated handle
+   */
+  <T extends TriplesReadHandle> T things(T handle, String... iris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Retrieves all triples related to specified subject or object iris.  The server can
-     * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
-     * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param as the type to populate and return. This type must be registered by an io handle.
-     * @param iris the subject or object iris to retrieve
-     * @param <T> the type of object that will be returned by the handle registered for it
-     *
-     * @return the retrieved triples as the specified type
-     */
-    <T> T thingsAs(Class<T> as, String... iris)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Retrieves all triples related to specified subject or object iris.  The server can
+   * serialize the triples using any RDFMimeTypes except TRIG.  Specify the
+   * desired serialization using {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param as the type to populate and return. This type must be registered by an io handle.
+   * @param iris the subject or object iris to retrieve
+   * @param <T> the type of object that will be returned by the handle registered for it
+   *
+   * @return the retrieved triples as the specified type
+   */
+  <T> T thingsAs(Class<T> as, String... iris)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add quads from the handle to the graphs specified in the quads data.
-     * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
-     * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
-     * content by calling {@link #setDefaultMimetype setDefaultMimetype} or
-     * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param handle the handle containing quads of appropriate RDFMimeTypes
-     */
-    void mergeGraphs(QuadsWriteHandle handle)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add quads from the handle to the graphs specified in the quads data.
+   * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
+   * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
+   * content by calling {@link #setDefaultMimetype setDefaultMimetype} or
+   * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param handle the handle containing quads of appropriate RDFMimeTypes
+   */
+  void mergeGraphs(QuadsWriteHandle handle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add quads from the handle to the graphs specified in the quads data.
-     * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
-     * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
-     * content by calling {@link #setDefaultMimetype setDefaultMimetype} or
-     * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
-     * available) on your handle.</p>
-     *
-     * @param handle the handle containing quads of appropriate RDFMimeTypes
-     * @param transaction the open transaction to write in
-     */
-    void mergeGraphs(QuadsWriteHandle handle, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add quads from the handle to the graphs specified in the quads data.
+   * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
+   * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
+   * content by calling {@link #setDefaultMimetype setDefaultMimetype} or
+   * {@link BaseHandle#setMimetype handle.setMimetype} or withMimetype (if
+   * available) on your handle.</p>
+   *
+   * @param handle the handle containing quads of appropriate RDFMimeTypes
+   * @param transaction the open transaction to write in
+   */
+  void mergeGraphs(QuadsWriteHandle handle, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add quads from the object to the graphs specified in the quads data.
-     * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
-     * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
-     * content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param quadsData the object containing quads of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     */
-    void mergeGraphsAs(Object quadsData)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add quads from the object to the graphs specified in the quads data.
+   * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
+   * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
+   * content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param quadsData the object containing quads of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   */
+  void mergeGraphsAs(Object quadsData)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Add quads from the object to the graphs specified in the quads data.
-     * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
-     * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
-     * content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param quadsData the object containing quads of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param transaction the open transaction to write in
-     */
-    void mergeGraphsAs(Object quadsData, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Add quads from the object to the graphs specified in the quads data.
+   * The server can receive the quads as {@link RDFMimeTypes#NQUADS} or
+   * {@link RDFMimeTypes#TRIG}.  Specify the mimetype appropriate for your
+   * content by calling {@link #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param quadsData the object containing quads of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param transaction the open transaction to write in
+   */
+  void mergeGraphsAs(Object quadsData, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Remove all quads from all graphs then insert quads from the handle
-     * to the graphs specified in the quads data.  The server can receive the
-     * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param handle the handle containing quads of appropriate RDFMimeTypes
-     */
-    void replaceGraphs(QuadsWriteHandle handle)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Remove all quads from all graphs then insert quads from the handle
+   * to the graphs specified in the quads data.  The server can receive the
+   * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param handle the handle containing quads of appropriate RDFMimeTypes
+   */
+  void replaceGraphs(QuadsWriteHandle handle)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Remove all quads from all graphs then insert quads from the handle
-     * to the graphs specified in the quads data.  The server can receive the
-     * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
-     * handle.setMimetype} or withMimetype (if available) on your handle.</p>
-     *
-     * @param handle the handle containing quads of appropriate RDFMimeTypes
-     * @param transaction the open transaction to write in
-     */
-    void replaceGraphs(QuadsWriteHandle handle, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Remove all quads from all graphs then insert quads from the handle
+   * to the graphs specified in the quads data.  The server can receive the
+   * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype} or {@link BaseHandle#setMimetype
+   * handle.setMimetype} or withMimetype (if available) on your handle.</p>
+   *
+   * @param handle the handle containing quads of appropriate RDFMimeTypes
+   * @param transaction the open transaction to write in
+   */
+  void replaceGraphs(QuadsWriteHandle handle, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Remove all quads from all graphs then insert quads from the quadsData
-     * to the graphs specified in the quads data.  The server can receive the
-     * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param quadsData the object containing quads of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     */
-    void replaceGraphsAs(Object quadsData)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Remove all quads from all graphs then insert quads from the quadsData
+   * to the graphs specified in the quads data.  The server can receive the
+   * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param quadsData the object containing quads of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   */
+  void replaceGraphsAs(Object quadsData)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Remove all quads from all graphs then insert quads from the quadsData
-     * to the graphs specified in the quads data.  The server can receive the
-     * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
-     * Specify the mimetype appropriate for your content by calling {@link
-     * #setDefaultMimetype setDefaultMimetype}.</p>
-     *
-     * @param quadsData the object containing quads of RDFMimeTypes specified by
-     *     {@link #setDefaultMimetype setDefaultMimetype}
-     * @param transaction the open transaction to write in
-     */
-    void replaceGraphsAs(Object quadsData, Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Remove all quads from all graphs then insert quads from the quadsData
+   * to the graphs specified in the quads data.  The server can receive the
+   * quads as {@link RDFMimeTypes#NQUADS} or {@link RDFMimeTypes#TRIG}.
+   * Specify the mimetype appropriate for your content by calling {@link
+   * #setDefaultMimetype setDefaultMimetype}.</p>
+   *
+   * @param quadsData the object containing quads of RDFMimeTypes specified by
+   *     {@link #setDefaultMimetype setDefaultMimetype}
+   * @param transaction the open transaction to write in
+   */
+  void replaceGraphsAs(Object quadsData, Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Permanently delete all quads from all graphs.</p>
-     */
-    void deleteGraphs()
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Permanently delete all quads from all graphs.</p>
+   */
+  void deleteGraphs()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** <p>Permanently delete all quads from all graphs.</p>
-     *
-     * @param transaction the open transaction to delete in
-     */
-    void deleteGraphs(Transaction transaction)
-        throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /** <p>Permanently delete all quads from all graphs.</p>
+   *
+   * @param transaction the open transaction to delete in
+   */
+  void deleteGraphs(Transaction transaction)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
 
-    /** Get the mimetype set by calling setDefaultMimetype.
-     *
-     * @return the default mimetype set by calling setDefaultMimetype
-     */
-    String getDefaultMimetype();
+  /** Get the mimetype set by calling setDefaultMimetype.
+   *
+   * @return the default mimetype set by calling setDefaultMimetype
+   */
+  String getDefaultMimetype();
 
-    /** Set the default mimetype for data sent by write* or merge* methods
-     * and data serialized by the server in response to calls to read* or
-     * things* methods.  A mimetype explicitly set on the handle will be used
-     * instead of the default.  This default mimetype must be set to use the
-     * *As methods since there is no handle on which to explicity set a
-     * mimetype.
-     *
-     * @param mimetype the new default mimetype
-     */
-    void setDefaultMimetype(String mimetype);
+  /** Set the default mimetype for data sent by write* or merge* methods
+   * and data serialized by the server in response to calls to read* or
+   * things* methods.  A mimetype explicitly set on the handle will be used
+   * instead of the default.  This default mimetype must be set to use the
+   * *As methods since there is no handle on which to explicity set a
+   * mimetype.
+   *
+   * @param mimetype the new default mimetype
+   */
+  void setDefaultMimetype(String mimetype);
 
-    /** Get an empty GraphPermissions instance.
-     *
-     * @return an empty GraphPermissions instance
-     */
-    GraphPermissions newGraphPermissions();
+  /** Get an empty GraphPermissions instance.
+   *
+   * @return an empty GraphPermissions instance
+   */
+  GraphPermissions newGraphPermissions();
 }

@@ -34,114 +34,114 @@ import com.marklogic.client.io.JacksonHandle;
  * using the Jackson extra library.  You must install the library first.
  */
 public class JacksonHandleExample {
-	public static void main(String[] args) throws IOException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args) throws IOException {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props) throws IOException {
-		System.out.println("example: "+JacksonHandleExample.class.getName());
+  public static void run(ExampleProperties props) throws IOException {
+    System.out.println("example: "+JacksonHandleExample.class.getName());
 
-		// use either shortcut or strong typed IO
-		runShortcut(props);
-		runStrongTyped(props);
-	}
-	public static void runShortcut(ExampleProperties props) throws IOException {
-		String filename = "flipper.json";
+    // use either shortcut or strong typed IO
+    runShortcut(props);
+    runStrongTyped(props);
+  }
+  public static void runShortcut(ExampleProperties props) throws IOException {
+    String filename = "flipper.json";
 
-		// register the handle from the extra library
-		DatabaseClientFactory.getHandleRegistry().register(
-				JacksonHandle.newFactory()
-				);
+    // register the handle from the extra library
+    DatabaseClientFactory.getHandleRegistry().register(
+      JacksonHandle.newFactory()
+    );
 
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				props.host, props.port, props.writerUser, props.writerPassword,
-				props.authType);
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      props.host, props.port, props.writerUser, props.writerPassword,
+      props.authType);
 
-		// create a manager for JSON documents
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    // create a manager for JSON documents
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// read the example file
-		InputStream docStream = Util.openStream("data"+File.separator+filename);
-		if (docStream == null)
-			throw new IOException("Could not read document example");
+    // read the example file
+    InputStream docStream = Util.openStream("data"+File.separator+filename);
+    if (docStream == null)
+      throw new IOException("Could not read document example");
 
-		// create an identifier for the document
-		String docId = "/example/"+filename;
+    // create an identifier for the document
+    String docId = "/example/"+filename;
 
-		// parse the example file with Jackson
-		JsonNode writeDocument = new ObjectMapper().readValue(
-				new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
+    // parse the example file with Jackson
+    JsonNode writeDocument = new ObjectMapper().readValue(
+      new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
 
-		// write the document
-		docMgr.writeAs(docId, writeDocument);
+    // write the document
+    docMgr.writeAs(docId, writeDocument);
 
-		// ... at some other time ...
+    // ... at some other time ...
 
-		// read the document content
-		JsonNode readDocument = docMgr.readAs(docId, JsonNode.class);
+    // read the document content
+    JsonNode readDocument = docMgr.readAs(docId, JsonNode.class);
 
-		// access the document content
-		String aRootField = readDocument.fieldNames().next();
+    // access the document content
+    String aRootField = readDocument.fieldNames().next();
 
-		// delete the document
-		docMgr.delete(docId);
+    // delete the document
+    docMgr.delete(docId);
 
-		System.out.println("(Shortcut) Wrote and read /example/"+filename+
-				" content with a root field name of "+aRootField+" using Jackson");
+    System.out.println("(Shortcut) Wrote and read /example/"+filename+
+      " content with a root field name of "+aRootField+" using Jackson");
 
-		// release the client
-		client.release();
-	}
-	public static void runStrongTyped(ExampleProperties props) throws IOException {
-		String filename = "flipper.json";
+    // release the client
+    client.release();
+  }
+  public static void runStrongTyped(ExampleProperties props) throws IOException {
+    String filename = "flipper.json";
 
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(
-				props.host, props.port, props.writerUser, props.writerPassword,
-				props.authType);
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      props.host, props.port, props.writerUser, props.writerPassword,
+      props.authType);
 
-		// create a manager for JSON documents
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    // create a manager for JSON documents
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// read the example file
-		InputStream docStream = Util.openStream("data"+File.separator+filename);
-		if (docStream == null)
-			throw new IOException("Could not read document example");
+    // read the example file
+    InputStream docStream = Util.openStream("data"+File.separator+filename);
+    if (docStream == null)
+      throw new IOException("Could not read document example");
 
-		// create an identifier for the document
-		String docId = "/example/"+filename;
+    // create an identifier for the document
+    String docId = "/example/"+filename;
 
-		// create a handle for the document
-		JacksonHandle writeHandle = new JacksonHandle();
+    // create a handle for the document
+    JacksonHandle writeHandle = new JacksonHandle();
 
-		// parse the example file with Jackson
-		JsonNode writeDocument = writeHandle.getMapper().readValue(
-				new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
-		writeHandle.set(writeDocument);
+    // parse the example file with Jackson
+    JsonNode writeDocument = writeHandle.getMapper().readValue(
+      new InputStreamReader(docStream, "UTF-8"), JsonNode.class);
+    writeHandle.set(writeDocument);
 
-		// write the document
-		docMgr.write(docId, writeHandle);
+    // write the document
+    docMgr.write(docId, writeHandle);
 
-		// ... at some other time ...
+    // ... at some other time ...
 
-		// create a handle to receive the document content
-		JacksonHandle readHandle = new JacksonHandle();
+    // create a handle to receive the document content
+    JacksonHandle readHandle = new JacksonHandle();
 
-		// read the document content
-		docMgr.read(docId, readHandle);
+    // read the document content
+    docMgr.read(docId, readHandle);
 
-		// access the document content
-		JsonNode readDocument = readHandle.get();
-		String aRootField = readDocument.fieldNames().next();
+    // access the document content
+    JsonNode readDocument = readHandle.get();
+    String aRootField = readDocument.fieldNames().next();
 
-		// delete the document
-		docMgr.delete(docId);
+    // delete the document
+    docMgr.delete(docId);
 
-		System.out.println("(Strong Typed) Wrote and read /example/"+filename+
-				" content with a root field name of "+aRootField+" using Jackson");
+    System.out.println("(Strong Typed) Wrote and read /example/"+filename+
+      " content with a root field name of "+aRootField+" using Jackson");
 
-		// release the client
-		client.release();
-	}
+    // release the client
+    client.release();
+  }
 }

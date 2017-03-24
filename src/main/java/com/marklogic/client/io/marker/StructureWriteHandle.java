@@ -19,6 +19,6 @@ package com.marklogic.client.io.marker;
  * A Structure Write Handle can represent a data structure written to the database.
  */
 public interface StructureWriteHandle
-extends DocumentPatchHandle, DocumentMetadataWriteHandle, QueryOptionsWriteHandle, RuleWriteHandle
+  extends DocumentPatchHandle, DocumentMetadataWriteHandle, QueryOptionsWriteHandle, RuleWriteHandle
 {
 }

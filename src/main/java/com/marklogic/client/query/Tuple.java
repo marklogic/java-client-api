@@ -26,29 +26,29 @@ import java.util.List;
  * A Tuple is a single tuple value taken from a tuple/value query.
  */
 public class Tuple {
-    @XmlAttribute(name = "frequency")
-    private long frequency;
+  @XmlAttribute(name = "frequency")
+  private long frequency;
 
-    @XmlElement(namespace = TuplesBuilder.Tuples.TUPLES_NS, name = "distinct-value")
-    private List<TypedDistinctValue> distinctValues;
+  @XmlElement(namespace = TuplesBuilder.Tuples.TUPLES_NS, name = "distinct-value")
+  private List<TypedDistinctValue> distinctValues;
 
-    public Tuple() {
-        distinctValues = new ArrayList<>();
-    }
+  public Tuple() {
+    distinctValues = new ArrayList<>();
+  }
 
-    /**
-     * Returns the frequency of this tuple in the database.
-     * @return The frequency.
-     */
-    public long getCount() {
-        return frequency;
-    }
+  /**
+   * Returns the frequency of this tuple in the database.
+   * @return The frequency.
+   */
+  public long getCount() {
+    return frequency;
+  }
 
-    /**
-     * Returns an array of all the values in this tuple.
-     * @return The array of values.
-     */
-    public TypedDistinctValue[] getValues() {
-        return distinctValues.toArray(new TypedDistinctValue[0]);
-    }
+  /**
+   * Returns an array of all the values in this tuple.
+   * @return The array of values.
+   */
+  public TypedDistinctValue[] getValues() {
+    return distinctValues.toArray(new TypedDistinctValue[0]);
+  }
 }

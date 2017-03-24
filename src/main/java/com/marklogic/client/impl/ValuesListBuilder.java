@@ -31,41 +31,41 @@ import javax.xml.bind.annotation.XmlRootElement;
  * It is of no consequence to users of this API.
  */
 public final class ValuesListBuilder {
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlRootElement(namespace = ValuesList.VALUES_LIST_NS, name = "values-list")
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlRootElement(namespace = ValuesList.VALUES_LIST_NS, name = "values-list")
 
-    public static final class ValuesList {
-        public static final String VALUES_LIST_NS = "http://marklogic.com/rest-api";
+  public static final class ValuesList {
+    public static final String VALUES_LIST_NS = "http://marklogic.com/rest-api";
 
-        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "values")
-        private List<Values> values;
+    @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "values")
+    private List<Values> values;
 
-        public ValuesList() {
-            values = new ArrayList<>();
-        }
-
-        public HashMap<String, String> getValuesMap() {
-            HashMap<String,String> map = new HashMap<>();
-            for (Values value : values) {
-                map.put(value.getName(), value.getUri());
-            }
-            return map;
-        }
+    public ValuesList() {
+      values = new ArrayList<>();
     }
 
-    private static final class Values {
-        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "name")
-        String name;
-
-        @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "uri")
-        String uri;
-
-        public String getName() {
-            return name;
-        }
-
-        public String getUri() {
-            return uri;
-        }
+    public HashMap<String, String> getValuesMap() {
+      HashMap<String,String> map = new HashMap<>();
+      for (Values value : values) {
+        map.put(value.getName(), value.getUri());
+      }
+      return map;
     }
+  }
+
+  private static final class Values {
+    @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "name")
+    String name;
+
+    @XmlElement(namespace = ValuesList.VALUES_LIST_NS, name = "uri")
+    String uri;
+
+    public String getName() {
+      return name;
+    }
+
+    public String getUri() {
+      return uri;
+    }
+  }
 }

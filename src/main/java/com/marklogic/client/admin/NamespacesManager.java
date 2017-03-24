@@ -24,51 +24,51 @@ import javax.xml.namespace.NamespaceContext;
 
 /**
  * The NamespacesManager provides access and editing for the namespaces defined on the server.
- * 
+ *
  * To use NamespacesManager, an application must authenticate as rest-admin.
  */
 public interface NamespacesManager {
-	/**
-	 * Returns the namespace URI bound to the specified prefix on the server.
-	 * @param prefix	the prefix for the binding
-	 * @return	the namespace URI
-	 */
-    String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
-    /**
-     * Reads all of the namespace bindings from the server.
-     * @return	a namespace context with the bindings
-     */
-    NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
-    /**
-     * Creates a namespace binding on the server.
-     * @param prefix	the prefix bound to the URI
-     * @param namespaceURI	the URI bound to the prefix
-     */
-    void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
-    /**
-     * Writes a namespace binding on the server.
-     * @param prefix	the prefix bound to the URI
-     * @param namespaceURI	the URI bound to the prefix
-     */
-    void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Deletes a namespace binding on the server.
-     * @param prefix	the prefix bound to the URI
-     */
-    void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
-    /**
-     * Deletes all namespace bindings on the server.
-     */
-    void deleteAll() throws ForbiddenUserException, FailedRequestException;
-    /**
-     * Starts debugging client requests. You can suspend and resume debugging output
-     * using the methods of the logger.
-     * 
-     * @param logger	the logger that receives debugging output
-     */
-    void startLogging(RequestLogger logger);
-    /**
-     *  Stops debugging client requests.
-     */
-    void stopLogging();
+  /**
+   * Returns the namespace URI bound to the specified prefix on the server.
+   * @param prefix	the prefix for the binding
+   * @return	the namespace URI
+   */
+  String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
+  /**
+   * Reads all of the namespace bindings from the server.
+   * @return	a namespace context with the bindings
+   */
+  NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
+  /**
+   * Creates a namespace binding on the server.
+   * @param prefix	the prefix bound to the URI
+   * @param namespaceURI	the URI bound to the prefix
+   */
+  void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
+  /**
+   * Writes a namespace binding on the server.
+   * @param prefix	the prefix bound to the URI
+   * @param namespaceURI	the URI bound to the prefix
+   */
+  void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /**
+   * Deletes a namespace binding on the server.
+   * @param prefix	the prefix bound to the URI
+   */
+  void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  /**
+   * Deletes all namespace bindings on the server.
+   */
+  void deleteAll() throws ForbiddenUserException, FailedRequestException;
+  /**
+   * Starts debugging client requests. You can suspend and resume debugging output
+   * using the methods of the logger.
+   *
+   * @param logger	the logger that receives debugging output
+   */
+  void startLogging(RequestLogger logger);
+  /**
+   *  Stops debugging client requests.
+   */
+  void stopLogging();
 }

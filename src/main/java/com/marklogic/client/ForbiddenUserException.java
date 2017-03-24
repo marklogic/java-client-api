@@ -24,13 +24,13 @@ import com.marklogic.client.impl.FailedRequest;
  */
 @SuppressWarnings("serial")
 public class ForbiddenUserException extends MarkLogicServerException {
-	public ForbiddenUserException(String message) {
-		super(message);
-	}
-	
-	public ForbiddenUserException(String localMessage,
-			FailedRequest failedRequest) {
-		super(localMessage, failedRequest);
-	}
+  public ForbiddenUserException(String message) {
+    super(message);
+  }
+
+  public ForbiddenUserException(String localMessage,
+                                FailedRequest failedRequest) {
+    super(localMessage, failedRequest);
+  }
 
 }

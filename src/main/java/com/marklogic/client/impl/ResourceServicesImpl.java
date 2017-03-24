@@ -23,117 +23,117 @@ import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
 
 class ResourceServicesImpl
-    extends AbstractLoggingManager
-    implements ResourceServices
+  extends AbstractLoggingManager
+  implements ResourceServices
 {
-	private String       resourceName;
-	private RESTServices services;
+  private String       resourceName;
+  private RESTServices services;
 
-	ResourceServicesImpl(RESTServices services, String resourceName) {
-		super();
-		this.services     = services;
-		this.resourceName = resourceName;
-	}
+  ResourceServicesImpl(RESTServices services, String resourceName) {
+    super();
+    this.services     = services;
+    this.resourceName = resourceName;
+  }
 
-	@Override
-	public String getResourceName() {
-		return resourceName;
-	}
-	private String getResourcePath() {
-		return "resources/"+getResourceName();
-	}
+  @Override
+  public String getResourceName() {
+    return resourceName;
+  }
+  private String getResourcePath() {
+    return "resources/"+getResourceName();
+  }
 
-	@Override
-	public <R extends AbstractReadHandle> R get(RequestParameters params, R output) {
-		return get(params, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output) {
-		return services.getResource(requestLogger, getResourcePath(), 
-				transaction, prepareParams(params), output);
-	}
-	@Override
-	public ServiceResultIterator get(RequestParameters params, String... outputMimetypes) {
-		return get(params, null, outputMimetypes);
-	}
-	@Override
-	public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... outputMimetypes) {
-		return services.getIteratedResource(requestLogger, getResourcePath(), 
-				transaction, prepareParams(params), outputMimetypes);
-	}
+  @Override
+  public <R extends AbstractReadHandle> R get(RequestParameters params, R output) {
+    return get(params, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R get(RequestParameters params, Transaction transaction, R output) {
+    return services.getResource(requestLogger, getResourcePath(),
+      transaction, prepareParams(params), output);
+  }
+  @Override
+  public ServiceResultIterator get(RequestParameters params, String... outputMimetypes) {
+    return get(params, null, outputMimetypes);
+  }
+  @Override
+  public ServiceResultIterator get(RequestParameters params, Transaction transaction, String... outputMimetypes) {
+    return services.getIteratedResource(requestLogger, getResourcePath(),
+      transaction, prepareParams(params), outputMimetypes);
+  }
 
-	@Override
-	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output) {
-		return put(params, input, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
-		return services.putResource(requestLogger, getResourcePath(), 
-				transaction, prepareParams(params), input, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output) {
-		return put(params, input, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output) {
-		return services.putResource(requestLogger, getResourcePath(),
-				transaction, prepareParams(params), input, output);
-	}
+  @Override
+  public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, R output) {
+    return put(params, input, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R put(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
+    return services.putResource(requestLogger, getResourcePath(),
+      transaction, prepareParams(params), input, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, R output) {
+    return put(params, input, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R put(RequestParameters params, W[] input, Transaction transaction, R output) {
+    return services.putResource(requestLogger, getResourcePath(),
+      transaction, prepareParams(params), input, output);
+  }
 
-	@Override
-	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output) {
-		return post(params, input, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
-		return services.postResource(
-				requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
-	}
-	@Override
-	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
-		return post(params, input, null, outputMimetypes);
-	}
-	@Override
-	public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... outputMimetypes) {
-		return services.postIteratedResource(
-				requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
-	}
-	@Override
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output) {
-		return post(params, input, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output) {
-		return services.postResource(
-				requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
-	}
-	@Override
-	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... outputMimetypes) {
-		return post(params, input, null, outputMimetypes);
-	}
-	@Override
-	public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... outputMimetypes) {
-		return services.postIteratedResource(
-				requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
-	}
+  @Override
+  public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, R output) {
+    return post(params, input, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, R output) {
+    return services.postResource(
+      requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
+  }
+  @Override
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, String... outputMimetypes) {
+    return post(params, input, null, outputMimetypes);
+  }
+  @Override
+  public ServiceResultIterator post(RequestParameters params, AbstractWriteHandle input, Transaction transaction, String... outputMimetypes) {
+    return services.postIteratedResource(
+      requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
+  }
+  @Override
+  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, R output) {
+    return post(params, input, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R post(RequestParameters params, W[] input, Transaction transaction, R output) {
+    return services.postResource(
+      requestLogger, getResourcePath(), transaction, prepareParams(params), input, output);
+  }
+  @Override
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, String... outputMimetypes) {
+    return post(params, input, null, outputMimetypes);
+  }
+  @Override
+  public <W extends AbstractWriteHandle> ServiceResultIterator post(RequestParameters params, W[] input, Transaction transaction, String... outputMimetypes) {
+    return services.postIteratedResource(
+      requestLogger, getResourcePath(), transaction, prepareParams(params), input, outputMimetypes);
+  }
 
-	@Override
-	public <R extends AbstractReadHandle> R delete(RequestParameters params, R output) {
-		return delete(params, null, output);
-	}
-	@Override
-	public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output) {
-		return services.deleteResource(requestLogger,
-				getResourcePath(), transaction, prepareParams(params), output);
-	}
+  @Override
+  public <R extends AbstractReadHandle> R delete(RequestParameters params, R output) {
+    return delete(params, null, output);
+  }
+  @Override
+  public <R extends AbstractReadHandle> R delete(RequestParameters params, Transaction transaction, R output) {
+    return services.deleteResource(requestLogger,
+      getResourcePath(), transaction, prepareParams(params), output);
+  }
 
-	@Override
-    public RequestLogger getRequestLogger() {
-    	return requestLogger;
-    }
+  @Override
+  public RequestLogger getRequestLogger() {
+    return requestLogger;
+  }
 
-	private RequestParameters prepareParams(RequestParameters params) {
-		return params != null ? params.copy("rs") : null;
-	}
+  private RequestParameters prepareParams(RequestParameters params) {
+    return params != null ? params.copy("rs") : null;
+  }
 }

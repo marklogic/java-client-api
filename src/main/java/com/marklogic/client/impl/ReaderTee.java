@@ -22,165 +22,165 @@ import java.io.Reader;
 import java.nio.CharBuffer;
 
 public class ReaderTee extends Reader {
-	private Reader             in;
-	private OutputStreamWriter tee;
-	private long               max  = 0;
-	private long               sent = 0;
+  private Reader             in;
+  private OutputStreamWriter tee;
+  private long               max  = 0;
+  private long               sent = 0;
 
-	public ReaderTee(Reader in, OutputStream tee, long max) {
-		super();
-		this.in  = in;
-		this.tee = new OutputStreamWriter(tee);
-		this.max = max;
-	}
+  public ReaderTee(Reader in, OutputStream tee, long max) {
+    super();
+    this.in  = in;
+    this.tee = new OutputStreamWriter(tee);
+    this.max = max;
+  }
 
-	@Override
-	public int read() throws IOException {
-		if (in == null)
-			return -1;
+  @Override
+  public int read() throws IOException {
+    if (in == null)
+      return -1;
 
-		if (sent >= max)
-			return in.read();
+    if (sent >= max)
+      return in.read();
 
-		int b = in.read();
-		if (b == -1) {
-			cleanupTee();
-			return b;
-		}
+    int b = in.read();
+    if (b == -1) {
+      cleanupTee();
+      return b;
+    }
 
-		if (max == Long.MAX_VALUE) {
-			tee.write(b);
-			return b;
-		}
+    if (max == Long.MAX_VALUE) {
+      tee.write(b);
+      return b;
+    }
 
-		tee.write(b);
+    tee.write(b);
 
-		sent++;
-		if (sent == max)
-			cleanupTee();
+    sent++;
+    if (sent == max)
+      cleanupTee();
 
-		return b;
-	}
-	@Override
-	public int read(char[] cbuf) throws IOException {
-		if (in == null)
-			return -1;
+    return b;
+  }
+  @Override
+  public int read(char[] cbuf) throws IOException {
+    if (in == null)
+      return -1;
 
-		if (sent >= max)
-			return in.read(cbuf);
+    if (sent >= max)
+      return in.read(cbuf);
 
-		int resultLen = in.read(cbuf);
-		if (resultLen < 1) {
-			if (resultLen == -1)
-				cleanupTee();
-			return resultLen;
-		}
-		
-		return readTee(cbuf, 0, resultLen);
-	}
-	@Override
-	public int read(char[] cbuf, int off, int len) throws IOException {
-		if (in == null)
-			return -1;
+    int resultLen = in.read(cbuf);
+    if (resultLen < 1) {
+      if (resultLen == -1)
+        cleanupTee();
+      return resultLen;
+    }
 
-		if (sent >= max)
-			return in.read(cbuf, off, len);
+    return readTee(cbuf, 0, resultLen);
+  }
+  @Override
+  public int read(char[] cbuf, int off, int len) throws IOException {
+    if (in == null)
+      return -1;
 
-		int resultLen = in.read(cbuf, off, len);
-		if (resultLen < 1) {
-			if (resultLen == -1)
-				cleanupTee();
-			return resultLen;
-		}
-		
-		return readTee(cbuf, off, resultLen);
-	}
-	@Override
-	public int read(CharBuffer target) throws IOException {
-		if (in == null)
-			return -1;
+    if (sent >= max)
+      return in.read(cbuf, off, len);
 
-		if (sent >= max)
-			return in.read(target);
+    int resultLen = in.read(cbuf, off, len);
+    if (resultLen < 1) {
+      if (resultLen == -1)
+        cleanupTee();
+      return resultLen;
+    }
 
-		int resultLen = in.read(target);
-		if (resultLen < 1) {
-			if (resultLen == -1)
-				cleanupTee();
-			return resultLen;
-		}
+    return readTee(cbuf, off, resultLen);
+  }
+  @Override
+  public int read(CharBuffer target) throws IOException {
+    if (in == null)
+      return -1;
 
-		char[] cbuf = new char[resultLen];
-		target.get(cbuf);
+    if (sent >= max)
+      return in.read(target);
 
-		return readTee(cbuf, 0, resultLen);
-	}
-	private int readTee(char[] cbuf, int off, int resultLen) throws IOException {
-		if (max == Long.MAX_VALUE) {
-			tee.write(cbuf, off, resultLen);
-			return resultLen;
-		}
+    int resultLen = in.read(target);
+    if (resultLen < 1) {
+      if (resultLen == -1)
+        cleanupTee();
+      return resultLen;
+    }
 
-		int teeLen = ((sent + resultLen) <= max) ? resultLen : (int) (max - sent);
-		sent += teeLen;
-		tee.write(cbuf, off, teeLen);
+    char[] cbuf = new char[resultLen];
+    target.get(cbuf);
 
-		if (sent >= max)
-			cleanupTee();
+    return readTee(cbuf, 0, resultLen);
+  }
+  private int readTee(char[] cbuf, int off, int resultLen) throws IOException {
+    if (max == Long.MAX_VALUE) {
+      tee.write(cbuf, off, resultLen);
+      return resultLen;
+    }
 
-		return resultLen;
-	}
-	private void cleanupTee() throws IOException {
-		if (tee == null)
-			return;
+    int teeLen = ((sent + resultLen) <= max) ? resultLen : (int) (max - sent);
+    sent += teeLen;
+    tee.write(cbuf, off, teeLen);
 
-		tee.flush();
-		tee = null;
-	}
-	@Override
-	public void close() throws IOException {
-		if (in == null)
-			return;
+    if (sent >= max)
+      cleanupTee();
 
-		in.close();
-		in = null;
+    return resultLen;
+  }
+  private void cleanupTee() throws IOException {
+    if (tee == null)
+      return;
 
-		cleanupTee();
-	}
+    tee.flush();
+    tee = null;
+  }
+  @Override
+  public void close() throws IOException {
+    if (in == null)
+      return;
 
-	@Override
-	public boolean ready() throws IOException {
-		if (in == null)
-			return true;
+    in.close();
+    in = null;
 
-		return in.ready();
-	}
-	@Override
-	public boolean markSupported() {
-		if (in == null)
-			return false;
+    cleanupTee();
+  }
 
-		return in.markSupported();
-	}
-	@Override
-	public void mark(int readAheadLimit) throws IOException {
-		if (in == null)
-			return;
+  @Override
+  public boolean ready() throws IOException {
+    if (in == null)
+      return true;
 
-		in.mark(readAheadLimit);
-	}
-	@Override
-	public void reset() throws IOException {
-		if (in == null)
-			throw new IOException("Reader closed");
+    return in.ready();
+  }
+  @Override
+  public boolean markSupported() {
+    if (in == null)
+      return false;
 
-		in.reset();
-	}
-	@Override
-	public long skip(long n) throws IOException {
-		if (in == null)
-			throw new IOException("Reader closed");
+    return in.markSupported();
+  }
+  @Override
+  public void mark(int readAheadLimit) throws IOException {
+    if (in == null)
+      return;
 
-		return in.skip(n);
-	}
+    in.mark(readAheadLimit);
+  }
+  @Override
+  public void reset() throws IOException {
+    if (in == null)
+      throw new IOException("Reader closed");
+
+    in.reset();
+  }
+  @Override
+  public long skip(long n) throws IOException {
+    if (in == null)
+      throw new IOException("Reader closed");
+
+    return in.skip(n);
+  }
 }

@@ -25,35 +25,35 @@ import com.marklogic.client.io.StringHandle;
 
 
 /**
-* KerberosClientCreator illustrates how to create a database client using Kerberos Authentication
-*/
+ * KerberosClientCreator illustrates how to create a database client using Kerberos Authentication
+ */
 class KerberosClientCreator
 {
-	public static void main(String[] args) throws IOException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args) throws IOException {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props) {
-		System.out.println("example: "+KerberosClientCreator.class.getName());
+  public static void run(ExampleProperties props) {
+    System.out.println("example: "+KerberosClientCreator.class.getName());
 
-		// create the client
-		DatabaseClient client = null; 
-		client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext());
-		
-		// make use of the client connection
-		TextDocumentManager docMgr = client.newTextDocumentManager();
-		String docId = "/example/text.txt";
-		StringHandle handle = new StringHandle();
-		handle.set("A simple text document");
-		docMgr.write(docId, handle);
+    // create the client
+    DatabaseClient client = null;
+    client = DatabaseClientFactory.newClient(props.host, props.port, new KerberosAuthContext());
 
-		System.out.println(
-			"Connected to "+props.host+":"+props.port+" using kerberos authentication");
+    // make use of the client connection
+    TextDocumentManager docMgr = client.newTextDocumentManager();
+    String docId = "/example/text.txt";
+    StringHandle handle = new StringHandle();
+    handle.set("A simple text document");
+    docMgr.write(docId, handle);
 
-		// clean up the written document
-		docMgr.delete(docId);
+    System.out.println(
+      "Connected to "+props.host+":"+props.port+" using kerberos authentication");
 
-		// release the client
-		client.release();
-	}
+    // clean up the written document
+    docMgr.delete(docId);
+
+    // release the client
+    client.release();
+  }
 }

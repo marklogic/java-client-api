@@ -43,144 +43,151 @@ import com.marklogic.client.query.StringQueryDefinition;
  * with string criteria referencing a constraint defined by options.
  */
 public class StringSearch {
-	static final private String OPTIONS_NAME = "products";
+  static final private String OPTIONS_NAME = "products";
 
-	static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
+  static final private String[] filenames = {"curbappeal.xml", "flipper.xml", "justintime.xml"};
 
-	public static void main(String[] args)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		run(Util.loadProperties());
-	}
+  public static void main(String[] args)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    run(Util.loadProperties());
+  }
 
-	public static void run(ExampleProperties props)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		System.out.println("example: "+StringSearch.class.getName());
+  public static void run(ExampleProperties props)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    System.out.println("example: "+StringSearch.class.getName());
 
-		configure(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
+    configure(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
 
-		search(props.host, props.port,
-				props.writerUser, props.writerPassword, props.authType);
+    search(props.host, props.port,
+      props.writerUser, props.writerPassword, props.authType);
 
-		tearDownExample(props.host, props.port,
-				props.adminUser, props.adminPassword, props.authType);
-	}
+    tearDownExample(props.host, props.port,
+      props.adminUser, props.adminPassword, props.authType);
+  }
 
-	public static void configure(String host, int port, String user, String password, Authentication authType) throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+  public static void configure(String host, int port, String user, String password, Authentication authType)
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for writing query options
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // create a manager for writing query options
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// construct the query options
-        String options =
-        	"<search:options "+
-                	"xmlns:search='http://marklogic.com/appservices/search'>"+
-                "<search:constraint name='industry'>"+
-                	"<search:value>"+
-                		"<search:element name='industry' ns=''/>"+
-                	"</search:value>"+
-                "</search:constraint>"+
-               "</search:options>";
+    // construct the query options
+    String options =
+      "<search:options "+
+        "xmlns:search='http://marklogic.com/appservices/search'>"+
+        "<search:constraint name='industry'>"+
+        "<search:value>"+
+        "<search:element name='industry' ns=''/>"+
+        "</search:value>"+
+        "</search:constraint>"+
+        "</search:options>";
 
-        // create a handle to send the query options
-		StringHandle writeHandle = new StringHandle(options);
-		
-		// write the query options to the database
-		optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
+    // create a handle to send the query options
+    StringHandle writeHandle = new StringHandle(options);
 
-		// release the client
-		client.release();
-	}
+    // write the query options to the database
+    optionsMgr.writeOptions(OPTIONS_NAME, writeHandle);
 
-	public static void search(String host, int port, String user, String password, Authentication authType)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		// create the client
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+    // release the client
+    client.release();
+  }
 
-		setUpExample(client);
+  public static void search(String host, int port, String user, String password, Authentication authType)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		// create a manager for searching
-		QueryManager queryMgr = client.newQueryManager();
+    setUpExample(client);
 
-		// create a search definition
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
-		querydef.setCriteria("neighborhood industry:\"Real Estate\"");
+    // create a manager for searching
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a handle for the search results
-		SearchHandle resultsHandle = new SearchHandle();
+    // create a search definition
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(OPTIONS_NAME);
+    querydef.setCriteria("neighborhood industry:\"Real Estate\"");
 
-		// run the search
-		queryMgr.search(querydef, resultsHandle);
+    // create a handle for the search results
+    SearchHandle resultsHandle = new SearchHandle();
 
-		System.out.println("Matched "+resultsHandle.getTotalResults()+
-				" documents with '"+querydef.getCriteria()+"'\n");
+    // run the search
+    queryMgr.search(querydef, resultsHandle);
 
-		// iterate over the result documents
-		MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
-		System.out.println("Listing "+docSummaries.length+" documents:\n");
-		for (MatchDocumentSummary docSummary: docSummaries) {
-			String uri = docSummary.getUri();
-			int score = docSummary.getScore();
+    System.out.println("Matched "+resultsHandle.getTotalResults()+
+      " documents with '"+querydef.getCriteria()+"'\n");
 
-			// iterate over the match locations within a result document
-			MatchLocation[] locations = docSummary.getMatchLocations();
-			System.out.println("Matched "+locations.length+" locations in "+uri+" with "+score+" score:");
-			for (MatchLocation location: locations) {
+    // iterate over the result documents
+    MatchDocumentSummary[] docSummaries = resultsHandle.getMatchResults();
+    System.out.println("Listing "+docSummaries.length+" documents:\n");
+    for (MatchDocumentSummary docSummary: docSummaries) {
+      String uri = docSummary.getUri();
+      int score = docSummary.getScore();
 
-				// iterate over the snippets at a match location
-				for (MatchSnippet snippet : location.getSnippets()) {
-					boolean isHighlighted = snippet.isHighlighted();
+      // iterate over the match locations within a result document
+      MatchLocation[] locations = docSummary.getMatchLocations();
+      System.out.println("Matched "+locations.length+" locations in "+uri+" with "+score+" score:");
+      for (MatchLocation location: locations) {
 
-					if (isHighlighted)
-						System.out.print("[");
-					System.out.print(snippet.getText());
-					if (isHighlighted)
-						System.out.print("]");
-				}
-				System.out.println();
-			}
-		}
+        // iterate over the snippets at a match location
+        for (MatchSnippet snippet : location.getSnippets()) {
+          boolean isHighlighted = snippet.isHighlighted();
 
-		// release the client
-		client.release();
-	}
+          if (isHighlighted)
+            System.out.print("[");
+          System.out.print(snippet.getText());
+          if (isHighlighted)
+            System.out.print("]");
+        }
+        System.out.println();
+      }
+    }
 
-	// set up by writing the document content and options used in the example query
-	public static void setUpExample(DatabaseClient client)
-	throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // release the client
+    client.release();
+  }
 
-		InputStreamHandle contentHandle = new InputStreamHandle();
+  // set up by writing the document content and options used in the example query
+  public static void setUpExample(DatabaseClient client)
+    throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		for (String filename: filenames) {
-			InputStream docStream = Util.openStream("data"+File.separator+filename);
-			if (docStream == null)
-				throw new IOException("Could not read document example");
+    InputStreamHandle contentHandle = new InputStreamHandle();
 
-			contentHandle.set(docStream);
+    for (String filename: filenames) {
+      InputStream docStream = Util.openStream("data"+File.separator+filename);
+      if (docStream == null)
+        throw new IOException("Could not read document example");
 
-			docMgr.write("/example/"+filename, contentHandle);
-		}
-	}
+      contentHandle.set(docStream);
 
-	// clean up by deleting the documents and query options used in the example query
-	public static void tearDownExample(
-			String host, int port, String user, String password, Authentication authType)
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
+      docMgr.write("/example/"+filename, contentHandle);
+    }
+  }
 
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+  // clean up by deleting the documents and query options used in the example query
+  public static void tearDownExample(
+    String host, int port, String user, String password, Authentication authType)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    DatabaseClient client = DatabaseClientFactory.newClient(host, port, user, password, authType);
 
-		for (String filename: filenames) {
-			docMgr.delete("/example/"+filename);
-		}
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    for (String filename: filenames) {
+      docMgr.delete("/example/"+filename);
+    }
 
-		optionsMgr.deleteOptions(OPTIONS_NAME);
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		client.release();
-	}
+    optionsMgr.deleteOptions(OPTIONS_NAME);
+
+    client.release();
+  }
 }

@@ -35,43 +35,43 @@ import javax.xml.bind.annotation.XmlRootElement;
  * It is of no consequence to users of this API.
  */
 public final class TuplesBuilder {
-    @XmlAccessorType(XmlAccessType.FIELD)
-    @XmlRootElement(namespace = Tuples.TUPLES_NS, name = "values-response")
+  @XmlAccessorType(XmlAccessType.FIELD)
+  @XmlRootElement(namespace = Tuples.TUPLES_NS, name = "values-response")
 
-    public static final class Tuples {
-        public static final String TUPLES_NS = "http://marklogic.com/appservices/search";
+  public static final class Tuples {
+    public static final String TUPLES_NS = "http://marklogic.com/appservices/search";
 
-        @XmlAttribute(name = "name")
-        private String name;
+    @XmlAttribute(name = "name")
+    private String name;
 
-        @XmlElement(namespace = Tuples.TUPLES_NS, name = "tuple")
-        private List<Tuple> tuples;
+    @XmlElement(namespace = Tuples.TUPLES_NS, name = "tuple")
+    private List<Tuple> tuples;
 
-        @XmlElement(namespace = Tuples.TUPLES_NS, name = "aggregate-result")
-        private List<AggregateResult> aggregateResults;
+    @XmlElement(namespace = Tuples.TUPLES_NS, name = "aggregate-result")
+    private List<AggregateResult> aggregateResults;
 
-        @XmlElement(namespace = Tuples.TUPLES_NS, name = "metrics")
-        private ValuesMetricsImpl metrics;
+    @XmlElement(namespace = Tuples.TUPLES_NS, name = "metrics")
+    private ValuesMetricsImpl metrics;
 
-        public String getName() {
-            return name;
-        }
-
-        public Tuples() {
-            tuples = new ArrayList<>();
-            aggregateResults = new ArrayList<>();
-        }
-
-        public Tuple[] getTuples() {
-            return tuples.toArray(new Tuple[0]);
-        }
-
-        public AggregateResult[] getAggregates() {
-            return aggregateResults.toArray(new AggregateResult[0]);
-        }
-
-        public ValuesMetrics getMetrics() {
-            return metrics;
-        }
+    public String getName() {
+      return name;
     }
+
+    public Tuples() {
+      tuples = new ArrayList<>();
+      aggregateResults = new ArrayList<>();
+    }
+
+    public Tuple[] getTuples() {
+      return tuples.toArray(new Tuple[0]);
+    }
+
+    public AggregateResult[] getAggregates() {
+      return aggregateResults.toArray(new AggregateResult[0]);
+    }
+
+    public ValuesMetrics getMetrics() {
+      return metrics;
+    }
+  }
 }
