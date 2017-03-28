@@ -9,3 +9,6 @@ test-complete/build/
 *.ear
 .classpath
 .gitignore
+.classpath
+.project
+.settings/
