@@ -124,7 +124,7 @@ public class HandleAccessor {
         }
         stringContent = sb.toString();
       }
-      if ( content instanceof File ) {
+      if ( content instanceof FileInputStream ) {
         ((FileInputStream) content).close();
       }
       if ( stringContent == null ) {
