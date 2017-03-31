@@ -127,7 +127,7 @@ public class RuleManagerImpl
       sourceHandle = (RuleWriteHandle) handle;
     }
 
-    writeRuleAs(ruleName, sourceHandle);
+    writeRule(ruleName, sourceHandle);
   }
   @Override
   public void writeRule(RuleDefinition ruleHandle) {
