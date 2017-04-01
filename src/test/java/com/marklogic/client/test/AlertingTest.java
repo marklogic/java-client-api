@@ -67,7 +67,8 @@ public class AlertingTest {
 	private static QueryManager queryManager;
 	private static TransformExtensionsManager transformManager;
 	private static DatabaseClient adminClient = Common.connectAdmin();
-	
+	private static final String RULE_NAME_WRITE_RULE_AS_TEST = "writeRuleAsTest";
+    
 	@AfterClass
 	public static void teardown()
 	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
@@ -343,6 +344,7 @@ public class AlertingTest {
 	throws ForbiddenUserException, FailedRequestException {
 		ruleManager.delete("notfavorited");
 		ruleManager.delete("favorites");
+        ruleManager.delete(RULE_NAME_WRITE_RULE_AS_TEST);
 	}
 
 	@Test
@@ -436,7 +438,6 @@ public class AlertingTest {
 
 	}
 	
-	
 	@Test
 	public void testRuleMatchTransform() {
 		StructuredQueryBuilder qb = new StructuredQueryBuilder();
@@ -471,4 +472,21 @@ public class AlertingTest {
 				.getName());
 
 	}
+    
+    @Test
+    public void testWriteRuleAs() {
+        RuleDefinition definition = new RuleDefinition("original" + RULE_NAME_WRITE_RULE_AS_TEST, 
+                "test to verify that writeRuleAs does not result in stackoverflow");
+        String query = 
+                "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">" +
+                "<search:qtext>favorited:true</search:qtext>" +
+                "</search:search>";
+		StringHandle textQuery = new StringHandle(query).withFormat(Format.XML);
+		definition.importQueryDefinition(textQuery);
+        
+		ruleManager.writeRuleAs(RULE_NAME_WRITE_RULE_AS_TEST, definition);
+
+        assertTrue("Rule was written with the name provided", ruleManager.exists(RULE_NAME_WRITE_RULE_AS_TEST));
+    }
+    
 }
