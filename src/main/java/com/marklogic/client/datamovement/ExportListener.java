@@ -101,8 +101,7 @@ public class ExportListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
-    try {
-      DocumentPage docs = getDocs(batch);
+    try ( DocumentPage docs = getDocs(batch) ) {
       while ( docs.hasNext() ) {
         for ( Consumer<DocumentRecord> listener : exportListeners ) {
           try {
