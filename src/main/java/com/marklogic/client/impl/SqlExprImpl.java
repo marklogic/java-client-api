@@ -48,20 +48,20 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsStringExpr collatedString(XsStringExpr string, String collation) {
-        return collatedString(string, (collation == null) ? (XsStringExpr) null : xs.string(collation));
+    public XsStringExpr collatedString(XsStringExpr string, String collationURI) {
+        return collatedString(string, (collationURI == null) ? (XsStringExpr) null : xs.string(collationURI));
     }
 
     
     @Override
-    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collation) {
+    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collationURI) {
         if (string == null) {
             throw new IllegalArgumentException("string parameter for collatedString() cannot be null");
         }
-        if (collation == null) {
-            throw new IllegalArgumentException("collation parameter for collatedString() cannot be null");
+        if (collationURI == null) {
+            throw new IllegalArgumentException("collationURI parameter for collatedString() cannot be null");
         }
-        return new XsExprImpl.StringCallImpl("sql", "collated-string", new Object[]{ string, collation });
+        return new XsExprImpl.StringCallImpl("sql", "collated-string", new Object[]{ string, collationURI });
     }
 
     

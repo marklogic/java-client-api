@@ -43,23 +43,23 @@ public interface SqlExpr {
     */
     public XsIntegerExpr bitLength(XsStringExpr str);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
-    * @param collation  The collation.
+    * @param collationURI  The collation URI.
     * @return  a XsStringExpr expression
     */
-    public XsStringExpr collatedString(XsStringExpr string, String collation);
+    public XsStringExpr collatedString(XsStringExpr string, String collationURI);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
-    * @param collation  The collation.
+    * @param collationURI  The collation URI.
     * @return  a XsStringExpr expression
     */
-    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collation);
+    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collationURI);
     /**
     * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
     * <p>

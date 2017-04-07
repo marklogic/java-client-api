@@ -641,8 +641,8 @@ class FnExprImpl implements FnExpr {
 
     
     @Override
-    public ItemExpr head(ItemSeqExpr arg1) {
-        return new BaseTypeImpl.ItemCallImpl("fn", "head", new Object[]{ arg1 });
+    public ItemExpr head(ItemSeqExpr seq) {
+        return new BaseTypeImpl.ItemCallImpl("fn", "head", new Object[]{ seq });
     }
 
     

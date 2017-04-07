@@ -170,7 +170,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
         */
         public final XsExpr xs;
 /**
-    * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an <a>op:col</a> function to identify a column.
+    * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an <a>op:col</a> function to identify a column. <p> The <a>op:add</a> function differs from the <a>op:sum</a> function in that it operates on operates on multiple column values in a row, rather than a group of rows. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a>
     * @param operand  Two or more boolean expressions, such as <a>op:eq</a> or <a>op:not</a>.
@@ -222,7 +222,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     */
     public abstract XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
     /**
-    * This function tests a value expression, <a>op.col</a> or another a column identifier function must be used to test whether a column has a null value.
+    * This function tests a value expression, <a>op:col</a> or another a column identifier function must be used to test whether a column has a null value.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:is-defined" target="mlserverdoc">op:is-defined</a>
     * @param operand  A boolean expression, such as <a>op:eq</a> or <a>op:not</a>.
@@ -304,13 +304,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     */
     public abstract PlanParamExpr param(XsStringVal name);
     /**
-    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string. Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). <p> In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.  <p> The returned value from this function can be modified by any of the functions described in 'Expression Functions For Processing Column Values' in the <em>Application Developer's Guide</em> 
+    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
     * @param column  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @return  a PlanColumn object
     */
     public abstract PlanColumn col(String column);
     /**
-    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string. Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). <p> In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.  <p> The returned value from this function can be modified by any of the functions described in 'Expression Functions For Processing Column Values' in the <em>Application Developer's Guide</em> 
+    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
     * @param column  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @return  a PlanColumn object
     */
@@ -418,7 +418,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
     * @param view  The name identifying a configured template or range view for rows projected from documents.
     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
-    * @param sysCols  A list that can specify <a>op:fragment-id-col</a> to add columns for the row id or fragment id. One use case for fragment ids in joins with lexicons.
+    * @param sysCols  A list that can specify <a>op:fragment-id-col</a> to add columns for the fragment id. One use case for fragment ids in joins with lexicons.
     * @return  a AccessPlan object
     */
     public abstract AccessPlan fromView(String schema, String view, String qualifierName, PlanSystemColumn sysCols);
@@ -427,7 +427,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     * @param schema  The name identifying the schema containing the view. If the schema name is null, the engine searches for a view with the specified name.
     * @param view  The name identifying a configured template or range view for rows projected from documents.
     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
-    * @param sysCols  A list that can specify <a>op:fragment-id-col</a> to add columns for the row id or fragment id. One use case for fragment ids in joins with lexicons.
+    * @param sysCols  A list that can specify <a>op:fragment-id-col</a> to add columns for the fragment id. One use case for fragment ids in joins with lexicons.
     * @return  a AccessPlan object
     */
     public abstract AccessPlan fromView(XsStringVal schema, XsStringVal view, XsStringVal qualifierName, PlanSystemColumn sysCols);
@@ -490,7 +490,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     * @param patterns  A <code>patterndef</code> returned by the <a>op:pattern</a> function.
     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
     * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The <a>sem:default-graph-iri</a> function returns the iri that identifies the default graph.
-    * @param option  A <a>sem:store</a> or <a>cts:query</a> that restricts the rows to triples from the specified store or matched source documents.
+    * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup which can take an on|off value to enable or disable deduplication. Deduplication is off by default.
     * @return  a AccessPlan object
     */
     public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, String qualifierName, String graphIris, PlanTripleOption option);
@@ -499,7 +499,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     * @param patterns  A <code>patterndef</code> returned by the <a>op:pattern</a> function.
     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
     * @param graphIris  A list of graph IRIs to restrict the results to triples in the specified graphs. The <a>sem:default-graph-iri</a> function returns the iri that identifies the default graph.
-    * @param option  A <a>sem:store</a> or <a>cts:query</a> that restricts the rows to triples from the specified store or matched source documents.
+    * @param option  Options consisting of key-value pairs that set options. At present, the options consist of dedup which can take an on|off value to enable or disable deduplication. Deduplication is off by default.
     * @return  a AccessPlan object
     */
     public abstract AccessPlan fromTriples(PlanTriplePatternSeq patterns, XsStringVal qualifierName, XsStringSeqVal graphIris, PlanTripleOption option);
@@ -826,21 +826,21 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     */
     public abstract PlanAggregateCol sequenceAggregate(PlanColumn name, PlanExprCol column, PlanValueOption option);
     /**
-    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function.
+    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function. <p> The <a>op:sum</a> function differs from the <a>op:add</a> function in that it operates on operates on a group of rows, rather than multiple column values in a row. 
     * @param name  The name to be used for the aggregated column.
     * @param column  The columns to which to add the values.
     * @return  a PlanAggregateCol object
     */
     public abstract PlanAggregateCol sum(String name, String column);
     /**
-    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function.
+    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function. <p> The <a>op:sum</a> function differs from the <a>op:add</a> function in that it operates on operates on a group of rows, rather than multiple column values in a row. 
     * @param name  The name to be used for the aggregated column.
     * @param column  The columns to which to add the values.
     * @return  a PlanAggregateCol object
     */
     public abstract PlanAggregateCol sum(PlanColumn name, PlanExprCol column);
     /**
-    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function.
+    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function. <p> The <a>op:sum</a> function differs from the <a>op:add</a> function in that it operates on operates on a group of rows, rather than multiple column values in a row. 
     * @param name  The name to be used for the aggregated column.
     * @param column  The columns to which to add the values.
     * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
@@ -848,7 +848,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     */
     public abstract PlanAggregateCol sum(String name, String column, PlanValueOption option);
     /**
-    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function.
+    * This function adds the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the <a>op:group-by</a> function. <p> The <a>op:sum</a> function differs from the <a>op:add</a> function in that it operates on operates on a group of rows, rather than multiple column values in a row. 
     * @param name  The name to be used for the aggregated column.
     * @param column  The columns to which to add the values.
     * @param option  The options can take a values key with a distinct value to average the distinct values of the column.
@@ -1210,13 +1210,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  */
     public interface AccessPlan extends ModifyPlan, PlanBuilderBase.AccessPlanBase {
         /**
-    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string. Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). <p> In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.  <p> The returned value from this function can be modified by any of the functions described in 'Expression Functions For Processing Column Values' in the <em>Application Developer's Guide</em> 
+    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
     * @param column  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @return  a PlanColumn object
     */
     public abstract PlanColumn col(String column);
         /**
-    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string. Identifies a column where the column name is unique and a qualifier on the column name isn't necessary (and might not exist). <p> In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.  <p> The returned value from this function can be modified by any of the functions described in 'Expression Functions For Processing Column Values' in the <em>Application Developer's Guide</em> 
+    * This method identifies a column, where the column name is unique. A qualifier on the column name isn't necessary (and might not exist). In positions where only a column name can appear, the unqualified column name can also be provided as a string. Qualified column names cannot be provided as a string.
     * @param column  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @return  a PlanColumn object
     */
@@ -1239,19 +1239,19 @@ public abstract class PlanBuilder implements PlanBuilderBase {
  */
     public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
         /**
-    * This method restricts the left row set to rows where a row with the same columns and values don't exist in the right row set.
+    * This method restricts the left row set to rows where a row with the same columns and values don't those in the right row set.
     * @param right  The row set from the left view.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan except(ModifyPlan right);
         /**
-    * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A groupBy operation without a grouping key outputs a single group reflecting the entire row set. A <code>select</code> operation before a groupBy applies an aggregate to the output from an expression. A <code>select</code> operation after a groupBy to applies an expression to the output from aggregates. 
+    * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A group-by operation without a grouping key outputs a single group reflecting the entire row set. A <code>select</code> operation before a group-by applies an aggregate to the output from an expression. A <code>select</code> operation after a group-by to applies an expression to the output from aggregates. 
     * @param keys  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan groupBy(PlanExprColSeq keys);
         /**
-    * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A groupBy operation without a grouping key outputs a single group reflecting the entire row set. A <code>select</code> operation before a groupBy applies an aggregate to the output from an expression. A <code>select</code> operation after a groupBy to applies an expression to the output from aggregates. 
+    * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A group-by operation without a grouping key outputs a single group reflecting the entire row set. A <code>select</code> operation before a group-by applies an aggregate to the output from an expression. A <code>select</code> operation after a group-by to applies an expression to the output from aggregates. 
     * @param keys  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @param aggregates  This parameter specifies one or more columns to be collapsed into a single row. The columns can be identified by either a column name in the row set or a column binding returned from <a>op:as</a>. Specify <code>null</code> to group all of the rows on one or more columndefs.
     * @return  a ModifyPlan object
@@ -1298,14 +1298,14 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     */
     public abstract ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol);
         /**
-    * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op.fragmentIdCol</a> <a>op:fragment-id-col</a> specifying a fragment id column. <p> If the fragment id column is null in the row, the row is dropped from the rowset. 
+    * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op:fragment-id-col</a> specifying a fragment id column. <p> If the fragment id column is null in the row, the row is dropped from the rowset. 
     * @param uriCol  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @param fragmentIdCol  The document uri. This is either the output from <a>op:col('uri')</a> specifying a document uri column.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan joinDocUri(String uriCol, String fragmentIdCol);
         /**
-    * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op.fragmentIdCol</a> <a>op:fragment-id-col</a> specifying a fragment id column. <p> If the fragment id column is null in the row, the row is dropped from the rowset. 
+    * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op:fragment-id-col</a> specifying a fragment id column. <p> If the fragment id column is null in the row, the row is dropped from the rowset. 
     * @param uriCol  The Optic Plan, input as a state object by the XQuery => chaining operator.
     * @param fragmentIdCol  The document uri. This is either the output from <a>op:col('uri')</a> specifying a document uri column.
     * @return  a ModifyPlan object
