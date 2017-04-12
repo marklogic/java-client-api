@@ -95,7 +95,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Linestring contains Point(point is the endpoint of linestring 
 	 */
-	@Ignore	
+	@Test	
 	public void testLinestringContainsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testLinestringContainsPoint");
@@ -137,29 +137,30 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		String snippetFromSummary = null;
 		String snippetFromRead = null;
 		
-		// Making sure that we proper results		
-		expectedMap.put("/Equator-json.json", "Json Linestring In Equator - South America");
-		expectedMap.put("/Equator.xml", "Linestring In Equator - South America");		
+		// Making sure that we proper results. Snippets are not complete. Taking in what appears in summary. 		
+		expectedMap.put("/Equator-json.json", "Json Point In Equator - South America");
+		expectedMap.put("/Equator.xml", "Point In Equator - South America");		
 		
 		for (MatchDocumentSummary summary : matches) {
 			String docUri = summary.getUri();
 			System.out.println("docURI is " + docUri);
 			System.out.println("Snippet from Summary is " + summary.getFirstSnippetText());
 			// Get only the numbers. Strip away others. Refer to data files.
-			snippetFromSummary = summary.getFirstSnippetText().split("LINESTRING\\(")[1];
+			snippetFromSummary = summary.getFirstSnippetText().split("LINESTRING\\(")[0];
 			// Strip the ... characters from snippets.
-			if (snippetFromSummary.contains("74.077"))
-				snippetFromSummary = snippetFromSummary.split("74.077")[0];
+			if (snippetFromSummary.contains("Json"))
+				snippetFromSummary = "Json " + snippetFromSummary.split("Json")[1].trim();
+			else
+				snippetFromSummary = "Point " + snippetFromSummary.split("Point")[1].trim();
 			if (summary.getFormat().name().equalsIgnoreCase("XML")) {	
 				DOMHandle contentHandle = readDocumentUsingDOMHandle(client, docUri, "XML");
 				Document readDoc = contentHandle.get();
-				linedesc = readDoc.getElementsByTagName("line-desc").item(0).getFirstChild().getNodeValue();
-				snippetFromRead = readDoc.getElementsByTagName("linestring").item(0).getFirstChild().getNodeValue();
-				System.out.println("linedesc from XML file is " + linedesc);
-				System.out.println("Snippet linestring from XML file is " + snippetFromRead);
+				linedesc = readDoc.getElementsByTagName("point-desc").item(0).getFirstChild().getNodeValue().trim();
+				
+				System.out.println("Point desc from XML file is " + linedesc);
 				
 				// Verify that snippets from qb and read contain the same.
-				assertTrue("Snippets from summary and from XML file are incorrect ", snippetFromRead.contains(snippetFromSummary) );
+				assertTrue("Snippets from summary and from XML file are incorrect ", linedesc.contains(snippetFromSummary) );
 				
 				readDoc = null;
 				contentHandle = null;
@@ -168,13 +169,12 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 				JacksonHandle jacksonhandle = new JacksonHandle();
 				docMgr.read(docUri, jacksonhandle);
 				JsonNode resultNode = jacksonhandle.get();
-				linedesc = resultNode.path("root").path("item").path("line-desc").asText();
-				snippetFromRead = resultNode.path("root").path("item").path("linestring").asText();
-				System.out.println("linedesc from JSON file is " + linedesc);
-				System.out.println("Snippet linestring from JSON file is " + snippetFromRead);
+				linedesc = resultNode.path("root").path("item").path("point-desc").asText().trim();
+				
+				System.out.println("Snippet point-desc from JSON file is " + linedesc);
 				
 				// Verify that snippets from qb and read contain the same.
-				assertTrue("Snippets from summary and from JSON file are incorrect ", snippetFromRead.contains(snippetFromSummary) );
+				assertTrue("Snippets from summary and from JSON file are incorrect ", linedesc.contains(snippetFromSummary) );
 				jacksonhandle = null;
 				resultNode = null;
 			}
@@ -187,7 +187,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Circle contains circle
 	 */
-	@Ignore	
+	@Test	
 	public void testCircleContainsCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleContainsCircle");
@@ -216,7 +216,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box contains Polygon
 	 */
-	@Ignore	
+	@Test	
 	public void testBoxContainsPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxContainsPolygon");
@@ -246,7 +246,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Circle intersects Point
 	 */
-	@Ignore	
+	@Test
 	public void testCircleIntersectsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleIntersectsPoint");
@@ -287,7 +287,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * linestring covered-by Polygon
 	 */
-	@Ignore	
+	@Test	
 	public void testcircleCoveredByPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testcircleCoveredByPolygon");
@@ -336,7 +336,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box covers Polygon
 	 */
-	@Ignore	
+	@Test	
 	public void testBoxCoversPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxCoversPolygon");
@@ -422,7 +422,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Linestring crosses Box TODO Once server side issues are sorted in 4.0-2
+	 * Linestring crosses Box - TODO to be handled in 9.0-2 as of 04/112/2017.
 	 */
 	@Ignore	
 	public void testLinestringCrossesBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
@@ -446,15 +446,14 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		JsonNode jsonPointNodes = resultNode.path("results");
 
 		// Should have 2 nodes returned.
-		//assertEquals("Two nodes not returned from testPolygonCoversBox method ", 2, resultNode.path("total").asInt());
-		
-		// Work on the asserts once server bugs are fixed. 
+		assertEquals("Two nodes not returned from testPolygonCoversBox method ", 2, resultNode.path("total").asInt());
+		 
 	}
 	
 	/*
 	 * Box overlaps Circle
 	 */
-	@Ignore	
+	@Test	
 	public void testBoxOverlapsCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxOverlapsCircle");
@@ -540,7 +539,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Polygon disjoint Polygon - polygon near south east
 	 */
-	@Ignore	
+	@Test	
 	public void testPolygonDisjointPolygon() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPolygonDisjointPolygon");
@@ -573,7 +572,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	/*
 	 * Box disjoint Box--except Tropic of Capricorn-Australia
 	 */
-	@Ignore	
+	@Test	
 	public void testBoxDisjointBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testBoxDisjointBox");
@@ -654,7 +653,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	 * Point equals Point
 	 */
 	
-	@Ignore	
+	@Test	
 	public void testPointEqualsPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPointEqualsPoint");
@@ -739,10 +738,10 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 	}
 	
 	/*
-	 * Polygon touches Point TODO - Once Server side issues are fixed in 4.0-2
+	 * Polygon touches Point
 	 */
 	
-	@Ignore	
+	@Test	
 	public void testPolygonTouchesPoint() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testPolygonTouchesPoint");
@@ -753,7 +752,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 		StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/polygon")), 
 				                                       GeospatialOperator.TOUCHES, 
-				                                       qb.point(-26.797920, 136.406250)
+				                                       qb.point(-26.0, 100.89)
 				                                   );
 		// create handle
 		JacksonHandle resultsHandle = new JacksonHandle();
@@ -764,16 +763,21 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
 		JsonNode jsonPointNodes = resultNode.path("results");
 
 		// Should have 2 nodes returned.
-		//assertEquals("Two nodes not returned from testPolygonCoversBox method ", 2, resultNode.path("total").asInt());
+		assertEquals("Two nodes not returned from testPolygonTouchesPoint method ", 2, resultNode.path("total").asInt());
 		
-		// Work on the asserts once server bugs are fixed. 
+		String exptdString = "POLYGON((153.65 -8.35,170.57 -26.0,162.52 -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0 10.26,153.65 -8.35))";
+		String polygondesc1 = jsonPointNodes.get(0).path("matches").get(0).path("match-text").get(0).path("highlight").asText();
+		String polygondesc2 = jsonPointNodes.get(1).path("matches").get(0).path("match-text").get(0).path("highlight").asText();
+		
+		assertTrue("Polygon Node not returned from testPolygonTouchesPoint method ", exptdString.equalsIgnoreCase(polygondesc1));
+		assertTrue("Polygon Node not returned from testPolygonTouchesPoint method ", exptdString.equalsIgnoreCase(polygondesc2));
 	}
 	
 	/*
 	 * Circle within Box
 	 */
 	
-	@Ignore	
+	@Test	
 	public void testCircleWithinBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
 	{	
 		System.out.println("Running testCircleWithinBox");
