@@ -8,7 +8,7 @@
 <line-desc>Linestring In Prime-Meridian</line-desc>
 <line-vertices>6</line-vertices>
 
-<circle>@5673.4567 37.463235,0</circle>
+<circle>@3525 37.463235,0</circle>
 <circle-desc>Circle In Prime-Meridian</circle-desc>
 
 <box>[30.8456, -10.34634, 40.345, 10.4564]</box>
