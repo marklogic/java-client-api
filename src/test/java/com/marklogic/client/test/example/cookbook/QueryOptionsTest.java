@@ -28,16 +28,17 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.QueryOptions;
 
 public class QueryOptionsTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		boolean succeeded = false;
-		try {
-			QueryOptions.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("QueryOptions example failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    boolean succeeded = false;
+    try {
+      QueryOptions.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("QueryOptions example failed", succeeded);
+  }
 }

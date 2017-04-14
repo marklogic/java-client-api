@@ -27,35 +27,35 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
 public class InvalidUserTest {
-    @Test
-    public void testInvalidUserAuth() {
+  @Test
+  public void testInvalidUserAuth() {
 
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        // create the client
-        DatabaseClient client = DatabaseClientFactory.newClient(
-          "localhost", 8012, "MyFooUser", "x", Authentication.DIGEST);
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient(
+      "localhost", 8012, "MyFooUser", "x", Authentication.DIGEST);
 
 
-        String expectedException = "com.marklogic.client.FailedRequestException: " +
-          "Local message: write failed: Unauthorized. Server Message: Unauthorized";
-        String exception = "";
+    String expectedException = "com.marklogic.client.FailedRequestException: " +
+      "Local message: write failed: Unauthorized. Server Message: Unauthorized";
+    String exception = "";
 
-        String docId = "/example/text.txt";
-        TextDocumentManager docMgr = client.newTextDocumentManager();
-        try {
-            // make use of the client connection so we get an auth error
-            StringHandle handle = new StringHandle();
-            handle.set("A simple text document");
-            docMgr.write(docId, handle);
-            // the next line will only run if write doesn't throw an exception
-            docMgr.delete(docId);
-        }
-        catch (FailedRequestException e) {
-            exception = e.toString();
-        } finally {
-            client.release();
-        }
-        assertEquals(expectedException, exception);
-
+    String docId = "/example/text.txt";
+    TextDocumentManager docMgr = client.newTextDocumentManager();
+    try {
+      // make use of the client connection so we get an auth error
+      StringHandle handle = new StringHandle();
+      handle.set("A simple text document");
+      docMgr.write(docId, handle);
+      // the next line will only run if write doesn't throw an exception
+      docMgr.delete(docId);
     }
+    catch (FailedRequestException e) {
+      exception = e.toString();
+    } finally {
+      client.release();
+    }
+    assertEquals(expectedException, exception);
+
+  }
 }

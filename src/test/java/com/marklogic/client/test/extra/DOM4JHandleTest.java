@@ -33,51 +33,51 @@ import com.marklogic.client.extra.dom4j.DOM4JHandle;
 import com.marklogic.client.test.Common;
 
 public class DOM4JHandleTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testReadWrite() throws SAXException, IOException {
-		// create an identifier for the database document
-		String docId = "/example/jdom-test.xml";
+  @Test
+  public void testReadWrite() throws SAXException, IOException {
+    // create an identifier for the database document
+    String docId = "/example/jdom-test.xml";
 
-		// create a manager for XML database documents
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+    // create a manager for XML database documents
+    XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
-		DocumentFactory factory = new DocumentFactory();
+    DocumentFactory factory = new DocumentFactory();
 
-		// create a dom4j document
-		Document writeDocument = factory.createDocument();
-		Element root = factory.createElement("root");
-		root.attributeValue("foo", "bar");
-		root.add(factory.createElement("child"));
-		root.addText("mixed");
-		writeDocument.setRootElement(root);
+    // create a dom4j document
+    Document writeDocument = factory.createDocument();
+    Element root = factory.createElement("root");
+    root.attributeValue("foo", "bar");
+    root.add(factory.createElement("child"));
+    root.addText("mixed");
+    writeDocument.setRootElement(root);
 
-		// create a handle for the dom4j document
-		DOM4JHandle writeHandle = new DOM4JHandle(writeDocument);
+    // create a handle for the dom4j document
+    DOM4JHandle writeHandle = new DOM4JHandle(writeDocument);
 
-		// write the document to the database
-		docMgr.write(docId, writeHandle);
+    // write the document to the database
+    docMgr.write(docId, writeHandle);
 
-		// create a handle to receive the database content as a dom4j document
-		DOM4JHandle readHandle = new DOM4JHandle();
+    // create a handle to receive the database content as a dom4j document
+    DOM4JHandle readHandle = new DOM4JHandle();
 
-		// read the document content from the database as a dom4j document
-		docMgr.read(docId, readHandle);
+    // read the document content from the database as a dom4j document
+    docMgr.read(docId, readHandle);
 
-		// access the document content
-		Document readDocument = readHandle.get();
-		assertNotNull("Wrote null dom4j document", readDocument);
-		assertXMLEqual("dom4j document not equal",
-				writeDocument.asXML(), readDocument.asXML());
+    // access the document content
+    Document readDocument = readHandle.get();
+    assertNotNull("Wrote null dom4j document", readDocument);
+    assertXMLEqual("dom4j document not equal",
+      writeDocument.asXML(), readDocument.asXML());
 
-		// delete the document
-		docMgr.delete(docId);
-	}
+    // delete the document
+    docMgr.delete(docId);
+  }
 }

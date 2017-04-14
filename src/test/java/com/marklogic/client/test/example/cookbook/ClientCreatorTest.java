@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.ClientCreator;
 
 public class ClientCreatorTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			ClientCreator.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("ClientCreator example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      ClientCreator.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("ClientCreator example failed", succeeded);
+  }
 }

@@ -35,85 +35,85 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
 
 public class DatabaseClientTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-		Common.connectAdmin();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+    Common.connectAdmin();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testNewDocument() {
-		GenericDocumentManager doc = Common.client.newDocumentManager();
-		assertNotNull("Client could not create generic document", doc);
-	}
+  @Test
+  public void testNewDocument() {
+    GenericDocumentManager doc = Common.client.newDocumentManager();
+    assertNotNull("Client could not create generic document", doc);
+  }
 
-	@Test
-	public void testNewBinaryDocument() {
-		BinaryDocumentManager doc = Common.client.newBinaryDocumentManager();
-		assertNotNull("Client could not create binary document", doc);
-	}
+  @Test
+  public void testNewBinaryDocument() {
+    BinaryDocumentManager doc = Common.client.newBinaryDocumentManager();
+    assertNotNull("Client could not create binary document", doc);
+  }
 
-	@Test
-	public void testNewJSONDocument() {
-		JSONDocumentManager doc = Common.client.newJSONDocumentManager();
-		assertNotNull("Client could not create JSON document", doc);
-	}
+  @Test
+  public void testNewJSONDocument() {
+    JSONDocumentManager doc = Common.client.newJSONDocumentManager();
+    assertNotNull("Client could not create JSON document", doc);
+  }
 
-	@Test
-	public void testNewTextDocument() {
-		TextDocumentManager doc = Common.client.newTextDocumentManager();
-		assertNotNull("Client could not create text document", doc);
-	}
+  @Test
+  public void testNewTextDocument() {
+    TextDocumentManager doc = Common.client.newTextDocumentManager();
+    assertNotNull("Client could not create text document", doc);
+  }
 
-	@Test
-	public void testNewXMLDocument() {
-		XMLDocumentManager doc = Common.client.newXMLDocumentManager();
-		assertNotNull("Client could not create XML document", doc);
-	}
+  @Test
+  public void testNewXMLDocument() {
+    XMLDocumentManager doc = Common.client.newXMLDocumentManager();
+    assertNotNull("Client could not create XML document", doc);
+  }
 
-	@Test
-	public void testNewLogger() {
-		RequestLogger logger = Common.client.newLogger(System.out);
-		assertNotNull("Client could not create request logger", logger);
-	}
+  @Test
+  public void testNewLogger() {
+    RequestLogger logger = Common.client.newLogger(System.out);
+    assertNotNull("Client could not create request logger", logger);
+  }
 
-	@Test
-	public void testNewQueryManager() {
-		QueryManager mgr = Common.client.newQueryManager();
-		assertNotNull("Client could not create query manager", mgr);
-	}
+  @Test
+  public void testNewQueryManager() {
+    QueryManager mgr = Common.client.newQueryManager();
+    assertNotNull("Client could not create query manager", mgr);
+  }
 
-	@Test
-	public void testNewRuleManager() {
-		RuleManager mgr = Common.client.newRuleManager();
-		assertNotNull("Client could not create rule manager", mgr);
-	}
+  @Test
+  public void testNewRuleManager() {
+    RuleManager mgr = Common.client.newRuleManager();
+    assertNotNull("Client could not create rule manager", mgr);
+  }
 
-	@Test
-	public void testNewPojoRepository() {
-		PojoRepository<City, Integer> mgr = Common.client.newPojoRepository(City.class, Integer.class);
-		assertNotNull("Client could not create pojo repository", mgr);
-	}
+  @Test
+  public void testNewPojoRepository() {
+    PojoRepository<City, Integer> mgr = Common.client.newPojoRepository(City.class, Integer.class);
+    assertNotNull("Client could not create pojo repository", mgr);
+  }
 
-	@Test
-	public void testNewServerEvaluationCall() {
-		ServerEvaluationCall mgr = Common.client.newServerEval();
-		assertNotNull("Client could not create ServerEvaluationCall", mgr);
-	}
+  @Test
+  public void testNewServerEvaluationCall() {
+    ServerEvaluationCall mgr = Common.client.newServerEval();
+    assertNotNull("Client could not create ServerEvaluationCall", mgr);
+  }
 
-	@Test
-	public void testNewQueryOptionsManager() {
-		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-		assertNotNull("Client could not create query options manager", mgr);
-	}
+  @Test
+  public void testNewQueryOptionsManager() {
+    QueryOptionsManager mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    assertNotNull("Client could not create query options manager", mgr);
+  }
 
-	@Test
-	public void testGetClientImplementationObject() {
-		Object impl = Common.client.getClientImplementation();
-		assertNotNull("Client could not get client implementation", impl);
-		assertTrue("", impl instanceof org.apache.http.client.HttpClient);
-	}
+  @Test
+  public void testGetClientImplementationObject() {
+    Object impl = Common.client.getClientImplementation();
+    assertNotNull("Client could not get client implementation", impl);
+    assertTrue("", impl instanceof org.apache.http.client.HttpClient);
+  }
 }

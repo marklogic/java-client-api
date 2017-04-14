@@ -42,72 +42,73 @@ import com.marklogic.client.query.QueryManager;
 import java.util.Map;
 
 public class QueryOptionsListHandleTest {
-	@SuppressWarnings("unused")
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(QueryOptionsListHandleTest.class);
-	
-    @BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-        Common.connectAdmin();
-    }
+  @SuppressWarnings("unused")
+  private static final Logger logger = (Logger) LoggerFactory
+    .getLogger(QueryOptionsListHandleTest.class);
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+    Common.connectAdmin();
+  }
 
-    @Test
-    public void tesQueryOptionsListHandle() throws IOException, ParserConfigurationException, SAXException {
-        File f = new File("src/test/resources/optionslist.xml");
-        MyQueryOptionsListHandle v;
-        try (FileInputStream is = new FileInputStream(f)) {
-            v = new MyQueryOptionsListHandle();
-            v.parseTestData(is);
-        }
-        Map<String,String> map = v.getValuesMap();
-        assertEquals("Map should contain two keys", map.size(), 2);
-        assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
-    }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-    // This only works if you've loaded the 5min guide @Test
-    public void serverOptionsList() throws IOException, ParserConfigurationException, SAXException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-
-        QueryOptionsListHandle results = queryMgr.optionsList(new QueryOptionsListHandle());
-        assertNotNull(results);
-        Map<String,String> map = results.getValuesMap();
-        assertEquals("Map should contain two keys", map.size(), 2);
-        assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+  @Test
+  public void tesQueryOptionsListHandle() throws IOException, ParserConfigurationException, SAXException {
+    File f = new File("src/test/resources/optionslist.xml");
+    MyQueryOptionsListHandle v;
+    try (FileInputStream is = new FileInputStream(f)) {
+      v = new MyQueryOptionsListHandle();
+      v.parseTestData(is);
     }
-    
-    @Test
-    public void serverOptionsListRaw()
-    throws IOException, ParserConfigurationException, SAXException, ForbiddenUserException, FailedRequestException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        QueryOptionsManager queryOptionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    Map<String,String> map = v.getValuesMap();
+    assertEquals("Map should contain two keys", map.size(), 2);
+    assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+  }
 
-        StringHandle results = queryMgr.optionsList(new StringHandle());
-        assertNotNull(results);
-        String resultsString = results.get();
-        assertNotNull(resultsString);
-        
-        StringHandle results2 = queryOptionsMgr.optionsList(new StringHandle());
-        assertNotNull(results2);
-        assertEquals(resultsString, results2.get());
-        assertNotNull(resultsString);
-        
-    }
+  // This only works if you've loaded the 5min guide @Test
+  public void serverOptionsList() throws IOException, ParserConfigurationException, SAXException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+
+    QueryOptionsListHandle results = queryMgr.optionsList(new QueryOptionsListHandle());
+    assertNotNull(results);
+    Map<String,String> map = results.getValuesMap();
+    assertEquals("Map should contain two keys", map.size(), 2);
+    assertEquals("photos should have this uri", map.get("photos"), "/v1/config/query/photos");
+  }
+
+  @Test
+  public void serverOptionsListRaw()
+    throws IOException, ParserConfigurationException, SAXException, ForbiddenUserException, FailedRequestException
+  {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    QueryOptionsManager queryOptionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+
+    StringHandle results = queryMgr.optionsList(new StringHandle());
+    assertNotNull(results);
+    String resultsString = results.get();
+    assertNotNull(resultsString);
+
+    StringHandle results2 = queryOptionsMgr.optionsList(new StringHandle());
+    assertNotNull(results2);
+    assertEquals(resultsString, results2.get());
+    assertNotNull(resultsString);
+
+  }
 
 
-    static public class MyQueryOptionsListHandle extends QueryOptionsListHandle {
-        public void parseTestData(InputStream stream) {
-            receiveContent(stream);
-        }
+  static public class MyQueryOptionsListHandle extends QueryOptionsListHandle {
+    public void parseTestData(InputStream stream) {
+      receiveContent(stream);
     }
-    
-    @Test
-    public void testInitialization() {
-    	new QueryOptionsListHandle().getValuesMap();
-    	
-    }
+  }
+
+  @Test
+  public void testInitialization() {
+    new QueryOptionsListHandle().getValuesMap();
+
+  }
 }

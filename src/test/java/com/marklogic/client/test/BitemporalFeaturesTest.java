@@ -65,26 +65,26 @@ public class BitemporalFeaturesTest {
   @Test
   public void testBitemporalDocument() {
     String doc1 = "<test>" +
-        uniqueTerm1 + " doc1" +
-        "<system-start></system-start>" +
-        "<system-end></system-end>" +
-        "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-        "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
-    "</test>";
+      uniqueTerm1 + " doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+      "</test>";
     String doc2 = "<test>" +
-        uniqueTerm2 + " doc1" +
-        "<system-start></system-start>" +
-        "<system-end></system-end>" +
-        "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-        "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
-    "</test>";
+      uniqueTerm2 + " doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+      "</test>";
     String doc3 = "<test>" +
-        uniqueTerm3 + " doc1" +
-        "<system-start></system-start>" +
-        "<system-end></system-end>" +
-        "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-        "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
-    "</test>";
+      uniqueTerm3 + " doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+      "</test>";
     StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
     docMgr.write(docId1, temporalDocument1, null, handle1, null, null, temporalCollection);
     StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
@@ -104,33 +104,33 @@ public class BitemporalFeaturesTest {
   public void testBitemporalDocumentBulk() {
     String prefix = "test_" + uniqueBulkTerm;
     String doc1 = "<test>" +
-            uniqueBulkTerm + " doc1" +
-            "<system-start></system-start>" +
-            "<system-end></system-end>" +
-            "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-            "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
-        "</test>";
+      uniqueBulkTerm + " doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+      "</test>";
     String doc2 = "<test>" +
-            uniqueBulkTerm + " doc2" +
-            "<system-start></system-start>" +
-            "<system-end></system-end>" +
-            "<valid-start>2014-08-19T00:00:02Z</valid-start>" +
-            "<valid-end>2014-08-19T00:00:03Z</valid-end>" +
-        "</test>";
+      uniqueBulkTerm + " doc2" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:02Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:03Z</valid-end>" +
+      "</test>";
     String doc3 = "<test>" +
-            uniqueBulkTerm + " doc3" +
-            "<system-start></system-start>" +
-            "<system-end></system-end>" +
-            "<valid-start>2014-08-19T00:00:03Z</valid-start>" +
-            "<valid-end>2014-08-19T00:00:04Z</valid-end>" +
-        "</test>";
+      uniqueBulkTerm + " doc3" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:03Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:04Z</valid-end>" +
+      "</test>";
     String doc4 = "<test>" +
-            uniqueBulkTerm + " doc4" +
-            "<system-start></system-start>" +
-            "<system-end></system-end>" +
-            "<valid-start>2014-08-19T00:00:05Z</valid-start>" +
-            "<valid-end>2014-08-19T00:00:06Z</valid-end>" +
-        "</test>";
+      uniqueBulkTerm + " doc4" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:05Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:06Z</valid-end>" +
+      "</test>";
     DocumentWriteSet writeSet = docMgr.newWriteSet();
     writeSet.add(prefix + "_A.xml", new StringHandle(doc1).withFormat(Format.XML), temporalDocument1);
     writeSet.add(prefix + "_B.xml", new StringHandle(doc2).withFormat(Format.XML), temporalDocument2);
@@ -155,17 +155,17 @@ public class BitemporalFeaturesTest {
   @Test
   public void testTemporalDocumentPatch() throws XpathException, SAXException, IOException {
     String doc1 = "<test>" +
-        uniqueTerm1 + " doc1" +
-        "<system-start></system-start>" +
-        "<system-end></system-end>" +
-        "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-        "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
-        "<song>Here without you</song>" +
-    "</test>";
-    
+      uniqueTerm1 + " doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+      "<song>Here without you</song>" +
+      "</test>";
+
     StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
     docMgr.write(temporalDocument5, null, handle1, null, null, temporalCollection);
-    
+
     DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
     patchBldr.insertFragment("/test/song", Position.AFTER, "<song>Kryptonite</song>");
     DocumentPatchHandle patchHandle = patchBldr.build();
@@ -175,7 +175,7 @@ public class BitemporalFeaturesTest {
 
     DocumentMetadataPatchBuilder metadatapatchBldr = docMgr.newPatchBuilder(Format.XML);
     DocumentPatchHandle metadatapatchHandle = metadatapatchBldr
-    .addMetadataValue("key1", "value1").build();
+      .addMetadataValue("key1", "value1").build();
     docMgr.patch(temporalDocument5, temporalCollection, metadatapatchHandle);
     String metadata = docMgr.readMetadata(temporalDocument5, new StringHandle().withFormat(Format.XML)).get();
     assertXpathEvaluatesTo("2","count(/*[local-name()='metadata']/*[local-name()='metadata-values']/*[local-name()='metadata-value'])",metadata);
@@ -197,48 +197,48 @@ public class BitemporalFeaturesTest {
 
   @Test
   public void testProtectWipe() throws DatatypeConfigurationException {
-      String protectDocID = "protectedDocument.xml";
-      String protectDocIDv2 = "protectedDocumentv2.xml";
-      String logicalID = "protectDocument.xml";
-      String doc1 = "<test>" +
-          "protect doc1" +
-          "<system-start></system-start>" +
-          "<system-end></system-end>" +
-          "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
-          "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
+    String protectDocID = "protectedDocument.xml";
+    String protectDocIDv2 = "protectedDocumentv2.xml";
+    String logicalID = "protectDocument.xml";
+    String doc1 = "<test>" +
+      "protect doc1" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:00Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:01Z</valid-end>" +
       "</test>";
-      String doc2 = "<test>" +
-              "protect doc2" +
-              "<system-start></system-start>" +
-              "<system-end></system-end>" +
-              "<valid-start>2014-08-19T00:00:01Z</valid-start>" +
-              "<valid-end>2014-08-19T00:00:02Z</valid-end>" +
-          "</test>";
-      StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
-      docMgr.write(protectDocID, logicalID, null, handle1, null, null, temporalCollection);
-      StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
-      docMgr.write(protectDocIDv2, logicalID, null, handle2, null, null, temporalCollection);
-      docMgr.protect(logicalID, temporalCollection, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT1S"));
-      try {
-          Thread.sleep(1500);
-        } catch (InterruptedException e) {
-          e.printStackTrace();
-        }
-      docMgr.wipe(logicalID, temporalCollection);
-      QueryManager queryMgr = Common.adminClient.newQueryManager();
-      queryMgr.setPageLength(1000);
-      QueryDefinition query = queryMgr.newStringDefinition();
-      query.setCollections(logicalID);
-      SearchHandle handle = queryMgr.search(query, new SearchHandle());
-      MatchDocumentSummary[] docs = handle.getMatchResults();
-      assertEquals("Incorrect number of docs",0, docs.length);
+    String doc2 = "<test>" +
+      "protect doc2" +
+      "<system-start></system-start>" +
+      "<system-end></system-end>" +
+      "<valid-start>2014-08-19T00:00:01Z</valid-start>" +
+      "<valid-end>2014-08-19T00:00:02Z</valid-end>" +
+      "</test>";
+    StringHandle handle1 = new StringHandle(doc1).withFormat(Format.XML);
+    docMgr.write(protectDocID, logicalID, null, handle1, null, null, temporalCollection);
+    StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
+    docMgr.write(protectDocIDv2, logicalID, null, handle2, null, null, temporalCollection);
+    docMgr.protect(logicalID, temporalCollection, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT1S"));
+    try {
+      Thread.sleep(1500);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
     }
+    docMgr.wipe(logicalID, temporalCollection);
+    QueryManager queryMgr = Common.adminClient.newQueryManager();
+    queryMgr.setPageLength(1000);
+    QueryDefinition query = queryMgr.newStringDefinition();
+    query.setCollections(logicalID);
+    SearchHandle handle = queryMgr.search(query, new SearchHandle());
+    MatchDocumentSummary[] docs = handle.getMatchResults();
+    assertEquals("Incorrect number of docs",0, docs.length);
+  }
 
   static public void cleanUp() throws DatatypeConfigurationException {
     String temporalDoc = "temporal-document";
     for (int i = 1; i < 6; i++) {
       docMgr.protect(temporalDoc + i, temporalCollection, ProtectionLevel.NOWIPE,
-          DatatypeFactory.newInstance().newDuration("PT1S"));
+        DatatypeFactory.newInstance().newDuration("PT1S"));
     }
     try {
       Thread.sleep(1500);

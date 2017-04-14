@@ -29,78 +29,80 @@ import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.admin.NamespacesManager;
 
 public class NamespacesManagerTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connectAdmin();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connectAdmin();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testWriteReadPrefix()
-	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
-		NamespacesManager nsMgr =
-			Common.adminClient.newServerConfigManager().newNamespacesManager();
-		
-		nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
+  @Test
+  public void testWriteReadPrefix()
+    throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
+  {
+    NamespacesManager nsMgr =
+      Common.adminClient.newServerConfigManager().newNamespacesManager();
 
-		String nsUri = nsMgr.readPrefix("dc");
-		assertEquals("Could not read namespace", nsUri, "http://purl.org/dc/terms/");
+    nsMgr.updatePrefix("dc", "http://purl.org/dc/terms/");
 
-		nsMgr.updatePrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
-		nsMgr.updatePrefix("skos", "http://www.w3.org/2004/02/skos/core#");
+    String nsUri = nsMgr.readPrefix("dc");
+    assertEquals("Could not read namespace", nsUri, "http://purl.org/dc/terms/");
 
-		EditableNamespaceContext context = (EditableNamespaceContext) nsMgr.readAll();
+    nsMgr.updatePrefix("rdf", "http://www.w3.org/1999/02/22-rdf-syntax-ns#");
+    nsMgr.updatePrefix("skos", "http://www.w3.org/2004/02/skos/core#");
 
-		int initialSize = context.size();
-		assertTrue("Failed to retrieve three namespaces", initialSize >= 3);
-		assertEquals("Did not retrieve RDF namespace", 
-				"http://purl.org/dc/terms/",
-				context.get("dc"));
-		assertEquals("Did not retrieve RDF namespace", 
-				"http://www.w3.org/1999/02/22-rdf-syntax-ns#",
-				context.get("rdf"));
-		assertEquals("Did not retrieve SKOS namespace", 
-				"http://www.w3.org/2004/02/skos/core#",
-				context.get("skos"));
+    EditableNamespaceContext context = (EditableNamespaceContext) nsMgr.readAll();
 
-		nsMgr.updatePrefix("dc", "http://diverted/category/");
+    int initialSize = context.size();
+    assertTrue("Failed to retrieve three namespaces", initialSize >= 3);
+    assertEquals("Did not retrieve RDF namespace",
+      "http://purl.org/dc/terms/",
+      context.get("dc"));
+    assertEquals("Did not retrieve RDF namespace",
+      "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+      context.get("rdf"));
+    assertEquals("Did not retrieve SKOS namespace",
+      "http://www.w3.org/2004/02/skos/core#",
+      context.get("skos"));
 
-		nsUri = nsMgr.readPrefix("dc");
-		assertEquals("Could not read namespace", nsUri, "http://diverted/category/");
+    nsMgr.updatePrefix("dc", "http://diverted/category/");
 
-		nsMgr.deletePrefix("dc");
-		context = (EditableNamespaceContext) nsMgr.readAll();
-		// assumes no concurrent deletes
-		assertEquals("Failed to delete namespace", initialSize - 1, context.size());
+    nsUri = nsMgr.readPrefix("dc");
+    assertEquals("Could not read namespace", nsUri, "http://diverted/category/");
 
-		nsMgr.deleteAll();
-		context = (EditableNamespaceContext) nsMgr.readAll();
-		assertTrue("Failed to delete all namespaces",
-				context == null || context.size() == 0);
-	}
+    nsMgr.deletePrefix("dc");
+    context = (EditableNamespaceContext) nsMgr.readAll();
+    // assumes no concurrent deletes
+    assertEquals("Failed to delete namespace", initialSize - 1, context.size());
 
-	@Test
-	public void testExceptions()
-	throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException {
-		NamespacesManager nsMgr =
-			Common.adminClient.newServerConfigManager().newNamespacesManager();
+    nsMgr.deleteAll();
+    context = (EditableNamespaceContext) nsMgr.readAll();
+    assertTrue("Failed to delete all namespaces",
+      context == null || context.size() == 0);
+  }
 
-		boolean illegalArgument = false;
-		try {
-			nsMgr.updatePrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
-		} catch (IllegalArgumentException e) {
-			illegalArgument = true;
-		}
-		assertTrue("Updating default prefix did not throw illegal argument exception", illegalArgument);
-		
-		illegalArgument = false;
-		try {
-			nsMgr.addPrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
-		} catch (IllegalArgumentException e) {
-			illegalArgument = true;
-		}
-		assertTrue("Adding default prefix did not throw illegal argument exception", illegalArgument);
-	}
+  @Test
+  public void testExceptions()
+    throws ForbiddenUserException, FailedRequestException, ResourceNotFoundException
+  {
+    NamespacesManager nsMgr =
+      Common.adminClient.newServerConfigManager().newNamespacesManager();
+
+    boolean illegalArgument = false;
+    try {
+      nsMgr.updatePrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
+    } catch (IllegalArgumentException e) {
+      illegalArgument = true;
+    }
+    assertTrue("Updating default prefix did not throw illegal argument exception", illegalArgument);
+
+    illegalArgument = false;
+    try {
+      nsMgr.addPrefix(javax.xml.XMLConstants.DEFAULT_NS_PREFIX, "http://invalid");
+    } catch (IllegalArgumentException e) {
+      illegalArgument = true;
+    }
+    assertTrue("Adding default prefix did not throw illegal argument exception", illegalArgument);
+  }
 }

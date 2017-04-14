@@ -92,7 +92,7 @@ public class QueryBatcherIteratorTest {
       .withCollections(collection, qhbTestCollection);
     for ( int i=1; i <= numDocs; i++ ) {
       writeBatcher.addAs(collection + "/doc_" + i + ".json", meta,
-          new StringHandle("{name:\"John Doe\",dept:\"HR\"}").withFormat(JSON));
+        new StringHandle("{name:\"John Doe\",dept:\"HR\"}").withFormat(JSON));
     }
     writeBatcher.flushAsync();
     writeBatcher.awaitCompletion();
@@ -111,14 +111,14 @@ public class QueryBatcherIteratorTest {
       successDocs1 = new AtomicInteger(0);
       failures = new StringBuilder();
       QueryBatcher getUris = moveMgr.newQueryBatcher(query)
-              .withThreadCount(5)
-              .withBatchSize(100)
-              .onUrisReady( new UrisToWriterListener(writer) )
-              .onUrisReady(batch -> successDocs1.addAndGet(batch.getItems().length))
-              .onQueryFailure( throwable -> {
-                throwable.printStackTrace();
-                failures.append("ERROR:[" + throwable + "]\n");
-              });
+        .withThreadCount(5)
+        .withBatchSize(100)
+        .onUrisReady( new UrisToWriterListener(writer) )
+        .onUrisReady(batch -> successDocs1.addAndGet(batch.getItems().length))
+        .onQueryFailure( throwable -> {
+          throwable.printStackTrace();
+          failures.append("ERROR:[" + throwable + "]\n");
+        });
       moveMgr.startJob(getUris);
       getUris.awaitCompletion();
       writer.flush();
@@ -131,20 +131,20 @@ public class QueryBatcherIteratorTest {
     AtomicInteger successDocs2 = new AtomicInteger(0);
     StringBuffer failures2 = new StringBuffer();
     try ( FileReader fileReader = new FileReader(tempFile);
-          BufferedReader reader = new BufferedReader(fileReader); ) 
+          BufferedReader reader = new BufferedReader(fileReader); )
     {
 
-	    QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
-	      .withThreadCount(6)
-	      .withBatchSize(19)
-	      .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
-	      .onQueryFailure( throwable -> {
-	        throwable.printStackTrace();
-	        failures2.append("ERROR:[" + throwable + "]\n");
-	      });
-	    moveMgr.startJob(doNothing);
-	    doNothing.awaitCompletion();
-	    moveMgr.stopJob(doNothing);
+      QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
+        .withThreadCount(6)
+        .withBatchSize(19)
+        .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
+        .onQueryFailure( throwable -> {
+          throwable.printStackTrace();
+          failures2.append("ERROR:[" + throwable + "]\n");
+        });
+      moveMgr.startJob(doNothing);
+      doNothing.awaitCompletion();
+      moveMgr.stopJob(doNothing);
     }
 
     if ( failures2.length() > 0 ) fail(failures2.toString());

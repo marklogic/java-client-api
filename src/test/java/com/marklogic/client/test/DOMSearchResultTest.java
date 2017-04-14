@@ -37,48 +37,48 @@ import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.io.DOMHandle;
 
 public class DOMSearchResultTest {
-    @BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-    }
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-    @Test
-    public void testStringSearch()
+  @Test
+  public void testStringSearch()
     throws IOException, ParserConfigurationException, XPathExpressionException {
-        // This test really just exists to show how to get search results in other formats.
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
-        qdef.setCriteria("leaf3");
+    // This test really just exists to show how to get search results in other formats.
+    QueryManager queryMgr = Common.client.newQueryManager();
+    StringQueryDefinition qdef = queryMgr.newStringDefinition(null);
+    qdef.setCriteria("leaf3");
 
-        DOMHandle responseHandle = queryMgr.search(qdef, new DOMHandle());
-        Document doc = responseHandle.get();
-        assertNotNull("null response document", doc);
+    DOMHandle responseHandle = queryMgr.search(qdef, new DOMHandle());
+    Document doc = responseHandle.get();
+    assertNotNull("null response document", doc);
 
-        // configure namespace bindings for the XPath processor
-        EditableNamespaceContext namespaces = new EditableNamespaceContext();
-        namespaces.setNamespaceURI("search", "http://marklogic.com/appservices/search");
-        responseHandle.getXPathProcessor().setNamespaceContext(namespaces);
+    // configure namespace bindings for the XPath processor
+    EditableNamespaceContext namespaces = new EditableNamespaceContext();
+    namespaces.setNamespaceURI("search", "http://marklogic.com/appservices/search");
+    responseHandle.getXPathProcessor().setNamespaceContext(namespaces);
 
-        // string expression against the document
-        String total = responseHandle.evaluateXPath("string(/search:response/@total)", String.class);
-        assertNotNull("null total", total);
+    // string expression against the document
+    String total = responseHandle.evaluateXPath("string(/search:response/@total)", String.class);
+    assertNotNull("null total", total);
 
-        // compiled expression against the document
-        XPathExpression resultsExpression = responseHandle.compileXPath("/search:response/search:result");
-        NodeList resultList = responseHandle.evaluateXPath(resultsExpression, NodeList.class);
-        assertNotNull("null result list", resultList);
-        assertEquals("result count mismatch", resultList.getLength(), Integer.parseInt(total));
+    // compiled expression against the document
+    XPathExpression resultsExpression = responseHandle.compileXPath("/search:response/search:result");
+    NodeList resultList = responseHandle.evaluateXPath(resultsExpression, NodeList.class);
+    assertNotNull("null result list", resultList);
+    assertEquals("result count mismatch", resultList.getLength(), Integer.parseInt(total));
 
-        // string expression against an element
-        Element firstResult = responseHandle.evaluateXPath("/search:response/search:result[1]", Element.class);
-        assertNotNull("null first result", firstResult);
+    // string expression against an element
+    Element firstResult = responseHandle.evaluateXPath("/search:response/search:result[1]", Element.class);
+    assertNotNull("null first result", firstResult);
 
-        String firstResultUri = responseHandle.evaluateXPath("string(@uri)", firstResult, String.class);
-        String firstItemUri   = ((Element) resultList.item(0)).getAttribute("uri");
-        assertEquals("first uri mismatch", firstResultUri, firstItemUri);
-    }
+    String firstResultUri = responseHandle.evaluateXPath("string(@uri)", firstResult, String.class);
+    String firstItemUri   = ((Element) resultList.item(0)).getAttribute("uri");
+    assertEquals("first uri mismatch", firstResultUri, firstItemUri);
+  }
 }

@@ -34,49 +34,49 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
 public class SSLTest {
-    @Test
-    public void testSSLAuth() throws NoSuchAlgorithmException, KeyManagementException {
+  @Test
+  public void testSSLAuth() throws NoSuchAlgorithmException, KeyManagementException {
 
-        // create a trust manager
-        // (note: a real application should verify certificates)
-        TrustManager naiveTrustMgr = new X509TrustManager() {
-            @Override
-            public void checkClientTrusted(X509Certificate[] chain, String authType) {
-            }
-            @Override
-            public void checkServerTrusted(X509Certificate[] chain, String authType) {
-            }
-            @Override
-            public X509Certificate[] getAcceptedIssuers() {
-                return new X509Certificate[0];
-            }
-        };
+    // create a trust manager
+    // (note: a real application should verify certificates)
+    TrustManager naiveTrustMgr = new X509TrustManager() {
+      @Override
+      public void checkClientTrusted(X509Certificate[] chain, String authType) {
+      }
+      @Override
+      public void checkServerTrusted(X509Certificate[] chain, String authType) {
+      }
+      @Override
+      public X509Certificate[] getAcceptedIssuers() {
+        return new X509Certificate[0];
+      }
+    };
 
-        // create an SSL context
-        SSLContext sslContext = SSLContext.getInstance("SSLv3");
-        sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
+    // create an SSL context
+    SSLContext sslContext = SSLContext.getInstance("SSLv3");
+    sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
-        // create the client
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
+    // create the client
+    DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
 
 
-        String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
-        String exception = "";
+    String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
+    String exception = "";
 
-        try {
-            // make use of the client connection so we get an auth error
-            TextDocumentManager docMgr = client.newTextDocumentManager();
-            String docId = "/example/text.txt";
-            StringHandle handle = new StringHandle();
-            handle.set("A simple text document");
-            docMgr.write(docId, handle);
-            // the next line will only run if write doesn't throw an exception
-            docMgr.delete(docId);
-        }
-        catch (Exception e) {
-            exception = e.toString();
-        }
-        assertEquals(expectedException, exception);
-
+    try {
+      // make use of the client connection so we get an auth error
+      TextDocumentManager docMgr = client.newTextDocumentManager();
+      String docId = "/example/text.txt";
+      StringHandle handle = new StringHandle();
+      handle.set("A simple text document");
+      docMgr.write(docId, handle);
+      // the next line will only run if write doesn't throw an exception
+      docMgr.delete(docId);
     }
+    catch (Exception e) {
+      exception = e.toString();
+    }
+    assertEquals(expectedException, exception);
+
+  }
 }
