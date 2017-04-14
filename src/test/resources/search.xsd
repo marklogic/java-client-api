@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!-- Copyright 2002-2017 MarkLogic Corporation.  All Rights Reserved. -->
-<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search" xmlns:query-plan="http://marklogic.com/cts/query">
-  <xs:import namespace="http://marklogic.com/cts/query" schemaLocation="query-plan.xsd"/>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema" elementFormDefault="qualified" targetNamespace="http://marklogic.com/appservices/search" xmlns:search="http://marklogic.com/appservices/search">
   <!-- Root element -->
   <xs:complexType name="OptionsType">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
@@ -872,8 +871,6 @@
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:similar"/>
         <xs:element minOccurs="0" maxOccurs="unbounded" ref="search:snippet"/>
         <xs:element minOccurs="0" ref="search:metadata"/>
-<!-- TODO: add extracted results -->
-        <xs:element minOccurs="0" ref="query-plan:relevance-info"/>
       </xs:sequence>
       <xs:attribute name="index" use="required" type="xs:unsignedLong"/>
       <xs:attribute name="uri" use="required"/>
