@@ -370,15 +370,37 @@ public class StructuredQueryBuilder {
   /**
    * Defines a NEAR query over the list of query definitions
    * with specified parameters.
-   * @param distance    the proximity for the query terms
+   * @param maximumDistance the maximum distance (in number of words) between any two matching
+   *   queries
    * @param weight    the weight for the query
    * @param order    the ordering for the query terms
    * @param queries    the query definitions
    * @return    the StructuredQueryDefinition for the NEAR query
    */
-  public StructuredQueryDefinition near(int distance, double weight, Ordering order, StructuredQueryDefinition... queries) {
+  public StructuredQueryDefinition near(int maximumDistance, double weight, Ordering order,
+    StructuredQueryDefinition... queries)
+  {
     checkQueries(queries);
-    return new NearQuery(distance, weight, order, queries);
+    return new NearQuery(null, maximumDistance, weight, order, queries);
+  }
+
+  /**
+   * Defines a NEAR query over the list of query definitions
+   * with specified parameters.
+   * @param minimumDistance the minimum distance (in number of words) between any two matching
+   *   queries
+   * @param maximumDistance the maximum distance (in number of words) between any two matching
+   *   queries
+   * @param weight    the weight for the query
+   * @param order    the ordering for the query terms
+   * @param queries    the query definitions
+   * @return    the StructuredQueryDefinition for the NEAR query
+   */
+  public StructuredQueryDefinition near(int minimumDistance, int maximumDistance, double weight,
+    Ordering order, StructuredQueryDefinition...  queries)
+  {
+    checkQueries(queries);
+    return new NearQuery(minimumDistance, maximumDistance, weight, order, queries);
   }
 
   /**
@@ -1281,9 +1303,9 @@ public class StructuredQueryBuilder {
     }
   }
 
-  protected class NearQuery
-    extends AbstractStructuredQuery {
-    private Integer distance;
+  protected class NearQuery extends AbstractStructuredQuery {
+    private Integer minimumDistance;
+    private Integer maximumDistance;
     private Double weight;
     private Ordering order;
     private StructuredQueryDefinition[] queries;
@@ -1293,8 +1315,11 @@ public class StructuredQueryBuilder {
       this.queries = queries;
     }
 
-    public NearQuery(Integer distance, Double weight, Ordering order, StructuredQueryDefinition... queries) {
-      this.distance = distance;
+    public NearQuery(Integer minimumDistance, Integer maximumDistance, Double weight,
+      Ordering order, StructuredQueryDefinition... queries)
+    {
+      this.minimumDistance = minimumDistance;
+      this.maximumDistance = maximumDistance;
       this.weight = weight;
       this.order = order;
       this.queries = queries;
@@ -1310,7 +1335,8 @@ public class StructuredQueryBuilder {
           Boolean.toString(order == Ordering.ORDERED));
         serializer.writeEndElement();
       }
-      writeText(serializer, "distance", distance);
+      writeText(serializer, "distance", maximumDistance);
+      writeText(serializer, "minimum-distance", minimumDistance);
       writeText(serializer, "distance-weight", weight);
       serializer.writeEndElement();
     }

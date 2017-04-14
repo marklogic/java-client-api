@@ -168,6 +168,18 @@ public class StructuredQueryBuilderTest {
         + "<near-query><term-query><text>one</text></term-query></near-query></query>", q);
     }
 
+    t = qb.near(qb.term("one"), qb.term("two"));
+    for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
+      xml = new StringInputStream(q);
+      parser.parse(xml, handler);
+      assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+        + "  <near-query>"
+        + "    <term-query><text>one</text></term-query>"
+        + "    <term-query><text>two</text></term-query>"
+        + "  </near-query>"
+        + "</query>", q);
+    }
+
     t = qb.near(4, 2.3, StructuredQueryBuilder.Ordering.UNORDERED, qb.term("two"));
     for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
       xml = new StringInputStream(q);
@@ -176,6 +188,22 @@ public class StructuredQueryBuilderTest {
         + "xmlns:search=\"http://marklogic.com/appservices/search\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\">"
         + "<near-query><term-query><text>two</text></term-query>"
         + "<ordered>false</ordered><distance>4</distance><distance-weight>2.3</distance-weight></near-query></query>", q);
+    }
+
+    t = qb.near(2, 4, 2.3, StructuredQueryBuilder.Ordering.UNORDERED, qb.term("one"), qb.term("two"));
+    for (String q: new String[]{t.serialize(), qb.build(t).toString()}) {
+      xml = new StringInputStream(q);
+      parser.parse(xml, handler);
+      assertXMLEqual("<query xmlns=\"http://marklogic.com/appservices/search\">"
+        + "  <near-query>"
+        + "    <term-query><text>one</text></term-query>"
+        + "    <term-query><text>two</text></term-query>"
+        + "    <ordered>false</ordered>"
+        + "    <distance>4</distance>"
+        + "    <minimum-distance>2</minimum-distance>"
+        + "    <distance-weight>2.3</distance-weight>"
+        + "  </near-query>"
+        + "</query>", q);
     }
 
     t = qb.term("leaf3");
