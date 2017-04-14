@@ -44,149 +44,149 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 public class StructuredSearchTest {
-    @BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-    }
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-    @Test
-    public void testStructuredSearch() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+  @Test
+  public void testStructuredSearch() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 
-        for (QueryDefinition t:new QueryDefinition[]{
-            qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
-        }) {
-        	SearchHandle results = queryMgr.search(t, new SearchHandle());
-        	assertNotNull(results);
-        	assertFalse(results.getMetrics().getTotalTime() == -1);
+    for (QueryDefinition t:new QueryDefinition[]{
+      qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
+    }) {
+      SearchHandle results = queryMgr.search(t, new SearchHandle());
+      assertNotNull(results);
+      assertFalse(results.getMetrics().getTotalTime() == -1);
 
-        	MatchDocumentSummary[] summaries = results.getMatchResults();
-        	assertNotNull(summaries);
-    		assertEquals("expected 1 result", 1, summaries.length);
-        	for (MatchDocumentSummary summary : summaries) {
-        		MatchLocation[] locations = summary.getMatchLocations();
-        		assertEquals("expected 1 match location", 1, locations.length);
-        		for (MatchLocation location : locations) {
-        			assertNotNull(location.getAllSnippetText());
-        		}
-        	}
+      MatchDocumentSummary[] summaries = results.getMatchResults();
+      assertNotNull(summaries);
+      assertEquals("expected 1 result", 1, summaries.length);
+      for (MatchDocumentSummary summary : summaries) {
+        MatchLocation[] locations = summary.getMatchLocations();
+        assertEquals("expected 1 match location", 1, locations.length);
+        for (MatchLocation location : locations) {
+          assertNotNull(location.getAllSnippetText());
         }
+      }
     }
+  }
 
-    @Test
-    public void testStructuredSearch1() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+  @Test
+  public void testStructuredSearch1() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
 
-        for (QueryDefinition t:new QueryDefinition[]{
-                qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
-            }) {
+    for (QueryDefinition t:new QueryDefinition[]{
+      qb.term("leaf3"), qb.build(qb.value(qb.element("leaf"), "leaf3"))
+    }) {
 
-        	MatchDocumentSummary summary = queryMgr.findOne(t);
-        	assertNotNull(summary);
+      MatchDocumentSummary summary = queryMgr.findOne(t);
+      assertNotNull(summary);
 
-        	GenericDocumentManager docMgr = Common.client.newDocumentManager();
-       		assertNotNull("Document exists", docMgr.exists(summary.getUri()));
-        }
+      GenericDocumentManager docMgr = Common.client.newDocumentManager();
+      assertNotNull("Document exists", docMgr.exists(summary.getUri()));
     }
+  }
 
-    @Test
-    public void testStructuredSearch2() throws IOException {
-    	QueryManager queryMgr = Common.client.newQueryManager();
-        
-    	EditableNamespaceContext namespaces = new EditableNamespaceContext(); 
-    	namespaces.put("x", "root.org");
-    	namespaces.put("y", "target.org");
-    	StructuredQueryBuilder qb = new StructuredQueryBuilder(namespaces);
-    	
-    	StructuredQueryDefinition qdef = qb.geospatial(
-    			qb.geoPath(qb.pathIndex("/x:geo/y:path")),
-    			qb.box(1, 2, 3, 4));
-    	
-    	SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-    	assertNotNull(results);
+  @Test
+  public void testStructuredSearch2() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-    	MatchDocumentSummary[] summaries = results.getMatchResults();
-    	assertTrue(summaries == null || summaries.length == 0);
-    }
+    EditableNamespaceContext namespaces = new EditableNamespaceContext();
+    namespaces.put("x", "root.org");
+    namespaces.put("y", "target.org");
+    StructuredQueryBuilder qb = new StructuredQueryBuilder(namespaces);
 
-    
-    @Test
-    public void testFailedSearch() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
-        StructuredQueryDefinition qdef = qb.term(
-        		"criteriaThatShouldNotMatchAnyDocument");
+    StructuredQueryDefinition qdef = qb.geospatial(
+      qb.geoPath(qb.pathIndex("/x:geo/y:path")),
+      qb.box(1, 2, 3, 4));
 
-        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
+    SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
 
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertTrue(summaries == null || summaries.length == 0);
-    }
+    MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertTrue(summaries == null || summaries.length == 0);
+  }
 
-    @Test
-    public void testJSON() {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
-        StructuredQueryDefinition t = qb.term("leaf3");
 
-        // create a handle for the search results
-        StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
+  @Test
+  public void testFailedSearch() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+    StructuredQueryDefinition qdef = qb.term(
+      "criteriaThatShouldNotMatchAnyDocument");
 
-        // run the search
-        queryMgr.search(t, resultsHandle);
+    SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
 
-        assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
-    }
+    MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertTrue(summaries == null || summaries.length == 0);
+  }
 
-    @Test
-    public void testExtractMetadata() throws SAXException, IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
+  @Test
+  public void testJSON() {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+    StructuredQueryDefinition t = qb.term("leaf3");
 
-        String combined =
-			"<search xmlns=\"http://marklogic.com/appservices/search\">"+
-			"<query>"+
-			"<value-query>"+
-			"<element ns=\"http://marklogic.com/xdmp/json\" name=\"firstKey\"/>"+
-			"<text>first value</text>"+
-			"</value-query>"+
-			"</query>"+
-			"<options>"+
-			"<extract-metadata>"+
-			"<qname elem-ns=\"http://marklogic.com/xdmp/json\" elem-name=\"subKey\"/>"+
-			"</extract-metadata>"+
-			"</options>"+
-			"</search>";
-		StringHandle rawHandle = new StringHandle(combined);
+    // create a handle for the search results
+    StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
 
-		RawCombinedQueryDefinition rawDef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // run the search
+    queryMgr.search(t, resultsHandle);
 
-		SearchHandle sh = queryMgr.search(rawDef, new SearchHandle());
+    assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
+  }
 
-		MatchDocumentSummary[] summaries = sh.getMatchResults();
-    	assertNotNull(summaries);
-		assertEquals("expected 1 result", 1, summaries.length);
+  @Test
+  public void testExtractMetadata() throws SAXException, IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-		MatchDocumentSummary matchResult = summaries[0];
-		Document metadata = matchResult.getMetadata();
-		Element subKey = (Element)
-		metadata.getElementsByTagNameNS("http://marklogic.com/xdmp/json", "subKey").item(0);
-		assertEquals("string", subKey.getAttribute("type"));
-		assertEquals("sub value", subKey.getTextContent());
+    String combined =
+      "<search xmlns=\"http://marklogic.com/appservices/search\">"+
+        "<query>"+
+        "<value-query>"+
+        "<element ns=\"http://marklogic.com/xdmp/json\" name=\"firstKey\"/>"+
+        "<text>first value</text>"+
+        "</value-query>"+
+        "</query>"+
+        "<options>"+
+        "<extract-metadata>"+
+        "<qname elem-ns=\"http://marklogic.com/xdmp/json\" elem-name=\"subKey\"/>"+
+        "</extract-metadata>"+
+        "</options>"+
+        "</search>";
+    StringHandle rawHandle = new StringHandle(combined);
 
-		String docStr    = Common.testDocumentToString(metadata);
-		String handleStr = matchResult.getMetadata(new StringHandle()).get();
-		assertXMLEqual("Different metadata for handle", docStr, handleStr);
+    RawCombinedQueryDefinition rawDef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		Document snippet = matchResult.getSnippets()[0];
-		docStr    = Common.testDocumentToString(snippet);
-		handleStr = matchResult.getSnippetIterator(new StringHandle()).next().get();
-		assertXMLEqual("Different snippet for handle", docStr, handleStr);
-    }
+    SearchHandle sh = queryMgr.search(rawDef, new SearchHandle());
+
+    MatchDocumentSummary[] summaries = sh.getMatchResults();
+    assertNotNull(summaries);
+    assertEquals("expected 1 result", 1, summaries.length);
+
+    MatchDocumentSummary matchResult = summaries[0];
+    Document metadata = matchResult.getMetadata();
+    Element subKey = (Element)
+      metadata.getElementsByTagNameNS("http://marklogic.com/xdmp/json", "subKey").item(0);
+    assertEquals("string", subKey.getAttribute("type"));
+    assertEquals("sub value", subKey.getTextContent());
+
+    String docStr    = Common.testDocumentToString(metadata);
+    String handleStr = matchResult.getMetadata(new StringHandle()).get();
+    assertXMLEqual("Different metadata for handle", docStr, handleStr);
+
+    Document snippet = matchResult.getSnippets()[0];
+    docStr    = Common.testDocumentToString(snippet);
+    handleStr = matchResult.getSnippetIterator(new StringHandle()).next().get();
+    assertXMLEqual("Different snippet for handle", docStr, handleStr);
+  }
 }

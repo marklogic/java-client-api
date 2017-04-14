@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentFormats;
 
 public class DocumentFormatsTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentFormats.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentFormats example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentFormats.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentFormats example failed", succeeded);
+  }
 }

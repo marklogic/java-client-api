@@ -42,59 +42,59 @@ import com.marklogic.client.query.QueryManager;
 
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class DeleteSearchTest {
-    private static final String directory = "/delete/test/";
-    private static final String filename = "testWrite1.xml";
-    private static final String docId = directory + filename;
-    private static DatabaseClient client = Common.connect();
+  private static final String directory = "/delete/test/";
+  private static final String filename = "testWrite1.xml";
+  private static final String docId = directory + filename;
+  private static DatabaseClient client = Common.connect();
 
-    @BeforeClass
-    public static void beforeClass() throws Exception {
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-        writeDoc();
-    }
+  @BeforeClass
+  public static void beforeClass() throws Exception {
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    writeDoc();
+  }
 
-    public static void writeDoc() throws Exception {
-        Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-        Element root = domDocument.createElement("root");
-        root.setAttribute("xml:lang", "en");
-        root.setAttribute("foo", "bar");
-        root.appendChild(domDocument.createElement("child"));
-        root.appendChild(domDocument.createTextNode("mixed"));
-        domDocument.appendChild(root);
+  public static void writeDoc() throws Exception {
+    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    Element root = domDocument.createElement("root");
+    root.setAttribute("xml:lang", "en");
+    root.setAttribute("foo", "bar");
+    root.appendChild(domDocument.createElement("child"));
+    root.appendChild(domDocument.createTextNode("mixed"));
+    domDocument.appendChild(root);
 
-        @SuppressWarnings("unused")
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-                .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+    @SuppressWarnings("unused")
+    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+      .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
-        XMLDocumentManager docMgr = client.newXMLDocumentManager();
-        docMgr.write(docId, new DOMHandle().with(domDocument));
-    }
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    docMgr.write(docId, new DOMHandle().with(domDocument));
+  }
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-    @Test
-    public void test_A_Delete() throws IOException {
-        GenericDocumentManager docMgr = client.newDocumentManager();
-        DocumentDescriptor desc = docMgr.exists(docId);
-        assertNotNull("Should find document before delete", desc);
-        assertEquals(desc.getUri(), docId);
+  @Test
+  public void test_A_Delete() throws IOException {
+    GenericDocumentManager docMgr = client.newDocumentManager();
+    DocumentDescriptor desc = docMgr.exists(docId);
+    assertNotNull("Should find document before delete", desc);
+    assertEquals(desc.getUri(), docId);
 
-        QueryManager queryMgr = client.newQueryManager();
-        DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
-        qdef.setDirectory(directory);
+    QueryManager queryMgr = client.newQueryManager();
+    DeleteQueryDefinition qdef = queryMgr.newDeleteDefinition();
+    qdef.setDirectory(directory);
 
-        queryMgr.delete(qdef);
+    queryMgr.delete(qdef);
 
-        desc = docMgr.exists(docId);
-        assertNull("Should not find document after delete", desc);
-    }
+    desc = docMgr.exists(docId);
+    assertNull("Should not find document after delete", desc);
+  }
 
-    @Test
-    public void test_B_RuntimeDb() throws Exception {
-        client = Common.newEvalClient("Documents");
-        writeDoc();
-        test_A_Delete();
-    }
+  @Test
+  public void test_B_RuntimeDb() throws Exception {
+    client = Common.newEvalClient("Documents");
+    writeDoc();
+    test_A_Delete();
+  }
 }

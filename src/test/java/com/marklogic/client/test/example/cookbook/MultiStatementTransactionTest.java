@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.MultiStatementTransaction;
 
 public class MultiStatementTransactionTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			MultiStatementTransaction.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("MultiStatementTransaction example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      MultiStatementTransaction.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("MultiStatementTransaction example failed", succeeded);
+  }
 }

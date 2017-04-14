@@ -44,195 +44,200 @@ import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesMetrics;
 
 public class TuplesHandleTest {
-	
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(TuplesHandleTest.class);
 
-	
-    private static final String options =
-            "<?xml version='1.0'?>"+
-                    "<options xmlns=\"http://marklogic.com/appservices/search\">"+
-                    "<values name=\"grandchild\">"+
-                    "<range type=\"xs:string\">"+
-                    "<element ns=\"\" name=\"grandchild\"/>"+
-                    "</range>"+
-                    "<values-option>limit=2</values-option>"+
-                    "</values>"+
-                    "<tuples name=\"co\">"+
-                    "<range type=\"xs:double\">"+
-                    "<element ns=\"\" name=\"double\"/>"+
-                    "</range>"+
-                    "<range type=\"xs:int\">"+
-                    "<element ns=\"\" name=\"int\"/>"+
-                    "</range>"+
-                    "</tuples>"+
-                    "<tuples name=\"n-way\">"+
-                    "<range type=\"xs:double\">"+
-                    "<element ns=\"\" name=\"double\"/>"+
-                    "</range>"+
-                    "<range type=\"xs:int\">"+
-                    "<element ns=\"\" name=\"int\"/>"+
-                    "</range>"+
-                    "<range type=\"xs:string\">"+
-                    "<element ns=\"\" name=\"string\"/>"+
-                    "</range>"+
-                    "<values-option>ascending</values-option>"+
-                    "</tuples>"+
-                    "<return-metrics>true</return-metrics>"+
-                    "<return-values>true</return-values>"+
-                    "</options>";
+  private static final Logger logger = (Logger) LoggerFactory
+    .getLogger(TuplesHandleTest.class);
 
-    @BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-        Common.connectAdmin();
-    }
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  private static final String options =
+    "<?xml version='1.0'?>" +
+    "<options xmlns=\"http://marklogic.com/appservices/search\">" +
+      "<values name=\"grandchild\">" +
+        "<range type=\"xs:string\">" +
+          "<element ns=\"\" name=\"grandchild\"/>" +
+        "</range>" +
+        "<values-option>limit=2</values-option>" +
+      "</values>" +
+      "<tuples name=\"co\">" +
+        "<range type=\"xs:double\">" +
+          "<element ns=\"\" name=\"double\"/>" +
+        "</range>" +
+        "<range type=\"xs:int\">" +
+          "<element ns=\"\" name=\"int\"/>" +
+        "</range>" +
+      "</tuples>" +
+      "<tuples name=\"n-way\">" +
+        "<range type=\"xs:double\">" +
+          "<element ns=\"\" name=\"double\"/>" +
+        "</range>" +
+        "<range type=\"xs:int\">" +
+          "<element ns=\"\" name=\"int\"/>" +
+        "</range>" +
+        "<range type=\"xs:string\">" +
+          "<element ns=\"\" name=\"string\"/>" +
+        "</range>" +
+        "<values-option>ascending</values-option>" +
+      "</tuples>" +
+      "<return-metrics>true</return-metrics>" +
+      "<return-values>true</return-values>" +
+    "</options>";
 
-    @Test
-    public void testAggregates()
-    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-    	optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+    Common.connectAdmin();
+  }
 
-    	logger.debug(options.toString());
-    	
-    	QueryManager queryMgr = Common.client.newQueryManager();
+  @AfterClass
+  public static void afterClass() {
+  }
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions2");
-        vdef.setAggregate("correlation", "covariance");
+  @Test
+  public void testAggregates()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
-        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
+    logger.debug(options.toString());
 
-        AggregateResult[] agg = t.getAggregates();
-        assertEquals("Two aggregates are expected", 2, agg.length);
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        double cov = t.getAggregate("covariance").get("xs:double", Double.class);
-        assertTrue("The covariance is between 1.551 and 1.552",
-                cov > 1.551 && cov < 1.552);
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions2");
+    vdef.setAggregate("correlation", "covariance");
 
-        Tuple[] tuples = t.getTuples();
-        assertEquals("Twelve tuples are expected", 12, tuples.length);
-        assertEquals("The tuples are named 'co'", "co", t.getName());
+    TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
-        ValuesMetrics metrics = t.getMetrics();
-        assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
-        assertTrue("The aggregate resolution time is >= 0", metrics.getAggregateResolutionTime() >= 0);
+    AggregateResult[] agg = t.getAggregates();
+    assertEquals("Two aggregates are expected", 2, agg.length);
 
-        optionsMgr.deleteOptions("valuesoptions2");
-    }
+    double cov = t.getAggregate("covariance").get("xs:double", Double.class);
+    assertTrue("The covariance is between 1.551 and 1.552",
+      cov > 1.551 && cov < 1.552);
 
-    @Test
-    public void testCoVariances()
-    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-        optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
+    Tuple[] tuples = t.getTuples();
+    assertEquals("Twelve tuples are expected", 12, tuples.length);
+    assertEquals("The tuples are named 'co'", "co", t.getName());
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+    ValuesMetrics metrics = t.getMetrics();
+    assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
+    assertTrue("The aggregate resolution time is >= 0", metrics.getAggregateResolutionTime() >= 0);
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
+    optionsMgr.deleteOptions("valuesoptions2");
+  }
 
-        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
+  @Test
+  public void testCoVariances()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
-        Tuple[] tuples = t.getTuples();
-        assertEquals("Twelve tuples are expected", 12, tuples.length);
-        assertEquals("The tuples are named 'co'", "co", t.getName());
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        ValuesMetrics metrics = t.getMetrics();
-        assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
-        // Restore after bug:18747 is fixed
-        // assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
 
-        optionsMgr.deleteOptions("valuesoptions3");
-    }
+    TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
-    @Test
-    public void testValuesHandle()
-    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-        optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+    Tuple[] tuples = t.getTuples();
+    assertEquals("Twelve tuples are expected", 12, tuples.length);
+    assertEquals("The tuples are named 'co'", "co", t.getName());
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+    ValuesMetrics metrics = t.getMetrics();
+    assertTrue("The values resolution time is >= 0", metrics.getValuesResolutionTime() >= 0);
+    // Restore after bug:18747 is fixed
+    // assertEquals("The aggregate resolution time is -1 (absent)", metrics.getAggregateResolutionTime(), -1);
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
+    optionsMgr.deleteOptions("valuesoptions3");
+  }
 
-        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
+  @Test
+  public void testValuesHandle()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
-        Tuple[] tuples = t.getTuples();
-        assertEquals("Twelve tuples are expected", 12, tuples.length);
-        assertEquals("The tuples are named 'co'", "co", t.getName());
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        TypedDistinctValue[] dv = tuples[0].getValues();
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
 
-        assertEquals("Two values per tuple expected", 2, dv.length);
-        assertEquals("First is long", "xs:double",  dv[0].getType());
-        assertEquals("Second is int", "xs:int", dv[1].getType());
-        assertEquals("Frequency is 1", 1, tuples[0].getCount());
-        assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
-        assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
+    TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
-        optionsMgr.deleteOptions("valuesoptions");
-    }
-    
-    @Test
-    public void testNWayTuples()
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	 QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-         optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+    Tuple[] tuples = t.getTuples();
+    assertEquals("Twelve tuples are expected", 12, tuples.length);
+    assertEquals("The tuples are named 'co'", "co", t.getName());
 
-         QueryManager queryMgr = Common.client.newQueryManager();
+    TypedDistinctValue[] dv = tuples[0].getValues();
 
-         ValuesDefinition vdef = queryMgr.newValuesDefinition("n-way", "valuesoptions");
+    assertEquals("Two values per tuple expected", 2, dv.length);
+    assertEquals("First is long", "xs:double",  dv[0].getType());
+    assertEquals("Second is int", "xs:int", dv[1].getType());
+    assertEquals("Frequency is 1", 1, tuples[0].getCount());
+    assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
+    assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
 
-         TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
-         
-         Tuple[] tuples = t.getTuples();
-         assertEquals("Four tuples are expected", 4, tuples.length);
-         assertEquals("The tuples are named 'n-way'", "n-way", t.getName());
+    optionsMgr.deleteOptions("valuesoptions");
+  }
 
-         TypedDistinctValue[] dv = tuples[0].getValues();
+  @Test
+  public void testNWayTuples()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
-         assertEquals("Three values per tuple expected", 3, dv.length);
-         assertEquals("First is long", "xs:double",  dv[0].getType());
-         assertEquals("Second is int", "xs:int", dv[1].getType());
-         assertEquals("Third is string", "xs:string", dv[2].getType());
-         assertEquals("Frequency is 1", 1, tuples[0].getCount());
-         assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
-         assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
-         assertEquals("Third value", "Alaska", (String) dv[2].get(String.class));
-         optionsMgr.deleteOptions("valuesoptions");
-    }
-    
-    @Test
-    public void testPagingTuples()
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-        QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-        optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        QueryManager queryMgr = Common.client.newQueryManager();
-        queryMgr.setPageLength(6);
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("n-way", "valuesoptions");
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
+    TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle());
 
-        TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle(), 3);
+    Tuple[] tuples = t.getTuples();
+    assertEquals("Four tuples are expected", 4, tuples.length);
+    assertEquals("The tuples are named 'n-way'", "n-way", t.getName());
 
-        Tuple[] tuples = t.getTuples();
-        assertEquals("Six tuples are expected", 6, tuples.length);
+    TypedDistinctValue[] dv = tuples[0].getValues();
 
-    	TypedDistinctValue[] values = tuples[0].getValues();
-    	String value = values[0].get(Double.class)+" | "+values[1].get(Integer.class);
-        assertEquals("The first tuple is '1.2 | 3'", "1.2 | 3", value);
+    assertEquals("Three values per tuple expected", 3, dv.length);
+    assertEquals("First is long", "xs:double",  dv[0].getType());
+    assertEquals("Second is int", "xs:int", dv[1].getType());
+    assertEquals("Third is string", "xs:string", dv[2].getType());
+    assertEquals("Frequency is 1", 1, tuples[0].getCount());
+    assertEquals("First value",  1.1, (double) dv[0].get(Double.class), 0.01);
+    assertEquals("Second value", (int) 1, (int) dv[1].get(Integer.class));
+    assertEquals("Third value", "Alaska", (String) dv[2].get(String.class));
+    optionsMgr.deleteOptions("valuesoptions");
+  }
 
-        values = tuples[5].getValues();
-        value =
-        	values[0].get(Double.class).toString()
-        	+ " | "
-        	+ values[1].get(Integer.class).toString();
-        assertEquals("The last tuple is '2.2 | 4'", "2.2 | 4", value);
+  @Test
+  public void testPagingTuples()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
-        optionsMgr.deleteOptions("valuesoptions");
-    }
+    QueryManager queryMgr = Common.client.newQueryManager();
+    queryMgr.setPageLength(6);
+
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions");
+
+    TuplesHandle t = queryMgr.tuples(vdef, new TuplesHandle(), 3);
+
+    Tuple[] tuples = t.getTuples();
+    assertEquals("Six tuples are expected", 6, tuples.length);
+
+    TypedDistinctValue[] values = tuples[0].getValues();
+    String value = values[0].get(Double.class)+" | "+values[1].get(Integer.class);
+    assertEquals("The first tuple is '1.2 | 3'", "1.2 | 3", value);
+
+    values = tuples[5].getValues();
+    value =
+      values[0].get(Double.class).toString()
+        + " | "
+        + values[1].get(Integer.class).toString();
+    assertEquals("The last tuple is '2.2 | 4'", "2.2 | 4", value);
+
+    optionsMgr.deleteOptions("valuesoptions");
+  }
 }

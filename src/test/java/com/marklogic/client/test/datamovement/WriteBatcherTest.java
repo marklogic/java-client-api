@@ -130,13 +130,13 @@ public class WriteBatcherTest {
           for(WriteEvent w: batch.getItems()){
             successBatch.append(w.getTargetUri()+":");
           }
-      })
+        })
       .onBatchFailure(
         (batch, throwable) -> {
           for(WriteEvent w: batch.getItems()){
             failureBatch.append(w.getTargetUri()+":");
           }
-      });
+        });
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection, whbTestCollection);
@@ -388,12 +388,12 @@ public class WriteBatcherTest {
   }
 
   public void runWriteTest( int batchSize, int externalThreadCount, int batcherThreadCount,
-      int totalDocCount, String testName)
+                            int totalDocCount, String testName)
   {
-    String config = "{ batchSize:           " + batchSize + ",\n" + 
-                    "  externalThreadCount: " + externalThreadCount + ",\n" + 
-                    "  batcherThreadCount:  " + batcherThreadCount + ",\n" + 
-                    "  totalDocCount:       " + totalDocCount + " }"; 
+    String config = "{ batchSize:           " + batchSize + ",\n" +
+                    "  externalThreadCount: " + externalThreadCount + ",\n" +
+                    "  batcherThreadCount:  " + batcherThreadCount + ",\n" +
+                    "  totalDocCount:       " + totalDocCount + " }";
     System.out.println("Starting test " + testName + " with config=" + config);
 
     String collection = whbTestCollection + ".testWrites_" + testName;
@@ -616,15 +616,15 @@ public class WriteBatcherTest {
     class MyRunnable implements Runnable {
 
       @Override
-        public void run() {
+      public void run() {
 
-          for (int j =0 ;j < 100; j++){
-            String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
-            batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
-          }
-          logger.debug("[testAddMultiThreadedSuccess_Issue61] added 100 docs");
-          batcher.flushAndWait();
+        for (int j =0 ;j < 100; j++){
+          String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
+          batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
         }
+        logger.debug("[testAddMultiThreadedSuccess_Issue61] added 100 docs");
+        batcher.flushAndWait();
+      }
 
     }
     Thread t1,t2,t3;
@@ -674,15 +674,15 @@ public class WriteBatcherTest {
     class MyRunnable implements Runnable {
 
       @Override
-        public void run() {
+      public void run() {
 
-          for (int j =0 ;j < 100; j++){
-            String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
-            batcher.add(uri, meta, fileHandle);
-          }
-          logger.debug("[testAddMultiThreadedSuccess_Issue48] added 100 docs");
-          batcher.flushAndWait();
+        for (int j =0 ;j < 100; j++){
+          String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
+          batcher.add(uri, meta, fileHandle);
         }
+        logger.debug("[testAddMultiThreadedSuccess_Issue48] added 100 docs");
+        batcher.flushAndWait();
+      }
     }
 
     Thread t1,t2,t3;
@@ -784,13 +784,13 @@ public class WriteBatcherTest {
     WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(11);
     ihbMT.onBatchSuccess(
-        batch -> {
-          logger.debug("[testMultipleFlushAnStop_Issue109] batch: {}, items: {}",
-            batch.getJobBatchNumber(), batch.getItems().length);
-          for(WriteEvent w:batch.getItems()){
-            //logger.debug("Success "+w.getTargetUri());
-          }
-        })
+      batch -> {
+        logger.debug("[testMultipleFlushAnStop_Issue109] batch: {}, items: {}",
+          batch.getJobBatchNumber(), batch.getItems().length);
+        for(WriteEvent w:batch.getItems()){
+          //logger.debug("Success "+w.getTargetUri());
+        }
+      })
     .onBatchFailure(
         (batch, throwable) -> {
           throwable.printStackTrace();
@@ -872,17 +872,17 @@ public class WriteBatcherTest {
     class MyRunnable implements Runnable {
 
       @Override
-        public void run() {
-          try {
-            for (int j =0 ;j < 400; j++){
-              String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
-              ihbMT.add(uri, meta, new StringHandle("test"));
-            }
-            logger.debug("[testStopBeforeFlush_Issue595] Finished executing thread");
-          } catch (Throwable t) {
-            logger.error("", t);
+      public void run() {
+        try {
+          for (int j =0 ;j < 400; j++){
+            String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
+            ihbMT.add(uri, meta, new StringHandle("test"));
           }
+          logger.debug("[testStopBeforeFlush_Issue595] Finished executing thread");
+        } catch (Throwable t) {
+          logger.error("", t);
         }
+      }
 
     }
     Thread t1,t2;

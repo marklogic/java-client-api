@@ -29,18 +29,19 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.extension.OpenCSVBatcherExample;
 
 public class OpenCSVBatcherTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		boolean succeeded = false;
-		try {
-			OpenCSVBatcherExample.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
-		assertTrue("OpenCSVSplitterExample failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    boolean succeeded = false;
+    try {
+      OpenCSVBatcherExample.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+    }
+    assertTrue("OpenCSVSplitterExample failed", succeeded);
+  }
 }

@@ -56,195 +56,199 @@ import java.util.Map;
 public class ValuesHandleTest {
 
 
-	private static final Logger logger = (Logger) LoggerFactory
-			.getLogger(ValuesHandleTest.class);
-	
-	@BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-        Common.connectAdmin();
+  private static final Logger logger = (Logger) LoggerFactory
+    .getLogger(ValuesHandleTest.class);
+
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+    Common.connectAdmin();
+  }
+
+  @AfterClass
+  public static void afterClass() {
+  }
+
+  @Test
+  public void testAggregates()
+    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException,
+           FailedRequestException, ResourceNotResendableException
+  {
+    String optionsName = makeValuesOptions();
+
+    QueryManager queryMgr = Common.client.newQueryManager();
+
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
+    vdef.setAggregate("sum", "avg");
+    vdef.setName("double");
+
+    //ValuesListDefinition vldef = queryMgr.newValuesListDefinition("valuesoptions");
+    //ValuesListHandle vlh = queryMgr.valuesList(vldef, new ValuesListHandle());
+
+    ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
+
+    AggregateResult[] agg = v.getAggregates();
+    assertEquals("There should be 2 aggregates", 2, agg.length);
+    double first  = agg[0].get("xs:double", Double.class);
+    assertTrue("Aggregate 1 should be between 11.4 and 12",
+      11.4 < first && first < 12.0);
+
+    double second = agg[1].get("xs:double", Double.class);
+
+    logger.debug("" + second);
+    assertTrue("Aggregate 2 should be between 1.43 and 1.44",
+      1.43 < second && second < 1.44);
+
+    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+  }
+
+  @Test
+  public void testCriteria()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    String optionsName = makeValuesOptions();
+
+    QueryManager queryMgr = Common.client.newQueryManager();
+
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
+
+    for (int i=0; i < 2; i++) {
+      ValueQueryDefinition vQuery = null;
+      switch (i) {
+        case 0:
+          StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
+          stringQuery.setCriteria("10");
+          vQuery = stringQuery;
+          break;
+        case 1:
+          StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
+          StructuredQueryDefinition t = qb.term("10");
+          vQuery = t;
+          break;
+        default:
+          assertTrue("test case error", false);
+      }
+      vdef.setQueryDefinition(vQuery);
+
+      ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
+      CountedDistinctValue dv[] = v.getValues();
+      assertNotNull("There should be values", dv);
+      assertEquals("There should be 3 values", 3, dv.length);
     }
 
-    @AfterClass
-    public static void afterClass() {
+    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+  }
+
+  @Test
+  public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
+    File f = new File("src/test/resources/values.xml");
+    MyValuesHandle v;
+    try (FileInputStream is = new FileInputStream(f)) {
+      v = new MyValuesHandle();
+      v.parseTestData(is);
     }
+    assertTrue("Name should be 'size'", "size".equals(v.getName()));
+    assertEquals("Type should be 'xs:unsignedLong'", "xs:unsignedLong", v.getType());
 
-    @Test
-    public void testAggregates()
-    throws IOException, ParserConfigurationException, SAXException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	String optionsName = makeValuesOptions();
+    CountedDistinctValue dv[] = v.getValues();
 
-    	QueryManager queryMgr = Common.client.newQueryManager();
+    assertEquals("There should be 8 values", 8, dv.length);
+    assertEquals("Frequency should be 1", 1, dv[0].getCount());
+    assertEquals("Value should be 815", (long) 815, (long) dv[0].get(v.getType(), Long.class));
+  }
 
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
-        vdef.setAggregate("sum", "avg");
-        vdef.setName("double");
+  @Test
+  public void testValuesListHandle() throws IOException, ParserConfigurationException, SAXException {
+    File f = new File("src/test/resources/valueslist.xml");
+    FileInputStream is = new FileInputStream(f);
 
-        //ValuesListDefinition vldef = queryMgr.newValuesListDefinition("valuesoptions");
-        //ValuesListHandle vlh = queryMgr.valuesList(vldef, new ValuesListHandle());
+    MyValuesListHandle v = new MyValuesListHandle();
 
-        ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
+    v.parseTestData(is);
+    Map<String,String> map = v.getValuesMap();
+    assertEquals("Map should contain two keys", map.size(), 2);
+    assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+  }
 
-        AggregateResult[] agg = v.getAggregates();
-        assertEquals("There should be 2 aggregates", 2, agg.length);
-        double first  = agg[0].get("xs:double", Double.class);
-        assertTrue("Aggregate 1 should be between 11.4 and 12",
-                11.4 < first && first < 12.0);
 
-        double second = agg[1].get("xs:double", Double.class);
+  @Test
+  public void testValuesPaging() throws IOException, ParserConfigurationException, SAXException {
+    String optionsName = makeValuesOptions();
 
-        logger.debug("" + second);
-        assertTrue("Aggregate 2 should be between 1.43 and 1.44",
-        		1.43 < second && second < 1.44);
+    QueryManager queryMgr = Common.client.newQueryManager();
+    queryMgr.setPageLength(2);
 
-        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+    ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
+
+    ValuesHandle v = queryMgr.values(vdef, new ValuesHandle(), 2);
+    CountedDistinctValue dv[] = v.getValues();
+    assertNotNull("There should be values", dv);
+    assertEquals("There should be 2 values", 2, dv.length);
+
+    assertEquals("The first value should be '1.2'",
+      dv[0].get("xs:double", Double.class).toString(), "1.2");
+    assertEquals("The second value should be '2.2'",
+      dv[1].get("xs:double", Double.class).toString(), "2.2");
+
+    Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+  }
+
+  // this test only works if you've loaded the 5min guide @Test
+  public void serverValuesList() throws IOException, ParserConfigurationException, SAXException {
+    String optionsName = "photos";
+
+    QueryManager queryMgr = Common.client.newQueryManager();
+    ValuesListDefinition vdef = queryMgr.newValuesListDefinition(optionsName);
+
+    ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
+    assertNotNull(results);
+    Map<String,String> map = results.getValuesMap();
+    assertEquals("Map should contain two keys", map.size(), 2);
+    assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
+
+    // test pagelength
+    queryMgr.setPageLength(1L);
+    results = queryMgr.valuesList(vdef, new ValuesListHandle());
+    assertNotNull(results);
+    map = results.getValuesMap();
+    assertEquals("Map should contain one keys", map.size(), 1);
+
+  }
+
+  static public String makeValuesOptions()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+  {
+    String options =
+      "<?xml version='1.0'?>"+
+      "<options xmlns=\"http://marklogic.com/appservices/search\">"+
+        "<values name=\"grandchild\">"+
+           "<range type=\"xs:string\">"+
+              "<element ns=\"\" name=\"grandchild\"/>"+
+           "</range>"+
+        "</values>"+
+        "<values name=\"double\">"+
+           "<range type=\"xs:double\">"+
+              "<element ns=\"\" name=\"double\"/>"+
+           "</range>"+
+        "</values>"+
+        "<return-metrics>false</return-metrics>"+
+      "</options>";
+
+    QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+    return "valuesoptions";
+  }
+
+  static public class MyValuesHandle extends ValuesHandle {
+    public void parseTestData(InputStream stream) {
+      receiveContent(stream);
     }
+  }
 
-    @Test
-    public void testCriteria()
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-    	String optionsName = makeValuesOptions();
-
-    	QueryManager queryMgr = Common.client.newQueryManager();
-
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
-
-        for (int i=0; i < 2; i++) {
-        	ValueQueryDefinition vQuery = null;
-        	switch (i) {
-        	case 0:
-        		StringQueryDefinition stringQuery = queryMgr.newStringDefinition();
-        		stringQuery.setCriteria("10");
-        		vQuery = stringQuery;
-        		break;
-        	case 1:
-                StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
-                StructuredQueryDefinition t = qb.term("10");
-                vQuery = t;
-                break;
-        	default:
-        		assertTrue("test case error", false);
-        	}
-        	vdef.setQueryDefinition(vQuery);
-
-        	ValuesHandle v = queryMgr.values(vdef, new ValuesHandle());
-        	CountedDistinctValue dv[] = v.getValues();
-        	assertNotNull("There should be values", dv);
-        	assertEquals("There should be 3 values", 3, dv.length);
-        }
-
-        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
+  static public class MyValuesListHandle extends ValuesListHandle {
+    public void parseTestData(InputStream stream) {
+      receiveContent(stream);
     }
-
-    @Test
-    public void testValuesHandle() throws IOException, ParserConfigurationException, SAXException {
-        File f = new File("src/test/resources/values.xml");
-        MyValuesHandle v;
-        try (FileInputStream is = new FileInputStream(f)) {
-            v = new MyValuesHandle();
-            v.parseTestData(is);
-        }
-        assertTrue("Name should be 'size'", "size".equals(v.getName()));
-        assertEquals("Type should be 'xs:unsignedLong'", "xs:unsignedLong", v.getType());
-
-        CountedDistinctValue dv[] = v.getValues();
-
-        assertEquals("There should be 8 values", 8, dv.length);
-        assertEquals("Frequency should be 1", 1, dv[0].getCount());
-        assertEquals("Value should be 815", (long) 815, (long) dv[0].get(v.getType(), Long.class));
-    }
-
-    @Test
-    public void testValuesListHandle() throws IOException, ParserConfigurationException, SAXException {
-        File f = new File("src/test/resources/valueslist.xml");
-        FileInputStream is = new FileInputStream(f);
-
-        MyValuesListHandle v = new MyValuesListHandle();
-
-        v.parseTestData(is);
-        Map<String,String> map = v.getValuesMap();
-        assertEquals("Map should contain two keys", map.size(), 2);
-        assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
-    }
-
-
-    @Test
-    public void testValuesPaging() throws IOException, ParserConfigurationException, SAXException {
-    	String optionsName = makeValuesOptions();
-
-    	QueryManager queryMgr = Common.client.newQueryManager();
-    	queryMgr.setPageLength(2);
-
-        ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
-
-        ValuesHandle v = queryMgr.values(vdef, new ValuesHandle(), 2);
-        CountedDistinctValue dv[] = v.getValues();
-        assertNotNull("There should be values", dv);
-        assertEquals("There should be 2 values", 2, dv.length);
-
-        assertEquals("The first value should be '1.2'",
-        		dv[0].get("xs:double", Double.class).toString(), "1.2");
-        assertEquals("The second value should be '2.2'",
-        		dv[1].get("xs:double", Double.class).toString(), "2.2");
-
-        Common.adminClient.newServerConfigManager().newQueryOptionsManager().deleteOptions(optionsName);
-    }
-
-    // this test only works if you've loaded the 5min guide @Test
-    public void serverValuesList() throws IOException, ParserConfigurationException, SAXException {
-        String optionsName = "photos";
-
-        QueryManager queryMgr = Common.client.newQueryManager();
-        ValuesListDefinition vdef = queryMgr.newValuesListDefinition(optionsName);
-
-        ValuesListHandle results = queryMgr.valuesList(vdef, new ValuesListHandle());
-        assertNotNull(results);
-        Map<String,String> map = results.getValuesMap();
-        assertEquals("Map should contain two keys", map.size(), 2);
-        assertEquals("Size should have this uri", map.get("size"), "/v1/values/size?options=photos");
-        
-        // test pagelength
-        queryMgr.setPageLength(1L);
-        results = queryMgr.valuesList(vdef, new ValuesListHandle());
-        assertNotNull(results);
-        map = results.getValuesMap();
-        assertEquals("Map should contain one keys", map.size(), 1);
-        
-    }
-
-    static public String makeValuesOptions()
-    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-    	String options = 
-        	"<?xml version='1.0'?>"+
-        	"<options xmlns=\"http://marklogic.com/appservices/search\">"+
-        	  "<values name=\"grandchild\">"+
-        	     "<range type=\"xs:string\">"+
-        	        "<element ns=\"\" name=\"grandchild\"/>"+
-        	     "</range>"+
-        	  "</values>"+
-        	  "<values name=\"double\">"+
-        	     "<range type=\"xs:double\">"+
-        	        "<element ns=\"\" name=\"double\"/>"+
-        	     "</range>"+
-        	  "</values>"+
-        	  "<return-metrics>false</return-metrics>"+
-        	"</options>";
-
-    	QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-    	optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
-
-    	return "valuesoptions";
-    }
-
-    static public class MyValuesHandle extends ValuesHandle {
-        public void parseTestData(InputStream stream) {
-            receiveContent(stream);
-        }
-    }
-
-    static public class MyValuesListHandle extends ValuesListHandle {
-        public void parseTestData(InputStream stream) {
-            receiveContent(stream);
-        }
-    }
+  }
 }

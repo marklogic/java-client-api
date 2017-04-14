@@ -103,9 +103,9 @@ public class PointInTimeQueryTest {
     AtomicInteger badDocs = new AtomicInteger();
     StringBuilder failures = new StringBuilder();
     QueryFailureListener failListener = throwable -> {
-        throwable.printStackTrace();
-        logger.error("ERORR:[{}]", throwable);
-        failures.append("ERORR:[" + throwable.toString() + "]");
+      throwable.printStackTrace();
+      logger.error("ERORR:[{}]", throwable);
+      failures.append("ERORR:[" + throwable.toString() + "]");
     };
     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
       .withThreadCount(1)

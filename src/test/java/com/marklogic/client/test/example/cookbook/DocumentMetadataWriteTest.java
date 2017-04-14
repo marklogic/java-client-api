@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentMetadataWrite;
 
 public class DocumentMetadataWriteTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentMetadataWrite.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentMetadataWrite example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentMetadataWrite.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentMetadataWrite example failed", succeeded);
+  }
 }

@@ -75,17 +75,17 @@ public class PackageExamples {
 
     // begin copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
-        .withBatchSize(1000)
-        .withThreadCount(20)
-        .withConsistentSnapshot()
-        .onUrisReady(batch -> {
-            for ( String uri : batch.getItems() ) {
-                if ( uri.endsWith(".txt") ) {
-                    client.newDocumentManager().delete(uri);
-                }
-            }
-        })
-        .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
+      .withBatchSize(1000)
+      .withThreadCount(20)
+      .withConsistentSnapshot()
+      .onUrisReady(batch -> {
+        for ( String uri : batch.getItems() ) {
+          if ( uri.endsWith(".txt") ) {
+            client.newDocumentManager().delete(uri);
+          }
+        }
+      })
+      .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
     JobTicket ticket = dataMovementManager.startJob(qhb);
     qhb.awaitCompletion();
     dataMovementManager.stopJob(ticket);
@@ -105,12 +105,12 @@ public class PackageExamples {
 
     // begin copy from "Using WriteBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
     WriteBatcher whb = dataMovementManager.newWriteBatcher()
-        .withBatchSize(100)
-        .withThreadCount(20)
-        .onBatchSuccess(batch -> {
-            logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
-        })
-        .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
+      .withBatchSize(100)
+      .withThreadCount(20)
+      .onBatchSuccess(batch -> {
+        logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
+      })
+      .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
     JobTicket ticket = dataMovementManager.startJob(whb);
     // the add or addAs methods could be called in separate threads on the
     // single whb instance

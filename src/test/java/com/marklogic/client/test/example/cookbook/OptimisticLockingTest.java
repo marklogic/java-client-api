@@ -28,16 +28,17 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.OptimisticLocking;
 
 public class OptimisticLockingTest {
-	@Test
-	public void testMain()
-	throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
-		boolean succeeded = false;
-		try {
-			OptimisticLocking.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("OptimisticLocking example failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
+  {
+    boolean succeeded = false;
+    try {
+      OptimisticLocking.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("OptimisticLocking example failed", succeeded);
+  }
 }
