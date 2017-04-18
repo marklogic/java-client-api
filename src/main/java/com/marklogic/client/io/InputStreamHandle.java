@@ -58,18 +58,17 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * to release the resources.</p>
  */
 public class InputStreamHandle
-	extends BaseHandle<InputStream, InputStream>
-	implements BufferableHandle, ContentHandle<InputStream>,
-		BinaryReadHandle, BinaryWriteHandle,
-		GenericReadHandle, GenericWriteHandle,
-		JSONReadHandle, JSONWriteHandle,
-		TextReadHandle, TextWriteHandle,
-		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle,
-		TriplesReadHandle, TriplesWriteHandle,
-		QuadsWriteHandle, SPARQLResultsReadHandle,
-		Closeable
-
+  extends BaseHandle<InputStream, InputStream>
+  implements BufferableHandle, ContentHandle<InputStream>,
+    BinaryReadHandle, BinaryWriteHandle,
+    GenericReadHandle, GenericWriteHandle,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    TriplesReadHandle, TriplesWriteHandle,
+    QuadsWriteHandle, SPARQLResultsReadHandle,
+    Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(InputStreamHandle.class);
 
@@ -79,7 +78,7 @@ public class InputStreamHandle
 
   /**
    * Creates a factory to create an InputStreamHandle instance for an input stream.
-   * @return	the factory
+   * @return  the factory
    */
   static public ContentHandleFactory newFactory() {
     return new ContentHandleFactory() {
@@ -95,7 +94,7 @@ public class InputStreamHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new InputStreamHandle() : null;
+                                  (ContentHandle<C>) new InputStreamHandle() : null;
         return handle;
       }
     };
@@ -110,7 +109,7 @@ public class InputStreamHandle
   }
   /**
    * Initializes the handle with an input stream for the content.
-   * @param content	an input stream
+   * @param content  an input stream
    */
   public InputStreamHandle(InputStream content) {
     this();
@@ -123,7 +122,7 @@ public class InputStreamHandle
    * When finished with the input stream, close the input stream to release
    * the response.
    *
-   * @return	the input stream
+   * @return  the input stream
    */
   @Override
   public InputStream get() {
@@ -131,7 +130,7 @@ public class InputStreamHandle
   }
   /**
    * Assigns an input stream as the content.
-   * @param content	an input stream
+   * @param content  an input stream
    */
   @Override
   public void set(InputStream content) {
@@ -140,8 +139,8 @@ public class InputStreamHandle
   /**
    * Assigns an input stream as the content and returns the handle
    * as a fluent convenience.
-   * @param content	an input stream
-   * @return	this handle
+   * @param content  an input stream
+   * @return  this handle
    */
   public InputStreamHandle with(InputStream content) {
     set(content);
@@ -151,8 +150,8 @@ public class InputStreamHandle
   /**
    * Specifies the format of the content and returns the handle
    * as a fluent convenience.
-   * @param format	the format of the content
-   * @return	this handle
+   * @param format  the format of the content
+   * @return  this handle
    */
   public InputStreamHandle withFormat(Format format) {
     setFormat(format);
@@ -161,8 +160,8 @@ public class InputStreamHandle
   /**
    * Specifies the mime type of the content and returns the handle
    * as a fluent convenience.
-   * @param mimetype	the mime type of the content
-   * @return	this handle
+   * @param mimetype  the mime type of the content
+   * @return  this handle
    */
   public InputStreamHandle withMimetype(String mimetype) {
     setMimetype(mimetype);

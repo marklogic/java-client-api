@@ -58,10 +58,10 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A DOM Handle represents XML content as a DOM document for reading or writing.
  */
 public class DOMHandle
-	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,
-		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle
+  extends BaseHandle<InputStream, OutputStreamSender>
+  implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle
 {
   static final private Logger logger = LoggerFactory.getLogger(DOMHandle.class);
 
@@ -88,7 +88,7 @@ public class DOMHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new DOMHandle() : null;
+                                  (ContentHandle<C>) new DOMHandle() : null;
         return handle;
       }
     };

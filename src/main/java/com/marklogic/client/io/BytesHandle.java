@@ -39,23 +39,23 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * A Bytes Handle represents document content as a byte array for reading or writing.
- * 
+ *
  * When writing JSON, text, or XML content, you should use a byte[] array only
  * if the bytes are encoded in UTF-8.  If the characters have a different encoding, use
  * a StringHandle and specify the correct character encoding for the bytes when
  * creating the String.
  */
 public class BytesHandle
-	extends BaseHandle<byte[], byte[]>
-	implements BufferableHandle, ContentHandle<byte[]>,
-		BinaryReadHandle, BinaryWriteHandle,
-		GenericReadHandle, GenericWriteHandle,
-		JSONReadHandle, JSONWriteHandle, 
-		TextReadHandle, TextWriteHandle,
-		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle,
-		QuadsWriteHandle,
-		TriplesReadHandle, TriplesWriteHandle
+  extends BaseHandle<byte[], byte[]>
+  implements BufferableHandle, ContentHandle<byte[]>,
+    BinaryReadHandle, BinaryWriteHandle,
+    GenericReadHandle, GenericWriteHandle,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    QuadsWriteHandle,
+    TriplesReadHandle, TriplesWriteHandle
 {
   private byte[] content;
 
@@ -77,7 +77,7 @@ public class BytesHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new BytesHandle() : null;
+                                  (ContentHandle<C>) new BytesHandle() : null;
         return handle;
       }
     };
