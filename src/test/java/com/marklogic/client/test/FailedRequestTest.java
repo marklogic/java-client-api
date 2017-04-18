@@ -39,33 +39,33 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 public class FailedRequestTest {
-	private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
 
-	@Test
-	public void testFailedRequest()
-    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException
+  @Test
+  public void testFailedRequest()
+  throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException
   {
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		Common.connectAdmin();
-		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
-				.newQueryOptionsManager();
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    Common.connectAdmin();
+    QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
+      .newQueryOptionsManager();
 
-		try {
-			mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
-		} catch (ForbiddenUserException e) {
-			assertEquals(
-					"Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
-					e.getMessage());
-			assertEquals(403, e.getFailedRequest().getStatusCode());
-			assertEquals("Forbidden", e.getFailedRequest().getStatus());
-		}
-		mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    try {
+      mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
+    } catch (ForbiddenUserException e) {
+      assertEquals(
+          "Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
+          e.getMessage());
+      assertEquals(403, e.getFailedRequest().getStatusCode());
+      assertEquals("Forbidden", e.getFailedRequest().getStatus());
+    }
+    mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
-		Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
+    Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
 
-		StringWriter xml = new StringWriter();
-		XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
-		xsw.writeStartDocument();
+    StringWriter xml = new StringWriter();
+    XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
+    xsw.writeStartDocument();
     xsw.writeStartElement("options");
       xsw.writeDefaultNamespace("http://marklogic.com/appservices/search");
       xsw.writeStartElement("constraint");
