@@ -25,8 +25,8 @@ class DocumentPatchBuilderImpl
   implements DocumentPatchBuilder
 {
 /* TODO:
-	insert values for JSON array items?
-	awareness of popular fragment sources
+   insert values for JSON array items?
+   awareness of popular fragment sources
 
     metadata - accept predicate for permission or property
 

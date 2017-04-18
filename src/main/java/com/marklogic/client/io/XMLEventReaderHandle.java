@@ -52,11 +52,11 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * to release the resources.</p>
  */
 public class XMLEventReaderHandle
-	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle, ContentHandle<XMLEventReader>,
-		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle,
-		Closeable
+  extends BaseHandle<InputStream, OutputStreamSender>
+  implements OutputStreamSender, BufferableHandle, ContentHandle<XMLEventReader>,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(XMLEventReaderHandle.class);
 
@@ -83,7 +83,7 @@ public class XMLEventReaderHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new XMLEventReaderHandle() : null;
+                                  (ContentHandle<C>) new XMLEventReaderHandle() : null;
         return handle;
       }
     };

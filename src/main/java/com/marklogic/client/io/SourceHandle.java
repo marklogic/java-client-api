@@ -52,239 +52,239 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
  */
 public class SourceHandle
-	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
-	    XMLReadHandle, XMLWriteHandle, 
-	    StructureReadHandle, StructureWriteHandle,
-		Closeable
+  extends BaseHandle<InputStream, OutputStreamSender>
+  implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    Closeable
 {
-	static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
+  static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);
 
-	private Transformer transformer;
-	private Source      content;
-	private InputStream underlyingStream;
+  private Transformer transformer;
+  private Source      content;
+  private InputStream underlyingStream;
 
-	/**
-	 * Creates a factory to create a SourceHandle instance for a Transformer Source.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ Source.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return Source.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new SourceHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a SourceHandle instance for a Transformer Source.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ Source.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return Source.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+                                  (ContentHandle<C>) new SourceHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public SourceHandle() {
-		super();
-		super.setFormat(Format.XML);
-   		setResendable(false);
-	}
-	/**
-	 * Initializes the handle with a transform source for the content.
-	 * @param content	a transform source
-	 */
-	public SourceHandle(Source content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public SourceHandle() {
+    super();
+    super.setFormat(Format.XML);
+    setResendable(false);
+  }
+  /**
+   * Initializes the handle with a transform source for the content.
+   * @param content	a transform source
+   */
+  public SourceHandle(Source content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns a transformer for modifying the content.
-	 * @return	the transformer
-	 */
-	public Transformer getTransformer() {
-		return transformer;
-	}
-	/**
-	 * Specifies a transformer for modifying the content.
-	 * @param transformer	the transformer
-	 */
-	public void setTransformer(Transformer transformer) {
-		this.transformer = transformer;
-	}
-    /**
-	 * Specifies a transformer for modifying the content and returns the handle
-	 * as a fluent convenience.
-	 * @param transformer	the transformer
-	 * @return	this handle
-     */
-	public SourceHandle withTransformer(Transformer transformer) {
-		setTransformer(transformer);
-		return this;
-	}
+  /**
+   * Returns a transformer for modifying the content.
+   * @return	the transformer
+   */
+  public Transformer getTransformer() {
+    return transformer;
+  }
+  /**
+   * Specifies a transformer for modifying the content.
+   * @param transformer	the transformer
+   */
+  public void setTransformer(Transformer transformer) {
+    this.transformer = transformer;
+  }
+  /**
+   * Specifies a transformer for modifying the content and returns the handle
+   * as a fluent convenience.
+   * @param transformer	the transformer
+   * @return	this handle
+   */
+  public SourceHandle withTransformer(Transformer transformer) {
+    setTransformer(transformer);
+    return this;
+  }
 
-	/**
-	 * Returns the transform source that produces the content.
-	 * @return	the transform source
-	 */
-	@Override
-	public Source get() {
-		return content;
-	}
-	/**
-	 * Assigns a transform source that produces the content.
-	 * @param content	the transform source
-	 */
-	@Override
-	public void set(Source content) {
-		this.content = content;
-	}
-    /**
-	 * Assigns a transform source that produces the content and returns
-	 * the handle as a fluent convenience.
-	 * @param content	the transform source
-	 * @return	this handle
-     */
-	public SourceHandle with(Source content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns the transform source that produces the content.
+   * @return	the transform source
+   */
+  @Override
+  public Source get() {
+    return content;
+  }
+  /**
+   * Assigns a transform source that produces the content.
+   * @param content	the transform source
+   */
+  @Override
+  public void set(Source content) {
+    this.content = content;
+  }
+  /**
+   * Assigns a transform source that produces the content and returns
+   * the handle as a fluent convenience.
+   * @param content	the transform source
+   * @return	this handle
+   */
+  public SourceHandle with(Source content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Transforms the source for the content output to the result.  If
-	 * the transformer is not specified, an identity transform sends
-	 * the source to the result.  When writing, the result is stored
-	 * in the database
-	 * @param result	the receiver of the transform output
-	 */
-	public void transform(Result result) {
-		if (logger.isInfoEnabled())
-			logger.info("Transforming source into result");
-		try {
-			if (content == null) {
-				throw new IllegalStateException("No source to transform");
-			}
+  /**
+   * Transforms the source for the content output to the result.  If
+   * the transformer is not specified, an identity transform sends
+   * the source to the result.  When writing, the result is stored
+   * in the database
+   * @param result	the receiver of the transform output
+   */
+  public void transform(Result result) {
+    if (logger.isInfoEnabled())
+      logger.info("Transforming source into result");
+    try {
+      if (content == null) {
+        throw new IllegalStateException("No source to transform");
+      }
 
-			Transformer transformer = null;
-			if (this.transformer != null) {
-				transformer = getTransformer();
-			} else {
-				if (logger.isWarnEnabled())
-					logger.warn("No transformer, so using identity transform");
-				transformer = TransformerFactory.newInstance().newTransformer();
-			}
+      Transformer transformer = null;
+      if (this.transformer != null) {
+        transformer = getTransformer();
+      } else {
+        if (logger.isWarnEnabled())
+          logger.warn("No transformer, so using identity transform");
+        transformer = TransformerFactory.newInstance().newTransformer();
+      }
 
-			transformer.transform(content, result);
-		} catch (TransformerException e) {
-			logger.error("Failed to transform source into result",e);
-			throw new MarkLogicIOException(e);
-		}
-	}
+      transformer.transform(content, result);
+    } catch (TransformerException e) {
+      logger.error("Failed to transform source into result",e);
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-	/**
-	 * Restricts the format to XML.
-	 */
-    @Override
-	public void setFormat(Format format) {
-		if (format != Format.XML)
-			throw new IllegalArgumentException("SourceHandle supports the XML format only");
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public SourceHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Restricts the format to XML.
+   */
+  @Override
+  public void setFormat(Format format) {
+    if (format != Format.XML)
+      throw new IllegalArgumentException("SourceHandle supports the XML format only");
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public SourceHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			content = null;
-		else
-			receiveContent(new ByteArrayInputStream(buffer));
-	}
-	@Override
-	public byte[] toBuffer() {
-		try {
-			if (content == null)
-				return null;
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    if (buffer == null || buffer.length == 0)
+      content = null;
+    else
+      receiveContent(new ByteArrayInputStream(buffer));
+  }
+  @Override
+  public byte[] toBuffer() {
+    try {
+      if (content == null)
+        return null;
 
-			ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-			write(buffer);
+      ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+      write(buffer);
 
-			byte[] b = buffer.toByteArray();
-			fromBuffer(b);
+      byte[] b = buffer.toByteArray();
+      fromBuffer(b);
 
-			return b;
-		} catch (IOException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	/**
-	 * Buffers the transform source and returns the buffer as a string.
-	 */
-	@Override
-	public String toString() {
-		try {
-			return new String(toBuffer(),"UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
+      return b;
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  /**
+   * Buffers the transform source and returns the buffer as a string.
+   */
+  @Override
+  public String toString() {
+    try {
+      return new String(toBuffer(),"UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
 
-	@Override
-	protected Class<InputStream> receiveAs() {
-		return InputStream.class;
-	}
-	@Override
-	protected void receiveContent(InputStream content) {
-		try {
-			if (content == null) {
-				this.content = null;
-				return;
-			}
+  @Override
+  protected Class<InputStream> receiveAs() {
+    return InputStream.class;
+  }
+  @Override
+  protected void receiveContent(InputStream content) {
+    try {
+      if (content == null) {
+        this.content = null;
+        return;
+      }
 
-			this.underlyingStream = content;
-			this.content = new StreamSource(new InputStreamReader(content, "UTF-8"));
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	@Override
-	protected OutputStreamSender sendContent() {
-		if (content == null) {
-			throw new IllegalStateException("No source to transform to result for writing");
-		}
+      this.underlyingStream = content;
+      this.content = new StreamSource(new InputStreamReader(content, "UTF-8"));
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  @Override
+  protected OutputStreamSender sendContent() {
+    if (content == null) {
+      throw new IllegalStateException("No source to transform to result for writing");
+    }
 
-		return this;
-	}
-    @Override
-	public void write(OutputStream out) throws IOException {
-		transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
-	}
+    return this;
+  }
+  @Override
+  public void write(OutputStream out) throws IOException {
+    transform(new StreamResult(new OutputStreamWriter(out, "UTF-8")));
+  }
 
-	/** Always call close() when finished with this handle -- it closes the underlying InputStream.
-	 */
-    @Override
-	public void close() {
-		if ( underlyingStream != null ) {
-			try {
-				underlyingStream.close();
-			} catch (IOException e) {
-				logger.error("Failed to close underlying InputStream",e);
-				throw new MarkLogicIOException(e);
-			}
-		}
-	}
+  /** Always call close() when finished with this handle -- it closes the underlying InputStream.
+   */
+  @Override
+  public void close() {
+    if ( underlyingStream != null ) {
+      try {
+        underlyingStream.close();
+      } catch (IOException e) {
+        logger.error("Failed to close underlying InputStream",e);
+        throw new MarkLogicIOException(e);
+      }
+    }
+  }
 }

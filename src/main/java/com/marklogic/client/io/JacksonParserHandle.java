@@ -85,7 +85,7 @@ public class JacksonParserHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new JacksonParserHandle() : null;
+                                  (ContentHandle<C>) new JacksonParserHandle() : null;
         return handle;
       }
     };

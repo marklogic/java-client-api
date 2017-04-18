@@ -354,14 +354,14 @@ public class JerseyServices implements RESTServices {
     int maxRouteConnections = 100;
     int maxTotalConnections = 2 * maxRouteConnections;
 
-		/*
-		 * 4.2 PoolingClientConnectionManager connMgr = new
-		 * PoolingClientConnectionManager(schemeRegistry);
-		 * connMgr.setMaxTotal(maxTotalConnections);
-		 * connMgr.setDefaultMaxPerRoute(maxRouteConnections);
-		 * connMgr.setMaxPerRoute( new HttpRoute(new HttpHost(baseUri)),
-		 *     maxRouteConnections);
-		 */
+    /*
+     * 4.2 PoolingClientConnectionManager connMgr = new
+     * PoolingClientConnectionManager(schemeRegistry);
+     * connMgr.setMaxTotal(maxTotalConnections);
+     * connMgr.setDefaultMaxPerRoute(maxRouteConnections);
+     * connMgr.setMaxPerRoute( new HttpRoute(new HttpHost(baseUri)),
+     *     maxRouteConnections);
+     */
     // start 4.1
     connMgr = new ThreadSafeClientConnManager(
       schemeRegistry);
@@ -677,50 +677,50 @@ public class JerseyServices implements RESTServices {
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
-		/*
-		 * This loop is for retrying the request if the service is unavailable
-		 */
+    /*
+     * This loop is for retrying the request if the service is unavailable
+     */
     for (; retry < minRetry || (System.currentTimeMillis() - startTime) < maxDelay; retry++) {
       if (nextDelay > 0) {
         try { Thread.sleep(nextDelay);} catch (InterruptedException e) {}
       }
 
-			/*
-			 * Execute the function which is passed as an argument
-			 * in order to get the ClientResponse
-			 */
+      /*
+       * Execute the function which is passed as an argument
+       * in order to get the ClientResponse
+       */
       response = doFunction.apply(builder);
       status = response.getClientResponseStatus();
       if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
         if (isFirstRequest()) setFirstRequest(false);
-				/*
-				 * If we don't get a service unavailable status, we break
-				 * from the retrying loop and return the response
-				 */
+        /*
+         * If we don't get a service unavailable status, we break
+         * from the retrying loop and return the response
+         */
         break;
       }
-			/*
-			 * This code will be executed whenever the service is unavailable.
-			 * When the service becomes unavailable, we close the ClientResponse
-			 * we got and retry it to try and get a new ClientResponse
-			 */
+      /*
+       * This code will be executed whenever the service is unavailable.
+       * When the service becomes unavailable, we close the ClientResponse
+       * we got and retry it to try and get a new ClientResponse
+       */
       response.close();
-			/*
-			 * There are scenarios where we don't want to retry and we just want to
-			 * throw ResourceNotResendableException. In that case, we pass that code from
-			 * the caller through the Consumer and execute it here. In the rest of the
-			 * scenarios, we pass it as null and it is just a no-operation.
-			 */
+      /*
+       * There are scenarios where we don't want to retry and we just want to
+       * throw ResourceNotResendableException. In that case, we pass that code from
+       * the caller through the Consumer and execute it here. In the rest of the
+       * scenarios, we pass it as null and it is just a no-operation.
+       */
       if(resendableConsumer != null) resendableConsumer.accept(null);
-			/*
-			 * Calculate the delay before which we shouldn't retry
-			 */
+      /*
+       * Calculate the delay before which we shouldn't retry
+       */
       nextDelay = Math.max(getRetryAfterTime(response), calculateDelay(randRetry, retry));
     }
-		/*
-		 * If the service is still unavailable after all the retries, we throw a
-		 * FailedRequestException indicating that the service is unavailable.
-		 */
+    /*
+     * If the service is still unavailable after all the retries, we throw a
+     * FailedRequestException indicating that the service is unavailable.
+     */
     if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
@@ -728,10 +728,10 @@ public class JerseyServices implements RESTServices {
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-		/*
-		 * Once we break from the retry loop, we just return the ClientResponse
-		 * back to the caller in order to proceed with the flow
-		 */
+    /*
+     * Once we break from the retry loop, we just return the ClientResponse
+     * back to the caller in order to proceed with the flow
+     */
     return response;
   }
 
@@ -3664,9 +3664,9 @@ public class JerseyServices implements RESTServices {
               JsonNode jsonNode = new JacksonParserHandle().getMapper().readTree(value);
               type = getJsonType(jsonNode);
             } else if ( format == Format.TEXT ) {
-							/* Comment next line until 32608 is resolved
-							type = "text()";
-							// until then, use the following line */
+              /* Comment next line until 32608 is resolved
+              type = "text()";
+              // until then, use the following line */
               type = "xs:untypedAtomic";
             } else if ( format == Format.BINARY ) {
               throw new UnsupportedOperationException("Binary format is not supported for variables");
