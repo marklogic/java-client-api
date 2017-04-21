@@ -98,7 +98,7 @@ public class BulkReadWriteTest {
     public void setNumRecords(int numWritten);
   }
 
-  private class BulkCityWriter implements CityWriter {
+  private static class BulkCityWriter implements CityWriter {
     private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
@@ -126,7 +126,7 @@ public class BulkReadWriteTest {
     // load all the countries into a HashMap (this isn't the big data set)
     // we'll attach country info to each city (that's the big data set)
     Map<String, Country> countries = new HashMap<>();
-    System.out.println("Reading countries:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
+    System.out.println("Reading countries:" + BulkReadWriteTest.class.getResource(COUNTRIES_FILE));
     String line;
     try (BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"))) {
       while ((line = countryReader.readLine()) != null ) {
@@ -135,28 +135,28 @@ public class BulkReadWriteTest {
     }
 
     // write batches of cities combined with their country info
-    System.out.println("Reading cities:" + BulkReadWriteTest.class.getClassLoader().getResource(CITIES_FILE));
-    BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE, "UTF-8"));
+    System.out.println("Reading cities:" + BulkReadWriteTest.class.getResource(CITIES_FILE));
     line = null;
-    int numWritten = 0;
-    while ((line = cityReader.readLine()) != null ) {
+    try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE, "UTF-8"))) {
+      int numWritten = 0;
+      while ((line = cityReader.readLine()) != null ) {
 
-      // instantiate the POJO for this city
-      City city = newCity(line, countries);
-      // let the implementation handle writing the city
-      cityWriter.addCity(city);
+        // instantiate the POJO for this city
+        City city = newCity(line, countries);
+        // let the implementation handle writing the city
+        cityWriter.addCity(city);
 
-      // when we have a full batch, write it out
-      if ( ++numWritten % BATCH_SIZE == 0 ) {
+        // when we have a full batch, write it out
+        if ( ++numWritten % BATCH_SIZE == 0 ) {
+          cityWriter.finishBatch();
+        }
+      }
+      // if there are any leftovers, let's write this last batch
+      if ( numWritten % BATCH_SIZE > 0 ) {
         cityWriter.finishBatch();
       }
+      cityWriter.setNumRecords(numWritten);
     }
-    // if there are any leftovers, let's write this last batch
-    if ( numWritten % BATCH_SIZE > 0 ) {
-      cityWriter.finishBatch();
-    }
-    cityWriter.setNumRecords(numWritten);
-    cityReader.close();
   }
 
 

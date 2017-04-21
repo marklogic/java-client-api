@@ -61,13 +61,13 @@ public class Bootstrapper {
       if (name.startsWith("-") && name.length() > 1 && ++i < args.length) {
         name = name.substring(1);
         if ("properties".equals(name)) {
-          InputStream propsStream = Bootstrapper.class.getClassLoader().getResourceAsStream(name);
-          if (propsStream == null)
-            throw new IOException("Could not read bootstrapper properties");
-          Properties props = new Properties();
-          props.load(propsStream);
-          props.putAll(properties);
-          properties = props;
+          try ( InputStream propsStream = Bootstrapper.class.getClassLoader().getResourceAsStream(name) ) {
+            if (propsStream == null) throw new IOException("Could not read bootstrapper properties");
+            Properties props = new Properties();
+            props.load(propsStream);
+            props.putAll(properties);
+            properties = props;
+          }
         } else {
           properties.put(name, args[i]);
         }

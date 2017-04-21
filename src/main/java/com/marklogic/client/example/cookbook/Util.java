@@ -63,14 +63,15 @@ public class Util {
   public static ExampleProperties loadProperties() throws IOException {
     String propsName = "Example.properties";
 
-    InputStream propsStream = openStream(propsName);
-    if (propsStream == null)
-      throw new IOException("Could not read properties "+propsName);
+    try ( InputStream propsStream = openStream(propsName) ) {
+      if (propsStream == null)
+        throw new IOException("Could not read properties "+propsName);
 
-    Properties props = new Properties();
-    props.load(propsStream);
+      Properties props = new Properties();
+      props.load(propsStream);
 
-    return new ExampleProperties(props);
+      return new ExampleProperties(props);
+    }
   }
 
   /**

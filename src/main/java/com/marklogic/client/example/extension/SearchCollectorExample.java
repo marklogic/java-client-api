@@ -105,35 +105,32 @@ public class SearchCollectorExample {
     metadata.setVersion("0.1");
 
     // acquire the resource extension source code
-    InputStream sourceStream = Util.openStream(
-      "scripts"+File.separator+SearchCollector.NAME+".xqy");
-    if (sourceStream == null)
-      throw new RuntimeException("Could not read example resource extension");
+    try ( InputStream sourceStream = Util.openStream("scripts"+File.separator+SearchCollector.NAME+".xqy") ) {
+      if (sourceStream == null) throw new RuntimeException("Could not read example resource extension");
 
-    // create a handle on the extension source code
-    InputStreamHandle handle = new InputStreamHandle(sourceStream);
-    handle.set(sourceStream);
+      // create a handle on the extension source code
+      InputStreamHandle handle = new InputStreamHandle(sourceStream);
+      handle.set(sourceStream);
 
-    MethodParameters getParams = new MethodParameters(MethodType.GET);
-    getParams.add("format",     "xs:string");
-    getParams.add("options",    "xs:string");
-    getParams.add("pageLength", "xs:string");
-    getParams.add("start",      "xs:string");
-    getParams.add("view",       "xs:string");
+      MethodParameters getParams = new MethodParameters(MethodType.GET);
+      getParams.add("format",     "xs:string");
+      getParams.add("options",    "xs:string");
+      getParams.add("pageLength", "xs:string");
+      getParams.add("start",      "xs:string");
+      getParams.add("view",       "xs:string");
 
-    getParams.add("q",          "xs:string");
+      getParams.add("q",          "xs:string");
 
-    MethodParameters postParams = new MethodParameters(MethodType.POST);
-    postParams.add("format",     "xs:string");
-    postParams.add("options",    "xs:string");
-    postParams.add("pageLength", "xs:string");
-    postParams.add("start",      "xs:string");
-    postParams.add("view",       "xs:string");
+      MethodParameters postParams = new MethodParameters(MethodType.POST);
+      postParams.add("format",     "xs:string");
+      postParams.add("options",    "xs:string");
+      postParams.add("pageLength", "xs:string");
+      postParams.add("start",      "xs:string");
+      postParams.add("view",       "xs:string");
 
-    // write the resource extension to the database
-    resourceMgr.writeServices(
-      SearchCollector.NAME, handle, metadata, getParams, postParams
-    );
+      // write the resource extension to the database
+      resourceMgr.writeServices(SearchCollector.NAME, handle, metadata, getParams, postParams);
+    }
 
     System.out.println("Installed the resource extension on the server");
   }
@@ -183,17 +180,17 @@ public class SearchCollectorExample {
   {
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-    InputStreamHandle contentHandle = new InputStreamHandle();
+    try ( InputStreamHandle contentHandle = new InputStreamHandle() ) {
 
-    for (String filename: filenames) {
-      InputStream docStream =  Util.openStream(
-        "data"+File.separator+filename);
-      if (docStream == null)
-        throw new IOException("Could not read document example");
+      for (String filename: filenames) {
+        InputStream docStream =  Util.openStream(
+          "data"+File.separator+filename);
+        if (docStream == null) throw new IOException("Could not read document example");
 
-      contentHandle.set(docStream);
+        contentHandle.set(docStream);
 
-      docMgr.write("/example/"+filename, contentHandle);
+        docMgr.write("/example/"+filename, contentHandle);
+      }
     }
   }
 

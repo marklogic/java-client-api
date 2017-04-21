@@ -23,23 +23,20 @@ import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
  *  and possibly its metadata (collections, properties, quality, and permissions).
  *  Whether metadata is included depends on whether it was requested in the call
  *  sent to the server. For example, to request collections metadata:
- *  <pre>{@code
- *JSONDocumentManager docMgr = databaseClient.newJSONDocumentManager();
- *docMgr.setNonDocumentFormat(Format.XML);
- *docMgr.setMetadataCategories(Metadata.COLLECTIONS);
- *DocumentPage documents = docMgr.read("doc1.json", "doc2.json");
- *try {
- *    for ( DocumentRecord record : documents ) {
- *        String uri = record.getUri();
- *        JacksonHandle content = record.getContent(new JacksonHandle());
- *        DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
- *        DocumentCollections collections = metadata.getCollections();
- *        // ... do something ...
- *    }
- *} finally {
- *    documents.close();
- *}
- *  }</pre>
+ *
+ *     JSONDocumentManager docMgr = databaseClient.newJSONDocumentManager();
+ *     docMgr.setNonDocumentFormat(Format.XML);
+ *     docMgr.setMetadataCategories(Metadata.COLLECTIONS);
+ *     // make sure to use a try-with-resources block or call documents.close()
+ *     try ( DocumentPage documents = docMgr.read("doc1.json", "doc2.json") ) {
+ *       for ( DocumentRecord record : documents ) {
+ *         String uri = record.getUri();
+ *         JacksonHandle content = record.getContent(new JacksonHandle());
+ *         DocumentMetadataHandle metadata = record.getMetadata(new DocumentMetadataHandle());
+ *         DocumentCollections collections = metadata.getCollections();
+ *         // ... do something ...
+ *       }
+ *     }
  */
 public interface DocumentRecord {
   /** Returns the uri (unique identifier) of the document in the server

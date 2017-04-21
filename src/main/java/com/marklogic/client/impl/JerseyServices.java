@@ -3565,7 +3565,7 @@ public class JerseyServices implements RESTServices {
       if ( getType() == EvalResult.Type.NULL ) {
         return null;
       } else {
-        return content.getEntityAs(String.class);
+        return content.getContentAs(String.class);
       }
     }
 
@@ -3661,8 +3661,10 @@ public class JerseyServices implements RESTServices {
             if ( format == Format.XML ) {
               type = "document-node()";
             } else if ( format == Format.JSON ) {
-              JsonNode jsonNode = new JacksonParserHandle().getMapper().readTree(value);
-              type = getJsonType(jsonNode);
+              try ( JacksonParserHandle handle = new JacksonParserHandle() ) {
+                JsonNode jsonNode = handle.getMapper().readTree(value);
+                type = getJsonType(jsonNode);
+              }
             } else if ( format == Format.TEXT ) {
               /* Comment next line until 32608 is resolved
               type = "text()";
@@ -4429,8 +4431,14 @@ public class JerseyServices implements RESTServices {
     }
     @Override
     public void close() throws IOException {
-      if ( multiPart != null ) multiPart.close();
-      if ( response   != null ) response.close();
+      try {
+        if ( multiPart != null ) {
+          multiPart.cleanup();
+          multiPart.close();
+        }
+      } finally {
+        if ( response != null ) response.close();
+      }
     }
   }
 
@@ -4449,10 +4457,6 @@ public class JerseyServices implements RESTServices {
       this.part = part;
     }
 
-    public <T> T getEntityAs(Class<T> clazz) {
-      return part.getEntityAs(clazz);
-    }
-
     public <R extends AbstractReadHandle> R getContent(R handle) {
       if (part == null)
         throw new IllegalStateException("Content already retrieved");
@@ -4464,13 +4468,16 @@ public class JerseyServices implements RESTServices {
       updateMimetype(handleBase, mimetype);
       updateLength(handleBase, length);
 
-      Object contentEntity = part.getEntityAs(handleBase.receiveAs());
-      handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
+      try {
+        Object contentEntity = part.getEntityAs(handleBase.receiveAs());
+        handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
 
-      part = null;
-      reqlog = null;
-
-      return handle;
+        return handle;
+      } finally {
+        part.cleanup();
+        part = null;
+        reqlog = null;
+      }
     }
 
     public <T> T getContentAs(Class<T> clazz) {
@@ -4619,14 +4626,12 @@ public class JerseyServices implements RESTServices {
       partQueue = null;
       reqlog = null;
       if ( closeable != null ) {
-        try { closeable.close(); } catch (IOException e) {}
+        try {
+          closeable.close();
+        } catch (IOException e) {
+          throw new MarkLogicIOException(e);
+        }
       }
-    }
-
-    @Override
-    protected void finalize() throws Throwable {
-      close();
-      super.finalize();
     }
   }
 

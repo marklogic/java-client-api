@@ -209,14 +209,15 @@ public class WriteBatcherTest {
     assertEquals("The failure listener should have run", "true", failListenerWasRun.toString());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
-    DocumentPage docs = docMgr.search(query, 1);
-    // only doc1 and doc2 wrote successfully, doc3 failed
-    assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
+    try ( DocumentPage docs = docMgr.search(query, 1) ) {
+      // only doc1 and doc2 wrote successfully, doc3 failed
+      assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
 
-    for (DocumentRecord record : docs ) {
-      if ( uri1.equals(record.getUri()) ) {
-        assertEquals( "the transform should have changed testProperty to 'test1a'",
-          "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
+      for (DocumentRecord record : docs ) {
+        if ( uri1.equals(record.getUri()) ) {
+          assertEquals( "the transform should have changed testProperty to 'test1a'",
+            "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
+        }
       }
     }
   }

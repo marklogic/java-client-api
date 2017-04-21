@@ -60,16 +60,15 @@ public class DocumentOutputStream {
       @Override
       public void write(OutputStream out) throws IOException {
         // acquire the content
-        InputStream docStream = Util.openStream(
-          "data"+File.separator+FILENAME);
-        if (docStream == null)
-          throw new IOException("Could not read document example");
+        try ( InputStream docStream = Util.openStream("data"+File.separator+FILENAME) ) {
+          if (docStream == null) throw new IOException("Could not read document example");
 
-        // copy content to the output stream
-        byte[] buf = new byte[MAX_BUF];
-        int byteCount = 0;
-        while ((byteCount=docStream.read(buf)) != -1) {
-          out.write(buf, 0, byteCount);
+          // copy content to the output stream
+          byte[] buf = new byte[MAX_BUF];
+          int byteCount = 0;
+          while ((byteCount=docStream.read(buf)) != -1) {
+            out.write(buf, 0, byteCount);
+          }
         }
       }
     };
