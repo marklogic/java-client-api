@@ -1,9 +1,9 @@
-NOTES FOR RELEASE 4.0.0
+# NOTES FOR RELEASE 4.0.0
 
 Adds Optic API, Data Movement SDK, Kerberos, Client Certificate Authentication, Geospatial enhancements,
 Temporal documen enhancements, support for metadata values.
 
-New Functionality
+## New Functionality
 * #392 - add shortcut addAs methods to DocumentWriteSet
 * #400 - Optic API
 * #402 - geo double precision and geo polygon search
@@ -17,7 +17,7 @@ New Functionality
          from Java Client API
 * #550 - add Capability NODE_UPDATE
 
-Improvements and Bug Fixes
+## Improvements and Bug Fixes
 * many javadoc improvements
 * #210 - fail fast when library module path doesn't begin with /ext
 * #234 - offer a way to close the input source for XMLStreamReaderHandle
