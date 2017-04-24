@@ -20,7 +20,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
