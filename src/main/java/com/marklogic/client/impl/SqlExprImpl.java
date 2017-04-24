@@ -114,20 +114,20 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr day(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "day", new Object[]{ arg1 });
+    public XsIntegerExpr day(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "day", new Object[]{ arg });
     }
 
     
     @Override
-    public XsStringExpr dayname(ItemExpr arg1) {
-        return new XsExprImpl.StringCallImpl("sql", "dayname", new Object[]{ arg1 });
+    public XsStringExpr dayname(ItemExpr arg) {
+        return new XsExprImpl.StringCallImpl("sql", "dayname", new Object[]{ arg });
     }
 
     
     @Override
-    public XsIntegerExpr hours(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "hours", new Object[]{ arg1 });
+    public XsIntegerExpr hours(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "hours", new Object[]{ arg });
     }
 
     
@@ -198,20 +198,20 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr minutes(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "minutes", new Object[]{ arg1 });
+    public XsIntegerExpr minutes(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "minutes", new Object[]{ arg });
     }
 
     
     @Override
-    public XsIntegerExpr month(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "month", new Object[]{ arg1 });
+    public XsIntegerExpr month(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "month", new Object[]{ arg });
     }
 
     
     @Override
-    public XsStringExpr monthname(ItemExpr arg1) {
-        return new XsExprImpl.StringCallImpl("sql", "monthname", new Object[]{ arg1 });
+    public XsStringExpr monthname(ItemExpr arg) {
+        return new XsExprImpl.StringCallImpl("sql", "monthname", new Object[]{ arg });
     }
 
     
@@ -222,8 +222,8 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr quarter(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "quarter", new Object[]{ arg1 });
+    public XsIntegerExpr quarter(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "quarter", new Object[]{ arg });
     }
 
     
@@ -276,8 +276,8 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsDecimalExpr seconds(ItemExpr arg1) {
-        return new XsExprImpl.DecimalCallImpl("sql", "seconds", new Object[]{ arg1 });
+    public XsDecimalExpr seconds(ItemExpr arg) {
+        return new XsExprImpl.DecimalCallImpl("sql", "seconds", new Object[]{ arg });
     }
 
     
@@ -318,17 +318,17 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr timestampdiff(XsStringExpr arg1, ItemExpr arg2, ItemExpr arg3) {
-        if (arg1 == null) {
-            throw new IllegalArgumentException("arg1 parameter for timestampdiff() cannot be null");
+    public XsIntegerExpr timestampdiff(XsStringExpr dateTimeType, ItemExpr timestamp1, ItemExpr timestamp2) {
+        if (dateTimeType == null) {
+            throw new IllegalArgumentException("dateTimeType parameter for timestampdiff() cannot be null");
         }
-        if (arg2 == null) {
-            throw new IllegalArgumentException("arg2 parameter for timestampdiff() cannot be null");
+        if (timestamp1 == null) {
+            throw new IllegalArgumentException("timestamp1 parameter for timestampdiff() cannot be null");
         }
-        if (arg3 == null) {
-            throw new IllegalArgumentException("arg3 parameter for timestampdiff() cannot be null");
+        if (timestamp2 == null) {
+            throw new IllegalArgumentException("timestamp2 parameter for timestampdiff() cannot be null");
         }
-        return new XsExprImpl.IntegerCallImpl("sql", "timestampdiff", new Object[]{ arg1, arg2, arg3 });
+        return new XsExprImpl.IntegerCallImpl("sql", "timestampdiff", new Object[]{ dateTimeType, timestamp1, timestamp2 });
     }
 
     
@@ -342,8 +342,8 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr week(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "week", new Object[]{ arg1 });
+    public XsIntegerExpr week(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "week", new Object[]{ arg });
     }
 
     
@@ -354,14 +354,14 @@ class SqlExprImpl implements SqlExpr {
 
     
     @Override
-    public XsIntegerExpr year(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "year", new Object[]{ arg1 });
+    public XsIntegerExpr year(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "year", new Object[]{ arg });
     }
 
     
     @Override
-    public XsIntegerExpr yearday(ItemExpr arg1) {
-        return new XsExprImpl.IntegerCallImpl("sql", "yearday", new Object[]{ arg1 });
+    public XsIntegerExpr yearday(ItemExpr arg) {
+        return new XsExprImpl.IntegerCallImpl("sql", "yearday", new Object[]{ arg });
     }
 
     }

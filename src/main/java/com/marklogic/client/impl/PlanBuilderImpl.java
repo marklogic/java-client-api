@@ -110,11 +110,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     // builder methods
     
     @Override
-    public XsNumericExpr add(XsNumericExpr... operand) {
-        if (operand == null) {
-            throw new IllegalArgumentException("operand parameter for add() cannot be null");
+    public XsNumericExpr add(XsNumericExpr... left) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for add() cannot be null");
         }
-        return new XsExprImpl.NumericCallImpl("op", "add", operand);
+        return new XsExprImpl.NumericCallImpl("op", "add", left);
     }
 
     
@@ -128,11 +128,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr and(XsAnyAtomicTypeExpr... operand) {
-        if (operand == null) {
-            throw new IllegalArgumentException("operand parameter for and() cannot be null");
+    public XsBooleanExpr and(XsAnyAtomicTypeExpr... left) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for and() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "and", operand);
+        return new XsExprImpl.BooleanCallImpl("op", "and", left);
     }
 
     
@@ -660,11 +660,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsNumericExpr multiply(XsNumericExpr... operand) {
-        if (operand == null) {
-            throw new IllegalArgumentException("operand parameter for multiply() cannot be null");
+    public XsNumericExpr multiply(XsNumericExpr... left) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for multiply() cannot be null");
         }
-        return new XsExprImpl.NumericCallImpl("op", "multiply", operand);
+        return new XsExprImpl.NumericCallImpl("op", "multiply", left);
     }
 
     
@@ -717,11 +717,11 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public XsBooleanExpr or(XsAnyAtomicTypeExpr... operand) {
-        if (operand == null) {
-            throw new IllegalArgumentException("operand parameter for or() cannot be null");
+    public XsBooleanExpr or(XsAnyAtomicTypeExpr... left) {
+        if (left == null) {
+            throw new IllegalArgumentException("left parameter for or() cannot be null");
         }
-        return new XsExprImpl.BooleanCallImpl("op", "or", operand);
+        return new XsExprImpl.BooleanCallImpl("op", "or", left);
     }
 
     
