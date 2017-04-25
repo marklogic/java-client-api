@@ -73,7 +73,6 @@ import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanValueOption;
 import com.marklogic.client.util.EditableNamespaceContext;
-import com.sun.org.apache.xalan.internal.xsltc.compiler.util.InternalError;
 
 public class RowManagerTest {
     private static String[]             uris           = null;
@@ -243,7 +242,7 @@ public class RowManagerTest {
                         checkSingleRow(rowsNode, rowstruct, datatypeStyle);
                         break;
                     default:
-                        throw new InternalError("unknown case for RowStructure: "+rowstruct);
+                        throw new IllegalArgumentException("unknown case for RowStructure: "+rowstruct);
                     }
 
                     try (ReaderHandle readerHandle = new ReaderHandle()) {
@@ -875,7 +874,7 @@ public class RowManagerTest {
             checkSecondTypedHeader( header.get(1) );
             break;
         default:
-            throw new InternalError("unknown case for RowSetPart: "+datatypeStyle);
+            throw new IllegalArgumentException("unknown case for RowSetPart: "+datatypeStyle);
         }
     }
     private void checkSingleRow(JsonNode row, RowStructure rowstruct, RowSetPart datatypeStyle) {
@@ -893,7 +892,7 @@ public class RowManagerTest {
                 checkSecondObject( row.get(1) );
                 break;
             default:
-                throw new InternalError("unknown case for RowStructure: "+rowstruct);
+                throw new IllegalArgumentException("unknown case for RowStructure: "+rowstruct);
             }
             break;
         case HEADER:
@@ -909,11 +908,11 @@ public class RowManagerTest {
                 checkSecondValue("JSON", row.get(1).asText() );
                 break;
             default:
-                throw new InternalError("unknown case for RowStructure: "+rowstruct);
+                throw new IllegalArgumentException("unknown case for RowStructure: "+rowstruct);
             }
             break;
         default:
-            throw new InternalError("unknown case for RowSetPart: "+datatypeStyle);
+            throw new IllegalArgumentException("unknown case for RowSetPart: "+datatypeStyle);
         }
     }
     private void checkFirstTypedHeader(JsonNode colNode) {
