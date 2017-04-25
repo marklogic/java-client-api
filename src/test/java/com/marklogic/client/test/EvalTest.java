@@ -104,29 +104,6 @@ public class EvalTest {
   }
 
   @Test
-  public void evalWithReader() throws IOException {
-    String inputText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor " +
-      "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation";
-    String javascript =
-      "var inputText;" +
-      "var output = new String();" +
-      "for ( i=0; i < 100; i++ ) {" +
-      "  output = output + inputText;" +
-      "}" +
-      "output;";
-    ServerEvaluationCall query = Common.evalClient.newServerEval()
-      .javascript(javascript)
-      .addVariable("inputText", inputText);
-    Reader response = query.evalAs(Reader.class);
-    String strVal = new BufferedReader(response).readLine();
-    StringBuilder expectedOutput = new StringBuilder();
-    for ( int i=0; i < 100; i++ ) {
-      expectedOutput.append(inputText);
-    }
-    assertEquals(expectedOutput.toString(), strVal);
-  }
-
-  @Test
   public void evalAndInvokeJavascript() throws DatatypeConfigurationException, JsonProcessingException, IOException {
     String javascript =
       "var myString;" +
