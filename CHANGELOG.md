@@ -3,7 +3,6 @@
 ## 4.0.0
 
 #### New Functionality
-- #392 - add shortcut addAs methods to DocumentWriteSet
 - #400 - Optic API
 - #402 - geo double precision and geo polygon search
 - #404 - add Kerberos support
@@ -29,7 +28,6 @@
 - #294 - DocumentPage.size was including metadata in counts but should not have
 - #365 - reduce duplicate code in JerseyServices
 - #371 - JAXBContext should be cached for improved performance
-- #380 - setOptimzeLevel should have been setOptimizeLevel
 - #421 - Some of the read handlers do not populate properly formats and mime-types when used with ResourceServices
 - #424 - remove logback dependency so slf4j works as it should
 - #436 - rename java-client-api-M.m.p.jar JAR to marklogic-client-api-M.m.p.jar
@@ -38,7 +36,6 @@
 - #524 - add support for markdown javadocs
 - #560 - support new 428 status code for missing content version
 - #582 - NullPointerException thrown while doing eval() with client object created with incorrect credentials
-- #587 - rename GeoSpatialOperator to GeospatialOperator
 - #610 - remove support for deprecated keyvalue endpoint
 - #621 - remove deprecated APIs
 - #651 - don't set the handle format from the descriptor if it's null
