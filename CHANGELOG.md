@@ -26,7 +26,6 @@
 - [#292](https://github.com/marklogic/java-client-api/issues/292) - support changes made in search:search response with extracted results
 - [#294](https://github.com/marklogic/java-client-api/issues/294) - DocumentPage.size was including metadata in counts but should not have
 - [#365](https://github.com/marklogic/java-client-api/issues/365) - reduce duplicate code in JerseyServices
-- [#371](https://github.com/marklogic/java-client-api/issues/371) - JAXBContext should be cached for improved performance
 - [#421](https://github.com/marklogic/java-client-api/issues/421) - Some of the read handlers do not populate properly formats and mime-types when used with ResourceServices
 - [#424](https://github.com/marklogic/java-client-api/issues/424) - remove logback dependency so slf4j works as it should
 - [#436](https://github.com/marklogic/java-client-api/issues/436) - rename java-client-api-M.m.p.jar JAR to marklogic-client-api-M.m.p.jar
