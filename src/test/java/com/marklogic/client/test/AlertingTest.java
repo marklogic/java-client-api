@@ -67,6 +67,7 @@ public class AlertingTest {
   private static QueryManager queryManager;
   private static TransformExtensionsManager transformManager;
   private static DatabaseClient adminClient = Common.connectAdmin();
+  private static final String RULE_NAME_WRITE_RULE_AS_TEST = "writeRuleAsTest";
 
   @AfterClass
   public static void teardown()
@@ -351,6 +352,7 @@ public class AlertingTest {
   {
     ruleManager.delete("notfavorited");
     ruleManager.delete("favorites");
+    ruleManager.delete(RULE_NAME_WRITE_RULE_AS_TEST);
   }
 
   @Test
@@ -478,5 +480,20 @@ public class AlertingTest {
     assertEquals("doc match 2", "notfavorited", ans2.iterator().next()
       .getName());
 
+  }
+
+  @Test
+  public void testWriteRuleAs() {
+    RuleDefinition definition = new RuleDefinition("original" + RULE_NAME_WRITE_RULE_AS_TEST,
+                "test to verify that writeRuleAs does not result in stackoverflow");
+    String query =
+            "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">" +
+            "<search:qtext>favorited:true</search:qtext>" +
+            "</search:search>";
+    StringHandle textQuery = new StringHandle(query).withFormat(Format.XML);
+    definition.importQueryDefinition(textQuery);
+
+    ruleManager.writeRuleAs(RULE_NAME_WRITE_RULE_AS_TEST, definition);
+    assertTrue("Rule was written with the name provided", ruleManager.exists(RULE_NAME_WRITE_RULE_AS_TEST));
   }
 }
