@@ -16,8 +16,10 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URISyntaxException;
@@ -32,7 +34,10 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import java.io.InputStream;
 public class HandleAccessorTest {
+    public static boolean fileInputStreamWasClosed;
+
 	@Test
     public void testContentAsString() throws URISyntaxException, IOException {
         // I'm purposely using a string with a non-ascii character to test 
@@ -47,8 +52,19 @@ public class HandleAccessorTest {
         assertEquals("Reader content mismatch", hola, 
             HandleAccessor.contentAsString(new ReaderHandle(new StringReader(hola))));
         assertEquals("File content mismatch", hola, 
-            HandleAccessor.contentAsString(new FileHandle(new File(filePath.toURI()))));
+            HandleAccessor.contentAsString(new FileHandle(new File(filePath.toURI()))));      
         assertEquals("InputStream content mismatch", hola, 
             HandleAccessor.contentAsString(new InputStreamHandle(filePath.openStream())));
+
+        InputStream fileInputStream = new FileInputStream(new File(filePath.toURI())) {
+                @Override
+                public void close() throws IOException {
+                    super.close();
+                    HandleAccessorTest.fileInputStreamWasClosed = true;
+                }
+            };
+        assertEquals("InputStream content mismatch", hola, 
+            HandleAccessor.contentAsString(new InputStreamHandle(fileInputStream)));
+        assertTrue(this.fileInputStreamWasClosed);
     }
 }
