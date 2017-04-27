@@ -54,13 +54,13 @@ public class FilteredForestConfigTest {
   private DataMovementManager moveMgr = client.newDataMovementManager();
 
   private ForestConfiguration forests = () -> new Forest[] {
-      new ForestImpl("host1", "openReplicaHost1", "alternateHost1", "databaseName1",
-        "forestName1", "forestId1", true, false),
-      new ForestImpl("host2", "openReplicaHost2", null, "databaseName2",
-        "forestName2", "forestId2", true, false),
-      new ForestImpl("host3", null, "alternateHost3", "databaseName3",
-        "forestName3", "forestId3", true, false)
-    };
+    new ForestImpl("host1", "openReplicaHost1", "alternateHost1", "databaseName1",
+      "forestName1", "forestId1", true, false),
+    new ForestImpl("host2", "openReplicaHost2", null, "databaseName2",
+      "forestName2", "forestId2", true, false),
+    new ForestImpl("host3", null, "alternateHost3", "databaseName3",
+      "forestName3", "forestId3", true, false)
+  };
 
   @Test
   public void testRename() {

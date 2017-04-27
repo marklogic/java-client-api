@@ -76,21 +76,25 @@ public class GenerateIndexConfig {
   public static void main(String[] args) throws IOException, ClassNotFoundException {
     String[] classes = new String[] {};
     Writer out = null;
-    for (int i=0; i < args.length; i++) {
-      String name = args[i];
-      if (name.startsWith("-") && name.length() > 1 && ++i < args.length) {
-        String argValue = args[i];
-        if ( "-classes".equals(name) ) {
-          classes = argValue.split("\\s+");
-        } else if ( "-file".equals(name) ) {
-          out= new FileWriter(argValue);
+    try {
+      for (int i=0; i < args.length; i++) {
+        String name = args[i];
+        if (name.startsWith("-") && name.length() > 1 && ++i < args.length) {
+          String argValue = args[i];
+          if ( "-classes".equals(name) ) {
+            classes = argValue.split("\\s+");
+          } else if ( "-file".equals(name) ) {
+            out= new FileWriter(argValue);
+          }
         }
       }
-    }
-    if ( out == null ) out = new OutputStreamWriter(System.out);
+      if ( out == null ) out = new OutputStreamWriter(System.out);
 
-    ObjectMapper mapper = new ObjectMapper();
-    generateConfig(classes, mapper, out);
+      ObjectMapper mapper = new ObjectMapper();
+      generateConfig(classes, mapper, out);
+    } finally {
+      if ( out != null ) out.close();
+    }
   }
 
   private static class AnnotationFound<T extends Annotation> {

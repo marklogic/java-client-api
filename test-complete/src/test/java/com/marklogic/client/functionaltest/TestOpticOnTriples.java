@@ -57,6 +57,7 @@ import com.marklogic.client.type.PlanPrefixer;
 import com.marklogic.client.type.PlanSystemColumn;
 import com.marklogic.client.type.PlanTripleOption;
 import com.marklogic.client.type.PlanTriplePatternSeq;
+import com.marklogic.client.type.PlanTriplePositionSeq;
 import com.marklogic.client.type.SemIriSeqVal;
 import com.marklogic.client.type.SemStoreExpr;
 
@@ -1459,6 +1460,133 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		jsonResults = jacksonHandle.get();		
 		// Should have null nodes returned.
 		assertTrue("No data should have been returned", jsonResults == null);	
+	}
+	
+	/* This test checks union instead of join over pattern value permutations.
+	 * 
+	 */
+	@Test
+	public void testPatternValuePermutations() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
+	{
+		System.out.println("In testPatternValuePermutations method");
+
+		// Create a new Plan.
+		RowManager rowMgr = client.newRowManager();
+		PlanBuilder p = rowMgr.newPlanBuilder();
+		PlanPrefixer  bb = p.prefixer("http://marklogic.com/baseball/players");
+
+		PlanColumn ageCol = p.col("age");
+		PlanColumn idCol = p.col("id");
+		PlanColumn nameCol = p.col("name");
+		
+		PlanColumn posCol = p.col("position");
+		
+		PlanTriplePositionSeq subjectSeq = p.subjectSeq(idCol);
+		PlanTriplePositionSeq predicateSeq = p.predicateSeq(bb.iri("/age"));
+		
+		PlanTriplePositionSeq objectSeq = p.objectSeq(p.xs.intVal(23), p.xs.intVal(19));
+		
+		PlanTriplePatternSeq patSeq = p.patternSeq(p.pattern(subjectSeq, predicateSeq, objectSeq),
+				p.pattern(idCol, bb.iri("name"), nameCol),
+				p.pattern(idCol, bb.iri("position"), posCol),
+				p.pattern(p.col("id"), p.sem.iri("http://marklogic.com/baseball/players/age"), p.col("age")));
+		ModifyPlan output = p.fromTriples(patSeq, "myPlayer")
+                             .orderBy(p.desc(ageCol))
+                             .select(
+	                                 p.as("PlayerName", nameCol), 
+	                                 p.as("PlayerPosition", posCol),
+                                     p.as("PlayerAge", ageCol)
+	                                );		
+		JacksonHandle jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(output, jacksonHandle);
+		JsonNode jsonResults = jacksonHandle.get();
+		JsonNode jsonBindingsNodes = jsonResults.path("rows");
+		JsonNode nodeVal = jsonBindingsNodes.path(0);
+		// Should have 2 nodes returned.		
+		assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodes.size());
+		assertEquals("Row 1 PlayerName value incorrect", "Bob Brian", nodeVal.path("PlayerName").path("value").asText());
+		assertEquals("Row 1 PlayerAge value incorrect", "23", nodeVal.path("PlayerAge").path("value").asText());
+		assertEquals("Row 1 PlayerPosition value incorrect", "Outfielder", nodeVal.path("PlayerPosition").path("value").asText());
+		
+		nodeVal = jsonBindingsNodes.path(1);
+		assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", nodeVal.path("PlayerName").path("value").asText());
+		assertEquals("Row 2 PlayerAge value incorrect", "19", nodeVal.path("PlayerAge").path("value").asText());
+		assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", nodeVal.path("PlayerPosition").path("value").asText());
+		
+		// Test for verifying that value permutations do not appear in the result rows. They should not be part of results.
+		// In the above plan we explicitly made a pattern to recover the ages.
+		PlanTriplePatternSeq patSeq1 = p.patternSeq(p.pattern(subjectSeq, predicateSeq, objectSeq));
+		ModifyPlan output1 = p.fromTriples(patSeq1, "myPlayer");		
+		JacksonHandle jacksonHandle1 = new JacksonHandle();
+		jacksonHandle1.setMimetype("application/json");
+
+		rowMgr.resultDoc(output1, jacksonHandle1);
+		JsonNode jsonResults1 = jacksonHandle1.get();
+		JsonNode jsonBindingsNodes1 = jsonResults1.path("rows");
+		JsonNode nodeVal1 = jsonBindingsNodes1.path(0);
+		// Should have 2 nodes returned.		
+		assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodes1.size());
+		assertTrue("Node not returned from testPatternValuePermutations method", 
+				jsonBindingsNodes1.path(0).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#005") ||
+				jsonBindingsNodes1.path(0).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#002"));
+		assertTrue("Node not returned from testPatternValuePermutations method", 
+				jsonBindingsNodes1.path(1).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#005") ||
+				jsonBindingsNodes1.path(1).get("myPlayer.id").get("value").asText().contains("http://marklogic.com/baseball/id#002"));
+		// Negative cases
+        PlanTriplePositionSeq objectSeqNeg = p.objectSeq(p.xs.intVal(123), p.xs.intVal(100));
+		
+		PlanTriplePatternSeq patSeqNeg = p.patternSeq(p.pattern(subjectSeq, predicateSeq, objectSeqNeg),
+				p.pattern(idCol, bb.iri("name"), nameCol),
+				p.pattern(idCol, bb.iri("position"), posCol),
+				p.pattern(p.col("id"), p.sem.iri("http://marklogic.com/baseball/players/age"), p.col("age")));
+		ModifyPlan outputNeg = p.fromTriples(patSeqNeg, "myPlayer")
+	             .orderBy(p.desc(ageCol))
+	             .select(
+			             p.as("PlayerName", nameCol), 
+			             p.as("PlayerPosition", posCol),
+	                     p.as("PlayerAge", ageCol)
+			           );
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(outputNeg, jacksonHandle);
+		JsonNode jsonResultsNeg = jacksonHandle.get();
+				
+		// Should have 0 nodes returned.		
+		assertTrue("Zero nodes not returned from testPatternValuePermutations method", jsonResultsNeg==null);
+				
+		PlanTriplePositionSeq objectSeqNeg1 = p.objectSeq(p.xs.intVal(23), p.xs.intVal(19), p.xs.intVal(-1));
+		
+		PlanTriplePatternSeq patSeqNeg1 = p.patternSeq(p.pattern(subjectSeq, predicateSeq, objectSeqNeg1),
+				p.pattern(idCol, bb.iri("name"), nameCol),
+				p.pattern(idCol, bb.iri("position"), posCol),
+				p.pattern(p.col("id"), p.sem.iri("http://marklogic.com/baseball/players/age"), p.col("age")));
+		ModifyPlan outputNeg1= p.fromTriples(patSeqNeg1, "myPlayer")
+	             .orderBy(p.desc(ageCol))
+	             .select(
+			             p.as("PlayerName", nameCol), 
+			             p.as("PlayerPosition", posCol),
+	                     p.as("PlayerAge", ageCol)
+			           );
+		jacksonHandle = new JacksonHandle();
+		jacksonHandle.setMimetype("application/json");
+
+		rowMgr.resultDoc(outputNeg1, jacksonHandle);
+		JsonNode jsonResultsNeg1 = jacksonHandle.get();
+		JsonNode jsonBindingsNodesNeg1 = jsonResultsNeg1.path("rows");
+		JsonNode nodeValNeg1 = jsonBindingsNodesNeg1.path(0);
+		// Should have 2 nodes returned.		
+		assertEquals("Two nodes not returned from testPatternValuePermutations method", 2, jsonBindingsNodesNeg1.size());
+		assertEquals("Row 1 PlayerName value incorrect", "Bob Brian", nodeValNeg1.path("PlayerName").path("value").asText());
+		assertEquals("Row 1 PlayerAge value incorrect", "23", nodeValNeg1.path("PlayerAge").path("value").asText());
+		assertEquals("Row 1 PlayerPosition value incorrect", "Outfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
+		
+		nodeValNeg1 = jsonBindingsNodesNeg1.path(1);
+		assertEquals("Row 2 PlayerName value incorrect", "Pedro Barrozo", nodeValNeg1.path("PlayerName").path("value").asText());
+		assertEquals("Row 2 PlayerAge value incorrect", "19", nodeValNeg1.path("PlayerAge").path("value").asText());
+		assertEquals("Row 2 PlayerPosition value incorrect", "Midfielder", nodeValNeg1.path("PlayerPosition").path("value").asText());
 	}
 	
 	@AfterClass

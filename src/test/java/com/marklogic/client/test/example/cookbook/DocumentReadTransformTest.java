@@ -28,16 +28,17 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.DocumentReadTransform;
 
 public class DocumentReadTransformTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		boolean succeeded = false;
-		try {
-			DocumentReadTransform.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentReadTransform example failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    boolean succeeded = false;
+    try {
+      DocumentReadTransform.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentReadTransform example failed", succeeded);
+  }
 }

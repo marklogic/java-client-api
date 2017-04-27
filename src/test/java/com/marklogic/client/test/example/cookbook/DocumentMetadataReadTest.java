@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentMetadataRead;
 
 public class DocumentMetadataReadTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentMetadataRead.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentMetadataRead example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentMetadataRead.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentMetadataRead example failed", succeeded);
+  }
 }

@@ -43,23 +43,23 @@ public interface SqlExpr {
     */
     public XsIntegerExpr bitLength(XsStringExpr str);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
-    * @param collation  The collation.
+    * @param collationURI  The collation URI.
     * @return  a XsStringExpr expression
     */
-    public XsStringExpr collatedString(XsStringExpr string, String collation);
+    public XsStringExpr collatedString(XsStringExpr string, String collationURI);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code>, and represents a collation tagged string in RDF.
+    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
-    * @param collation  The collation.
+    * @param collationURI  The collation URI.
     * @return  a XsStringExpr expression
     */
-    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collation);
+    public XsStringExpr collatedString(XsStringExpr string, XsStringExpr collationURI);
     /**
     * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
     * <p>
@@ -99,9 +99,30 @@ public interface SqlExpr {
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr datepart(XsStringExpr datepart, ItemExpr date);
-    public XsIntegerExpr day(ItemExpr arg1);
-    public XsStringExpr dayname(ItemExpr arg1);
-    public XsIntegerExpr hours(ItemExpr arg1);
+    /**
+    *  Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:day" target="mlserverdoc">sql:day</a>
+    * @param arg  The xs:genericDateTimeArg whose day component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr day(ItemExpr arg);
+    /**
+    * Returns an xs:string representing the dayname value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:dayname" target="mlserverdoc">sql:dayname</a>
+    * @param arg  The date whose dayname value will be returned.
+    * @return  a XsStringExpr expression
+    */
+    public XsStringExpr dayname(ItemExpr arg);
+    /**
+    *  Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:hours" target="mlserverdoc">sql:hours</a>
+    * @param arg  The genericDateTime whose hours component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr hours(ItemExpr arg);
     /**
     * Returns a string that that is the first argument with <var>length</var> characters removed starting at <var>start</var> and the second string has been inserted beginning at <var>start</var>.
     * <p>
@@ -168,9 +189,30 @@ public interface SqlExpr {
     * @return  a XsStringExpr expression
     */
     public XsStringExpr ltrim(XsStringExpr str);
-    public XsIntegerExpr minutes(ItemExpr arg1);
-    public XsIntegerExpr month(ItemExpr arg1);
-    public XsStringExpr monthname(ItemExpr arg1);
+    /**
+    *  Returns an xs:integer value between 0 to 59, both inclusive, representing the value of the minutes component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:minutes" target="mlserverdoc">sql:minutes</a>
+    * @param arg  The genericDateTime whose minutes component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr minutes(ItemExpr arg);
+    /**
+    *  Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:month" target="mlserverdoc">sql:month</a>
+    * @param arg  The genericDateTime whose month component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr month(ItemExpr arg);
+    /**
+    *  Returns month name, calculated from the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:monthname" target="mlserverdoc">sql:monthname</a>
+    * @param arg  The date whose month-name will be returned.
+    * @return  a XsStringExpr expression
+    */
+    public XsStringExpr monthname(ItemExpr arg);
     /**
     * Returns the length of the string "str" in bits.
     * <p>
@@ -179,7 +221,14 @@ public interface SqlExpr {
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr octetLength(XsStringExpr x);
-    public XsIntegerExpr quarter(ItemExpr arg1);
+    /**
+    *  Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:quarter" target="mlserverdoc">sql:quarter</a>
+    * @param arg  The genericDateTime whose quarter component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr quarter(ItemExpr arg);
     /**
     * Return a random number. This differs from xdmp:random in that the argument is a seed.
     * <p>
@@ -232,7 +281,14 @@ public interface SqlExpr {
     * @return  a XsStringExpr expression
     */
     public XsStringExpr rtrim(XsStringExpr str);
-    public XsDecimalExpr seconds(ItemExpr arg1);
+    /**
+    *  Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:seconds" target="mlserverdoc">sql:seconds</a>
+    * @param arg  The time whose seconds component will be returned.
+    * @return  a XsDecimalExpr expression
+    */
+    public XsDecimalExpr seconds(ItemExpr arg);
     /**
     * Returns the sign of number x.
     * <p>
@@ -269,7 +325,16 @@ public interface SqlExpr {
     * @return  a ItemExpr expression
     */
     public ItemExpr timestampadd(XsStringExpr dateTimeType, XsIntExpr value, ItemExpr timestamp);
-    public XsIntegerExpr timestampdiff(XsStringExpr arg1, ItemExpr arg2, ItemExpr arg3);
+    /**
+    * Returns the difference in dateTimeType field of two given timestamps.
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampdiff" target="mlserverdoc">sql:timestampdiff</a>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt><p>SQL_TSI_FRAC_SECOND</p></dt> <dd>nano seconds</dd> <dt><p>SQL_TSI_SECOND</p></dt> <dd>seconds</dd> <dt><p>SQL_TSI_MINUTE</p></dt> <dd>minute</dd> <dt><p>SQL_TSI_HOUR</p></dt> <dd>hour</dd> <dt><p>SQL_TSI_DAY</p></dt> <dd>day</dd> <dt><p>SQL_TSI_WEEK</p></dt> <dd>week</dd> <dt><p>SQL_TSI_MONTH</p></dt> <dd>month</dd> <dt><p>SQL_TSI_QUARTER</p></dt> <dd>quarter</dd> <dt><p>SQL_TSI_YEAR</p></dt> <dd>year</dd> </dl>
+    * @param timestamp1  The integer to add to the given dateTimeType field of the third parameter.
+    * @param timestamp2  The xs:dateTime timestamp to which addition has to take place.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr timestampdiff(XsStringExpr dateTimeType, ItemExpr timestamp1, ItemExpr timestamp2);
     /**
     * Return a string that removes leading empty spaces in the input string.
     * <p>
@@ -278,8 +343,29 @@ public interface SqlExpr {
     * @return  a XsStringExpr expression
     */
     public XsStringExpr trim(XsStringExpr str);
-    public XsIntegerExpr week(ItemExpr arg1);
+    /**
+    *  Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:week" target="mlserverdoc">sql:week</a>
+    * @param arg  The dateTime/date/string whose day component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr week(ItemExpr arg);
     public XsIntegerExpr weekday(ItemExpr arg1);
-    public XsIntegerExpr year(ItemExpr arg1);
-    public XsIntegerExpr yearday(ItemExpr arg1);
+    /**
+    *  Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:year" target="mlserverdoc">sql:year</a>
+    * @param arg  The dateTime/date/string whose day component will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr year(ItemExpr arg);
+    /**
+    * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * <p>
+    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:yearday" target="mlserverdoc">sql:yearday</a>
+    * @param arg  The xs:genericDateTimeArg whose days of the year will be returned.
+    * @return  a XsIntegerExpr expression
+    */
+    public XsIntegerExpr yearday(ItemExpr arg);
 }

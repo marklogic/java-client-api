@@ -24,16 +24,16 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.JavascriptResourceExtension;
 
 public class JavascriptExtensionTest {
-	@Test
-	public void testMain() {
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		boolean succeeded = false;
-		try {
-			JavascriptResourceExtension.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("JavascriptResourceExtension example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    boolean succeeded = false;
+    try {
+      JavascriptResourceExtension.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("JavascriptResourceExtension example failed", succeeded);
+  }
 }

@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.RawCombinedSearch;
 
 public class RawCombinedSearchTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			RawCombinedSearch.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("RawCombinedSearch example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      RawCombinedSearch.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("RawCombinedSearch example failed", succeeded);
+  }
 }

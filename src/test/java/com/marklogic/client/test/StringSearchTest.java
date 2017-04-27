@@ -55,261 +55,229 @@ import com.marklogic.client.util.RequestLogger;
 
 public class StringSearchTest {
   @SuppressWarnings("unused")
-  private static final Logger logger = (Logger) LoggerFactory
-      .getLogger(StringSearchTest.class);
+  private static final Logger logger = (Logger) LoggerFactory.getLogger(StringSearchTest.class);
 
-    @BeforeClass
-    public static void beforeClass() {
-        Common.connect();
-        Common.connectAdmin();
-        //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+    Common.connectAdmin();
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+  }
+
+  @AfterClass
+  public static void afterClass() {
+  }
+
+  @Test
+  public void testStringSearch()
+    throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException,
+    ResourceNotFoundException, ResourceNotResendableException
+  {
+    String optionsName = writeOptions();
+
+    QueryManager queryMgr = Common.client.newQueryManager();
+
+    StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+    qdef.setCriteria("grandchild1 OR grandchild4");
+    qdef.setDirectory("/sample/");
+
+    SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
+    assertFalse(results.getMetrics().getTotalTime() == -1);
+
+    FacetResult[] facets = results.getFacetResults();
+    assertNotNull(facets);
+    assertEquals("expected 1 facet", 1, facets.length);
+    FacetValue[] facetVals = facets[0].getFacetValues();
+    assertEquals("expected 6 facet values", 6, facetVals.length);
+
+    MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertNotNull(summaries);
+    assertEquals("expected 2 results", 2, summaries.length);
+  }
+
+  @Test
+  public void testStringSearch2() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+
+    StringQueryDefinition qdef = queryMgr.newStringDefinition();
+    qdef.setCriteria("10");
+    qdef.setDirectory("/sample/");
+
+    SearchHandle handle = new SearchHandle();
+    handle = queryMgr.search(qdef, handle);
+    assertNotNull(handle);
+
+    MatchDocumentSummary[] summaries = handle.getMatchResults();
+    assertNotNull(summaries);
+    assertEquals("expected 2 results", 2, summaries.length);
+
+    for ( MatchDocumentSummary summary : summaries ) {
+      MatchLocation[] locations = summary.getMatchLocations();
+      assertEquals("expected 1 match location", 1, locations.length);
+      for ( MatchLocation location : locations ) {
+        assertNotNull(location.getAllSnippetText());
+      }
     }
+  }
 
-    @AfterClass
-    public static void afterClass() {
-    }
+  @Test
+  public void testStringSearch4()
+    throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException,
+    ResourceNotResendableException
+  {
+    String optionsName = writeOptions();
 
-    @Test
-    public void testStringSearch()
-    throws IOException, ParserConfigurationException, SAXException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        String optionsName = writeOptions();
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+    StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+    qdef.setCriteria("grandchild1 OR grandchild4");
+    qdef.setDirectory("/sample/");
 
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
-        qdef.setCriteria("grandchild1 OR grandchild4");
-        qdef.setDirectory("/sample/");
+    queryMgr.setView(QueryView.FACETS);
+    SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
 
-        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
-        assertFalse(results.getMetrics().getTotalTime() == -1);
+    FacetResult[] facets = results.getFacetResults();
+    assertNotNull(facets);
+    assertEquals("expected 1 facet", 1, facets.length);
+    FacetValue[] facetVals = facets[0].getFacetValues();
+    assertEquals("expected 6 facet values", 6, facetVals.length);
 
-        FacetResult[] facets = results.getFacetResults();
-        assertNotNull(facets);
-        assertEquals("expected 1 facet", 1, facets.length);
-        FacetValue[] facetVals = facets[0].getFacetValues();
-        assertEquals("expected 6 facet values", 6, facetVals.length);
+    MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertTrue(summaries == null || summaries.length == 0);
 
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertNotNull(summaries);
-        assertEquals("expected 2 results", 2, summaries.length);
-    }
+    queryMgr.setView(QueryView.RESULTS);
+    results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
 
-    @Test
-    public void testStringSearch2() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
+    facets = results.getFacetResults();
+    assertTrue(facets == null || facets.length == 0);
 
-        StringQueryDefinition qdef = queryMgr.newStringDefinition();
-        qdef.setCriteria("10");
-        qdef.setDirectory("/sample/");
+    summaries = results.getMatchResults();
+    assertNotNull(summaries);
+    assertEquals("expected 2 results", 2, summaries.length);
+    assertEquals("empty-snippet", results.getSnippetTransformType());
+  }
 
-        SearchHandle handle = new SearchHandle();
-        handle = queryMgr.search(qdef, handle);
-        assertNotNull(handle);
+  @Test
+  public void testSearchHandle() throws Exception {
+    String xml =
+      "<product xmlns='http://example.com/products'>" + "<description xmlns='' xml:lang='en'>some description</description>" + "</product>";
 
-        MatchDocumentSummary[] summaries = handle.getMatchResults();
-        assertNotNull(summaries);
-        assertEquals("expected 2 results", 2, summaries.length);
+    ByteArrayOutputStream out = new ByteArrayOutputStream();
+    RequestLogger logger = Common.client.newLogger(out);
+    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections("xml", "products");
+    Common.client.newXMLDocumentManager().writeAs("test.xml", meta, xml);
+    QueryManager queryMgr = Common.client.newQueryManager();
+    queryMgr.startLogging(logger);
+    RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(new StringHandle(
+      "<search xmlns='http://marklogic.com/appservices/search'>" + "<options>" + "<extract-document-data selected='all'>" + "<extract-path>//description[@xml:lang='en']</extract-path>" + "</extract-document-data>" + "<constraint name='myFacet'>" + "<range type='xs:string' facet='true'>" + "<element name='grandchild'/>" + "</range>" + "</constraint>" + "<extract-metadata>" + "<qname elem-name='description'/>" + "</extract-metadata>" + "<return-constraints>true</return-constraints>" + "<return-facets>true</return-facets>" + "<return-metrics>true</return-metrics>" + "<return-plan>true</return-plan>" + "<return-qtext>true</return-qtext>" + "<return-query>true</return-query>" + "<return-results>true</return-results>" + "<debug>true</debug>" + "</options>" + "<query>" + "<and-query>" + "<collection-query><uri>xml</uri></collection-query>" + "<collection-query><uri>products</uri></collection-query>" + "</and-query>" + "</query>" + "</search>"));
+    queryMgr.setView(QueryView.ALL);
+    SearchHandle results = queryMgr.search(query, new SearchHandle());
+    assertTrue(results.getConstraintIterator(new StringHandle()).next().get().startsWith("<search:constraint"));
+    assertTrue(results.getConstraintNames()[0].equals("myFacet"));
+    assertTrue(results.getConstraint("myFacet", new StringHandle()).get().startsWith("<search:constraint"));
+    assertEquals("myFacet", results.getFacetNames()[0]);
+    SearchMetrics metrics = results.getMetrics();
+    assertTrue(metrics.getFacetResolutionTime() >= 0);
+    assertTrue(metrics.getQueryResolutionTime() >= 0);
+    assertTrue(metrics.getSnippetResolutionTime() >= 0);
+    assertTrue(metrics.getMetadataResolutionTime() >= 0);
+    assertTrue(metrics.getExtractResolutionTime() >= 0);
+    assertTrue(metrics.getTotalTime() >= 0);
+    assertTrue(results.getPlan(new StringHandle()).get().startsWith("<search:plan"));
+    assertEquals("plan", results.getPlan().getFirstChild().getLocalName());
+    assertEquals("SEARCH-FLWOR", results.getReports()[0].getId());
+    assertTrue(results.getQuery(new StringHandle()).get().startsWith("<search:query"));
+    assertEquals("snippet", results.getSnippetTransformType());
+    assertTrue(results.getWarnings().length == 0);
+    assertTrue(out.toString().startsWith("searched"));
+  }
 
-        for (MatchDocumentSummary summary : summaries) {
-          MatchLocation[] locations = summary.getMatchLocations();
-          assertEquals("expected 1 match location", 1, locations.length);
-          for (MatchLocation location : locations) {
-            assertNotNull(location.getAllSnippetText());
-          }
-        }
-    }
+  @Test
+  public void testFailedSearch() throws IOException {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    queryMgr.setView(QueryView.RESULTS);
 
-    @Test
-    public void testStringSearch4()
-    throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        String optionsName = writeOptions();
+    StringQueryDefinition qdef = queryMgr.newStringDefinition();
+    qdef.setCriteria("criteriaThatShouldNotMatchAnyDocument");
+    qdef.setDirectory("/sample/");
 
-        QueryManager queryMgr = Common.client.newQueryManager();
+    SearchHandle results = queryMgr.search(qdef, new SearchHandle());
+    assertNotNull(results);
 
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
-        qdef.setCriteria("grandchild1 OR grandchild4");
-        qdef.setDirectory("/sample/");
+    MatchDocumentSummary[] summaries = results.getMatchResults();
+    assertTrue(summaries == null || summaries.length == 0);
+  }
 
-        queryMgr.setView(QueryView.FACETS);
-        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
+  @Test
+  public void testJSON()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+  {
+    String optionsName = writeOptions();
 
-        FacetResult[] facets = results.getFacetResults();
-        assertNotNull(facets);
-        assertEquals("expected 1 facet", 1, facets.length);
-        FacetValue[] facetVals = facets[0].getFacetValues();
-        assertEquals("expected 6 facet values", 6, facetVals.length);
+    QueryManager queryMgr = Common.client.newQueryManager();
 
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertTrue(summaries == null || summaries.length == 0);
+    StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
+    qdef.setCriteria("grandchild1 OR grandchild4");
+    qdef.setDirectory("/sample/");
 
-        queryMgr.setView(QueryView.RESULTS);
-        results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
+    queryMgr.setView(QueryView.FACETS);
 
-        facets = results.getFacetResults();
-        assertTrue(facets == null || facets.length == 0);
+    // create a handle for the search results
+    StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
 
-        summaries = results.getMatchResults();
-        assertNotNull(summaries);
-        assertEquals("expected 2 results", 2, summaries.length);
-        assertEquals("empty-snippet", results.getSnippetTransformType());
-    }
+    // run the search
+    queryMgr.search(qdef, resultsHandle);
 
-    @Test
-    public void testSearchHandle() throws Exception {
-      String xml = 
-        "<product xmlns='http://example.com/products'>" +
-          "<description xmlns='' xml:lang='en'>some description</description>" +
-        "</product>";
+    assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
+  }
 
-      ByteArrayOutputStream out = new ByteArrayOutputStream();
-      RequestLogger logger = Common.client.newLogger(out);
-      DocumentMetadataHandle meta = new DocumentMetadataHandle()
-        .withCollections("xml", "products");
-      Common.client.newXMLDocumentManager().writeAs("test.xml", meta, xml);
-      QueryManager queryMgr = Common.client.newQueryManager();
-      queryMgr.startLogging(logger);
-      RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(
-          new StringHandle(
-            "<search xmlns='http://marklogic.com/appservices/search'>" +
-              "<options>" +
-                "<extract-document-data selected='all'>" +
-                  "<extract-path>//description[@xml:lang='en']</extract-path>" +
-                "</extract-document-data>" +
-                "<constraint name='myFacet'>" +
-                  "<range type='xs:string' facet='true'>" +
-                    "<element name='grandchild'/>" +
-                  "</range>" +
-                "</constraint>" +
-                "<extract-metadata>" +
-                  "<qname elem-name='description'/>" +
-                "</extract-metadata>" +
-                "<return-constraints>true</return-constraints>" +
-                "<return-facets>true</return-facets>" +
-                "<return-metrics>true</return-metrics>" +
-                "<return-plan>true</return-plan>" +
-                "<return-qtext>true</return-qtext>" +
-                "<return-query>true</return-query>" +
-                "<return-results>true</return-results>" +
-                "<debug>true</debug>" +
-              "</options>" +
-              "<query>" +
-                "<and-query>" +
-                  "<collection-query><uri>xml</uri></collection-query>" +
-                  "<collection-query><uri>products</uri></collection-query>" +
-                "</and-query>" +
-              "</query>" +
-            "</search>"
-          )
-      );
-      queryMgr.setView(QueryView.ALL);
-      SearchHandle results = queryMgr.search(query, new SearchHandle());
-      assertTrue(results.getConstraintIterator(new StringHandle()).next().get().startsWith("<search:constraint"));
-      assertTrue(results.getConstraintNames()[0].equals("myFacet"));
-      assertTrue(results.getConstraint("myFacet", new StringHandle()).get().startsWith("<search:constraint"));
-      assertEquals("myFacet", results.getFacetNames()[0]);
-      SearchMetrics metrics = results.getMetrics();
-      assertTrue(metrics.getFacetResolutionTime() >= 0);
-      assertTrue(metrics.getQueryResolutionTime() >= 0);
-      assertTrue(metrics.getSnippetResolutionTime() >= 0);
-      assertTrue(metrics.getMetadataResolutionTime() >= 0);
-      assertTrue(metrics.getExtractResolutionTime() >= 0);
-      assertTrue(metrics.getTotalTime() >= 0);
-      assertTrue(results.getPlan(new StringHandle()).get().startsWith("<search:plan"));
-      assertEquals("plan", results.getPlan().getFirstChild().getLocalName());
-      assertEquals("SEARCH-FLWOR", results.getReports()[0].getId());
-      assertTrue(results.getQuery(new StringHandle()).get().startsWith("<search:query"));
-      assertEquals("snippet", results.getSnippetTransformType());
-      assertTrue(results.getWarnings().length == 0);
-      assertTrue(out.toString().startsWith("searched"));
-    }
+  @Test
+  public void test_issue644() {
+    QueryManager queryMgr = Common.client.newQueryManager();
+    String queryText = "queryThatMatchesNothing";
+    RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(new StringHandle(
+      "<search xmlns='http://marklogic.com/appservices/search'>" +
+        "<options>" +
+          "<extract-document-data selected='all'>" +
+            "<extract-path>/*</extract-path>" +
+          "</extract-document-data>" +
+          "<return-metrics>true</return-metrics>" +
+        "</options>" +
+        "<query>" +
+          "<term-query><text>" + queryText + "</text></term-query>" +
+        "</query>" +
+      "</search>"));
+    queryMgr.search(query, new SearchHandle());
+    // we didn't throw an Exception, which means this issue is resolved
+  }
 
-    @Test
-    public void testFailedSearch() throws IOException {
-        QueryManager queryMgr = Common.client.newQueryManager();
-        queryMgr.setView(QueryView.RESULTS);
+  private String writeOptions()
+    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
+  {
+    String optionsName = "facets";
 
-        StringQueryDefinition qdef = queryMgr.newStringDefinition();
-        qdef.setCriteria("criteriaThatShouldNotMatchAnyDocument");
-        qdef.setDirectory("/sample/");
-
-        SearchHandle results = queryMgr.search(qdef, new SearchHandle());
-        assertNotNull(results);
-
-        MatchDocumentSummary[] summaries = results.getMatchResults();
-        assertTrue(summaries == null || summaries.length == 0);
-    }
-
-    @Test
-    public void testJSON()
-    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        String optionsName = writeOptions();
-
-        QueryManager queryMgr = Common.client.newQueryManager();
-
-        StringQueryDefinition qdef = queryMgr.newStringDefinition(optionsName);
-        qdef.setCriteria("grandchild1 OR grandchild4");
-        qdef.setDirectory("/sample/");
-
-        queryMgr.setView(QueryView.FACETS);
-
-        // create a handle for the search results
-        StringHandle resultsHandle = new StringHandle().withFormat(Format.JSON);
-
-        // run the search
-        queryMgr.search(qdef, resultsHandle);
-
-        assertEquals("{", resultsHandle.get().substring(0, 1)); // It's JSON, right?
-    }
-
-    @Test
-    public void test_issue644() {
-      QueryManager queryMgr = Common.client.newQueryManager();
-      String queryText = "queryThatMatchesNothing";
-      RawCombinedQueryDefinition query = queryMgr.newRawCombinedQueryDefinition(
-          new StringHandle(
-            "<search xmlns='http://marklogic.com/appservices/search'>" +
-              "<options>" +
-                "<extract-document-data selected='all'>" +
-                  "<extract-path>/*</extract-path>" +
-                "</extract-document-data>" +
-                "<return-metrics>true</return-metrics>" +
-              "</options>" +
-              "<query>" +
-                "<term-query><text>" + queryText + "</text></term-query>" +
-              "</query>" +
-            "</search>"
-          )
-      );
-      queryMgr.search(query, new SearchHandle());
-      // we didn't throw an Exception, which means this issue is resolved
-    }
-
-    private String writeOptions()
-    throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        String optionsName = "facets";
-
-        // Get back facets...
-        String options = 
-          "{\"options\": " +
-              "{   \"constraint\": " +
-                  "[{\"name\":\"grandchild\", \"range\": " +
-                      "{   \"type\":\"xs:string\", \"collation\":\"http://marklogic.com/collation/\"," +
-                          "\"element\":{\"name\":\"grandchild\"}," +
-                          "\"facet\":true" +
-                      "}" +
-                  "}]," +
-                  "\"transform-results\": {\"apply\": \"empty-snippet\"}" +
+    // Get back facets...
+    String options =
+      "{\"options\": " +
+        "{ \"constraint\": " +
+            "[{\"name\":\"grandchild\", \"range\": " +
+              "{   \"type\":\"xs:string\", \"collation\":\"http://marklogic.com/collation/\"," +
+                "\"element\":{\"name\":\"grandchild\"}," +
+                "\"facet\":true" +
               "}" +
-          "}";
+            "}]," +
+          "\"transform-results\": {\"apply\": \"empty-snippet\"}" +
+        "}" +
+      "}";
 
-        QueryOptionsManager queryOptionsMgr =
-          Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    QueryOptionsManager queryOptionsMgr =
+      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
-        queryOptionsMgr.writeOptions(optionsName, new StringHandle(options).withFormat(Format.JSON));
+    queryOptionsMgr.writeOptions(optionsName, new StringHandle(options).withFormat(Format.JSON));
 
-        return optionsName;
-    }
+    return optionsName;
+  }
 }

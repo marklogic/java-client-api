@@ -86,18 +86,20 @@ public class UrisToWriterListenerExamples {
     writer.close();
 
     // start interject a test
-    BufferedReader reader1 = new BufferedReader(new FileReader("uriCache.txt"));
-    assertEquals(3, reader1.lines().count());
+    try ( BufferedReader reader1 = new BufferedReader(new FileReader("uriCache.txt")) ) {
+      assertEquals(3, reader1.lines().count());
+    }
     // end interject a test
 
     // now we have the uris, let's step through them
-    BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
-    QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
-      .onUrisReady(new DeleteListener())
-      .onQueryFailure(exception-> exception.printStackTrace());
-    JobTicket ticket = dataMovementManager.startJob(performDelete);
-    performDelete.awaitCompletion();
-    dataMovementManager.stopJob(ticket);
+    try ( BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt")) ) {
+      QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
+        .onUrisReady(new DeleteListener())
+        .onQueryFailure(exception-> exception.printStackTrace());
+      JobTicket ticket = dataMovementManager.startJob(performDelete);
+      performDelete.awaitCompletion();
+      dataMovementManager.stopJob(ticket);
+    }
     // end copy from class javadoc in src/main/java/com/marklogic/datamovement/UrisToWriterListener.java
 
     assertEquals(0, client.newQueryManager().search(collectionQuery, new SearchHandle()).getTotalResults());

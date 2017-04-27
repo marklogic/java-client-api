@@ -27,16 +27,17 @@ import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.example.extension.BatchManagerExample;
 
 public class BatchManagerTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException {
-		boolean succeeded = false;
-		try {
-			BatchManagerExample.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("BatchExample failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
+    boolean succeeded = false;
+    try {
+      BatchManagerExample.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("BatchExample failed", succeeded);
+  }
 }

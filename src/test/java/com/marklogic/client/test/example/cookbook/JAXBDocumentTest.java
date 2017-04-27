@@ -26,17 +26,17 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.JAXBDocument;
 
 public class JAXBDocumentTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			JAXBDocument.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		}
-		assertTrue("JAXBDocument example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      JAXBDocument.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (JAXBException e) {
+      e.printStackTrace();
+    }
+    assertTrue("JAXBDocument example failed", succeeded);
+  }
 }

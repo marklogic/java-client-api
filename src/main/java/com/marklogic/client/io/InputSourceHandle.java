@@ -60,11 +60,11 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * <p>Always call {@link #close} when finished with this handle to release the resources.</p>
  */
 public class InputSourceHandle
-	extends BaseHandle<InputStream, OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle, ContentHandle<InputSource>,
+  extends BaseHandle<InputStream, OutputStreamSender>
+  implements OutputStreamSender, BufferableHandle, ContentHandle<InputSource>,
     XMLReadHandle, XMLWriteHandle,
     StructureReadHandle, StructureWriteHandle,
-		Closeable
+    Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(InputSourceHandle.class);
 
@@ -93,7 +93,7 @@ public class InputSourceHandle
       public <C> ContentHandle<C> newHandle(Class<C> type) {
         @SuppressWarnings("unchecked")
         ContentHandle<C> handle = isHandled(type) ?
-          (ContentHandle<C>) new InputSourceHandle() : null;
+                                  (ContentHandle<C>) new InputSourceHandle() : null;
         return handle;
       }
     };

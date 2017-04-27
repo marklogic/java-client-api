@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.handle.URIHandleExample;
 
 public class URIHandleTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			URIHandleExample.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("URIHandleExample failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      URIHandleExample.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("URIHandleExample failed", succeeded);
+  }
 }

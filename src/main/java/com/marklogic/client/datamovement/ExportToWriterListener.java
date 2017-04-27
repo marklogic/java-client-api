@@ -62,8 +62,7 @@ public class ExportToWriterListener extends ExportListener {
 
   @Override
   public void processEvent(QueryBatch batch) {
-    try {
-      DocumentPage docs = getDocs(batch);
+    try ( DocumentPage docs = getDocs(batch) ) {
       synchronized(writer) {
         for ( DocumentRecord doc : docs ) {
           Format format = doc.getFormat();

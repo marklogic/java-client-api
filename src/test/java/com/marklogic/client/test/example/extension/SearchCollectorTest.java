@@ -30,18 +30,19 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.extension.SearchCollectorExample;
 
 public class SearchCollectorTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		boolean succeeded = false;
-		try {
-			SearchCollectorExample.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (ParserConfigurationException e) {
-			e.printStackTrace();
-		}
-		assertTrue("SearchCollectorExample failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    boolean succeeded = false;
+    try {
+      SearchCollectorExample.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (ParserConfigurationException e) {
+      e.printStackTrace();
+    }
+    assertTrue("SearchCollectorExample failed", succeeded);
+  }
 }

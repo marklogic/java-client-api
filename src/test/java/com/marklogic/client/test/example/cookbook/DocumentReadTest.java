@@ -26,17 +26,17 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentRead;
 
 public class DocumentReadTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentRead.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		} catch (XPathExpressionException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentRead example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentRead.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    } catch (XPathExpressionException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentRead example failed", succeeded);
+  }
 }

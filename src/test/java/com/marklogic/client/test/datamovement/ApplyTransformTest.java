@@ -86,19 +86,19 @@ public class ApplyTransformTest {
     StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test1");
 
     ServerTransform transform = new ServerTransform(transformName1)
-        .addParameter("newValue", "test1a");
+      .addParameter("newValue", "test1a");
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE);
     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
-        .onUrisReady(listener);
+      .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
     moveMgr.stopJob(ticket);
 
     JsonNode docContents = docMgr.readAs(collection + "/test1.json", JsonNode.class);
     assertEquals( "the transform should have changed testProperty to 'test1a'",
-        "test1a", docContents.get("testProperty").textValue() );
+      "test1a", docContents.get("testProperty").textValue() );
   }
 
   @Test
@@ -109,12 +109,12 @@ public class ApplyTransformTest {
 
     StructuredQueryDefinition query = sqb.value(sqb.jsonProperty("testProperty"), "test2");
     ServerTransform transform = new ServerTransform(transformName2)
-        .addParameter("newValue", "test2a");
+      .addParameter("newValue", "test2a");
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.IGNORE);
     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
-        .onUrisReady(listener);
+      .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
     moveMgr.stopJob(ticket);
@@ -143,7 +143,7 @@ public class ApplyTransformTest {
     query2.setCollections(collection);
     final AtomicInteger count2 = new AtomicInteger(0);
     ServerTransform transform = new ServerTransform(transformName1)
-        .addParameter("newValue", "test3a");
+      .addParameter("newValue", "test3a");
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE)
