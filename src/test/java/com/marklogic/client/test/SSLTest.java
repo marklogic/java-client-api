@@ -60,7 +60,7 @@ public class SSLTest {
     DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
 
 
-    String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
+    String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLException: Unrecognized SSL message, plaintext connection?";
     String exception = "";
 
     try {
