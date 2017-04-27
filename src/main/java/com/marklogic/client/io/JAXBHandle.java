@@ -339,7 +339,7 @@ public class JAXBHandle<C>
     @Override
     public <C> ContentHandle<C> newHandle(Class<C> type) {
       ContentHandle<C> handle = isHandled(type) ?
-        (ContentHandle<C>) new JAXBHandle<>(factoryContext) : null;
+                                (ContentHandle<C>) new JAXBHandle<>(factoryContext) : null;
       return handle;
     }
   }

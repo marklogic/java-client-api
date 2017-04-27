@@ -32,69 +32,70 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 
 public class ServerConfigurationManagerTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connectAdmin();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connectAdmin();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testSetGet()
-	throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException {
-		ServerConfigurationManager serverConfig = Common.adminClient.newServerConfigManager();
+  @Test
+  public void testSetGet()
+    throws IOException, FailedRequestException, ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException
+  {
+    ServerConfigurationManager serverConfig = Common.adminClient.newServerConfigManager();
 
-		assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
+    assertNull("Initial query option validation not null", serverConfig.getQueryOptionValidation());
 
-		serverConfig.readConfiguration();
+    serverConfig.readConfiguration();
 
-		Boolean initialQueryValid      = serverConfig.getQueryValidation();
-		Boolean initialOptionValid     = serverConfig.getQueryOptionValidation();
-		String  initialReadTrans       = serverConfig.getDefaultDocumentReadTransform();
-		Boolean initialReadTransAll    = serverConfig.getDefaultDocumentReadTransformAll();
-		Boolean initialRequestLog      = serverConfig.getServerRequestLogging();
-		UpdatePolicy initialVersionReq = serverConfig.getUpdatePolicy();
+    Boolean initialQueryValid      = serverConfig.getQueryValidation();
+    Boolean initialOptionValid     = serverConfig.getQueryOptionValidation();
+    String  initialReadTrans       = serverConfig.getDefaultDocumentReadTransform();
+    Boolean initialReadTransAll    = serverConfig.getDefaultDocumentReadTransformAll();
+    Boolean initialRequestLog      = serverConfig.getServerRequestLogging();
+    UpdatePolicy initialVersionReq = serverConfig.getUpdatePolicy();
 
-		Boolean      modQueryValid   = initialQueryValid   ? false : true;
-		Boolean      modOptionValid  = initialOptionValid  ? false : true;
-		String       modReadTrans    = "modifiedReadTransform";
-		Boolean      modReadTransAll = initialReadTransAll ? false : true;
-		Boolean      modRequestLog   = initialOptionValid  ? false : true;
-		UpdatePolicy modVersionReq   = (initialVersionReq == UpdatePolicy.VERSION_OPTIONAL) ?
-				UpdatePolicy.VERSION_REQUIRED : UpdatePolicy.VERSION_OPTIONAL;
+    Boolean      modQueryValid   = initialQueryValid   ? false : true;
+    Boolean      modOptionValid  = initialOptionValid  ? false : true;
+    String       modReadTrans    = "modifiedReadTransform";
+    Boolean      modReadTransAll = initialReadTransAll ? false : true;
+    Boolean      modRequestLog   = initialOptionValid  ? false : true;
+    UpdatePolicy modVersionReq   = (initialVersionReq == UpdatePolicy.VERSION_OPTIONAL) ?
+                                   UpdatePolicy.VERSION_REQUIRED : UpdatePolicy.VERSION_OPTIONAL;
 
-		serverConfig = Common.adminClient.newServerConfigManager();
-		serverConfig.setQueryValidation(modQueryValid);
-		serverConfig.setQueryOptionValidation(modOptionValid);
-		serverConfig.setDefaultDocumentReadTransform(modReadTrans);
-		serverConfig.setDefaultDocumentReadTransformAll(modReadTransAll);
-		serverConfig.setServerRequestLogging(modRequestLog);
-		serverConfig.setUpdatePolicy(modVersionReq);
-		serverConfig.writeConfiguration();
+    serverConfig = Common.adminClient.newServerConfigManager();
+    serverConfig.setQueryValidation(modQueryValid);
+    serverConfig.setQueryOptionValidation(modOptionValid);
+    serverConfig.setDefaultDocumentReadTransform(modReadTrans);
+    serverConfig.setDefaultDocumentReadTransformAll(modReadTransAll);
+    serverConfig.setServerRequestLogging(modRequestLog);
+    serverConfig.setUpdatePolicy(modVersionReq);
+    serverConfig.writeConfiguration();
 
-		serverConfig = Common.adminClient.newServerConfigManager();
-		serverConfig.readConfiguration();
-		assertEquals("Failed to change query validation",
-				modQueryValid,   serverConfig.getQueryValidation());
-		assertEquals("Failed to change query options validation",
-				modOptionValid,  serverConfig.getQueryOptionValidation());
-		assertEquals("Failed to change document read transform",
-				modReadTrans,    serverConfig.getDefaultDocumentReadTransform());
-		assertEquals("Failed to change document read transform all",
-				modReadTransAll, serverConfig.getDefaultDocumentReadTransformAll());
-		assertEquals("Failed to change server request logging",
-				modRequestLog,   serverConfig.getServerRequestLogging());
-		assertEquals("Failed to change update policy ",
-				modVersionReq,   serverConfig.getUpdatePolicy());
-		
-		serverConfig = Common.adminClient.newServerConfigManager();
-		serverConfig.setQueryOptionValidation(initialOptionValid);
-		serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
-		serverConfig.setDefaultDocumentReadTransformAll(initialReadTransAll);
-		serverConfig.setServerRequestLogging(initialRequestLog);
-		serverConfig.setUpdatePolicy(initialVersionReq);
-		serverConfig.writeConfiguration();
-	}
+    serverConfig = Common.adminClient.newServerConfigManager();
+    serverConfig.readConfiguration();
+    assertEquals("Failed to change query validation",
+      modQueryValid,   serverConfig.getQueryValidation());
+    assertEquals("Failed to change query options validation",
+      modOptionValid,  serverConfig.getQueryOptionValidation());
+    assertEquals("Failed to change document read transform",
+      modReadTrans,    serverConfig.getDefaultDocumentReadTransform());
+    assertEquals("Failed to change document read transform all",
+      modReadTransAll, serverConfig.getDefaultDocumentReadTransformAll());
+    assertEquals("Failed to change server request logging",
+      modRequestLog,   serverConfig.getServerRequestLogging());
+    assertEquals("Failed to change update policy ",
+      modVersionReq,   serverConfig.getUpdatePolicy());
+
+    serverConfig = Common.adminClient.newServerConfigManager();
+    serverConfig.setQueryOptionValidation(initialOptionValid);
+    serverConfig.setDefaultDocumentReadTransform(initialReadTrans);
+    serverConfig.setDefaultDocumentReadTransformAll(initialReadTransAll);
+    serverConfig.setServerRequestLogging(initialRequestLog);
+    serverConfig.setUpdatePolicy(initialVersionReq);
+    serverConfig.writeConfiguration();
+  }
 
 }

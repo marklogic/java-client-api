@@ -26,28 +26,28 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 
 /**
  * An OutputStreamHandle generates output during writing.
- * 
+ *
  * You define a class that implements the OutputStreamSender interface.
  * When the client is ready to write to the server, it calls the write()
  * method of the class with an OutputStream.  That is, the write() method
  * generates the output to be written to the server.  The OutputStreamSender
  * implementer is typically an anonymous class.
- * 
+ *
  * Initialize the OutputStreamHandle with the OutputStreamSender implementer
  * before passing the OutputStreamHandle to the write() method of a document
  * manager.
  *
  */
 public class OutputStreamHandle
-	extends BaseHandle<OperationNotSupported, OutputStreamSender>
-    implements
-	    BinaryWriteHandle,
-        GenericWriteHandle,
-        JSONWriteHandle, 
-        TextWriteHandle,
-        XMLWriteHandle,
-        StructureWriteHandle,
-        TriplesWriteHandle
+  extends BaseHandle<OperationNotSupported, OutputStreamSender>
+  implements
+    BinaryWriteHandle,
+    GenericWriteHandle,
+    JSONWriteHandle,
+    TextWriteHandle,
+    XMLWriteHandle,
+    StructureWriteHandle,
+    TriplesWriteHandle
 {
 
   private OutputStreamSender sender;

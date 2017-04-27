@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.handle.HTMLCleanerHandleExample;
 
 public class HTMLCleanerHandleTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			HTMLCleanerHandleExample.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("HTMLCleanerHandleExample failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      HTMLCleanerHandleExample.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("HTMLCleanerHandleExample failed", succeeded);
+  }
 }

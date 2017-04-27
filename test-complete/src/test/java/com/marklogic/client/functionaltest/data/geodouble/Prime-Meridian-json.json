@@ -7,7 +7,7 @@
 "line-desc":"Json Linestring In Prime-Meridian",
 "line-vertices":"6",
 
-"circle":"@5673.4567 37.463235,0",
+"circle":"@3525 37.463235,0",
 "circle-desc":"Json Circle In Prime-Meridian",
 
 "box":"[30.8456, -10.34634, 40.345, 10.4564]",

@@ -28,16 +28,17 @@ import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.example.cookbook.StructuredSearch;
 
 public class StructuredSearchTest {
-	@Test
-	public void testMain()
-	throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		boolean succeeded = false;
-		try {
-			StructuredSearch.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("StructuredSearch example failed", succeeded);
-	}
+  @Test
+  public void testMain()
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    boolean succeeded = false;
+    try {
+      StructuredSearch.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("StructuredSearch example failed", succeeded);
+  }
 }

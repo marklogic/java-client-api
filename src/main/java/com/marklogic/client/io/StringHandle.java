@@ -41,155 +41,155 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
  * A String Handle represents document content as a string for reading or writing.
  */
 public class StringHandle
-	extends BaseHandle<byte[], OutputStreamSender>
-	implements OutputStreamSender, BufferableHandle, ContentHandle<String>,
-		JSONReadHandle, JSONWriteHandle, 
-		TextReadHandle, TextWriteHandle,
-		XMLReadHandle, XMLWriteHandle,
-		StructureReadHandle, StructureWriteHandle,
-		QuadsWriteHandle, 
-		TriplesReadHandle, TriplesWriteHandle,
-		SPARQLResultsReadHandle
+  extends BaseHandle<byte[], OutputStreamSender>
+  implements OutputStreamSender, BufferableHandle, ContentHandle<String>,
+    JSONReadHandle, JSONWriteHandle,
+    TextReadHandle, TextWriteHandle,
+    XMLReadHandle, XMLWriteHandle,
+    StructureReadHandle, StructureWriteHandle,
+    QuadsWriteHandle,
+    TriplesReadHandle, TriplesWriteHandle,
+    SPARQLResultsReadHandle
 {
-	private String content;
+  private String content;
 
-	/**
-	 * Creates a factory to create a StringHandle instance for a string.
-	 * @return	the factory
-	 */
-	static public ContentHandleFactory newFactory() {
-		return new ContentHandleFactory() {
-			@Override
-			public Class<?>[] getHandledClasses() {
-				return new Class<?>[]{ String.class };
-			}
-			@Override
-			public boolean isHandled(Class<?> type) {
-				return String.class.isAssignableFrom(type);
-			}
-			@Override
-			public <C> ContentHandle<C> newHandle(Class<C> type) {
-				@SuppressWarnings("unchecked")
-				ContentHandle<C> handle = isHandled(type) ?
-						(ContentHandle<C>) new StringHandle() : null;
-				return handle;
-			}
-		};
-	}
+  /**
+   * Creates a factory to create a StringHandle instance for a string.
+   * @return	the factory
+   */
+  static public ContentHandleFactory newFactory() {
+    return new ContentHandleFactory() {
+      @Override
+      public Class<?>[] getHandledClasses() {
+        return new Class<?>[]{ String.class };
+      }
+      @Override
+      public boolean isHandled(Class<?> type) {
+        return String.class.isAssignableFrom(type);
+      }
+      @Override
+      public <C> ContentHandle<C> newHandle(Class<C> type) {
+        @SuppressWarnings("unchecked")
+        ContentHandle<C> handle = isHandled(type) ?
+                                  (ContentHandle<C>) new StringHandle() : null;
+        return handle;
+      }
+    };
+  }
 
-	/**
-	 * Zero-argument constructor.
-	 */
-	public StringHandle() {
-		super();
-   		setResendable(true);
-	}
-	/**
-	 * Initializes the handle with a string for the content.
-	 * @param content	a content string
-	 */
-	public StringHandle(String content) {
-		this();
-		set(content);
-	}
+  /**
+   * Zero-argument constructor.
+   */
+  public StringHandle() {
+    super();
+    setResendable(true);
+  }
+  /**
+   * Initializes the handle with a string for the content.
+   * @param content	a content string
+   */
+  public StringHandle(String content) {
+    this();
+    set(content);
+  }
 
-	/**
-	 * Returns the string for the content.
-	 * @return	the string
-	 */
-	@Override
-	public String get() {
-		return content;
-	}
-	/**
-	 * Assigns an string as the content.
-	 * @param content	a string
-	 */
-	@Override
-	public void set(String content) {
-		this.content = content;
-	}
-    /**
-	 * Assigns a string as the content and returns the handle
-	 * as a fluent convenience.
-	 * @param content	a string
-	 * @return	this handle
-     */
-	public StringHandle with(String content) {
-		set(content);
-		return this;
-	}
+  /**
+   * Returns the string for the content.
+   * @return	the string
+   */
+  @Override
+  public String get() {
+    return content;
+  }
+  /**
+   * Assigns an string as the content.
+   * @param content	a string
+   */
+  @Override
+  public void set(String content) {
+    this.content = content;
+  }
+  /**
+   * Assigns a string as the content and returns the handle
+   * as a fluent convenience.
+   * @param content	a string
+   * @return	this handle
+   */
+  public StringHandle with(String content) {
+    set(content);
+    return this;
+  }
 
-	/**
-	 * Specifies the format of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param format	the format of the content
-	 * @return	this handle
-	 */
-	public StringHandle withFormat(Format format) {
-		setFormat(format);
-		return this;
-	}
-	/**
-	 * Specifies the mime type of the content and returns the handle
-	 * as a fluent convenience.
-	 * @param mimetype	the mime type of the content
-	 * @return	this handle
-	 */
-	public StringHandle withMimetype(String mimetype) {
-		setMimetype(mimetype);
-		return this;
-	}
+  /**
+   * Specifies the format of the content and returns the handle
+   * as a fluent convenience.
+   * @param format	the format of the content
+   * @return	this handle
+   */
+  public StringHandle withFormat(Format format) {
+    setFormat(format);
+    return this;
+  }
+  /**
+   * Specifies the mime type of the content and returns the handle
+   * as a fluent convenience.
+   * @param mimetype	the mime type of the content
+   * @return	this handle
+   */
+  public StringHandle withMimetype(String mimetype) {
+    setMimetype(mimetype);
+    return this;
+  }
 
-	@Override
-	public void fromBuffer(byte[] buffer) {
-		if (buffer == null || buffer.length == 0)
-			content = null;
-		else
-			content = new String(buffer, Charset.forName("UTF-8"));
-	}
-	@Override
-	public byte[] toBuffer() {
-		if (content == null)
-			return null;
+  @Override
+  public void fromBuffer(byte[] buffer) {
+    if (buffer == null || buffer.length == 0)
+      content = null;
+    else
+      content = new String(buffer, Charset.forName("UTF-8"));
+  }
+  @Override
+  public byte[] toBuffer() {
+    if (content == null)
+      return null;
 
-		return content.getBytes(Charset.forName("UTF-8"));
-	}
-	/**
-	 * Returns the content.
-	 */
-	@Override
-	public String toString() {
-		return content;
-	}
+    return content.getBytes(Charset.forName("UTF-8"));
+  }
+  /**
+   * Returns the content.
+   */
+  @Override
+  public String toString() {
+    return content;
+  }
 
-	@Override
-	protected Class<byte[]> receiveAs() {
-		return byte[].class;
-	}
-	@Override
-	protected void receiveContent(byte[] content) {
-		try {
-			if (content == null) {
-				this.content = null;
-				return;
-			}
+  @Override
+  protected Class<byte[]> receiveAs() {
+    return byte[].class;
+  }
+  @Override
+  protected void receiveContent(byte[] content) {
+    try {
+      if (content == null) {
+        this.content = null;
+        return;
+      }
 
-			this.content = new String(content, "UTF-8");
-		} catch (UnsupportedEncodingException e) {
-			throw new MarkLogicIOException(e);
-		}
-	}
-	@Override
-	protected OutputStreamSender sendContent() {
-		if (content == null) {
-			throw new IllegalStateException("No string to write");
-		}
+      this.content = new String(content, "UTF-8");
+    } catch (UnsupportedEncodingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+  @Override
+  protected OutputStreamSender sendContent() {
+    if (content == null) {
+      throw new IllegalStateException("No string to write");
+    }
 
-		return this;
-	}
-	@Override
-	public void write(OutputStream out) throws IOException {
-		out.write(toBuffer());
-	}
+    return this;
+  }
+  @Override
+  public void write(OutputStream out) throws IOException {
+    out.write(toBuffer());
+  }
 }

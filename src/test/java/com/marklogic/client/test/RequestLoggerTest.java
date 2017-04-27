@@ -47,152 +47,152 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.util.RequestLogger;
 
 public class RequestLoggerTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testCopyTee() throws IOException {
-		String expectedString = "first line\nsecond line\n";
+  @Test
+  public void testCopyTee() throws IOException {
+    String expectedString = "first line\nsecond line\n";
 
-		ByteArrayOutputStream out = null;
-		RequestLogger logger = null;
-		String outString = null;
+    ByteArrayOutputStream out = null;
+    RequestLogger logger = null;
+    String outString = null;
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
 
-		StringReader mainReader = new StringReader(expectedString);
-		Reader copyReader = logger.copyContent(mainReader);
-		String copyString = Common.readerToString(copyReader);
-		assertEquals("Copy reader failed to read", expectedString, copyString);
-		outString = new String(out.toByteArray());
-		assertEquals("Out failed to read", expectedString, outString);
+    StringReader mainReader = new StringReader(expectedString);
+    Reader copyReader = logger.copyContent(mainReader);
+    String copyString = Common.readerToString(copyReader);
+    assertEquals("Copy reader failed to read", expectedString, copyString);
+    outString = new String(out.toByteArray());
+    assertEquals("Out failed to read", expectedString, outString);
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
 
-		ByteArrayInputStream mainInputStream =
-			new ByteArrayInputStream(expectedString.getBytes());
-		InputStream copyInputStream = logger.copyContent(mainInputStream);
-		byte[] copyBytes = Common.streamToBytes(copyInputStream);
-		assertEquals("Copy input stream failed to read", expectedString, new String(copyBytes));
-		outString = new String(out.toByteArray());
-		assertEquals("Out failed to read", expectedString, outString);
+    ByteArrayInputStream mainInputStream =
+      new ByteArrayInputStream(expectedString.getBytes());
+    InputStream copyInputStream = logger.copyContent(mainInputStream);
+    byte[] copyBytes = Common.streamToBytes(copyInputStream);
+    assertEquals("Copy input stream failed to read", expectedString, new String(copyBytes));
+    outString = new String(out.toByteArray());
+    assertEquals("Out failed to read", expectedString, outString);
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
 
-		ByteArrayOutputStream mainOutputStream = new ByteArrayOutputStream();
-		OutputStream tee = new OutputStreamTee(mainOutputStream, out, Long.MAX_VALUE);
-		tee.write(expectedString.getBytes());
-		byte[] mainBytes = mainOutputStream.toByteArray();
-		assertEquals("Main output stream failed to read", expectedString, new String(mainBytes));
-		outString = new String(out.toByteArray());
-		assertEquals("Out failed to read", expectedString, outString);
-		tee.close();
-	}
+    ByteArrayOutputStream mainOutputStream = new ByteArrayOutputStream();
+    OutputStream tee = new OutputStreamTee(mainOutputStream, out, Long.MAX_VALUE);
+    tee.write(expectedString.getBytes());
+    byte[] mainBytes = mainOutputStream.toByteArray();
+    assertEquals("Main output stream failed to read", expectedString, new String(mainBytes));
+    outString = new String(out.toByteArray());
+    assertEquals("Out failed to read", expectedString, outString);
+    tee.close();
+  }
 
-	@Test
-	public void testWriteReadLog() throws IOException, ParserConfigurationException {
-		String docId = "/test/testWrite1.xml";
+  @Test
+  public void testWriteReadLog() throws IOException, ParserConfigurationException {
+    String docId = "/test/testWrite1.xml";
 
-		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		Element root = domDocument.createElement("root");
-		root.setAttribute("xml:lang", "en");
-		root.setAttribute("foo", "bar");
-		root.appendChild(domDocument.createElement("child"));
-		root.appendChild(domDocument.createTextNode("mixed"));
-		domDocument.appendChild(root);
+    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    Element root = domDocument.createElement("root");
+    root.setAttribute("xml:lang", "en");
+    root.setAttribute("foo", "bar");
+    root.appendChild(domDocument.createElement("child"));
+    root.appendChild(domDocument.createTextNode("mixed"));
+    domDocument.appendChild(root);
 
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-				.getDOMImplementation()).createLSSerializer().writeToString(domDocument)
-				.replaceFirst("^<\\?xml(\\s+version=\"[^\"]*\"|\\s+encoding=\"[^\"]*\")*\\s*\\?>\\s*", "");
+    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+      .getDOMImplementation()).createLSSerializer().writeToString(domDocument)
+      .replaceFirst("^<\\?xml(\\s+version=\"[^\"]*\"|\\s+encoding=\"[^\"]*\")*\\s*\\?>\\s*", "");
 
-		ByteArrayOutputStream out = null;
-		RequestLogger logger = null;
-		String outString = null;
+    ByteArrayOutputStream out = null;
+    RequestLogger logger = null;
+    String outString = null;
 
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+    XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		docMgr.startLogging(logger);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    docMgr.startLogging(logger);
 
-		docMgr.write(docId, new DOMHandle().with(domDocument));
-		outString = new String(out.toByteArray());
-		assertTrue("Write failed to log output", outString.contains(domString));
+    docMgr.write(docId, new DOMHandle().with(domDocument));
+    outString = new String(out.toByteArray());
+    assertTrue("Write failed to log output", outString.contains(domString));
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		docMgr.startLogging(logger);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    docMgr.startLogging(logger);
 
-		String docText = docMgr.read(docId, new StringHandle()).get();
-		outString = new String(out.toByteArray());
-		assertTrue("Read failed to log output", outString.contains(docText));
+    String docText = docMgr.read(docId, new StringHandle()).get();
+    outString = new String(out.toByteArray());
+    assertTrue("Read failed to log output", outString.contains(docText));
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		docMgr.startLogging(logger);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    docMgr.startLogging(logger);
 
-		docMgr.exists(docId);
-		outString = new String(out.toByteArray());
-		assertTrue("Exists logged null output",  outString != null);
-		if (outString != null)
-			assertTrue("Exists logged empty output", outString.length() > 0);
+    docMgr.exists(docId);
+    outString = new String(out.toByteArray());
+    assertTrue("Exists logged null output",  outString != null);
+    if (outString != null)
+      assertTrue("Exists logged empty output", outString.length() > 0);
 
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		docMgr.startLogging(logger);
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    docMgr.startLogging(logger);
 
-		docMgr.delete(docId);
-		outString = new String(out.toByteArray());
-		assertTrue("Delete failed to log output", outString != null && outString.length() > 0);
-		
-	}
-	
-	@Test
-	public void testSearchLog() {
-		QueryManager qMgr = Common.client.newQueryManager();
-		ByteArrayOutputStream out = null;
-		RequestLogger logger = null;
-		String outString = null;
-	
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		qMgr.startLogging(logger);
+    docMgr.delete(docId);
+    outString = new String(out.toByteArray());
+    assertTrue("Delete failed to log output", outString != null && outString.length() > 0);
 
-		QueryDefinition querydef = qMgr.newStringDefinition();
-		
-		qMgr.search(querydef, new SearchHandle());
-		outString = new String(out.toByteArray());
-		assertTrue("Search failed to log output", outString != null && outString.length() > 0);
-	
-		out = new ByteArrayOutputStream();
-		logger = Common.client.newLogger(out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
-		qMgr.startLogging(logger);
+  }
 
-		DeleteQueryDefinition deleteDef = qMgr.newDeleteDefinition();
-		deleteDef.setCollections("x");
-		
-		qMgr.delete(deleteDef);
-		outString = new String(out.toByteArray());
-		assertTrue("SearchDelete failed to log output", outString != null && outString.length() > 0);
-	
-	
-	}
+  @Test
+  public void testSearchLog() {
+    QueryManager qMgr = Common.client.newQueryManager();
+    ByteArrayOutputStream out = null;
+    RequestLogger logger = null;
+    String outString = null;
+
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    qMgr.startLogging(logger);
+
+    QueryDefinition querydef = qMgr.newStringDefinition();
+
+    qMgr.search(querydef, new SearchHandle());
+    outString = new String(out.toByteArray());
+    assertTrue("Search failed to log output", outString != null && outString.length() > 0);
+
+    out = new ByteArrayOutputStream();
+    logger = Common.client.newLogger(out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
+    qMgr.startLogging(logger);
+
+    DeleteQueryDefinition deleteDef = qMgr.newDeleteDefinition();
+    deleteDef.setCollections("x");
+
+    qMgr.delete(deleteDef);
+    outString = new String(out.toByteArray());
+    assertTrue("SearchDelete failed to log output", outString != null && outString.length() > 0);
+
+
+  }
 
 }

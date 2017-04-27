@@ -49,96 +49,87 @@ import com.marklogic.client.io.StringHandle;
 
 @SuppressWarnings("deprecation")
 public class QueryOptionsManagerTest {
-	
-	private static final org.slf4j.Logger logger = LoggerFactory.getLogger(QueryOptionsManagerTest.class);
-	
-	
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connectAdmin();
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
-	
+  private static final org.slf4j.Logger logger = LoggerFactory.getLogger(QueryOptionsManagerTest.class);
 
-	
-	@Test
-	public void testQueryOptionsManager()
-	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		QueryOptionsManager mgr =
-			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-		assertNotNull("Client could not create query options manager", mgr);
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connectAdmin();
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-		mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
-        
-        String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
-        logger.debug("Empty options from server {}", optionsResult);
-        assertTrue("Empty options result not empty",optionsResult.contains("options"));
-        assertTrue("Empty options result not empty",optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
-		
-		mgr.deleteOptions("testempty");
-		
-		
-	};
-	
+  @Test
+  public void testQueryOptionsManager()
+    throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager mgr =
+      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    assertNotNull("Client could not create query options manager", mgr);
 
-	@Test
-	public void testXMLDocsAsSearchOptions()
-	throws ParserConfigurationException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		String optionsName = "invalid";
-		
-		Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
-		Element root = domDocument.createElementNS("http://marklogic.com/appservices/search","options");
-		Element rf = domDocument.createElementNS("http://marklogic.com/appservices/search","return-facets");
-		rf.setTextContent("true");
-		root.appendChild(rf);
-		root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "lang", "en");  // MarkLogic adds this if I don't
-		domDocument.appendChild(root);
+    mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
 
-		QueryOptionsManager queryOptionsMgr =
-			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-		
-		queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
+    String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
+    logger.debug("Empty options from server {}", optionsResult);
+    assertTrue("Empty options result not empty",optionsResult.contains("options"));
+    assertTrue("Empty options result not empty",optionsResult.contains("\"http://marklogic.com/appservices/search\"/>"));
 
-		String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
-				.getDOMImplementation()).createLSSerializer().writeToString(domDocument);
-		
-		String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
-		assertNotNull("Read null string for XML content",optionsString);
-		logger.debug("Two XML Strings {} and {}", domString, optionsString);
-		
-		Document readDoc = queryOptionsMgr.readOptions(optionsName, new DOMHandle()).get();
-		assertNotNull("Read null document for XML content",readDoc);
-		
-	}
-	
+    mgr.deleteOptions("testempty");
+  };
+
+  @Test
+  public void testXMLDocsAsSearchOptions()
+    throws ParserConfigurationException, SAXException, IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    String optionsName = "invalid";
+
+    Document domDocument = DocumentBuilderFactory.newInstance().newDocumentBuilder().newDocument();
+    Element root = domDocument.createElementNS("http://marklogic.com/appservices/search","options");
+    Element rf = domDocument.createElementNS("http://marklogic.com/appservices/search","return-facets");
+    rf.setTextContent("true");
+    root.appendChild(rf);
+    root.setAttributeNS("http://www.w3.org/XML/1998/namespace", "lang", "en");  // MarkLogic adds this if I don't
+    domDocument.appendChild(root);
+
+    QueryOptionsManager queryOptionsMgr =
+      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+
+    queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
+
+    String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
+      .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
+
+    String optionsString = queryOptionsMgr.readOptions(optionsName, new StringHandle()).get();
+    assertNotNull("Read null string for XML content",optionsString);
+    logger.debug("Two XML Strings {} and {}", domString, optionsString);
+
+    Document readDoc = queryOptionsMgr.readOptions(optionsName, new DOMHandle()).get();
+    assertNotNull("Read null document for XML content",readDoc);
+
+  }
+
+  @Test
+  public void testJSONOptions()
+    throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException
+  {
+    QueryOptionsManager mgr =
+      Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    assertNotNull("Client could not create query options manager", mgr);
+
+    FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
+    jsonHandle.setFormat(Format.JSON);
+    mgr.writeOptions("jsonoptions", jsonHandle);
+    JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
+
+    assertEquals("JSON options came back incorrectly", options.findPath("constraint").get(0).get("name").textValue(), "decade");
 
 
-	@Test
-	public void testJSONOptions()
-	throws JAXBException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException, ResourceNotResendableException {
-		QueryOptionsManager mgr =
-			Common.adminClient.newServerConfigManager().newQueryOptionsManager();
-		assertNotNull("Client could not create query options manager", mgr);
+    StringHandle jsonStringHandle = new StringHandle();
+    jsonStringHandle.setFormat(Format.JSON);
+    mgr.readOptions("jsonoptions", jsonStringHandle);
+    assertTrue("JSON String from QueryManager must start with json options", jsonStringHandle.get().startsWith("{\"options\":"));
 
-		FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
-		jsonHandle.setFormat(Format.JSON);
-		mgr.writeOptions("jsonoptions", jsonHandle);
-		JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
-		
-		assertEquals("JSON options came back incorrectly", options.findPath("constraint").get(0).get("name").textValue(), "decade");
-		
-		
-		StringHandle jsonStringHandle = new StringHandle();
-		jsonStringHandle.setFormat(Format.JSON);
-		mgr.readOptions("jsonoptions", jsonStringHandle);
-		assertTrue("JSON String from QueryManager must start with json options", jsonStringHandle.get().startsWith("{\"options\":"));
-		
-		mgr.deleteOptions("jsonoptions");
-		
-		
-	};
-	
+    mgr.deleteOptions("jsonoptions");
+  };
 }

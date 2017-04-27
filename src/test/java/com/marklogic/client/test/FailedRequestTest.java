@@ -39,89 +39,89 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
 public class FailedRequestTest {
-	private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
+  private static final Logger logger = LoggerFactory.getLogger(FailedRequestTest.class);
 
-	@Test
-	public void testFailedRequest()
-	throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException {
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		Common.connectAdmin();
-		QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
-				.newQueryOptionsManager();
+  @Test
+  public void testFailedRequest()
+  throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException
+  {
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    Common.connectAdmin();
+    QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
+      .newQueryOptionsManager();
 
-		try {
-			mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
-		} catch (ForbiddenUserException e) {
-			assertEquals(
-					"Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
-					e.getMessage());
-			assertEquals(403, e.getFailedRequest().getStatusCode());
-			assertEquals("Forbidden", e.getFailedRequest().getStatus());
-		}
-		mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
+    try {
+      mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
+    } catch (ForbiddenUserException e) {
+      assertEquals(
+          "Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
+          e.getMessage());
+      assertEquals(403, e.getFailedRequest().getStatusCode());
+      assertEquals("Forbidden", e.getFailedRequest().getStatus());
+    }
+    mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
-		Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
+    Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
 
-		StringWriter xml = new StringWriter();
-		XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
-		xsw.writeStartDocument();
-		xsw.writeStartElement("options");
-			xsw.writeDefaultNamespace("http://marklogic.com/appservices/search");
-			xsw.writeStartElement("constraint");
-				xsw.writeAttribute("name", "blah");
-				xsw.writeStartElement("collection");
-					xsw.writeAttribute("prefix", "S");
-					xsw.writeAttribute("facet", "false");
-				xsw.writeEndElement();//"collection"
-			xsw.writeEndElement();//"constraint"
-			xsw.writeStartElement("constraint");
-				xsw.writeAttribute("name", "blah");
-				xsw.writeStartElement("collection");
-					xsw.writeAttribute("prefix", "D");
-					xsw.writeAttribute("facet", "false");
-				xsw.writeEndElement();//"collection"
-			xsw.writeEndElement();//"constraint"
-		xsw.writeEndElement(); //"http://marklogic.com/appservices/search", "options"
-		xsw.writeEndDocument();
+    StringWriter xml = new StringWriter();
+    XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
+    xsw.writeStartDocument();
+    xsw.writeStartElement("options");
+      xsw.writeDefaultNamespace("http://marklogic.com/appservices/search");
+      xsw.writeStartElement("constraint");
+        xsw.writeAttribute("name", "blah");
+        xsw.writeStartElement("collection");
+          xsw.writeAttribute("prefix", "S");
+          xsw.writeAttribute("facet", "false");
+        xsw.writeEndElement();//"collection"
+      xsw.writeEndElement();//"constraint"
+      xsw.writeStartElement("constraint");
+        xsw.writeAttribute("name", "blah");
+        xsw.writeStartElement("collection");
+          xsw.writeAttribute("prefix", "D");
+          xsw.writeAttribute("facet", "false");
+        xsw.writeEndElement();//"collection"
+      xsw.writeEndElement();//"constraint"
+    xsw.writeEndElement(); //"http://marklogic.com/appservices/search", "options"
+    xsw.writeEndDocument();
 
-		logger.debug(xml.toString());
-		try {
-			mgr.writeOptions("testempty", new StringHandle(xml.toString()));
-		} catch (FailedRequestException e) {
-			assertEquals(
-					"Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",
-					e.getMessage());
-			assertEquals(400, e.getFailedRequest().getStatusCode());
-			assertEquals("Bad Request", e.getFailedRequest().getStatus());
-			assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest()
-					.getMessageCode());
-		}
+    logger.debug(xml.toString());
+    try {
+      mgr.writeOptions("testempty", new StringHandle(xml.toString()));
+    } catch (FailedRequestException e) {
+      assertEquals(
+        "Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",
+        e.getMessage());
+      assertEquals(400, e.getFailedRequest().getStatusCode());
+      assertEquals("Bad Request", e.getFailedRequest().getStatus());
+      assertEquals("RESTAPI-INVALIDCONTENT", e.getFailedRequest()
+        .getMessageCode());
+    }
 
-	}
+  }
 
 
-	@Test
-	public void testErrorOnNonREST()
-	throws ForbiddenUserException {
-		DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
-				8001, new DigestAuthContext(Common.USER, Common.PASS));
-		ServerConfigurationManager serverConfig = badClient
-				.newServerConfigManager();
+  @Test
+  public void testErrorOnNonREST() throws ForbiddenUserException {
+    DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
+      8001, new DigestAuthContext(Common.USER, Common.PASS));
+    ServerConfigurationManager serverConfig = badClient
+      .newServerConfigManager();
 
-		try {
-			serverConfig.readConfiguration();
-		} catch (FailedRequestException e) {
+    try {
+      serverConfig.readConfiguration();
+    } catch (FailedRequestException e) {
 
-		
-			assertEquals(
-					"Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
-					e.getMessage());
-			assertEquals(404, e.getFailedRequest().getStatusCode());
-			assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
-		} finally {
-			badClient.release();
-		}
 
-	}
+      assertEquals(
+        "Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
+        e.getMessage());
+      assertEquals(404, e.getFailedRequest().getStatusCode());
+      assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
+    } finally {
+      badClient.release();
+    }
+
+  }
 
 }

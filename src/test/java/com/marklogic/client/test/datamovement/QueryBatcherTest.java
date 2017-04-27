@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
@@ -244,7 +245,7 @@ public class QueryBatcherTest {
     final AtomicReference<String> batchDatabaseName = new AtomicReference<>();
     final AtomicReference<JobTicket> batchTicket = new AtomicReference<>();
     final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
-    final Map<String, Set<String>> results = new HashMap<>();
+    final Map<String, Set<String>> results = new ConcurrentHashMap<>();
     final StringBuffer failures = new StringBuffer();
     queryBatcher
       .withBatchSize(batchSize)
@@ -254,11 +255,8 @@ public class QueryBatcherTest {
           successfulBatchCount.incrementAndGet();
           totalResults.addAndGet(batch.getItems().length);
           String forestName = batch.getForest().getForestName();
-          Set<String> matches = results.get(forestName);
-          if ( matches == null ) {
-            matches = new HashSet<>();
-            results.put(forestName, matches);
-          }
+          // atomically gets the set unless it's missing in which case it creates it
+          Set<String> matches = results.computeIfAbsent(forestName, k->ConcurrentHashMap.<String>newKeySet());
           for ( String uri : batch.getItems() ) {
             matches.add(uri);
           }
@@ -329,7 +327,8 @@ public class QueryBatcherTest {
         for ( String uri : expected ) {
           if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
             for ( String resultsForest : results.keySet() ) {
-              logger.error("Results found for forest {}: {}", resultsForest, results.get(resultsForest));
+              logger.error("Results found for forest {}: {}, expected {}", resultsForest, results.get(resultsForest),
+                Arrays.asList(matchesByForest.get(resultsForest)));
             }
             fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
           }

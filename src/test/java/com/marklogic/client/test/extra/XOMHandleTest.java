@@ -34,48 +34,48 @@ import com.marklogic.client.extra.xom.XOMHandle;
 import com.marklogic.client.test.Common;
 
 public class XOMHandleTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testReadWrite() throws SAXException, IOException {
-		// create an identifier for the database document
-		String docId = "/example/xom-test.xml";
+  @Test
+  public void testReadWrite() throws SAXException, IOException {
+    // create an identifier for the database document
+    String docId = "/example/xom-test.xml";
 
-		// create a manager for XML database documents
-		XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
+    // create a manager for XML database documents
+    XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
 
-		// create a XOM document
-		Element root = new Element("root");
-		root.addAttribute(new Attribute("foo", "bar"));
-		root.appendChild(new Element("child"));
-		root.appendChild("mixed");
-		Document writeDocument = new Document(root);
+    // create a XOM document
+    Element root = new Element("root");
+    root.addAttribute(new Attribute("foo", "bar"));
+    root.appendChild(new Element("child"));
+    root.appendChild("mixed");
+    Document writeDocument = new Document(root);
 
-		// create a handle for the XOM document
-		XOMHandle writeHandle = new XOMHandle(writeDocument);
+    // create a handle for the XOM document
+    XOMHandle writeHandle = new XOMHandle(writeDocument);
 
-		// write the XOM document to the database
-		docMgr.write(docId, writeHandle);
+    // write the XOM document to the database
+    docMgr.write(docId, writeHandle);
 
-		// create a handle to receive the document content as a XOM document
-		XOMHandle readHandle = new XOMHandle();
+    // create a handle to receive the document content as a XOM document
+    XOMHandle readHandle = new XOMHandle();
 
-		// read the document content from the database as a XOM document
-		docMgr.read(docId, readHandle);
+    // read the document content from the database as a XOM document
+    docMgr.read(docId, readHandle);
 
-		// access the document content
-		Document readDocument = readHandle.get();
-		assertNotNull("Wrote null XOM document", readDocument);
-		assertXMLEqual("XOM documents not equal", 
-				writeDocument.toXML(), readDocument.toXML());
+    // access the document content
+    Document readDocument = readHandle.get();
+    assertNotNull("Wrote null XOM document", readDocument);
+    assertXMLEqual("XOM documents not equal",
+      writeDocument.toXML(), readDocument.toXML());
 
-		// delete the document
-		docMgr.delete(docId);
-	}
+    // delete the document
+    docMgr.delete(docId);
+  }
 }

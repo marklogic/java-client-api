@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentWrite;
 
 public class DocumentWriteTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentWrite.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentWrite example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentWrite.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentWrite example failed", succeeded);
+  }
 }

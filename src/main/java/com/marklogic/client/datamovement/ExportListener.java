@@ -101,8 +101,7 @@ public class ExportListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
-    try {
-      DocumentPage docs = getDocs(batch);
+    try ( DocumentPage docs = getDocs(batch) ) {
       while ( docs.hasNext() ) {
         for ( Consumer<DocumentRecord> listener : exportListeners ) {
           try {
@@ -201,7 +200,9 @@ public class ExportListener implements QueryBatchListener {
    * file system, a REST service, or any target supported by Java.  If further
    * information is required about the document beyond what DocumentRecord can
    * provide, register a listener with {@link QueryBatcher#onUrisReady
-   * QueryBatcher.onUrisReady} instead.
+   * QueryBatcher.onUrisReady} instead.  You do not need to call close() on
+   * each DocumentRecord because the ExportListener will call close for you on
+   * the entire DocumentPage.
    *
    * @param listener the code which will process each document
    * @return this instance for method chaining

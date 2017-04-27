@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentDelete;
 
 public class DocumentDeleteTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentDelete.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentDelete example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentDelete.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentDelete example failed", succeeded);
+  }
 }

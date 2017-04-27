@@ -104,11 +104,11 @@ public class JSONStringWriter {
     out.append('"');
     for (int i=0; i < valen; i++) {
       char ch = value.charAt(i);
-			/* Per RFC 4627, only quotation mark, reverse solidus,
-			   and the control characters (U+0000 through U+001F)
-			   must be escaped.  Two-character sequence escape
-			   representations may be used for popular characters.
-			 */
+      /* Per RFC 4627, only quotation mark, reverse solidus,
+         and the control characters (U+0000 through U+001F)
+         must be escaped.  Two-character sequence escape
+         representations may be used for popular characters.
+       */
       switch (ch) {
         case '"':
           out.append('\\');

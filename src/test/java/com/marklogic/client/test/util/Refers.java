@@ -22,8 +22,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 
 @XmlRootElement
 public class Refers {
-    public String              name  = "refers";
-    public Referred            child = null;
-    public Map<String,Integer> map   = null;
-    public List<String>        list  = null;
+  public String              name  = "refers";
+  public Referred            child = null;
+  public Map<String,Integer> map   = null;
+  public List<String>        list  = null;
 }

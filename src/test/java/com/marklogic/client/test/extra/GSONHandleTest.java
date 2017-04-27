@@ -30,51 +30,51 @@ import com.marklogic.client.extra.gson.GSONHandle;
 import com.marklogic.client.test.Common;
 
 public class GSONHandleTest {
-	@BeforeClass
-	public static void beforeClass() {
-		Common.connect();
-	}
-	@AfterClass
-	public static void afterClass() {
-	}
+  @BeforeClass
+  public static void beforeClass() {
+    Common.connect();
+  }
+  @AfterClass
+  public static void afterClass() {
+  }
 
-	@Test
-	public void testReadWrite() {
-		// create an identifier for the database document
-		String docId = "/example/gson-test.json";
+  @Test
+  public void testReadWrite() {
+    // create an identifier for the database document
+    String docId = "/example/gson-test.json";
 
-		// create a manager for JSON documents
-		JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
+    // create a manager for JSON documents
+    JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
 
-		// construct a GSON JSON structure
-		JsonObject childObj = new JsonObject();
-		childObj.addProperty("key", "value");
-		JsonArray childArray = new JsonArray();
-		childArray.add(new JsonPrimitive("item1"));
-		childArray.add(new JsonPrimitive("item2"));
-		JsonObject writeRoot = new JsonObject();
-		writeRoot.add("object", childObj);
-		writeRoot.add("array",  childArray);
+    // construct a GSON JSON structure
+    JsonObject childObj = new JsonObject();
+    childObj.addProperty("key", "value");
+    JsonArray childArray = new JsonArray();
+    childArray.add(new JsonPrimitive("item1"));
+    childArray.add(new JsonPrimitive("item2"));
+    JsonObject writeRoot = new JsonObject();
+    writeRoot.add("object", childObj);
+    writeRoot.add("array",  childArray);
 
-		// create a handle for the JSON structure
-		GSONHandle writeHandle = new GSONHandle(writeRoot);
+    // create a handle for the JSON structure
+    GSONHandle writeHandle = new GSONHandle(writeRoot);
 
-		// write the document to the database
-		docMgr.write(docId, writeHandle);
+    // write the document to the database
+    docMgr.write(docId, writeHandle);
 
-		// create a handle to receive the database content as a GSON structure
-		GSONHandle readHandle = new GSONHandle();
+    // create a handle to receive the database content as a GSON structure
+    GSONHandle readHandle = new GSONHandle();
 
-		// read the document content from the database as a GSON structure
-		docMgr.read(docId, readHandle);
+    // read the document content from the database as a GSON structure
+    docMgr.read(docId, readHandle);
 
-		// access the document content
-		JsonObject readRoot = readHandle.get().getAsJsonObject();
-		assertNotNull("Wrote null JSON structure", readRoot);
-		assertTrue("JSON structures not equal",
-				readRoot.equals(writeRoot));
+    // access the document content
+    JsonObject readRoot = readHandle.get().getAsJsonObject();
+    assertNotNull("Wrote null JSON structure", readRoot);
+    assertTrue("JSON structures not equal",
+      readRoot.equals(writeRoot));
 
-		// delete the document
-		docMgr.delete(docId);
-	}
+    // delete the document
+    docMgr.delete(docId);
+  }
 }

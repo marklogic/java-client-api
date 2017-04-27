@@ -842,9 +842,10 @@ public interface FnExpr {
     * Returns the first item in a sequence. For more details, see <a>XPath 3.0 Functions and Operators</a>.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/fn:head" target="mlserverdoc">fn:head</a>
-    
+    * @param seq  A sequence of items.
+    * @return  a ItemExpr expression
     */
-    public ItemExpr head(ItemSeqExpr arg1);
+    public ItemExpr head(ItemSeqExpr seq);
     /**
     *  Returns an xs:integer between 0 and 23, both inclusive, representing the hours component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
     * <p>

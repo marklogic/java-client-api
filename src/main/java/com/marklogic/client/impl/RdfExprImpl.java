@@ -26,58 +26,58 @@ import com.marklogic.client.impl.BaseTypeImpl;
 // IMPORTANT: Do not edit. This file is generated.
 class RdfExprImpl extends RdfValueImpl implements RdfExpr {
 
-  final static XsExprImpl xs = XsExprImpl.xs;
+    final static XsExprImpl xs = XsExprImpl.xs;
 
-  final static RdfExprImpl rdf = new RdfExprImpl();
+    final static RdfExprImpl rdf = new RdfExprImpl();
 
-  RdfExprImpl() {
-  }
-
-
-  @Override
-  public RdfLangStringExpr langString(XsStringExpr string, String lang) {
-    return langString(string, (lang == null) ? (XsStringExpr) null : xs.string(lang));
-  }
-
-
-  @Override
-  public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
-    if (string == null) {
-      throw new IllegalArgumentException("string parameter for langString() cannot be null");
+    RdfExprImpl() {
     }
-    if (lang == null) {
-      throw new IllegalArgumentException("lang parameter for langString() cannot be null");
-    }
-    return new LangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
-  }
 
+    
+    @Override
+    public RdfLangStringExpr langString(XsStringExpr string, String lang) {
+        return langString(string, (lang == null) ? (XsStringExpr) null : xs.string(lang));
+    }
 
-  @Override
-  public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
-    if (val == null) {
-      throw new IllegalArgumentException("val parameter for langStringLanguage() cannot be null");
+    
+    @Override
+    public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang) {
+        if (string == null) {
+            throw new IllegalArgumentException("string parameter for langString() cannot be null");
+        }
+        if (lang == null) {
+            throw new IllegalArgumentException("lang parameter for langString() cannot be null");
+        }
+        return new LangStringCallImpl("rdf", "langString", new Object[]{ string, lang });
     }
-    return new XsExprImpl.StringCallImpl("rdf", "langString-language", new Object[]{ val });
-  }
 
-  @Override
-  public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items) {
-    return new LangStringSeqListImpl(items);
-  }
-  static class LangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
-    LangStringSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+    
+    @Override
+    public XsStringExpr langStringLanguage(RdfLangStringExpr val) {
+        if (val == null) {
+            throw new IllegalArgumentException("val parameter for langStringLanguage() cannot be null");
+        }
+        return new XsExprImpl.StringCallImpl("rdf", "langString-language", new Object[]{ val });
     }
-  }
-  static class LangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
-    LangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-    }
-  }
-  static class LangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringExpr {
-    LangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
-    }
-  }
 
-}
+    @Override
+    public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items) {
+        return new LangStringSeqListImpl(items);
+    }
+    static class LangStringSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+        LangStringSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class LangStringSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringSeqExpr {
+        LangStringSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class LangStringCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements RdfLangStringExpr {
+        LangStringCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+
+    }

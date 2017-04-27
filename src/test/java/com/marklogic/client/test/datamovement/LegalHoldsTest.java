@@ -111,17 +111,17 @@ public class LegalHoldsTest {
     StructuredQueryBuilder sqb = new StructuredQueryBuilder();
     StructuredQueryDefinition query =
       sqb.and(
-          sqb.collection(collection),
-          sqb.value(sqb.jsonProperty("type"), "X"),
-          sqb.value(sqb.jsonProperty("originJurisdiction"), "Y"),
-          sqb.value(sqb.jsonProperty("state"), "resolved", "closed", "finalized"),
-          sqb.not( sqb.value(sqb.jsonProperty("hold"), "true") ),
-          sqb.range(
-            sqb.jsonProperty("lastModified"),
-            "xs:dateTime", new String[0],
-            Operator.LE, sevenYearsAgo
-            )
-          );
+        sqb.collection(collection),
+        sqb.value(sqb.jsonProperty("type"), "X"),
+        sqb.value(sqb.jsonProperty("originJurisdiction"), "Y"),
+        sqb.value(sqb.jsonProperty("state"), "resolved", "closed", "finalized"),
+        sqb.not( sqb.value(sqb.jsonProperty("hold"), "true") ),
+        sqb.range(
+          sqb.jsonProperty("lastModified"),
+          "xs:dateTime", new String[0],
+          Operator.LE, sevenYearsAgo
+        )
+      );
 
     // walk through all batches of docs matching our query
     DataMovementManager moveMgr = evalClient.newDataMovementManager();
@@ -150,7 +150,7 @@ public class LegalHoldsTest {
             // now that we have a clean list, delete them
             batch.getClient().newDocumentManager().delete(urisToDelete.split(","));
             for ( String uri : urisToDelete.split(",") ) {
-            logger.info("DEBUG: [LegalHoldsTest] uri =[" + uri  + "]");
+              logger.info("DEBUG: [LegalHoldsTest] uri =[" + uri  + "]");
               synchronized (urisDeleted) {
                 AtomicInteger deleted = urisDeleted.get(batch.getForest().getForestName());
                 if ( deleted == null ) {
@@ -165,8 +165,8 @@ public class LegalHoldsTest {
         }
       )
       .onQueryFailure( throwable -> {
-          anyFailure.append("error: " + throwable + "\n");
-          throwable.printStackTrace();
+        anyFailure.append("error: " + throwable + "\n");
+        throwable.printStackTrace();
       });
     moveMgr.startJob(batcher);
 
@@ -174,7 +174,7 @@ public class LegalHoldsTest {
     batcher.awaitCompletion(1, TimeUnit.DAYS);
 
     if ( anyFailure.length() > 0 ) {
-        fail(anyFailure.toString());
+      fail(anyFailure.toString());
     }
 
     JSONDocumentManager docMgr = evalClient.newJSONDocumentManager();
@@ -211,18 +211,18 @@ public class LegalHoldsTest {
 
     // write server-side javascript module file to the modules database
     libsMgr.write("/ext" + directory + "filterUrisReferencedByHolds.sjs",
-        new FileHandle(new File("src/test/resources/legal_holds/filterUrisReferencedByHolds.sjs"))
+      new FileHandle(new File("src/test/resources/legal_holds/filterUrisReferencedByHolds.sjs"))
         .withFormat(Format.TEXT));
   }
 
   private static void setMergeTimestamp(String timestampXQuery) throws Exception {
-      adminClient.newServerEval()
-        .xquery(
-          "import module namespace admin = 'http://marklogic.com/xdmp/admin' at '/MarkLogic/admin.xqy';" +
+    adminClient.newServerEval()
+      .xquery(
+        "import module namespace admin = 'http://marklogic.com/xdmp/admin' at '/MarkLogic/admin.xqy';" +
 
           "admin:save-configuration(admin:database-set-merge-timestamp(admin:get-configuration(), " +
           "    xdmp:database(), " + timestampXQuery + ")), " + timestampXQuery
-        ).eval();
+      ).eval();
   }
 
   private static void uploadData() throws Exception {

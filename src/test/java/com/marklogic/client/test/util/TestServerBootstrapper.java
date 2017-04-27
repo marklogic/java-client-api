@@ -35,101 +35,98 @@ import com.marklogic.client.example.util.Bootstrapper;
  * This test manages a REST instance to support Java unit tests. It installs a resource
  * extension called boostrap.xqy. then invokes it to create users and indexes
  * needed for Java unit tests. This XQuery module contains user and index setup.
- * 
+ *
  * Calling the main method with no arguments sets up a REST server on port
  * 8012 for the test harness.
- * 
+ *
  */
 public class TestServerBootstrapper {
 
-	private String username = "admin";
-	private String password = "admin";
-	private String host = "localhost";
-	private int port = 8012;
+  private String username = "admin";
+  private String password = "admin";
+  private String host = "localhost";
+  private int port = 8012;
 
-	private void bootstrapRestServer() throws ClientProtocolException,
-			IOException {
+  private void bootstrapRestServer() throws ClientProtocolException, IOException {
 
-		Bootstrapper.main(new String[] {"-configuser", username, "-configpassword", password, "-confighost", host, "-restserver", "java-unittest", "-restport", ""+port, "-restdb", "java-unittest"});
-	
-		
-		System.out.println("Bootstrapped rest server for unit tests on port 8012");
-	}
+    Bootstrapper.main(new String[] {"-configuser", username, "-configpassword", password, "-confighost", host, "-restserver", "java-unittest", "-restport", ""+port, "-restdb", "java-unittest"});
 
-	private void deleteRestServer() throws ClientProtocolException, IOException {
 
-		DefaultHttpClient client = new DefaultHttpClient();
+    System.out.println("Bootstrapped rest server for unit tests on port 8012");
+  }
 
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", 8002),
-				new UsernamePasswordCredentials(username, password));
+  private void deleteRestServer() throws ClientProtocolException, IOException {
 
-		HttpDelete delete = new HttpDelete(
-				"http://"
-						+ host
-						+ ":8002/v1/rest-apis/java-unittest?include=modules&include=content");
+    DefaultHttpClient client = new DefaultHttpClient();
 
-		client.execute(delete);
-	}
+    client.getCredentialsProvider().setCredentials(
+      new AuthScope("localhost", 8002),
+      new UsernamePasswordCredentials(username, password));
 
-	private void invokeBootstrapExtension() throws ClientProtocolException,
-			IOException {
+    HttpDelete delete = new HttpDelete(
+      "http://"
+        + host
+        + ":8002/v1/rest-apis/java-unittest?include=modules&include=content");
 
-		DefaultHttpClient client = new DefaultHttpClient();
+    client.execute(delete);
+  }
 
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", port),
-				new UsernamePasswordCredentials(username, password));
+  private void invokeBootstrapExtension() throws ClientProtocolException, IOException {
 
-		HttpPost post = new HttpPost("http://" + host + ":" + port
-				+ "/v1/resources/bootstrap");
+    DefaultHttpClient client = new DefaultHttpClient();
 
-		HttpResponse response = client.execute(post);
-		@SuppressWarnings("unused")
-		HttpEntity entity = response.getEntity();
-		System.out.println("Invoked bootstrap extension.  Response is "
-				+ response.toString());
-	}
+    client.getCredentialsProvider().setCredentials(
+      new AuthScope("localhost", port),
+      new UsernamePasswordCredentials(username, password));
 
-	private void installBootstrapExtension() throws IOException {
+    HttpPost post = new HttpPost("http://" + host + ":" + port
+      + "/v1/resources/bootstrap");
 
-		DefaultHttpClient client = new DefaultHttpClient();
+    HttpResponse response = client.execute(post);
+    @SuppressWarnings("unused")
+    HttpEntity entity = response.getEntity();
+    System.out.println("Invoked bootstrap extension.  Response is "
+      + response.toString());
+  }
 
-		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", port),
-				new UsernamePasswordCredentials(username, password));
+  private void installBootstrapExtension() throws IOException {
 
-		HttpPut put = new HttpPut("http://" + host + ":" + port
-				+ "/v1/config/resources/bootstrap?method=POST");
+    DefaultHttpClient client = new DefaultHttpClient();
 
-		put.setEntity(new FileEntity(new File("src/test/resources/bootstrap.xqy"), "application/xquery"));
-		HttpResponse response = client.execute(put);
-		@SuppressWarnings("unused")
-		HttpEntity entity = response.getEntity();
-		System.out.println("Installed bootstrap extension.  Response is "
-				+ response.toString());
+    client.getCredentialsProvider().setCredentials(
+      new AuthScope("localhost", port),
+      new UsernamePasswordCredentials(username, password));
 
-	}
-	
-	public static void main(String[] args) throws ClientProtocolException,
-			IOException {
-		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-		//System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
+    HttpPut put = new HttpPut("http://" + host + ":" + port
+      + "/v1/config/resources/bootstrap?method=POST");
 
-		TestServerBootstrapper bootstrapper = new TestServerBootstrapper();
+    put.setEntity(new FileEntity(new File("src/test/resources/bootstrap.xqy"), "application/xquery"));
+    HttpResponse response = client.execute(put);
+    @SuppressWarnings("unused")
+    HttpEntity entity = response.getEntity();
+    System.out.println("Installed bootstrap extension.  Response is "
+      + response.toString());
 
-		if ((args.length == 1) && (args[0].equals("teardown"))) {
-			bootstrapper.teardown();
-		} else {
-			bootstrapper.bootstrapRestServer();
-			bootstrapper.installBootstrapExtension();
-			bootstrapper.invokeBootstrapExtension();
-		}
+  }
 
-	};
+  public static void main(String[] args) throws ClientProtocolException, IOException {
+    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+    //System.setProperty("org.apache.commons.logging.Log", "org.apache.commons.logging.impl.SimpleLog");
 
-	public void teardown() throws ClientProtocolException, IOException {
-		deleteRestServer();
-	}
+    TestServerBootstrapper bootstrapper = new TestServerBootstrapper();
+
+    if ((args.length == 1) && (args[0].equals("teardown"))) {
+      bootstrapper.teardown();
+    } else {
+      bootstrapper.bootstrapRestServer();
+      bootstrapper.installBootstrapExtension();
+      bootstrapper.invokeBootstrapExtension();
+    }
+
+  };
+
+  public void teardown() throws ClientProtocolException, IOException {
+    deleteRestServer();
+  }
 
 }

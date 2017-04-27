@@ -24,15 +24,15 @@ import org.junit.Test;
 import com.marklogic.client.example.cookbook.DocumentOutputStream;
 
 public class DocumentOutputStreamTest {
-	@Test
-	public void testMain() {
-		boolean succeeded = false;
-		try {
-			DocumentOutputStream.main(new String[0]);
-			succeeded = true;
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		assertTrue("DocumentOutputStream example failed", succeeded);
-	}
+  @Test
+  public void testMain() {
+    boolean succeeded = false;
+    try {
+      DocumentOutputStream.main(new String[0]);
+      succeeded = true;
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+    assertTrue("DocumentOutputStream example failed", succeeded);
+  }
 }
