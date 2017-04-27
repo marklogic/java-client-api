@@ -40,21 +40,21 @@ public class HandleAccessorTest {
 
   @Test
   public void testContentAsString() throws URISyntaxException, IOException {
-    // I'm purposely using a string with a non-ascii character to test 
+    // I'm purposely using a string with a non-ascii character to test
     // charset issues
     String hola = "¡Hola!";
     System.out.println("Default Java Charset: " + Charset.defaultCharset());
-    assertEquals("String content mismatch", hola, 
-        HandleAccessor.contentAsString(new StringHandle(hola)));
-    assertEquals("byte[] content mismatch", hola, 
-        HandleAccessor.contentAsString(new BytesHandle(hola.getBytes("UTF-8"))));
+    assertEquals("String content mismatch", hola,
+      HandleAccessor.contentAsString(new StringHandle(hola)));
+    assertEquals("byte[] content mismatch", hola,
+      HandleAccessor.contentAsString(new BytesHandle(hola.getBytes("UTF-8"))));
     URL filePath = this.getClass().getClassLoader().getResource("hola.txt");
-    assertEquals("Reader content mismatch", hola, 
-        HandleAccessor.contentAsString(new ReaderHandle(new StringReader(hola))));
-    assertEquals("File content mismatch", hola, 
-        HandleAccessor.contentAsString(new FileHandle(new File(filePath.toURI()))));      
-    assertEquals("InputStream content mismatch", hola, 
-        HandleAccessor.contentAsString(new InputStreamHandle(filePath.openStream())));
+    assertEquals("Reader content mismatch", hola,
+      HandleAccessor.contentAsString(new ReaderHandle(new StringReader(hola))));
+    assertEquals("File content mismatch", hola,
+      HandleAccessor.contentAsString(new FileHandle(new File(filePath.toURI()))));
+    assertEquals("InputStream content mismatch", hola,
+      HandleAccessor.contentAsString(new InputStreamHandle(filePath.openStream())));
 
     InputStream fileInputStream = new FileInputStream(new File(filePath.toURI())) {
       @Override
@@ -63,8 +63,8 @@ public class HandleAccessorTest {
           HandleAccessorTest.fileInputStreamWasClosed = true;
       }
     };
-    assertEquals("InputStream content mismatch", hola, 
-        HandleAccessor.contentAsString(new InputStreamHandle(fileInputStream)));
+    assertEquals("InputStream content mismatch", hola,
+      HandleAccessor.contentAsString(new InputStreamHandle(fileInputStream)));
     assertTrue(this.fileInputStreamWasClosed);
   }
 }
