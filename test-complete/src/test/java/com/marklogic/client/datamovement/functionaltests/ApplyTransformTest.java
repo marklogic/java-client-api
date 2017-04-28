@@ -58,7 +58,7 @@ import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;
@@ -71,14 +71,14 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
-public class ApplyTransformTest extends  DmsdkJavaClientREST {
+public class ApplyTransformTest extends  BasicJavaClientREST {
 
 	private static String dbName = "ApplyTransform";
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	private static DatabaseClient dbClient;
-	private static String host = "localhost";
+	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -103,7 +103,7 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 	private static JsonNode jsonNode;
 	private static JsonNode jsonNode1;
 	private static final String query1 = "fn:count(fn:doc())";
-	private static String[] hostNames ;
+	private static String[] hostNames;
 
 
 	/**
@@ -111,6 +111,8 @@ public class ApplyTransformTest extends  DmsdkJavaClientREST {
 	 */
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		loadGradleProperties();
+		host = getRestAppServerHostName();
 		hostNames = getHosts();	    
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);

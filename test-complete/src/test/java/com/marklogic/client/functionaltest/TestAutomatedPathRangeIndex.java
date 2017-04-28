@@ -70,15 +70,17 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 	private static String[] fNames = { "TestAutomatedPathRangeIndexDB-1" };
 	
 	private DatabaseClient client;
-	
+	private static String appServerHostname = null;
+	private static int adminPort = 0;
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {		
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
-		//
+		
 		BasicJavaClientREST.addRangePathIndex(dbName, "long", "com.marklogic.client.functionaltest.ArtifactIndexedOnInteger/inventory", "", "reject",true);
-
+		appServerHostname = getRestAppServerHostName();
+		adminPort = getAdminPort();
 	}
 
 	@AfterClass
@@ -111,9 +113,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		try {
 			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
-					new AuthScope("localhost", 8002),
+					new AuthScope(appServerHostname, adminPort),
 					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://localhost:8002"
+			HttpGet getrequest = new HttpGet("http://" + appServerHostname +":" + adminPort
 					+ "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
 			HttpResponse response1 = client.execute(getrequest);
@@ -161,9 +163,9 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		try {
 			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(
-					new AuthScope("localhost", 8002),
+					new AuthScope(appServerHostname, adminPort),
 					new UsernamePasswordCredentials("admin", "admin"));
-			HttpGet getrequest = new HttpGet("http://localhost:8002"
+			HttpGet getrequest = new HttpGet("http://" +appServerHostname+ ":" + adminPort
 					+ "/manage/v2/databases/" + dbName
 					+ "/properties?format=json");
 			HttpResponse response1 = client.execute(getrequest);
@@ -319,8 +321,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 			}
 		}
 	}
-	
-	
+		
 	@Test
 	public void testArtifactIndexedOnString() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		boolean succeeded = false;
@@ -726,6 +727,5 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 		assertNotNull("Artifact object should never be Null",art);
 		assertNotNull("Id should never be Null",art.id);
 		assertTrue("Inventry is always greater than 1000", art.getInventory()>1000);
-	}
-	
+	}	
 }

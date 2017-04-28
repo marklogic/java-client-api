@@ -48,6 +48,7 @@ public class TestAppServicesWordConstraint extends BasicJavaClientREST {
 	  System.out.println("In setup");
 	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
+	  addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
 	}
 @After
 public  void testCleanUp() throws Exception

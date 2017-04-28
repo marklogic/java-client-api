@@ -58,6 +58,8 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 public class TestPointInTimeQuery extends BasicJavaClientREST {
 	private static String dbName = "TestPointInTimeQueryDB";
 	private static String [] fNames = {"TestPointInTimeQuery-1"};
+	private static int adminPort = 0;
+	private static String appServerHostname = null;
 	
 	@BeforeClass	
 	public static void setUp() throws Exception {
@@ -66,9 +68,11 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		setupAppServicesConstraint(dbName);
 		
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
-	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");	    
 		// set to - 60 seconds
 		setDatabaseProperties(dbName, "merge-timestamp","-600000000");
+		appServerHostname = getRestAppServerHostName();
+		adminPort = getAdminPort();
 	}
 	
 	@After
@@ -120,7 +124,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		long insTimeStamp = jacksonHandle.getServerTimestamp();
 		System.out.println("Point in Time Stamp after the initial insert " + insTimeStamp);
 		// Verify the counts
-		JsonNode jNode = getDBFragmentCount(getRestAppServerHostName(), "8002", dbName);
+		JsonNode jNode = getDBFragmentCount();
 	    int activeFragCount = jNode.path("database-counts").path( "count-properties").path("active-fragments").path("value").asInt();
 		int deletedFragCount = jNode.path("database-counts").path( "count-properties").path("deleted-fragments").path("value").asInt();
 		System.out.println("Number of active Fragments after initial insert" + activeFragCount);
@@ -183,7 +187,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		System.out.println("Point in Time Stamp after the first update " + firstUpdTimeStamp);
 
 		// Verify the counts
-		jNode = getDBFragmentCount(getRestAppServerHostName(), "8002", dbName);
+		jNode = getDBFragmentCount();
 		activeFragCount = jNode.path("database-counts").path( "count-properties").path("active-fragments").path("value").asInt();
 		deletedFragCount = jNode.path("database-counts").path( "count-properties").path("deleted-fragments").path("value").asInt();
 		System.out.println("Number of active Fragments after first update " + activeFragCount);
@@ -214,7 +218,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		System.out.println("Point in Time Stamp after the first update " + secondUpdTimeStamp);
 
 		// Verify the counts
-		jNode = getDBFragmentCount(getRestAppServerHostName(), "8002", dbName);
+		jNode = getDBFragmentCount();
 		activeFragCount = jNode.path("database-counts").path( "count-properties").path("active-fragments").path("value").asInt();
 		deletedFragCount = jNode.path("database-counts").path( "count-properties").path("deleted-fragments").path("value").asInt();
 		System.out.println("Number of active Fragments after second update " + activeFragCount);
@@ -353,16 +357,16 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
 		//TODO THE TEST.
 	}
 	
-	public JsonNode getDBFragmentCount(String hostname, String adminport, String dbName) {
+	public JsonNode getDBFragmentCount() {
 		InputStream jstream = null;
 		JsonNode jnode = null;
 		DefaultHttpClient client = null;
 		try {
 		client = new DefaultHttpClient();
 		client.getCredentialsProvider().setCredentials(
-				new AuthScope("localhost", 8002),
+				new AuthScope(appServerHostname, adminPort),
 				new UsernamePasswordCredentials("admin", "admin"));
-		HttpGet getrequest = new HttpGet("http://" + hostname +":" + adminport + "/manage/v2/databases/" + dbName + "?view=counts&format=json");
+		HttpGet getrequest = new HttpGet("http://" + appServerHostname +":" + adminPort + "/manage/v2/databases/" + dbName + "?view=counts&format=json");
 		HttpResponse resp = client.execute(getrequest);
 		jstream = resp.getEntity().getContent();
 		jnode = new ObjectMapper().readTree(jstream);	

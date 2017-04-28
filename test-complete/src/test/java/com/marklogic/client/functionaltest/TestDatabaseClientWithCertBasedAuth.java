@@ -486,7 +486,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 			client.getCredentialsProvider().setCredentials(
 					new AuthScope(host, 8002),
 					new UsernamePasswordCredentials("admin", "admin"));
-            HttpGet getrequest = new HttpGet("http://localhost:8002/manage/v2/servers/"+server+"/properties?group-id=Default&format=json");
+            HttpGet getrequest = new HttpGet("http://" +host+":8002/manage/v2/servers/"+server+"/properties?group-id=Default&format=json");
 			HttpResponse response1 = client.execute(getrequest);
 			jsonstream = response1.getEntity().getContent();
 			JsonNode jnode= new ObjectMapper().readTree(jsonstream);
@@ -498,7 +498,7 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST{
 			
 			mainNode.put("operation", "clear-database");
 			
-			HttpPost post = new HttpPost("http://localhost:8002"+ "/manage/v2/databases/" + dbName);
+			HttpPost post = new HttpPost("http://"+host+":8002"+ "/manage/v2/databases/" + dbName);
 			post.addHeader("Content-type", "application/json");
 			post.setEntity(new StringEntity(mainNode.toString()));
 

@@ -33,7 +33,7 @@ import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DOMHandle;
@@ -43,14 +43,14 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 
-public class WriteBatcherJobReportTest extends  DmsdkJavaClientREST{
+public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	
 	private static String dbName = "WriteBatcherJobReport";
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
-	private static String host = "localhost";
+	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -65,12 +65,11 @@ public class WriteBatcherJobReportTest extends  DmsdkJavaClientREST{
 	
 	private static WriteBatcher ihbMT;
 	private static JsonNode clusterInfo;
-	private static String[] hostNames ;
+	private static String[] hostNames;
 	
 	private static String stringTriple;
 	private static File fileJson;
 	private static Document docContent;
-
 
 	private static JsonNode jsonNode;
 	
@@ -78,6 +77,8 @@ public class WriteBatcherJobReportTest extends  DmsdkJavaClientREST{
 			
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		loadGradleProperties();
+		host = getRestAppServerHostName();
 		hostNames = getHosts();	    
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);

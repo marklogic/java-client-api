@@ -62,12 +62,14 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 	private  DatabaseClient client ;
 	// Additional port to test for Uber port
     private static int uberPort = 8000;
+    private static String appServerHostname = null;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		System.out.println("In setup");
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	@AfterClass
@@ -83,7 +85,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 		// create new connection for each test below
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
 	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
-		client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After

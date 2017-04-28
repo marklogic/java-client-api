@@ -160,7 +160,8 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		
 		int restPort = getRestServerPort();
-		client = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		String appServerHostname = getRestAppServerHostName();
+		client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
 		ExtensionMetadata resextMetadata = new ExtensionMetadata();
 		resextMetadata.setTitle("BasicJSTest");

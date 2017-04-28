@@ -34,6 +34,7 @@ import java.nio.channels.FileChannel;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
@@ -56,15 +57,19 @@ import javax.xml.transform.dom.DOMSource;
 import javax.xml.transform.sax.SAXSource;
 import javax.xml.transform.stream.StreamResult;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-//import sun.java2d.loops.XorPixelWriter.ByteData;
-
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -73,7 +78,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.Format;
@@ -510,6 +514,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 		// create an anonymous class with a callback method
 		OutputStreamSender sender = new OutputStreamSender() {
             // the callback receives the output stream
+			@Override
 			public void write(OutputStream out) throws IOException {
         		// acquire the content
 				InputStream docStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
@@ -520,6 +525,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
         
@@ -554,6 +560,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
         
@@ -588,6 +595,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
 

@@ -64,15 +64,16 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 
-public class ExportToWriterListenerTest extends com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST {
+public class ExportToWriterListenerTest extends BasicJavaClientREST {
 	
 	private static String dbName = "ExportToWriterListener";
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
-	private static String host = "localhost";
+	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -98,6 +99,7 @@ public class ExportToWriterListenerTest extends com.marklogic.client.datamovemen
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		host = getRestAppServerHostName();
 		dataConfigDirPath = getDataConfigDirPath();
 		hostNames = getHosts();	    
 		createDB(dbName);

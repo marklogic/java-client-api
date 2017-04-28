@@ -66,8 +66,8 @@ import com.marklogic.client.io.JacksonHandle;
 public class TestEvalJavaScript  extends BasicJavaClientREST {
 	private static String dbName = "TestEvalJavaScriptDB";
 	private static String [] fNames = {"TestEvalJavaScriptDB-1"};
-	
-	
+	private static String appServerHostname = null;
+		
 	private  DatabaseClient client ;
 
 	@BeforeClass
@@ -75,7 +75,8 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		 System.out.println("In setup");
 		 configureRESTServer(dbName, fNames, false);
  	     TestEvalXquery.createUserRolesWithPrevilages("test-js-eval", "xdbc:eval", "xdbc:eval-in","xdmp:eval-in","xdmp:invoke-in","xdmp:invoke","xdbc:invoke-in","any-uri","xdbc:invoke");
- 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-js-eval");		 
+ 	     TestEvalXquery.createRESTUser("eval-user", "x", "test-js-eval");
+ 	     appServerHostname = getRestAppServerHostName();
 	}
 
 	@AfterClass
@@ -89,7 +90,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 	@Before
 	public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 		int restPort = getRestServerPort();
-		client = getDatabaseClientOnDatabase("localhost", restPort, dbName,"eval-user", "x", Authentication.DIGEST);
+		client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName,"eval-user", "x", Authentication.DIGEST);
 	}
 
 	@After
@@ -548,7 +549,7 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 		InputStream inputStream = null;
 		int restPort = getRestServerPort();
 		String restServerName = getRestServerName();
-		DatabaseClient moduleClient = getDatabaseClientOnDatabase("localhost", restPort, (restServerName + "-modules"), "admin", "admin", Authentication.DIGEST);
+		DatabaseClient moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort, (restServerName + "-modules"), "admin", "admin", Authentication.DIGEST);
 		try {
 			inputStream = new FileInputStream(
 					"src/test/java/com/marklogic/client/functionaltest/data/javascriptQueries.sjs");

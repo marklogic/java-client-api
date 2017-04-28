@@ -27,14 +27,18 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+
 import org.junit.*;
 public class TestXMLDocumentRepair extends BasicJavaClientREST {
+	
+	private static String appServerHostname = null;
+	
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
 		setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
-
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	@Test	
@@ -71,7 +75,7 @@ public class TestXMLDocumentRepair extends BasicJavaClientREST {
 		out.close();
 
 		// create database client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "rest-writer", "x", Authentication.DIGEST);
 
 		// create doc id
 		String docId = "/repair/xml/" + file.getName();

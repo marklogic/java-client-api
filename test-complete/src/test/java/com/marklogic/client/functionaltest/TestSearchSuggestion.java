@@ -36,8 +36,6 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 
 	private static String dbName = "SearchSuggestionDB";
 	private static String [] fNames = {"SearchSuggestionDB-1"};
-	
-	
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
@@ -48,6 +46,9 @@ public class TestSearchSuggestion extends BasicJavaClientREST {
 		setupAppServicesConstraint(dbName);
 		addRangeElementIndex(dbName, "string", "http://action/", "title", "http://marklogic.com/collation/");
 		addRangeElementIndex(dbName, "string", "http://noun/", "title", "http://marklogic.com/collation/");
+		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+		addFieldExcludeRoot(dbName, "para");
+		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
 	}
 
 	@After

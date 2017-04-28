@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.Calendar;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -50,13 +51,18 @@ public class TestBug18736 extends BasicJavaClientREST {
 	public static void setUp() throws Exception 
 	{
 	  System.out.println("In setup");
+	 
 	  configureRESTServer(dbName, fNames);
+	  long startTime =  Calendar.getInstance().getTimeInMillis();
 	  setupAppServicesConstraint(dbName);
+	  long endTime =  Calendar.getInstance().getTimeInMillis();
+	  long nt = endTime - startTime;
+	  System.out.println("Configure REST Server Time is " + nt);
 	}
 
 @Test
 	public void testBug18736() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
-	{	
+	{	System.out.println("Start Time is " + Calendar.getInstance().getTimeInMillis());
 		System.out.println("Running testBug18736");
 		
 		String filename = "constraint1.xml";

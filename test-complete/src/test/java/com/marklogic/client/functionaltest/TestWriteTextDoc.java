@@ -21,25 +21,26 @@ import static org.junit.Assert.*;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
-
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
+
 import org.junit.*;
 public class TestWriteTextDoc extends BasicJavaClientREST
 {
+	private static String appServerHostname = null;
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
 		setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
-
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	@Test  
 	public void testWriteTextDoc()  
 	{
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "admin", "admin", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "admin", "admin", Authentication.DIGEST);
 
 		String docId = "/foo/test/myFoo.txt";
 		TextDocumentManager docMgr = client.newTextDocumentManager();

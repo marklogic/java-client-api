@@ -66,7 +66,7 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
@@ -94,7 +94,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
  * - With invalid string query. Verify error message.
  *
  */
-public class StringQueryHostBatcherTest extends  DmsdkJavaClientREST {
+public class StringQueryHostBatcherTest extends  BasicJavaClientREST {
 	private static String dbName = "StringQueryHostBatcherDB";
 	private static String [] fNames = {"StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3"};
 	private static DataMovementManager dmManager = null;

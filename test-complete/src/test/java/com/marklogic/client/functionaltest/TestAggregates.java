@@ -22,6 +22,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.DecimalFormat;
+import java.util.Calendar;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -55,10 +56,12 @@ public class TestAggregates extends BasicJavaClientREST  {
 	public static void setUp() throws Exception 
 	{
 	   System.out.println("In setup");
+	   long startTime =  Calendar.getInstance().getTimeInMillis();
 	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
-	  
-	 // System.out.println(" and "+ serverName + dbName + restServerName);
+	  long endTime =  Calendar.getInstance().getTimeInMillis();
+	  long nt = endTime - startTime;
+	  System.out.println("Configure REST Server Time is " + nt);
 	}
 	
     @After
@@ -208,7 +211,7 @@ public class TestAggregates extends BasicJavaClientREST  {
 	}
 	@Test
 	public void testTuplesAggregates() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
+	{	System.out.println("Start Time is " + Calendar.getInstance().getTimeInMillis());
 		System.out.println("Running testTuplesAggregates");
 		
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};

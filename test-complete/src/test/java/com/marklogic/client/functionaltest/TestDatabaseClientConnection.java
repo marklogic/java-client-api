@@ -67,6 +67,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
+
 import java.util.Map;
 
 public class TestDatabaseClientConnection extends BasicJavaClientREST{
@@ -82,6 +83,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	private static String [] UberfNames = {"UberDatabaseClientConnectionDB-1"};
 	private static int Uberport = 8000;
 	private static String UberrestServerName = "App-Services";
+	private static String appServerHostname = null;
 	
 	@BeforeClass
 	public static void setUp() throws Exception {
@@ -89,6 +91,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		configureRESTServer(dbName, fNames);
 		restPort = getRestServerPort();
 		restServerName = getRestServerName();
+		appServerHostname = getRestAppServerHostName();
 		
 		/*
 		 * Only users with the http://marklogic.com/xdmp/privileges/xdmp-eval-in (xdmp:eval-in) or equivalent privilege can 
@@ -159,14 +162,14 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		
 		String filename = "facebook-10443244874876159931";
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8033, "rest-reader", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, "rest-reader", "x", Authentication.DIGEST);
 		
 		String expectedException = null;		                              
 		String exception = "";
 		if 	(IsSecurityEnabled()) 
 			expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused";
 		else
-			expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8033 refused";
+			expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException";
 		
 		// write doc
 		try {
@@ -294,7 +297,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		
 		String filename = "xml-original-test.xml";
 		String uri = "/write-xml-string/";		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, "eval-user", "x", Authentication.DIGEST);				
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, "eval-user", "x", Authentication.DIGEST);				
 		String exception = "";
 			
 			// write doc		
@@ -323,7 +326,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		
 		String filename = "xml-original-test.xml";
 		String uri = "/write-xml-string/";		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);				
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);				
 		String exception = "";
 				
 		// write doc		
@@ -352,7 +355,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
 		String queryOptionName = "suggestionOpt.xml";
 		
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);			
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);			
 		// write docs
 		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/ss/", "XML");
@@ -381,7 +384,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
 		String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames) {
@@ -438,7 +441,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml"};
 		String queryOptionName = "aggregatesOpt5Occ.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
 		
 		// write docs
 		for(String filename : filenames) {
@@ -472,7 +475,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		System.out.println("Running testTransactionReadStatus");
 		
 		String docId[] = {"/foo/test/transactionURIFoo1.txt","/foo/test/transactionURIFoo2.txt","/foo/test/transactionURIFoo3.txt"};
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
 		Transaction transaction = client.openTransaction();
 		try {
 			TextDocumentManager docMgr = client.newTextDocumentManager();
@@ -592,7 +595,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		System.out.println("Running testAddAs");
 		
 		String[] docId = {"aggr1.xml", "aggr2.xml", "aggr3.xml"};
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
 		Transaction transaction = client.openTransaction();
 		
 		try {
@@ -655,7 +658,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		try {
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		client = DatabaseClientFactory.newClient("localhost", Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+		client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
 		// write docs
 		for(String filename : filenames) {
 			writeDocumentUsingInputStreamHandle(client, filename, "/raw-alert/", "XML");
@@ -795,7 +798,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 		String[] rules = new String[] {"RULE-TEST-1","RULE-TEST-2"};
 
-		//DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+		//DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8011, "rest-admin", "x", Authentication.DIGEST);
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
 		// write docs
