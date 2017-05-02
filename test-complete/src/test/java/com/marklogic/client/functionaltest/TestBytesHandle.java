@@ -35,15 +35,17 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.BytesHandle;
+
 import org.junit.*;
 public class TestBytesHandle extends BasicJavaClientREST{
 
-
+	
 private static String dbName = "BytesHandleDB";
 private static String [] fNames = {"BytesHandleDB-1"};
 
 //Additional port to test for Uber port
 private static int uberPort = 8000;
+private static String appServerHostname = null;
 
 @BeforeClass
 public static void setUp() throws Exception{
@@ -51,6 +53,7 @@ public static void setUp() throws Exception{
 	configureRESTServer(dbName, fNames);
 	createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+    appServerHostname = getRestAppServerHostName();
 	}
 
 @Test
@@ -63,7 +66,7 @@ public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmExceptio
 	XMLUnit.setNormalizeWhitespace(true);
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x",Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x",Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, null,"XML");
@@ -125,7 +128,7 @@ public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmExcepti
 	System.out.println("Runing test TextCRUD");
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -185,7 +188,7 @@ public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmExcepti
 	ObjectMapper mapper = new ObjectMapper();
 	
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -244,7 +247,7 @@ public void testBinaryCRUD() throws KeyManagementException, NoSuchAlgorithmExcep
 	System.out.println("Running testBinaryCRUD");
 
 	// connect the client
-	DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+	DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 	
 	// write docs
 	writeDocumentUsingBytesHandle(client, filename, uri, "Binary");

@@ -40,6 +40,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 	private static String dbName = "TestSSLConnectionDB";
 	private static String [] fNames = {"TestSSLConnectionDB-1"};
 	private static String restServerName = "REST-Java-Client-API-SSL-Server";
+	private static String appServerHostname = null;
 
 	@BeforeClass
 	public static void setUp() throws Exception 
@@ -47,6 +48,11 @@ public class TestSSLConnection extends BasicJavaClientREST {
 		System.out.println("In setup");
 		setupJavaRESTServer(dbName, fNames[0],restServerName,8012);
 		setupAppServicesConstraint(dbName);
+		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+		addFieldExcludeRoot(dbName, "para");
+		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
+		loadGradleProperties();
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	/*
@@ -84,7 +90,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient("appServerHostname", 8012, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 	    // create and initialize a handle on the metadata
 	    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -219,10 +225,10 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8033, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8033, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 
-		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to https://localhost:8033 refused";
+		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException";
 		String exception = "";
 
 		// write doc
@@ -232,7 +238,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 		}
 		catch (Exception e) { exception = e.toString(); }
 
-		assertEquals("Exception is not thrown", expectedException, exception);
+		assertTrue("Exception is not thrown", exception.contains(expectedException));
 
 		// release client
 		client.release();
@@ -266,7 +272,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8011, "rest-admin", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 
 		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
@@ -313,7 +319,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "rest-admin", "foo", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, "rest-admin", "foo", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 
 		String expectedException = "FailedRequestException: Local message: write failed: Unauthorized";
@@ -363,7 +369,7 @@ public class TestSSLConnection extends BasicJavaClientREST {
 
 		// create the client
 		// (note: a real application should use a COMMON, STRICT, or implemented hostname verifier)
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "MyFooUser", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8012, "MyFooUser", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 
 		String expectedException = "FailedRequestException: Local message: write failed: Unauthorized";

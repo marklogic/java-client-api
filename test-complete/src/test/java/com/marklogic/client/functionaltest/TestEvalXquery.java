@@ -461,8 +461,9 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 
 		int restPort = getRestServerPort();
 		String restServerName = getRestServerName();
+		String appServerHostname = getRestAppServerHostName();
 		
-		DatabaseClient	moduleClient = getDatabaseClientOnDatabase("localhost", restPort,(restServerName+"-modules"),"admin", "admin", Authentication.DIGEST);
+		DatabaseClient	moduleClient = getDatabaseClientOnDatabase(appServerHostname, restPort,(restServerName+"-modules"),"admin", "admin", Authentication.DIGEST);
 	try{
 		inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xquery-modules-with-diff-variable-types.xqy");
 		InputStreamHandle ish = new InputStreamHandle();

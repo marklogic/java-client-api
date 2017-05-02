@@ -40,21 +40,21 @@ import com.marklogic.client.io.SourceHandle;
 import org.junit.*;
 
 public class TestTransformXMLWithXSLT extends BasicJavaClientREST {
-
+	private static String appServerHostname = null;
 
 	@BeforeClass 
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");
 		setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
-
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	@Test	
 	public void testWriteXMLWithXSLTransform() throws KeyManagementException, NoSuchAlgorithmException, TransformerException, FileNotFoundException
 	{	
 		// connect the client
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8015, "rest-writer", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "rest-writer", "x", Authentication.DIGEST);
 
 		// get the doc
 		Source source = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee.xml");

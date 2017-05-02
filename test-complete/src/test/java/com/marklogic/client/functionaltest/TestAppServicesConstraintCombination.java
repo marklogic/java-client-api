@@ -50,6 +50,9 @@ public class TestAppServicesConstraintCombination extends BasicJavaClientREST {
 	{
 	  configureRESTServer(dbName, fNames);
 	  setupAppServicesConstraint(dbName);
+	  addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+	  addFieldExcludeRoot(dbName, "para");
+	  includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
 	}
 @After
 public  void testCleanUp() throws Exception

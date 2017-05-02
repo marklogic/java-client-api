@@ -57,6 +57,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 		configureRESTServer(dbName, fNames);
 		setDatabaseProperties(dbName,"stemmed-searches","basic");
 		setupAppServicesConstraint(dbName);
+		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
 	}
 
 	@Test	

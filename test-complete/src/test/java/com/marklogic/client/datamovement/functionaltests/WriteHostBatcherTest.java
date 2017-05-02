@@ -78,7 +78,7 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -97,14 +97,14 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
-public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
+public class WriteHostBatcherTest extends BasicJavaClientREST {
 	
 	private static String dbName = "WriteHostBatcher";
 	private static DataMovementManager dmManager = null;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 	
 	private static DatabaseClient dbClient;
-	private static String host = "localhost";
+	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -143,7 +143,10 @@ public class WriteHostBatcherTest extends  DmsdkJavaClientREST {
 	
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
-		hostNames = getHosts();	    
+		loadGradleProperties();
+		host = getRestAppServerHostName();
+		hostNames = getHosts();
+		
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);
 		int count = 1;

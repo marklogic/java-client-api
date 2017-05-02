@@ -47,7 +47,7 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
 import com.marklogic.client.functionaltest.Company;
@@ -65,7 +65,7 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
-public class UrisToWriterListenerFuncTest extends DmsdkJavaClientREST {
+public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
 
 	private static String dbName = "UrisToWriterListenerFuncTestDB";
 	private static String [] fNames = {"UrisToWriterListenerFuncTestDB-1", "UrisToWriterListenerFuncTestDB-2", "UrisToWriterListenerFuncTestDB-3"};

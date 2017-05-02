@@ -39,7 +39,7 @@ import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.functionaltests.util.DmsdkJavaClientREST;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.JacksonHandle;
@@ -47,12 +47,12 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
-public class ExportListenerTest extends  DmsdkJavaClientREST {
+public class ExportListenerTest extends BasicJavaClientREST {
 
 	private static String dbName = "ExportListener";
 	private static DataMovementManager dmManager = null;
 	private static DatabaseClient dbClient;
-	private static String host = "localhost";
+	private static String host = null;
 	private static String user = "admin";
 	private static int port = 8000;
 	private static String password = "admin";
@@ -64,6 +64,8 @@ public class ExportListenerTest extends  DmsdkJavaClientREST {
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
+		loadGradleProperties();
+		host = getRestAppServerHostName();
 		hostNames = getHosts();	    
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);

@@ -38,6 +38,14 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.Set;
 
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthScope;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ResponseHandler;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.BasicResponseHandler;
+import org.apache.http.impl.client.DefaultHttpClient;
+
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.parsers.DocumentBuilder;
@@ -62,9 +70,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-//import sun.java2d.loops.XorPixelWriter.ByteData;
-
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -510,6 +515,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
 		// create an anonymous class with a callback method
 		OutputStreamSender sender = new OutputStreamSender() {
             // the callback receives the output stream
+			@Override
 			public void write(OutputStream out) throws IOException {
         		// acquire the content
 				InputStream docStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
@@ -520,6 +526,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
         
@@ -554,6 +561,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
         
@@ -588,6 +596,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
         		while ((byteCount=docStream.read(buf)) != -1) {
         			out.write(buf, 0, byteCount);
         		}
+        		docStream.close();
             }
         };
 
@@ -1741,8 +1750,7 @@ return readContent;
 	 * @throws KeyManagementException 
 	 */
 	public void loadGeoData() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		//DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8011, "rest-admin", "x", Authentication.DIGEST);
+	{		
 		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 		
 		// write docs

@@ -25,7 +25,6 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Iterator;
@@ -84,6 +83,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 	private static DatabaseClient client;
 	private static DatabaseClient writeclient;
 	private static DatabaseClient readclient;
+	
+	private static String appServerHostname = null;
 	
 	private static String newline;
 	private static String customGraph;
@@ -217,6 +218,8 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		enableCollectionLexicon(dbName);
 		enableTripleIndex(dbName);
 		waitForServerRestart();
+		
+		appServerHostname = getRestAppServerHostName();
 				
 		//You can enable the triple positions index for faster near searches using cts:triple-range-query.
 		writeclient = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
@@ -2323,7 +2326,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 		
 		createUserRolesWithPrevilages("sem-query-role");
 		createRESTUser("sem-query-user","x","sem-query-role", "rest-writer");
-		DatabaseClient semQueryclient = DatabaseClientFactory.newClient("localhost", restPort, "sem-query-user", "x", Authentication.DIGEST);
+		DatabaseClient semQueryclient = DatabaseClientFactory.newClient(appServerHostname, restPort, "sem-query-user", "x", Authentication.DIGEST);
 		
 		GraphManager graphManagerPerm = semQueryclient.newGraphManager();
 		GraphPermissions  graphPermissions = graphManagerPerm.permission("sem-query-role", Capability.UPDATE, Capability.EXECUTE);

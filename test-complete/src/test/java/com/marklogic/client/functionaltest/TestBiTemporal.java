@@ -108,6 +108,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private final static String latestCollectionName = "latest";
   private final static String updateCollectionName = "updateCollection";
   private final static String insertCollectionName = "insertCollection";
+  
+  private static String appServerHostname = null;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -141,6 +143,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         temporalLsqtCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
+    appServerHostname = getRestAppServerHostName();
   }
 
   @AfterClass
@@ -174,9 +177,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     		                      "xdbc:invoke","temporal:statement-set-system-time");
     createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader", "temporal-admin");
     int restPort = getRestServerPort();
-    adminClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-    writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "eval-user", "x", Authentication.DIGEST);
-    readerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-reader", "x", Authentication.DIGEST);             
+    adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);             
   }
 
   @After

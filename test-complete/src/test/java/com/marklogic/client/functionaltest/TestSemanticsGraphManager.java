@@ -59,8 +59,8 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 	private static GraphManager gmReader;	
 	private static String dbName = "SemanticsDB-JavaAPI";
 	private static String[] fNames = { "SemanticsDB-JavaAPI-1" };
+	private static String appServerHostname = null;
 	
-	//	
 	private DatabaseClient adminClient = null;
 	private DatabaseClient writerClient = null;
 	private DatabaseClient readerClient = null;
@@ -73,7 +73,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		setupAppServicesConstraint(dbName);
 		enableCollectionLexicon(dbName);
 		enableTripleIndex(dbName);
-
+		appServerHostname = getRestAppServerHostName();
 	}
 
 	@AfterClass
@@ -101,9 +101,9 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
 		createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
 		int restPort = getRestServerPort();
-		adminClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-		writerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
-		readerClient = getDatabaseClientOnDatabase("localhost", restPort, dbName, "rest-reader", "x", Authentication.DIGEST);		
+		adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+		writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-writer", "x", Authentication.DIGEST);
+		readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);		
 		gmWriter = writerClient.newGraphManager();
 		gmReader = readerClient.newGraphManager();		
 	}
@@ -333,7 +333,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		InputStream fileRead = read.get();
 		String readContent = convertInputStreamToString(fileRead);
 		assertTrue("Did not find expected content after inserting the triples:: Found: " + readContent,
-				readContent.contains("http://localhost/publications/journals/Journal1/1940"));
+				readContent.contains("/publications/journals/Journal1/1940"));
 		read.close();
 
 	}
@@ -868,7 +868,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
 		int restPort = getRestServerPort();
-		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 		// Create GraphManager with Above client
 		GraphManager gmTestPerm = permUser.newGraphManager();
 		// Set Update Capability for the Created User
@@ -988,7 +988,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
 		int restPort = getRestServerPort();
-		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 		// Create GraphManager with Above client
 
 		Transaction trx = permUser.openTransaction();
@@ -1035,7 +1035,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
 		createRESTUser("perm-user", "x", "test-perm");
 		// Create Client with above User
 		int restPort = getRestServerPort();
-		DatabaseClient permUser = getDatabaseClientOnDatabase("localhost", restPort, dbName, "perm-user", "x", Authentication.DIGEST);
+		DatabaseClient permUser = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "perm-user", "x", Authentication.DIGEST);
 
 		// Create GraphManager with Above client
 		Transaction trx = permUser.openTransaction();

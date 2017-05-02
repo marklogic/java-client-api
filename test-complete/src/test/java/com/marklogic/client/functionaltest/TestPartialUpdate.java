@@ -60,15 +60,18 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	
 	// Additional port to test for Uber port
     private static int uberPort = 8000;
+    private static String appServerHostname = null;
 
 	@BeforeClass
 	public  static void setUp() throws Exception {
 		System.out.println("In setup");		
 		configureRESTServer(dbName, fNames);
 		setupAppServicesConstraint(dbName);
+		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
 		
 		createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in","any-uri","xdbc:invoke");
 	    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader");
+	    appServerHostname = getRestAppServerHostName();
 	}
 
 	@After
@@ -83,7 +86,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -152,7 +155,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "bad-eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "bad-eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -168,7 +171,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -239,7 +242,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String filename = "constraint1.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -327,7 +330,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	{	
 		System.out.println("Running testPartialUpdateDeletePath");
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -367,7 +370,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateFragments() throws Exception{
 		System.out.println("Running testPartialUpdateFragments");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -402,7 +405,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateInsertFragments() throws Exception{
 		System.out.println("Running testPartialUpdateInsertFragments");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -435,7 +438,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateInsertExistingFragments() throws Exception{
 		System.out.println("Running testPartialUpdateInsertExistingFragments");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -468,7 +471,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateReplaceApply() throws Exception{
 		System.out.println("Running testPartialUpdateReplaceApply");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8000, "rest-admin", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8000, "rest-admin", "x", Authentication.DIGEST);
 		ExtensionLibrariesManager libsMgr =  client.newServerConfigManager().newExtensionLibrariesManager();
 
 		libsMgr.write("/ext/patch/custom-lib.xqy", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/custom-lib.xqy")).withFormat(Format.TEXT));
@@ -521,7 +524,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	 
 	public void testPartialUpdateCombination() throws Exception{
 		System.out.println("Running testPartialUpdateCombination");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -550,7 +553,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateCombinationTransc() throws Exception{
 		System.out.println("Running testPartialUpdateCombination");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		Transaction t = client.openTransaction("Transac");
 		// write docs
 		String filename = "constraint1.xml";
@@ -584,7 +587,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateCombinationTranscRevert() throws Exception{
 		System.out.println("Running testPartialUpdateCombinationTranscRevert");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		// write docs
 		String[] filenames = {"constraint1.xml", "constraint2.xml"};
 		for(String filename : filenames) {
@@ -670,7 +673,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 	@Test	
 	public void testPartialUpdateMetadata() throws Exception{
 		System.out.println("Running testPartialUpdateMetadata");
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		String filename = "constraint1.xml";
@@ -741,7 +744,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -776,7 +779,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -819,7 +822,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -856,7 +859,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -899,7 +902,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String filename = "constraint1.xml";
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
@@ -952,7 +955,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -995,7 +998,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -1038,7 +1041,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -1082,7 +1085,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -1125,7 +1128,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 
 		// write docs
 		for(String filename : filenames) {
@@ -1168,7 +1171,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
 		String[] filenames = {"json-original.json"};
 
-		DatabaseClient client = DatabaseClientFactory.newClient("localhost", uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
 		DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 		
 		// write docs
