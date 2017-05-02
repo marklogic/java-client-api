@@ -17,8 +17,7 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -38,6 +37,7 @@ import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
@@ -45,6 +45,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -775,7 +776,73 @@ public class TestRawCombinedQuery extends BasicJavaClientREST {
 		// release client
 		client.release();		
 	}
+	
+	/*
+	 * When searching using a structured query, the <search:metrics/> element in the response used to include 
+	 * an empty <search:extract-resolution-time/>
+	 * This test makes sure that the response does not have 
+	 * <search:extract-resolution-time>
+	 * element
+	 */
+	
+	@Test	
+	public void testBug43940() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+	{	
+		// Negative test
+		System.out.println("Running testBug43940");
 
+		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+
+		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+		// set query option validation to true
+		ServerConfigurationManager srvMgr = client.newServerConfigManager();
+		srvMgr.readConfiguration();
+		srvMgr.setQueryOptionValidation(true);
+		srvMgr.writeConfiguration();
+
+		// write docs
+		for(String filename : filenames)
+		{
+			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+		}
+
+		// get the combined query
+		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryMetricsTrue.xml");
+
+		String combinedQuery = convertFileToString(file);
+
+		// create a handle for the search criteria
+		StringHandle rawHandle = new StringHandle(combinedQuery);
+
+		QueryManager queryMgr = client.newQueryManager();
+
+		// create a search definition based on the handle
+		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+		queryMgr.newStringDefinition("LinkResultDocumentsOpt.xml");
+
+		// create result handle
+		JacksonHandle resultsHandle = new JacksonHandle();
+		queryMgr.search(querydef, resultsHandle);
+
+		// get the result
+		//Document resultDoc = resultsHandle.get();
+		JsonNode resultNode = resultsHandle.get().get("metrics");
+		System.out.println("Mime Type : "+resultsHandle.getMimetype());
+		System.out.println(resultNode);
+		// Make sure response does not have extract-resolution-time property in the metrics
+		assertNull(resultNode.get("extract-resolution-time"));
+		// End of Negative test
+		
+		// Start of positive tests
+		
+		
+		//End of positive tests
+		
+		// release client
+		client.release();		
+	}
+	
 	@AfterClass	
 	public static void tearDown() throws Exception
 	{
