@@ -29,7 +29,7 @@ The Java API supports the following core features of the MarkLogic database:
 *  Execute ACID modifications so the change either succeeds or throws an exception.
 *  Execute multi-statement transactions so changes to multiple documents succeed or fail together.
 
-### What's New in Java Client API 4.0.0
+### What's New in Java Client API 4.0.1
 
 * Optic API - blends relational with NoSQL by providing joins and aggregates over documents
   * is powered by the new row index and query optimizer
