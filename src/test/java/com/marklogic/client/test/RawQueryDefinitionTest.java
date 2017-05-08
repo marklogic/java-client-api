@@ -82,6 +82,7 @@ public class RawQueryDefinitionTest {
 
   @AfterClass
   public static void afterClass() {
+    Common.client.newDocumentManager().delete("test_issue581_RawStructuredQueryFromFileHandle.xml");
   }
 
   @BeforeClass
