@@ -32,6 +32,7 @@ import com.marklogic.client.impl.JacksonBaseHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -56,7 +57,7 @@ public class JacksonParserHandle
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
-    StructureReadHandle, StructureWriteHandle,
+    StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(JacksonParserHandle.class);

@@ -108,6 +108,7 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -117,6 +118,7 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
@@ -2134,12 +2136,17 @@ public class JerseyServices implements RESTServices {
 
         webResource = getConnection().path("search").queryParams(params);
         builder = webResource.type("application/xml").accept(mimetype);
-      } else if (queryDef instanceof RawQueryDefinition) {
+      } else if (queryDef instanceof RawQueryDefinition || queryDef instanceof RawCtsQueryDefinition) {
         if (logger.isDebugEnabled())
           logger.debug("Raw search");
 
-        StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
-        baseHandle = HandleAccessor.checkHandle(handle, "search");
+        if (queryDef instanceof RawQueryDefinition) {
+          StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+          baseHandle = HandleAccessor.checkHandle(handle, "search");
+        } else if (queryDef instanceof RawCtsQueryDefinition) {
+          CtsQueryWriteHandle handle = ((RawCtsQueryDefinition) queryDef).getHandle();
+          baseHandle = HandleAccessor.checkHandle(handle, "search");
+        }
 
         Format payloadFormat = getStructuredQueryFormat(baseHandle);
         String payloadMimetype = getMimetypeWithDefaultXML(payloadFormat, baseHandle);
@@ -2201,6 +2208,8 @@ public class JerseyServices implements RESTServices {
         } else if (queryDef instanceof DeleteQueryDefinition) {
           response = doGet(builder);
         } else if (queryDef instanceof RawQueryDefinition) {
+          response = doPost(reqlog, builder, baseHandle.sendContent(), true);
+        } else if (queryDef instanceof RawCtsQueryDefinition) {
           response = doPost(reqlog, builder, baseHandle.sendContent(), true);
         } else if (queryDef instanceof StringQueryDefinition) {
           response = doGet(builder);

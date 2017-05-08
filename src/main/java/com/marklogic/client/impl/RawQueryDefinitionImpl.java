@@ -15,8 +15,10 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
@@ -79,6 +81,66 @@ abstract public class RawQueryDefinitionImpl
     public RawStructuredQueryDefinition withCriteria(String criteria) {
       setCriteria(criteria);
       return this;
+    }
+  }
+
+  static public class CtsQuery extends AbstractQueryDefinition implements RawCtsQueryDefinition {
+    private String criteria = null;
+    private CtsQueryWriteHandle handle;
+
+    public CtsQuery(CtsQueryWriteHandle handle) {
+      super();
+      setHandle(handle);
+    }
+    public CtsQuery(CtsQueryWriteHandle handle, String optionsName) {
+      super();
+      setHandle(handle);
+      setOptionsName(optionsName);
+    }
+
+    public String serialize() {
+      if (getHandle() == null) return "";
+      return HandleAccessor.contentAsString(getHandle());
+    }
+
+    @Override
+    public String getCriteria() {
+      return criteria;
+    }
+
+    @Override
+    public void setCriteria(String criteria) {
+      this.criteria = criteria;
+    }
+
+    @Override
+    public RawCtsQueryDefinition withCriteria(String criteria) {
+      setCriteria(criteria);
+      return this;
+    }
+
+    @Override
+    public CtsQueryWriteHandle getHandle() {
+      return handle;
+    }
+
+    @Override
+    public void setHandle(CtsQueryWriteHandle handle) {
+      this.handle = handle;
+    }
+
+    @Override
+    public RawCtsQueryDefinition withHandle(CtsQueryWriteHandle handle) {
+      setHandle(handle);
+      return this;
+    }
+
+    @Override
+    public String toString() {
+      if (handle == null) {
+        return "";
+      }
+      return handle.toString();
     }
   }
 

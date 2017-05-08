@@ -19,6 +19,7 @@ import javax.xml.namespace.QName;
 
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -585,6 +586,50 @@ public interface QueryManager {
    * @return a QueryDefinition for use of the structured query
    */
   RawStructuredQueryDefinition newRawStructuredQueryDefinition(StructureWriteHandle handle, String optionsName);
+
+  /**
+   * Defines a serialized cts query from a JSON or XML representation provided as an object of an IO class.
+   *
+   * The IO class must have been registered before creating the database client.
+   * By default, the provided handles that implement
+   * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+   *
+   * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+   *
+   * @param format	whether the format of the representation is JSON or XML
+   * @param rawQuery	an IO representation of the JSON or XML serialized cts query
+   * @return a QueryDefinition for use of the serialized cts query.
+   */
+  RawCtsQueryDefinition newRawCtsQueryDefinitionAs(Format format, Object rawQuery);
+  /**
+   * Defines a serialized cts query from a JSON or XML representation provided as an object of an IO class.
+   *
+   * The IO class must have been registered before creating the database client.
+   * By default, the provided handles that implement
+   * {@link com.marklogic.client.io.marker.ContentHandle ContentHandle} are registered.
+   *
+   * <a href="../../../../overview-summary.html#ShortcutMethods">Learn more about shortcut methods</a>
+   *
+   * @param format	whether the format of the representation is JSON or XML
+   * @param rawQuery	an IO representation of the JSON or XML serialized cts query
+   * @param optionsName the name of a persisted query options configuration
+   * @return a QueryDefinition for use of the serialized cts query.
+   */
+  RawCtsQueryDefinition newRawCtsQueryDefinitionAs(Format format, Object rawQuery, String optionsName);
+
+  /**
+   * Defines a serialized cts query from a JSON or XML representation.
+   * @param handle a handle for a JSON or XML serialized cts query
+   * @return a QueryDefinition for use of the serialized cts query
+   */
+  RawCtsQueryDefinition newRawCtsQueryDefinition(CtsQueryWriteHandle handle);
+  /**
+   * Defines a serialized cts query from a JSON or XML representation.
+   * @param handle a handle for a JSON or XML serialized cts query
+   * @param optionsName the name of a persisted query options configuration
+   * @return a QueryDefinition for use of the serialized cts query
+   */
+  RawCtsQueryDefinition newRawCtsQueryDefinition(CtsQueryWriteHandle handle, String optionsName);
 
   /**
    * Defines a simple query by example from a JSON or XML representation provided as an object of an IO class.

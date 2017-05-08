@@ -28,6 +28,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.SPARQLResultsReadHandle;
@@ -51,7 +52,7 @@ public class JacksonHandle
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
-    StructureReadHandle, StructureWriteHandle,
+    StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     SPARQLResultsReadHandle
 {
   private JsonNode content;

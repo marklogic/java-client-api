@@ -1,0 +1,12 @@
+<search xmlns="http://marklogic.com/appservices/search">
+  <cts:element-value-query xmlns:cts="http://marklogic.com/cts">
+    <cts:element>id</cts:element>
+    <cts:text xml:lang="en">0026</cts:text>
+  </cts:element-value-query>
+  <options>
+    <return-metrics>false</return-metrics>
+    <return-qtext>false</return-qtext>
+    <debug>true</debug>
+    <transform-results apply="raw"/>
+  </options>
+</search>

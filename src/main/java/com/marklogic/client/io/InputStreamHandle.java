@@ -31,6 +31,7 @@ import com.marklogic.client.io.marker.BinaryWriteHandle;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.GenericReadHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
@@ -65,7 +66,7 @@ public class InputStreamHandle
     JSONReadHandle, JSONWriteHandle,
     TextReadHandle, TextWriteHandle,
     XMLReadHandle, XMLWriteHandle,
-    StructureReadHandle, StructureWriteHandle,
+    StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     TriplesReadHandle, TriplesWriteHandle,
     QuadsWriteHandle, SPARQLResultsReadHandle,
     Closeable
