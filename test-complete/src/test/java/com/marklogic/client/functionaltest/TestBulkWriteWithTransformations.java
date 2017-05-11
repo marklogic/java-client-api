@@ -191,6 +191,154 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST{
 
 	}
 	
+	@Test
+	public void testBulkSetReadTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+		String attribute = null;
+
+		TransformExtensionsManager transMgr = 
+				client.newServerConfigManager().newTransformExtensionsManager();
+		ExtensionMetadata metadata = new ExtensionMetadata();
+		metadata.setTitle("Adding attribute xquery Transform");
+		metadata.setDescription("This plugin transforms an XML document by adding attribute to root node");
+		metadata.setProvider("MarkLogic");
+		metadata.setVersion("0.1");
+		// get the transform file
+		File transformFile = new File("src/test/java/com/marklogic/client/functionaltest/transforms/add-attr-xquery-transform.xqy");
+		FileHandle transformHandle = new FileHandle(transformFile);
+		transMgr.writeXQueryTransform("add-attr-xquery-transform", transformHandle, metadata);
+		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
+		transform.put("name", "Land");
+		transform.put("value", "USA");
+		int count=1;
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		docMgr.setWriteTransform(transform);
+		Map<String,String> map= new HashMap<>();
+		DocumentWriteSet writeset =docMgr.newWriteSet();
+		for(int i=0;i<10;i++) {
+
+			writeset.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
+			map.put(DIRECTORY+"foo"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgr.write(writeset);
+				writeset = docMgr.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0) {
+			docMgr.write(writeset);
+		}
+		
+		String uris[] = new String[10];
+		for(int i=0;i<10;i++) {
+			uris[i]=DIRECTORY+"foo"+i+".xml";
+		}
+		count=0;
+		XMLDocumentManager docMgrRd = client.newXMLDocumentManager();
+		DocumentPage page = docMgrRd.read(uris);
+		DOMHandle dh = new DOMHandle();
+		while(page.hasNext()) {
+			DocumentRecord rec = page.next();
+			rec.getContent(dh);
+			assertTrue("Element has attribure ? :",dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			
+			count++;
+		}
+
+		assertEquals("Document count", 10, count); 
+		DOMHandle readHandle = readDocumentUsingDOMHandle(client, uris[0], "XML");
+		attribute = readHandle.get().getDocumentElement().getAttributes().getNamedItem("Land").toString();
+		assertTrue("Attribute value incorrect : ",attribute.contains("Land=\"USA\""));
+		
+		// Do a read transform
+		count=0;
+		ServerTransform transformRd = new ServerTransform("add-attr-xquery-transform");
+		transformRd.put("name", "Place");
+		transformRd.put("value", "England");
+		
+		Map<String,String> mapRd = new HashMap<>();
+		DocumentWriteSet writesetRd = docMgrRd.newWriteSet();
+		for(int i=10;i<20;i++) {
+
+			writesetRd.add(DIRECTORY+"foo"+i+".xml", new DOMHandle(getDocumentContent("This is so foo"+i)));
+			mapRd.put(DIRECTORY+"foo"+i+".xml", convertXMLDocumentToString(getDocumentContent("This is so foo"+i)));
+			if(count%BATCH_SIZE == 0){
+				docMgrRd.write(writesetRd);
+				writesetRd = docMgrRd.newWriteSet();
+			}
+			count++;
+		}
+		if(count%BATCH_SIZE > 0) {
+			docMgrRd.write(writesetRd);
+		}
+		
+		String urisRd[] = new String[10];
+		for(int i=0;i<10;i++) {
+			urisRd[i]=DIRECTORY+"foo"+(i+10)+".xml";
+		}
+		count=0;
+		docMgrRd.setReadTransform(transformRd);
+		DocumentPage pageRd = docMgrRd.read(urisRd);
+		DOMHandle dhRd = new DOMHandle();
+		while(pageRd.hasNext()) {
+			DocumentRecord recRd = pageRd.next();
+			recRd.getContent(dhRd);
+			assertTrue("Element has attribure ? :",dhRd.get().getElementsByTagName("foo").item(0).hasAttributes());
+			attribute = dhRd.get().getDocumentElement().getAttributes().getNamedItem("Place").toString();
+			assertTrue("Attribute value incorrect :", attribute.contains("Place=\"England\""));
+			count++;
+		}
+
+		assertEquals("Document count", 10, count);
+		
+	    // Test for multiple Read transforms on same URI.
+		ServerTransform transformRd1 = new ServerTransform("add-attr-xquery-transform");
+		transformRd1.put("name", "Country");
+		transformRd1.put("value", "GB");
+		
+		XMLDocumentManager docMgrRd1 = client.newXMLDocumentManager();
+		docMgrRd1.setReadTransform(transformRd);
+		docMgrRd1.setReadTransform(transformRd1);
+		DocumentPage pageRd1 = docMgrRd1.read(urisRd[0]);
+		DOMHandle dhRd1 = new DOMHandle();
+		DocumentRecord recRd1 = pageRd1.next();
+		recRd1.getContent(dhRd1);
+		attribute = dhRd1.get().getDocumentElement().getAttributes().getNamedItem("Country").toString();
+		
+		assertTrue("Attribute value incorrect :", attribute.contains("Country=\"GB\""));
+		
+		// Test for Read and Write transforms on same URI.
+		docMgrRd1.setReadTransform(null);
+		DocumentWriteSet writesetMul = docMgrRd1.newWriteSet();
+		docMgrRd1.setWriteTransform(transform);
+		docMgrRd1.setReadTransform(transformRd1);
+		writesetMul.add(DIRECTORY+"fooMultiple.xml", new DOMHandle(getDocumentContent("This is so foo Multiple")));
+		docMgrRd1.write(writesetMul);
+		
+		DocumentPage pageMul = docMgrRd1.read(DIRECTORY+"fooMultiple.xml");
+		DOMHandle dhRdMul = new DOMHandle();
+		DocumentRecord recRdMul = pageMul.next();
+		recRdMul.getContent(dhRdMul);
+		attribute = dhRdMul.get().getDocumentElement().getAttributes().getNamedItem("Country").toString();
+		assertTrue("Attribute value incorrect :", attribute.contains("Country=\"GB\""));
+		attribute = dhRdMul.get().getDocumentElement().getAttributes().getNamedItem("Land").toString();
+		assertTrue("Attribute value incorrect :", attribute.contains("Land=\"USA\""));
+		
+		// Negative test - Use null Transforms
+		docMgrRd1.setReadTransform(null);
+		docMgrRd1.setWriteTransform(null);
+		DocumentWriteSet writeNull = docMgrRd1.newWriteSet();
+		writeNull.add(DIRECTORY+"fooNullTransform.xml", new DOMHandle(getDocumentContent("This is so foo Multiple")));
+		docMgrRd1.write(writeNull);
+		
+		DocumentPage pageNull = docMgrRd1.read(DIRECTORY+"fooNullTransform.xml");
+		DOMHandle dhRdNull = new DOMHandle();
+		DocumentRecord recRdNull = pageNull.next();
+		recRdNull.getContent(dhRdNull);
+		String content = dhRdNull.toString();
+		
+		assertTrue("Attribute value incorrect :", content.contains("<foo>This is so foo Multiple</foo>"));
+	}
+	
 	/* This test is similar to testBulkLoadWithXQueryTransform and is used to validate Git Issue 396.
 	 * 
 	 * Verify that a ServerTransform object is passed along when in transactions.
