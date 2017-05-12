@@ -460,8 +460,6 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
 		assertEquals("Row 1 myCity.city value incorrect", "london", jsonBindingsNodes.path(0).path("myCity.city").path("value").asText());
 		assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", jsonBindingsNodes.path(0).path("myCity.uri1").path("value").asText());
 		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", jsonBindingsNodes.path(0).path("myTeam.uri2").path("value").asText());
-		assertEquals("Row 1 myCity.fragId1 type value incorrect", "sem:iri", jsonBindingsNodes.path(0).path("myCity.fragId1").path("type").asText());
-		assertEquals("Row 1 myTeam.fragId2 value incorrect", "sem:iri", jsonBindingsNodes.path(0).path("myTeam.fragId2").path("type").asText());		
 	}
 	
 	/* Checks for cts queries with options on fromLexicons

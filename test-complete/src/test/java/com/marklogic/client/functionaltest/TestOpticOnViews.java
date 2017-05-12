@@ -817,49 +817,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Plan exportAs incorrect", "order-by", exportedAs.path("$optic").path("args").get(2).path("fn").asText());
 	}
 	
-	/* This test checks group by with uda.
-	 * Should return 2 items.
-	 * 
-	 */
-	@Test
-	public void testgroupByWithUda() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
-	{	
-		System.out.println("In testgroupByWithUda method");	
-		RowManager rowMgr = client.newRowManager();
-		PlanBuilder p = rowMgr.newPlanBuilder();
-		
-		ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-		                    .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
-		ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-				            .orderBy(p.schemaCol("opticFunctionalTest", "master" , "id"));
-		ModifyPlan plan3 = plan1.joinInner(plan2)
-				                .where(
-						                p.eq(
-								              p.schemaCol("opticFunctionalTest", "master" , "id"), 
-								              p.schemaCol("opticFunctionalTest", "detail", "masterId")
-								            )
-						              )
-						        .groupBy(p.schemaCol("opticFunctionalTest", "master", "name"), 
-						        		 p.uda("DetailSum", "amount", "sampleplugin/sampleplugin", "sum"))
-						        .orderBy(p.desc(p.col("DetailSum")));
-
-		JacksonHandle jacksonHandle = new JacksonHandle();
-		jacksonHandle.setMimetype("application/json");
-		
-		rowMgr.resultDoc(plan3, jacksonHandle);
-		JsonNode jsonResults = jacksonHandle.get();
-		JsonNode jsonBindingsNodes = jsonResults.path("rows");
-		// Should have 2 node returned.
-		assertEquals("Two nodes not returned from testgroupByWithUda method ", 2, jsonBindingsNodes.size());
-		// Verify first node.
-		JsonNode first = jsonBindingsNodes.path(0);
-		assertEquals("Element 1 opticFunctionalTest.master.name value incorrect", "Master 2", first.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 1 DetailSum value incorrect", "120.12", first.path("DetailSum").path("value").asText());
-		JsonNode second = jsonBindingsNodes.path(1);
-		assertEquals("Element 1 opticFunctionalTest.master.name value incorrect", "Master 1", second.path("opticFunctionalTest.master.name").path("value").asText());
-		assertEquals("Element 1 DetailSum value incorrect", "90.09", second.path("DetailSum").path("value").asText());
-	}
-	
 	/* This test checks offset with positive value, negative value and zero.
 	 * Should return 3 items, null, 6 items and exception
 	 * 
@@ -1906,15 +1863,11 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 		assertEquals("Six nodes not returned from testFragmentId method ", 6, jsonBindingsNodes.size());
 		// Verify nodes
 		assertEquals("Element 1 MasterName value incorrect", "Master 2", node.path("MasterName").path("value").asText());
-		assertEquals("Element 1 DetailName value incorrect", "Detail 6", node.path("DetailName").path("value").asText());
-		assertEquals("Element 1 opticFunctionalTest.detail.fragIdCol1 type incorrect", "sem:iri", node.path("opticFunctionalTest.detail.fragIdCol1").path("type").asText());
-		assertEquals("Element 1 opticFunctionalTest.master.fragIdCol2 type incorrect", "sem:iri", node.path("opticFunctionalTest.master.fragIdCol2").path("type").asText());
+		assertEquals("Element 1 DetailName value incorrect", "Detail 6", node.path("DetailName").path("value").asText());		
 		assertEquals("Element 1 opticFunctionalTest.detail.amount value incorrect", "60.06", node.path("opticFunctionalTest.detail.amount").path("value").asText());
 		node = jsonBindingsNodes.get(5);
 		assertEquals("Element 6 MasterName value incorrect", "Master 1", node.path("MasterName").path("value").asText());
-		assertEquals("Element 6 DetailName value incorrect", "Detail 1", node.path("DetailName").path("value").asText());
-		assertEquals("Element 6 opticFunctionalTest.detail.fragIdCol1 type incorrect", "sem:iri", node.path("opticFunctionalTest.detail.fragIdCol1").path("type").asText());
-		assertEquals("Element 6 opticFunctionalTest.master.fragIdCol2 type incorrect", "sem:iri", node.path("opticFunctionalTest.master.fragIdCol2").path("type").asText());
+		assertEquals("Element 6 DetailName value incorrect", "Detail 1", node.path("DetailName").path("value").asText());		
 		assertEquals("Element 6 opticFunctionalTest.detail.amount value incorrect", "10.01", node.path("opticFunctionalTest.detail.amount").path("value").asText());
 	}
 	

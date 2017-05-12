@@ -621,8 +621,6 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());	
 		assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
 		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
-		assertTrue("Row 1 myCity.__docid value incorrect", node.path("myCity.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
-		assertTrue("Row 1 myTeam.__docid value incorrect", node.path("myTeam.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
 		
 		node = jsonBindingsNodes.path(4);
 		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
@@ -632,9 +630,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
 		assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
 		assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
-		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
-		assertTrue("Row 5 myCity.__docid value incorrect", node.path("myCity.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
-		assertTrue("Row 5 myTeam.__docid value incorrect", node.path("myTeam.__docid").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());		
 	}
 	
 	/*
@@ -795,9 +791,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Row 1 myCity.popularity value incorrect", "2", node.path("myCity.popularity").path("value").asText());
 		assertEquals("Row 1 myCity.point value incorrect", "40.720001,-74.07", node.path("myCity.point").path("value").asText());	
 		assertEquals("Row 1 myCity.uri1 value incorrect", "/optic/lexicon/test/doc3.json", node.path("myCity.uri1").path("value").asText());
-		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());
-		assertTrue("Row 1 myCity.fragId1 value incorrect", node.path("myCity.fragId1").path("value").asText().startsWith("http://marklogic.com/fragment/"));
-		assertTrue("Row 1 myTeam.fragId2 value incorrect", node.path("myTeam.fragId2").path("value").asText().startsWith("http://marklogic.com/fragment/"));
+		assertEquals("Row 1 myTeam.uri2 value incorrect", "/optic/lexicon/test/city3.json", node.path("myTeam.uri2").path("value").asText());		
 		
 		node = jsonBindingsNodes.path(4);
 		assertEquals("Row 5 myCity.city value incorrect", "london", node.path("myCity.city").path("value").asText());
@@ -807,9 +801,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
 		assertEquals("Row 5 myCity.popularity value incorrect", "5", node.path("myCity.popularity").path("value").asText());
 		assertEquals("Row 5 myCity.point value incorrect", "51.5,-0.12", node.path("myCity.point").path("value").asText());
 		assertEquals("Row 5 myCity.uri1 value incorrect", "/optic/lexicon/test/doc1.json", node.path("myCity.uri1").path("value").asText());
-		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());
-		assertTrue("Row 5 myCity.fragId1 value incorrect", node.path("myCity.fragId1").path("value").asText().startsWith("http://marklogic.com/fragment/"));
-		assertTrue("Row 5 myTeam.fragId2 value incorrect", node.path("myTeam.fragId2").path("value").asText().startsWith("http://marklogic.com/fragment/"));		
+		assertEquals("Row 5 myTeam.uri2 value incorrect", "/optic/lexicon/test/city1.json", node.path("myTeam.uri2").path("value").asText());				
 	}
 	
 	/*

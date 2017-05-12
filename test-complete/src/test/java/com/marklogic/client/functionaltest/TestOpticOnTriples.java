@@ -899,16 +899,13 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
 		assertEquals("Three nodes not returned from testAccessWithQualifier method", 3, jsonBindingsNodes.size());
 
 		assertEquals("Row 1 myPlayer.name value incorrect", "Pedro Barrozo", jsonBindingsNodes.get(0).path("myPlayer.name").path("value").asText());
-		assertEquals("Row 1 myPlayer.age value incorrect", "19", jsonBindingsNodes.get(0).path("myPlayer.age").path("value").asText());
-		assertTrue(jsonBindingsNodes.get(0).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
+		assertEquals("Row 1 myPlayer.age value incorrect", "19", jsonBindingsNodes.get(0).path("myPlayer.age").path("value").asText());		
 
 		assertEquals("Row 1 myPlayer.name value incorrect", "Pat Crenshaw", jsonBindingsNodes.get(1).path("myPlayer.name").path("value").asText());
 		assertEquals("Row 1 myPlayer.age value incorrect", "25", jsonBindingsNodes.get(1).path("myPlayer.age").path("value").asText());
-		assertTrue(jsonBindingsNodes.get(1).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
 
 		assertEquals("Row 1 myPlayer.name value incorrect", "Bob Brian", jsonBindingsNodes.get(2).path("myPlayer.name").path("value").asText());
-		assertEquals("Row 1 myPlayer.age value incorrect", "23", jsonBindingsNodes.get(2).path("myPlayer.age").path("value").asText());
-		assertTrue(jsonBindingsNodes.get(2).path("myPlayer.fragId").path("value").asText().startsWith("http://marklogic.com/fragment"));
+		assertEquals("Row 1 myPlayer.age value incorrect", "23", jsonBindingsNodes.get(2).path("myPlayer.age").path("value").asText());		
 	}
 	
 	/* This test checks access with iri predicate.
