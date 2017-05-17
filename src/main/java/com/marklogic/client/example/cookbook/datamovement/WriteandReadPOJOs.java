@@ -43,8 +43,9 @@ public class WriteandReadPOJOs {
   private int batchSize = 10;
   private int threadCount = 5;
   private Logger logger = LoggerFactory.getLogger(WriteandReadPOJOs.class);
-  private DatabaseClient client = null;
-  private DataMovementManager moveMgr = null;
+  // Create the Database Client and Data Movement Manager
+  private DatabaseClient client =  DatabaseClientSingleton.get();
+  private DataMovementManager moveMgr = client.newDataMovementManager();
 
   public static void main(String args[]) throws JAXBException {
     new WriteandReadPOJOs().run();
@@ -80,11 +81,6 @@ public class WriteandReadPOJOs {
   }
 
   public void run() throws JAXBException {
-    // Register the ProductDetails class so that it can be handled by the JAXBHandle
-    DatabaseClientSingleton.register(ProductDetails.class);
-    // Create the Database Client and Data Movement Manager
-    client =  DatabaseClientSingleton.get();
-    moveMgr = client.newDataMovementManager();
     writeBulkPOJOS();
     readBulkPOJOS();
     readPOJOsWithExportListener();
