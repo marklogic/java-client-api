@@ -41,7 +41,7 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *         .withBatchSize(100)
  *         .withThreadCount(20)
  *         .onBatchSuccess(batch -> {
- *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+ *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
  *         })
  *         .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
  *     JobTicket ticket = dataMovementManager.startJob(whb);
