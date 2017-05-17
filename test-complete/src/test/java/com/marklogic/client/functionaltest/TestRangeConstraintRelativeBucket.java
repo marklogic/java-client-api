@@ -31,50 +31,49 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 
 public class TestRangeConstraintRelativeBucket extends BasicJavaClientREST {
-	static String filenames[] = {"bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml"};
-	static String queryOptionName = "rangeRelativeBucketConstraintOpt.xml"; 
-	private static String dbName = "RangeConstraintRelBucketDB";
-	private static String [] fNames = {"RangeConstraintRelBucketDB-1"};
-	
+  static String filenames[] = { "bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml" };
+  static String queryOptionName = "rangeRelativeBucketConstraintOpt.xml";
+  private static String dbName = "RangeConstraintRelBucketDB";
+  private static String[] fNames = { "RangeConstraintRelBucketDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		addRangeElementAttributeIndex(dbName, "dateTime", "http://example.com", "entry", "", "date");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    addRangeElementAttributeIndex(dbName, "dateTime", "http://example.com", "entry", "", "date");
+  }
 
-	@Test	
-	public void testRangeConstraintRelativeBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRangeConstraintRelativeBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename:filenames)
-		{
-			writeDocumentReaderHandle(client, filename, "/range-constraint-rel-bucket/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentReaderHandle(client, filename, "/range-constraint-rel-bucket/", "XML");
+    }
 
-		// write the query options to the database
-		setQueryOption(client, queryOptionName);
+    // write the query options to the database
+    setQueryOption(client, queryOptionName);
 
-		// run the search
-		SearchHandle resultsHandle = runSearch(client, queryOptionName, "date:older");
+    // run the search
+    SearchHandle resultsHandle = runSearch(client, queryOptionName, "date:older");
 
-		// search result
-		String result = "Matched "+resultsHandle.getTotalResults();
-		String expectedResult = "Matched 5";
-		assertEquals("Document match difference", expectedResult, result);
+    // search result
+    String result = "Matched " + resultsHandle.getTotalResults();
+    String expectedResult = "Matched 5";
+    assertEquals("Document match difference", expectedResult, result);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

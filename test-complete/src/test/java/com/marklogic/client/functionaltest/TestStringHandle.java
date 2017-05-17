@@ -42,235 +42,236 @@ import com.marklogic.client.io.StringHandle;
 
 public class TestStringHandle extends BasicJavaClientREST {
 
-	private static String dbName = "StringDB";
-	private static String [] fNames = {"StringDB-1"};
-	
+  private static String dbName = "StringDB";
+  private static String[] fNames = { "StringDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test	
-	public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
-	{	
-		String filename = "xml-original-test.xml";
-		String uri = "/write-xml-string/";
+  @Test
+  public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    String filename = "xml-original-test.xml";
+    String uri = "/write-xml-string/";
 
-		System.out.println("Running testXmlCRUD");
+    System.out.println("Running testXmlCRUD");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingStringHandle(client, filename, uri, "XML");
+    // write docs
+    writeDocumentUsingStringHandle(client, filename, uri, "XML");
 
-		// read docs
-		StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
+    // read docs
+    StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
 
-		// get the contents
-		//	File fileRead = contentHandle.get();
+    // get the contents
+    // File fileRead = contentHandle.get();
 
-		String readContent = contentHandle.get();
+    String readContent = contentHandle.get();
 
-		// get xml document for expected result
-		Document expectedDoc = expectedXMLDocument(filename);
+    // get xml document for expected result
+    Document expectedDoc = expectedXMLDocument(filename);
 
-		// convert actual string to xml doc
-		Document readDoc = convertStringToXMLDocument(readContent);
+    // convert actual string to xml doc
+    Document readDoc = convertStringToXMLDocument(readContent);
 
-		assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+    assertXMLEqual("Write XML difference", expectedDoc, readDoc);
 
-		// update the doc
-		// acquire the content for update
-		String updateFilename = "xml-updated-test.xml";
-		updateDocumentUsingStringHandle(client, updateFilename, uri + filename, "XML");
+    // update the doc
+    // acquire the content for update
+    String updateFilename = "xml-updated-test.xml";
+    updateDocumentUsingStringHandle(client, updateFilename, uri + filename, "XML");
 
-		// read the document
-		StringHandle updateHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
+    // read the document
+    StringHandle updateHandle = readDocumentUsingStringHandle(client, uri + filename, "XML");
 
-		// get the contents
-		String readContentUpdate = updateHandle.get();
+    // get the contents
+    String readContentUpdate = updateHandle.get();
 
-		// get xml document for expected result
-		Document expectedDocUpdate = expectedXMLDocument(updateFilename);
+    // get xml document for expected result
+    Document expectedDocUpdate = expectedXMLDocument(updateFilename);
 
-		// convert actual string to xml doc
-		Document readDocUpdate = convertStringToXMLDocument(readContentUpdate);
+    // convert actual string to xml doc
+    Document readDocUpdate = convertStringToXMLDocument(readContentUpdate);
 
-		assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
+    assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
 
-		// delete the document
-		deleteDocument(client, uri + filename, "XML");
+    // delete the document
+    deleteDocument(client, uri + filename, "XML");
 
-		// read the deleted document
-		String exception = "";
-		try
-		{
-			readDocumentUsingFileHandle(client, uri + filename, "XML");
-		} 
-		catch (Exception e) { exception = e.toString(); }
+    // read the deleted document
+    String exception = "";
+    try
+    {
+      readDocumentUsingFileHandle(client, uri + filename, "XML");
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-string/xml-original-test.xml";
-		assertEquals("Document is not deleted", expectedException, exception);
+    String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-xml-string/xml-original-test.xml";
+    assertEquals("Document is not deleted", expectedException, exception);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		String filename = "text-original.txt";
-		String uri = "/write-text-stringhandle/";
+  @Test
+  public void testTextCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    String filename = "text-original.txt";
+    String uri = "/write-text-stringhandle/";
 
-		System.out.println("Running testTextCRUD");
+    System.out.println("Running testTextCRUD");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingStringHandle(client, filename, uri, "Text");
+    // write docs
+    writeDocumentUsingStringHandle(client, filename, uri, "Text");
 
-		// read docs
-		StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "Text");
+    // read docs
+    StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "Text");
 
-		// get the contents
-		//	    File fileRead = contentHandle.get();
+    // get the contents
+    // File fileRead = contentHandle.get();
 
-		String readContent = contentHandle.get();
+    String readContent = contentHandle.get();
 
-		String expectedContent = "hello world, welcome to java API";
+    String expectedContent = "hello world, welcome to java API";
 
-		assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
+    assertEquals("Write Text difference", expectedContent.trim(), readContent.trim());
 
-		// update the doc
-		// acquire the content for update
-		String updateFilename = "text-updated.txt";
-		updateDocumentUsingStringHandle(client, updateFilename, uri + filename, "Text");
+    // update the doc
+    // acquire the content for update
+    String updateFilename = "text-updated.txt";
+    updateDocumentUsingStringHandle(client, updateFilename, uri + filename, "Text");
 
-		// read the document
-		StringHandle updateHandle = readDocumentUsingStringHandle(client, uri + filename, "Text");
+    // read the document
+    StringHandle updateHandle = readDocumentUsingStringHandle(client, uri + filename, "Text");
 
-		// get the contents
-		//		File fileReadUpdate = updateHandle.get();
+    // get the contents
+    // File fileReadUpdate = updateHandle.get();
 
-		String readContentUpdate = updateHandle.get();
+    String readContentUpdate = updateHandle.get();
 
-		String expectedContentUpdate = "hello world, welcome to java API after new updates";
+    String expectedContentUpdate = "hello world, welcome to java API after new updates";
 
-		assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
+    assertEquals("Write Text difference", expectedContentUpdate.trim(), readContentUpdate.toString().trim());
 
-		// delete the document
-		deleteDocument(client, uri + filename, "Text");
+    // delete the document
+    deleteDocument(client, uri + filename, "Text");
 
-		String exception = "";
-		try
-		{
-			readDocumentUsingFileHandle(client, uri + filename, "Text");
-		} 
-		catch (Exception e) { exception = e.toString(); }
+    String exception = "";
+    try
+    {
+      readDocumentUsingFileHandle(client, uri + filename, "Text");
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-stringhandle/text-original.txt";
-		assertEquals("Document is not deleted", expectedException, exception);
+    String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-text-stringhandle/text-original.txt";
+    assertEquals("Document is not deleted", expectedException, exception);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		String filename = "json-original.json";
-		String uri = "/write-json-stringhandle/";
+  @Test
+  public void testJsonCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    String filename = "json-original.json";
+    String uri = "/write-json-stringhandle/";
 
-		System.out.println("Running testJsonCRUD");
+    System.out.println("Running testJsonCRUD");
 
-		ObjectMapper mapper = new ObjectMapper();
+    ObjectMapper mapper = new ObjectMapper();
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingStringHandle(client, filename, uri, "JSON");
+    // write docs
+    writeDocumentUsingStringHandle(client, filename, uri, "JSON");
 
-		// read docs
-		StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "JSON");
+    // read docs
+    StringHandle contentHandle = readDocumentUsingStringHandle(client, uri + filename, "JSON");
 
-		// get the contents
-		JsonNode readContent = mapper.readValue(contentHandle.get(),JsonNode.class);
+    // get the contents
+    JsonNode readContent = mapper.readValue(contentHandle.get(), JsonNode.class);
 
-		// get expected contents
-		JsonNode expectedContent = expectedJSONDocument(filename);
+    // get expected contents
+    JsonNode expectedContent = expectedJSONDocument(filename);
 
-		assertTrue("Write JSON document difference", readContent.equals(expectedContent));		
+    assertTrue("Write JSON document difference", readContent.equals(expectedContent));
 
-		// update the doc
-		// acquire the content for update
-		String updateFilename = "json-updated.json";
-		updateDocumentUsingFileHandle(client, updateFilename, uri + filename, "JSON");
+    // update the doc
+    // acquire the content for update
+    String updateFilename = "json-updated.json";
+    updateDocumentUsingFileHandle(client, updateFilename, uri + filename, "JSON");
 
-		// read the document
-		FileHandle updateHandle = readDocumentUsingFileHandle(client, uri + filename, "JSON");
+    // read the document
+    FileHandle updateHandle = readDocumentUsingFileHandle(client, uri + filename, "JSON");
 
-		// get the contents
-		File fileReadUpdate = updateHandle.get();
+    // get the contents
+    File fileReadUpdate = updateHandle.get();
 
-		JsonNode readContentUpdate = mapper.readTree(fileReadUpdate);
+    JsonNode readContentUpdate = mapper.readTree(fileReadUpdate);
 
-		// get expected contents
-		JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
+    // get expected contents
+    JsonNode expectedContentUpdate = expectedJSONDocument(updateFilename);
 
-		assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));		
+    assertTrue("Write JSON document difference", readContentUpdate.equals(expectedContentUpdate));
 
-		// delete the document
-		deleteDocument(client, uri + filename, "JSON");
+    // delete the document
+    deleteDocument(client, uri + filename, "JSON");
 
-		String exception = "";
-		try
-		{
-			readDocumentUsingFileHandle(client, uri + filename, "JSON");
-		} 
-		catch (Exception e) { exception = e.toString(); }
+    String exception = "";
+    try
+    {
+      readDocumentUsingFileHandle(client, uri + filename, "JSON");
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-stringhandle/json-original.json";
-		assertEquals("Document is not deleted", expectedException, exception);
+    String expectedException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /write-json-stringhandle/json-original.json";
+    assertEquals("Document is not deleted", expectedException, exception);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testBug22356() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
-	{	
-		System.out.println("Running testBug22356");
+  @Test
+  public void testBug22356() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("Running testBug22356");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// read docs
-		StringHandle contentHandle = null;
-		try
-		{
-			// get the contents
-			contentHandle.get();
-		} 
-		catch (NullPointerException e) { 
-			System.out.println("Null pointer Exception is expected noy an Empty Value");
-			e.toString(); 
-		}
+    // read docs
+    StringHandle contentHandle = null;
+    try
+    {
+      // get the contents
+      contentHandle.get();
+    } catch (NullPointerException e) {
+      System.out.println("Null pointer Exception is expected noy an Empty Value");
+      e.toString();
+    }
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
 
-	}
+  }
 }

@@ -30,47 +30,48 @@ import com.marklogic.client.io.FileHandle;
 
 public class ThreadWrite extends BasicJavaClientREST implements Runnable {
 
-	String msg;
+  String msg;
 
-	public void run()
-	{	
-		String filename = "flipper.xml";
-		try {
+  public void run()
+  {
+    String filename = "flipper.xml";
+    try {
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+      DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+      XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		for(int i=1; i<=15; i++)
-		{
-			System.out.println("Writing document " + i + " from: " + msg);
+      for (int i = 1; i <= 15; i++)
+      {
+        System.out.println("Writing document " + i + " from: " + msg);
 
-			// write docs
-			String docId = "/multithread-write/filename" + i + ".xml";
-			docMgr.write(docId, new FileHandle().with(file));
+        // write docs
+        String docId = "/multithread-write/filename" + i + ".xml";
+        docMgr.write(docId, new FileHandle().with(file));
 
-			Random rand = new Random();
-			int r = rand.nextInt(2000) + 1000;
+        Random rand = new Random();
+        int r = rand.nextInt(2000) + 1000;
 
-			try {
-				Thread.sleep(r);
-			} 
-			catch (InterruptedException e) { e.printStackTrace(); }
-		}
+        try {
+          Thread.sleep(r);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
 
-		// release client
-		client.release();
-		} catch (KeyManagementException | NoSuchAlgorithmException
-				| IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
+      // release client
+      client.release();
+    } catch (KeyManagementException | NoSuchAlgorithmException
+        | IOException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
+  }
 
-	ThreadWrite(String mg)
-	{
-		msg=mg;
-	}
+  ThreadWrite(String mg)
+  {
+    msg = mg;
+  }
 }

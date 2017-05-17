@@ -43,89 +43,92 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
+
 public class TestBug18801 extends BasicJavaClientREST {
 
-	private static String dbName = "Bug18801DB";
-	private static String [] fNames = {"Bug18801DB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  // Adding a wait for cluster restart from a prior test.
-	  waitForServerRestart();
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "Bug18801DB";
+  private static String[] fNames = { "Bug18801DB-1" };
 
-@Test
-public void testDefaultFacetValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-{	
-	System.out.println("Running testDefaultFacetValue");
-	
-	String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    // Adding a wait for cluster restart from a prior test.
+    waitForServerRestart();
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-	DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-			
-	// set query option validation to true
-	ServerConfigurationManager srvMgr = client.newServerConfigManager();
-	srvMgr.readConfiguration();
-	srvMgr.setQueryOptionValidation(true);
-	srvMgr.writeConfiguration();
-	
-	// write docs
-	for(String filename : filenames)
-	{
-		writeDocumentUsingInputStreamHandle(client, filename, "/def-facet/", "XML");
-	}
+  @Test
+  public void testDefaultFacetValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testDefaultFacetValue");
 
-	// create query options manager
-	QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
-	
-	// create query options builder		
-	String opts = new StringBuilder()
-	                  .append("<search:options xmlns:search=\"http://marklogic.com/appservices/search\">")
-                      .append("<search:constraint name=\"pop\">")
-                      .append("<search:range type=\"xs:int\">")
-                      .append("<search:element name=\"popularity\" ns=\"\"/>")
-                      .append("</search:range>")
-                      .append("</search:constraint>")
-                      .append("</search:options>").toString();
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/def-facet/", "XML");
+    }
+
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    // create query options builder
+    String opts = new StringBuilder()
+        .append("<search:options xmlns:search=\"http://marklogic.com/appservices/search\">")
+        .append("<search:constraint name=\"pop\">")
+        .append("<search:range type=\"xs:int\">")
+        .append("<search:element name=\"popularity\" ns=\"\"/>")
+        .append("</search:range>")
+        .append("</search:constraint>")
+        .append("</search:options>").toString();
     // build and write query options with new handle
     optionsMgr.writeOptions("FacetValueOpt", new StringHandle(opts));
-    
-    // read query option
- 	StringHandle readHandle = new StringHandle();
- 	readHandle.setFormat(Format.XML);
- 	optionsMgr.readOptions("FacetValueOpt", readHandle);
- 	String output = readHandle.get();
- 	System.out.println(output);
 
- 	// create query manager
- 	QueryManager queryMgr = client.newQueryManager();
- 				
- 	// create query def
- 	StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder("FacetValueOpt");
- 	StructuredQueryDefinition queryFinal = qb.rangeConstraint("pop", Operator.EQ, "5");
- 		
- 	// create handle
- 	DOMHandle resultsHandle = new DOMHandle();
- 	queryMgr.search(queryFinal, resultsHandle);
- 		
- 	// get the result
- 	Document resultDoc = resultsHandle.get();
- 	//System.out.println(convertXMLDocumentToString(resultDoc)); 
- 	
- 	assertXpathEvaluatesTo("pop", "string(//*[local-name()='response']//*[local-name()='facet']//@*[local-name()='name'])", resultDoc);
- 	assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//*[local-name()='facet']/*[local-name()='facet-value']//@*[local-name()='count'])", resultDoc);
- 	
-	// release client
-	client.release();		
-}
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);	
-	}
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.XML);
+    optionsMgr.readOptions("FacetValueOpt", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
+
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder("FacetValueOpt");
+    StructuredQueryDefinition queryFinal = qb.rangeConstraint("pop", Operator.EQ, "5");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(queryFinal, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
+
+    assertXpathEvaluatesTo("pop", "string(//*[local-name()='response']//*[local-name()='facet']//@*[local-name()='name'])", resultDoc);
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//*[local-name()='facet']/*[local-name()='facet-value']//@*[local-name()='count'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

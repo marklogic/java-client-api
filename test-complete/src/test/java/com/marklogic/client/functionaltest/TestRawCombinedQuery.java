@@ -49,804 +49,818 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class TestRawCombinedQuery extends BasicJavaClientREST {
-	private static String dbName = "TestRawCombinedQueryDB";
-	private static String [] fNames = {"TestRawCombinedQueryDB-1"};
-	
-	
-	
-	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-		addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
-		addFieldExcludeRoot(dbName, "para");
-		includeElementFieldWithWeight(dbName, "para", "", "p", 5,"","","");
-	}
-	@After
-	public void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}
-	
-	@Test	
-	public void testBug22353() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testBug22353");
-
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
-
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
-
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOption.xml");
-
-		String combinedQuery = convertFileToString(file);
-
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-
-		QueryManager queryMgr = client.newQueryManager();
-
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
-		queryMgr.newStringDefinition("LinkResultDocumentsOpt.xml");
-
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		System.out.println("Mime Type : "+resultsHandle.getMimetype());
-		System.out.println(convertXMLDocumentToString(resultDoc));
-
-		assertEquals("application/xml",resultsHandle.getMimetype());
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
-
-		// release client
-		client.release();		
-	}
-
-	@Test	
-	public void test1RawCombinedQueryXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryXML");
-
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+  private static String dbName = "TestRawCombinedQueryDB";
+  private static String[] fNames = { "TestRawCombinedQueryDB-1" };
+
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+    addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+    addFieldExcludeRoot(dbName, "para");
+    includeElementFieldWithWeight(dbName, "para", "", "p", 5, "", "", "");
+  }
+
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
-
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOption.xml");
-
-		String combinedQuery = convertFileToString(file);
-
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		//FileHandle rawHandle = new FileHandle(file); // bug 21107
-		//rawHandle.setMimetype("application/xml");
+  @Test
+  public void testBug22353() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  {
+    System.out.println("Running testBug22353");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		QueryManager queryMgr = client.newQueryManager();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
+
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOption.xml");
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    String combinedQuery = convertFileToString(file);
+
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    queryMgr.newStringDefinition("LinkResultDocumentsOpt.xml");
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println("Mime Type : " + resultsHandle.getMimetype());
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertEquals("application/xml", resultsHandle.getMimetype());
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test2RawCombinedQueryXMLWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryXMLWithOptions");
+  @Test
+  public void test1RawCombinedQueryXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryXML");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.setQueryValidation(true);
-		srvMgr.writeConfiguration();
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOption.xml");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryNoOption.xml");
+    String combinedQuery = convertFileToString(file);
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file);
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    // FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // rawHandle.setMimetype("application/xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test3RawCombinedQueryXMLWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryXMLWithOverwriteOptions");
+  @Test
+  public void test2RawCombinedQueryXMLWithOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryXMLWithOptions");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.setQueryValidation(true);
+    srvMgr.writeConfiguration();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    setQueryOption(client, queryOptionName);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCollectionOverwrite.xml");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryNoOption.xml");
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file);
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test4RawCombinedQueryJSONWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryJSONWithOverwriteOptions");
+  @Test
+  public void test3RawCombinedQueryXMLWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryXMLWithOverwriteOptions");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    setQueryOption(client, queryOptionName);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionJSONOverwrite.json");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCollectionOverwrite.xml");
 
-		String combinedQuery = convertFileToString(file);
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file);
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		//FileHandle rawHandle = new FileHandle(file);
-		//rawHandle.setMimetype("application/xml");
-		rawHandle.setFormat(Format.JSON);
+    QueryManager queryMgr = client.newQueryManager();
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		System.out.println(resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint1.xml"));
+    // release client
+    client.release();
+  }
 
-		// release client
-		client.release();		
-	}
+  @Test
+  public void test4RawCombinedQueryJSONWithOverwriteOptions() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryJSONWithOverwriteOptions");
 
-	@Test	
-	public void test5RawCombinedQueryJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryJSON");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    setQueryOption(client, queryOptionName);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionJSON.json");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionJSONOverwrite.json");
 
-		String combinedQuery = convertFileToString(file);
+    String combinedQuery = convertFileToString(file);
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		//FileHandle rawHandle = new FileHandle(file);
-		//rawHandle.setMimetype("application/xml");
-		rawHandle.setFormat(Format.JSON);
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    // FileHandle rawHandle = new FileHandle(file);
+    // rawHandle.setMimetype("application/xml");
+    rawHandle.setFormat(Format.JSON);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle, queryOptionName);
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    // get the result
+    String resultDoc = resultsHandle.get();
 
-		System.out.println(resultDoc);
+    System.out.println(resultDoc);
 
-		assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint5.xml"));
+    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint1.xml"));
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test6RawCombinedQueryWildcard() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryWildcard");
+  @Test
+  public void test5RawCombinedQueryJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryJSON");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionWildcard.xml");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionJSON.json");
 
-		String combinedQuery = convertFileToString(file);
+    String combinedQuery = convertFileToString(file);
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		//FileHandle rawHandle = new FileHandle(file); // bug 21107
-		//rawHandle.setMimetype("application/xml");
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    // FileHandle rawHandle = new FileHandle(file);
+    // rawHandle.setMimetype("application/xml");
+    rawHandle.setFormat(Format.JSON);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    String resultDoc = resultsHandle.get();
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    System.out.println(resultDoc);
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
-		assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
+    assertTrue("document is not returned", resultDoc.contains("/raw-combined-query/constraint5.xml"));
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test7RawCombinedQueryCollection() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryCollection");
+  @Test
+  public void test6RawCombinedQueryWildcard() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryWildcard");
 
-		String filename1 = "constraint1.xml";
-		String filename2 = "constraint2.xml";
-		String filename3 = "constraint3.xml";
-		String filename4 = "constraint4.xml";
-		String filename5 = "constraint5.xml";
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create and initialize a handle on the metadata
-		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// set the metadata
-		metadataHandle1.getCollections().addAll("http://test.com/set1");
-		metadataHandle1.getCollections().addAll("http://test.com/set5");
-		metadataHandle2.getCollections().addAll("http://test.com/set1");
-		metadataHandle3.getCollections().addAll("http://test.com/set3");
-		metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
-		metadataHandle5.getCollections().addAll("http://test.com/set1");
-		metadataHandle5.getCollections().addAll("http://test.com/set5");
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
 
-		// write docs
-		writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionWildcard.xml");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCollection.xml");
+    String combinedQuery = convertFileToString(file);
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    // FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // rawHandle.setMimetype("application/xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("Vannevar Bush", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("0012", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test8RawCombinedQueryCombo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryCombo");
+  @Test
+  public void test7RawCombinedQueryCollection() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryCollection");
 
-		String filename1 = "constraint1.xml";
-		String filename2 = "constraint2.xml";
-		String filename3 = "constraint3.xml";
-		String filename4 = "constraint4.xml";
-		String filename5 = "constraint5.xml";
+    String filename1 = "constraint1.xml";
+    String filename2 = "constraint2.xml";
+    String filename3 = "constraint3.xml";
+    String filename4 = "constraint4.xml";
+    String filename5 = "constraint5.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create and initialize a handle on the metadata
-		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
+    // create and initialize a handle on the metadata
+    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
 
-		// set the metadata
-		metadataHandle1.getCollections().addAll("http://test.com/set1");
-		metadataHandle1.getCollections().addAll("http://test.com/set5");
-		metadataHandle2.getCollections().addAll("http://test.com/set1");
-		metadataHandle3.getCollections().addAll("http://test.com/set3");
-		metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
-		metadataHandle5.getCollections().addAll("http://test.com/set1");
-		metadataHandle5.getCollections().addAll("http://test.com/set5");
+    // set the metadata
+    metadataHandle1.getCollections().addAll("http://test.com/set1");
+    metadataHandle1.getCollections().addAll("http://test.com/set5");
+    metadataHandle2.getCollections().addAll("http://test.com/set1");
+    metadataHandle3.getCollections().addAll("http://test.com/set3");
+    metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
+    metadataHandle5.getCollections().addAll("http://test.com/set1");
+    metadataHandle5.getCollections().addAll("http://test.com/set5");
 
-		// write docs
-		writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
+    // write docs
+    writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCombo.xml");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCollection.xml");
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("Vannevar Bush", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("Vannevar Bush", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void test9RawCombinedQueryField() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryField");
+  @Test
+  public void test8RawCombinedQueryCombo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryCombo");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    String filename1 = "constraint1.xml";
+    String filename2 = "constraint2.xml";
+    String filename3 = "constraint3.xml";
+    String filename4 = "constraint4.xml";
+    String filename5 = "constraint5.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/field-constraint/", "XML");
-		}
+    // create and initialize a handle on the metadata
+    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionField.xml");
+    // set the metadata
+    metadataHandle1.getCollections().addAll("http://test.com/set1");
+    metadataHandle1.getCollections().addAll("http://test.com/set5");
+    metadataHandle2.getCollections().addAll("http://test.com/set1");
+    metadataHandle3.getCollections().addAll("http://test.com/set3");
+    metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
+    metadataHandle5.getCollections().addAll("http://test.com/set1");
+    metadataHandle5.getCollections().addAll("http://test.com/set5");
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // write docs
+    writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionCombo.xml");
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("memex", "string(//*[local-name()='result'][1]//*[local-name()='match'][1]//*[local-name()='highlight'])", resultDoc);
-		assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='match'][2]//*[local-name()='highlight'])", resultDoc);
-		assertXpathEvaluatesTo("Memex", "string(//*[local-name()='result'][1]//*[local-name()='match'][3]//*[local-name()='highlight'])", resultDoc);
-		assertXpathEvaluatesTo("Bush", "string(//*[local-name()='result'][2]//*[local-name()='match'][1]//*[local-name()='highlight'])", resultDoc);
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// release client
-		client.release();		
-	}
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-	@Test	
-	public void test10RawCombinedQueryPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryPathIndex");
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("Vannevar Bush", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
 
-		String[] filenames = {"pathindex1.xml", "pathindex2.xml"};
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void test9RawCombinedQueryField() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryField");
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/path-index-raw/", "XML");
-		}		
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionPathIndex.xml");
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/field-constraint/", "XML");
+    }
 
-		QueryManager queryMgr = client.newQueryManager();
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionField.xml");
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-raw/pathindex2.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-raw/pathindex1.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// release client
-		client.release();		
-	}
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-	@Test	
-	public void test11RawCombinedQueryComboJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryComboJSON");
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("memex", "string(//*[local-name()='result'][1]//*[local-name()='match'][1]//*[local-name()='highlight'])", resultDoc);
+    assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='match'][2]//*[local-name()='highlight'])", resultDoc);
+    assertXpathEvaluatesTo("Memex", "string(//*[local-name()='result'][1]//*[local-name()='match'][3]//*[local-name()='highlight'])", resultDoc);
+    assertXpathEvaluatesTo("Bush", "string(//*[local-name()='result'][2]//*[local-name()='match'][1]//*[local-name()='highlight'])", resultDoc);
 
-		String filename1 = "constraint1.xml";
-		String filename2 = "constraint2.xml";
-		String filename3 = "constraint3.xml";
-		String filename4 = "constraint4.xml";
-		String filename5 = "constraint5.xml";
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void test10RawCombinedQueryPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryPathIndex");
 
-		// create and initialize a handle on the metadata
-		DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
-		DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
+    String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
 
-		// set the metadata
-		metadataHandle1.getCollections().addAll("http://test.com/set1");
-		metadataHandle1.getCollections().addAll("http://test.com/set5");
-		metadataHandle2.getCollections().addAll("http://test.com/set1");
-		metadataHandle3.getCollections().addAll("http://test.com/set3");
-		metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
-		metadataHandle5.getCollections().addAll("http://test.com/set1");
-		metadataHandle5.getCollections().addAll("http://test.com/set5");
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
-		writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");		
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/path-index-raw/", "XML");
+    }
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.setQueryValidation(false);
-		srvMgr.writeConfiguration();
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionPathIndex.xml");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionComboJSON.json");
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		String combinedQuery = convertFileToString(file);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		rawHandle.setFormat(Format.JSON);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-raw/pathindex2.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-raw/pathindex1.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
 
-		System.out.println(resultDoc);
-		assertTrue("Returned result is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.9213213\" href=\"/v1/documents?uri=%2Fcollection-constraint%2Fconstraint1.xml\" mimetype=\"application/xml\" format=\"xml\">"));
+    // release client
+    client.release();
+  }
 
-		// release client
-		client.release();		
-	}
+  @Test
+  public void test11RawCombinedQueryComboJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryComboJSON");
 
-	@Test	
-	public void test12RawCombinedQueryFieldJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryFieldJSON");
+    String filename1 = "constraint1.xml";
+    String filename2 = "constraint2.xml";
+    String filename3 = "constraint3.xml";
+    String filename4 = "constraint4.xml";
+    String filename5 = "constraint5.xml";
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // create and initialize a handle on the metadata
+    DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle2 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle3 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle4 = new DocumentMetadataHandle();
+    DocumentMetadataHandle metadataHandle5 = new DocumentMetadataHandle();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/field-constraint/", "XML");
-		}
+    // set the metadata
+    metadataHandle1.getCollections().addAll("http://test.com/set1");
+    metadataHandle1.getCollections().addAll("http://test.com/set5");
+    metadataHandle2.getCollections().addAll("http://test.com/set1");
+    metadataHandle3.getCollections().addAll("http://test.com/set3");
+    metadataHandle4.getCollections().addAll("http://test.com/set3/set3-1");
+    metadataHandle5.getCollections().addAll("http://test.com/set1");
+    metadataHandle5.getCollections().addAll("http://test.com/set5");
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.setQueryValidation(false);
-		srvMgr.writeConfiguration();
+    // write docs
+    writeDocumentUsingInputStreamHandle(client, filename1, "/collection-constraint/", metadataHandle1, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename2, "/collection-constraint/", metadataHandle2, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename3, "/collection-constraint/", metadataHandle3, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename4, "/collection-constraint/", metadataHandle4, "XML");
+    writeDocumentUsingInputStreamHandle(client, filename5, "/collection-constraint/", metadataHandle5, "XML");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionFieldJSON.json");
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.setQueryValidation(false);
+    srvMgr.writeConfiguration();
 
-		String combinedQuery = convertFileToString(file);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionComboJSON.json");
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		rawHandle.setFormat(Format.JSON);		
-		QueryManager queryMgr = client.newQueryManager();
+    String combinedQuery = convertFileToString(file);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    rawHandle.setFormat(Format.JSON);
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		System.out.println(resultDoc);
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"2\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
+    // get the result
+    String resultDoc = resultsHandle.get();
 
-		// release client
-		client.release();		
-	}
-	
-	/*
-	 * When searching using a structured query, the <search:metrics/> element in the response used to include 
-	 * an empty <search:extract-resolution-time/>
-	 * This test makes sure that the response does not have 
-	 * <search:extract-resolution-time>
-	 * element
-	 */
-	
-	@Test	
-	public void testBug43940() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		// Negative test
-		System.out.println("Running testBug43940");
+    System.out.println(resultDoc);
+    assertTrue(
+        "Returned result is not correct",
+        resultDoc
+            .contains("<search:result index=\"1\" uri=\"/collection-constraint/constraint1.xml\" path=\"fn:doc(&quot;/collection-constraint/constraint1.xml&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.9213213\" href=\"/v1/documents?uri=%2Fcollection-constraint%2Fconstraint1.xml\" mimetype=\"application/xml\" format=\"xml\">"));
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void test12RawCombinedQueryFieldJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryFieldJSON");
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryMetricsTrue.xml");
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/field-constraint/", "XML");
+    }
 
-		String combinedQuery = convertFileToString(file);
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.setQueryValidation(false);
+    srvMgr.writeConfiguration();
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionFieldJSON.json");
 
-		QueryManager queryMgr = client.newQueryManager();
+    String combinedQuery = convertFileToString(file);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
-		queryMgr.newStringDefinition("LinkResultDocumentsOpt.xml");
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    rawHandle.setFormat(Format.JSON);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		JacksonHandle resultsHandle = new JacksonHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		//Document resultDoc = resultsHandle.get();
-		JsonNode resultNode = resultsHandle.get().get("metrics");
-		System.out.println("Mime Type : "+resultsHandle.getMimetype());
-		System.out.println(resultNode);
-		// Make sure response does not have extract-resolution-time property in the metrics
-		assertNull(resultNode.get("extract-resolution-time"));
-		// End of Negative test
-		
-		// Start of positive tests
-		
-		
-		//End of positive tests
-		
-		// release client
-		client.release();		
-	}
-	
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    String resultDoc = resultsHandle.get();
+
+    System.out.println(resultDoc);
+
+    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"2\""));
+    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint5.xml\""));
+    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/field-constraint/constraint1.xml\""));
+
+    // release client
+    client.release();
+  }
+
+  /*
+   * When searching using a structured query, the <search:metrics/> element in
+   * the response used to include an empty <search:extract-resolution-time/>
+   * This test makes sure that the response does not have
+   * <search:extract-resolution-time> element
+   */
+
+  @Test
+  public void testBug43940() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  {
+    // Negative test
+    System.out.println("Running testBug43940");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-combined-query/", "XML");
+    }
+
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryMetricsTrue.xml");
+
+    String combinedQuery = convertFileToString(file);
+
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    queryMgr.newStringDefinition("LinkResultDocumentsOpt.xml");
+
+    // create result handle
+    JacksonHandle resultsHandle = new JacksonHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    // Document resultDoc = resultsHandle.get();
+    JsonNode resultNode = resultsHandle.get().get("metrics");
+    System.out.println("Mime Type : " + resultsHandle.getMimetype());
+    System.out.println(resultNode);
+    // Make sure response does not have extract-resolution-time property in the
+    // metrics
+    assertNull(resultNode.get("extract-resolution-time"));
+    // End of Negative test
+
+    // Start of positive tests
+
+    // End of positive tests
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

@@ -46,323 +46,330 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 
 public class TestRawCombinedQueryGeo extends BasicJavaClientREST {
-	private static String dbName = "TestRawCombinedQueryGeoDB";
-	private static String [] fNames = {"TestRawCombinedQueryGeoDB-1"};
-	
-	private static int restPort =8011;
+  private static String dbName = "TestRawCombinedQueryGeoDB";
+  private static String[] fNames = { "TestRawCombinedQueryGeoDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesGeoConstraint(dbName);
-	}
+  private static int restPort = 8011;
 
-	@After
-	public  void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesGeoConstraint(dbName);
+  }
 
-	@Test	
-	public void testRawCombinedQueryGeo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryGeo");
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeo() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryGeo");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // write docs
+    loadGeoData();
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeo.xml");
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeo.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
 
-	@Test	
-	public void testRawCombinedQueryGeoJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryGeoJSON");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryGeoJSON");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // write docs
+    loadGeoData();
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoJSON.json");
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		String combinedQuery = convertFileToString(file);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoJSON.json");
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		rawHandle.setFormat(Format.JSON);		
+    String combinedQuery = convertFileToString(file);
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    rawHandle.setFormat(Format.JSON);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(resultDoc);
+    // get the result
+    String resultDoc = resultsHandle.get();
 
-		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint1.xml\""));
-		assertTrue("matched text is incorrect", resultDoc.contains("karl_kara 12,5 12,5 12 5"));
+    System.out.println(resultDoc);
 
-		// release client
-		client.release();		
-	}
+    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
+    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint1.xml\""));
+    assertTrue("matched text is incorrect", resultDoc.contains("karl_kara 12,5 12,5 12 5"));
 
-	@Test	
-	public void testRawCombinedQueryGeoBoxAndWordJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryGeoBoxAndWordJSON");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoBoxAndWordJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryGeoBoxAndWordJSON");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// set query option validation to true
-		ServerConfigurationManager srvMgr = client.newServerConfigManager();
-		srvMgr.readConfiguration();
-		srvMgr.setQueryOptionValidation(true);
-		srvMgr.writeConfiguration();
+    // write docs
+    loadGeoData();
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBoxAndWordJSON.json");
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
 
-		String combinedQuery = convertFileToString(file);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBoxAndWordJSON.json");
 
-		// create a handle for the search criteria
-		StringHandle rawHandle = new StringHandle(combinedQuery);
-		rawHandle.setFormat(Format.JSON);		
+    String combinedQuery = convertFileToString(file);
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    StringHandle rawHandle = new StringHandle(combinedQuery);
+    rawHandle.setFormat(Format.JSON);
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		StringHandle resultsHandle = new StringHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		String resultDoc = resultsHandle.get();
+    // create result handle
+    StringHandle resultsHandle = new StringHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(resultDoc);
+    // get the result
+    String resultDoc = resultsHandle.get();
 
-		assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
-		assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint20.xml\""));	
+    System.out.println(resultDoc);
 
-		// release client
-		client.release();		
-	}
+    assertTrue("total document returned is incorrect", resultDoc.contains("total=\"1\""));
+    assertTrue("returned doc is incorrect", resultDoc.contains("uri=\"/geo-constraint/geo-constraint20.xml\""));
 
-	@Test	
-	public void testRawCombinedQueryGeoCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("testRawCombinedQueryGeoCircle");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoCircle() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("testRawCombinedQueryGeoCircle");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoCircle.xml");
+    // write docs
+    loadGeoData();
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoCircle.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,-5 12,-5 12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,-5 11,-5 11 -5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,-4 12,-4 12 -4", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("bill_kara 13,-5 13,-5 13 -5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_gale 12,-6 12,-6 12 -6", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara 12,-5 12,-5 12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("jack_kara 11,-5 11,-5 11 -5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_jill 12,-4 12,-4 12 -4", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("bill_kara 13,-5 13,-5 13 -5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_gale 12,-6 12,-6 12 -6", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
 
-	@Test	
-	public void testRawCombinedQueryGeoBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("testRawCombinedQueryGeoBox");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoBox() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("testRawCombinedQueryGeoBox");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBox.xml");
+    // write docs
+    loadGeoData();
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBox.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,-5 12,-5 12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara 11,-5 11,-5 11 -5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill 12,-4 12,-4 12 -4", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara 12,-5 12,-5 12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("jack_kara 11,-5 11,-5 11 -5", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_jill 12,-4 12,-4 12 -4", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
 
-	@Test	
-	public void testRawCombinedQueryGeoBoxAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryGeoBoxAndWord");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoBoxAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryGeoBoxAndWord");
 
-		// write docs
-		loadGeoData();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBoxAndWord.xml");
+    // write docs
+    loadGeoData();
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoBoxAndWord.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/geo-constraint/geo-constraint20.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/geo-constraint/geo-constraint20.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
-	@Test	
-	public void testRawCombinedQueryGeoPointAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testRawCombinedQueryGeoPointAndWord");
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+  @Test
+  public void testRawCombinedQueryGeoPointAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, TransformerException
+  {
+    System.out.println("Running testRawCombinedQueryGeoPointAndWord");
 
-		// write docs
-		for(int i = 1; i <= 9; i++)
-		{
-			writeDocumentUsingInputStreamHandle(client, "geo-constraint" + i + ".xml", "/geo-constraint/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoPointAndWord.xml");
+    // write docs
+    for (int i = 1; i <= 9; i++)
+    {
+      writeDocumentUsingInputStreamHandle(client, "geo-constraint" + i + ".xml", "/geo-constraint/", "XML");
+    }
 
-		// create a handle for the search criteria
-		FileHandle rawHandle = new FileHandle(file); // bug 21107
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/combined/combinedQueryOptionGeoPointAndWord.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    // create a handle for the search criteria
+    FileHandle rawHandle = new FileHandle(file); // bug 21107
 
-		// create a search definition based on the handle
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create result handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create a search definition based on the handle
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create result handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/geo-constraint/geo-constraint8.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/geo-constraint/geo-constraint8.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

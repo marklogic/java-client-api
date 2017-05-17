@@ -30,60 +30,61 @@ import com.marklogic.client.io.SearchHandle;
 
 public class ThreadSearch extends BasicJavaClientREST implements Runnable {
 
-	String msg;
-	long totalResultsArray[] = new long[10];
-	long totalAllResults = 0;
+  String msg;
+  long totalResultsArray[] = new long[10];
+  long totalAllResults = 0;
 
-	public void run()
-	{	
-		long totalResults = 0;
-		
-		DatabaseClient client;
-		try {
-		
-		client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
-		QueryManager queryMgr = client.newQueryManager();
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
+  public void run()
+  {
+    long totalResults = 0;
 
-		// create handle
-		SearchHandle resultsHandle = new SearchHandle();        
+    DatabaseClient client;
+    try {
 
-		for(int i=1; i<=10; i++)
-		{
-			System.out.println("Searching document " + i + " from: " + msg);
+      client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+      QueryManager queryMgr = client.newQueryManager();
+      StringQueryDefinition querydef = queryMgr.newStringDefinition(null);
 
-			// search docs
-			querydef.setCriteria("alert");
-			queryMgr.search(querydef, resultsHandle);
+      // create handle
+      SearchHandle resultsHandle = new SearchHandle();
 
-			totalResults = resultsHandle.getTotalResults();
+      for (int i = 1; i <= 10; i++)
+      {
+        System.out.println("Searching document " + i + " from: " + msg);
 
-			System.out.println("Results: " + totalResults + " documents returned");
+        // search docs
+        querydef.setCriteria("alert");
+        queryMgr.search(querydef, resultsHandle);
 
-			totalResultsArray[i-1] = totalResults;
+        totalResults = resultsHandle.getTotalResults();
 
-			totalAllResults = totalAllResults + totalResults;
+        System.out.println("Results: " + totalResults + " documents returned");
 
-			Random rand = new Random();
-			int r = rand.nextInt(3000) + 1000;
+        totalResultsArray[i - 1] = totalResults;
 
-			try {
-				Thread.sleep(r);
-			} 
-			catch (InterruptedException e) { e.printStackTrace(); }
-		}
+        totalAllResults = totalAllResults + totalResults;
 
-		// release client
-		client.release();
-		} catch (KeyManagementException | NoSuchAlgorithmException
-				| IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-	}
+        Random rand = new Random();
+        int r = rand.nextInt(3000) + 1000;
 
-	ThreadSearch(String mg)
-	{
-		msg=mg;
-	}
+        try {
+          Thread.sleep(r);
+        } catch (InterruptedException e) {
+          e.printStackTrace();
+        }
+      }
+
+      // release client
+      client.release();
+    } catch (KeyManagementException | NoSuchAlgorithmException
+        | IOException e1) {
+      // TODO Auto-generated catch block
+      e1.printStackTrace();
+    }
+  }
+
+  ThreadSearch(String mg)
+  {
+    msg = mg;
+  }
 }

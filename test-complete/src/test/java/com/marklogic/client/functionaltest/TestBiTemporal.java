@@ -79,8 +79,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private static String dbName = "TestBiTemporalJava";
   private static String[] fNames = { "TestBiTemporalJava-1" };
   private static String schemadbName = "TestBiTemporalJavaSchemaDB";
-  private static String [] schemafNames = {"TestBiTemporalJavaSchemaDB-1"};
-  
+  private static String[] schemafNames = { "TestBiTemporalJavaSchemaDB-1" };
+
   private static int uberPort = 8000;
   private DatabaseClient adminClient = null;
   private DatabaseClient writerClient = null;
@@ -108,14 +108,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private final static String latestCollectionName = "latest";
   private final static String updateCollectionName = "updateCollection";
   private final static String insertCollectionName = "insertCollection";
-  
+
   private static String appServerHostname = null;
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
-    
+
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
         systemStartERIName);
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
@@ -125,9 +125,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     ConnectedRESTQA.addRangeElementIndex(dbName, dateTimeDataTypeString, "",
         validEndERIName);
     createDB(schemadbName);
-	createForest(schemafNames[0], schemadbName);
-	//Set the schemadbName database as the Schema database.
-	setDatabaseProperties(dbName, "schema-database", schemadbName);
+    createForest(schemafNames[0], schemadbName);
+    // Set the schemadbName database as the Schema database.
+    setDatabaseProperties(dbName, "schema-database", schemadbName);
 
     // Temporal axis must be created before temporal collection associated with
     // those axes is created
@@ -138,7 +138,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
         temporalCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
-            bulktemporalCollectionName, axisSystemName, axisValidName);
+        bulktemporalCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.addElementRangeIndexTemporalCollection(dbName,
         temporalLsqtCollectionName, axisSystemName, axisValidName);
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
@@ -162,24 +162,24 @@ public class TestBiTemporal extends BasicJavaClientREST {
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
         temporalCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalCollection("Documents",
-            bulktemporalCollectionName);
+        bulktemporalCollectionName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
         axisValidName);
     ConnectedRESTQA.deleteElementRangeIndexTemporalAxis("Documents",
         axisSystemName);
     deleteDB(schemadbName);
-	deleteForest(schemafNames[0]);
+    deleteForest(schemafNames[0]);
   }
 
   @Before
   public void setUp() throws Exception {
-    createUserRolesWithPrevilages("test-eval","xdbc:eval", "xdbc:eval-in","xdmp:eval-in", "any-uri",
-    		                      "xdbc:invoke","temporal:statement-set-system-time");
-    createRESTUser("eval-user", "x", "test-eval","rest-admin","rest-writer","rest-reader", "temporal-admin");
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri",
+        "xdbc:invoke", "temporal:statement-set-system-time");
+    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
     int restPort = getRestServerPort();
     adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
     writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
-    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);             
+    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);
   }
 
   @After
@@ -209,7 +209,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       metadataHandle.setQuality(11);
     }
-    
+
     metadataHandle.getProperties().put("myString", "foo");
     metadataHandle.getProperties().put("myInteger", 10);
     metadataHandle.getProperties().put("myDecimal", 34.56678);
@@ -236,7 +236,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println(actualPermissions);
   }
 
-  private void validateLSQTQueryData(DatabaseClient client)  throws Exception  {
+  private void validateLSQTQueryData(DatabaseClient client) throws Exception {
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = client.newQueryManager();
@@ -302,10 +302,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
         System.out.println("validEndDate = " + validEndDate);
 
         assertTrue("Valid start date check failed",
-          (validStartDate.equals("2001-01-01T00:00:00") &&
-           validEndDate.equals("2011-12-31T23:59:59") &&
-           systemStartDate.equals("2005-01-01T00:00:01-08:00") &&
-           systemEndDate.equals("2010-01-01T00:00:01-08:00")));
+            (validStartDate.equals("2001-01-01T00:00:00") &&
+                validEndDate.equals("2011-12-31T23:59:59") &&
+                systemStartDate.equals("2005-01-01T00:00:01-08:00") &&
+            systemEndDate.equals("2010-01-01T00:00:01-08:00")));
       }
     }
 
@@ -317,7 +317,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   private void insertXMLSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
     System.out.println("Inside insertXMLSingleDocument");
-    
+
     DOMHandle handle = getXMLDocumentHandle("2001-01-01T00:00:00",
         "2011-12-31T23:59:59", "999 Skyway Park - XML", docId);
 
@@ -346,19 +346,19 @@ public class TestBiTemporal extends BasicJavaClientREST {
       ServerTransform transformer = new ServerTransform(transformName);
       transformer.put("name", "Lang");
       transformer.put("value", "English");
-      
-	  docMgr.write(desc, mh, handle, transformer, null,	temporalCollection);
-		}
-      else {
-		docMgr.write(desc, mh, handle, null, null, temporalCollection);
-		}
-   }
+
+      docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
+    }
+    else {
+      docMgr.write(desc, mh, handle, null, null, temporalCollection);
+    }
+  }
 
   // This covers passing transforms and descriptor
   private void updateXMLSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
     System.out.println("Inside updateXMLSingleDocument");
-    
+
     // Update the document
     DOMHandle handle = getXMLDocumentHandle("2003-01-01T00:00:00",
         "2008-12-31T23:59:59", "1999 Skyway Park - Updated - XML", docId);
@@ -367,7 +367,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     docMgr.setMetadataCategories(Metadata.ALL);
 
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
-    DocumentMetadataHandle mh = setMetadata(true); 
+    DocumentMetadataHandle mh = setMetadata(true);
     if (transformName != null) {
       TransformExtensionsManager transMgr = adminClient.newServerConfigManager()
           .newTransformExtensionsManager();
@@ -389,9 +389,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       docMgr.write(desc, mh, handle, transformer, null, temporalCollection);
     } else {
-    	docMgr.write(desc, mh, handle, null, null, temporalCollection);
+      docMgr.write(desc, mh, handle, null, null, temporalCollection);
     }
-	
+
   }
 
   // This covers passing descriptor
@@ -399,7 +399,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       throws Exception {
 
     System.out.println("Inside deleteXMLSingleDocument");
-    
+
     XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
     DocumentDescriptor desc = docMgr.newDescriptor(docId);
@@ -450,55 +450,55 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     return handle;
   }
-  
+
   private Document getXMLAsDocumentObject(String startValidTime,
-	      String endValidTime, String address, String uri) throws Exception {
+      String endValidTime, String address, String uri) throws Exception {
 
-	    Document domDocument = DocumentBuilderFactory.newInstance()
-	        .newDocumentBuilder().newDocument();
-	    Element root = domDocument.createElement("root");
+    Document domDocument = DocumentBuilderFactory.newInstance()
+        .newDocumentBuilder().newDocument();
+    Element root = domDocument.createElement("root");
 
-	    // System start and End time
-	    Node systemNode = root.appendChild(domDocument.createElement("system"));
-	    systemNode.appendChild(domDocument.createElement(systemStartERIName));
-	    systemNode.appendChild(domDocument.createElement(systemEndERIName));
+    // System start and End time
+    Node systemNode = root.appendChild(domDocument.createElement("system"));
+    systemNode.appendChild(domDocument.createElement(systemStartERIName));
+    systemNode.appendChild(domDocument.createElement(systemEndERIName));
 
-	    // Valid start and End time
-	    Node validNode = root.appendChild(domDocument.createElement("valid"));
+    // Valid start and End time
+    Node validNode = root.appendChild(domDocument.createElement("valid"));
 
-	    Node validStartNode = validNode.appendChild(domDocument
-	        .createElement(validStartERIName));
-	    validStartNode.appendChild(domDocument.createTextNode(startValidTime));
-	    validNode.appendChild(validStartNode);
+    Node validStartNode = validNode.appendChild(domDocument
+        .createElement(validStartERIName));
+    validStartNode.appendChild(domDocument.createTextNode(startValidTime));
+    validNode.appendChild(validStartNode);
 
-	    Node validEndNode = validNode.appendChild(domDocument
-	        .createElement(validEndERIName));
-	    validEndNode.appendChild(domDocument.createTextNode(endValidTime));
-	    validNode.appendChild(validEndNode);
+    Node validEndNode = validNode.appendChild(domDocument
+        .createElement(validEndERIName));
+    validEndNode.appendChild(domDocument.createTextNode(endValidTime));
+    validNode.appendChild(validEndNode);
 
-	    // Address
-	    Node addressNode = root.appendChild(domDocument.createElement("Address"));
-	    addressNode.appendChild(domDocument.createTextNode(address));
+    // Address
+    Node addressNode = root.appendChild(domDocument.createElement("Address"));
+    addressNode.appendChild(domDocument.createTextNode(address));
 
-	    // uri
-	    Node uriNode = root.appendChild(domDocument.createElement("uri"));
-	    uriNode.appendChild(domDocument.createTextNode(uri));
-	    domDocument.appendChild(root);
-	    
-	    return domDocument;
-	  }
+    // uri
+    Node uriNode = root.appendChild(domDocument.createElement("uri"));
+    uriNode.appendChild(domDocument.createTextNode(uri));
+    domDocument.appendChild(root);
+
+    return domDocument;
+  }
 
   public void insertJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
-	  insertJSONSingleDocument(temporalCollection, docId, null, transaction,
+    insertJSONSingleDocument(temporalCollection, docId, null, transaction,
         systemTime);
   }
 
   public void insertJSONSingleDocument(String temporalCollection, String docId,
       String transformName) throws Exception {
 
-	  insertJSONSingleDocument(temporalCollection, docId, transformName, null,
+    insertJSONSingleDocument(temporalCollection, docId, transformName, null,
         null);
   }
 
@@ -552,11 +552,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
       }
     }
   }
-  
+
   public void insertJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside insertJSONSingleDocumentAsEvalUser");
-    
+
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
         docId);
@@ -566,19 +566,19 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     // put meta-data
     DocumentMetadataHandle mh = setMetadata(false);
-   docMgr.write(docId, mh, handle, null, null, temporalCollection);
+    docMgr.write(docId, mh, handle, null, null, temporalCollection);
   }
 
   public void updateJSONSingleDocument(String temporalCollection, String docId)
       throws Exception {
-	  
-	  updateJSONSingleDocument(temporalCollection, docId, null, null);
+
+    updateJSONSingleDocument(temporalCollection, docId, null, null);
   }
 
   public void updateJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside updateJSONSingleDocumentString");
-    
+
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2003-01-01T00:00:00", "2008-12-31T23:59:59",
@@ -587,7 +587,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
     DocumentMetadataHandle mh = setMetadata(true);
-    
+
     docMgr.write(docId, mh, handle, null, null, temporalCollection);
   }
 
@@ -595,7 +595,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
     System.out.println("Inside updateJSONSingleDocument");
-    
+
     // Update the temporal document
     JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
         "2003-01-01T00:00:00", "2008-12-31T23:59:59",
@@ -604,21 +604,21 @@ public class TestBiTemporal extends BasicJavaClientREST {
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL);
     DocumentMetadataHandle mh = setMetadata(true);
-    
+
     docMgr.write(docId, mh, handle, null, transaction, temporalCollection,
         systemTime);
   }
 
   public void deleteJSONSingleDocument(String temporalCollection, String docId,
       Transaction transaction) throws Exception {
-	  
+
     deleteJSONSingleDocument(temporalCollection, docId, transaction, null);
   }
 
   public void deleteJSONSingleDocumentAsEvalUser(String temporalCollection, String docId) throws Exception {
 
     System.out.println("Inside deleteJSONSingleDocumentAsEvalUser");
-    
+
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 
     // Doing the logic here to exercise the overloaded methods
@@ -629,14 +629,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
       Transaction transaction, java.util.Calendar systemTime) throws Exception {
 
     System.out.println("Inside deleteJSONSingleDocument");
-    
+
     JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 
     // Doing the logic here to exercise the overloaded methods
     if (systemTime != null) {
-    	docMgr.delete(docId, transaction, temporalCollection, systemTime);
+      docMgr.delete(docId, transaction, temporalCollection, systemTime);
     } else {
-    	docMgr.delete(docId, transaction, temporalCollection);
+      docMgr.delete(docId, transaction, temporalCollection);
     }
   }
 
@@ -684,265 +684,261 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     return handle;
   }
-  
+
   /*
-  * Insert multiple temporal documents to test bulk write of temporal documents.
-  */
-  	@Test
-  	public void testBulkWritReadeWithTransaction() throws Exception {
+   * Insert multiple temporal documents to test bulk write of temporal
+   * documents.
+   */
+  @Test
+  public void testBulkWritReadeWithTransaction() throws Exception {
 
-  		boolean tstatus = false;
-  		DocumentPage termQueryResults = null;
-  		
-  		Transaction tx = writerClient.openTransaction();
-  		try {
-  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+    boolean tstatus = false;
+    DocumentPage termQueryResults = null;
 
-  			DocumentWriteSet writeset = docMgr.newWriteSet();
-  			String[] docId = new String[4];
-  			docId[0] = "1.xml";
-  			docId[1] = "2.xml";
-  			docId[2] = "3.xml";
-  			docId[3] = "4.xml";
+    Transaction tx = writerClient.openTransaction();
+    try {
+      XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
-  			DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
-  					"2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
-  			DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
-  					"2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
-  			DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
-  					"2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
-  			DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
-  					"2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
-  			DocumentMetadataHandle mh = setMetadata(false);
+      DocumentWriteSet writeset = docMgr.newWriteSet();
+      String[] docId = new String[4];
+      docId[0] = "1.xml";
+      docId[1] = "2.xml";
+      docId[2] = "3.xml";
+      docId[3] = "4.xml";
 
-  			writeset.add(docId[0], mh, handle1);
-  			writeset.add(docId[1], mh, handle2);
-  			writeset.add(docId[2], mh, handle3);
-  			writeset.add(docId[3], mh, handle4);
-  			Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
-  			map.put(docId[0], handle1);
-  			map.put(docId[1], handle2);
-  			map.put(docId[2], handle3);
-  			map.put(docId[3], handle4);
+      DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+          "2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
+      DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+          "2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
+      DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+          "2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
+      DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+          "2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
+      DocumentMetadataHandle mh = setMetadata(false);
 
-  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+      writeset.add(docId[0], mh, handle1);
+      writeset.add(docId[1], mh, handle2);
+      writeset.add(docId[2], mh, handle3);
+      writeset.add(docId[3], mh, handle4);
+      Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
+      map.put(docId[0], handle1);
+      map.put(docId[1], handle2);
+      map.put(docId[2], handle3);
+      map.put(docId[3], handle4);
 
-  			QueryManager queryMgr = readerClient.newQueryManager();
-  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+      docMgr.write(writeset, null, null, bulktemporalCollectionName);
 
-  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
-  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+      QueryManager queryMgr = readerClient.newQueryManager();
+      StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-  			long start = 1;
-  			docMgr = readerClient.newXMLDocumentManager();
-  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-  			termQueryResults = docMgr.search(termQuery, start);
-  			assertEquals("Records counts is incorrect", 4, termQueryResults.size());
-  			// Verify the Document Record content with map contents for each record.
-  			while (termQueryResults.hasNext()) {
+      String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+      StructuredQueryDefinition termQuery = sqb.collection(collections);
 
-  				DocumentRecord record = termQueryResults.next();
+      long start = 1;
+      docMgr = readerClient.newXMLDocumentManager();
+      docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+      termQueryResults = docMgr.search(termQuery, start);
+      assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+      // Verify the Document Record content with map contents for each record.
+      while (termQueryResults.hasNext()) {
 
-  				DOMHandle recordHandle = new DOMHandle();
-  				record.getContent(recordHandle);
+        DocumentRecord record = termQueryResults.next();
 
-  				String recordContent = recordHandle.toString();
+        DOMHandle recordHandle = new DOMHandle();
+        record.getContent(recordHandle);
 
-  				System.out.println("Record URI = " + record.getUri());
-  				System.out.println("Record content is = " + recordContent);
+        String recordContent = recordHandle.toString();
 
-  				DOMHandle readDOMHandle = map.get(record.getUri());
-  				String mapContent = readDOMHandle.evaluateXPath("/root/Address/text()", String.class);
+        System.out.println("Record URI = " + record.getUri());
+        System.out.println("Record content is = " + recordContent);
 
-  				assertTrue("Address value is incorrect ", recordContent.contains(mapContent));
+        DOMHandle readDOMHandle = map.get(record.getUri());
+        String mapContent = readDOMHandle.evaluateXPath("/root/Address/text()", String.class);
 
-  				readDOMHandle = null;
-  				mapContent = null;
-  			}
-  		}
-  		catch(Exception e) {
-  			System.out.println(e.getMessage());
-  			tstatus=true;
-  			throw e;
-  		}
-  		finally {
-  			if(tstatus) {
-  				if (termQueryResults != null)
-  				termQueryResults.close();  			
-  			}
-  			tx.rollback();
-  			tx = null;
-  		}    
-  	}
-  	
-  	/*
-  	 * Update multiple temporal documents to test bulk write of temporal documents with logical version ids
-  	 */
-  	@Test
-  	public void testAddWithLogicalVersionDocSet() throws Exception {
+        assertTrue("Address value is incorrect ", recordContent.contains(mapContent));
 
-  		boolean tstatus = false;
-  		DocumentPage termQueryResults = null;
+        readDOMHandle = null;
+        mapContent = null;
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      tstatus = true;
+      throw e;
+    } finally {
+      if (tstatus) {
+        if (termQueryResults != null)
+          termQueryResults.close();
+      }
+      tx.rollback();
+      tx = null;
+    }
+  }
 
-  		Transaction tx = writerClient.openTransaction();
-  		try {
-  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+  /*
+   * Update multiple temporal documents to test bulk write of temporal documents
+   * with logical version ids
+   */
+  @Test
+  public void testAddWithLogicalVersionDocSet() throws Exception {
 
-  			DocumentWriteSet writeset = docMgr.newWriteSet();
-  			String[] docId = new String[4];
-  			docId[0] = "1.xml";
-  			docId[1] = "2.xml";
-  			docId[2] = "3.xml";
-  			docId[3] = "4.xml";
+    boolean tstatus = false;
+    DocumentPage termQueryResults = null;
 
-  			String[] versiondocId = new String[4];
-  			versiondocId[0] = "/version2/1.xml";
-  			versiondocId[1] = "/version2/2.xml";
-  			versiondocId[2] = "/version2/3.xml";
-  			versiondocId[3] = "/version2/4.xml";
+    Transaction tx = writerClient.openTransaction();
+    try {
+      XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
-  			DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
-  					"2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
-  			DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
-  					"2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
-  			DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
-  					"2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
-  			DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
-  					"2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
-  			DocumentMetadataHandle mh = setMetadata(false);
+      DocumentWriteSet writeset = docMgr.newWriteSet();
+      String[] docId = new String[4];
+      docId[0] = "1.xml";
+      docId[1] = "2.xml";
+      docId[2] = "3.xml";
+      docId[3] = "4.xml";
 
-  			writeset.add(docId[0], mh, handle1);
-  			writeset.add(docId[1], mh, handle2);
-  			writeset.add(docId[2], mh, handle3);
-  			writeset.add(docId[3], mh, handle4);
-  			Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
-  			map.put(docId[0], handle1);
-  			map.put(docId[1], handle2);
-  			map.put(docId[2], handle3);
-  			map.put(docId[3], handle4);
+      String[] versiondocId = new String[4];
+      versiondocId[0] = "/version2/1.xml";
+      versiondocId[1] = "/version2/2.xml";
+      versiondocId[2] = "/version2/3.xml";
+      versiondocId[3] = "/version2/4.xml";
 
-  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+      DOMHandle handle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+          "2011-12-31T23:59:56", "999 Skyway Park - XML", docId[0]);
+      DOMHandle handle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+          "2011-12-31T23:59:57", "999 Skyway Park - XML", docId[1]);
+      DOMHandle handle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+          "2011-12-31T23:59:58", "999 Skyway Park - XML", docId[2]);
+      DOMHandle handle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+          "2011-12-31T23:59:59", "999 Skyway Park - XML", docId[3]);
+      DocumentMetadataHandle mh = setMetadata(false);
 
-  			// Update the docs.
-  			DocumentWriteSet writesetUpd = docMgr.newWriteSet();
-  			DOMHandle vTwohandle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
-  					"2011-12-31T23:59:56", "999 Skyway Park - XML Updated", docId[0]);
-  			DOMHandle vTwohandle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
-  					"2011-12-31T23:59:57", "999 Skyway Park - XML Updated", docId[1]);
-  			DOMHandle vTwohandle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
-  					"2011-12-31T23:59:58", "999 Skyway Park - XML Updated", docId[2]);
-  			DOMHandle vTwohandle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
-  					"2011-12-31T23:59:59", "999 Skyway Park - XML Updated", docId[3]);
+      writeset.add(docId[0], mh, handle1);
+      writeset.add(docId[1], mh, handle2);
+      writeset.add(docId[2], mh, handle3);
+      writeset.add(docId[3], mh, handle4);
+      Map<String, DOMHandle> map = new TreeMap<String, DOMHandle>();
+      map.put(docId[0], handle1);
+      map.put(docId[1], handle2);
+      map.put(docId[2], handle3);
+      map.put(docId[3], handle4);
 
-  			writesetUpd.add(versiondocId[0], null, vTwohandle1, docId[0]);
-  			writesetUpd.add(versiondocId[1], null, vTwohandle2, docId[1]);
-  			writesetUpd.add(versiondocId[2], null, vTwohandle3, docId[2]);
-  			writesetUpd.add(versiondocId[3], null, vTwohandle4, docId[3]);
+      docMgr.write(writeset, null, null, bulktemporalCollectionName);
 
-  			// Write updated version
+      // Update the docs.
+      DocumentWriteSet writesetUpd = docMgr.newWriteSet();
+      DOMHandle vTwohandle1 = getXMLDocumentHandle("2001-01-01T00:00:00",
+          "2011-12-31T23:59:56", "999 Skyway Park - XML Updated", docId[0]);
+      DOMHandle vTwohandle2 = getXMLDocumentHandle("2001-01-02T00:00:00",
+          "2011-12-31T23:59:57", "999 Skyway Park - XML Updated", docId[1]);
+      DOMHandle vTwohandle3 = getXMLDocumentHandle("2001-01-03T00:00:00",
+          "2011-12-31T23:59:58", "999 Skyway Park - XML Updated", docId[2]);
+      DOMHandle vTwohandle4 = getXMLDocumentHandle("2001-01-04T00:00:00",
+          "2011-12-31T23:59:59", "999 Skyway Park - XML Updated", docId[3]);
 
-  			docMgr.write(writesetUpd, null, null, bulktemporalCollectionName);
+      writesetUpd.add(versiondocId[0], null, vTwohandle1, docId[0]);
+      writesetUpd.add(versiondocId[1], null, vTwohandle2, docId[1]);
+      writesetUpd.add(versiondocId[2], null, vTwohandle3, docId[2]);
+      writesetUpd.add(versiondocId[3], null, vTwohandle4, docId[3]);
 
-  			QueryManager queryMgr = readerClient.newQueryManager();
-  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+      // Write updated version
 
-  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
-  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+      docMgr.write(writesetUpd, null, null, bulktemporalCollectionName);
 
-  			long start = 1;
-  			docMgr = readerClient.newXMLDocumentManager();
-  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-  			termQueryResults = docMgr.search(termQuery, start);
-  			assertEquals("Records counts is incorrect", 8, termQueryResults.size());
-  		}
-  		catch(Exception e) {
-  			System.out.println(e.getMessage());
-  			tstatus=true;
-  			throw e;
-  		}
-  		finally {
-  			if(tstatus) {
-  				if (termQueryResults != null)
-  					termQueryResults.close();  			
-  			}
-  			tx.rollback();
-  			tx = null;
-  		}    
-  	}
+      QueryManager queryMgr = readerClient.newQueryManager();
+      StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-  	/*
-  	 * Insert multiple temporal documents to test bulk write of temporal documents.
-  	 * Verify that addAs does not blow up and contents can be added.
-  	 */
-  	@Test
-  	public void testBulkWriteReadWithAddAs() throws Exception {
+      String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+      StructuredQueryDefinition termQuery = sqb.collection(collections);
 
-  		boolean tstatus = false;
-  		DocumentPage termQueryResults = null;
+      long start = 1;
+      docMgr = readerClient.newXMLDocumentManager();
+      docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+      termQueryResults = docMgr.search(termQuery, start);
+      assertEquals("Records counts is incorrect", 8, termQueryResults.size());
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      tstatus = true;
+      throw e;
+    } finally {
+      if (tstatus) {
+        if (termQueryResults != null)
+          termQueryResults.close();
+      }
+      tx.rollback();
+      tx = null;
+    }
+  }
 
-  		try {
-  			XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
+  /*
+   * Insert multiple temporal documents to test bulk write of temporal
+   * documents. Verify that addAs does not blow up and contents can be added.
+   */
+  @Test
+  public void testBulkWriteReadWithAddAs() throws Exception {
 
-  			DocumentWriteSet writeset = docMgr.newWriteSet();
-  			String[] docId = new String[4];
-  			docId[0] = "1.xml";
-  			docId[1] = "2.xml";
-  			docId[2] = "3.xml";
-  			docId[3] = "4.xml";
+    boolean tstatus = false;
+    DocumentPage termQueryResults = null;
 
-  			Document doc1 = getXMLAsDocumentObject("2001-01-01T00:00:00",
-  					"2011-12-31T23:59:56", "999 Skyway Park - XML1", docId[0]);
-  			Document doc2 = getXMLAsDocumentObject("2001-01-02T00:00:00",
-  					"2011-12-31T23:59:57", "999 Skyway Park - XML2", docId[1]);
-  			Document doc3 = getXMLAsDocumentObject("2001-01-03T00:00:00",
-  					"2011-12-31T23:59:58", "999 Skyway Park - XML3", docId[2]);
-  			Document doc4 = getXMLAsDocumentObject("2001-01-04T00:00:00",
-  					"2011-12-31T23:59:59", "999 Skyway Park - XML4", docId[3]);
-  			DocumentMetadataHandle mh = setMetadata(false);
+    try {
+      XMLDocumentManager docMgr = writerClient.newXMLDocumentManager();
 
-  			writeset.addAs(docId[0], mh, doc1);
-  			writeset.addAs(docId[1], mh, doc2);
-  			writeset.addAs(docId[2], mh, doc3);
-  			writeset.addAs(docId[3], mh, doc4);
+      DocumentWriteSet writeset = docMgr.newWriteSet();
+      String[] docId = new String[4];
+      docId[0] = "1.xml";
+      docId[1] = "2.xml";
+      docId[2] = "3.xml";
+      docId[3] = "4.xml";
 
-  			docMgr.write(writeset, null, null, bulktemporalCollectionName);
+      Document doc1 = getXMLAsDocumentObject("2001-01-01T00:00:00",
+          "2011-12-31T23:59:56", "999 Skyway Park - XML1", docId[0]);
+      Document doc2 = getXMLAsDocumentObject("2001-01-02T00:00:00",
+          "2011-12-31T23:59:57", "999 Skyway Park - XML2", docId[1]);
+      Document doc3 = getXMLAsDocumentObject("2001-01-03T00:00:00",
+          "2011-12-31T23:59:58", "999 Skyway Park - XML3", docId[2]);
+      Document doc4 = getXMLAsDocumentObject("2001-01-04T00:00:00",
+          "2011-12-31T23:59:59", "999 Skyway Park - XML4", docId[3]);
+      DocumentMetadataHandle mh = setMetadata(false);
 
-  			QueryManager queryMgr = readerClient.newQueryManager();
-  			StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+      writeset.addAs(docId[0], mh, doc1);
+      writeset.addAs(docId[1], mh, doc2);
+      writeset.addAs(docId[2], mh, doc3);
+      writeset.addAs(docId[3], mh, doc4);
 
-  			String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
-  			StructuredQueryDefinition termQuery = sqb.collection(collections);
+      docMgr.write(writeset, null, null, bulktemporalCollectionName);
 
-  			long start = 1;
-  			docMgr = readerClient.newXMLDocumentManager();
-  			docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-  			termQueryResults = docMgr.search(termQuery, start);
-  			assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+      QueryManager queryMgr = readerClient.newQueryManager();
+      StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-  			// Read one document to make sure that addAs worked.
-  			DocumentPage page = docMgr.read(docId[2]);
-  			DOMHandle dh = new DOMHandle();
-  			while(page.hasNext()){
-  				DocumentRecord rec = page.next();
-  				rec.getContent(dh);
+      String[] collections = { latestCollectionName, bulktemporalCollectionName, "insertCollection" };
+      StructuredQueryDefinition termQuery = sqb.collection(collections);
 
-  				assertEquals("URI returned is wrong", docId[2], rec.getUri());
-  				assertEquals("URI returned is wrong", Format.XML, rec.getFormat());
-  				assertTrue("Comparing the content", convertXMLDocumentToString(dh.get()).contains("XML3"));
-  			}  		
-  		}
-  		catch(Exception e) {
-  			System.out.println(e.getMessage());
-  			tstatus=true;
-  			throw e;
-  		}
-  		finally {
-  			if(tstatus) {
-  				if (termQueryResults != null)
-  					termQueryResults.close();  			
-  			}  			
-  		}    
-  	}
+      long start = 1;
+      docMgr = readerClient.newXMLDocumentManager();
+      docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+      termQueryResults = docMgr.search(termQuery, start);
+      assertEquals("Records counts is incorrect", 4, termQueryResults.size());
+
+      // Read one document to make sure that addAs worked.
+      DocumentPage page = docMgr.read(docId[2]);
+      DOMHandle dh = new DOMHandle();
+      while (page.hasNext()) {
+        DocumentRecord rec = page.next();
+        rec.getContent(dh);
+
+        assertEquals("URI returned is wrong", docId[2], rec.getUri());
+        assertEquals("URI returned is wrong", Format.XML, rec.getFormat());
+        assertTrue("Comparing the content", convertXMLDocumentToString(dh.get()).contains("XML3"));
+      }
+    } catch (Exception e) {
+      System.out.println(e.getMessage());
+      tstatus = true;
+      throw e;
+    } finally {
+      if (tstatus) {
+        if (termQueryResults != null)
+          termQueryResults.close();
+      }
+    }
+  }
 
   @Test
   // Insert a temporal document using DocumentUriTemplate
@@ -998,7 +994,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Insert a temporal document and update it using an invalid transform.
-  // The transform in this case creates a duplicate element against which as range index
+  // The transform in this case creates a duplicate element against which as
+  // range index
   // has been setup
   public void testInsertAndUpdateXMLSingleDocumentUsingInvalidTransform()
       throws Exception {
@@ -1008,14 +1005,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     boolean exceptionThrown = false;
     try {
-    	 updateXMLSingleDocument(temporalCollectionName, docId,
+      updateXMLSingleDocument(temporalCollectionName, docId,
           "add-element-xquery-invalid-bitemp-transform");
-    } catch (com.marklogic.client.FailedRequestException ex) {      
+    } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -1029,8 +1026,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // This test validates the following -
   // 1. Inserts, updates and delete and and also makes sure number of documents
-  //    in doc uri collection, latest collection are accurate after those operations.
-  //    Do this for more than one document URI (we do this with JSON and XML)
+  // in doc uri collection, latest collection are accurate after those
+  // operations.
+  // Do this for more than one document URI (we do this with JSON and XML)
   // 2. Make sure things are correct with transforms
   public void testConsolidated() throws Exception {
 
@@ -1237,7 +1235,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Test bitemporal create, update and delete works with a JSON document
-  // All database operations in this method are done using 'eval-user' against port 8000 
+  // All database operations in this method are done using 'eval-user' against
+  // port 8000
   public void testJSONConsolidated() throws Exception {
 
     System.out.println("Inside testJSONConsolidated");
@@ -1268,7 +1267,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // ================================================================
     // Update the document
     updateJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
-    
+
     // Verify that the document was updated
     // Make sure there is 1 document in latest collection
     QueryManager queryMgr = writerClient.newQueryManager();
@@ -1378,7 +1377,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // =============================================================================
     // Delete one of the document
     deleteJSONSingleDocumentAsEvalUser(temporalCollectionName, docId);
-   
+
     // Make sure there are still 4 documents in docId collection
     queryMgr = writerClient.newQueryManager();
     sqb = queryMgr.newStructuredQueryBuilder();
@@ -1430,9 +1429,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Test bitemporal create, update and delete works with a JSON document while passing
-  // system time. The temporal collection needs to be enabled for lsqt and we have enabled
-  // automation for lsqt (lsqt will be advanced every second and system time will be set with 
+  // Test bitemporal create, update and delete works with a JSON document while
+  // passing
+  // system time. The temporal collection needs to be enabled for lsqt and we
+  // have enabled
+  // automation for lsqt (lsqt will be advanced every second and system time
+  // will be set with
   // a lag of 1 second)
   public void testSystemTime() throws Exception {
 
@@ -1456,8 +1458,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
     DocumentPage readResults = docMgr.read(docId);
 
     System.out.println("Number of results = " + readResults.size());
-    assertEquals("Wrong number of results", 1, readResults.size()); 
-    
+    assertEquals("Wrong number of results", 1, readResults.size());
+
     DocumentRecord record = readResults.next();
     System.out.println("URI after insert = " + record.getUri());
     assertEquals("Document uri wrong after insert", docId, record.getUri());
@@ -1516,32 +1518,32 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
       assertTrue("Document permissions difference in rest-reader permission",
           actualPermissions.contains("rest-reader:[READ]"));
-      //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+      // Split up rest-writer:[READ, EXECUTE, UPDATE] string
       String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-      
+
       assertTrue("Document permissions difference in rest-writer permission - first permission",
-    		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+          writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
       assertTrue("Document permissions difference in rest-writer permission - second permission",
-    		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+          writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
       assertTrue("Document permissions difference in rest-writer permission - third permission",
-    		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-      //Split up app-user app-user:[UPDATE, EXECUTE, READ] string
+          writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+      // Split up app-user app-user:[UPDATE, EXECUTE, READ] string
       String[] appUserPerms = actualPermissions.split("app\\-user:\\[")[1].split("\\]")[0].split(",");
-      
+
       assertTrue("Document permissions difference in App User permission - first permission",
-    		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+          appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
       assertTrue("Document permissions difference in App User permission - second permission",
-    		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+          appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
       assertTrue("Document permissions difference in App User permission - third permission",
-    		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-      
-      //Split up temporal-admin=[READ, UPDATE] string
+          appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+
+      // Split up temporal-admin=[READ, UPDATE] string
       String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
       assertTrue("Document permissions difference in temporal-admin permission - first permission",
-    		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+          temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
       assertTrue("Document permissions difference in rest-writer permission - second permission",
-    		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+          temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
       // Validate quality
       int quality = metadataHandle.getQuality();
@@ -1694,32 +1696,32 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue("Document permissions difference in size value",
               actualPermissions.contains("size:4"));
 
-          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[UPDATE, READ] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[UPDATE, READ] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
-          
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
           assertFalse("Document permissions difference in app-user permission",
-        		  actualPermissions.split("app-user:\\[")[1].split("\\]")[0].contains("EXECUTE"));
+              actualPermissions.split("app-user:\\[")[1].split("\\]")[0].contains("EXECUTE"));
 
           assertEquals(quality, 99);
         }
@@ -1754,31 +1756,31 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-         //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-        //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -1809,36 +1811,36 @@ public class TestBiTemporal extends BasicJavaClientREST {
           }
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));   
-         
+              actualPermissions.contains("size:4"));
+
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
 
@@ -1870,35 +1872,35 @@ public class TestBiTemporal extends BasicJavaClientREST {
               .getProperties().isEmpty());
 
           assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));         
+              actualPermissions.contains("size:4"));
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-        //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -2032,34 +2034,34 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
           assertTrue("Document permissions difference in size value",
               actualPermissions.contains("size:4"));
-         
+
           assertTrue(
               "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));                   
+              actualPermissions.contains("rest-reader:[READ]"));
 
-          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")); 
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
           assertEquals(quality, 99);
         }
 
@@ -2093,32 +2095,32 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-          
-          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -2154,32 +2156,32 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-         
-          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
 
@@ -2215,32 +2217,32 @@ public class TestBiTemporal extends BasicJavaClientREST {
           assertTrue(
               "Document permissions difference in rest-reader permission",
               actualPermissions.contains("rest-reader:[READ]"));
-          
-          //Split up rest-writer:[READ, EXECUTE, UPDATE] string
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
           String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in rest-writer permission - first permission",
-        		  writerPerms[0].contains("UPDATE")||writerPerms[1].contains("UPDATE")||writerPerms[2].contains("UPDATE"));
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  writerPerms[0].contains("EXECUTE")||writerPerms[1].contains("EXECUTE")||writerPerms[2].contains("EXECUTE"));
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
           assertTrue("Document permissions difference in rest-writer permission - third permission",
-        		  writerPerms[0].contains("READ")||writerPerms[1].contains("READ")||writerPerms[2].contains("READ"));
-          //Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
           String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-          
+
           assertTrue("Document permissions difference in App User permission - first permission",
-        		  appUserPerms[0].contains("UPDATE")||appUserPerms[1].contains("UPDATE")||appUserPerms[2].contains("UPDATE"));
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
           assertTrue("Document permissions difference in App user permission - second permission",
-        		  appUserPerms[0].contains("READ")||appUserPerms[1].contains("READ")||appUserPerms[2].contains("READ"));
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
           assertTrue("Document permissions difference in App user permission - third permission",
-        		  appUserPerms[0].contains("EXECUTE")||appUserPerms[1].contains("EXECUTE")||appUserPerms[2].contains("EXECUTE"));
-          //Split up temporal-admin=[READ, UPDATE] string
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
           String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
 
           assertTrue("Document permissions difference in temporal-admin permission - first permission",
-        		  temporalAdminPerms[0].contains("UPDATE")||temporalAdminPerms[1].contains("UPDATE"));
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
           assertTrue("Document permissions difference in rest-writer permission - second permission",
-        		  temporalAdminPerms[0].contains("READ")||temporalAdminPerms[1].contains("READ"));
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
 
           assertEquals(quality, 11);
         }
@@ -2258,7 +2260,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Create a bitemporal document and update the document with a system time that is less than
+  // Create a bitemporal document and update the document with a system time
+  // that is less than
   // the one used during creation
   public void testSystemTimeUsingInvalidTime() throws Exception {
 
@@ -2272,7 +2275,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
         .parseDateTime("2010-01-01T00:00:01");
     insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
         firstInsertTime);
-    
+
     // Sleep for 2 seconds for LSQT to be advanced
     Thread.sleep(2000);
 
@@ -2286,10 +2289,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
           updateTime);
     } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -2310,10 +2313,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
           deleteTime);
     } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -2335,9 +2338,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     Transaction transaction = writerClient
         .openTransaction("Transaction for BiTemporal");
     try {
-    	insertJSONSingleDocument(temporalCollectionName, docId, null, 
+      insertJSONSingleDocument(temporalCollectionName, docId, null,
           transaction, null);
-       
+
       // Verify that the document was inserted
       JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
       DocumentPage readResults = docMgr.read(transaction, docId);
@@ -2365,14 +2368,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
         JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
             ObjectNode.class);
         DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-        docMgr.read(docId, metadataHandle, contentHandle);        
+        docMgr.read(docId, metadataHandle, contentHandle);
       } catch (Exception ex) {
         exceptionThrown = true;
       }
-      
+
       if (!exceptionThrown) {
         transaction.rollback();
-        
+
         assertTrue(
             "Exception not thrown during read using no transaction handle",
             exceptionThrown);
@@ -2472,12 +2475,11 @@ public class TestBiTemporal extends BasicJavaClientREST {
       transaction = null;
 
       assertTrue("testTransactionCommit failed", false);
-    }
-    finally {
-    	if( transaction != null ) {
-    		transaction.rollback();
-    		transaction = null;
-    	}
+    } finally {
+      if (transaction != null) {
+        transaction.rollback();
+        transaction = null;
+      }
     }
   }
 
@@ -2487,195 +2489,195 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     System.out.println("Inside testTransactionRollback");
     Transaction transaction = writerClient
-            .openTransaction("Transaction for BiTemporal");
+        .openTransaction("Transaction for BiTemporal");
 
     try {
-		String docId = "javaSingleJSONDoc.json";
-		try {
-			insertJSONSingleDocument(temporalCollectionName, docId, null,
-		      transaction, null);
-			} catch (Exception ex) {
-		  transaction.rollback();
-		  transaction = null;
+      String docId = "javaSingleJSONDoc.json";
+      try {
+        insertJSONSingleDocument(temporalCollectionName, docId, null,
+            transaction, null);
+      } catch (Exception ex) {
+        transaction.rollback();
+        transaction = null;
 
-		  assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
-		      false);
-		}
+        assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
+            false);
+      }
 
-		// Verify that the document was inserted
-		JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
-		DocumentPage readResults = docMgr.read(transaction, docId);
+      // Verify that the document was inserted
+      JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+      DocumentPage readResults = docMgr.read(transaction, docId);
 
-		System.out.println("Number of results = " + readResults.size());
-		if (readResults.size() != 1) {
-		  transaction.rollback();
+      System.out.println("Number of results = " + readResults.size());
+      if (readResults.size() != 1) {
+        transaction.rollback();
 
-		  assertEquals("Wrong number of results", 1, readResults.size());
-		}
+        assertEquals("Wrong number of results", 1, readResults.size());
+      }
 
-		DocumentRecord latestDoc = readResults.next();
-		System.out.println("URI after insert = " + latestDoc.getUri());
-		if (!docId.equals(latestDoc.getUri())) {
-		  transaction.rollback();
+      DocumentRecord latestDoc = readResults.next();
+      System.out.println("URI after insert = " + latestDoc.getUri());
+      if (!docId.equals(latestDoc.getUri())) {
+        transaction.rollback();
 
-		  assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
-		}
+        assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
+      }
 
-		try {
-		  updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
-		} catch (Exception ex) {
-		  transaction.rollback();
-		  transaction = null;
+      try {
+        updateJSONSingleDocument(temporalCollectionName, docId, transaction, null);
+      } catch (Exception ex) {
+        transaction.rollback();
+        transaction = null;
 
-		  assertTrue("updateJSONSingleDocument failed in testTransactionRollback",
-		      false);
-		}
+        assertTrue("updateJSONSingleDocument failed in testTransactionRollback",
+            false);
+      }
 
-		// Verify that the document is visible and count is 4
-		// Fetch documents associated with a search term (such as XML) in Address
-		// element
-		QueryManager queryMgr = writerClient.newQueryManager();
-		StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+      // Verify that the document is visible and count is 4
+      // Fetch documents associated with a search term (such as XML) in Address
+      // element
+      QueryManager queryMgr = writerClient.newQueryManager();
+      StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
 
-		StructuredQueryDefinition termQuery = sqb.collection(docId);
+      StructuredQueryDefinition termQuery = sqb.collection(docId);
 
-		long start = 1;
-		DocumentPage termQueryResults = docMgr
-		    .search(termQuery, start, transaction);
-		System.out
-		    .println("Number of results = " + termQueryResults.getTotalSize());
-		if (termQueryResults.getTotalSize() != 4) {
-		  transaction.rollback();
+      long start = 1;
+      DocumentPage termQueryResults = docMgr
+          .search(termQuery, start, transaction);
+      System.out
+          .println("Number of results = " + termQueryResults.getTotalSize());
+      if (termQueryResults.getTotalSize() != 4) {
+        transaction.rollback();
 
-		  assertEquals("Wrong number of results", 4,
-		      termQueryResults.getTotalSize());
-		}
+        assertEquals("Wrong number of results", 4,
+            termQueryResults.getTotalSize());
+      }
 
-		transaction.rollback();
+      transaction.rollback();
 
-		// Verify that the document is not there after rollback
-		boolean exceptionThrown = false;
-		try {
-		  JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
-		      ObjectNode.class);
-		  DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-		  docMgr.read(docId, metadataHandle, contentHandle);
-		} catch (Exception ex) {
-		  exceptionThrown = true;
-		}
+      // Verify that the document is not there after rollback
+      boolean exceptionThrown = false;
+      try {
+        JacksonDatabindHandle<ObjectNode> contentHandle = new JacksonDatabindHandle<>(
+            ObjectNode.class);
+        DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+        docMgr.read(docId, metadataHandle, contentHandle);
+      } catch (Exception ex) {
+        exceptionThrown = true;
+      }
 
-		if (!exceptionThrown) {
-		  transaction.rollback();
-		
-		  assertTrue("Exception not thrown during read on non-existing uri",
-		      exceptionThrown);
-		}
+      if (!exceptionThrown) {
+        transaction.rollback();
 
-		// =======================================================================
-		// Now try rollback with delete
-		System.out.println("Test Rollback after delete");
-		docId = "javaSingleJSONDocForDelete.json";
+        assertTrue("Exception not thrown during read on non-existing uri",
+            exceptionThrown);
+      }
 
-		transaction = writerClient
-		    .openTransaction("Transaction Rollback for BiTemporal Delete");
+      // =======================================================================
+      // Now try rollback with delete
+      System.out.println("Test Rollback after delete");
+      docId = "javaSingleJSONDocForDelete.json";
 
-		try {
-			insertJSONSingleDocument(temporalCollectionName, docId, null,
-		      transaction, null);
-			} catch (Exception ex) {
-		  transaction.rollback();
-		  transaction = null;
+      transaction = writerClient
+          .openTransaction("Transaction Rollback for BiTemporal Delete");
 
-		  assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
-		      false);
-		}
+      try {
+        insertJSONSingleDocument(temporalCollectionName, docId, null,
+            transaction, null);
+      } catch (Exception ex) {
+        transaction.rollback();
+        transaction = null;
 
-		// Verify that the document was inserted
-		docMgr = writerClient.newJSONDocumentManager();
-		readResults = docMgr.read(transaction, docId);
+        assertTrue("insertJSONSingleDocument failed in testTransactionRollback",
+            false);
+      }
 
-		System.out.println("Number of results = " + readResults.size());
-		if (readResults.size() != 1) {
-		  transaction.rollback();
+      // Verify that the document was inserted
+      docMgr = writerClient.newJSONDocumentManager();
+      readResults = docMgr.read(transaction, docId);
 
-		  assertEquals("Wrong number of results", 1, readResults.size());
-		}
+      System.out.println("Number of results = " + readResults.size());
+      if (readResults.size() != 1) {
+        transaction.rollback();
 
-		latestDoc = readResults.next();
-		System.out.println("URI after insert = " + latestDoc.getUri());
-		if (!docId.equals(latestDoc.getUri())) {
-		  transaction.rollback();
+        assertEquals("Wrong number of results", 1, readResults.size());
+      }
 
-		  assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
-		}
+      latestDoc = readResults.next();
+      System.out.println("URI after insert = " + latestDoc.getUri());
+      if (!docId.equals(latestDoc.getUri())) {
+        transaction.rollback();
 
-		try {
-		  deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
-		} catch (Exception ex) {
-		  transaction.rollback();
-		  transaction = null;
+        assertEquals("Document uri wrong after insert", docId, latestDoc.getUri());
+      }
 
-		  assertTrue("deleteJSONSingleDocument failed in testTransactionRollback",
-		      false);
-		}
+      try {
+        deleteJSONSingleDocument(temporalCollectionName, docId, transaction);
+      } catch (Exception ex) {
+        transaction.rollback();
+        transaction = null;
 
-		// Verify that the document is visible and count is 1
-		// Fetch documents associated with a search term (such as XML) in Address
-		// element
-		queryMgr = writerClient.newQueryManager();
-		sqb = queryMgr.newStructuredQueryBuilder();
+        assertTrue("deleteJSONSingleDocument failed in testTransactionRollback",
+            false);
+      }
 
-		termQuery = sqb.collection(docId);
+      // Verify that the document is visible and count is 1
+      // Fetch documents associated with a search term (such as XML) in Address
+      // element
+      queryMgr = writerClient.newQueryManager();
+      sqb = queryMgr.newStructuredQueryBuilder();
 
-		start = 1;
-		termQueryResults = docMgr.search(termQuery, start, transaction);
-		System.out
-		    .println("Number of results = " + termQueryResults.getTotalSize());
-		if (termQueryResults.getTotalSize() != 1) {
-		  transaction.rollback();
+      termQuery = sqb.collection(docId);
 
-		  assertEquals("Wrong number of results", 1,
-		      termQueryResults.getTotalSize());
-		}
+      start = 1;
+      termQueryResults = docMgr.search(termQuery, start, transaction);
+      System.out
+          .println("Number of results = " + termQueryResults.getTotalSize());
+      if (termQueryResults.getTotalSize() != 1) {
+        transaction.rollback();
 
-		transaction.rollback();
-		transaction = null;
+        assertEquals("Wrong number of results", 1,
+            termQueryResults.getTotalSize());
+      }
 
-		// Verify that the document was rolled back and count is 0
-		exceptionThrown = false;
-		try {
-		  readResults = docMgr.read(docId);
-		} catch (Exception ex) {
-		  exceptionThrown = true;
-		}
+      transaction.rollback();
+      transaction = null;
 
-		System.out.println("Done");
-	} catch (Exception e) {		
-		e.printStackTrace();		
-	}
-    finally {
-    	if(transaction != null) {
-    		transaction.rollback();
-    		transaction = null;
-    	}    	
+      // Verify that the document was rolled back and count is 0
+      exceptionThrown = false;
+      try {
+        readResults = docMgr.read(docId);
+      } catch (Exception ex) {
+        exceptionThrown = true;
+      }
+
+      System.out.println("Done");
+    } catch (Exception e) {
+      e.printStackTrace();
+    } finally {
+      if (transaction != null) {
+        transaction.rollback();
+        transaction = null;
+      }
     }
   }
 
   @Test
-  // Test Period Range Query using ALN_CONTAINS. We use a single axis during query
+  // Test Period Range Query using ALN_CONTAINS. We use a single axis during
+  // query
   public void testPeriodRangeQuerySingleAxisBasedOnALNContains()
       throws Exception {
     System.out.println("Inside testPeriodRangeQuerySingleAxisBasedOnALNContains");
-    
+
     // Read documents based on document URI and ALN Contains. We are just
     // looking for count of documents to be correct
 
     String docId = "javaSingleJSONDoc.json";
-    
+
     insertJSONSingleDocument(temporalCollectionName, docId, null);
-    
+
     updateJSONSingleDocument(temporalCollectionName, docId);
-    
+
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -2759,21 +2761,22 @@ public class TestBiTemporal extends BasicJavaClientREST {
   @Test
   // Test Period Range Query usig ALN_CONTAINS. We use 2 axes during query
   // Note that the query will be done for every axis across every period. And
-  // the results will be an OR of the result of each of the query done for every axis 
+  // the results will be an OR of the result of each of the query done for every
+  // axis
   // across every period
   public void testPeriodRangeQueryMultiplesAxesBasedOnALNContains()
       throws Exception {
     System.out.println("Inside testPeriodRangeQueryMultiplesAxesBasedOnALNContains");
-    
+
     // Read documents based on document URI and ALN_OVERLAPS. We are just
     // looking
     // for count of documents to be correct
 
     String docId = "javaSingleJSONDoc.json";
-    
+
     insertJSONSingleDocument(temporalCollectionName, docId, null);
     updateJSONSingleDocument(temporalCollectionName, docId);
-    
+
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -2800,7 +2803,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
         sqb.temporalPeriodRange(axes, TemporalOperator.ALN_CONTAINS, periods));
 
     // Note that the query will be done for every axis across every period. And
-    // the results will be an OR of the result of each of the query done for every axis 
+    // the results will be an OR of the result of each of the query done for
+    // every axis
     // across every period
     long start = 1;
     JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
@@ -2864,7 +2868,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
   public void testPeriodCompareQueryBasedOnALNContains()
       throws Exception {
     System.out.println("Inside testPeriodCompareQueryBasedOnALNContains");
-    
+
     // Read documents based on document URI and ALN Contains. We are just
     // looking for count of documents to be correct
     String docId = "javaSingleJSONDoc.json";
@@ -2875,12 +2879,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
         .parseDateTime("2005-01-01T00:00:01");
     insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
         insertTime);
-    
+
     Calendar updateTime = DatatypeConverter
         .parseDateTime("2010-01-01T00:00:01");
     updateJSONSingleDocument(temporalLsqtCollectionName, docId, null,
         updateTime);
-    
+
     // Fetch documents associated with a search term (such as XML) in Address
     // element
     QueryManager queryMgr = readerClient.newQueryManager();
@@ -2963,7 +2967,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     System.out.println("Number of results using SQB = " + count);
     assertEquals("Wrong number of results", 1, count);
   }
-  
+
   @Test
   // Test LSQT Query using temporalLsqtQuery. Do the query as REST reader
   public void testLsqtQuery() throws Exception {
@@ -2986,14 +2990,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
         updateTime);
 
     Thread.sleep(2000);
-    
+
     validateLSQTQueryData(readerClient);
   }
 
   @Test
   // Test LSQT Query using temporalLsqtQuery. Do the query as REST admin
   public void testLsqtQueryAsAdmin() throws Exception {
-   
+
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
 
@@ -3014,7 +3018,7 @@ public class TestBiTemporal extends BasicJavaClientREST {
     // put meta-data
     DocumentMetadataHandle mh = setMetadata(false);
     docMgr.write(docId, mh, handle, null, null, temporalLsqtCollectionName,
-            insertTime);
+        insertTime);
 
     Calendar updateTime = DatatypeConverter
         .parseDateTime("2010-01-01T00:00:01");
@@ -3022,12 +3026,13 @@ public class TestBiTemporal extends BasicJavaClientREST {
         updateTime);
 
     Thread.sleep(2000);
-    
+
     validateLSQTQueryData(writerClient);
   }
 
   @Test
-  // Test inserting a temporal document and transform it using server-side Javascript
+  // Test inserting a temporal document and transform it using server-side
+  // Javascript
   public void testJSTransforms() throws Exception {
     // Now insert a JSON document
     System.out.println("In testJSONTransforms .. testing JSON transforms");
@@ -3049,12 +3054,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
     boolean exceptionThrown = false;
     try {
       insertJSONSingleDocument(temporalCollectionName, jsonDocId, null);
-    } catch (com.marklogic.client.FailedRequestException ex) {      
+    } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -3093,15 +3098,15 @@ public class TestBiTemporal extends BasicJavaClientREST {
     } catch (com.marklogic.client.FailedRequestException ex) {
 
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
       assertTrue("Error Message", message.equals("TEMPORAL-COLLECTIONNOTFOUND"));
-      assertTrue("Status code", (statusCode == 400));      
+      assertTrue("Status code", (statusCode == 400));
     }
 
     assertTrue("Exception not thrown for invalid temporal collection",
@@ -3110,7 +3115,8 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
   @Test
   // Negative test
-  // Test inserting a temporal document into the "latest" collection. Operation should fail
+  // Test inserting a temporal document into the "latest" collection. Operation
+  // should fail
   public void testDocumentUsingCollectionNamedLatest() throws Exception {
     // Now insert a JSON document
     String jsonDocId = "javaSingleJSONDoc.json";
@@ -3133,10 +3139,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
       docMgr.write(jsonDocId, mh, handle, null, null, latestCollectionName);
     } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -3144,14 +3150,14 @@ public class TestBiTemporal extends BasicJavaClientREST {
       assertTrue("Status code", (statusCode == 400));
     }
 
-    
     assertTrue("Exception not thrown for invalid temporal collection",
         exceptionThrown);
   }
 
   @Test
   // Negative test
-  // Test inserting a temporal document as REST reader who does not have the privilege for the 
+  // Test inserting a temporal document as REST reader who does not have the
+  // privilege for the
   // operation
   public void testInsertJSONDocumentUsingAsRESTReader() throws Exception {
     // Now insert a JSON document
@@ -3176,10 +3182,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
       docMgr.write(jsonDocId, mh, handle, null, null, temporalCollectionName);
     } catch (com.marklogic.client.ForbiddenUserException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 
@@ -3192,8 +3198,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
   }
 
   @Test
-  // Negative test. 
-  // Insert a temporal document whose Doc URI Id is the same as the temporal collection name
+  // Negative test.
+  // Insert a temporal document whose Doc URI Id is the same as the temporal
+  // collection name
   public void testInsertDocumentUsingDocumentURIAsCollectionName()
       throws Exception {
     // Now insert a JSON document
@@ -3224,10 +3231,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
       docMgr.write(jsonDocId, mh, handle, null, null, jsonDocId);
     } catch (com.marklogic.client.FailedRequestException ex) {
       String message = ex.getFailedRequest().getMessageCode();
-      int statusCode = ex.getFailedRequest().getStatusCode(); 
+      int statusCode = ex.getFailedRequest().getStatusCode();
 
       exceptionThrown = true;
-      
+
       System.out.println(message);
       System.out.println(statusCode);
 

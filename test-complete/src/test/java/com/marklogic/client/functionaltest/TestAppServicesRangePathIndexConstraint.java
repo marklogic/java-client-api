@@ -43,185 +43,187 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
+
 public class TestAppServicesRangePathIndexConstraint extends BasicJavaClientREST {
 
-	private static String dbName = "AppServicesPathIndexConstraintDB";
-	private static String [] fNames = {"AppServicesPathIndexConstraintDB-1"};
+  private static String dbName = "AppServicesPathIndexConstraintDB";
+  private static String[] fNames = { "AppServicesPathIndexConstraintDB-1" };
 
-	@BeforeClass
-	public static void setUp() throws Exception {
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
-	
-	@After
-	public  void testCleanUp() throws Exception {
-		clearDB();
-		System.out.println("Running clear script");
-	}
-	
-	@SuppressWarnings("deprecation")
-	@Test
-	public void testPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testPathIndex");
+  @BeforeClass
+  public static void setUp() throws Exception {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-		String[] filenames = {"pathindex1.xml", "pathindex2.xml"};
-		String queryOptionName = "pathIndexConstraintOpt.xml";
+  @After
+  public void testCleanUp() throws Exception {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @SuppressWarnings("deprecation")
+  @Test
+  public void testPathIndex() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testPathIndex");
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
-		}
+    String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
+    String queryOptionName = "pathIndexConstraintOpt.xml";
 
-		setQueryOption(client, queryOptionName);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		QueryManager queryMgr = client.newQueryManager();
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
+    }
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pindex:Aries");
+    setQueryOption(client, queryOptionName);
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pindex:Aries");
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-constraint/pathindex1.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-constraint/pathindex2.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// release client
-		client.release();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// ***********************************************
-		// *** Running test path index with constraint ***
-		// ***********************************************
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-constraint/pathindex1.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-constraint/pathindex2.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
 
-		System.out.println("Running testPathIndexWithConstraint");
+    // release client
+    client.release();
 
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // ***********************************************
+    // *** Running test path index with constraint ***
+    // ***********************************************
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
-		}
+    System.out.println("Running testPathIndexWithConstraint");
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options handle
-		//QueryOptionsHandle handle = new QueryOptionsHandle();
-		String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:constraint name='lastname'>" +
-				"<search:word>" +
-				"<search:element name='ln' ns=''/>" +
-				"</search:word>" +
-				"</search:constraint>" +
-				"<search:constraint name='pindex'>" +
-				"<search:range collation='http://marklogic.com/collation/' type='xs:string'>" +
-				"<search:path-index>/Employee/fn</search:path-index>" +
-				"</search:range>" +
-				"</search:constraint>" +
-				"</search:options>";
-		StringHandle handle = new StringHandle(xmlOptions);
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
+    }
 
-		// write query options
-		optionsMgr.writeOptions("PathIndexWithConstraint", handle);
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query manager
-		queryMgr = client.newQueryManager();
+    // create query options handle
+    // QueryOptionsHandle handle = new QueryOptionsHandle();
+    String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:constraint name='lastname'>" +
+        "<search:word>" +
+        "<search:element name='ln' ns=''/>" +
+        "</search:word>" +
+        "</search:constraint>" +
+        "<search:constraint name='pindex'>" +
+        "<search:range collation='http://marklogic.com/collation/' type='xs:string'>" +
+        "<search:path-index>/Employee/fn</search:path-index>" +
+        "</search:range>" +
+        "</search:constraint>" +
+        "</search:options>";
+    StringHandle handle = new StringHandle(xmlOptions);
 
-		// create query def
-		querydef = queryMgr.newStringDefinition("PathIndexWithConstraint");
-		querydef.setCriteria("pindex:Aries AND lastname:Yuwono");
+    // write query options
+    optionsMgr.writeOptions("PathIndexWithConstraint", handle);
 
-		StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder("PathIndexWithConstraint");
-		StructuredQueryDefinition queryPathIndex = qb.rangeConstraint("pindex", Operator.EQ, "Aries");
-		StructuredQueryDefinition queryWord = qb.wordConstraint("lastname", "Yuwono");
-		StructuredQueryDefinition queryFinal = qb.and(queryPathIndex, queryWord);
+    // create query manager
+    queryMgr = client.newQueryManager();
 
-		// create handle
-		resultsHandle = new DOMHandle();
-		queryMgr.search(queryFinal, resultsHandle);
+    // create query def
+    querydef = queryMgr.newStringDefinition("PathIndexWithConstraint");
+    querydef.setCriteria("pindex:Aries AND lastname:Yuwono");
 
-		resultDoc = resultsHandle.get();
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder("PathIndexWithConstraint");
+    StructuredQueryDefinition queryPathIndex = qb.rangeConstraint("pindex", Operator.EQ, "Aries");
+    StructuredQueryDefinition queryWord = qb.wordConstraint("lastname", "Yuwono");
+    StructuredQueryDefinition queryFinal = qb.and(queryPathIndex, queryWord);
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-constraint/pathindex1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    // create handle
+    resultsHandle = new DOMHandle();
+    queryMgr.search(queryFinal, resultsHandle);
 
-		// release client
-		client.release();
+    resultDoc = resultsHandle.get();
 
-		// ***********************************************
-		// *** Running test path index on int ***
-		// ***********************************************
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-constraint/pathindex1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
-		System.out.println("Running testPathIndexOnInt");
+    // release client
+    client.release();
 
-		String[] filenames2 = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    // ***********************************************
+    // *** Running test path index on int ***
+    // ***********************************************
 
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    System.out.println("Running testPathIndexOnInt");
 
-		// write docs
-		for(String filename : filenames2) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
-		}
+    String[] filenames2 = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// create query options manager
-		optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options handle
-		String xmlOptions2 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				
-				"<search:constraint name='amount'>" +
-				"<search:range type='xs:decimal'>" +
-				"<search:path-index>//@amt</search:path-index>" +
-				"</search:range>" +
-				"</search:constraint>" +
-				"<search:constraint name='pop'>" +
-				"<search:range type='xs:int'>" +
-				"<search:path-index>/root/popularity</search:path-index>" +
-				"</search:range>" +
-				"</search:constraint>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>" ;
+    // write docs
+    for (String filename : filenames2) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/path-index-constraint/", "XML");
+    }
 
-		handle = new StringHandle(xmlOptions2);
+    // create query options manager
+    optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// write query options
-		optionsMgr.writeOptions("PathIndexWithConstraint", handle);
+    // create query options handle
+    String xmlOptions2 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
 
-		// create query manager
-		queryMgr = client.newQueryManager();
+        "<search:constraint name='amount'>" +
+        "<search:range type='xs:decimal'>" +
+        "<search:path-index>//@amt</search:path-index>" +
+        "</search:range>" +
+        "</search:constraint>" +
+        "<search:constraint name='pop'>" +
+        "<search:range type='xs:int'>" +
+        "<search:path-index>/root/popularity</search:path-index>" +
+        "</search:range>" +
+        "</search:constraint>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		// create query builder
-		qb = queryMgr.newStructuredQueryBuilder("PathIndexWithConstraint");
-		StructuredQueryDefinition queryPathIndex1 = qb.rangeConstraint("pop", Operator.EQ, "5");
-		StructuredQueryDefinition queryPathIndex2 = qb.rangeConstraint("amount", Operator.EQ, "0.1");
-		queryFinal = qb.and(queryPathIndex1, queryPathIndex2);
+    handle = new StringHandle(xmlOptions2);
 
-		// create handle
-		resultsHandle = new DOMHandle();
-		queryMgr.search(queryFinal, resultsHandle);
+    // write query options
+    optionsMgr.writeOptions("PathIndexWithConstraint", handle);
 
-		resultDoc = resultsHandle.get();
+    // create query manager
+    queryMgr = client.newQueryManager();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/path-index-constraint/constraint1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    // create query builder
+    qb = queryMgr.newStructuredQueryBuilder("PathIndexWithConstraint");
+    StructuredQueryDefinition queryPathIndex1 = qb.rangeConstraint("pop", Operator.EQ, "5");
+    StructuredQueryDefinition queryPathIndex2 = qb.rangeConstraint("amount", Operator.EQ, "0.1");
+    queryFinal = qb.and(queryPathIndex1, queryPathIndex2);
 
-		// release client
-		client.release();		
-	}
+    // create handle
+    resultsHandle = new DOMHandle();
+    queryMgr.search(queryFinal, resultsHandle);
 
-	@AfterClass
-	public static void tearDown() throws Exception {
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/path-index-constraint/constraint1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

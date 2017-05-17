@@ -43,282 +43,287 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.StringQueryDefinition;
+
 public class TestSearchOptions extends BasicJavaClientREST {
 
+  private static String dbName = "TestSearchOptionsDB";
+  private static String[] fNames = { "TestSearchOptionsDB-1" };
+
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
+
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
+
+  @Test
+  public void testReturnResultsFalse() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testReturnResultsFalse");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "searchReturnResultsFalseOpt.xml";
 
-	private static String dbName = "TestSearchOptionsDB";
-	private static String [] fNames = {"TestSearchOptionsDB-1"};
-	
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-results-false/", "XML");
+    }
 
-	@After
-	public void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}	
+    setQueryOption(client, queryOptionName);
 
-	@Test	
-	public void testReturnResultsFalse() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testReturnResultsFalse");
+    QueryManager queryMgr = client.newQueryManager();
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "searchReturnResultsFalseOpt.xml";
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("intitle:1945");
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-results-false/", "XML");
-		}
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		setQueryOption(client, queryOptionName);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+    assertXpathNotExists("//*[local-name()='result']", resultDoc);
+
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
+  @Test
+  public void testSetViewMetadata() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSetViewMetadata");
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("intitle:1945");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "setViewOpt.xml";
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // create and initialize a handle on the metadata
+    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
-		assertXpathNotExists("//*[local-name()='result']", resultDoc);
+    // put metadata
+    metadataHandle.getCollections().addAll("my-collection");
+    metadataHandle.getCollections().addAll("another-collection");
+    metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
 
-		// release client
-		client.release();		
-	}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-meta/", metadataHandle, "XML");
+    }
 
-	@Test	
-	public void testSetViewMetadata() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSetViewMetadata");
+    setQueryOption(client, queryOptionName);
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "setViewOpt.xml";
+    QueryManager queryMgr = client.newQueryManager();
+    queryMgr.setView(QueryView.METADATA);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pop:high");
 
-		// create and initialize a handle on the metadata
-		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// put metadata
-		metadataHandle.getCollections().addAll("my-collection");
-		metadataHandle.getCollections().addAll("another-collection");
-		metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-meta/", metadataHandle, "XML");
-		}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='start'])", resultDoc);
+    assertXpathExists("//*[local-name()='metrics']", resultDoc);
 
-		setQueryOption(client, queryOptionName);
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setView(QueryView.METADATA);
+  @Test
+  public void testSetViewResults() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSetViewResults");
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pop:high");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "setViewOpt.xml";
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-results/", "XML");
+    }
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='response']//@*[local-name()='start'])", resultDoc);
-		assertXpathExists("//*[local-name()='metrics']", resultDoc);
+    setQueryOption(client, queryOptionName);
 
-		// release client
-		client.release();		
-	}
+    QueryManager queryMgr = client.newQueryManager();
+    queryMgr.setView(QueryView.RESULTS);
 
-	@Test	
-	public void testSetViewResults() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSetViewResults");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pop:high");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "setViewOpt.xml";
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-results/", "XML");
-		}
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+    assertXpathExists("//*[local-name()='result']", resultDoc);
 
-		setQueryOption(client, queryOptionName);
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setView(QueryView.RESULTS);
+  @Test
+  public void testSetViewFacets() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSetViewFacets");
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pop:high");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "setViewOpt.xml";
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-facets/", "XML");
+    }
 
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
-		assertXpathExists("//*[local-name()='result']", resultDoc);
+    setQueryOption(client, queryOptionName);
 
-		// release client
-		client.release();		
-	}
+    QueryManager queryMgr = client.newQueryManager();
+    queryMgr.setView(QueryView.FACETS);
 
-	@Test	
-	public void testSetViewFacets() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSetViewFacets");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pop:high");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "setViewOpt.xml";
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-facets/", "XML");
-		}
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+    assertXpathExists("//*[local-name()='facet']", resultDoc);
 
-		setQueryOption(client, queryOptionName);
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setView(QueryView.FACETS);
+  @Test
+  public void testSetViewDefault() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSetViewDefault");
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pop:high");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "setViewOpt.xml";
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
+    }
 
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
-		assertXpathExists("//*[local-name()='facet']", resultDoc);
+    setQueryOption(client, queryOptionName);
 
-		// release client
-		client.release();		
-	}
+    QueryManager queryMgr = client.newQueryManager();
+    queryMgr.setView(QueryView.DEFAULT);
 
-	@Test	
-	public void testSetViewDefault() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSetViewDefault");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pop:high");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "setViewOpt.xml";
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
-		}
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+    assertXpathExists("//*[local-name()='result']", resultDoc);
+    assertXpathExists("//*[local-name()='facet']", resultDoc);
 
-		setQueryOption(client, queryOptionName);
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setView(QueryView.DEFAULT);
+  @Test
+  public void testSetViewAll() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSetViewAll");
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pop:high");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "setViewOpt.xml";
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		System.out.println(convertXMLDocumentToString(resultDoc));
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
+    }
 
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
-		assertXpathExists("//*[local-name()='result']", resultDoc);
-		assertXpathExists("//*[local-name()='facet']", resultDoc);
+    setQueryOption(client, queryOptionName);
 
-		// release client
-		client.release();		
-	}
+    QueryManager queryMgr = client.newQueryManager();
+    queryMgr.setView(QueryView.ALL);
 
-	@Test	
-	public void testSetViewAll() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSetViewAll");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("pop:high");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "setViewOpt.xml";
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/return-setview-all/", "XML");
-		}
+    assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
+    assertXpathExists("//*[local-name()='result']", resultDoc);
+    assertXpathExists("//*[local-name()='facet']", resultDoc);
+    assertXpathExists("//*[local-name()='metrics']", resultDoc);
 
-		setQueryOption(client, queryOptionName);
+    // release client
+    client.release();
+  }
 
-		QueryManager queryMgr = client.newQueryManager();
-		queryMgr.setView(QueryView.ALL);
-
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("pop:high");
-
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		System.out.println(convertXMLDocumentToString(resultDoc));
-
-		assertXpathEvaluatesTo("3", "string(//*[local-name()='response']//@*[local-name()='total'])", resultDoc);
-		assertXpathExists("//*[local-name()='result']", resultDoc);
-		assertXpathExists("//*[local-name()='facet']", resultDoc);
-		assertXpathExists("//*[local-name()='metrics']", resultDoc);
-
-		// release client
-		client.release();		
-	}
-
-	@AfterClass	
-	public static  void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

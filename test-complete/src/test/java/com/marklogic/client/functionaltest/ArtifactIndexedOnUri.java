@@ -27,57 +27,57 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  * Property name annotated with @Id.
  */
 public class ArtifactIndexedOnUri {
-	@Id	
-	public String name;
+  @Id
+  public String name;
 
-	public long id;
-	private Company manufacturer;
-	private int inventory;
-	
-	@PathIndexProperty(scalarType = ScalarType.ANYURI)
-	private URI artifactUri;
-	
-	public URI getArtifactUri() {
-		return artifactUri;
-	}
+  public long id;
+  private Company manufacturer;
+  private int inventory;
 
-	public void setArtifactUri(URI artifactUri) {
-		this.artifactUri = artifactUri;
-	}
+  @PathIndexProperty(scalarType = ScalarType.ANYURI)
+  private URI artifactUri;
 
-	public long getId() {
-		return id;
-	}
+  public URI getArtifactUri() {
+    return artifactUri;
+  }
 
-	public ArtifactIndexedOnUri setId(long id) {
-		this.id = id;
-		return this;
-	}
+  public void setArtifactUri(URI artifactUri) {
+    this.artifactUri = artifactUri;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public long getId() {
+    return id;
+  }
 
-	public ArtifactIndexedOnUri setName(String name) {
-		this.name = name;
-		return this;
-	}
+  public ArtifactIndexedOnUri setId(long id) {
+    this.id = id;
+    return this;
+  }
 
-	public Company getManufacturer() {
-		return manufacturer;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public ArtifactIndexedOnUri setManufacturer(Company manufacturer) {
-		this.manufacturer = manufacturer;
-		return this;
-	}
+  public ArtifactIndexedOnUri setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-	public int getInventory() {
-		return inventory;
-	}
+  public Company getManufacturer() {
+    return manufacturer;
+  }
 
-	public ArtifactIndexedOnUri setInventory(int inventory) {
-		this.inventory = inventory;
-		return this;
-	}
+  public ArtifactIndexedOnUri setManufacturer(Company manufacturer) {
+    this.manufacturer = manufacturer;
+    return this;
+  }
+
+  public int getInventory() {
+    return inventory;
+  }
+
+  public ArtifactIndexedOnUri setInventory(int inventory) {
+    this.inventory = inventory;
+    return this;
+  }
 }

@@ -36,158 +36,159 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
+
 public class TestMetadataXML extends BasicJavaClientREST {
 
-	private static String dbName = "TestMetadataXMLDB";
-	private static String [] fNames = {"TestMetadataXMLDB-1"};
-	
-	
-	@BeforeClass
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
+  private static String dbName = "TestMetadataXMLDB";
+  private static String[] fNames = { "TestMetadataXMLDB-1" };
 
-		configureRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
 
-	@Test
-	public void testMetadataXMLCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testMetadataXMLCRUD");
+    configureRESTServer(dbName, fNames);
+  }
 
-		String filename = "Simple_ScanTe.png";
-		String uri = "/write-bin-metadata/";
+  @Test
+  public void testMetadataXMLCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testMetadataXMLCRUD");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    String filename = "Simple_ScanTe.png";
+    String uri = "/write-bin-metadata/";
 
-		// create doc manager
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// get the original metadata
-		Document docMetadata = getXMLMetadata("metadata-original.xml");
+    // create doc manager
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// WRITE
-		// write the doc
-		writeDocumentUsingBytesHandle(client, filename, uri, "Binary");
+    // get the original metadata
+    Document docMetadata = getXMLMetadata("metadata-original.xml");
 
-		// create handle to write metadata
-		DOMHandle writeMetadataHandle = new DOMHandle();
-		writeMetadataHandle.set(docMetadata);
+    // WRITE
+    // write the doc
+    writeDocumentUsingBytesHandle(client, filename, uri, "Binary");
 
-		// create doc id
-		String docId = uri + filename;
+    // create handle to write metadata
+    DOMHandle writeMetadataHandle = new DOMHandle();
+    writeMetadataHandle.set(docMetadata);
 
-		// write original metadata
-		docMgr.writeMetadata(docId, writeMetadataHandle);
+    // create doc id
+    String docId = uri + filename;
 
-		// create handle to read metadata
-		DOMHandle readMetadataHandle = new DOMHandle();
+    // write original metadata
+    docMgr.writeMetadata(docId, writeMetadataHandle);
 
-		// READ
-		// read metadata
-		docMgr.readMetadata(docId, readMetadataHandle);
-		Document docReadMetadata = readMetadataHandle.get();
+    // create handle to read metadata
+    DOMHandle readMetadataHandle = new DOMHandle();
 
-		assertXpathEvaluatesTo("coll1", "string(//*[local-name()='collection'][1])", docReadMetadata);
-		assertXpathEvaluatesTo("coll2", "string(//*[local-name()='collection'][2])", docReadMetadata);
-		assertXpathEvaluatesTo("MarkLogic", "string(//*[local-name()='Author'])", docReadMetadata);
+    // READ
+    // read metadata
+    docMgr.readMetadata(docId, readMetadataHandle);
+    Document docReadMetadata = readMetadataHandle.get();
 
-		// UPDATE
-		// get the update metadata
-		Document docMetadataUpdate = getXMLMetadata("metadata-updated.xml");
+    assertXpathEvaluatesTo("coll1", "string(//*[local-name()='collection'][1])", docReadMetadata);
+    assertXpathEvaluatesTo("coll2", "string(//*[local-name()='collection'][2])", docReadMetadata);
+    assertXpathEvaluatesTo("MarkLogic", "string(//*[local-name()='Author'])", docReadMetadata);
 
-		// create handle for metadata update
-		DOMHandle writeMetadataHandleUpdate = new DOMHandle();
-		writeMetadataHandleUpdate.set(docMetadataUpdate);
+    // UPDATE
+    // get the update metadata
+    Document docMetadataUpdate = getXMLMetadata("metadata-updated.xml");
 
-		// write updated metadata
-		docMgr.writeMetadata(docId, writeMetadataHandleUpdate);
+    // create handle for metadata update
+    DOMHandle writeMetadataHandleUpdate = new DOMHandle();
+    writeMetadataHandleUpdate.set(docMetadataUpdate);
 
-		// create handle to read updated metadata
-		DOMHandle readMetadataHandleUpdate = new DOMHandle();
+    // write updated metadata
+    docMgr.writeMetadata(docId, writeMetadataHandleUpdate);
 
-		// read updated metadata
-		docMgr.readMetadata(docId, readMetadataHandleUpdate);
-		Document docReadMetadataUpdate = readMetadataHandleUpdate.get();
+    // create handle to read updated metadata
+    DOMHandle readMetadataHandleUpdate = new DOMHandle();
 
-		assertXpathEvaluatesTo("coll1", "string(//*[local-name()='collection'][1])", docReadMetadataUpdate);
-		assertXpathEvaluatesTo("coll3", "string(//*[local-name()='collection'][2])", docReadMetadataUpdate);
-		assertXpathEvaluatesTo("23", "string(//*[local-name()='quality'])", docReadMetadataUpdate);
-		assertXpathEvaluatesTo("Aries", "string(//*[local-name()='Author'])", docReadMetadataUpdate);
+    // read updated metadata
+    docMgr.readMetadata(docId, readMetadataHandleUpdate);
+    Document docReadMetadataUpdate = readMetadataHandleUpdate.get();
 
-		// DELETE
-		// write default metadata
-		docMgr.writeDefaultMetadata(docId);
+    assertXpathEvaluatesTo("coll1", "string(//*[local-name()='collection'][1])", docReadMetadataUpdate);
+    assertXpathEvaluatesTo("coll3", "string(//*[local-name()='collection'][2])", docReadMetadataUpdate);
+    assertXpathEvaluatesTo("23", "string(//*[local-name()='quality'])", docReadMetadataUpdate);
+    assertXpathEvaluatesTo("Aries", "string(//*[local-name()='Author'])", docReadMetadataUpdate);
 
-		// create handle to read deleted metadata
-		DOMHandle readMetadataHandleDelete = new DOMHandle();
+    // DELETE
+    // write default metadata
+    docMgr.writeDefaultMetadata(docId);
 
-		// read deleted metadata
-		docMgr.readMetadata(docId, readMetadataHandleDelete);
-		Document docReadMetadataDelete = readMetadataHandleDelete.get();
+    // create handle to read deleted metadata
+    DOMHandle readMetadataHandleDelete = new DOMHandle();
 
-		assertXpathEvaluatesTo("0", "string(//*[local-name()='quality'])", docReadMetadataDelete);
+    // read deleted metadata
+    docMgr.readMetadata(docId, readMetadataHandleDelete);
+    Document docReadMetadataDelete = readMetadataHandleDelete.get();
 
-		// release the client
-		client.release();
-	}	
+    assertXpathEvaluatesTo("0", "string(//*[local-name()='quality'])", docReadMetadataDelete);
 
+    // release the client
+    client.release();
+  }
 
+  @Test
+  public void testMetadataXMLNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testMetadataXMLNegative");
 
-	@Test	
-	public void testMetadataXMLNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testMetadataXMLNegative");
+    String filename = "Simple_ScanTe.png";
+    String uri = "/write-neg-metadata/";
 
-		String filename = "Simple_ScanTe.png";
-		String uri = "/write-neg-metadata/";
+    // connect the client
+    DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// connect the client
-		DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // write the doc
+    writeDocumentUsingBytesHandle(client1, filename, uri, "Binary");
 
-		// write the doc
-		writeDocumentUsingBytesHandle(client1, filename, uri, "Binary");
+    // connect with another client to write metadata
+    DatabaseClient client2 = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
 
-		// connect with another client to write metadata
-		DatabaseClient client2 = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    // create doc manager
+    XMLDocumentManager docMgr = client2.newXMLDocumentManager();
 
-		// create doc manager
-		XMLDocumentManager docMgr = client2.newXMLDocumentManager();
+    // get the original metadata
+    Document docMetadata = getXMLMetadata("metadata-original.xml");
 
-		// get the original metadata
-		Document docMetadata = getXMLMetadata("metadata-original.xml");
+    // create handle to write metadata
+    DOMHandle writeMetadataHandle = new DOMHandle();
+    writeMetadataHandle.set(docMetadata);
 
-		// create handle to write metadata
-		DOMHandle writeMetadataHandle = new DOMHandle();
-		writeMetadataHandle.set(docMetadata);
+    // create doc id
+    String docId = uri + filename;
 
-		// create doc id
-		String docId = uri + filename;
+    String expectedException = "You do not have permission to this method and URL";
+    String exception = "";
 
-		String expectedException = "You do not have permission to this method and URL";
-		String exception = "";
+    // write original metadata
+    try
+    {
+      docMgr.writeMetadata(docId, writeMetadataHandle);
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		// write original metadata
-		try
-		{
-			docMgr.writeMetadata(docId, writeMetadataHandle);
-		}
-		catch (Exception e) { exception = e.toString(); } 
+    // assertEquals("Could write metadata with forbidden user",
+    // expectedException, exception);
 
-		//assertEquals("Could write metadata with forbidden user", expectedException, exception);
+    boolean exceptionIsThrown = exception.contains(expectedException);
+    assertTrue("Exception is not thrown", exceptionIsThrown);
 
-		boolean exceptionIsThrown = exception.contains(expectedException);
-		assertTrue("Exception is not thrown", exceptionIsThrown);
+    // release the clients
+    client1.release();
+    client2.release();
+  }
 
-		// release the clients
-		client1.release();
-		client2.release();
-	}	
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

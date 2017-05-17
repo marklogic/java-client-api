@@ -37,101 +37,105 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.ValuesDefinition;
+
 public class TestBug19144 extends BasicJavaClientREST {
 
-	private static String dbName = "TestBug19144DB";
-	private static String [] fNames = {"TestBug19144DB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "TestBug19144DB";
+  private static String[] fNames = { "TestBug19144DB-1" };
 
-@Test
-	public void testBug19144WithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testBug19144WithJson");
-		
-		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
-		String queryOptionName = "aggregatesOpt.xml";
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/bug19144/", "XML");
-		}
-		
-		setQueryOption(client, queryOptionName);
-				
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		ValuesDefinition queryDef = queryMgr.newValuesDefinition("popularity", "aggregatesOpt.xml");
-		queryDef.setAggregate("correlation", "covariance");
-		queryDef.setName("pop-rate-tups");
-		
-		// create handle
-		StringHandle resultHandle = new StringHandle().withFormat(Format.JSON);
-		queryMgr.tuples(queryDef, resultHandle);
-		
-		String result = resultHandle.get();
-		
-		System.out.println(result);
-		
-		assertEquals("{", result.substring(0, 1));
-        		
-		// release client
-		client.release();		
-	}
+  @Test
+  public void testBug19144WithJson() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testBug19144WithJson");
 
-@Test
-	public void testBug19144WithXml() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testBug19144WithXml");
-		
-		String[] filenames = {"aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml"};
-		String queryOptionName = "aggregatesOpt.xml";
+    String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml" };
+    String queryOptionName = "aggregatesOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/bug19144/", "XML");
-		}
-		
-		setQueryOption(client, queryOptionName);
-				
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		ValuesDefinition queryDef = queryMgr.newValuesDefinition("popularity", "aggregatesOpt.xml");
-		queryDef.setAggregate("correlation", "covariance");
-		queryDef.setName("pop-rate-tups");
-		
-		// create handle
-		StringHandle resultHandle = new StringHandle().withFormat(Format.XML);
-		queryMgr.tuples(queryDef, resultHandle);
-		
-		String result = resultHandle.get();
-		
-		System.out.println(result);
-		
-		assertEquals("<", result.substring(0, 1));
-        		
-		// release client
-		client.release();		
-	}
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-		
-	}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/bug19144/", "XML");
+    }
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    ValuesDefinition queryDef = queryMgr.newValuesDefinition("popularity", "aggregatesOpt.xml");
+    queryDef.setAggregate("correlation", "covariance");
+    queryDef.setName("pop-rate-tups");
+
+    // create handle
+    StringHandle resultHandle = new StringHandle().withFormat(Format.JSON);
+    queryMgr.tuples(queryDef, resultHandle);
+
+    String result = resultHandle.get();
+
+    System.out.println(result);
+
+    assertEquals("{", result.substring(0, 1));
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testBug19144WithXml() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testBug19144WithXml");
+
+    String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml", "aggr5.xml" };
+    String queryOptionName = "aggregatesOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/bug19144/", "XML");
+    }
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    ValuesDefinition queryDef = queryMgr.newValuesDefinition("popularity", "aggregatesOpt.xml");
+    queryDef.setAggregate("correlation", "covariance");
+    queryDef.setName("pop-rate-tups");
+
+    // create handle
+    StringHandle resultHandle = new StringHandle().withFormat(Format.XML);
+    queryMgr.tuples(queryDef, resultHandle);
+
+    String result = resultHandle.get();
+
+    System.out.println(result);
+
+    assertEquals("<", result.substring(0, 1));
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+
+  }
 }

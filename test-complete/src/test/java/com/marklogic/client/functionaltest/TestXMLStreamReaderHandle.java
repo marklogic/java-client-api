@@ -37,66 +37,69 @@ import org.xml.sax.SAXException;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.XMLStreamReaderHandle;
+
 public class TestXMLStreamReaderHandle extends BasicJavaClientREST {
-	private static String dbName = "XMLStreamReaderHandleDB";
-	private static String [] fNames = {"XMLStreamReaderHandleDB-1"};
-	
+  private static String dbName = "XMLStreamReaderHandleDB";
+  private static String[] fNames = { "XMLStreamReaderHandleDB-1" };
 
-	@BeforeClass	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test	
-	public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException, TransformerException, XMLStreamException
-	{	
-		String filename = "xml-original-test.xml";
-		String uri = "/write-xml-XMLStreamReaderHandle/";
+  @Test
+  public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException, TransformerException,
+      XMLStreamException
+  {
+    String filename = "xml-original-test.xml";
+    String uri = "/write-xml-XMLStreamReaderHandle/";
 
-		System.out.println("Running testXmlCRUD");
+    System.out.println("Running testXmlCRUD");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write the doc
-		writeDocumentReaderHandle(client, filename, uri, "XML");
+    // write the doc
+    writeDocumentReaderHandle(client, filename, uri, "XML");
 
-		// read the document
-		XMLStreamReaderHandle readHandle = readDocumentUsingXMLStreamReaderHandle(client, uri + filename, "XML");
+    // read the document
+    XMLStreamReaderHandle readHandle = readDocumentUsingXMLStreamReaderHandle(client, uri + filename, "XML");
 
-		// access the document content
-		XMLStreamReader fileRead = readHandle.get();
-		String readContent = convertXMLStreamReaderToString(fileRead);
+    // access the document content
+    XMLStreamReader fileRead = readHandle.get();
+    String readContent = convertXMLStreamReaderToString(fileRead);
 
-		// get xml document for expected result
-		Document expectedDoc = expectedXMLDocument(filename);
-		String expectedContent = convertXMLDocumentToString(expectedDoc);
-		expectedContent = "null"+expectedContent.substring(expectedContent.indexOf("<name>")+6, expectedContent.indexOf("</name>"));
-		assertEquals("Write XML difference", expectedContent,readContent);	    
+    // get xml document for expected result
+    Document expectedDoc = expectedXMLDocument(filename);
+    String expectedContent = convertXMLDocumentToString(expectedDoc);
+    expectedContent = "null" + expectedContent.substring(expectedContent.indexOf("<name>") + 6, expectedContent.indexOf("</name>"));
+    assertEquals("Write XML difference", expectedContent, readContent);
 
-		// delete the document
-		deleteDocument(client, uri + filename, "XML");
+    // delete the document
+    deleteDocument(client, uri + filename, "XML");
 
-		String exception = "";
-		try
-		{
-			readDocumentReaderHandle(client, uri + filename, "XML");
-		} 
-		catch (Exception e) { exception = e.toString(); }
+    String exception = "";
+    try
+    {
+      readDocumentReaderHandle(client, uri + filename, "XML");
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		String expectedException = "Could not read non-existent document";
-		boolean documentIsDeleted = exception.contains(expectedException);
-		assertTrue("Document is not deleted", documentIsDeleted);
+    String expectedException = "Could not read non-existent document";
+    boolean documentIsDeleted = exception.contains(expectedException);
+    assertTrue("Document is not deleted", documentIsDeleted);
 
-		// release the client
-		client.release();
-	}
+    // release the client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

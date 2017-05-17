@@ -39,93 +39,93 @@ import com.marklogic.client.io.SourceHandle;
 
 public class TestSourceHandle extends BasicJavaClientREST {
 
-	private static String dbName = "SourceHandleDB";
-	private static String [] fNames = {"SourceHandleDB-1"};
-	
+  private static String dbName = "SourceHandleDB";
+  private static String[] fNames = { "SourceHandleDB-1" };
 
-	@BeforeClass	
-	public static  void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test	
-	public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException, TransformerException
-	{	
-		String filename = "xml-original-test.xml";
-		String uri = "/write-xml-sourcehandle/";
+  @Test
+  public void testXmlCRUD() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException, TransformerException
+  {
+    String filename = "xml-original-test.xml";
+    String uri = "/write-xml-sourcehandle/";
 
-		System.out.println("Running testXmlCRUD");
+    System.out.println("Running testXmlCRUD");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingInputStreamHandle(client, filename, uri, "XML");
+    // write docs
+    writeDocumentUsingInputStreamHandle(client, filename, uri, "XML");
 
-		// read docs
-		SourceHandle contentHandle = readDocumentUsingSourceHandle(client, uri + filename, "XML");
+    // read docs
+    SourceHandle contentHandle = readDocumentUsingSourceHandle(client, uri + filename, "XML");
 
-		// get the contents
-		Source fileRead = contentHandle.get();
+    // get the contents
+    Source fileRead = contentHandle.get();
 
-		String readContent = convertSourceToString(fileRead);
+    String readContent = convertSourceToString(fileRead);
 
-		// get xml document for expected result
-		Document expectedDoc = expectedXMLDocument(filename);
+    // get xml document for expected result
+    Document expectedDoc = expectedXMLDocument(filename);
 
-		// convert actual string to xml doc
-		Document readDoc = convertStringToXMLDocument(readContent);
+    // convert actual string to xml doc
+    Document readDoc = convertStringToXMLDocument(readContent);
 
-		assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+    assertXMLEqual("Write XML difference", expectedDoc, readDoc);
 
-		// update the doc
-		// acquire the content for update
-		String updateFilename = "xml-updated-test.xml";
-		updateDocumentUsingInputStreamHandle(client, updateFilename, uri + filename, "XML");
+    // update the doc
+    // acquire the content for update
+    String updateFilename = "xml-updated-test.xml";
+    updateDocumentUsingInputStreamHandle(client, updateFilename, uri + filename, "XML");
 
-		// read the document
-		SourceHandle updateHandle = readDocumentUsingSourceHandle(client, uri + filename, "XML");
+    // read the document
+    SourceHandle updateHandle = readDocumentUsingSourceHandle(client, uri + filename, "XML");
 
-		// get the contents
-		Source fileReadUpdate = updateHandle.get();
+    // get the contents
+    Source fileReadUpdate = updateHandle.get();
 
-		String readContentUpdate = convertSourceToString(fileReadUpdate);
+    String readContentUpdate = convertSourceToString(fileReadUpdate);
 
-		// get xml document for expected result
-		Document expectedDocUpdate = expectedXMLDocument(updateFilename);
+    // get xml document for expected result
+    Document expectedDocUpdate = expectedXMLDocument(updateFilename);
 
-		// convert actual string to xml doc
-		Document readDocUpdate = convertStringToXMLDocument(readContentUpdate);
+    // convert actual string to xml doc
+    Document readDocUpdate = convertStringToXMLDocument(readContentUpdate);
 
-		assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
+    assertXMLEqual("Write XML difference", expectedDocUpdate, readDocUpdate);
 
-		// delete the document
-		deleteDocument(client, uri + filename, "XML");
+    // delete the document
+    deleteDocument(client, uri + filename, "XML");
 
-		// read the deleted document
-		String exception = "";
-		try
-		{
-			readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
-		} 
-		catch (Exception e) { exception = e.toString(); }
+    // read the deleted document
+    String exception = "";
+    try
+    {
+      readDocumentUsingInputStreamHandle(client, uri + filename, "XML");
+    } catch (Exception e) {
+      exception = e.toString();
+    }
 
-		String expectedException = "Could not read non-existent document";
-		boolean documentIsDeleted = exception.contains(expectedException);
-		assertTrue("Document is not deleted", documentIsDeleted);
+    String expectedException = "Could not read non-existent document";
+    boolean documentIsDeleted = exception.contains(expectedException);
+    assertTrue("Document is not deleted", documentIsDeleted);
 
-		// release client
-		contentHandle.close();
-		updateHandle.close();
-		client.release();
-	}
+    // release client
+    contentHandle.close();
+    updateHandle.close();
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

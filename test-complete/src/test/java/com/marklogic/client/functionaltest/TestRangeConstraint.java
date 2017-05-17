@@ -31,54 +31,53 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
 
 public class TestRangeConstraint extends BasicJavaClientREST {
-	static String filenames[] = {"bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml"};
-	static String queryOptionName = "rangeConstraintOpt.xml"; 
-	private static String dbName = "RangeConstraintDB";
-	private static String [] fNames = {"RangeConstraintDB-1"};
-	
+  static String filenames[] = { "bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml" };
+  static String queryOptionName = "rangeConstraintOpt.xml";
+  private static String dbName = "RangeConstraintDB";
+  private static String[] fNames = { "RangeConstraintDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		addRangeElementIndex(dbName, "decimal", "http://example.com", "rating");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    addRangeElementIndex(dbName, "decimal", "http://example.com", "rating");
+  }
 
-	@Test	
-	public void testElementRangeConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testElementRangeConstraint() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename:filenames)
-		{
-			writeDocumentReaderHandle(client, filename, "/range-constraint/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentReaderHandle(client, filename, "/range-constraint/", "XML");
+    }
 
-		// write the query options to the database
-		setQueryOption(client, queryOptionName);
+    // write the query options to the database
+    setQueryOption(client, queryOptionName);
 
-		// run the search
-		SearchHandle resultsHandle = runSearch(client, queryOptionName, "rating:5");
+    // run the search
+    SearchHandle resultsHandle = runSearch(client, queryOptionName, "rating:5");
 
-		// search result
-		String searchResult = returnSearchResult(resultsHandle);
+    // search result
+    String searchResult = returnSearchResult(resultsHandle);
 
-		String expectedSearchResult = "|Matched 1 locations in /range-constraint/bbq4.xml|Matched 1 locations in /range-constraint/bbq3.xml";
-		System.out.println(searchResult);
+    String expectedSearchResult = "|Matched 1 locations in /range-constraint/bbq4.xml|Matched 1 locations in /range-constraint/bbq3.xml";
+    System.out.println(searchResult);
 
-		assertEquals("Search result difference", expectedSearchResult, searchResult);
+    assertEquals("Search result difference", expectedSearchResult, searchResult);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
 
-	}
+  }
 }

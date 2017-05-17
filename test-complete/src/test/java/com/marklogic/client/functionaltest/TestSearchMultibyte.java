@@ -38,147 +38,149 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+
 public class TestSearchMultibyte extends BasicJavaClientREST {
 
-	private static String dbName = "TestSearchMultibyteDB";
-	private static String [] fNames = {"TestSearchMultibyteDB-1"};
-	
-	
+  private static String dbName = "TestSearchMultibyteDB";
+  private static String[] fNames = { "TestSearchMultibyteDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-	@After
-	public void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-	@Test	
-	public void testSearchString() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSearchString");
+  @Test
+  public void testSearchString() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSearchString");
 
-		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
-		String queryOptionName = "multibyteSearchOpt.xml";
+    String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
+    String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    setQueryOption(client, queryOptionName);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("mult-title:万里长城");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("mult-title:万里长城");
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testSearchStringWithBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSearchStringWithBucket");
+  @Test
+  public void testSearchStringWithBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSearchStringWithBucket");
 
-		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
-		String queryOptionName = "multibyteSearchOpt.xml";
+    String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
+    String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    setQueryOption(client, queryOptionName);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("mult-pop:medium");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("mult-pop:medium");
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
-		assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result'][1]//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("/multibyte-search/multibyte1.xml", "string(//*[local-name()='result'][2]//@*[local-name()='uri'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testSearchStringWithBucketAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testSearchStringWithBucketAndWord");
+  @Test
+  public void testSearchStringWithBucketAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testSearchStringWithBucketAndWord");
 
-		String[] filenames = {"multibyte1.xml", "multibyte2.xml", "multibyte3.xml"};
-		String queryOptionName = "multibyteSearchOpt.xml";
+    String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
+    String queryOptionName = "multibyteSearchOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/multibyte-search/", "XML");
+    }
 
-		setQueryOption(client, queryOptionName);
+    setQueryOption(client, queryOptionName);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("mult-pop:medium AND mult-title:上海");
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("mult-pop:medium AND mult-title:上海");
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/multibyte-search/multibyte2.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

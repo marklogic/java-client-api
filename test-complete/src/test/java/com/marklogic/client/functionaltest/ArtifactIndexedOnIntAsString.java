@@ -26,48 +26,48 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  * Property name been annotated with @Id.
  */
 public class ArtifactIndexedOnIntAsString {
-	@Id
-	public String name;
-	public long id;
-	private Company manufacturer;
+  @Id
+  public String name;
+  public long id;
+  private Company manufacturer;
 
-	// Note int is annotated as a string
-	@PathIndexProperty(scalarType = ScalarType.STRING)
-	private int inventory;
+  // Note int is annotated as a string
+  @PathIndexProperty(scalarType = ScalarType.STRING)
+  private int inventory;
 
-	public long getId() {
-		return id;
-	}
+  public long getId() {
+    return id;
+  }
 
-	public ArtifactIndexedOnIntAsString setId(long id) {
-		this.id = id;
-		return this;
-	}
+  public ArtifactIndexedOnIntAsString setId(long id) {
+    this.id = id;
+    return this;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public ArtifactIndexedOnIntAsString setName(String name) {
-		this.name = name;
-		return this;
-	}
+  public ArtifactIndexedOnIntAsString setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-	public Company getManufacturer() {
-		return manufacturer;
-	}
+  public Company getManufacturer() {
+    return manufacturer;
+  }
 
-	public ArtifactIndexedOnIntAsString setManufacturer(Company manufacturer) {
-		this.manufacturer = manufacturer;
-		return this;
-	}
+  public ArtifactIndexedOnIntAsString setManufacturer(Company manufacturer) {
+    this.manufacturer = manufacturer;
+    return this;
+  }
 
-	public int getInventory() {
-		return inventory;
-	}
+  public int getInventory() {
+    return inventory;
+  }
 
-	public ArtifactIndexedOnIntAsString setInventory(int inventory) {
-		this.inventory = inventory;
-		return this;
-	}
+  public ArtifactIndexedOnIntAsString setInventory(int inventory) {
+    this.inventory = inventory;
+    return this;
+  }
 }

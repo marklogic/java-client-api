@@ -31,67 +31,67 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.StringHandle;
+
 public class TestBug18993 extends BasicJavaClientREST {
-	
-	private static String dbName = "Bug18993DB";
-	private static String [] fNames = {"Bug18993DB-1"};
-	
-	
-	
-	@BeforeClass
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		if (!IsSecurityEnabled()) {
-			// Run it only in non-SSL mode.
-		loadBug18993();
-		}
-	}
 
-@After
-	public  void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  private static String dbName = "Bug18993DB";
+  private static String[] fNames = { "Bug18993DB-1" };
 
-	@Test
-	public void testBug18993() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		if (!IsSecurityEnabled()) {
-			// Run it only in non-SSL mode.
-		System.out.println("Running testBug18993");
-		
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-		
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-				
-		StringHandle readHandle = new StringHandle();
-		 
-		String uris[] = {"/a b"};
-		
-		String expectedXML = "<foo>a space b</foo>";
-		
-	    for (String uri : uris) 
-	    {
-	        System.out.println("uri = " + uri);
-	        docMgr.read(uri, readHandle);
-	        System.out.println();
-	        String strXML = readHandle.toString();
-	        System.out.print(readHandle.toString());
-	        assertTrue("Document is not returned", strXML.contains(expectedXML));
-	        System.out.println();
-	    } 
-		
-		// release client
-		client.release();
-		}
-	}
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    if (!IsSecurityEnabled()) {
+      // Run it only in non-SSL mode.
+      loadBug18993();
+    }
+  }
+
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
+
+  @Test
+  public void testBug18993() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    if (!IsSecurityEnabled()) {
+      // Run it only in non-SSL mode.
+      System.out.println("Running testBug18993");
+
+      DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+
+      XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+      StringHandle readHandle = new StringHandle();
+
+      String uris[] = { "/a b" };
+
+      String expectedXML = "<foo>a space b</foo>";
+
+      for (String uri : uris)
+      {
+        System.out.println("uri = " + uri);
+        docMgr.read(uri, readHandle);
+        System.out.println();
+        String strXML = readHandle.toString();
+        System.out.print(readHandle.toString());
+        assertTrue("Document is not returned", strXML.contains(expectedXML));
+        System.out.println();
+      }
+
+      // release client
+      client.release();
+    }
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

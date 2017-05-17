@@ -30,89 +30,90 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import org.junit.*;
 
 public class TestXMLDocumentRepair extends BasicJavaClientREST {
-	
-	private static String appServerHostname = null;
-	
-	@BeforeClass 
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		setupJavaRESTServerWithDB( "REST-Java-Client-API-Server-withDB", 8015);
-		appServerHostname = getRestAppServerHostName();
-	}
 
-	@Test	
-	public void testXMLDocumentRepairFull() throws IOException
-	{
-		// acquire the content 
-		File file = new File("repairXMLFull.xml");
-		file.delete();
-		boolean success = file.createNewFile();
-		if(success)
-			System.out.println("New file created on " + file.getAbsolutePath());
-		else
-			System.out.println("Cannot create file");
+  private static String appServerHostname = null;
 
-		BufferedWriter out = new BufferedWriter(new FileWriter(file));
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    setupJavaRESTServerWithDB("REST-Java-Client-API-Server-withDB", 8015);
+    appServerHostname = getRestAppServerHostName();
+  }
 
-		String xmlContent = 
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-						"<repair>\n" +
-						"<p>This is <b>bold and <i>italic</b> within the paragraph.</p>\n" + 
-						"<p>This is <b>bold and <i>italic</i></b></u> within the paragraph.</p>\n" +
-						"<p>This is <b>bold and <i>italic</b></i> within the paragraph.</p>\n" +
-						"</repair>";
+  @Test
+  public void testXMLDocumentRepairFull() throws IOException
+  {
+    // acquire the content
+    File file = new File("repairXMLFull.xml");
+    file.delete();
+    boolean success = file.createNewFile();
+    if (success)
+      System.out.println("New file created on " + file.getAbsolutePath());
+    else
+      System.out.println("Cannot create file");
 
-		String repairedContent =
-				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
-						"<repair>\n" +
-						"<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" + 
-						"<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" +
-						"<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" +
-						"</repair>";				
+    BufferedWriter out = new BufferedWriter(new FileWriter(file));
 
-		out.write(xmlContent);
-		out.close();
+    String xmlContent =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<repair>\n" +
+            "<p>This is <b>bold and <i>italic</b> within the paragraph.</p>\n" +
+            "<p>This is <b>bold and <i>italic</i></b></u> within the paragraph.</p>\n" +
+            "<p>This is <b>bold and <i>italic</b></i> within the paragraph.</p>\n" +
+            "</repair>";
 
-		// create database client
-		DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "rest-writer", "x", Authentication.DIGEST);
+    String repairedContent =
+        "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+            "<repair>\n" +
+            "<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" +
+            "<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" +
+            "<p>This is <b>bold and <i>italic</i></b> within the paragraph.</p>\n" +
+            "</repair>";
 
-		// create doc id
-		String docId = "/repair/xml/" + file.getName();
+    out.write(xmlContent);
+    out.close();
 
-		// create document manager
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    // create database client
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "rest-writer", "x", Authentication.DIGEST);
 
-		// set document repair
-		docMgr.setDocumentRepair(DocumentRepair.FULL);
+    // create doc id
+    String docId = "/repair/xml/" + file.getName();
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
+    // create document manager
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// write the document content
-		docMgr.write(docId, handle);
+    // set document repair
+    docMgr.setDocumentRepair(DocumentRepair.FULL);
 
-		System.out.println("Write " + docId + " to database");
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
 
-		// read the document
-		docMgr.read(docId, handle);
+    // write the document content
+    docMgr.write(docId, handle);
 
-		// access the document content
-		File fileRead = handle.get();
+    System.out.println("Write " + docId + " to database");
 
-		Scanner scanner = new Scanner(fileRead).useDelimiter("\\Z");
-		String readContent = scanner.next();
-		assertEquals("XML document write difference", repairedContent, readContent);
-		scanner.close();
+    // read the document
+    docMgr.read(docId, handle);
 
-		// release the client
-		client.release();
-	}
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		deleteRESTServerWithDB("REST-Java-Client-API-Server-withDB");
-	}
+    // access the document content
+    File fileRead = handle.get();
+
+    Scanner scanner = new Scanner(fileRead).useDelimiter("\\Z");
+    String readContent = scanner.next();
+    assertEquals("XML document write difference", repairedContent, readContent);
+    scanner.close();
+
+    // release the client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    deleteRESTServerWithDB("REST-Java-Client-API-Server-withDB");
+  }
 }

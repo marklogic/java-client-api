@@ -37,72 +37,74 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 
-public class TestAppServicesAbsRangeConstraint extends BasicJavaClientREST  {
+public class TestAppServicesAbsRangeConstraint extends BasicJavaClientREST {
 
-	
-	private static String dbName = "AbsRangeConstraintDB";
-	private static String [] fNames = {"AbsRangeConstraintDB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesConstraint(dbName);
-	  addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
-	}
+  private static String dbName = "AbsRangeConstraintDB";
+  private static String[] fNames = { "AbsRangeConstraintDB-1" };
 
-	@Test
-	public void testWithVariousGrammarAndWordQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, KeyManagementException, NoSuchAlgorithmException
-	{	
-		System.out.println("Running testWithVariousGrammarAndWordQuery");
-		
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
-		String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+    addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/abs-range-constraint/", "XML");
-		}
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("(pop:high OR pop:medium) AND price:medium AND intitle:served");
+  @Test
+  public void testWithVariousGrammarAndWordQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException,
+      XpathException, KeyManagementException, NoSuchAlgorithmException
+  {
+    System.out.println("Running testWithVariousGrammarAndWordQuery");
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("Vannevar served", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
-		assertXpathEvaluatesTo("12.34", "string(//*[local-name()='result'][1]//@*[local-name()='amt'])", resultDoc);
-		assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][1]//*[local-name()='popularity'])", resultDoc);
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='facet-value']//@*[local-name()='count'])", resultDoc);
-		assertXpathEvaluatesTo("High", "string(//*[local-name()='facet-value'])", resultDoc);
-	    
-		//String expectedSearchReport = "(cts:search(fn:collection(), cts:and-query((cts:or-query((cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&gt;=\", xs:int(\"5\"), (), 1), cts:and-query((cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&gt;=\", xs:int(\"3\"), (), 1), cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&lt;\", xs:int(\"5\"), (), 1)), ()))), cts:element-attribute-range-query(fn:QName(\"http://cloudbank.com\", \"price\"), fn:QName(\"\", \"amt\"), \"&gt;=\", 3.0, (), 1), cts:element-attribute-range-query(fn:QName(\"http://cloudbank.com\", \"price\"), fn:QName(\"\", \"amt\"), \"&lt;\", 14.0, (), 1), cts:element-word-query(fn:QName(\"\", \"title\"), \"served\", (\"lang=en\"), 1)), ()), (\"score-logtfidf\"), 1))[1 to 10]";
-		
-		//assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
-	
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-//		super.tearDown();
-	}
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/abs-range-constraint/", "XML");
+    }
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("(pop:high OR pop:medium) AND price:medium AND intitle:served");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("Vannevar served", "string(//*[local-name()='result'][1]//*[local-name()='title'])", resultDoc);
+    assertXpathEvaluatesTo("12.34", "string(//*[local-name()='result'][1]//@*[local-name()='amt'])", resultDoc);
+    assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][1]//*[local-name()='popularity'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='facet-value']//@*[local-name()='count'])", resultDoc);
+    assertXpathEvaluatesTo("High", "string(//*[local-name()='facet-value'])", resultDoc);
+
+    // String expectedSearchReport =
+    // "(cts:search(fn:collection(), cts:and-query((cts:or-query((cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&gt;=\", xs:int(\"5\"), (), 1), cts:and-query((cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&gt;=\", xs:int(\"3\"), (), 1), cts:element-range-query(fn:QName(\"\", \"popularity\"), \"&lt;\", xs:int(\"5\"), (), 1)), ()))), cts:element-attribute-range-query(fn:QName(\"http://cloudbank.com\", \"price\"), fn:QName(\"\", \"amt\"), \"&gt;=\", 3.0, (), 1), cts:element-attribute-range-query(fn:QName(\"http://cloudbank.com\", \"price\"), fn:QName(\"\", \"amt\"), \"&lt;\", 14.0, (), 1), cts:element-word-query(fn:QName(\"\", \"title\"), \"served\", (\"lang=en\"), 1)), ()), (\"score-logtfidf\"), 1))[1 to 10]";
+
+    // assertXpathEvaluatesTo(expectedSearchReport,
+    // "string(//*[local-name()='report'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+    // super.tearDown();
+  }
 }
