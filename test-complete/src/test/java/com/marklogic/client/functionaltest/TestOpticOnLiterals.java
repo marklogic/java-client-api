@@ -761,14 +761,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     // TEST 16 - join inner doc with xpath traversing down and multiple values
     // on json
-    ModifyPlan output = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/location/latLonPair/(lat|long)")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
     rowMgr.resultDoc(output, jacksonHandle);
@@ -786,14 +787,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc3.json", node.path("uri").path("value").asText());
 
     // Verify TEST 17 - join inner doc with xpath accessing attribute on xml
-    ModifyPlan output17 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output17 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/distance/@direction")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle17 = new JacksonHandle();
     jacksonHandle17.setMimetype("application/json");
     rowMgr.resultDoc(output17, jacksonHandle17);
@@ -809,14 +811,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     // Verify TEST 18 - join inner doc with xpath traversing down and multiple
     // values on xml
-    ModifyPlan output18 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output18 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/number()")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle18 = new JacksonHandle();
     jacksonHandle18.setMimetype("application/json");
     rowMgr.resultDoc(output18, jacksonHandle18);
@@ -832,14 +835,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 1 nodes value incorrect", "116.4", node18.path("nodes").path("value").get(1).asText());
 
     // Verify TEST 19 - join inner doc with traversing up xpath on json
-    ModifyPlan output19 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output19 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/location/latLonPair/../../city")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle19 = new JacksonHandle();
     jacksonHandle19.setMimetype("application/json");
     rowMgr.resultDoc(output19, jacksonHandle19);
@@ -860,14 +864,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 2 nodes value incorrect", "new jersey", node19.path("nodes").path("value").asText());
 
     // Verify TEST 20 - join inner doc with traversing up xpath on xml
-    ModifyPlan output20 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output20 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/../../city")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle20 = new JacksonHandle();
     jacksonHandle20.setMimetype("application/json");
     rowMgr.resultDoc(output20, jacksonHandle20);
@@ -883,14 +888,15 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
 
     // Verify TEST 21 - join inner doc with traversing deep xpath on json and
     // xml
-    ModifyPlan output21 = p.fromLiterals(literals3).orderBy(p.asc("id"))
+    ModifyPlan output21 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
             p.as("nodes", p.xpath("doc", "//lat/number()")))
-        .where(p.isDefined(p.col("nodes")));
+        .where(p.isDefined(p.col("nodes")))
+        .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle21 = new JacksonHandle();
     jacksonHandle21.setMimetype("application/json");
     rowMgr.resultDoc(output21, jacksonHandle21);
