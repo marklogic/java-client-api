@@ -58,6 +58,8 @@ public class ExportToWriterListener extends ExportListener {
 
   public ExportToWriterListener(Writer writer) {
     this.writer = writer;
+    logger.debug("new ExportToWriterListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
   }
 
   @Override

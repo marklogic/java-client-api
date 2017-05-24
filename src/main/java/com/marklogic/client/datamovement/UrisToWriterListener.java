@@ -63,6 +63,8 @@ public class UrisToWriterListener implements QueryBatchListener {
 
   public UrisToWriterListener(Writer writer) {
     this.writer = writer;
+    logger.debug("new UrisToWriterListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
   }
 
   @Override

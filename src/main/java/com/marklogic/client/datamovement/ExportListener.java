@@ -79,6 +79,8 @@ public class ExportListener implements QueryBatchListener {
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
   public ExportListener() {
+    logger.debug("new ExportListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
   }
 
   protected DocumentPage getDocs(QueryBatch batch) {

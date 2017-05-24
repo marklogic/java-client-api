@@ -84,6 +84,11 @@ public class ApplyTransformListener implements QueryBatchListener {
   private List<QueryBatchListener> skippedListeners = new ArrayList<>();
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
+  public ApplyTransformListener() {
+    logger.debug("new ApplyTransformListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
+  }
+
   /**
    * The standard BatchListener action called by QueryBatcher.
    */

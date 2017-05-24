@@ -62,6 +62,11 @@ public class DeleteListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(DeleteListener.class);
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
 
+  public DeleteListener() {
+    logger.debug("new DeleteListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
+  }
+
   /**
    * The standard BatchListener action called by QueryBatcher.
    */
