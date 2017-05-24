@@ -17,6 +17,7 @@ package com.marklogic.client.example.cookbook.datamovement;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
+import java.util.HashMap;
 
 import javax.xml.bind.JAXBException;
 
@@ -34,11 +35,15 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 
 public class DatabaseClientSingleton {
   private static DatabaseClient client = null;
+  private static HashMap<String,DatabaseClient> dbSpecificClients = new HashMap<>();
   private static DatabaseClient restAdminClient = null;
+  private static boolean handlesRegistered = false;
+  private static ExampleProperties properties = getProperties();
 
   private DatabaseClientSingleton() {}
 
   private static void registerHandlers() {
+    if ( handlesRegistered == true ) return;
     try {
     DatabaseClientFactory.getHandleRegistry().register(
       JAXBHandle.newFactory(ProductDetails.class));
@@ -53,36 +58,43 @@ public class DatabaseClientSingleton {
     mapper.setDateFormat(new SimpleDateFormat(ISO_8601_FORMAT));
     DatabaseClientFactory.getHandleRegistry().register(
       JacksonDatabindHandle.newFactory(mapper, Employee.class));
+    DatabaseClientFactory.getHandleRegistry().register(
+      JacksonDatabindHandle.newFactory(mapper, LoadDetail.class));
+    handlesRegistered = true;
   }
 
   public static DatabaseClient get() {
     if(client == null) {
       registerHandlers();
-      ExampleProperties properties = null;
-      try {
-        properties = Util.loadProperties();
-      } catch (IOException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
       client = DatabaseClientFactory.newClient(properties.host, properties.port,
         new DigestAuthContext(properties.writerUser, properties.writerPassword));
     }
     return client;
   }
 
+  public static synchronized DatabaseClient get(String database) {
+    if(dbSpecificClients.get(database) == null) {
+      registerHandlers();
+      dbSpecificClients.put(database, DatabaseClientFactory.newClient(properties.host, properties.port,
+        database, new DigestAuthContext(properties.writerUser, properties.writerPassword)));
+    }
+    return dbSpecificClients.get(database);
+  }
+
   public static DatabaseClient getRestAdmin() {
     if(restAdminClient == null) {
-      ExampleProperties properties = null;
-      try {
-        properties = Util.loadProperties();
-      } catch (IOException e) {
-        e.printStackTrace();
-        throw new RuntimeException(e);
-      }
       restAdminClient = DatabaseClientFactory.newClient(properties.host, properties.port,
         new DigestAuthContext(properties.adminUser, properties.adminPassword));
     }
     return restAdminClient;
+  }
+
+  private static ExampleProperties getProperties() {
+    try {
+      return Util.loadProperties();
+    } catch (IOException e) {
+      e.printStackTrace();
+      throw new RuntimeException(e);
+    }
   }
 }
