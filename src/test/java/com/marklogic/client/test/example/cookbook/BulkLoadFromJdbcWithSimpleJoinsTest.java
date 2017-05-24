@@ -19,11 +19,14 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
 
-import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcRaw;
+import com.marklogic.client.example.cookbook.datamovement.BulkLoadFromJdbcWithSimpleJoins;
 
-public class BulkLoadFromJdbcRawTest {
+public class BulkLoadFromJdbcWithSimpleJoinsTest {
   @Test
   public void testMain() throws Exception {
-    BulkLoadFromJdbcRaw.main(new String[0]);
+    BulkLoadFromJdbcWithSimpleJoins.main(new String[0]);
   }
 }
+
+
+

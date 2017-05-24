@@ -26,6 +26,11 @@ import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowCallbackHandler;
 
+import com.fasterxml.jackson.core.JsonParser.Feature;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,12 +39,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
 import javax.sql.DataSource;
+import java.text.SimpleDateFormat;
 
 public class BulkLoadFromJdbcWithJoins {
   private static Logger logger = LoggerFactory.getLogger(BulkLoadFromJdbcWithJoins.class);
+  public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
   private static int threadCount = 10;
-  private static int batchSize   = 10000;
+  private static int batchSize   = 1000;
 
   public static final DataMovementManager moveMgr =
     DatabaseClientSingleton.get().newDataMovementManager();
@@ -49,21 +56,15 @@ public class BulkLoadFromJdbcWithJoins {
     new BulkLoadFromJdbcWithJoins().run();
   }
 
-  public void populate(ResultSet row, Employee e) throws SQLException {
-    e.setEmployeeId(row.getInt("emp_no"));
-    e.setBirthDate(Calendar.getInstance());
-    e.getBirthDate().setTime(row.getDate("birth_date"));
-    e.setFirstName(row.getString("first_name"));
-    e.setLastName(row.getString("last_name"));
-    if ( "M".equals(row.getString("gender")) ) {
-      e.setGender(Employee.Gender.MALE);
-    } else if ( "F".equals(row.getString("gender")) ) {
-      e.setGender(Employee.Gender.FEMALE);
+  public Employee parseEmployee(ResultSet row) throws SQLException {
+    try {
+      ObjectMapper mapper = new ObjectMapper()
+        .configure(Feature.ALLOW_UNQUOTED_FIELD_NAMES, true);
+      return mapper.readValue(row.getString(1), Employee.class);
+    } catch (Exception exception) {
+      exception.printStackTrace();
+      throw new RuntimeException(exception);
     }
-    e.setHireDate(Calendar.getInstance());
-    e.getHireDate().setTime(row.getDate("hire_date"));
-    e.setSalary(row.getInt("salary"));
-    e.setTitle(row.getString("title"));
   }
 
   public void run() throws IOException, SQLException {
@@ -74,16 +75,35 @@ public class BulkLoadFromJdbcWithJoins {
       .onBatchSuccess(batch -> System.out.println("Written: " + batch.getJobWritesSoFar()))
       .onBatchFailure((batch,exception) -> exception.printStackTrace());
     JobTicket ticket = moveMgr.startJob(wb);
+    // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
+    jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
     jdbcTemplate.query(
-      "SELECT e.*, MAX(s.salary) AS salary, MAX(title) AS title " +
-      "FROM employees e, salaries s, titles t " +
-      "WHERE e.emp_no = s.emp_no " +
-      "  AND e.emp_no = t.emp_no " +
+      /******** Generate JSON Employee record with nested salaries and titles arrays ********/
+      "SELECT CONCAT('{employeeId:', e.emp_no, ',', " +
+      "              ' firstName:\"', e.first_name, '\",', " +
+      "              ' lastName:\"', e.last_name, '\",', " +
+      "              ' gender:\"', IF(e.gender='M','MALE',IF(e.gender='F','FEMALE','UNKNOWN')), '\",', " +
+      "              ' birthDate:\"', DATE_FORMAT(e.birth_date,'%Y-%m-%d'), '\",'," +
+      "              ' hireDate:\"', DATE_FORMAT(e.hire_date,'%Y-%m-%d'), '\",', " +
+      "              ' salaries:[', " +
+      "                GROUP_CONCAT(CONCAT('{salary:',salary,',', " +
+      "                  ' fromDate:\"', DATE_FORMAT(s.from_date,'%Y-%m-%d'), '\"', " +
+      "                  IF(s.to_date='9999-01-01','',CONCAT(', toDate:\"', DATE_FORMAT(s.to_date,'%Y-%m-%d'), '\"')), " +
+      "                '}') SEPARATOR ','), " +
+      "              '], titles:[', titles, ']}') " +
+      "FROM salaries s, " +
+      "  (SELECT employees.*, GROUP_CONCAT(CONCAT('{title:\"',title,'\",', " +
+      "    ' fromDate:\"', DATE_FORMAT(t.from_date,'%Y-%m-%d'), '\"', " +
+      "    IF(t.to_date='9999-01-01','',CONCAT(', toDate:\"', DATE_FORMAT(t.to_date,'%Y-%m-%d'), '\"')), " +
+      "  '}') SEPARATOR ',') titles " +
+      "   FROM employees, titles t " +
+      "   WHERE employees.emp_no=t.emp_no " +
+      "   GROUP BY employees.emp_no) e " +
+      "WHERE e.emp_no=s.emp_no " +
       "GROUP BY e.emp_no " +
       "LIMIT 100",
       (RowCallbackHandler) row -> {
-        Employee employee = new Employee();
-        populate(row, employee);
+        Employee employee = parseEmployee(row);
         wb.addAs(employee.getEmployeeId() + ".json", employee);
       }
     );

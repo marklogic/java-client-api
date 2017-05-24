@@ -88,7 +88,7 @@ public class BulkLoadFromJdbcRaw {
 
   public void populateSalary(ResultSet row, ObjectNode s) throws SQLException {
     s.put("employeeId", row.getInt("emp_no"));
-    s.put("salary", row.getString("salary"));
+    s.put("salary", row.getInt("salary"));
     Calendar fromDate = Calendar.getInstance();
     fromDate.setTime(row.getDate("from_date"));
     s.put("fromDate", dateFormat.format(fromDate.getTime()));
@@ -183,10 +183,12 @@ public class BulkLoadFromJdbcRaw {
       "    cts.directoryQuery('/salaries/'), " +
       "    cts.jsonPropertyValueQuery('employeeId', employee.employeeId)" +
       "  ])); " +
-      "  salaries.map(function(salary){delete salary.employeeId}); " +
-      "  employee.salaries = salaries; " +
-      "  for ( var i=1; i <= fn.count(salaries); i++ ) { " +
-      "    xdmp.documentDelete(fn.baseUri(fn.subsequence(salaries, i, 1))) " +
+      "  if ( fn.count(salaries) > 0 ) { " +
+      "    salaries.map(function(salary){delete salary.employeeId}); " +
+      "    employee.salaries = salaries; " +
+      "    for ( var i=1; i <= fn.count(salaries); i++ ) { " +
+      "      xdmp.documentDelete(fn.baseUri(fn.subsequence(salaries, i, 1))) " +
+      "    } " +
       "  } " +
       "  return employee; " +
       "}; " +
