@@ -19,21 +19,21 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 public class LoadDetail {
-  private long hashCode;
+  private int hashCode;
   private String jobName;
 
   public LoadDetail() {}
 
-  public LoadDetail(String jobName, long hashCode) {
+  public LoadDetail(String jobName, int hashCode) {
     this.jobName = jobName;
     this.hashCode = hashCode;
   }
 
-  public long getHashCode() {
+  public int getHashCode() {
     return hashCode;
   }
 
-  public void setHashCode(long hashCode) {
+  public void setHashCode(int hashCode) {
     this.hashCode = hashCode;
   }
 
