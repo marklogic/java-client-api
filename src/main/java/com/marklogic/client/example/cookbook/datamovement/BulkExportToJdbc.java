@@ -77,14 +77,19 @@ public class BulkExportToJdbc {
             Employee employee = record.getContentAs(Employee.class);
             jdbcTemplate.update(
               "INSERT INTO employees (emp_no, hire_date, first_name, last_name, birth_date) " +
-              "VALUES (?, ?, ?, ?, ?)",
+              "VALUES (?, ?, ?, ?, ?) " +
+              "ON DUPLICATE KEY UPDATE emp_no=?, hire_date=?, first_name=?, last_name=?, birth_date=?",
+              employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
+              employee.getLastName(), employee.getBirthDate(),
               employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
               employee.getLastName(), employee.getBirthDate());
             if ( employee.getSalaries() != null ) {
               for ( Salary salary : employee.getSalaries() ) {
                 jdbcTemplate.update(
                   "INSERT INTO salaries (emp_no, salary, from_date, to_date) " +
-                  "VALUES(?, ?, ?, ?)",
+                  "VALUES(?, ?, ?, ?)" +
+                  "ON DUPLICATE KEY UPDATE emp_no=?, salary=?, from_date=?, to_date=?",
+                  employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate(),
                   employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate());
               }
             }
@@ -92,7 +97,9 @@ public class BulkExportToJdbc {
               for ( Title title : employee.getTitles() ) {
                 jdbcTemplate.update(
                   "INSERT INTO titles (emp_no, title, from_date, to_date) " +
-                  "VALUES(?, ?, ?, ?)",
+                  "VALUES(?, ?, ?, ?)" +
+                  "ON DUPLICATE KEY UPDATE emp_no=?, title=?, from_date=?, to_date=?",
+                  employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate(),
                   employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate());
               }
             }
