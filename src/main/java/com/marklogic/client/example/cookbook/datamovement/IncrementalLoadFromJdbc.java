@@ -37,6 +37,7 @@ import java.sql.SQLException;
 import java.text.SimpleDateFormat;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
@@ -89,6 +90,7 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
       boolean finished = false;
 
       public boolean hasNext() {
+        if ( nextUri != null ) return true;
         if ( finished == true ) return false;
         try {
           // block (wait) for up to 10 minutes for the next uri from the source
@@ -105,9 +107,13 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
         }
       }
       public String next() {
-        return nextUri;
+        String next = nextUri;
+        nextUri = null;
+        return next;
       }
     };
+    AtomicInteger changedEmployees = new AtomicInteger(0);
+    AtomicInteger unchangedEmployees = new AtomicInteger(0);
     // the batcher to step through employee uris
     QueryBatcher qb = moveMgr.newQueryBatcher(uris)
       .withJobName(String.valueOf(System.currentTimeMillis()))
@@ -126,14 +132,17 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
           String ldUri = LoadDetail.makeUri(uri);
           LoadDetail detail = details.get(ldUri);
           Employee employee = sourceEmployees.get(uri);
+          sourceEmployees.remove(uri);
           if ( detail != null && detail.getHashCode() == employee.hashCode() ) {
             // this employee hasn't changed, so just update the details record
             // with the current job name
             logger.trace("employee hasn't changed; uri=[" + uri + "]");
+            unchangedEmployees.incrementAndGet();
             detail.setJobName(batch.getBatcher().getJobName());
             docWb.addAs(ldUri, detail);
           } else {
             // this employee has changed, so let's overwrite them
+            changedEmployees.incrementAndGet();
             logger.trace("employee changed; uri=[" + uri + "]");
             docWb.addAs(uri, employee);
             docWb.addAs(ldUri, new LoadDetail(batch.getBatcher().getJobName(), employee.hashCode()));
@@ -163,12 +172,16 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
     qb.awaitCompletion();
     moveMgr.stopJob(qb);
     JobReport report = moveMgr.getJobReport(qbTicket);
+    logger.debug("Compared " + report.getSuccessEventsCount() + " employees in " + report.getSuccessBatchesCount() + " batches");
     if ( report.getFailureBatchesCount() > 0 ) {
       throw new IllegalStateException("Encountered " +
         report.getFailureBatchesCount() + " failed query batches");
     }
     docWb.flushAndWait();
     moveMgr.stopJob(docWb);
+    logger.debug("Wrote " + report.getSuccessEventsCount() + " docs in " + report.getSuccessBatchesCount() + " batches");
+    logger.debug(changedEmployees.get() + " employees were changed");
+    logger.debug(unchangedEmployees.get() + " employees were unchanged");
     report = moveMgr.getJobReport(docWbTicket);
     if ( report.getFailureBatchesCount() > 0 ) {
       throw new IllegalStateException("Encountered " +
