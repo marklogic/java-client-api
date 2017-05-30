@@ -124,7 +124,7 @@ public class XMLEventReaderHandle
 	}
 
 	/**
-	 * Returns an XML Event Reader for for reading a resource from the database
+	 * Returns an XML Event Reader for reading a resource from the database
 	 * as a series of StAX events.
 	 * 
      * When finished with the event reader, close the event reader to release
