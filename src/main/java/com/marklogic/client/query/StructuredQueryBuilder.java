@@ -2823,7 +2823,7 @@ public class StructuredQueryBuilder {
    * Matches documents with LSQT prior to timestamp
    * @param temporalCollection the temporal collection to query
    * @param time documents with lsqt equal to or prior to this timestamp will match
-   * @param weight the weight for for this query
+   * @param weight the weight for this query
    * @param options string options from the list for
    *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
    * @return a query to filter by lsqt
@@ -2843,7 +2843,7 @@ public class StructuredQueryBuilder {
    * @param temporalCollection the temporal collection to query
    * @param timestamp timestamp in ISO 8601 format - documents with lsqt equal to or
    *        prior to this timestamp will match
-   * @param weight the weight for for this query
+   * @param weight the weight for this query
    * @param options string options from the list for
    *     <a href="http://docs.marklogic.com/cts:lsqt-query">cts:lsqt-query calls</a>
    * @return a query to filter by lsqt

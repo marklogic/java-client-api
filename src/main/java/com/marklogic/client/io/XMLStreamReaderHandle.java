@@ -126,7 +126,7 @@ public class XMLStreamReaderHandle
   }
 
   /**
-   * Returns an XML Stream Reader for for reading a resource from the database
+   * Returns an XML Stream Reader for reading a resource from the database
    * as a StAX pull stream.
    *
    * When finished with the stream reader, call {@link #close} to release
