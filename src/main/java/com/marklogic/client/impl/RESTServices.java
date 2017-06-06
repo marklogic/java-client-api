@@ -115,12 +115,9 @@ public interface RESTServices {
 		throws ResourceNotFoundException, ResourceNotResendableException,
 			ForbiddenUserException, FailedRequestException;
 
-    public <T> T search(RequestLogger logger, Class <T> as, QueryDefinition queryDef, String mimetype,
+    public <T extends SearchReadHandle> T search(RequestLogger logger, T as, QueryDefinition queryDef,
     		long start, long len, QueryView view, Transaction transaction)
     	throws ForbiddenUserException, FailedRequestException;
-	public <T> T search(RequestLogger reqlog, Class<T> as, QueryDefinition queryDef, String mimetype,
-			String view)
-		throws ForbiddenUserException, FailedRequestException;
 
     public void deleteSearch(RequestLogger logger, DeleteQueryDefinition queryDef, Transaction transaction)
             throws ForbiddenUserException, FailedRequestException;

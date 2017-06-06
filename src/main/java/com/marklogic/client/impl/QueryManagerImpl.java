@@ -20,6 +20,7 @@ import java.util.List;
 
 import javax.xml.namespace.QName;
 
+import com.marklogic.client.util.RequestParameters;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 
@@ -172,31 +173,13 @@ public class QueryManagerImpl
     @Override
     @SuppressWarnings("unchecked")
     public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-		@SuppressWarnings("rawtypes")
-		HandleImplementation searchBase = HandleAccessor.checkHandle(searchHandle, "search");
 
-        if (searchHandle instanceof SearchHandle) {
-        	SearchHandle responseHandle = (SearchHandle) searchHandle;
-        	responseHandle.setHandleRegistry(getHandleRegistry());
-        	responseHandle.setQueryCriteria(querydef);
-        }
-
-        Format searchFormat = searchBase.getFormat();
-        switch(searchFormat) {
-        case UNKNOWN:
-        	searchFormat = Format.XML;
-        	break;
-        case JSON:
-        case XML:
-        	break;
-        default:
-            throw new UnsupportedOperationException("Only XML and JSON search results are possible.");
-        }
-
-        String mimetype = searchFormat.getDefaultMimetype();
-
-        searchBase.receiveContent(services.search(requestLogger, searchBase.receiveAs(), querydef, mimetype, start, pageLen, view, transaction));
-        return searchHandle;
+      if (searchHandle instanceof SearchHandle) {
+        SearchHandle responseHandle = (SearchHandle) searchHandle;
+        responseHandle.setHandleRegistry(getHandleRegistry());
+        responseHandle.setQueryCriteria(querydef);
+      }
+      return services.search(requestLogger, searchHandle, querydef, start, pageLen, view, transaction);
     }
 
     @Override
@@ -400,67 +383,40 @@ public class QueryManagerImpl
 
 	@SuppressWarnings("unchecked")
 	@Override
-    public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle) {
-		@SuppressWarnings("rawtypes")
-		HandleImplementation convertedBase = HandleAccessor.checkHandle(convertedHandle, "convert");
-
-        Format convertedFormat = convertedBase.getFormat();
-        switch(convertedFormat) {
-        case UNKNOWN:
-    		@SuppressWarnings("rawtypes")
-    		HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
-    		convertedFormat = queryBase.getFormat();
-        	if (convertedFormat == Format.UNKNOWN) {
-        		convertedFormat = Format.XML;
-        	}
-        	break;
-        case JSON:
-        case XML:
-        	break;
-        default:
-            throw new UnsupportedOperationException("Only XML and JSON conversions are possible.");
-        }
-
-        String mimetype = convertedFormat.getDefaultMimetype();
-
-        convertedBase.receiveContent(
-        		services.search(requestLogger, convertedBase.receiveAs(), query, mimetype, "structured")
-        		);
-
-        return convertedHandle;
-	}
+  public <T extends StructureReadHandle> T convert(RawQueryByExampleDefinition query, T convertedHandle) {
+    return convertOrValidate(query, convertedHandle, "structured");
+  }
 
 	@SuppressWarnings("unchecked")
 	@Override
-    public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle) {
-		@SuppressWarnings("rawtypes")
-		HandleImplementation reportBase = HandleAccessor.checkHandle(reportHandle, "validate");
-
-        Format reportFormat = reportBase.getFormat();
-        switch(reportFormat) {
-        case UNKNOWN:
-    		@SuppressWarnings("rawtypes")
-    		HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
-    		reportFormat = queryBase.getFormat();
-        	if (reportFormat == Format.UNKNOWN) {
-        		reportFormat = Format.XML;
-        	}
-        	break;
-        case JSON:
-        case XML:
-        	break;
-        default:
-            throw new UnsupportedOperationException("Only XML and JSON validation reports are possible.");
-        }
-
-        String mimetype = reportFormat.getDefaultMimetype();
-
-        reportBase.receiveContent(
-        		services.search(requestLogger, reportBase.receiveAs(), query, mimetype, "validate")
-        		);
-
-        return reportHandle;
+  public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle) {
+    return convertOrValidate(query, reportHandle, "structured");
 	}
+
+  @SuppressWarnings("unchecked")
+  public <T extends StructureReadHandle> T convertOrValidate(RawQueryByExampleDefinition query, T convertedHandle, String view) {
+    RequestParameters params = new RequestParameters();
+    params.add("view", view);
+    @SuppressWarnings("rawtypes")
+    HandleImplementation convertedBase = HandleAccessor.checkHandle(convertedHandle, "convert");
+
+    Format convertedFormat = convertedBase.getFormat();
+    if(convertedFormat == Format.UNKNOWN ) {
+      @SuppressWarnings("rawtypes")
+      HandleImplementation queryBase = HandleAccessor.checkHandle(query.getHandle(), "validate");
+      if (queryBase.getFormat() == Format.UNKNOWN) {
+        convertedBase.setFormat(Format.XML);
+      }
+    }
+    String optionsName = query.getOptionsName();
+    if (optionsName != null && optionsName.length() > 0) {
+      params.add("options", optionsName);
+    }
+
+    services.postResource(requestLogger, "qbe", null, params, query.getHandle(), convertedHandle);
+
+    return convertedHandle;
+  }
 
 	@Override
 	public SuggestDefinition newSuggestDefinition() {
