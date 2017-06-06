@@ -52,6 +52,10 @@ import javax.ws.rs.core.StreamingOutput;
 import javax.xml.bind.DatatypeConverter;
 
 import com.marklogic.client.extensions.ResourceServices;
+import com.marklogic.client.query.ElementLocator;
+import com.marklogic.client.query.KeyLocator;
+import com.marklogic.client.query.KeyValueQueryDefinition;
+import com.marklogic.client.query.ValueLocator;
 import org.apache.http.HttpHost;
 import org.apache.http.HttpVersion;
 import org.apache.http.auth.params.AuthPNames;
@@ -2078,6 +2082,27 @@ public class JerseyServices implements RESTServices {
         builder = (payloadMimetype != null) ?
           webResource.type(payloadMimetype).accept(mimetype) :
           webResource.accept(mimetype);
+      } else if (queryDef instanceof KeyValueQueryDefinition ) {
+        if (logger.isDebugEnabled())
+          logger.debug("Searching for keys/values");
+
+        Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
+        for (Map.Entry<ValueLocator, String> entry: pairs.entrySet()) {
+          ValueLocator loc = entry.getKey();
+          if (loc instanceof KeyLocator ) {
+            addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+          } else {
+            ElementLocator eloc = (ElementLocator) loc;
+            params.add("element", eloc.getElement().toString());
+            if (eloc.getAttribute() != null) {
+              params.add("attribute", eloc.getAttribute().toString());
+            }
+          }
+          addEncodedParam(params, "value", entry.getValue());
+        }
+
+        webResource = getConnection().path("keyvalue").queryParams(params);
+        builder = webResource.accept(mimetype);
       } else if (queryDef instanceof CombinedQueryDefinition) {
         structure = ((CombinedQueryDefinition) queryDef).serialize();
 
@@ -2121,7 +2146,9 @@ public class JerseyServices implements RESTServices {
           }
         }
 
-        if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
+        if (queryDef instanceof KeyValueQueryDefinition) {
+          response = doGet(builder);
+        } else if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
           response = doPost(reqlog, builder, structure, true);
         } else if (queryDef instanceof CombinedQueryDefinition) {
           response = doPost(reqlog, builder, structure, true);
