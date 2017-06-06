@@ -390,7 +390,7 @@ public class QueryManagerImpl
 	@SuppressWarnings("unchecked")
 	@Override
   public <T extends StructureReadHandle> T validate(RawQueryByExampleDefinition query, T reportHandle) {
-    return convertOrValidate(query, reportHandle, "structured");
+    return convertOrValidate(query, reportHandle, "validate");
 	}
 
   @SuppressWarnings("unchecked")
