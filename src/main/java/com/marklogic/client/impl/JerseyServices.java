@@ -548,7 +548,7 @@ public class JerseyServices implements RESTServices {
       throw new ResourceNotFoundException(
         "Could not delete non-existent document");
     }
-    if (statusCode == 428) {
+    if (status == ClientResponse.Status.FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1334,7 +1334,7 @@ public class JerseyServices implements RESTServices {
         "Could not write non-existent document",
         extractErrorFields(response));
     }
-    if (statusCode == 428) {
+    if (status == ClientResponse.Status.FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1487,7 +1487,7 @@ public class JerseyServices implements RESTServices {
       throw new ResourceNotFoundException(
         "Could not write non-existent document");
     }
-    if (statusCode == 428) {
+    if (status == ClientResponse.Status.FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
