@@ -39,8 +39,6 @@ import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -383,7 +381,7 @@ public class JerseyServices implements RESTServices {
     HttpParams httpParams = new BasicHttpParams();
 
     if (authenType != null) {
-      List<String> authpref = new ArrayList<>();
+      List<String> authpref = new ArrayList<String>();
       if (authenType == Authentication.BASIC)
         authpref.add(AuthPolicy.BASIC);
       else if (authenType == Authentication.DIGEST)
@@ -537,8 +535,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
-      .delete(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.delete(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doDeleteFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     int statusCode = response.getStatus();
@@ -718,8 +719,11 @@ public class JerseyServices implements RESTServices {
 
     builder = addVersionHeader(desc, builder, "If-None-Match");
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.NOT_FOUND)
@@ -976,9 +980,12 @@ public class JerseyServices implements RESTServices {
     builder = addTelemetryAgentId(builder);
     builder = addVersionHeader(desc, builder, "If-None-Match");
 
-    MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder.accept(multipartType)
-      .get(ClientResponse.class);
+    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.accept(multipartType).get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.NOT_FOUND)
@@ -1092,8 +1099,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doHeadFunction = funcBuilder -> funcBuilder
-      .head();
+    Function<WebResource.Builder, ClientResponse> doHeadFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.head();
+      }
+    };
     ClientResponse response = makeRequest(builder, doHeadFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status != ClientResponse.Status.OK) {
@@ -1578,8 +1588,11 @@ public class JerseyServices implements RESTServices {
     WebResource.Builder builder = resource.getRequestBuilder();
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> funcBuilder
-      .post(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.post(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doPostFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN)
@@ -1644,8 +1657,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> funcBuilder
-      .post(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.post(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doPostFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -2251,8 +2267,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
-      .delete(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.delete(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doDeleteFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN) {
@@ -2401,10 +2420,18 @@ public class JerseyServices implements RESTServices {
 
     final HandleImplementation tempBaseHandle = baseHandle;
     Function<WebResource.Builder, ClientResponse> doGetFunction =
-      funcBuilder -> doGet(funcBuilder);
+      new Function<WebResource.Builder, ClientResponse>() {
+        public ClientResponse apply(WebResource.Builder funcBuilder) {
+          return doGet(funcBuilder);
+        }
+      };
     Function<WebResource.Builder, ClientResponse> doPostFunction =
-      funcBuilder -> doPost(null, funcBuilder.type(tempBaseHandle.getMimetype()),
-        tempBaseHandle.sendContent(), tempBaseHandle.isResendable());
+      new Function<WebResource.Builder, ClientResponse>() {
+        public ClientResponse apply(WebResource.Builder funcBuilder) {
+          return doPost(null, funcBuilder.type(tempBaseHandle.getMimetype()),
+            tempBaseHandle.sendContent(), tempBaseHandle.isResendable());
+        }
+      };
     ClientResponse response = baseHandle == null ? makeRequest(builder, doGetFunction, null)
       : makeRequest(builder, doPostFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
@@ -2449,8 +2476,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -2488,8 +2518,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -2521,8 +2554,11 @@ public class JerseyServices implements RESTServices {
     WebResource.Builder builder = makeBuilder(type + "/" + key, null, null, mimetype);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -2573,8 +2609,11 @@ public class JerseyServices implements RESTServices {
       getConnection().path(type).queryParams(requestParams).accept(mimetype);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN) {
@@ -2795,8 +2834,11 @@ public class JerseyServices implements RESTServices {
       .getRequestBuilder();
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
-      .delete(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.delete(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doDeleteFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN)
@@ -2824,8 +2866,11 @@ public class JerseyServices implements RESTServices {
     WebResource.Builder builder = getConnection().path(type).getRequestBuilder();
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> funcBuilder
-      .delete(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.delete(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doDeleteFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN)
@@ -2857,7 +2902,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doGet(funcBuilder);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     checkStatus(response, status, "read", "resource", path,
@@ -2894,9 +2943,13 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
+    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder.accept(multipartType));
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doGet(funcBuilder.accept(multipartType));
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     checkStatus(response, status, "read", "resource", path,
@@ -2906,20 +2959,20 @@ public class JerseyServices implements RESTServices {
   }
 
   @Override
-  public <R extends AbstractReadHandle> R putResource(RequestLogger reqlog,
-                                                      String path, Transaction transaction, RequestParameters params,
+  public <R extends AbstractReadHandle> R putResource(final RequestLogger reqlog,
+                                                      final String path, Transaction transaction, RequestParameters params,
                                                       AbstractWriteHandle input, R output)
       throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
     {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
-    HandleImplementation inputBase = HandleAccessor.checkHandle(input,
+    final HandleImplementation inputBase = HandleAccessor.checkHandle(input,
       "write");
     HandleImplementation outputBase = HandleAccessor.checkHandle(output,
       "read");
 
     String inputMimetype = inputBase.getMimetype();
-    boolean isResendable = inputBase.isResendable();
+    final boolean isResendable = inputBase.isResendable();
     String outputMimeType = null;
     Class as = null;
     if (outputBase != null) {
@@ -2931,17 +2984,21 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Consumer<Boolean> resendableConsumer = (resendable) -> {
-      if (!isResendable) {
-        checkFirstRequest();
-        throw new ResourceNotResendableException(
-          "Cannot retry request for " + path);
+    Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
+      public void accept(Boolean resendable) {
+        if (!isResendable) {
+          checkFirstRequest();
+          throw new ResourceNotResendableException(
+            "Cannot retry request for " + path);
+        }
       }
     };
 
-    Function<WebResource.Builder, ClientResponse> doPutFunction = funcBuilder -> doPut(reqlog,
-      funcBuilder, inputBase.sendContent(),
-      !isResendable);
+    Function<WebResource.Builder, ClientResponse> doPutFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doPut(reqlog, funcBuilder, inputBase.sendContent(), !isResendable);
+      }
+    };
     ClientResponse response = makeRequest(builder, doPutFunction, resendableConsumer);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -3049,8 +3106,8 @@ public class JerseyServices implements RESTServices {
     return postResource(reqlog, path, transaction, params, input, output, "apply");
   }
 
-  private <R extends AbstractReadHandle> R postResource(RequestLogger reqlog,
-                                                       String path, Transaction transaction, RequestParameters params,
+  private <R extends AbstractReadHandle> R postResource(final RequestLogger reqlog,
+                                                       final String path, Transaction transaction, RequestParameters params,
                                                        AbstractWriteHandle input, R output, String operation)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
@@ -3072,7 +3129,7 @@ public class JerseyServices implements RESTServices {
       }
     }
     String outputMimetype = outputBase == null ? null : outputBase.getMimetype();
-    boolean isResendable = inputBase == null ? true : inputBase.isResendable();
+    final boolean isResendable = inputBase == null ? true : inputBase.isResendable();
     Class as = outputBase == null ? null : outputBase.receiveAs();
 
     WebResource webResource = makePostWebResource(path, params);
@@ -3080,15 +3137,20 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Consumer<Boolean> resendableConsumer = (resendable) -> {
-      if (!isResendable) {
-        checkFirstRequest();
-        throw new ResourceNotResendableException("Cannot retry request for " + path);
+    Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
+      public void accept(Boolean resendable) {
+        if (!isResendable) {
+          checkFirstRequest();
+          throw new ResourceNotResendableException("Cannot retry request for " + path);
+        }
       }
     };
-    Object value = inputBase == null ? null :inputBase.sendContent();
-    Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(reqlog, funcBuilder,
-      value, !isResendable);
+    final Object value = inputBase == null ? null :inputBase.sendContent();
+    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doPost(reqlog, funcBuilder, value, !isResendable);
+      }
+    };
 
     ClientResponse response = makeRequest(builder, doPostFunction, resendableConsumer);
     ClientResponse.Status status = response.getClientResponseStatus();
@@ -3208,8 +3270,8 @@ public class JerseyServices implements RESTServices {
     String temporalCollection)
     throws ForbiddenUserException,  FailedRequestException
   {
-    List<AbstractWriteHandle> writeHandles = new ArrayList<>();
-    List<Map<String, List<String>>> headerList = new ArrayList<>();
+    List<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
+    List<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
     for ( DocumentWriteOperation write: writeSet ) {
       HandleImplementation metadata =
         HandleAccessor.checkHandle(write.getMetadata(), "write");
@@ -3532,9 +3594,12 @@ public class JerseyServices implements RESTServices {
             if ( format == Format.XML ) {
               type = "document-node()";
             } else if ( format == Format.JSON ) {
-              try ( JacksonParserHandle handle = new JacksonParserHandle() ) {
+              JacksonParserHandle handle = new JacksonParserHandle();
+              try {
                 JsonNode jsonNode = handle.getMapper().readTree(value);
                 type = getJsonType(jsonNode);
+              } finally {
+                handle.close();
               }
             } else if ( format == Format.TEXT ) {
               /* Comment next line until 32608 is resolved
@@ -3604,34 +3669,40 @@ public class JerseyServices implements RESTServices {
   }
 
   private <U extends JerseyResultIterator> U postIteratedResourceImpl(
-    Class<U> clazz, RequestLogger reqlog,
-    String path, Transaction transaction, RequestParameters params,
+    Class<U> clazz, final RequestLogger reqlog,
+    final String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
-    HandleImplementation inputBase = HandleAccessor.checkHandle(input,
+    final HandleImplementation inputBase = HandleAccessor.checkHandle(input,
       "write");
 
     String inputMimetype = inputBase.getMimetype();
-    boolean isResendable = inputBase.isResendable();
+    final boolean isResendable = inputBase.isResendable();
 
     WebResource webResource = makePostWebResource(path, params);
     WebResource.Builder builder = makeBuilder(webResource, inputMimetype, null);
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
+    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
 
-    Consumer<Boolean> resendableConsumer = (resendable) -> {
-      if (!isResendable) {
-        checkFirstRequest();
-        throw new ResourceNotResendableException(
-          "Cannot retry request for " + path);
+    Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
+      public void accept(Boolean resendable) {
+        if (!isResendable) {
+          checkFirstRequest();
+          throw new ResourceNotResendableException(
+            "Cannot retry request for " + path);
+        }
       }
     };
-    Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(reqlog, funcBuilder.accept(multipartType), inputBase.sendContent(), !isResendable);
+    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doPost(reqlog, funcBuilder.accept(multipartType), inputBase.sendContent(), !isResendable);
+      }
+    };
     ClientResponse response = makeRequest(builder, doPostFunction, resendableConsumer);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -3740,7 +3811,11 @@ public class JerseyServices implements RESTServices {
     builder = addTransactionScopedCookies(builder, webResource, transaction);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = funcBuilder -> doDelete(funcBuilder);
+    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doDelete(funcBuilder);
+      }
+    };
     ClientResponse response = makeRequest(builder, doDeleteFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     checkStatus(response, status, "delete", "resource", path,
@@ -3940,7 +4015,7 @@ public class JerseyServices implements RESTServices {
     if (oldSize == 0)
       return null;
 
-    List<String> newValues = new ArrayList<>(oldSize);
+    List<String> newValues = new ArrayList<String>(oldSize);
     for (String value : oldValues) {
       String newValue = encodeParamValue(value);
       if (newValue == null)
@@ -3959,7 +4034,7 @@ public class JerseyServices implements RESTServices {
     if (oldSize == 0)
       return null;
 
-    List<String> newValues = new ArrayList<>(oldSize);
+    List<String> newValues = new ArrayList<String>(oldSize);
     for (String value : oldValues) {
       String newValue = encodeParamValue(value);
       if (newValue == null)
@@ -4405,7 +4480,7 @@ public class JerseyServices implements RESTServices {
       this.reqlog = reqlog;
       if (partList != null && partList.size() > 0) {
         this.size = partList.size();
-        this.partQueue = new ConcurrentLinkedQueue<>(
+        this.partQueue = new ConcurrentLinkedQueue<BodyPart>(
           partList).iterator();
       } else {
         this.size = 0;
@@ -4611,8 +4686,11 @@ public class JerseyServices implements RESTServices {
     builder = makeBuilder("suggest", params, null, "application/xml");
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> funcBuilder
-      .get(ClientResponse.class);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return funcBuilder.get(ClientResponse.class);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN) {
@@ -4637,7 +4715,7 @@ public class JerseyServices implements RESTServices {
                            String[] candidateRules, String mimeType, ServerTransform transform) {
     MultivaluedMap<String, String> params = new MultivaluedMapImpl();
 
-    HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
+    final HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
     if (candidateRules != null) {
       for (String candidateRule : candidateRules) {
         params.add("rule", candidateRule);
@@ -4650,7 +4728,11 @@ public class JerseyServices implements RESTServices {
     builder = makeBuilder("alert/match", params, "application/xml", mimeType);
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = funcBuilder -> doPost(null, funcBuilder, baseHandle.sendContent(), false);
+    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doPost(null, funcBuilder, baseHandle.sendContent(), false);
+      }
+    };
     ClientResponse response = makeRequest(builder, doPostFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
 
@@ -4822,7 +4904,11 @@ public class JerseyServices implements RESTServices {
     WebResource.Builder builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
     builder = addTelemetryAgentId(builder);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = funcBuilder -> doGet(funcBuilder);
+    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
+      public ClientResponse apply(WebResource.Builder funcBuilder) {
+        return doGet(funcBuilder);
+      }
+    };
     ClientResponse response = makeRequest(builder, doGetFunction, null);
     ClientResponse.Status status = response.getClientResponseStatus();
     if (status == ClientResponse.Status.FORBIDDEN) {
@@ -5098,4 +5184,11 @@ public class JerseyServices implements RESTServices {
     return transaction.getTransactionId();
   }
 
+  private interface Function<T,R> {
+    R apply(T t);
+  }
+
+  private interface Consumer<T> {
+    void accept(T t);
+  }
 }
