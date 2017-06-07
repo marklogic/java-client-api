@@ -715,6 +715,255 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     // release client
     client.release();
   }
+  
+  /*
+   * Test to verify minimum distance parameter in near method. - Git issue 722
+   * One word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
+   * Zero word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
+   * Reverse One word distance - q1 = Atlantic q2 = The :as in  The Atlantic
+   * > 1 min distance  and max distance (2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+   * > 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+   * < 1 min distance  and max distance (2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+   * < 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+   * 0 min distance  and 0 max distance words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+   * Same queries One word distance - q1 = Atlantic  q2 = Atlantic :as in For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking.
+   * Random queries One word distance - q1 = AAAA  q2 = BBBB
+   * Near query on first word min distance = 1 q1 = Vannevar and q2 = wrote :as in Vannevar Bush wrote an article for The Atlantic Monthly
+   * Near query on last word min distance = 0 q1 = Monthly and q2 (nothing)  :as in Vannevar Bush wrote an article for The Atlantic Monthly
+   * Partial word min distance = 1  - q1 = Th  q 2 = lant :as in The Atlantic
+   */
+  
+  @Test
+  public void testNearQueryMinimumDistance() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testNearQueryMinimumDistance");
+
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
+    String queryOptionName = "valueConstraintWildCardOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // set query option validation to true
+    ServerConfigurationManager srvMgr = client.newServerConfigManager();
+    srvMgr.readConfiguration();
+    srvMgr.setQueryOptionValidation(true);
+    srvMgr.writeConfiguration();
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/min-dist/", "XML");
+    }
+
+    setQueryOption(client, queryOptionName);
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def - One word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
+    StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(queryOptionName);
+    StructuredQueryDefinition termQuery1 = qb.term("The");
+    StructuredQueryDefinition termQuery2 = qb.term("Atlantic");
+    
+    StructuredQueryDefinition nearQuery1 = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery1, termQuery2);
+    JacksonHandle resultsHandle = new JacksonHandle();
+    queryMgr.search(nearQuery1, resultsHandle);
+
+    // get the Result
+    JsonNode result = resultsHandle.get();
+    System.out.println("nearQuery1 Results " + result.toString());
+    
+    assertTrue("Search Results total incorrect", result.path("total").asInt() == 2);
+    
+    String uri1 = result.path("results").get(0).path("uri").asText().trim();
+    String uri2 = result.path("results").get(1).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
+    
+    // create handle - Zero word distance - q1 = The  q 2 = Atlantic :as in The Atlantic
+    StructuredQueryDefinition nearQuery2 = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery1, termQuery2);
+
+    // create handle
+    JacksonHandle resultsHandle2 = new JacksonHandle();
+    queryMgr.search(nearQuery2, resultsHandle2);
+
+    // get the Result
+    JsonNode result2 = resultsHandle2.get();
+    System.out.println("nearQuery2 Results " + result2.toString());
+    
+    assertTrue("Search Results total incorrect", result2.path("total").asInt() == 2);
+    uri1 = result2.path("results").get(0).path("uri").asText().trim();
+    uri2 = result2.path("results").get(1).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
+    
+    //Reverse One word distance - q1 = Atlantic q2 = The :as in  The Atlantic
+    
+    StructuredQueryDefinition RevtermQuery1 = qb.term("Atlantic");
+    StructuredQueryDefinition RevtermQuery2 = qb.term("The");
+    
+    StructuredQueryDefinition RevnearQuery = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, RevtermQuery1, RevtermQuery2);
+
+    // create handle
+    JacksonHandle RevResultsHandle = new JacksonHandle();
+    queryMgr.search(RevnearQuery, RevResultsHandle);
+
+    // get the Result should be 0
+    JsonNode RevResult = RevResultsHandle.get();
+    System.out.println("RevnearQuery Results " + RevResult.toString());
+    
+    assertTrue("Search Results total incorrect", RevResult.path("total").asInt() == 0);
+    
+    // > 1 min distance  and max distance(2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+    StructuredQueryDefinition MaxtermQuery1 = qb.term("prominent");
+    StructuredQueryDefinition MaxtermQuery2 = qb.term("intellectual");
+   
+    StructuredQueryDefinition maxnearQuery = qb.near(1, 2, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
+
+    // create handle
+    JacksonHandle maxResultsHandle = new JacksonHandle();
+    queryMgr.search(maxnearQuery, maxResultsHandle);
+
+    // get the Result - Should be 0.
+    JsonNode resultMax = maxResultsHandle.get();
+    System.out.println("maxnearQuery Results " + resultMax.toString());
+    
+    assertTrue("Search Results total incorrect", resultMax.path("total").asInt() == 0);
+    
+    // > 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+    StructuredQueryDefinition maxnearQuery2 = qb.near(1, 4, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
+    // create handle
+    JacksonHandle maxResultsHandle2 = new JacksonHandle();
+    queryMgr.search(maxnearQuery2, maxResultsHandle2);
+
+    // get the Result - Should be 0.
+    JsonNode resultMax2 = maxResultsHandle2.get();
+    System.out.println("maxnearQuery2 Results " + resultMax2.toString());
+    
+    assertTrue("Search Results total incorrect", resultMax2.path("total").asInt() == 1);
+    uri1 = resultMax2.path("results").get(0).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint4.xml"));
+    
+    // < 1 min distance  and max distance (2) is less than the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+    StructuredQueryDefinition NegMinxnearQuery = qb.near(-1, 2, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
+
+    // create handle
+    JacksonHandle NegMinxResultsHandle = new JacksonHandle();
+    queryMgr.search(NegMinxnearQuery, NegMinxResultsHandle);
+
+    // get the Result - Should be 0.
+    JsonNode ResultNegMin = NegMinxResultsHandle.get();
+    System.out.println("NegMinxnearQuery Results " + ResultNegMin.toString());
+    
+    assertTrue("Search Results total incorrect", ResultNegMin.path("total").asInt() == 0);
+    
+    // < 1 min distance  and max distance (4) is equal to the actual words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+    StructuredQueryDefinition NegMinxnearQuery2 = qb.near(-2, 4, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
+    // create handle
+    JacksonHandle NegMinxResultsHandle2 = new JacksonHandle();
+    queryMgr.search(NegMinxnearQuery2, NegMinxResultsHandle2);
+
+    // get the Result - Should be 0.
+    JsonNode resultNegMin2 = NegMinxResultsHandle2.get();
+    System.out.println("NegMinxnearQuery2 Results " + resultNegMin2.toString());
+    assertTrue("Search Results total incorrect", resultNegMin2.path("total").asInt() == 1);
+    uri1 = resultNegMin2.path("results").get(0).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint4.xml"));
+
+    // 0 min distance  and 0 max distance words in between - q1 = prominent and q2 = intellectual :as Vannevar served as a prominent policymaker and public intellectual
+    StructuredQueryDefinition zeroMinxnearQuery = qb.near(0, 0, 1.0, StructuredQueryBuilder.Ordering.ORDERED, MaxtermQuery1, MaxtermQuery2);
+    // create handle
+    JacksonHandle zeroMinxResultsHandle = new JacksonHandle();
+    queryMgr.search(zeroMinxnearQuery, zeroMinxResultsHandle);
+
+    // get the Result - Should be 0.
+    JsonNode ResultZero = zeroMinxResultsHandle.get();
+    System.out.println("zeroMinxnearQuery Results " + ResultZero.toString());
+    assertTrue("Search Results total incorrect", ResultZero.path("total").asInt() == 0);
+    
+    // Same queries One word distance - q1 = Atlantic  q 2 = Atlantic :as in For 1945, the thoughts expressed in The Atlantic Monthly were groundbreaking.
+    
+    StructuredQueryDefinition SamenearQuery = qb.near(0, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, termQuery2, termQuery2);
+
+    // create handle
+    JacksonHandle SameResultsHandle = new JacksonHandle();
+    queryMgr.search(SamenearQuery, SameResultsHandle);
+
+    // get the Result should be 0
+    JsonNode SameResult = SameResultsHandle.get();
+    System.out.println("SamenearQuery Results " + SameResult.toString());
+    
+    assertTrue("Search Results total incorrect", SameResult.path("total").asInt() == 2);
+    uri1 = SameResult.path("results").get(0).path("uri").asText().trim();
+    uri2 = SameResult.path("results").get(1).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
+    
+    // Random queries One word distance - q1 = AAA  q 2 = BBB
+    StructuredQueryDefinition randomQuery1 = qb.term("AAA");
+    StructuredQueryDefinition randomQuery2 = qb.term("BBB");
+    
+    StructuredQueryDefinition RandomnearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, randomQuery1, randomQuery2);
+
+    // create handle
+    JacksonHandle RandomResultsHandle = new JacksonHandle();
+    queryMgr.search(RandomnearQuery, RandomResultsHandle);
+
+    // get the Result should be 0
+    JsonNode randomResult = RandomResultsHandle.get();
+    System.out.println("RandomenearQuery Results " + randomResult.toString());    
+    assertTrue("Search Results total incorrect", randomResult.path("total").asInt() == 0);
+    
+    // Near query on first word min distance = 1 q1 = Vannevar and q2 = wrote :as in Vannevar Bush wrote an article for The Atlantic Monthly
+    StructuredQueryDefinition firstQuery1 = qb.term("Vannevar");
+    StructuredQueryDefinition firstQuery2 = qb.term("wrote");
+    
+    StructuredQueryDefinition firstnearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, firstQuery1, firstQuery2);
+
+    // create handle
+    JacksonHandle firstResultsHandle = new JacksonHandle();
+    queryMgr.search(firstnearQuery, firstResultsHandle);
+
+    // get the Result should be 1
+    JsonNode firstResult = firstResultsHandle.get();
+    System.out.println("firstnearQuery Results " + firstResult.toString());    
+    assertTrue("Search Results total incorrect", firstResult.path("total").asInt() == 1);
+    uri1 = firstResult.path("results").get(0).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
+    
+    // Near query on last word min distance = 0 q1 = Monthly and q2 (nothing)  :as in Vannevar Bush wrote an article for The Atlantic Monthly
+    StructuredQueryDefinition lastQuery1 = qb.term("Monthly");
+    
+    StructuredQueryDefinition lastnearQuery = qb.near(0, 0, 1.0, StructuredQueryBuilder.Ordering.ORDERED, lastQuery1);
+
+    // create handle
+    JacksonHandle lastResultsHandle = new JacksonHandle();
+    queryMgr.search(lastnearQuery, lastResultsHandle);
+
+    // get the Result should be 2
+    JsonNode lastResult = lastResultsHandle.get();
+    System.out.println("lastnearQuery Results " + lastResult.toString());    
+    assertTrue("Search Results total incorrect", lastResult.path("total").asInt() == 2);
+    uri1 = lastResult.path("results").get(0).path("uri").asText().trim();
+    uri2 = lastResult.path("results").get(1).path("uri").asText().trim();
+    assertTrue("URI returned incorrect", uri1.contains("/min-dist/constraint1.xml"));
+    assertTrue("URI returned incorrect", uri2.contains("/min-dist/constraint3.xml"));
+    
+    // Partial word min distance = 1  - q1 = Th  q 2 = lant :as in The Atlantic
+    StructuredQueryDefinition PartialQuery1 = qb.term("Th");
+    StructuredQueryDefinition PartialQuery2 = qb.term("lant");
+    
+    StructuredQueryDefinition PartialNearQuery = qb.near(1, 6, 1.0, StructuredQueryBuilder.Ordering.ORDERED, PartialQuery1, PartialQuery2);
+    JacksonHandle PartialResultsHandle = new JacksonHandle();
+    queryMgr.search(PartialNearQuery, PartialResultsHandle);
+
+    // get the Result - Should be 0
+    JsonNode resultpartial = PartialResultsHandle.get();
+    System.out.println("PartialNearQuery Results " + resultpartial.toString());
+    
+    assertTrue("Search Results total incorrect", resultpartial.path("total").asInt() == 0);
+    
+    // release client
+    client.release();
+  }
 
   @AfterClass
   public static void tearDown() throws Exception {
