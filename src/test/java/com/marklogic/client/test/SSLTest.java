@@ -57,10 +57,12 @@ public class SSLTest {
         sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
         // create the client
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "MyFooUser", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
+        DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT,
+          "MyFooUser", "x", Authentication.DIGEST, sslContext, SSLHostnameVerifier.ANY);
 
 
-        String expectedException = "com.sun.jersey.api.client.ClientHandlerException: javax.net.ssl.SSLPeerUnverifiedException: peer not authenticated";
+        String expectedException = "com.marklogic.client.MarkLogicIOException: " +
+          "javax.net.ssl.SSLException: Unrecognized SSL message, plaintext connection?";
         String exception = "";
 
         try {

@@ -15,73 +15,10 @@
  */
 package com.marklogic.client.impl;
 
-import java.io.Closeable;
-import java.io.File;
-import java.io.IOException;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.io.PrintStream;
-import java.io.Reader;
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.math.BigDecimal;
-import java.net.URLEncoder;
-import java.net.URI;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Iterator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.concurrent.ConcurrentLinkedQueue;
-
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.SSLException;
-import javax.ws.rs.core.HttpHeaders;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.MultivaluedMap;
-import javax.ws.rs.core.NewCookie;
-import javax.ws.rs.core.StreamingOutput;
-import javax.xml.bind.DatatypeConverter;
-
-import com.marklogic.client.extensions.ResourceServices;
-import com.marklogic.client.query.ElementLocator;
-import com.marklogic.client.query.KeyLocator;
-import com.marklogic.client.query.KeyValueQueryDefinition;
-import com.marklogic.client.query.ValueLocator;
-import org.apache.http.HttpHost;
-import org.apache.http.HttpVersion;
-import org.apache.http.auth.params.AuthPNames;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.params.AuthPolicy;
-import org.apache.http.client.params.ClientPNames;
-import org.apache.http.conn.routing.HttpRoute;
-import org.apache.http.conn.scheme.PlainSocketFactory;
-import org.apache.http.conn.scheme.Scheme;
-import org.apache.http.conn.scheme.SchemeRegistry;
-import org.apache.http.conn.scheme.SchemeSocketFactory;
-import org.apache.http.conn.ssl.AbstractVerifier;
-import org.apache.http.conn.ssl.SSLSocketFactory;
-import org.apache.http.conn.ssl.X509HostnameVerifier;
-import org.apache.http.impl.conn.tsccm.ThreadSafeClientConnManager;
-import org.apache.http.params.BasicHttpParams;
-import org.apache.http.params.HttpParams;
-import org.apache.http.params.HttpProtocolParams;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.fasterxml.jackson.databind.JsonNode;
-import com.fasterxml.jackson.databind.node.ArrayNode;
-import com.fasterxml.jackson.databind.node.ObjectNode;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
@@ -95,17 +32,18 @@ import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.DocumentWriteSet;
-import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
+import com.marklogic.client.extensions.ResourceServices;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -116,6 +54,9 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
+import com.marklogic.client.query.ElementLocator;
+import com.marklogic.client.query.KeyLocator;
+import com.marklogic.client.query.KeyValueQueryDefinition;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -125,6 +66,7 @@ import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.SuggestDefinition;
+import com.marklogic.client.query.ValueLocator;
 import com.marklogic.client.query.ValueQueryDefinition;
 import com.marklogic.client.query.ValuesDefinition;
 import com.marklogic.client.query.ValuesListDefinition;
@@ -138,27 +80,80 @@ import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.WebResource;
-import com.sun.jersey.api.client.WebResource.Builder;
-import com.sun.jersey.api.client.filter.HTTPBasicAuthFilter;
-import com.sun.jersey.api.client.filter.HTTPDigestAuthFilter;
-import com.sun.jersey.api.uri.UriComponent;
-import com.sun.jersey.client.apache4.ApacheHttpClient4;
-import com.sun.jersey.client.apache4.config.ApacheHttpClient4Config;
-import com.sun.jersey.client.apache4.config.DefaultApacheHttpClient4Config;
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-import com.sun.jersey.core.header.ContentDisposition;
-import com.sun.jersey.multipart.BodyPart;
-import com.sun.jersey.multipart.Boundary;
-import com.sun.jersey.multipart.MultiPart;
-import com.sun.jersey.multipart.MultiPartMediaTypes;
+
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
+import okhttp3.Cookie;
+import okhttp3.Headers;
+import okhttp3.HttpUrl;
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.MultipartBody.Part;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
+import okhttp3.ResponseBody;
+import okhttp3.logging.HttpLoggingInterceptor;
+import okio.BufferedSink;
+import okio.Okio;
+import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
+import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
+import com.burgstaller.okhttp.DispatchingAuthenticator;
+import com.burgstaller.okhttp.basic.BasicAuthenticator;
+import com.burgstaller.okhttp.digest.CachingAuthenticator;
+import com.burgstaller.okhttp.digest.Credentials;
+import com.burgstaller.okhttp.digest.DigestAuthenticator;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.mail.BodyPart;
+import javax.mail.Header;
+import javax.mail.MessagingException;
+import javax.mail.internet.ContentDisposition;
+import javax.mail.internet.MimeMultipart;
+import javax.mail.util.ByteArrayDataSource;
+import javax.net.ssl.HostnameVerifier;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
+import javax.ws.rs.core.NewCookie;
+import java.io.ByteArrayInputStream;
+import java.io.Closeable;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.UnsupportedEncodingException;
+import java.io.Writer;
+import java.math.BigDecimal;
+import java.net.URLEncoder;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Enumeration;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.Random;
+import java.util.Set;
+import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.TimeUnit;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
-public class JerseyServices implements RESTServices {
-  static final private Logger logger = LoggerFactory
-    .getLogger(JerseyServices.class);
-  static final String ERROR_NS = "http://marklogic.com/xdmp/error";
+public class OkHttpServices implements RESTServices {
+  static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
 
   static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
@@ -168,28 +163,34 @@ public class JerseyServices implements RESTServices {
   static final private int DEFAULT_MAX_DELAY = 120000;
   static final private int DEFAULT_MIN_RETRY =      8;
 
-  static final private String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
-  static final private String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
-
-  static protected class HostnameVerifierAdapter extends AbstractVerifier {
+  static protected class HostnameVerifierAdapter implements HostnameVerifier {
     private SSLHostnameVerifier verifier;
 
     protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
-      super();
       this.verifier = verifier;
     }
 
     @Override
-    public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException {
-      verifier.verify(hostname, cns, subjectAlts);
+    public boolean verify(String hostname, SSLSession session) {
+      try {
+        Certificate[] certificates = session.getPeerCertificates();
+        verify(hostname, (X509Certificate) certificates[0]);
+        return true;
+      } catch(SSLException e) {
+        return false;
+      }
+    }
+
+    public void verify(String hostname, X509Certificate cert) throws SSLException {
+      // verifier.verify(hostname, cns, subjectAlts);
+      throw new IllegalStateException("Not yet implemented");
     }
   }
 
   private DatabaseClient databaseClient;
   private String database = null;
-  private ThreadSafeClientConnManager connMgr;
-  private ApacheHttpClient4 client;
-  private WebResource connection;
+  private HttpUrl baseUri;
+  private OkHttpClient client;
   private boolean released = false;
 
   private Random randRetry    = new Random();
@@ -197,7 +198,7 @@ public class JerseyServices implements RESTServices {
   private int maxDelay = DEFAULT_MAX_DELAY;
   private int minRetry = DEFAULT_MIN_RETRY;
 
-  private boolean checkFirstRequest = false;
+  private boolean checkFirstRequest = true;
 
   static protected class ThreadState {
     boolean isFirstRequest;
@@ -214,22 +215,21 @@ public class JerseyServices implements RESTServices {
     }
   };
 
-  public JerseyServices() {
+  public OkHttpServices() {
   }
 
-  private FailedRequest extractErrorFields(ClientResponse response) {
+  private FailedRequest extractErrorFields(Response response) {
     if ( response == null ) return null;
-    if ( response.getStatus() == 401 ) {
+    if ( response.code() == STATUS_UNAUTHORIZED ) {
       FailedRequest failure = new FailedRequest();
       failure.setMessageString("Unauthorized");
       failure.setStatusString("Failed Auth");
       return failure;
     }
-    String responseBody = response.getEntity(String.class);
+    String responseBody = getEntity(response.body(), String.class);
     try {
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
-      FailedRequest handler = FailedRequest.getFailedRequest(
-        response.getStatus(), response.getType(), is);
+      FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
       if ( handler.getMessage() == null ) {
         handler.setMessageString(responseBody);
       }
@@ -245,35 +245,38 @@ public class JerseyServices implements RESTServices {
   public void connect(String host, int port, String database, String user, String password,
                       Authentication authenType, SSLContext context,
                       SSLHostnameVerifier verifier) {
-    X509HostnameVerifier x509Verifier = null;
+    HostnameVerifier hostnameVerifier = null;
     if (verifier == null) {
-      if (context != null)
-        x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-    }
-    else if (verifier == SSLHostnameVerifier.ANY)
-      x509Verifier = SSLSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER;
-    else if (verifier == SSLHostnameVerifier.COMMON)
-      x509Verifier = SSLSocketFactory.BROWSER_COMPATIBLE_HOSTNAME_VERIFIER;
-    else if (verifier == SSLHostnameVerifier.STRICT)
-      x509Verifier = SSLSocketFactory.STRICT_HOSTNAME_VERIFIER;
-    else if (context != null)
-      x509Verifier = new HostnameVerifierAdapter(verifier);
-    else
+      if (context != null) {
+        hostnameVerifier = null;
+      }
+    } else if (verifier == SSLHostnameVerifier.ANY) {
+      hostnameVerifier = new HostnameVerifier() {
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+          return true;
+        }
+      };
+    } else if (verifier == SSLHostnameVerifier.COMMON) {
+      hostnameVerifier = null;
+    } else if (verifier == SSLHostnameVerifier.STRICT) {
+      // TODO: implement SSLHostnameVerifier.STRICT for OkHttp
+      throw new IllegalStateException("Not yet implemented");
+    } else if (context != null) {
+      hostnameVerifier = new HostnameVerifierAdapter(verifier);
+    } else {
       throw new IllegalArgumentException(
-        "Null SSLContent but non-null SSLHostnameVerifier for client");
-
-    connect(host, port, database, user, password, authenType, context, x509Verifier);
+        "Null SSLContext but non-null SSLHostnameVerifier for client");
+    }
+    connect(host, port, database, user, password, authenType, context, hostnameVerifier);
   }
 
   private void connect(String host, int port, String database, String user, String password,
                        Authentication authenType, SSLContext context,
-                       X509HostnameVerifier verifier) {
-    if (logger.isDebugEnabled())
-      logger.debug("Connecting to {} at {} as {}", new Object[] { host,
-        port, user });
+                       HostnameVerifier verifier) {
+    logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
 
-    if (host == null)
-      throw new IllegalArgumentException("No host provided");
+    if (host == null) throw new IllegalArgumentException("No host provided");
 
     if (authenType == null) {
       if (context != null) {
@@ -282,14 +285,51 @@ public class JerseyServices implements RESTServices {
     }
 
     if (authenType != null) {
-      if (user == null)
-        throw new IllegalArgumentException("No user provided");
-      if (password == null)
-        throw new IllegalArgumentException("No password provided");
+      if (user == null) throw new IllegalArgumentException("No user provided");
+      if (password == null) throw new IllegalArgumentException("No password provided");
+      if (authenType == Authentication.BASIC) {
+        checkFirstRequest = false;
+      }
     }
 
-    if (connection != null)
-      connection = null;
+    this.database = database;
+
+    this.baseUri = new HttpUrl.Builder()
+      .scheme(context == null ? "http" : "https")
+      .host(host)
+      .port(port)
+      .encodedPath("/v1/ping")
+      .build();
+
+    Credentials credentials = new Credentials(user, password);
+    final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
+    final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
+    final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
+
+    DispatchingAuthenticator authenticator = new DispatchingAuthenticator.Builder()
+      .with("digest", digestAuthenticator)
+      .with("basic", basicAuthenticator)
+      .build();
+
+    this.client = new OkHttpClient.Builder()
+      .authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
+      .addInterceptor(new AuthenticationCacheInterceptor(authCache))
+      /*
+      .addNetworkInterceptor(
+        new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
+          public void log(String message) {
+            logger.debug(message);
+          }
+        })
+        .setLevel(HttpLoggingInterceptor.Level.HEADERS)
+      )
+      */
+      .followRedirects(false)
+      .followSslRedirects(false)
+      .build();
+
+    /*
+    if (connection != null) connection = null;
     if (connMgr != null) {
       connMgr.shutdown();
       connMgr = null;
@@ -299,7 +339,6 @@ public class JerseyServices implements RESTServices {
       client = null;
     }
 
-    this.database = database;
 
     String baseUri = ((context == null) ? "http" : "https") + "://" + host + ":" + port + "/v1/";
 
@@ -356,14 +395,6 @@ public class JerseyServices implements RESTServices {
     int maxRouteConnections = 100;
     int maxTotalConnections = 2 * maxRouteConnections;
 
-    /*
-     * 4.2 PoolingClientConnectionManager connMgr = new
-     * PoolingClientConnectionManager(schemeRegistry);
-     * connMgr.setMaxTotal(maxTotalConnections);
-     * connMgr.setDefaultMaxPerRoute(maxRouteConnections);
-     * connMgr.setMaxPerRoute( new HttpRoute(new HttpHost(baseUri)),
-     *     maxRouteConnections);
-     */
     // start 4.1
     connMgr = new ThreadSafeClientConnManager(
       schemeRegistry);
@@ -449,6 +480,7 @@ public class JerseyServices implements RESTServices {
     // client.addFilter(new LoggingFilter(System.err));
 
     connection = client.resource(baseUri);
+    */
   }
 
   @Override
@@ -460,8 +492,8 @@ public class JerseyServices implements RESTServices {
     this.databaseClient = client;
   }
 
-  private WebResource getConnection() {
-    if ( connection != null ) return connection;
+  private OkHttpClient getConnection() {
+    if ( client != null ) return client;
     else if ( released ) throw new IllegalStateException(
       "You cannot use this connected object anymore--connection has already been released");
     else throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
@@ -469,7 +501,23 @@ public class JerseyServices implements RESTServices {
 
   @Override
   public void release() {
-    released = true;
+    try {
+      released = true;
+      client.dispatcher().executorService().shutdown();
+    } finally {
+      try {
+        client.connectionPool().evictAll();
+      } finally {
+        try {
+          if ( client.cache() != null ) client.cache().close();
+        } catch (IOException e) {
+          throw new MarkLogicIOException(e);
+        } finally {
+          client = null;
+        }
+      }
+    }
+    /*
     if (databaseClient != null) {
       databaseClient = null;
     }
@@ -485,6 +533,7 @@ public class JerseyServices implements RESTServices {
     connMgr = null;
     client.destroy();
     client = null;
+    */
   }
 
   private boolean isFirstRequest() {
@@ -499,17 +548,16 @@ public class JerseyServices implements RESTServices {
   }
 
   private int makeFirstRequest(int retry) {
-    ClientResponse response = getConnection().path("ping").head();
-    int statusCode = response.getClientResponseStatus().getStatusCode();
-    if (statusCode != ClientResponse.Status.SERVICE_UNAVAILABLE.getStatusCode()) {
+    Response response = sendRequestOnce(setupRequest("ping", null).head());
+    int statusCode = response.code();
+    if (statusCode != STATUS_SERVICE_UNAVAILABLE) {
       response.close();
       return 0;
     }
 
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+    String retryAfterRaw = response.header("Retry-After");
     response.close();
 
-    String retryAfterRaw = responseHeaders.getFirst("Retry-After");
     int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
     return Math.max(retryAfter, calculateDelay(randRetry, retry));
   }
@@ -524,32 +572,29 @@ public class JerseyServices implements RESTServices {
       throw new IllegalArgumentException(
         "Document delete for document identifier without uri");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Deleting {} in transaction {}", uri, getTransactionId(transaction));
+    logger.debug("Deleting {} in transaction {}", uri, getTransactionId(transaction));
 
-    WebResource webResource = makeDocumentResource(makeDocumentParams(uri,
+    Request.Builder requestBldr = makeDocumentResource(makeDocumentParams(uri,
       categories, transaction, extraParams));
 
-    WebResource.Builder builder = addVersionHeader(desc,
-      webResource.getRequestBuilder(), "If-Match");
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    requestBldr = addVersionHeader(desc, requestBldr, "If-Match");
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.delete(ClientResponse.class);
+    Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doDeleteFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    int statusCode = response.getStatus();
+    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.NOT_FOUND) {
+    if (status == STATUS_NOT_FOUND) {
       response.close();
       throw new ResourceNotFoundException(
         "Could not delete non-existent document");
     }
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -557,12 +602,12 @@ public class JerseyServices implements RESTServices {
       }
       throw new FailedRequestException(
         "Precondition required to delete document", failure);
-    } else if (status == ClientResponse.Status.FORBIDDEN) {
+    } else if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to delete documents", failure);
     }
-    if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+    if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
         throw new FailedRequestException(
@@ -573,10 +618,10 @@ public class JerseyServices implements RESTServices {
           "Empty request body sent to server", failure);
       throw new FailedRequestException("Precondition Failed", failure);
     }
-    if (status != ClientResponse.Status.NO_CONTENT)
+    if (status != STATUS_NO_CONTENT)
       throw new FailedRequestException("delete failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+        + getReasonPhrase(response), extractErrorFields(response));
+    Headers responseHeaders = response.headers();
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
     response.close();
@@ -624,15 +669,26 @@ public class JerseyServices implements RESTServices {
     return false;
   }
 
-  private int getRetryAfterTime(ClientResponse response) {
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-    String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+  private int getRetryAfterTime(Response response) {
+    String retryAfterRaw = response.header("Retry-After");
     return (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
   }
 
-  private ClientResponse makeRequest(Builder builder, Function<Builder, ClientResponse> doFunction, Consumer<Boolean> resendableConsumer) {
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+  private Response sendRequestOnce(Request.Builder requestBldr) {
+    return sendRequestOnce(requestBldr.build());
+  }
+
+  private Response sendRequestOnce(Request request) {
+    try {
+      return getConnection().newCall(request).execute();
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+
+  private Response sendRequestWithRetry(Request.Builder requestBldr, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer) {
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -646,11 +702,11 @@ public class JerseyServices implements RESTServices {
 
       /*
        * Execute the function which is passed as an argument
-       * in order to get the ClientResponse
+       * in order to get the Response
        */
-      response = doFunction.apply(builder);
-      status = response.getClientResponseStatus();
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      response = doFunction.apply(requestBldr);
+      status = response.code();
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest()) setFirstRequest(false);
         /*
          * If we don't get a service unavailable status, we break
@@ -660,8 +716,8 @@ public class JerseyServices implements RESTServices {
       }
       /*
        * This code will be executed whenever the service is unavailable.
-       * When the service becomes unavailable, we close the ClientResponse
-       * we got and retry it to try and get a new ClientResponse
+       * When the service becomes unavailable, we close the Response
+       * we got and retry it to try and get a new Response
        */
       response.close();
       /*
@@ -680,7 +736,7 @@ public class JerseyServices implements RESTServices {
      * If the service is still unavailable after all the retries, we throw a
      * FailedRequestException indicating that the service is unavailable.
      */
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
@@ -688,7 +744,7 @@ public class JerseyServices implements RESTServices {
           " seconds after "+retry+" retries");
     }
     /*
-     * Once we break from the retry loop, we just return the ClientResponse
+     * Once we break from the retry loop, we just return the Response
      * back to the caller in order to proceed with the flow
      */
     return response;
@@ -705,43 +761,43 @@ public class JerseyServices implements RESTServices {
       throw new IllegalArgumentException(
         "Document read for document identifier without uri");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
+    logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
 
-    WebResource webResource = makeDocumentResource(
+    Request.Builder requestBldr = makeDocumentResource(
       makeDocumentParams(uri, categories, transaction, extraParams));
-    WebResource.Builder builder = webResource.accept(mimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    if ( mimetype != null ) {
+      requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
+    }
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
     if (extraParams != null && extraParams.containsKey("range"))
-      builder = builder.header("range", extraParams.get("range").get(0));
+      requestBldr = requestBldr.header("range", extraParams.get("range").get(0));
 
-    builder = addVersionHeader(desc, builder, "If-None-Match");
+    requestBldr = addVersionHeader(desc, requestBldr, "If-None-Match");
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.NOT_FOUND)
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
+    if (status == STATUS_NOT_FOUND)
       throw new ResourceNotFoundException(
         "Could not read non-existent document",
         extractErrorFields(response));
-    if (status == ClientResponse.Status.FORBIDDEN)
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException(
         "User is not allowed to read documents",
         extractErrorFields(response));
-    if (status == ClientResponse.Status.NOT_MODIFIED) {
+    if (status == STATUS_NOT_MODIFIED) {
       response.close();
       return false;
     }
-    if (status != ClientResponse.Status.OK
-      && status != ClientResponse.Status.PARTIAL_CONTENT)
+    if (status != STATUS_OK && status != STATUS_PARTIAL_CONTENT)
       throw new FailedRequestException("read failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
 
     logRequest(
       reqlog,
@@ -752,7 +808,7 @@ public class JerseyServices implements RESTServices {
 
     HandleImplementation handleBase = HandleAccessor.as(handle);
 
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+    Headers responseHeaders = response.headers();
     if (isExternalDescriptor(desc)) {
       updateVersion(desc, responseHeaders);
       updateDescriptor(desc, responseHeaders);
@@ -762,7 +818,8 @@ public class JerseyServices implements RESTServices {
     }
 
     Class as = handleBase.receiveAs();
-    Object entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
 
     if (entity == null ||
       (!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as)))
@@ -780,9 +837,9 @@ public class JerseyServices implements RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
     {
     boolean hasMetadata = categories != null && categories.size() > 0;
-    JerseyResultIterator iterator =
+    OkHttpResultIterator iterator =
       getBulkDocumentsImpl(reqlog, transaction, categories, format, extraParams, withContent, uris);
-    return new JerseyDocumentPage(iterator, withContent, hasMetadata);
+    return new OkHttpDocumentPage(iterator, withContent, hasMetadata);
   }
 
   @Override
@@ -796,19 +853,19 @@ public class JerseyServices implements RESTServices {
   {
     boolean hasMetadata = categories != null && categories.size() > 0;
     boolean hasContent = true;
-    JerseyResultIterator iterator =
+    OkHttpResultIterator iterator =
       getBulkDocumentsImpl(reqlog, querydef, start, pageLength, transaction,
         searchHandle, view, categories, format, extraParams);
-    return new JerseyDocumentPage(iterator, hasContent, hasMetadata);
+    return new OkHttpDocumentPage(iterator, hasContent, hasMetadata);
   }
 
-  private class JerseyDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
-    private JerseyResultIterator iterator;
+  private class OkHttpDocumentPage extends BasicPage<DocumentRecord> implements DocumentPage, Iterator<DocumentRecord> {
+    private OkHttpResultIterator iterator;
     private Iterator<DocumentRecord> docRecordIterator;
     private boolean hasMetadata;
     private boolean hasContent;
 
-    JerseyDocumentPage(JerseyResultIterator iterator, boolean hasContent, boolean hasMetadata) {
+    OkHttpDocumentPage(OkHttpResultIterator iterator, boolean hasContent, boolean hasMetadata) {
       super(
         new ArrayList<DocumentRecord>().iterator(),
         iterator != null ? iterator.getStart() : 1,
@@ -846,18 +903,18 @@ public class JerseyServices implements RESTServices {
     @Override
     public DocumentRecord next() {
       if ( iterator == null ) throw new NoSuchElementException("No documents available");
-      JerseyResult result = iterator.next();
+      OkHttpResult result = iterator.next();
       DocumentRecord record;
       if ( hasContent && hasMetadata ) {
-        JerseyResult metadata = result;
-        JerseyResult content = iterator.next();
-        record = new JerseyDocumentRecord(content, metadata);
+        OkHttpResult metadata = result;
+        OkHttpResult content = iterator.next();
+        record = new OkHttpDocumentRecord(content, metadata);
       } else if ( hasContent ) {
-        JerseyResult content = result;
-        record = new JerseyDocumentRecord(content);
+        OkHttpResult content = result;
+        record = new OkHttpDocumentRecord(content);
       } else if ( hasMetadata ) {
-        JerseyResult metadata = result;
-        record = new JerseyDocumentRecord(null, metadata);
+        OkHttpResult metadata = result;
+        record = new OkHttpDocumentRecord(null, metadata);
       } else {
         throw new IllegalStateException("Should never have neither content nor metadata");
       }
@@ -875,7 +932,7 @@ public class JerseyServices implements RESTServices {
     }
   }
 
-  private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+  private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
                                                     Transaction transaction, Set<Metadata> categories,
                                                     Format format, RequestParameters extraParams, boolean withContent, String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
@@ -889,8 +946,8 @@ public class JerseyServices implements RESTServices {
     for (String uri: uris) {
       params.add("uri", uri);
     }
-    JerseyResultIterator iterator = getIteratedResourceImpl(DefaultJerseyResultIterator.class,
-      reqlog, path, transaction, params, MultiPartMediaTypes.MULTIPART_MIXED);
+    OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator.class,
+      reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);
     if ( iterator != null ) {
       if ( iterator.getStart() == -1 ) iterator.setStart(1);
       if ( iterator.getSize() != -1 ) {
@@ -901,53 +958,56 @@ public class JerseyServices implements RESTServices {
     return iterator;
   }
 
-  private JerseyResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
+  private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog,
                                                     QueryDefinition querydef, long start, long pageLength,
                                                     Transaction transaction, SearchReadHandle searchHandle, QueryView view,
                                                     Set<Metadata> categories, Format format, RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
-    if ( extraParams != null ) params.putAll(extraParams);
-    boolean withContent = true;
-    addCategoryParams(categories, params, withContent);
-    if (searchHandle != null && view != null) params.add("view", view.toString().toLowerCase());
-    if (start > 1)             params.add("start",      Long.toString(start));
-    if (pageLength >= 0)       params.add("pageLength", Long.toString(pageLength));
-    if (format != null)        params.add("format",     format.toString().toLowerCase());
-    HandleImplementation handleBase = HandleAccessor.as(searchHandle);
-    if ( format == null && searchHandle != null ) {
-      if ( Format.XML == handleBase.getFormat() ) {
-        params.add("format", "xml");
-      } else if ( Format.JSON == handleBase.getFormat() ) {
-        params.add("format", "json");
-      }
-    }
-
-    JerseySearchRequest request =
-      generateSearchRequest(reqlog, querydef, MultiPartMediaTypes.MULTIPART_MIXED, transaction, params);
-    ClientResponse response = request.getResponse();
-    if ( response == null ) return null;
-    MultiPart entity = null;
-    if ( searchHandle != null ) {
-      if ( response.hasEntity() ) {
-        entity = response.getEntity(MultiPart.class);
-        if ( entity != null ) {
-          List<BodyPart> partList = entity.getBodyParts();
-          if ( partList != null && partList.size() > 0 ) {
-            BodyPart searchResponsePart = partList.get(0);
-            handleBase.receiveContent(
-              searchResponsePart.getEntityAs(handleBase.receiveAs())
-            );
-            partList = partList.subList(1, partList.size());
-          }
-          Closeable closeable = new MultipartCloseable(response, entity);
-          return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource",
-            partList, response, closeable);
+    try {
+      RequestParameters params = new RequestParameters();
+      if ( extraParams != null ) params.putAll(extraParams);
+      boolean withContent = true;
+      addCategoryParams(categories, params, withContent);
+      if ( searchHandle != null && view != null ) params.add("view", view.toString().toLowerCase());
+      if ( start > 1 ) params.add("start", Long.toString(start));
+      if ( pageLength >= 0 ) params.add("pageLength", Long.toString(pageLength));
+      if ( format != null ) params.add("format", format.toString().toLowerCase());
+      HandleImplementation handleBase = HandleAccessor.as(searchHandle);
+      if ( format == null && searchHandle != null ) {
+        if ( Format.XML == handleBase.getFormat() ) {
+          params.add("format", "xml");
+        } else if ( Format.JSON == handleBase.getFormat() ) {
+          params.add("format", "json");
         }
       }
+
+      OkHttpSearchRequest request =
+        generateSearchRequest(reqlog, querydef, MIMETYPE_MULTIPART_MIXED, transaction, params);
+      Response response = request.getResponse();
+      if ( response == null ) return null;
+      MimeMultipart entity = null;
+      if ( searchHandle != null ) {
+        ResponseBody body = response.body();
+        if ( body.contentLength() != 0 ) {
+          entity = getEntity(body, MimeMultipart.class);
+          if ( entity != null ) {
+            List<BodyPart> partList = getPartList(entity);
+            if ( entity.getCount() > 0 ) {
+              BodyPart searchResponsePart = entity.getBodyPart(0);
+              handleBase.receiveContent(getEntity(searchResponsePart, handleBase.receiveAs()));
+              partList = partList.subList(1, partList.size());
+            }
+            Closeable closeable = response;
+            return makeResults(OkHttpServiceResultIterator.class, reqlog, "read", "resource", partList, response,
+              closeable);
+          }
+        }
+      }
+      return makeResults(OkHttpServiceResultIterator.class, reqlog, "read", "resource", response);
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
     }
-    return makeResults(JerseyServiceResultIterator.class, reqlog, "read", "resource", response);
   }
 
   private boolean getDocumentImpl(RequestLogger reqlog,
@@ -965,94 +1025,87 @@ public class JerseyServices implements RESTServices {
     assert metadataHandle != null : "metadataHandle is null";
     assert contentHandle != null : "contentHandle is null";
 
-    if (logger.isDebugEnabled())
-      logger.debug("Getting multipart for {} in transaction {}", uri,
-        getTransactionId(transaction));
+    logger.debug("Getting multipart for {} in transaction {}", uri, getTransactionId(transaction));
 
 
-    MultivaluedMap<String, String> docParams = makeDocumentParams(uri,
-      categories, transaction, extraParams, true);
+    RequestParameters docParams = makeDocumentParams(uri, categories, transaction, extraParams, true);
     docParams.add("format", metadataFormat);
 
-    WebResource webResource = makeDocumentResource(docParams);
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
-    builder = addVersionHeader(desc, builder, "If-None-Match");
+    Request.Builder requestBldr = makeDocumentResource(docParams);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
+    requestBldr = addVersionHeader(desc, requestBldr, "If-None-Match");
 
-    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.accept(multipartType).get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.addHeader(HEADER_ACCEPT, multipartMixedWithBoundary()).get());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.NOT_FOUND)
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
+    if (status == STATUS_NOT_FOUND)
       throw new ResourceNotFoundException(
         "Could not read non-existent document",
         extractErrorFields(response));
-    if (status == ClientResponse.Status.FORBIDDEN)
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException(
         "User is not allowed to read documents",
         extractErrorFields(response));
-    if (status == ClientResponse.Status.NOT_MODIFIED) {
+    if (status == STATUS_NOT_MODIFIED) {
       response.close();
       return false;
     }
-    if (status != ClientResponse.Status.OK)
+    if (status != STATUS_OK)
       throw new FailedRequestException("read failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
 
     logRequest(
       reqlog,
       "read %s document from %s transaction with %s metadata categories and content",
       uri, (transaction != null) ? transaction.getTransactionId() : "no", stringJoin(categories, ", ", "no"));
 
-    MultiPart entity = response.hasEntity() ?
-      response.getEntity(MultiPart.class) : null;
-    if (entity == null)
-      return false;
+    try {
+      ResponseBody body = response.body();
+      MimeMultipart entity = body.contentLength() != 0 ?
+        getEntity(body, MimeMultipart.class) : null;
+      if (entity == null) return false;
 
-    List<BodyPart> partList = entity.getBodyParts();
-    if (partList == null)
-      return false;
+      int partCount = entity.getCount();
+      if (partCount == 0) return false;
+      List<BodyPart> partList = getPartList(entity);
 
-    int partCount = partList.size();
-    if (partCount == 0)
-      return false;
-    if (partCount != 2)
-      throw new FailedRequestException("read expected 2 parts but got "
-        + partCount + " parts");
+      if (partCount != 2) {
+        throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts");
+      }
 
-    HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
-    HandleImplementation contentBase = HandleAccessor.as(contentHandle);
+      HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
+      HandleImplementation contentBase = HandleAccessor.as(contentHandle);
 
-    BodyPart contentPart = partList.get(1);
+      BodyPart contentPart = partList.get(1);
 
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-    MultivaluedMap<String, String> contentHeaders = contentPart
-      .getHeaders();
-    if (isExternalDescriptor(desc)) {
-      updateVersion(desc, responseHeaders);
-      updateFormat(desc, responseHeaders);
-      updateMimetype(desc, contentHeaders);
-      updateLength(desc, contentHeaders);
-      copyDescriptor(desc, contentBase);
-    } else {
-      updateDescriptor(contentBase, responseHeaders);
+      Headers responseHeaders = response.headers();
+      if (isExternalDescriptor(desc)) {
+        updateVersion(desc, responseHeaders);
+        updateFormat(desc, responseHeaders);
+        updateMimetype(desc, getHeaderMimetype(getHeader(contentPart, HEADER_CONTENT_TYPE)));
+        updateLength(desc, getHeaderLength(getHeader(contentPart, HEADER_CONTENT_LENGTH)));
+        copyDescriptor(desc, contentBase);
+      } else {
+        updateDescriptor(contentBase, responseHeaders);
+      }
+
+      metadataBase.receiveContent(getEntity(partList.get(0),
+        metadataBase.receiveAs()));
+
+      Object contentEntity = getEntity(contentPart, contentBase.receiveAs());
+      contentBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
+
+      response.close();
+
+      return true;
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
     }
-
-    metadataBase.receiveContent(partList.get(0).getEntityAs(
-      metadataBase.receiveAs()));
-
-    Object contentEntity = contentPart.getEntityAs(contentBase.receiveAs());
-    contentBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
-
-    try { entity.close(); } catch (IOException e) {}
-    response.close();
-
-    return true;
   }
 
   @Override
@@ -1060,13 +1113,13 @@ public class JerseyServices implements RESTServices {
                                  Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    ClientResponse response = headImpl(reqlog, uri, transaction, makeDocumentResource(makeDocumentParams(uri,
+    Response response = headImpl(reqlog, uri, transaction, makeDocumentResource(makeDocumentParams(uri,
       null, transaction, null)));
 
     // 404
     if (response == null) return null;
 
-    MultivaluedMap<String, String> responseHeaders = response.getHeaders();
+    Headers responseHeaders = response.headers();
 
     response.close();
     logRequest(reqlog, "checked %s document from %s transaction", uri,
@@ -1082,42 +1135,39 @@ public class JerseyServices implements RESTServices {
 
   @Override
   public boolean exists(String uri) throws ForbiddenUserException, FailedRequestException {
-    return headImpl(null, uri, null, getConnection().path(uri)) == null ? false : true;
+    return headImpl(null, uri, null, setupRequest(uri, null)) == null ? false : true;
   }
 
-  public ClientResponse headImpl(RequestLogger reqlog, String uri,
-                                 Transaction transaction, WebResource webResource) {
+  private Response headImpl(RequestLogger reqlog, String uri,
+                            Transaction transaction, Request.Builder requestBldr) {
     if (uri == null)
       throw new IllegalArgumentException(
         "Existence check for document identifier without uri");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Requesting head for {} in transaction {}", uri,
-        getTransactionId(transaction));
+    logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
 
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doHeadFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.head();
+    Function<Request.Builder, Response> doHeadFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.head().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doHeadFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status != ClientResponse.Status.OK) {
-      if (status == ClientResponse.Status.NOT_FOUND) {
+    Response response = sendRequestWithRetry(requestBldr, doHeadFunction, null);
+    int status = response.code();
+    if (status != STATUS_OK) {
+      if (status == STATUS_NOT_FOUND) {
         response.close();
         return null;
-      } else if (status == ClientResponse.Status.FORBIDDEN)
+      } else if (status == STATUS_FORBIDDEN)
         throw new ForbiddenUserException(
           "User is not allowed to check the existence of documents",
           extractErrorFields(response));
       else
         throw new FailedRequestException(
           "Document existence check failed: "
-            + status.getReasonPhrase(),
+            + getReasonPhrase(response),
           extractErrorFields(response));
     }
     return response;
@@ -1234,8 +1284,7 @@ public class JerseyServices implements RESTServices {
 
     HandleImplementation handleBase = HandleAccessor.as(handle);
 
-    if (logger.isDebugEnabled())
-      logger.debug("Sending {} document in transaction {}",
+    logger.debug("Sending {} document in transaction {}",
         (uri != null) ? uri : "new", getTransactionId(transaction));
 
     logRequest(
@@ -1246,29 +1295,28 @@ public class JerseyServices implements RESTServices {
       (mimetype != null) ? mimetype : "no",
       stringJoin(categories, ", ", "no"));
 
-    WebResource webResource = makeDocumentResource(
+    Request.Builder requestBldr = makeDocumentResource(
       makeDocumentParams(
         uri, categories, transaction, extraParams, isOnContent
       ));
 
-    WebResource.Builder builder = webResource.type(
-      (mimetype != null) ? mimetype : MediaType.WILDCARD);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    requestBldr = requestBldr.header(HEADER_CONTENT_TYPE,
+      (mimetype != null) ? mimetype : MIMETYPE_WILDCARD);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
     if (uri != null) {
-      builder = addVersionHeader(desc, builder, "If-Match");
+      requestBldr = addVersionHeader(desc, requestBldr, "If-Match");
     }
 
     if ("patch".equals(method)) {
-      builder = builder.header("X-HTTP-Method-Override", "PATCH");
+      requestBldr = requestBldr.header("X-HTTP-Method-Override", "PATCH");
       method  = "post";
     }
     boolean isResendable = handleBase.isResendable();
 
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
-    int statusCode = -1;
-    MultivaluedMap<String, String> responseHeaders = null;
+    Response response = null;
+    int status = -1;
+    Headers responseHeaders = null;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -1292,34 +1340,35 @@ public class JerseyServices implements RESTServices {
           continue;
       }
 
+      MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
       if (value instanceof OutputStreamSender) {
-        StreamingOutput sentStream =
-          new StreamingOutputImpl((OutputStreamSender) value, reqlog);
-        response =
+        StreamingOutputImpl sentStream =
+          new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType);
+        requestBldr =
           ("put".equals(method)) ?
-            builder.put(ClientResponse.class,  sentStream) :
-            builder.post(ClientResponse.class, sentStream);
+            requestBldr.put(sentStream) :
+            requestBldr.post(sentStream);
       } else {
         Object sentObj = (reqlog != null) ?
           reqlog.copyContent(value) : value;
-        response =
+        requestBldr =
           ("put".equals(method)) ?
-            builder.put(ClientResponse.class,  sentObj) :
-            builder.post(ClientResponse.class, sentObj);
+            requestBldr.put(new ObjectRequestBody(sentObj, mediaType)) :
+            requestBldr.post(new ObjectRequestBody(sentObj, mediaType));
       }
+      response = sendRequestOnce(requestBldr);
 
-      status = response.getClientResponseStatus();
-      statusCode = response.getStatus();
+      status = response.code();
 
-      responseHeaders = response.getHeaders();
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      responseHeaders = response.headers();
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (!isResendable) {
@@ -1332,19 +1381,19 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-    if (status == ClientResponse.Status.NOT_FOUND) {
+    if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
         "Could not write non-existent document",
         extractErrorFields(response));
     }
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1352,12 +1401,12 @@ public class JerseyServices implements RESTServices {
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
-    } else if (status == ClientResponse.Status.FORBIDDEN) {
+    } else if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to write documents", failure);
     }
-    if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+    if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
         throw new FailedRequestException(
@@ -1367,17 +1416,17 @@ public class JerseyServices implements RESTServices {
           "Empty request body sent to server", failure);
       throw new FailedRequestException("Precondition Failed", failure);
     }
-    if (status == null) {
+    if (status == -1) {
       throw new FailedRequestException("write failed: Unknown Reason", extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.CREATED
-      && status != ClientResponse.Status.NO_CONTENT) {
+    if (status != STATUS_CREATED
+      && status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("write failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
     if (uri == null) {
-      String location = responseHeaders.getFirst("Location");
+      String location = response.header("Location");
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1)
@@ -1405,9 +1454,8 @@ public class JerseyServices implements RESTServices {
   {
     String uri = desc.getUri();
 
-    if (logger.isDebugEnabled())
-      logger.debug("Sending {} multipart document in transaction {}",
-        (uri != null) ? uri : "new", getTransactionId(transaction));
+    logger.debug("Sending {} multipart document in transaction {}",
+      (uri != null) ? uri : "new", getTransactionId(transaction));
 
     logRequest(
       reqlog,
@@ -1416,23 +1464,20 @@ public class JerseyServices implements RESTServices {
       (transaction != null) ? transaction.getTransactionId() : "no",
       stringJoin(categories, ", ", "no"));
 
-    MultivaluedMap<String, String> docParams =
+    RequestParameters docParams =
       makeDocumentParams(uri, categories, transaction, extraParams, true);
 
-    WebResource webResource = makeDocumentResource(docParams);
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makeDocumentResource(docParams)
+      .addHeader(HEADER_ACCEPT, MIMETYPE_MULTIPART_MIXED);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
     if (uri != null) {
-      builder = addVersionHeader(desc, builder, "If-Match");
+      requestBldr = addVersionHeader(desc, requestBldr, "If-Match");
     }
 
-    MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
-
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
-    int statusCode = -1;
-    MultivaluedMap<String, String> responseHeaders = null;
+    Response response = null;
+    int status = -1;
+    Headers responseHeaders = null;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -1444,7 +1489,7 @@ public class JerseyServices implements RESTServices {
         }
       }
 
-      MultiPart multiPart = new MultiPart();
+      MultipartBody.Builder multiPart = new MultipartBody.Builder();
       boolean hasStreamingPart = addParts(multiPart, reqlog,
         new String[] { metadataMimetype, contentMimetype },
         new AbstractWriteHandle[] { metadataHandle, contentHandle });
@@ -1455,25 +1500,18 @@ public class JerseyServices implements RESTServices {
           continue;
       }
 
-      // Must set multipart/mixed mime type explicitly on each request
-      // because Jersey client 1.17 adapter for HttpClient switches
-      // to application/octet-stream on retry
-      WebResource.Builder requestBlder = builder.type(multipartType);
-      response =
-        ("put".equals(method)) ?
-          requestBlder.put(ClientResponse.class,  multiPart) :
-          requestBlder.post(ClientResponse.class, multiPart);
-      status = response.getClientResponseStatus();
-      statusCode = response.getStatus();
+      requestBldr = ("put".equals(method)) ?  requestBldr.put(multiPart.build()) : requestBldr.post(multiPart.build());
+      response = sendRequestOnce(requestBldr);
+      status = response.code();
 
-      responseHeaders = response.getHeaders();
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      responseHeaders = response.headers();
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (hasStreamingPart) {
@@ -1485,19 +1523,19 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-    if (status == ClientResponse.Status.NOT_FOUND) {
+    if (status == STATUS_NOT_FOUND) {
       response.close();
       throw new ResourceNotFoundException(
         "Could not write non-existent document");
     }
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1505,12 +1543,12 @@ public class JerseyServices implements RESTServices {
       }
       throw new FailedRequestException(
         "Precondition required to write document", failure);
-    } else if (status == ClientResponse.Status.FORBIDDEN) {
+    } else if (status == STATUS_FORBIDDEN) {
       FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to write documents", failure);
     }
-    if (status == ClientResponse.Status.PRECONDITION_FAILED) {
+    if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
         throw new FailedRequestException(
@@ -1520,14 +1558,14 @@ public class JerseyServices implements RESTServices {
           "Empty request body sent to server", failure);
       throw new FailedRequestException("Precondition Failed", failure);
     }
-    if (status != ClientResponse.Status.CREATED
-      && status != ClientResponse.Status.NO_CONTENT) {
+    if (status != STATUS_CREATED
+      && status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("write failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
     if (uri == null) {
-      String location = responseHeaders.getFirst("Location");
+      String location = response.header("Location");
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
         if (offset == -1)
@@ -1568,59 +1606,50 @@ public class JerseyServices implements RESTServices {
 
   @Override
   public Transaction openTransaction(String name, int timeLimit) throws ForbiddenUserException, FailedRequestException {
-    if (logger.isDebugEnabled())
-      logger.debug("Opening transaction");
+    logger.debug("Opening transaction");
 
-    MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
-    if (name != null || timeLimit > 0) {
-      if (name != null)
-        addEncodedParam(transParams, "name", name);
-      if (timeLimit > 0)
-        transParams.add("timeLimit", String.valueOf(timeLimit));
-    }
-    if ( database != null ) {
-      addEncodedParam(transParams, "database", database);
+    RequestParameters transParams = new RequestParameters();
+    if ( name != null || timeLimit > 0 ) {
+      if ( name != null ) transParams.add("name", name);
+      if ( timeLimit > 0 ) transParams.add("timeLimit", String.valueOf(timeLimit));
     }
 
-    WebResource resource = (transParams != null)
-                             ? getConnection().path("transactions").queryParams(transParams)
-                             : getConnection().path("transactions");
-    WebResource.Builder builder = resource.getRequestBuilder();
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest("transactions", transParams);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.post(ClientResponse.class);
+    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")));
       }
     };
-    ClientResponse response = makeRequest(builder, doPostFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN)
-      throw new ForbiddenUserException(
-        "User is not allowed to open transactions",
-        extractErrorFields(response));
-    if (status != ClientResponse.Status.SEE_OTHER)
-      throw new FailedRequestException("transaction open failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+    Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN) {
+      throw new ForbiddenUserException("User is not allowed to open transactions", extractErrorFields(response));
+    }
+    if (status != STATUS_SEE_OTHER) {
+      throw new FailedRequestException("transaction open failed: " +
+        getReasonPhrase(response), extractErrorFields(response));
+    }
 
-    String location = response.getHeaders().getFirst("Location");
+    String location = response.headers().get("Location");
     String hostId = null;
-    for ( NewCookie newCookie : response.getCookies() ) {
+    List<NewCookie> cookies = new ArrayList<NewCookie>();
+    for ( String setCookie : response.headers(HEADER_SET_COOKIE) ) {
+      NewCookie newCookie = makeJaxRsCookie(requestBldr.build().url(), setCookie);
+      cookies.add(newCookie);
       if ( "HostId".equalsIgnoreCase(newCookie.getName()) ) {
         hostId =  newCookie.getValue();
-        break;
       }
     }
     response.close();
-    if (location == null)
-      throw new MarkLogicInternalException(
-        "transaction open failed to provide location");
-    if (!location.contains("/"))
-      throw new MarkLogicInternalException(
-        "transaction open produced invalid location: " + location);
+    if (location == null) throw new MarkLogicInternalException("transaction open failed to provide location");
+    if (!location.contains("/")) {
+      throw new MarkLogicInternalException("transaction open produced invalid location: " + location);
+    }
 
     String transactionId = location.substring(location.lastIndexOf("/") + 1);
-    return new TransactionImpl(this, transactionId, response.getCookies());
+    return new TransactionImpl(this, transactionId, cookies);
   }
 
   @Override
@@ -1643,56 +1672,36 @@ public class JerseyServices implements RESTServices {
       throw new MarkLogicInternalException(
         "transaction completion without id: " + result);
 
-    if (logger.isDebugEnabled())
-      logger.debug("Completing transaction {} with {}", transaction.getTransactionId(),
-        result);
+    logger.debug("Completing transaction {} with {}", transaction.getTransactionId(), result);
 
-    MultivaluedMap<String, String> transParams = new MultivaluedMapImpl();
+    RequestParameters transParams = new RequestParameters();
     transParams.add("result", result);
 
-    WebResource webResource = getConnection().path("transactions/" + transaction.getTransactionId())
-      .queryParams(transParams);
+    Request.Builder requestBldr = setupRequest("transactions/" + transaction.getTransactionId(), transParams);
 
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.post(ClientResponse.class);
+    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")).build());
       }
     };
-    ClientResponse response = makeRequest(builder, doPostFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.FORBIDDEN)
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException(
         "User is not allowed to complete transaction with "
           + result, extractErrorFields(response));
-    if (status != ClientResponse.Status.NO_CONTENT)
+    if (status != STATUS_NO_CONTENT)
       throw new FailedRequestException("transaction " + result
-        + " failed: " + status.getReasonPhrase(),
+        + " failed: " + getReasonPhrase(response),
         extractErrorFields(response));
 
     response.close();
   }
 
-  private void addCategoryParams(Set<Metadata> categories, MultivaluedMap<String, String> params,
-                                 boolean withContent)
-  {
-    if (withContent && categories == null || categories.size() == 0) {
-      params.add("category", "content");
-    } else {
-      if (withContent) params.add("category", "content");
-      if (categories.contains(Metadata.ALL)) {
-        params.add("category", "metadata");
-      } else {
-        for (Metadata category : categories) {
-          params.add("category", category.name().toLowerCase());
-        }
-      }
-    }
-  }
   private void addCategoryParams(Set<Metadata> categories, RequestParameters params,
                                  boolean withContent)
   {
@@ -1710,34 +1719,34 @@ public class JerseyServices implements RESTServices {
     }
   }
 
-  private MultivaluedMap<String, String> makeDocumentParams(String uri,
+  private RequestParameters makeDocumentParams(String uri,
                                                             Set<Metadata> categories, Transaction transaction,
                                                             RequestParameters extraParams) {
     return makeDocumentParams(uri, categories, transaction, extraParams,
       false);
   }
 
-  private MultivaluedMap<String, String> makeDocumentParams(String uri,
-                                                            Set<Metadata> categories, Transaction transaction,
-                                                            RequestParameters extraParams, boolean withContent) {
-    MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+  private RequestParameters makeDocumentParams(String uri, Set<Metadata> categories, Transaction transaction,
+                                               RequestParameters extraParams, boolean withContent)
+  {
+    RequestParameters docParams = new RequestParameters();
     if (extraParams != null && extraParams.size() > 0) {
-      for (Map.Entry<String, List<String>> entry : extraParams.entrySet()) {
-        String extraKey = entry.getKey();
-        if (!"range".equalsIgnoreCase(extraKey)) {
-          addEncodedParam(docParams, extraKey, entry.getValue());
+      for ( Map.Entry<String, List<String>> entry : extraParams.entrySet() ) {
+        for ( String value : entry.getValue() ) {
+          String extraKey = entry.getKey();
+          if ( !"range".equalsIgnoreCase(extraKey) ) {
+            docParams.add(extraKey, value);
+          }
         }
       }
     }
-    addEncodedParam(docParams, "uri", uri);
-    if ( database != null ) {
-      addEncodedParam(docParams, "database", database);
-    }
+    if ( uri != null ) docParams.add("uri", uri);
     if (categories == null || categories.size() == 0) {
       docParams.add("category", "content");
     } else {
-      if (withContent)
+      if (withContent) {
         docParams.add("category", "content");
+      }
       if (categories.contains(Metadata.ALL)) {
         docParams.add("category", "metadata");
       } else {
@@ -1751,9 +1760,8 @@ public class JerseyServices implements RESTServices {
     return docParams;
   }
 
-  private WebResource makeDocumentResource(
-    MultivaluedMap<String, String> queryParams) {
-    return getConnection().path("documents").queryParams(queryParams);
+  private Request.Builder makeDocumentResource(RequestParameters queryParams) {
+    return setupRequest("documents", queryParams);
   }
 
   private boolean isExternalDescriptor(ContentDescriptor desc) {
@@ -1762,7 +1770,7 @@ public class JerseyServices implements RESTServices {
   }
 
   private void updateDescriptor(ContentDescriptor desc,
-                                MultivaluedMap<String, String> headers) {
+                                Headers headers) {
     if (desc == null || headers == null)
       return;
 
@@ -1772,7 +1780,7 @@ public class JerseyServices implements RESTServices {
   }
 
   private TemporalDescriptor updateTemporalSystemTime(DocumentDescriptor desc,
-                                                      MultivaluedMap<String, String> headers)
+                                                      Headers headers)
   {
     if (headers == null) return null;
 
@@ -1782,18 +1790,8 @@ public class JerseyServices implements RESTServices {
     } else {
       temporalDescriptor = new DocumentDescriptorImpl(desc.getUri(), false);
     }
-    temporalDescriptor.setTemporalSystemTime(getHeaderTemporalSystemTime(headers));
+    temporalDescriptor.setTemporalSystemTime(headers.get(HEADER_X_MARKLOGIC_SYSTEM_TIME));
     return temporalDescriptor;
-  }
-
-  private String getHeaderTemporalSystemTime(MultivaluedMap<String, String> headers) {
-    if (headers.containsKey("x-marklogic-system-time")) {
-      List<String> values = headers.get("x-marklogic-system-time");
-      if (values != null) {
-        return values.get(0);
-      }
-    }
-    return null;
   }
 
   private void copyDescriptor(DocumentDescriptor desc,
@@ -1807,7 +1805,7 @@ public class JerseyServices implements RESTServices {
   }
 
   private void updateFormat(ContentDescriptor descriptor,
-                            MultivaluedMap<String, String> headers) {
+                            Headers headers) {
     updateFormat(descriptor, getHeaderFormat(headers));
   }
 
@@ -1817,40 +1815,37 @@ public class JerseyServices implements RESTServices {
     }
   }
 
-  private Format getHeaderFormat(MultivaluedMap<String, String> headers) {
-    if (headers.containsKey("vnd.marklogic.document-format")) {
-      List<String> values = headers.get("vnd.marklogic.document-format");
-      if (values != null) {
-        return Format.valueOf(values.get(0).toUpperCase());
-      }
+  private Format getHeaderFormat(Headers headers) {
+    String format = headers.get(HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
+    if (format != null) {
+      return Format.valueOf(format.toUpperCase());
     }
     return null;
   }
 
   private Format getHeaderFormat(BodyPart part) {
-    ContentDisposition contentDisposition = part.getContentDisposition();
-    if (part.getHeaders().containsKey("vnd.marklogic.document-format")) {
-      String value = part.getHeaders().getFirst("vnd.marklogic.document-format");
-      if (value != null) {
-        return Format.valueOf(value.toUpperCase());
+    try {
+      String contentDisposition = part.getDisposition();
+      String formatRegex = " format=(text|binary|xml|json)";
+      String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
+      String contentType = getHeader(part, HEADER_CONTENT_TYPE);
+      if ( format != null && format.length() > 0 ) {
+        return Format.valueOf(format.toUpperCase());
+      } else if ( contentDisposition != null && contentDisposition.matches(formatRegex) ) {
+        format = contentDisposition.replaceFirst("^.*" + formatRegex + ".*$", "$1");
+        return Format.valueOf(format.toUpperCase());
+      } else if ( contentType != null && contentType.length() > 0 ) {
+        return Format.getFromMimetype(contentType);
       }
-    } else if ( contentDisposition != null ) {
-      Map<String, String> parameters = contentDisposition.getParameters();
-      if ( parameters != null && parameters.get("format") != null ) {
-        return Format.valueOf(parameters.get("format").toUpperCase());
-      }
-    } else if ( part.getHeaders().containsKey("Content-Type") ) {
-      String value = part.getHeaders().getFirst("Content-Type");
-      if (value != null) {
-        return Format.getFromMimetype(value);
-      }
+      return null;
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
     }
-    return null;
   }
 
   private void updateMimetype(ContentDescriptor descriptor,
-                              MultivaluedMap<String, String> headers) {
-    updateMimetype(descriptor, getHeaderMimetype(headers));
+                              Headers headers) {
+    updateMimetype(descriptor, getHeaderMimetype(headers.get(HEADER_CONTENT_TYPE)));
   }
 
   private void updateMimetype(ContentDescriptor descriptor, String mimetype) {
@@ -1859,26 +1854,43 @@ public class JerseyServices implements RESTServices {
     }
   }
 
-  private String getHeaderMimetype(Map<String, List<String>> headers) {
-    if (headers.containsKey(HttpHeaders.CONTENT_TYPE)) {
-      List<String> values = headers.get(HttpHeaders.CONTENT_TYPE);
-      if (values != null) {
-        String contentType = values.get(0);
-        String mimetype = contentType.contains(";")
-                            ? contentType.substring(0, contentType.indexOf(";"))
-                            : contentType;
-        // TODO: if "; charset=foo" set character set
-        if (mimetype != null && mimetype.length() > 0) {
-          return mimetype;
-        }
+  private String getHeader(Map<String, List<String>> headers, String name) {
+    List<String> values = headers.get(name);
+    if ( values != null && values.size() > 0 ) {
+      return values.get(0);
+    }
+    return null;
+  }
+
+  private static String getHeader(BodyPart part, String name) {
+    if ( part == null ) throw new MarkLogicInternalException("part must not be null");
+    try {
+      String[] values = part.getHeader(name);
+      if ( values != null && values.length > 0 ) {
+        return values[0];
+      }
+      return null;
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+
+  private String getHeaderMimetype(String contentType) {
+    if (contentType != null) {
+      String mimetype = contentType.contains(";")
+                          ? contentType.substring(0, contentType.indexOf(";"))
+                          : contentType;
+      // TODO: if "; charset=foo" set character set
+      if (mimetype != null && mimetype.length() > 0) {
+        return mimetype;
       }
     }
     return null;
   }
 
   private void updateLength(ContentDescriptor descriptor,
-                            MultivaluedMap<String, String> headers) {
-    updateLength(descriptor, getHeaderLength(headers));
+                            Headers headers) {
+    updateLength(descriptor, getHeaderLength(headers.get(HEADER_CONTENT_LENGTH)));
   }
 
   private void updateLength(ContentDescriptor descriptor, long length) {
@@ -1886,60 +1898,52 @@ public class JerseyServices implements RESTServices {
   }
 
 
-  private long getHeaderServerTimestamp(MultivaluedMap<String,String> headers) {
-    List<String> values = headers.get("ML-Effective-Timestamp");
-    if (values != null) {
-      String timestamp = values.get(0);
-      if (timestamp != null && timestamp.length() > 0) {
-        return Long.parseLong(timestamp);
-      }
+  private long getHeaderServerTimestamp(Headers headers) {
+    String timestamp = headers.get(HEADER_ML_EFFECTIVE_TIMESTAMP);
+    if (timestamp != null && timestamp.length() > 0) {
+      return Long.parseLong(timestamp);
     }
     return -1;
   }
 
-  private long getHeaderLength(MultivaluedMap<String, String> headers) {
-    if (headers.containsKey(HttpHeaders.CONTENT_LENGTH)) {
-      List<String> values = headers.get(HttpHeaders.CONTENT_LENGTH);
-      if (values != null) {
-        return Long.parseLong(values.get(0));
-      }
+  private long getHeaderLength(String length) {
+    if (length != null) {
+      return Long.parseLong(length);
     }
     return ContentDescriptor.UNKNOWN_LENGTH;
   }
 
-  private String getHeaderUri(ContentDisposition contentDisposition) {
-    if ( contentDisposition != null ) {
-      return contentDisposition.getFileName();
+  private String getHeaderUri(BodyPart part) {
+    try {
+      if ( part != null ) {
+        return part.getFileName();
+      }
+      // if it's not found, just return null
+      return null;
+    } catch(MessagingException e) {
+      throw new MarkLogicIOException(e);
     }
-    // if it's not found, just return null
-    return null;
   }
 
-  private void updateVersion(DocumentDescriptor descriptor,
-                             MultivaluedMap<String, String> headers) {
+  private void updateVersion(DocumentDescriptor descriptor, Headers headers) {
     long version = DocumentDescriptor.UNKNOWN_VERSION;
-    if (headers.containsKey("ETag")) {
-      List<String> values = headers.get("ETag");
-      if (values != null) {
-        // trim the double quotes
-        String value = values.get(0);
-        version = Long.parseLong(value.substring(1, value.length() - 1));
-      }
+    String value = headers.get(HEADER_ETAG);
+    if (value != null && value.length() > 0) {
+      // trim the double quotes
+      version = Long.parseLong(value.substring(1, value.length() - 1));
     }
     descriptor.setVersion(version);
   }
 
-  private WebResource.Builder addVersionHeader(DocumentDescriptor desc,
-                                               WebResource.Builder builder, String name) {
+  private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
     if (desc != null && desc instanceof DocumentDescriptorImpl
       && !((DocumentDescriptorImpl) desc).isInternal()) {
       long version = desc.getVersion();
       if (version != DocumentDescriptor.UNKNOWN_VERSION) {
-        return builder.header(name, "\"" + String.valueOf(version)
-          + "\"");
+        return requestBldr.header(name, "\"" + String.valueOf(version) + "\"");
       }
     }
-    return builder;
+    return requestBldr;
   }
 
   @Override
@@ -1948,7 +1952,7 @@ public class JerseyServices implements RESTServices {
                                                Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     if (start > 1) {
       params.add("start", Long.toString(start));
@@ -1988,18 +1992,20 @@ public class JerseyServices implements RESTServices {
 
     String mimetype = searchFormat.getDefaultMimetype();
 
-    JerseySearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
+    OkHttpSearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params);
 
-    ClientResponse response = request.getResponse();
+    Response response = request.getResponse();
     if ( response == null ) return null;
 
-    Class as = searchBase.receiveAs();
+    Class<?> as = searchBase.receiveAs();
 
-    Object entity = response.hasEntity() ? response.getEntity(as) : null;
+
+    ResponseBody body = response.body();
+    Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
     searchBase.receiveContent(entity);
-    updateDescriptor(searchBase, response.getHeaders());
+    updateDescriptor(searchBase, response.headers());
 
     logRequest( reqlog,
       "searched starting at %s with length %s in %s transaction with %s mime type",
@@ -2008,32 +2014,30 @@ public class JerseyServices implements RESTServices {
     return searchHandle;
   }
 
-  private JerseySearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef,
-                                                    String mimetype, Transaction transaction, MultivaluedMap<String, String> params) {
-    if ( params == null ) params = new MultivaluedMapImpl();
-    if ( database != null ) addEncodedParam(params, "database", database);
-    return new JerseySearchRequest(reqlog, queryDef, mimetype, transaction, params);
+  private OkHttpSearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef,
+                                                    String mimetype, Transaction transaction, RequestParameters params) {
+    if ( params == null ) params = new RequestParameters();
+    return new OkHttpSearchRequest(reqlog, queryDef, mimetype, transaction, params);
   }
 
-  private class JerseySearchRequest {
+  private class OkHttpSearchRequest {
     RequestLogger reqlog;
     QueryDefinition queryDef;
     String mimetype;
-    MultivaluedMap<String, String> params;
+    RequestParameters params;
     Transaction transaction;
 
-    WebResource webResource = null;
-    WebResource.Builder builder = null;
+    Request.Builder requestBldr = null;
     String structure = null;
     HandleImplementation baseHandle = null;
 
-    JerseySearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype,
-                        Transaction transaction, MultivaluedMap<String, String> params) {
+    OkHttpSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype,
+                        Transaction transaction, RequestParameters params) {
       this.reqlog = reqlog;
       this.queryDef = queryDef;
       this.mimetype = mimetype;
       this.transaction = transaction;
-      this.params = params != null ? params : new MultivaluedMapImpl();
+      this.params = params != null ? params : new RequestParameters();
       addParams();
       init();
     }
@@ -2041,14 +2045,14 @@ public class JerseyServices implements RESTServices {
     void addParams() {
       String directory = queryDef.getDirectory();
       if (directory != null) {
-        addEncodedParam(params, "directory", directory);
+        params.add("directory", directory);
       }
 
-      addEncodedParam(params, "collection", queryDef.getCollections());
+      params.add("collection", queryDef.getCollections());
 
       String optionsName = queryDef.getOptionsName();
       if (optionsName != null && optionsName.length() > 0) {
-        addEncodedParam(params, "options", optionsName);
+        params.add("options", optionsName);
       }
 
       ServerTransform transform = queryDef.getResponseTransform();
@@ -2067,7 +2071,7 @@ public class JerseyServices implements RESTServices {
         text = ((StringQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
-        addEncodedParam(params, "q", text);
+        params.add("q", text);
       }
       if (queryDef instanceof StructuredQueryDefinition) {
         structure = ((StructuredQueryDefinition) queryDef).serialize();
@@ -2077,11 +2081,10 @@ public class JerseyServices implements RESTServices {
           logger.debug("Searching for structure {}{}", structure, qtextMessage);
         }
 
-        webResource = getConnection().path("search").queryParams(params);
-        builder = webResource.type("application/xml").accept(mimetype);
+        requestBldr = setupRequest("search", params);
+        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof RawQueryDefinition) {
-        if (logger.isDebugEnabled())
-          logger.debug("Raw search");
+        logger.debug("Raw search");
 
         if (queryDef instanceof RawQueryDefinition) {
           StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
@@ -2094,19 +2097,18 @@ public class JerseyServices implements RESTServices {
         String path = (queryDef instanceof RawQueryByExampleDefinition) ?
           "qbe" : "search";
 
-        webResource = getConnection().path(path).queryParams(params);
-        builder = (payloadMimetype != null) ?
-          webResource.type(payloadMimetype).accept(mimetype) :
-          webResource.accept(mimetype);
+        requestBldr = setupRequest(path, params);
+        requestBldr = (payloadMimetype != null) ?
+          requestBldr.header(HEADER_CONTENT_TYPE, payloadMimetype).header(HEADER_ACCEPT, mimetype) :
+          requestBldr.header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof KeyValueQueryDefinition ) {
-        if (logger.isDebugEnabled())
-          logger.debug("Searching for keys/values");
+        logger.debug("Searching for keys/values");
 
         Map<ValueLocator, String> pairs = ((KeyValueQueryDefinition) queryDef);
         for (Map.Entry<ValueLocator, String> entry: pairs.entrySet()) {
           ValueLocator loc = entry.getKey();
           if (loc instanceof KeyLocator ) {
-            addEncodedParam(params, "key", ((KeyLocator) loc).getKey());
+            params.add("key", ((KeyLocator) loc).getKey());
           } else {
             ElementLocator eloc = (ElementLocator) loc;
             params.add("element", eloc.getElement().toString());
@@ -2114,43 +2116,40 @@ public class JerseyServices implements RESTServices {
               params.add("attribute", eloc.getAttribute().toString());
             }
           }
-          addEncodedParam(params, "value", entry.getValue());
+          params.add("value", entry.getValue());
         }
 
-        webResource = getConnection().path("keyvalue").queryParams(params);
-        builder = webResource.accept(mimetype);
+        requestBldr = setupRequest("keyvalue", params);
+        requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof CombinedQueryDefinition) {
         structure = ((CombinedQueryDefinition) queryDef).serialize();
 
-        if (logger.isDebugEnabled())
-          logger.debug("Searching for combined query {}", structure);
+        logger.debug("Searching for combined query {}", structure);
 
-        webResource = getConnection().path("search").queryParams(params);
-        builder = webResource.type("application/xml").accept(mimetype);
+        requestBldr = setupRequest("search", params);
+        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof StringQueryDefinition) {
-        if (logger.isDebugEnabled())
-          logger.debug("Searching for string [{}]", text);
+        logger.debug("Searching for string [{}]", text);
 
-        webResource = getConnection().path("search").queryParams(params);
-        builder = webResource.type("application/xml").accept(mimetype);
+        requestBldr = setupRequest("search", params);
+        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof DeleteQueryDefinition) {
-        if (logger.isDebugEnabled())
-          logger.debug("Searching for deletes");
+        logger.debug("Searching for deletes");
 
-        webResource = getConnection().path("search").queryParams(params);
-        builder = webResource.accept(mimetype);
+        requestBldr = setupRequest("search", params);
+        requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
       } else {
         throw new UnsupportedOperationException("Cannot search with "
           + queryDef.getClass().getName());
       }
 
-      builder = addTransactionScopedCookies(builder, webResource, transaction);
-      builder = addTelemetryAgentId(builder);
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
     }
 
-    ClientResponse getResponse() {
-      ClientResponse response = null;
-      ClientResponse.Status status = null;
+    Response getResponse() {
+      Response response = null;
+      int status = -1;
       long startTime = System.currentTimeMillis();
       int nextDelay = 0;
       int retry = 0;
@@ -2163,57 +2162,56 @@ public class JerseyServices implements RESTServices {
         }
 
         if (queryDef instanceof KeyValueQueryDefinition) {
-          response = doGet(builder);
+          response = doGet(requestBldr);
         } else if (queryDef instanceof StructuredQueryDefinition && ! (queryDef instanceof RawQueryDefinition)) {
-          response = doPost(reqlog, builder, structure, true);
+          response = doPost(reqlog, requestBldr, structure);
         } else if (queryDef instanceof CombinedQueryDefinition) {
-          response = doPost(reqlog, builder, structure, true);
+          response = doPost(reqlog, requestBldr, structure);
         } else if (queryDef instanceof DeleteQueryDefinition) {
-          response = doGet(builder);
+          response = doGet(requestBldr);
         } else if (queryDef instanceof RawQueryDefinition) {
-          response = doPost(reqlog, builder, baseHandle.sendContent(), true);
+          response = doPost(reqlog, requestBldr, baseHandle.sendContent());
         } else if (queryDef instanceof StringQueryDefinition) {
-          response = doGet(builder);
+          response = doGet(requestBldr);
         } else {
           throw new UnsupportedOperationException("Cannot search with "
             + queryDef.getClass().getName());
         }
 
-        status = response.getClientResponseStatus();
+        status = response.code();
 
-        if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+        if (status != STATUS_SERVICE_UNAVAILABLE) {
           if (isFirstRequest())
             setFirstRequest(false);
 
           break;
         }
 
-        MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-        String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+        String retryAfterRaw = response.header("Retry-After");
         int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
         response.close();
 
         nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
       }
-      if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status == STATUS_SERVICE_UNAVAILABLE) {
         checkFirstRequest();
         throw new FailedRequestException(
           "Service unavailable and maximum retry period elapsed: "+
             Math.round((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
       }
-      if (status == ClientResponse.Status.NOT_FOUND) {
+      if (status == STATUS_NOT_FOUND) {
         response.close();
         return null;
       }
-      if (status == ClientResponse.Status.FORBIDDEN) {
+      if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException("User is not allowed to search",
           extractErrorFields(response));
       }
-      if (status != ClientResponse.Status.OK) {
+      if (status != STATUS_OK) {
         throw new FailedRequestException("search failed: "
-          + status.getReasonPhrase(), extractErrorFields(response));
+          + getReasonPhrase(response), extractErrorFields(response));
       }
       return response;
     }
@@ -2236,7 +2234,7 @@ public class JerseyServices implements RESTServices {
       if (payloadMimetype == null)
         payloadMimetype = payloadFormat.getDefaultMimetype();
     } else if (payloadMimetype == null) {
-      payloadMimetype = "application/xml";
+      payloadMimetype = MIMETYPE_APPLICATION_XML;
     }
     return payloadMimetype;
   }
@@ -2246,42 +2244,38 @@ public class JerseyServices implements RESTServices {
                            Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     if (queryDef.getDirectory() != null) {
-      addEncodedParam(params, "directory", queryDef.getDirectory());
+      params.add("directory", queryDef.getDirectory());
     }
 
-    addEncodedParam(params, "collection", queryDef.getCollections());
+    params.add("collection", queryDef.getCollections());
 
     if (transaction != null) {
       params.add("txid", transaction.getTransactionId());
     }
-    if ( database != null ) {
-      addEncodedParam(params, "database", database);
-    }
 
-    WebResource webResource = getConnection().path("search").queryParams(params);
+    Request.Builder requestBldr = setupRequest("search", params);
 
-    WebResource.Builder builder = webResource.getRequestBuilder();
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.delete(ClientResponse.class);
+    Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doDeleteFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to delete",
         extractErrorFields(response));
     }
 
-    if (status != ClientResponse.Status.NO_CONTENT) {
+    if (status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("delete failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
     response.close();
@@ -2308,19 +2302,19 @@ public class JerseyServices implements RESTServices {
                       long start, long pageLength, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+    RequestParameters docParams = new RequestParameters();
 
     String optionsName = valDef.getOptionsName();
     if (optionsName != null && optionsName.length() > 0) {
-      addEncodedParam(docParams, "options", optionsName);
+      docParams.add("options", optionsName);
     }
 
     if (valDef.getAggregate() != null) {
-      addEncodedParam(docParams, "aggregate", valDef.getAggregate());
+      docParams.add("aggregate", valDef.getAggregate());
     }
 
     if (valDef.getAggregatePath() != null) {
-      addEncodedParam(docParams, "aggregatePath",
+      docParams.add("aggregatePath",
         valDef.getAggregatePath());
     }
 
@@ -2359,7 +2353,7 @@ public class JerseyServices implements RESTServices {
       if (optionsName == null) {
         optionsName = queryDef.getOptionsName();
         if (optionsName != null) {
-          addEncodedParam(docParams, "options", optionsName);
+          docParams.add("options", optionsName);
         }
       } else if (queryDef.getOptionsName() != null) {
         if (!queryDef.getOptionsName().equals(optionsName)
@@ -2381,13 +2375,13 @@ public class JerseyServices implements RESTServices {
         text = ((StringQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
-        addEncodedParam(docParams, "q", text);
+        docParams.add("q", text);
       }
       if (queryDef instanceof StructuredQueryDefinition ) {
         String structure = ((StructuredQueryDefinition) queryDef)
           .serialize();
         if (structure != null) {
-          addEncodedParam(docParams, "structuredQuery", structure);
+          docParams.add("structuredQuery", structure);
         }
       } else if (queryDef instanceof RawQueryDefinition) {
         StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
@@ -2413,39 +2407,40 @@ public class JerseyServices implements RESTServices {
       uri += "/" + valDef.getName();
     }
 
-    WebResource webResource = makeWebResource(uri, docParams);
-    WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(uri, docParams);
+    requestBldr = setupRequest(requestBldr, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
     final HandleImplementation tempBaseHandle = baseHandle;
-    Function<WebResource.Builder, ClientResponse> doGetFunction =
-      new Function<WebResource.Builder, ClientResponse>() {
-        public ClientResponse apply(WebResource.Builder funcBuilder) {
+    Function<Request.Builder, Response> doGetFunction =
+      new Function<Request.Builder, Response>() {
+        public Response apply(Request.Builder funcBuilder) {
           return doGet(funcBuilder);
         }
       };
-    Function<WebResource.Builder, ClientResponse> doPostFunction =
-      new Function<WebResource.Builder, ClientResponse>() {
-        public ClientResponse apply(WebResource.Builder funcBuilder) {
-          return doPost(null, funcBuilder.type(tempBaseHandle.getMimetype()),
-            tempBaseHandle.sendContent(), tempBaseHandle.isResendable());
+    Function<Request.Builder, Response> doPostFunction =
+      new Function<Request.Builder, Response>() {
+        public Response apply(Request.Builder funcBuilder) {
+          return doPost(null, funcBuilder.header(HEADER_CONTENT_TYPE, tempBaseHandle.getMimetype()),
+            tempBaseHandle.sendContent());
         }
       };
-    ClientResponse response = baseHandle == null ? makeRequest(builder, doGetFunction, null)
-      : makeRequest(builder, doPostFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = baseHandle == null ? sendRequestWithRetry(requestBldr, doGetFunction, null)
+      : sendRequestWithRetry(requestBldr, doPostFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to search",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("search failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -2458,11 +2453,11 @@ public class JerseyServices implements RESTServices {
                           String mimetype, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+    RequestParameters docParams = new RequestParameters();
 
     String optionsName = valDef.getOptionsName();
     if (optionsName != null && optionsName.length() > 0) {
-      addEncodedParam(docParams, "options", optionsName);
+      docParams.add("options", optionsName);
     }
 
     if (transaction != null) {
@@ -2471,29 +2466,30 @@ public class JerseyServices implements RESTServices {
 
     String uri = "values";
 
-    WebResource webResource = makeWebResource(uri, docParams);
-    WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(uri, docParams);
+    requestBldr = setupRequest(requestBldr, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to search",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("search failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -2504,7 +2500,7 @@ public class JerseyServices implements RESTServices {
   public <T> T optionsList(Class<T> as, String mimetype, Transaction transaction)
     throws ForbiddenUserException, FailedRequestException
   {
-    MultivaluedMap<String, String> docParams = new MultivaluedMapImpl();
+    RequestParameters docParams = new RequestParameters();
 
     if (transaction != null) {
       docParams.add("txid", transaction.getTransactionId());
@@ -2512,30 +2508,30 @@ public class JerseyServices implements RESTServices {
 
     String uri = "config/query";
 
-    WebResource webResource = getConnection().path(uri)
-      .queryParams(docParams);
-    WebResource.Builder builder = webResource.accept(mimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(uri, docParams);
+    requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to search",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("search failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -2548,40 +2544,40 @@ public class JerseyServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Getting {}/{}", type, key);
+    logger.debug("Getting {}/{}", type, key);
 
-    WebResource.Builder builder = makeBuilder(type + "/" + key, null, null, mimetype);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(type + "/" + key, null, null, mimetype);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
 
-    if (status != ClientResponse.Status.OK) {
-      if (status == ClientResponse.Status.NOT_FOUND) {
+    if (status != STATUS_OK) {
+      if (status == STATUS_NOT_FOUND) {
         response.close();
         if (!isNullable)
           throw new ResourceNotFoundException("Could not get " + type
             + "/" + key);
         return null;
-      } else if (status == ClientResponse.Status.FORBIDDEN)
+      } else if (status == STATUS_FORBIDDEN)
         throw new ForbiddenUserException("User is not allowed to read "
           + type, extractErrorFields(response));
       else
         throw new FailedRequestException(type + " read failed: "
-          + status.getReasonPhrase(),
+          + getReasonPhrase(response),
           extractErrorFields(response));
     }
 
     logRequest(reqlog, "read %s value with %s key and %s mime type", type,
       key, (mimetype != null) ? mimetype : null);
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -2599,36 +2595,32 @@ public class JerseyServices implements RESTServices {
                          String mimetype, Class<T> as)
     throws ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Getting {}", type);
+    logger.debug("Getting {}", type);
 
-    MultivaluedMap<String, String> requestParams = convertParams(extraParams);
+    Request.Builder requestBldr = setupRequest(type, extraParams).header(HEADER_ACCEPT, mimetype);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    WebResource.Builder builder = (requestParams == null) ?
-      getConnection().path(type).accept(mimetype) :
-      getConnection().path(type).queryParams(requestParams).accept(mimetype);
-    builder = addTelemetryAgentId(builder);
-
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to read "
         + type, extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException(type + " read failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
     logRequest(reqlog, "read %s values with %s mime type", type,
       (mimetype != null) ? mimetype : null);
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -2640,22 +2632,18 @@ public class JerseyServices implements RESTServices {
                         String mimetype, Object value)
     throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Posting {}/{}", type, key);
+    logger.debug("Posting {}/{}", type, key);
 
-    putPostValueImpl(reqlog, "post", type, key, null, mimetype, value,
-      ClientResponse.Status.CREATED);
+    putPostValueImpl(reqlog, "post", type, key, null, mimetype, value, STATUS_CREATED);
   }
   @Override
   public void postValue(RequestLogger reqlog, String type, String key,
                         RequestParameters extraParams)
     throws ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Posting {}/{}", type, key);
+    logger.debug("Posting {}/{}", type, key);
 
-    putPostValueImpl(reqlog, "post", type, key, extraParams, null, null,
-      ClientResponse.Status.NO_CONTENT);
+    putPostValueImpl(reqlog, "post", type, key, extraParams, null, null, STATUS_NO_CONTENT);
   }
 
 
@@ -2664,11 +2652,9 @@ public class JerseyServices implements RESTServices {
                        String mimetype, Object value)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Putting {}/{}", type, key);
+    logger.debug("Putting {}/{}", type, key);
 
-    putPostValueImpl(reqlog, "put", type, key, null, mimetype, value,
-      ClientResponse.Status.NO_CONTENT, ClientResponse.Status.CREATED);
+    putPostValueImpl(reqlog, "put", type, key, null, mimetype, value, STATUS_NO_CONTENT, STATUS_CREATED);
   }
 
   @Override
@@ -2676,17 +2662,15 @@ public class JerseyServices implements RESTServices {
                        RequestParameters extraParams, String mimetype, Object value)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Putting {}/{}", type, key);
+    logger.debug("Putting {}/{}", type, key);
 
-    putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype,
-      value, ClientResponse.Status.NO_CONTENT);
+    putPostValueImpl(reqlog, "put", type, key, extraParams, mimetype, value, STATUS_NO_CONTENT);
   }
 
   private void putPostValueImpl(RequestLogger reqlog, String method,
                                 String type, String key, RequestParameters extraParams,
                                 String mimetype, Object value,
-                                ClientResponse.Status... expectedStatuses) {
+                                int... expectedStatuses) {
     if (key != null) {
       logRequest(reqlog, "writing %s value with %s key and %s mime type",
         type, key, (mimetype != null) ? mimetype : null);
@@ -2698,13 +2682,13 @@ public class JerseyServices implements RESTServices {
     HandleImplementation handle = (value instanceof HandleImplementation) ?
       (HandleImplementation) value : null;
 
-    MultivaluedMap<String, String> requestParams = convertParams(extraParams);
+    MediaType mediaType = makeType(mimetype);
 
     String connectPath = null;
-    WebResource.Builder builder = null;
+    Request.Builder requestBldr = null;
 
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -2718,15 +2702,16 @@ public class JerseyServices implements RESTServices {
 
       Object nextValue = (handle != null) ? handle.sendContent() : value;
 
-      Object sentValue = null;
+      RequestBody sentValue = null;
       if (nextValue instanceof OutputStreamSender) {
         sentValue = new StreamingOutputImpl(
-          (OutputStreamSender) nextValue, reqlog);
+          (OutputStreamSender) nextValue, reqlog, mediaType);
       } else {
-        if (reqlog != null && retry == 0)
-          sentValue = reqlog.copyContent(nextValue);
-        else
-          sentValue = nextValue;
+        if (reqlog != null && retry == 0) {
+          sentValue = new ObjectRequestBody(reqlog.copyContent(nextValue), mediaType);
+        } else {
+          sentValue = new ObjectRequestBody(nextValue, mediaType);
+        }
       }
 
       boolean isStreaming = (isFirstRequest() || handle == null) ? isStreaming(sentValue) : false;
@@ -2740,49 +2725,44 @@ public class JerseyServices implements RESTServices {
       }
 
       if ("put".equals(method)) {
-        if (builder == null) {
+        if (requestBldr == null) {
           connectPath = (key != null) ? type + "/" + key : type;
-          WebResource resource = (requestParams == null) ?
-            getConnection().path(connectPath) :
-            getConnection().path(connectPath).queryParams(requestParams);
-          builder = (mimetype == null) ?
-            resource.getRequestBuilder() : resource.type(mimetype);
-          builder = addTelemetryAgentId(builder);
+          Request.Builder resource = setupRequest(connectPath, extraParams);
+          requestBldr = (mimetype == null) ?
+            resource : resource.header(HEADER_CONTENT_TYPE, mimetype);
+          requestBldr = addTelemetryAgentId(requestBldr);
         }
 
         response = (sentValue == null) ?
-          builder.put(ClientResponse.class) :
-          builder.put(ClientResponse.class, sentValue);
+                   sendRequestOnce(requestBldr.put(null).build()) :
+                   sendRequestOnce(requestBldr.put(sentValue).build());
       } else if ("post".equals(method)) {
-        if (builder == null) {
+        if (requestBldr == null) {
           connectPath = type;
-          WebResource resource = (requestParams == null) ?
-            getConnection().path(connectPath) :
-            getConnection().path(connectPath).queryParams(requestParams);
-          builder = (mimetype == null) ?
-            resource.getRequestBuilder() : resource.type(mimetype);
-          builder = addTelemetryAgentId(builder);
+          Request.Builder resource = setupRequest(connectPath, extraParams);
+          requestBldr = (mimetype == null) ?
+            resource : resource.header(HEADER_CONTENT_TYPE, mimetype);
+          requestBldr = addTelemetryAgentId(requestBldr);
         }
 
         response = (sentValue == null) ?
-          builder.post(ClientResponse.class) :
-          builder.post(ClientResponse.class, sentValue);
+                   sendRequestOnce(requestBldr.post(RequestBody.create(null, "")).build()) :
+                   sendRequestOnce(requestBldr.post(sentValue).build());
       } else {
         throw new MarkLogicInternalException("unknown method type "
           + method);
       }
 
-      status = response.getClientResponseStatus();
+      status = response.code();
 
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (!isResendable) {
@@ -2794,21 +2774,21 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-    if (status == ClientResponse.Status.FORBIDDEN)
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException("User is not allowed to write "
         + type, extractErrorFields(response));
-    if (status == ClientResponse.Status.NOT_FOUND)
+    if (status == STATUS_NOT_FOUND)
       throw new ResourceNotFoundException(type + " not found for write",
         extractErrorFields(response));
     boolean statusOk = false;
-    for (ClientResponse.Status expectedStatus : expectedStatuses) {
+    for (int expectedStatus : expectedStatuses) {
       statusOk = statusOk || (status == expectedStatus);
       if (statusOk) {
         break;
@@ -2817,7 +2797,7 @@ public class JerseyServices implements RESTServices {
 
     if (!statusOk) {
       throw new FailedRequestException(type + " write failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
     response.close();
 
@@ -2827,29 +2807,27 @@ public class JerseyServices implements RESTServices {
   public void deleteValue(RequestLogger reqlog, String type, String key)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Deleting {}/{}", type, key);
+    logger.debug("Deleting {}/{}", type, key);
 
-    WebResource.Builder builder = getConnection().path(type + "/" + key)
-      .getRequestBuilder();
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(type + "/" + key, null);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.delete(ClientResponse.class);
+    Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doDeleteFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN)
+    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException("User is not allowed to delete "
         + type, extractErrorFields(response));
-    if (status == ClientResponse.Status.NOT_FOUND)
+    if (status == STATUS_NOT_FOUND)
       throw new ResourceNotFoundException(type + " not found for delete",
         extractErrorFields(response));
-    if (status != ClientResponse.Status.NO_CONTENT)
+    if (status != STATUS_NO_CONTENT)
       throw new FailedRequestException("delete failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
 
     response.close();
 
@@ -2860,25 +2838,24 @@ public class JerseyServices implements RESTServices {
   public void deleteValues(RequestLogger reqlog, String type)
     throws ForbiddenUserException, FailedRequestException
   {
-    if (logger.isDebugEnabled())
-      logger.debug("Deleting {}", type);
+    logger.debug("Deleting {}", type);
 
-    WebResource.Builder builder = getConnection().path(type).getRequestBuilder();
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest(type, null);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.delete(ClientResponse.class);
+    Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doDeleteFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN)
+    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN)
       throw new ForbiddenUserException("User is not allowed to delete "
         + type, extractErrorFields(response));
-    if (status != ClientResponse.Status.NO_CONTENT)
+    if (status != STATUS_NO_CONTENT)
       throw new FailedRequestException("delete failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     response.close();
 
     logRequest(reqlog, "deleted %s values", type);
@@ -2897,22 +2874,22 @@ public class JerseyServices implements RESTServices {
     String mimetype = outputBase.getMimetype();
     Class as = outputBase.receiveAs();
 
-    WebResource webResource = makeGetWebResource(path, params, mimetype);
-    WebResource.Builder builder = makeBuilder(webResource, null, mimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makeGetWebResource(path, params, mimetype);
+    requestBldr = setupRequest(requestBldr, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
         return doGet(funcBuilder);
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
 
-    updateDescriptor(outputBase, response.getHeaders());
+    updateDescriptor(outputBase, response.headers());
     if (as != null) {
       outputBase.receiveContent(makeResult(reqlog, "read", "resource",
         response, as));
@@ -2928,30 +2905,29 @@ public class JerseyServices implements RESTServices {
                                                                     String path, Transaction transaction, RequestParameters params, String... mimetypes)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getIteratedResourceImpl(JerseyServiceResultIterator.class, reqlog, path, transaction, params, mimetypes);
+    return getIteratedResourceImpl(OkHttpServiceResultIterator.class, reqlog, path, transaction, params, mimetypes);
   }
 
-  private <U extends JerseyResultIterator> U getIteratedResourceImpl(Class<U> clazz, RequestLogger reqlog,
+  private <U extends OkHttpResultIterator> U getIteratedResourceImpl(Class<U> clazz, RequestLogger reqlog,
                                                                      String path, Transaction transaction, RequestParameters params, String... mimetypes)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
     if (transaction != null) params.add("txid", transaction.getTransactionId());
 
-    WebResource webResource = makeGetWebResource(path, params, null);
-    WebResource.Builder builder = makeBuilder(webResource, null, null);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makeGetWebResource(path, params, null);
+    requestBldr = setupRequest(requestBldr, null, null);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
-
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return doGet(funcBuilder.accept(multipartType));
+    requestBldr = requestBldr.header(HEADER_ACCEPT, multipartMixedWithBoundary());
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return doGet(funcBuilder);
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
 
@@ -2979,10 +2955,10 @@ public class JerseyServices implements RESTServices {
       outputMimeType = outputBase.getMimetype();
       as = outputBase.receiveAs();
     }
-    WebResource webResource = makePutWebResource(path, params);
-    WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimeType);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makePutWebResource(path, params);
+    requestBldr = setupRequest(requestBldr, inputMimetype, outputMimeType);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
@@ -2994,13 +2970,13 @@ public class JerseyServices implements RESTServices {
       }
     };
 
-    Function<WebResource.Builder, ClientResponse> doPutFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
+    Function<Request.Builder, Response> doPutFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
         return doPut(reqlog, funcBuilder, inputBase.sendContent(), !isResendable);
       }
     };
-    ClientResponse response = makeRequest(builder, doPutFunction, resendableConsumer);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doPutFunction, resendableConsumer);
+    int status = response.code();
 
     checkStatus(response, status, "write", "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
@@ -3033,8 +3009,8 @@ public class JerseyServices implements RESTServices {
     String outputMimetype = outputBase.getMimetype();
     Class as = outputBase.receiveAs();
 
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -3046,26 +3022,25 @@ public class JerseyServices implements RESTServices {
         }
       }
 
-      MultiPart multiPart = new MultiPart();
+      MultipartBody.Builder multiPart = new MultipartBody.Builder();
       boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-      WebResource webResource = makePutWebResource(path, params);
-      WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
-      builder = addTransactionScopedCookies(builder, webResource, transaction);
-      builder = addTelemetryAgentId(builder);
+      Request.Builder requestBldr = makePutWebResource(path, params);
+      requestBldr = setupRequest(requestBldr, multiPart, outputMimetype);
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
 
-      response = doPut(builder, multiPart, hasStreamingPart);
-      status = response.getClientResponseStatus();
+      response = doPut(requestBldr, multiPart, hasStreamingPart);
+      status = response.code();
 
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (hasStreamingPart) {
@@ -3076,7 +3051,7 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
@@ -3132,10 +3107,10 @@ public class JerseyServices implements RESTServices {
     final boolean isResendable = inputBase == null ? true : inputBase.isResendable();
     Class as = outputBase == null ? null : outputBase.receiveAs();
 
-    WebResource webResource = makePostWebResource(path, params);
-    WebResource.Builder builder = makeBuilder(webResource, inputMimetype, outputMimetype);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makePostWebResource(path, params);
+    requestBldr = setupRequest(requestBldr, inputMimetype, outputMimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
@@ -3146,14 +3121,14 @@ public class JerseyServices implements RESTServices {
       }
     };
     final Object value = inputBase == null ? null :inputBase.sendContent();
-    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return doPost(reqlog, funcBuilder, value, !isResendable);
+    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return doPost(reqlog, funcBuilder, value);
       }
     };
 
-    ClientResponse response = makeRequest(builder, doPostFunction, resendableConsumer);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    int status = response.code();
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
@@ -3190,8 +3165,8 @@ public class JerseyServices implements RESTServices {
     String outputMimetype = outputBase != null ? outputBase.getMimetype() : null;
     Class as = outputBase != null ? outputBase.receiveAs() : null;
 
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -3203,26 +3178,25 @@ public class JerseyServices implements RESTServices {
         }
       }
 
-      MultiPart multiPart = new MultiPart();
+      MultipartBody.Builder multiPart = new MultipartBody.Builder();
       boolean hasStreamingPart = addParts(multiPart, reqlog, null, input, headers);
 
-      WebResource webResource = makePostWebResource(path, params);
-      WebResource.Builder builder = makeBuilder(webResource, multiPart, outputMimetype);
-      builder = addTransactionScopedCookies(builder, webResource, transaction);
-      builder = addTelemetryAgentId(builder);
+      Request.Builder requestBldr = makePostWebResource(path, params);
+      requestBldr = setupRequest(requestBldr, multiPart, outputMimetype);
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
 
-      response = doPost(builder, multiPart, hasStreamingPart);
-      status = response.getClientResponseStatus();
+      response = doPost(requestBldr, multiPart, hasStreamingPart);
+      status = response.code();
 
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (hasStreamingPart) {
@@ -3233,7 +3207,7 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
@@ -3271,80 +3245,66 @@ public class JerseyServices implements RESTServices {
     throws ForbiddenUserException,  FailedRequestException
   {
     List<AbstractWriteHandle> writeHandles = new ArrayList<AbstractWriteHandle>();
-    List<Map<String, List<String>>> headerList = new ArrayList<Map<String, List<String>>>();
-    for ( DocumentWriteOperation write: writeSet ) {
-      HandleImplementation metadata =
-        HandleAccessor.checkHandle(write.getMetadata(), "write");
-      HandleImplementation content =
-        HandleAccessor.checkHandle(write.getContent(), "write");
-      String contentDispositionTemporal = "";
-      if ( write.getOperationType() ==
-        DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT )
-      {
-        MultivaluedMap headers = new MultivaluedMapImpl();
-        headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
-        headers.add("Content-Disposition", "inline; category=metadata"+contentDispositionTemporal);
+    List<RequestParameters> headerList = new ArrayList<RequestParameters>();
+    for ( DocumentWriteOperation write : writeSet ) {
+      HandleImplementation metadata = HandleAccessor.checkHandle(write.getMetadata(), "write");
+      HandleImplementation content = HandleAccessor.checkHandle(write.getContent(), "write");
+      if ( write.getOperationType() == DocumentWriteOperation.OperationType.DISABLE_METADATA_DEFAULT ) {
+        RequestParameters headers = new RequestParameters();
+        headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
+        headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata");
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       } else if ( metadata != null ) {
-        MultivaluedMap headers = new MultivaluedMapImpl();
-        headers.add(HttpHeaders.CONTENT_TYPE, metadata.getMimetype());
+        RequestParameters headers = new RequestParameters();
+        headers.add(HEADER_CONTENT_TYPE, metadata.getMimetype());
         if ( write.getOperationType() == DocumentWriteOperation.OperationType.METADATA_DEFAULT ) {
-          headers.add("Content-Disposition", "inline; category=metadata"+contentDispositionTemporal);
+          headers.add(HEADER_CONTENT_DISPOSITION, DISPOSITION_TYPE_INLINE + "; category=metadata");
         } else {
-          headers.add("Content-Disposition",
-            ContentDisposition
-              .type("attachment")
-              .fileName(escapeContentDispositionFilename(write.getUri()))
-              .build().toString() +
-              "; category=metadata"+contentDispositionTemporal
-          );
+          String disposition = DISPOSITION_TYPE_ATTACHMENT  + "; " +
+            DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri()) +
+            "; category=metadata";
+          headers.add(HEADER_CONTENT_DISPOSITION, disposition);
         }
         headerList.add(headers);
         writeHandles.add(write.getMetadata());
       }
       if ( content != null ) {
-        MultivaluedMap headers = new MultivaluedMapImpl();
+        RequestParameters headers = new RequestParameters();
         String mimeType = content.getMimetype();
         if ( mimeType == null && defaultFormat != null ) {
           mimeType = defaultFormat.getDefaultMimetype();
         }
-        headers.add(HttpHeaders.CONTENT_TYPE, mimeType);
-        headers.add("Content-Disposition",
-          ContentDisposition
-            .type("attachment")
-            .fileName(escapeContentDispositionFilename(write.getUri()))
-            .build().toString()+contentDispositionTemporal
-        );
+        headers.add(HEADER_CONTENT_TYPE, mimeType);
+        String disposition = DISPOSITION_TYPE_ATTACHMENT + "; " +
+          DISPOSITION_PARAM_FILENAME + "=" + escapeContentDispositionFilename(write.getUri());
+        headers.add(HEADER_CONTENT_DISPOSITION, disposition);
         headerList.add(headers);
         writeHandles.add(write.getContent());
       }
     }
     RequestParameters params = new RequestParameters();
-    if (transform != null) {
+    if ( transform != null ) {
       transform.merge(params);
     }
-    if (temporalCollection != null) params.add("temporal-collection", temporalCollection);
-    return postResource(
-      reqlog,
-      "documents",
-      transaction,
-      params,
+    if ( temporalCollection != null ) params.add("temporal-collection", temporalCollection);
+    return postResource(reqlog, "documents", transaction, params,
       (AbstractWriteHandle[]) writeHandles.toArray(new AbstractWriteHandle[0]),
-      (Map<String, List<String>>[]) headerList.toArray(new HashMap[0]),
+      (RequestParameters[]) headerList.toArray(new RequestParameters[0]),
       output);
   }
 
+  // TODO: See what other escaping we need to do for filenames
   private String escapeContentDispositionFilename(String str) {
     if ( str == null ) return null;
     // escape any quotes or back-slashes
-    return str.replace("\"", "\\\"").replace("\\", "\\\\");
+    return "\"" + str.replace("\"", "\\\"").replace("\\", "\\\\") + "\"";
   }
 
-  public class JerseyEvalResultIterator implements EvalResultIterator {
-    private JerseyResultIterator iterator;
+  public class OkHttpEvalResultIterator implements EvalResultIterator {
+    private OkHttpResultIterator iterator;
 
-    JerseyEvalResultIterator(JerseyResultIterator iterator) {
+    OkHttpEvalResultIterator(OkHttpResultIterator iterator) {
       this.iterator = iterator;
     }
 
@@ -3367,8 +3327,8 @@ public class JerseyServices implements RESTServices {
     @Override
     public EvalResult next() {
       if ( iterator == null ) throw new NoSuchElementException("No results available");
-      JerseyResult jerseyResult = iterator.next();
-      EvalResult result = new JerseyEvalResult(jerseyResult);
+      OkHttpResult jerseyResult = iterator.next();
+      EvalResult result = new OkHttpEvalResult(jerseyResult);
       return result;
     }
 
@@ -3377,10 +3337,10 @@ public class JerseyServices implements RESTServices {
       if ( iterator != null ) iterator.close();
     }
   }
-  public class JerseyEvalResult implements EvalResult {
-    private JerseyResult content;
+  public class OkHttpEvalResult implements EvalResult {
+    private OkHttpResult content;
 
-    public JerseyEvalResult(JerseyResult content) {
+    public OkHttpEvalResult(OkHttpResult content) {
       this.content = content;
     }
 
@@ -3391,20 +3351,20 @@ public class JerseyServices implements RESTServices {
 
     @Override
     public EvalResult.Type getType() {
-      String contentType = content.getHeader("Content-Type");
-      String xPrimitive = content.getHeader("X-Primitive");
+      String contentType = content.getHeader(HEADER_CONTENT_TYPE);
+      String xPrimitive = content.getHeader(HEADER_X_PRIMITIVE);
       if ( contentType != null ) {
-        if ( "application/json".equals(contentType) ) {
+        if ( MIMETYPE_APPLICATION_JSON.equals(contentType) ) {
           if ( "null-node()".equals(xPrimitive) ) {
             return EvalResult.Type.NULL;
           } else {
             return EvalResult.Type.JSON;
           }
-        } else if ( "text/json".equals(contentType) ) {
+        } else if ( MIMETYPE_TEXT_JSON.equals(contentType) ) {
           return EvalResult.Type.JSON;
-        } else if ( "application/xml".equals(contentType) ) {
+        } else if ( MIMETYPE_APPLICATION_XML.equals(contentType) ) {
           return EvalResult.Type.XML;
-        } else if ( "text/xml".equals(contentType) ) {
+        } else if ( MIMETYPE_TEXT_XML.equals(contentType) ) {
           return EvalResult.Type.XML;
         } else if ( "application/x-unknown-content-type".equals(contentType) &&
           "binary()".equals(xPrimitive) )
@@ -3642,7 +3602,7 @@ public class JerseyServices implements RESTServices {
     }
     StringHandle input = new StringHandle(formUrlEncodedPayload)
       .withMimetype("application/x-www-form-urlencoded");
-    return new JerseyEvalResultIterator( postIteratedResourceImpl(DefaultJerseyResultIterator.class,
+    return new OkHttpEvalResultIterator( postIteratedResourceImpl(DefaultOkHttpResultIterator.class,
       reqlog, path, transaction, params, input) );
   }
 
@@ -3664,11 +3624,11 @@ public class JerseyServices implements RESTServices {
                                                                      String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    return postIteratedResourceImpl(JerseyServiceResultIterator.class,
+    return postIteratedResourceImpl(OkHttpServiceResultIterator.class,
       reqlog, path, transaction, params, input, outputMimetypes);
   }
 
-  private <U extends JerseyResultIterator> U postIteratedResourceImpl(
+  private <U extends OkHttpResultIterator> U postIteratedResourceImpl(
     Class<U> clazz, final RequestLogger reqlog,
     final String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, String... outputMimetypes)
@@ -3682,12 +3642,10 @@ public class JerseyServices implements RESTServices {
     String inputMimetype = inputBase.getMimetype();
     final boolean isResendable = inputBase.isResendable();
 
-    WebResource webResource = makePostWebResource(path, params);
-    WebResource.Builder builder = makeBuilder(webResource, inputMimetype, null);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
-
-    final MediaType multipartType = Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE);
+    Request.Builder requestBldr = makePostWebResource(path, params);
+    requestBldr = setupRequest(requestBldr, inputMimetype, null);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
     Consumer<Boolean> resendableConsumer = new Consumer<Boolean>() {
       public void accept(Boolean resendable) {
@@ -3698,13 +3656,14 @@ public class JerseyServices implements RESTServices {
         }
       }
     };
-    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return doPost(reqlog, funcBuilder.accept(multipartType), inputBase.sendContent(), !isResendable);
+    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return doPost(reqlog, funcBuilder.header(HEADER_ACCEPT, multipartMixedWithBoundary()),
+          inputBase.sendContent());
       }
     };
-    ClientResponse response = makeRequest(builder, doPostFunction, resendableConsumer);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    int status = response.code();
 
     checkStatus(response, status, "apply", "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
@@ -3718,19 +3677,19 @@ public class JerseyServices implements RESTServices {
     W[] input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    return postIteratedResourceImpl(JerseyServiceResultIterator.class,
+    return postIteratedResourceImpl(OkHttpServiceResultIterator.class,
       reqlog, path, transaction, params, input, outputMimetypes);
   }
 
-  private <W extends AbstractWriteHandle, U extends JerseyResultIterator> U postIteratedResourceImpl(
+  private <W extends AbstractWriteHandle, U extends OkHttpResultIterator> U postIteratedResourceImpl(
     Class<U> clazz, RequestLogger reqlog, String path, Transaction transaction,
     RequestParameters params, W[] input, String... outputMimetypes)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -3742,29 +3701,28 @@ public class JerseyServices implements RESTServices {
         }
       }
 
-      MultiPart multiPart = new MultiPart();
+      MultipartBody.Builder multiPart = new MultipartBody.Builder();
       boolean hasStreamingPart = addParts(multiPart, reqlog, input);
 
-      WebResource webResource = makePostWebResource(path, params);
-      WebResource.Builder builder = makeBuilder(
-        webResource,
+      Request.Builder requestBldr = makePostWebResource(path, params);
+      requestBldr = setupRequest(
+        requestBldr,
         multiPart,
-        Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-      builder = addTransactionScopedCookies(builder, webResource, transaction);
-      builder = addTelemetryAgentId(builder);
+        multipartMixedWithBoundary());
+      requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+      requestBldr = addTelemetryAgentId(requestBldr);
 
-      response = doPost(builder, multiPart, hasStreamingPart);
-      status = response.getClientResponseStatus();
+      response = doPost(requestBldr, multiPart, hasStreamingPart);
+      status = response.code();
 
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       response.close();
 
       if (hasStreamingPart) {
@@ -3775,7 +3733,7 @@ public class JerseyServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
@@ -3806,18 +3764,18 @@ public class JerseyServices implements RESTServices {
       outputMimeType = outputBase.getMimetype();
       as = outputBase.receiveAs();
     }
-    WebResource webResource = makeDeleteWebResource(path, params);
-    WebResource.Builder builder = makeBuilder(webResource, null, outputMimeType);
-    builder = addTransactionScopedCookies(builder, webResource, transaction);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = makeDeleteWebResource(path, params);
+    requestBldr = setupRequest(requestBldr, null, outputMimeType);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doDeleteFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
+    Function<Request.Builder, Response> doDeleteFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
         return doDelete(funcBuilder);
       }
     };
-    ClientResponse response = makeRequest(builder, doDeleteFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    int status = response.code();
     checkStatus(response, status, "delete", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
 
@@ -3831,19 +3789,19 @@ public class JerseyServices implements RESTServices {
     return output;
   }
 
-  private WebResource makeGetWebResource(String path,
-                                         RequestParameters params, Object mimetype) {
+  private Request.Builder makeGetWebResource(String path,
+                                             RequestParameters params, Object mimetype) {
     if (path == null)
       throw new IllegalArgumentException("Read with null path");
 
-    if (logger.isDebugEnabled())
-      logger.debug(String.format("Getting %s as %s", path, mimetype));
+    logger.debug(String.format("Getting %s as %s", path, mimetype));
 
-    return makeWebResource(path, convertParams(params));
+    return setupRequest(path, params);
   }
 
-  private ClientResponse doGet(WebResource.Builder builder) {
-    ClientResponse response = builder.get(ClientResponse.class);
+  private Response doGet(Request.Builder requestBldr) {
+    requestBldr = requestBldr.get();
+    Response response = sendRequestOnce(requestBldr);
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3851,37 +3809,34 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private WebResource makePutWebResource(String path,
-                                         RequestParameters params) {
+  private Request.Builder makePutWebResource(String path,
+                                             RequestParameters params) {
     if (path == null)
       throw new IllegalArgumentException("Write with null path");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Putting {}", path);
+    logger.debug("Putting {}", path);
 
-    return makeWebResource(path, convertParams(params));
+    return setupRequest(path, params);
   }
 
-  private ClientResponse doPut(RequestLogger reqlog,
-                               WebResource.Builder builder, Object value, boolean isStreaming) {
+  private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value, boolean isStreaming) {
     if (value == null)
       throw new IllegalArgumentException("Resource write with null value");
 
     if (isFirstRequest() && isStreaming(value))
       makeFirstRequest(0);
 
-    ClientResponse response = null;
+    MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
     if (value instanceof OutputStreamSender) {
-      response = builder
-        .put(ClientResponse.class, new StreamingOutputImpl(
-          (OutputStreamSender) value, reqlog));
+      requestBldr = requestBldr.put(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
     } else {
-      if (reqlog != null)
-        response = builder.put(ClientResponse.class,
-          reqlog.copyContent(value));
-      else
-        response = builder.put(ClientResponse.class, value);
+      if (reqlog != null) {
+        requestBldr = requestBldr.put(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
+      } else {
+        requestBldr = requestBldr.put(new ObjectRequestBody(value, mediaType));
+      }
     }
+    Response response = sendRequestOnce(requestBldr);
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3889,12 +3844,13 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private ClientResponse doPut(WebResource.Builder builder,
-                               MultiPart multiPart, boolean hasStreamingPart) {
+  private Response doPut(Request.Builder requestBldr,
+                         MultipartBody.Builder multiPart, boolean hasStreamingPart) {
     if (isFirstRequest() && hasStreamingPart)
       makeFirstRequest(0);
 
-    ClientResponse response = builder.put(ClientResponse.class, multiPart);
+    requestBldr = requestBldr.put(multiPart.build());
+    Response response = sendRequestOnce(requestBldr);
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3902,36 +3858,34 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private WebResource makePostWebResource(String path, RequestParameters params) {
+  private Request.Builder makePostWebResource(String path, RequestParameters params) {
     if (path == null)
       throw new IllegalArgumentException("Apply with null path");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Posting {}", path);
+    logger.debug("Posting {}", path);
 
-    return makeWebResource(path, convertParams(params));
+    return setupRequest(path, params);
   }
 
-  private ClientResponse doPost(RequestLogger reqlog,
-                                WebResource.Builder builder, Object value, boolean isStreaming) {
-    if (isFirstRequest() && isStreaming(value))
+  private Response doPost(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
+    if (isFirstRequest() && isStreaming(value)) {
       makeFirstRequest(0);
+    }
 
-    ClientResponse response = null;
+    MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
     if(value == null) {
-      response = builder.post(ClientResponse.class);
-    }
-    else if (value instanceof OutputStreamSender) {
-      response = builder
-        .post(ClientResponse.class, new StreamingOutputImpl(
-          (OutputStreamSender) value, reqlog));
+      requestBldr = requestBldr.post(new ObjectRequestBody(null, null));
+    } else if (value instanceof OutputStreamSender) {
+      requestBldr = requestBldr
+        .post(new StreamingOutputImpl((OutputStreamSender) value, reqlog, mediaType));
     } else {
-      if (reqlog != null)
-        response = builder.post(ClientResponse.class,
-          reqlog.copyContent(value));
-      else
-        response = builder.post(ClientResponse.class, value);
+      if (reqlog != null) {
+        requestBldr = requestBldr.post(new ObjectRequestBody(reqlog.copyContent(value), mediaType));
+      } else {
+        requestBldr = requestBldr.post(new ObjectRequestBody(value, mediaType));
+      }
     }
+    Response response = sendRequestOnce(requestBldr);
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3939,12 +3893,12 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private ClientResponse doPost(WebResource.Builder builder,
-                                MultiPart multiPart, boolean hasStreamingPart) {
+  private Response doPost(Request.Builder requestBldr,
+                          MultipartBody.Builder multiPart, boolean hasStreamingPart) {
     if (isFirstRequest() && hasStreamingPart)
       makeFirstRequest(0);
 
-    ClientResponse response = builder.post(ClientResponse.class, multiPart);
+    Response response = sendRequestOnce(requestBldr.post(multiPart.build()));
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3952,18 +3906,17 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private WebResource makeDeleteWebResource(String path, RequestParameters params) {
+  private Request.Builder makeDeleteWebResource(String path, RequestParameters params) {
     if (path == null)
       throw new IllegalArgumentException("Delete with null path");
 
-    if (logger.isDebugEnabled())
-      logger.debug("Deleting {}", path);
+    logger.debug("Deleting {}", path);
 
-    return makeWebResource(path, convertParams(params));
+    return setupRequest(path, params);
   }
 
-  private ClientResponse doDelete(WebResource.Builder builder) {
-    ClientResponse response = builder.delete(ClientResponse.class);
+  private Response doDelete(Request.Builder requestBldr) {
+    Response response = sendRequestOnce(requestBldr.delete().build());
 
     if (isFirstRequest())
       setFirstRequest(false);
@@ -3971,34 +3924,22 @@ public class JerseyServices implements RESTServices {
     return response;
   }
 
-  private MultivaluedMap<String, String> convertParams(
-    RequestParameters params) {
-    if (params == null || params.size() == 0)
-      return null;
-
-    MultivaluedMap<String, String> requestParams = new MultivaluedMapImpl();
-    for (Map.Entry<String, List<String>> entry : params.entrySet()) {
-      addEncodedParam(requestParams, entry.getKey(), entry.getValue());
-    }
-
-    return requestParams;
-  }
-
-  private void addEncodedParam(MultivaluedMap<String, String> params,
+  /*
+  private void addEncodedParam(RequestParameters params,
                                String key, List<String> values) {
     List<String> encodedParams = encodeParamValues(values);
     if (encodedParams != null && encodedParams.size() > 0)
       params.put(key, encodedParams);
   }
 
-  private void addEncodedParam(MultivaluedMap<String, String> params,
+  private void addEncodedParam(RequestParameters params,
                                String key, String[] values) {
     List<String> encodedParams = encodeParamValues(values);
     if (encodedParams != null && encodedParams.size() > 0)
       params.put(key, encodedParams);
   }
 
-  private void addEncodedParam(MultivaluedMap<String, String> params,
+  private void addEncodedParam(RequestParameters params,
                                String key, String value) {
     value = encodeParamValue(value);
     if (value == null)
@@ -4052,37 +3993,38 @@ public class JerseyServices implements RESTServices {
     return UriComponent.encode(value, UriComponent.Type.QUERY_PARAM)
       .replace("+", "%20");
   }
+  */
 
-  private WebResource.Builder addTransactionScopedCookies(WebResource.Builder builder, WebResource webResource,
-                                                          Transaction transaction)
-  {
+  private Request.Builder addTransactionScopedCookies(Request.Builder requestBldr, Transaction transaction) {
     if ( transaction != null && transaction.getCookies() != null ) {
-      if ( builder == null ) {
-        throw new MarkLogicInternalException("no builder available to set cookies");
+      if ( requestBldr == null ) {
+        throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
-      if ( webResource == null ) {
-        throw new MarkLogicInternalException("no webResource available to get the URI");
-      }
-      URI uri = webResource.getURI();
+      HttpUrl uri = requestBldr.build().url();
       for ( NewCookie cookie : transaction.getCookies() ) {
         // don't forward the cookie if it requires https and we're not using https
-        if ( cookie.isSecure() && ! "https".equals(uri.getScheme()) ) {
+        if ( cookie.isSecure() && ! uri.isHttps() ) {
           continue;
         }
         // don't forward the cookie if it requires a path and we're using a different path
         if ( cookie.getPath() != null ) {
-          if ( uri.getPath() == null || ! uri.getPath().startsWith(cookie.getPath()) ) {
+          String path = uri.encodedPath();
+          if ( path == null || ! path.startsWith(cookie.getPath()) ) {
             continue;
           }
         }
         // don't forward the cookie if it requires a domain and we're using a different domain
         if ( cookie.getDomain() != null ) {
-          if ( uri.getHost() == null || ! uri.getHost().equals(cookie.getDomain()) ) {
+          if ( uri.host() == null || ! uri.host().equals(cookie.getDomain()) ) {
             continue;
           }
         }
         // don't forward the cookie if it has 0 for max age
-        if ( cookie.getMaxAge() == 0 ) { continue; }
+        if ( cookie.getMaxAge() == 0 ) {
+          continue;
+        }
+        // TODO: eval if we need handling for MIN_VALUE
+        // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
         // don't forward the cookie if it has a max age and we're past the max age
         if ( cookie.getMaxAge() > 0 ) {
           Calendar expiration = (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone();
@@ -4091,31 +4033,56 @@ public class JerseyServices implements RESTServices {
             continue;
           }
         }
-        return builder.cookie(cookie);
+        requestBldr = requestBldr.addHeader(HEADER_COOKIE, makeCookie(uri, cookie).toString());
       }
     }
-    return builder;
+    return requestBldr;
   }
 
-  private WebResource.Builder addTelemetryAgentId(WebResource.Builder builder) {
-    if ( builder == null ) throw new MarkLogicInternalException("no builder available to set ML-Agent-ID header");
-    return builder.header("ML-Agent-ID", "java");
+  private NewCookie makeJaxRsCookie(HttpUrl url, String setCookie) {
+    Cookie cookie = Cookie.parse(url, setCookie);
+    int maxAge = (int) TimeUnit.MILLISECONDS.toSeconds(cookie.expiresAt() - System.currentTimeMillis());
+    return new NewCookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain(),
+      null, maxAge, cookie.secure(), cookie.httpOnly());
+  }
+
+  private Cookie makeCookie(HttpUrl url, NewCookie cookie) {
+    if ( cookie == null ) throw new IllegalArgumentException(("cookie cannot be null"));
+    /*
+    return Cookie.parse(url, cookie.toString());
+    */
+    Cookie.Builder cookieBldr = new Cookie.Builder()
+      .domain(cookie.getDomain())
+      .path(cookie.getPath())
+      .name(cookie.getName())
+      .value(cookie.getValue());
+    if ( cookie.getExpiry() != null )  cookieBldr.expiresAt(cookie.getExpiry().getDate());
+    if ( cookie.isSecure() == true ) cookieBldr = cookieBldr.secure();
+    if ( cookie.isHttpOnly() == true ) cookieBldr = cookieBldr.httpOnly();
+    return cookieBldr.build();
+  }
+
+  private Request.Builder addTelemetryAgentId(Request.Builder requestBldr) {
+    if ( requestBldr == null ) throw new MarkLogicInternalException("no requestBldr available to set ML-Agent-ID header");
+    return requestBldr.header("ML-Agent-ID", "java");
   }
 
   private <W extends AbstractWriteHandle> boolean addParts(
-    MultiPart multiPart, RequestLogger reqlog, W[] input) {
+    MultipartBody.Builder multiPart, RequestLogger reqlog, W[] input)
+  {
     return addParts(multiPart, reqlog, null, input, null);
   }
 
   private <W extends AbstractWriteHandle> boolean addParts(
-    MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
-    W[] input) {
+    MultipartBody.Builder multiPart, RequestLogger reqlog, String[] mimetypes, W[] input)
+  {
     return addParts(multiPart, reqlog, null, input, null);
   }
 
   private <W extends AbstractWriteHandle> boolean addParts(
-    MultiPart multiPart, RequestLogger reqlog, String[] mimetypes,
-    W[] input, Map<String, List<String>>[] headers) {
+    MultipartBody.Builder multiPart, RequestLogger reqlog, String[] mimetypes,
+    W[] input, Map<String, List<String>>[] headers)
+  {
     if (mimetypes != null && mimetypes.length != input.length)
       throw new IllegalArgumentException(
         "Mismatch between count of mimetypes and input");
@@ -4123,7 +4090,7 @@ public class JerseyServices implements RESTServices {
       throw new IllegalArgumentException(
         "Mismatch between count of headers and input");
 
-    multiPart.setMediaType(new MediaType("multipart", "mixed"));
+    multiPart.setType(MediaType.parse(MIMETYPE_MULTIPART_MIXED));
 
     boolean hasStreamingPart = false;
     for (int i = 0; i < input.length; i++) {
@@ -4139,61 +4106,87 @@ public class JerseyServices implements RESTServices {
       String inputMimetype = null;
       if ( mimetypes != null ) inputMimetype = mimetypes[i];
       if ( inputMimetype == null && headers != null ) {
-        inputMimetype = getHeaderMimetype(headers[i]);
+        inputMimetype = getHeaderMimetype(getHeader(headers[i], HEADER_CONTENT_TYPE));
       }
       if ( inputMimetype == null ) inputMimetype = handleBase.getMimetype();
 
-      String[] typeParts = (inputMimetype != null && inputMimetype
-        .contains("/")) ? inputMimetype.split("/", 2) : null;
+      MediaType mediaType = (inputMimetype != null)
+                              ? MediaType.parse(inputMimetype)
+                              : MediaType.parse(MIMETYPE_WILDCARD);
 
-      MediaType typePart = (typeParts != null)
-                             ? new MediaType(typeParts[0], typeParts[1])
-                             : MediaType.WILDCARD_TYPE;
-
-      BodyPart bodyPart = null;
-      if (value instanceof OutputStreamSender) {
-        bodyPart = new BodyPart(new StreamingOutputImpl(
-          (OutputStreamSender) value, reqlog), typePart);
-      } else {
-        if (reqlog != null)
-          bodyPart = new BodyPart(reqlog.copyContent(value), typePart);
-        else
-          bodyPart = new BodyPart(value, typePart);
-      }
+      Headers.Builder partHeaders = new Headers.Builder();
       if ( headers != null ) {
-        MultivaluedMap mutableHeaders = bodyPart.getHeaders();
-        mutableHeaders.putAll(headers[i]);
+        for ( String key : headers[i].keySet() ) {
+          // OkHttp wants me to skip the Content-Type header
+          if ( HEADER_CONTENT_TYPE.equalsIgnoreCase(key) ) continue;
+          for ( String headerValue : headers[i].get(key) ) {
+            partHeaders.add(key, headerValue);
+          }
+        }
       }
 
-      multiPart = multiPart.bodyPart(bodyPart);
+      Part bodyPart = null;
+      if (value instanceof OutputStreamSender) {
+        bodyPart = Part.create(partHeaders.build(), new StreamingOutputImpl(
+          (OutputStreamSender) value, reqlog, mediaType));
+      } else {
+        if (reqlog != null) {
+          bodyPart = Part.create(partHeaders.build(), new ObjectRequestBody(reqlog.copyContent(value), mediaType));
+        } else {
+          bodyPart = Part.create(partHeaders.build(), new ObjectRequestBody(value, mediaType));
+        }
+      }
+
+      multiPart = multiPart.addPart(bodyPart);
     }
 
     return hasStreamingPart;
   }
 
-  private WebResource makeWebResource(String path,
-                                      MultivaluedMap<String, String> params) {
-    if ( params == null ) params = new MultivaluedMapImpl();
+  private String multipartMixedWithBoundary() {
+    return MIMETYPE_MULTIPART_MIXED + "; boundary=" + UUID.randomUUID().toString();
+  }
+
+  private Request.Builder setupRequest(String path, RequestParameters params) {
+    if ( path == null ) throw new IllegalArgumentException("path cannot be null");
+    if ( path.startsWith("/") ) path = path.substring(1);
+    HttpUrl.Builder uri = baseUri.resolve(path).newBuilder();
+    if ( params != null ) {
+      for ( String key : params.keySet() ) {
+        for ( String value : params.get(key) ) {
+          uri.addQueryParameter(key, value);
+        }
+      }
+    }
+    if ( database != null ) {
+      uri.addQueryParameter("database", database);
+    }
+    Request.Builder request = new Request.Builder()
+      .url(uri.build());
+    return request;
+  }
+  /*
+  private Request.Builder sendRequestBuilder(String path,
+                                      RequestParameters params) {
+    if ( params == null ) params = new RequestParameters();
     if ( database != null ) {
       addEncodedParam(params, "database", database);
     }
     return getConnection().path(path).queryParams(params);
   }
+  */
 
-  private WebResource.Builder makeBuilder(WebResource webResource,
-                                          Object inputMimetype, Object outputMimetype) {
-
-    WebResource.Builder builder = webResource.getRequestBuilder();
+  private Request.Builder setupRequest(Request.Builder requestBldr,
+                                       Object inputMimetype, Object outputMimetype) {
 
     if (inputMimetype == null) {
     } else if (inputMimetype instanceof String) {
-      builder = builder.type((String) inputMimetype);
+      requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, (String) inputMimetype);
     } else if (inputMimetype instanceof MediaType) {
-      builder = builder.type((MediaType) inputMimetype);
-    } else if (inputMimetype instanceof MultiPart) {
-      builder = builder.type(Boundary.addBoundary(MultiPartMediaTypes.MULTIPART_MIXED_TYPE));
-      if (logger.isDebugEnabled())
-        logger.debug("Sending multipart for {}", webResource.getURI().getPath());
+      requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, inputMimetype.toString());
+    } else if (inputMimetype instanceof MultipartBody.Builder) {
+      requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_MULTIPART_MIXED);
+      logger.debug("Sending multipart for {}", requestBldr.build().url().encodedPath());
     } else {
       throw new IllegalArgumentException(
         "Unknown input mimetype specifier "
@@ -4202,30 +4195,30 @@ public class JerseyServices implements RESTServices {
 
     if (outputMimetype == null) {
     } else if (outputMimetype instanceof String) {
-      builder = builder.accept((String) outputMimetype);
+      requestBldr = requestBldr.header(HEADER_ACCEPT, (String) outputMimetype);
     } else if (outputMimetype instanceof MediaType) {
-      builder = builder.accept((MediaType) outputMimetype);
+      requestBldr = requestBldr.header(HEADER_ACCEPT, outputMimetype.toString());
     } else {
       throw new IllegalArgumentException(
         "Unknown output mimetype specifier "
           + outputMimetype.getClass().getName());
     }
 
-    return builder;
+    return requestBldr;
   }
 
-  private WebResource.Builder makeBuilder(String path,
-                                          MultivaluedMap<String, String> params, Object inputMimetype,
-                                          Object outputMimetype) {
-    return makeBuilder(makeWebResource(path, params), inputMimetype, outputMimetype);
+  private Request.Builder setupRequest(String path, RequestParameters params, Object inputMimetype,
+                                       Object outputMimetype)
+  {
+    return setupRequest(setupRequest(path, params), inputMimetype, outputMimetype);
   }
 
-  private void checkStatus(ClientResponse response,
-                           ClientResponse.Status status, String operation, String entityType,
-                           String path, ResponseStatus expected) {
+  private void checkStatus(Response response, int status, String operation, String entityType,
+                           String path, ResponseStatus expected)
+  {
     if (!expected.isExpected(status)) {
       FailedRequest failure = extractErrorFields(response);
-      if (status == ClientResponse.Status.NOT_FOUND) {
+      if (status == STATUS_NOT_FOUND) {
         throw new ResourceNotFoundException("Could not " + operation
           + " " + entityType + " at " + path,
           failure);
@@ -4233,47 +4226,49 @@ public class JerseyServices implements RESTServices {
       if ("RESTAPI-CONTENTNOVERSION".equals(failure.getMessageCode())) {
         throw new FailedRequestException("Content version required to " +
           operation + " " + entityType + " at " + path, failure);
-      } else if (status == ClientResponse.Status.FORBIDDEN) {
+      } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException("User is not allowed to "
           + operation + " " + entityType + " at " + path,
           failure);
       }
       throw new FailedRequestException("failed to " + operation + " "
         + entityType + " at " + path + ": "
-        + status.getReasonPhrase(), failure);
+        + getReasonPhrase(response), failure);
     }
   }
 
   private <T> T makeResult(RequestLogger reqlog, String operation,
-                           String entityType, ClientResponse response, Class<T> as) {
+                           String entityType, Response response, Class<T> as) {
     if (as == null) {
       return null;
     }
 
     logRequest(reqlog, "%s for %s", operation, entityType);
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
 
-  private <U extends JerseyResultIterator> U makeResults(
+  private <U extends OkHttpResultIterator> U makeResults(
     Class<U> clazz, RequestLogger reqlog,
-    String operation, String entityType, ClientResponse response) {
+    String operation, String entityType, Response response) {
     if ( response == null ) return null;
-    MultiPart entity = response.hasEntity() ?
-      response.getEntity(MultiPart.class) : null;
+    ResponseBody body = response.body();
+    MimeMultipart entity = body.contentLength() != 0 ?
+      getEntity(body, MimeMultipart.class) : null;
 
-    List<BodyPart> partList = (entity == null) ? null : entity.getBodyParts();
-    Closeable closeable = new MultipartCloseable(response, entity);
+    List<BodyPart> partList = getPartList(entity);
+    Closeable closeable = response;
     return makeResults(clazz, reqlog, operation, entityType, partList, response, closeable);
   }
 
-  private <U extends JerseyResultIterator> U makeResults(
+  private <U extends OkHttpResultIterator> U makeResults(
     Class<U> clazz, RequestLogger reqlog,
-    String operation, String entityType, List<BodyPart> partList, ClientResponse response,
+    String operation, String entityType, List<BodyPart> partList, Response response,
     Closeable closeable) {
     logRequest(reqlog, "%s for %s", operation, entityType);
 
@@ -4281,17 +4276,17 @@ public class JerseyServices implements RESTServices {
 
     try {
       java.lang.reflect.Constructor<U> constructor =
-        clazz.getConstructor(JerseyServices.class, RequestLogger.class, List.class, Closeable.class);
-      JerseyResultIterator result = constructor.newInstance(this, reqlog, partList, closeable);
-      MultivaluedMap<String, String> headers = response.getHeaders();
-      if (headers.containsKey("vnd.marklogic.start")) {
-        result.setStart(Long.parseLong(headers.get("vnd.marklogic.start").get(0)));
+        clazz.getConstructor(OkHttpServices.class, RequestLogger.class, List.class, Closeable.class);
+      OkHttpResultIterator result = constructor.newInstance(this, reqlog, partList, closeable);
+      Headers headers = response.headers();
+      if (headers.get(HEADER_VND_MARKLOGIC_START) != null) {
+        result.setStart(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_START)));
       }
-      if (headers.containsKey("vnd.marklogic.pageLength")) {
-        result.setPageSize(Long.parseLong(headers.get("vnd.marklogic.pageLength").get(0)));
+      if (headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH) != null) {
+        result.setPageSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_PAGELENGTH)));
       }
-      if (headers.containsKey("vnd.marklogic.result-estimate")) {
-        result.setTotalSize(Long.parseLong(headers.get("vnd.marklogic.result-estimate").get(0)));
+      if (headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE) != null) {
+        result.setTotalSize(Long.parseLong(headers.get(HEADER_VND_MARKLOGIC_RESULT_ESTIMATE)));
       }
       return (U) result;
     } catch (Throwable t) {
@@ -4351,38 +4346,17 @@ public class JerseyServices implements RESTServices {
     return min + randRetry.nextInt(range);
   }
 
-  public class MultipartCloseable implements Closeable {
-    private ClientResponse response;
-    private MultiPart multiPart;
-
-    public MultipartCloseable(ClientResponse response, MultiPart multiPart) {
-      this.response = response;
-      this.multiPart = multiPart;
-    }
-    @Override
-    public void close() throws IOException {
-      try {
-        if ( multiPart != null ) {
-          multiPart.cleanup();
-          multiPart.close();
-        }
-      } finally {
-        if ( response != null ) response.close();
-      }
-    }
-  }
-
-  public class JerseyResult {
+  public class OkHttpResult {
     private RequestLogger reqlog;
     private BodyPart part;
     private boolean extractedHeaders = false;
-    private MultivaluedMap<String, String> headers = null;
     private String uri;
+    private ConcurrentHashMap<String,String> headers = new ConcurrentHashMap<String,String>();
     private Format format;
     private String mimetype;
     private long length;
 
-    public JerseyResult(RequestLogger reqlog, BodyPart part) {
+    public OkHttpResult(RequestLogger reqlog, BodyPart part) {
       this.reqlog = reqlog;
       this.part = part;
     }
@@ -4399,12 +4373,11 @@ public class JerseyServices implements RESTServices {
       updateLength(handleBase, length);
 
       try {
-        Object contentEntity = part.getEntityAs(handleBase.receiveAs());
+        Object contentEntity = getEntity(part, handleBase.receiveAs());
         handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(contentEntity) : contentEntity);
 
         return handle;
       } finally {
-        part.cleanup();
         part = null;
         reqlog = null;
       }
@@ -4436,35 +4409,37 @@ public class JerseyServices implements RESTServices {
       return length;
     }
 
-    public Map<String,List<String>> getHeaders() {
-      extractHeaders();
-      return headers;
-    }
-
     public String getHeader(String name) {
       extractHeaders();
-      return headers.getFirst(name);
+      return headers.get(name);
     }
 
     private void extractHeaders() {
       if (part == null || extractedHeaders)
         return;
-      headers = part.getHeaders();
-      format = getHeaderFormat(part);
-      mimetype = getHeaderMimetype(headers);
-      length = getHeaderLength(headers);
-      uri = getHeaderUri(part.getContentDisposition());
-      extractedHeaders = true;
+      try {
+        for ( Enumeration<Header> e = part.getAllHeaders(); e.hasMoreElements(); ) {
+          Header header = e.nextElement();
+          headers.put(header.getName(), header.getValue());
+        }
+        format = getHeaderFormat(part);
+        mimetype = getHeaderMimetype(OkHttpServices.getHeader(part, HEADER_CONTENT_TYPE));
+        length = getHeaderLength(OkHttpServices.getHeader(part, HEADER_CONTENT_LENGTH));
+        uri = getHeaderUri(part);
+        extractedHeaders = true;
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      }
     }
   }
 
-  public class JerseyServiceResult extends JerseyResult implements ResourceServices.ServiceResult {
-    public JerseyServiceResult(RequestLogger reqlog, BodyPart part) {
+  public class OkHttpServiceResult extends OkHttpResult implements ResourceServices.ServiceResult {
+    public OkHttpServiceResult(RequestLogger reqlog, BodyPart part) {
       super(reqlog, part);
     }
   }
 
-  public class JerseyResultIterator<T extends JerseyResult> {
+  public class OkHttpResultIterator<T extends OkHttpResult> {
     private RequestLogger reqlog;
     private Iterator<BodyPart> partQueue;
     private Class<T> clazz;
@@ -4474,7 +4449,7 @@ public class JerseyServices implements RESTServices {
     private long totalSize = -1;
     private Closeable closeable;
 
-    public JerseyResultIterator(RequestLogger reqlog,
+    public OkHttpResultIterator(RequestLogger reqlog,
                                 List<BodyPart> partList, Class<T> clazz, Closeable closeable) {
       this.clazz = clazz;
       this.reqlog = reqlog;
@@ -4492,7 +4467,7 @@ public class JerseyServices implements RESTServices {
       return start;
     }
 
-    public JerseyResultIterator<T> setStart(long start) {
+    public OkHttpResultIterator<T> setStart(long start) {
       this.start = start;
       return this;
     }
@@ -4501,7 +4476,7 @@ public class JerseyServices implements RESTServices {
       return size;
     }
 
-    public JerseyResultIterator<T> setSize(long size) {
+    public OkHttpResultIterator<T> setSize(long size) {
       this.size = size;
       return this;
     }
@@ -4510,7 +4485,7 @@ public class JerseyServices implements RESTServices {
       return pageSize;
     }
 
-    public JerseyResultIterator<T> setPageSize(long pageSize) {
+    public OkHttpResultIterator<T> setPageSize(long pageSize) {
       this.pageSize = pageSize;
       return this;
     }
@@ -4519,7 +4494,7 @@ public class JerseyServices implements RESTServices {
       return totalSize;
     }
 
-    public JerseyResultIterator<T> setTotalSize(long totalSize) {
+    public OkHttpResultIterator<T> setTotalSize(long totalSize) {
       this.totalSize = totalSize;
       return this;
     }
@@ -4538,8 +4513,8 @@ public class JerseyServices implements RESTServices {
 
       try {
         java.lang.reflect.Constructor<T> constructor =
-          clazz.getConstructor(JerseyServices.class, RequestLogger.class, BodyPart.class);
-        return constructor.newInstance(new JerseyServices(), reqlog, partQueue.next());
+          clazz.getConstructor(OkHttpServices.class, RequestLogger.class, BodyPart.class);
+        return constructor.newInstance(new OkHttpServices(), reqlog, partQueue.next());
       } catch (Throwable t) {
         throw new IllegalStateException("Error instantiating " + clazz.getName(), t);
       }
@@ -4565,36 +4540,36 @@ public class JerseyServices implements RESTServices {
     }
   }
 
-  public class JerseyServiceResultIterator
-    extends JerseyResultIterator<JerseyServiceResult>
+  public class OkHttpServiceResultIterator
+    extends OkHttpResultIterator<OkHttpServiceResult>
     implements ResourceServices.ServiceResultIterator
   {
-    public JerseyServiceResultIterator(RequestLogger reqlog,
+    public OkHttpServiceResultIterator(RequestLogger reqlog,
                                        List<BodyPart> partList, Closeable closeable) {
-      super(reqlog, partList, JerseyServiceResult.class, closeable);
+      super(reqlog, partList, OkHttpServiceResult.class, closeable);
     }
   }
 
-  public class DefaultJerseyResultIterator
-    extends JerseyResultIterator<JerseyResult>
-    implements Iterator<JerseyResult>
+  public class DefaultOkHttpResultIterator
+    extends OkHttpResultIterator<OkHttpResult>
+    implements Iterator<OkHttpResult>
   {
-    public DefaultJerseyResultIterator(RequestLogger reqlog,
+    public DefaultOkHttpResultIterator(RequestLogger reqlog,
                                        List<BodyPart> partList, Closeable closeable) {
-      super(reqlog, partList, JerseyResult.class, closeable);
+      super(reqlog, partList, OkHttpResult.class, closeable);
     }
   }
 
-  public class JerseyDocumentRecord implements DocumentRecord {
-    private JerseyResult content;
-    private JerseyResult metadata;
+  public class OkHttpDocumentRecord implements DocumentRecord {
+    private OkHttpResult content;
+    private OkHttpResult metadata;
 
-    public JerseyDocumentRecord(JerseyResult content, JerseyResult metadata) {
+    public OkHttpDocumentRecord(OkHttpResult content, OkHttpResult metadata) {
       this.content = content;
       this.metadata = metadata;
     }
 
-    public JerseyDocumentRecord(JerseyResult content) {
+    public OkHttpDocumentRecord(OkHttpResult content) {
       this.content = content;
     }
 
@@ -4649,15 +4624,18 @@ public class JerseyServices implements RESTServices {
   }
 
   @Override
-  public HttpClient getClientImplementation() {
-    if (client == null)
-      return null;
-    return client.getClientHandler().getHttpClient();
+  public OkHttpClient getClientImplementation() {
+    if (client == null) return null;
+    return client;
+  }
+
+  public void setClientImplementation(OkHttpClient client) {
+    this.client = client;
   }
 
   @Override
   public <T> T suggest(Class<T> as, SuggestDefinition suggestionDef) {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     String suggestCriteria = suggestionDef.getStringCriteria();
     String[] queries = suggestionDef.getQueryStrings();
@@ -4682,28 +4660,29 @@ public class JerseyServices implements RESTServices {
         params.add("q", stringQuery);
       }
     }
-    WebResource.Builder builder = null;
-    builder = makeBuilder("suggest", params, null, "application/xml");
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = null;
+    requestBldr = setupRequest("suggest", params, null, MIMETYPE_APPLICATION_XML);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return funcBuilder.get(ClientResponse.class);
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException(
         "User is not allowed to get suggestions",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("Suggest call failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    T entity = response.hasEntity() ? response.getEntity(as) : null;
+    ResponseBody body = response.body();
+    T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
     if (entity == null || (as != InputStream.class && as != Reader.class))
       response.close();
 
@@ -4713,7 +4692,7 @@ public class JerseyServices implements RESTServices {
   @Override
   public InputStream match(StructureWriteHandle document,
                            String[] candidateRules, String mimeType, ServerTransform transform) {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     final HandleImplementation baseHandle = HandleAccessor.checkHandle(document, "match");
     if (candidateRules != null) {
@@ -4724,29 +4703,30 @@ public class JerseyServices implements RESTServices {
     if (transform != null) {
       transform.merge(params);
     }
-    WebResource.Builder builder = null;
-    builder = makeBuilder("alert/match", params, "application/xml", mimeType);
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = null;
+    requestBldr = setupRequest("alert/match", params, MIMETYPE_APPLICATION_XML, mimeType);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doPostFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
-        return doPost(null, funcBuilder, baseHandle.sendContent(), false);
+    Function<Request.Builder, Response> doPostFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
+        return doPost(null, funcBuilder, baseHandle.sendContent());
       }
     };
-    ClientResponse response = makeRequest(builder, doPostFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
+    Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+    int status = response.code();
 
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to match",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("match failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    InputStream entity = response.hasEntity() ?
-      response.getEntity(InputStream.class) : null;
+    ResponseBody body = response.body();
+    InputStream entity = body.contentLength() != 0 ?
+      getEntity(body, InputStream.class) : null;
     if (entity == null)
       response.close();
 
@@ -4760,7 +4740,7 @@ public class JerseyServices implements RESTServices {
       throw new IllegalArgumentException("Cannot match null query");
     }
 
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     if (start > 1) {
       params.add("start", Long.toString(start));
@@ -4781,7 +4761,7 @@ public class JerseyServices implements RESTServices {
       params.add("options", queryDef.getOptionsName());
     }
 
-    WebResource.Builder builder = null;
+    Request.Builder requestBldr = null;
     String structure = null;
     HandleImplementation baseHandle = null;
 
@@ -4790,37 +4770,35 @@ public class JerseyServices implements RESTServices {
       text = ((StringQueryDefinition) queryDef).getCriteria();
     }
     if (text != null) {
-      addEncodedParam(params, "q", text);
+      params.add("q", text);
     }
     if (queryDef instanceof StructuredQueryDefinition) {
       structure = ((StructuredQueryDefinition) queryDef).serialize();
 
-      if (logger.isDebugEnabled())
-        logger.debug("Searching for structure {}",
-          structure);
+      logger.debug("Searching with structured query {}", structure);
 
-      builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
+      requestBldr = setupRequest("alert/match", params, MIMETYPE_APPLICATION_XML, MIMETYPE_APPLICATION_XML);
     } else if (queryDef instanceof RawQueryDefinition) {
       StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
       baseHandle = HandleAccessor.checkHandle(handle, "match");
 
-      if (logger.isDebugEnabled())
-        logger.debug("Searching for structure {}", structure);
+      logger.debug("Searching with raw query");
 
-      builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
+      requestBldr = setupRequest("alert/match", params, MIMETYPE_APPLICATION_XML, MIMETYPE_APPLICATION_XML);
     } else if (queryDef instanceof StringQueryDefinition) {
-      if (logger.isDebugEnabled())
-        logger.debug("Searching for string [{}]", text);
+      logger.debug("Searching with string query [{}]", text);
 
-      builder = makeBuilder("alert/match", params, null, "application/xml");
+      requestBldr = setupRequest("alert/match", params, null, MIMETYPE_APPLICATION_XML);
     } else {
       throw new UnsupportedOperationException("Cannot match with "
         + queryDef.getClass().getName());
     }
-    builder = addTelemetryAgentId(builder);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    ClientResponse response = null;
-    ClientResponse.Status status = null;
+    MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
+
+    Response response = null;
+    int status = -1;
     long startTime = System.currentTimeMillis();
     int nextDelay = 0;
     int retry = 0;
@@ -4833,51 +4811,51 @@ public class JerseyServices implements RESTServices {
       }
 
       if (queryDef instanceof StructuredQueryDefinition) {
-        response = builder.post(ClientResponse.class, structure);
+        response = sendRequestOnce(requestBldr.post(RequestBody.create(mediaType, structure)));
+          response = doPost(null, requestBldr, structure);
       } else if (queryDef instanceof RawQueryDefinition) {
-        response = doPost(null, builder, baseHandle.sendContent(), false);
+        response = doPost(null, requestBldr, baseHandle.sendContent());
       } else if (queryDef instanceof StringQueryDefinition) {
-        response = builder.get(ClientResponse.class);
+        response = sendRequestOnce(requestBldr.get());
       } else {
         throw new UnsupportedOperationException("Cannot match with "
           + queryDef.getClass().getName());
       }
+      status = response.code();
 
-      status = response.getClientResponseStatus();
-
-      if (status != ClientResponse.Status.SERVICE_UNAVAILABLE) {
+      if (status != STATUS_SERVICE_UNAVAILABLE) {
         if (isFirstRequest())
           setFirstRequest(false);
 
         break;
       }
 
-      MultivaluedMap<String, String> responseHeaders = response.getHeaders();
-      String retryAfterRaw = responseHeaders.getFirst("Retry-After");
+      String retryAfterRaw = response.header("Retry-After");
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
 
       response.close();
 
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == ClientResponse.Status.SERVICE_UNAVAILABLE) {
+    if (status == STATUS_SERVICE_UNAVAILABLE) {
       checkFirstRequest();
       throw new FailedRequestException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to match",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("match failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    InputStream entity = response.hasEntity() ?
-      response.getEntity(InputStream.class) : null;
+    ResponseBody body = response.body();
+    InputStream entity = body.contentLength() != 0 ?
+      getEntity(body, InputStream.class) : null;
     if (entity == null)
       response.close();
 
@@ -4886,7 +4864,7 @@ public class JerseyServices implements RESTServices {
 
   @Override
   public InputStream match(String[] docIds, String[] candidateRules, ServerTransform transform) {
-    MultivaluedMap<String, String> params = new MultivaluedMapImpl();
+    RequestParameters params = new RequestParameters();
 
     if (docIds.length > 0) {
       for (String docId : docIds) {
@@ -4901,27 +4879,28 @@ public class JerseyServices implements RESTServices {
     if (transform != null) {
       transform.merge(params);
     }
-    WebResource.Builder builder = makeBuilder("alert/match", params, "application/xml", "application/xml");
-    builder = addTelemetryAgentId(builder);
+    Request.Builder requestBldr = setupRequest("alert/match", params, MIMETYPE_APPLICATION_XML, MIMETYPE_APPLICATION_XML);
+    requestBldr = addTelemetryAgentId(requestBldr);
 
-    Function<WebResource.Builder, ClientResponse> doGetFunction = new Function<WebResource.Builder, ClientResponse>() {
-      public ClientResponse apply(WebResource.Builder funcBuilder) {
+    Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
+      public Response apply(Request.Builder funcBuilder) {
         return doGet(funcBuilder);
       }
     };
-    ClientResponse response = makeRequest(builder, doGetFunction, null);
-    ClientResponse.Status status = response.getClientResponseStatus();
-    if (status == ClientResponse.Status.FORBIDDEN) {
+    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    int status = response.code();
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to match",
         extractErrorFields(response));
     }
-    if (status != ClientResponse.Status.OK) {
+    if (status != STATUS_OK) {
       throw new FailedRequestException("match failed: "
-        + status.getReasonPhrase(), extractErrorFields(response));
+        + getReasonPhrase(response), extractErrorFields(response));
     }
 
-    InputStream entity = response.hasEntity() ?
-      response.getEntity(InputStream.class) : null;
+    ResponseBody body = response.body();
+    InputStream entity = body.contentLength() != 0 ?
+      getEntity(body, InputStream.class) : null;
     if (entity == null)
       response.close();
 
@@ -5133,7 +5112,7 @@ public class JerseyServices implements RESTServices {
             (StructuredQueryDefinition) constrainingQuery : null;
         CombinedQueryDefinition combinedQdef = new CombinedQueryBuilderImpl().combine(
           structuredQuery, null, stringQuery, sparql);
-        input = new StringHandle(combinedQdef.serialize()).withMimetype("application/xml");
+        input = new StringHandle(combinedQdef.serialize()).withMimetype(MIMETYPE_APPLICATION_XML);
       } else {
         throw new IllegalArgumentException(
           "Constraining query must be of type SPARQLConstrainingQueryDefinition");
@@ -5182,6 +5161,131 @@ public class JerseyServices implements RESTServices {
   private String getTransactionId(Transaction transaction) {
     if ( transaction == null ) return null;
     return transaction.getTransactionId();
+  }
+
+  private String getReasonPhrase(Response response) {
+    if ( response.message() == null ) return "";
+    // strip off the number part of the reason phrase
+    return response.message().replaceFirst("^\\d+ ", "");
+  }
+
+  private <T> T getEntity(BodyPart part, Class<T> as) {
+    try {
+      String contentType = part.getContentType();
+      return getEntity(ResponseBody.create(MediaType.parse(contentType), part.getSize(),
+        Okio.buffer(Okio.source(part.getInputStream()))), as);
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+
+  private MediaType makeType(String mimetype) {
+    if ( mimetype == null ) return null;
+    MediaType type = MediaType.parse(mimetype);
+    if ( type == null ) throw new IllegalArgumentException("Invalid mime-type: " + mimetype);
+    return type;
+  }
+
+  private <T> T getEntity(ResponseBody body, Class<T> as) {
+    try {
+      if ( as == InputStream.class ) {
+        return (T) body.byteStream();
+      } else if ( as == byte[].class ) {
+        return (T) body.bytes();
+      } else if ( as == Reader.class ) {
+        return (T) body.charStream();
+      } else if ( as == String.class ) {
+        return (T) body.string();
+      } else if ( as == MimeMultipart.class ) {
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(body.byteStream(), body.contentType().toString());
+        return (T) new MimeMultipart(dataSource);
+      } else if ( as == File.class ) {
+        // write out the response body to a temp file in the system temp folder
+        // then return the path to that file as a File object
+        String suffix = ".unknown";
+        boolean isBinary = true;
+        MediaType mediaType = body.contentType();
+        if ( mediaType != null ) {
+          suffix = "." + mediaType.subtype();
+          for ( String type : new String[] {"json", "xml", "xquery", "sjs", "javascript", "html"} ) {
+            if ( type.equalsIgnoreCase(mediaType.subtype()) ) {
+              isBinary = false;
+            }
+          }
+          if ( isBinary == true && "text".equalsIgnoreCase(mediaType.type()) ) {
+            suffix = ".txt";
+            isBinary = false;
+          }
+        }
+        Path path = Files.createTempFile("tmp", suffix);
+        if ( isBinary == true ) {
+          Files.write(path, body.bytes());
+        } else {
+          Writer out = Files.newBufferedWriter(path);
+          try {
+            out.write(body.string());
+          } finally {
+            out.close();
+          }
+        }
+        return (T) path.toFile();
+      } else {
+        throw new IllegalArgumentException(
+          "Handle recieveAs returned " + as + " which is not a supported type.  " +
+          "Try InputStream, Reader, String, byte[], File.");
+      }
+    } catch (IOException e) {
+      throw new MarkLogicIOException(e);
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+
+  private List<BodyPart> getPartList(MimeMultipart multipart) {
+    try {
+      if ( multipart == null ) return null;
+      List<BodyPart> partList = new ArrayList<BodyPart>();
+      for ( int i = 0; i < multipart.getCount(); i++ ) {
+        partList.add(multipart.getBodyPart(i));
+      }
+      return partList;
+    } catch (MessagingException e) {
+      throw new MarkLogicIOException(e);
+    }
+  }
+
+  private class ObjectRequestBody extends RequestBody {
+    private Object obj;
+    private MediaType contentType;
+
+    ObjectRequestBody(Object obj, MediaType contentType) {
+      super();
+      this.obj = obj;
+      this.contentType = contentType;
+    }
+
+    @Override
+    public MediaType contentType() {
+      return contentType;
+    }
+
+    @Override
+    public void writeTo(BufferedSink sink) throws IOException {
+      if ( obj instanceof InputStream ) {
+        sink.writeAll(Okio.source((InputStream) obj));
+      } else if ( obj instanceof File ) {
+        sink.writeAll(Okio.source((File) obj));
+      } else if ( obj instanceof byte[] ) {
+        sink.write((byte[]) obj);
+      } else if ( obj instanceof String) {
+        sink.write(((String) obj).getBytes("UTF-8"));
+      } else if ( obj == null ) {
+      } else {
+        throw new IllegalStateException("Cannot write object of type: " + obj.getClass());
+      }
+    }
   }
 
   private interface Function<T,R> {
