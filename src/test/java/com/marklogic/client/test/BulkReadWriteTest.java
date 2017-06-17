@@ -20,12 +20,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.logging.FileHandler;
-import java.util.logging.Handler;
-import java.util.logging.Logger;
-import java.util.logging.Level;
 
-import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 
 import static org.junit.Assert.assertEquals;
@@ -39,12 +34,14 @@ import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
-import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -52,9 +49,6 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
-import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
@@ -74,6 +68,7 @@ import com.marklogic.client.query.QueryManager.QueryView;
  **/
 @FixMethodOrder(MethodSorters.NAME_ASCENDING)
 public class BulkReadWriteTest {
+    static final private Logger logger = LoggerFactory.getLogger(BulkReadWriteTest.class);
     private static final int BATCH_SIZE = 100;
     static final String DIRECTORY = "/cities/";
     private static final String COUNTRIES_FILE = "countryInfo.txt";
@@ -600,7 +595,7 @@ public class BulkReadWriteTest {
             assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
 
         }catch(Exception e){
-            System.out.println(e.getMessage());
+            logger.error("Exception in test_171", e);
             tstatus=true;
             throw e;
         }finally{
@@ -652,7 +647,7 @@ public class BulkReadWriteTest {
             assertEquals("Count of documents in runtime db", 12, inRuntimeDbResults.getTotalResults());
             assertEquals("Count of documents in default db", 0,  inDefaultDbResults.getTotalResults());
         }catch(Exception e){
-            System.out.println(e.getMessage());
+            logger.error("Exception in test_218", e);
             if(! committed){
                 t1.rollback();
             }
