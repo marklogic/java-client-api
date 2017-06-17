@@ -33,7 +33,7 @@ public class InvalidUserTest {
         //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
         // create the client
         DatabaseClient client = DatabaseClientFactory.newClient(
-          "localhost", 8012, "MyFooUser", "x", Authentication.DIGEST);
+          Common.HOST, Common.PORT, "MyFooUser", "x", Authentication.DIGEST);
 
 
         String expectedException = "com.marklogic.client.FailedRequestException: " +

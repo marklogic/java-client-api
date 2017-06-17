@@ -417,7 +417,7 @@ public class QueryOptionsHandleTest {
     @Test
     public void bug17240()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
-        DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
+        DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, "rest-admin", "x", DatabaseClientFactory.Authentication.DIGEST);
         // create a manager for writing query options
 
         QueryOptionsManager optionsMgr =
