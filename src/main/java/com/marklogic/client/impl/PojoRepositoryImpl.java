@@ -42,6 +42,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicBindingException;
+import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
@@ -60,7 +61,6 @@ import com.marklogic.client.pojo.annotation.Id;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
-import com.sun.jersey.api.client.ClientHandlerException;
 import java.util.Set;
 
 public class PojoRepositoryImpl<T, ID extends Serializable>
@@ -154,7 +154,7 @@ public class PojoRepositoryImpl<T, ID extends Serializable>
     writeSet.add(getDocumentUri(entity), metadataHandle, contentHandle);
     try {
       docMgr.write(writeSet, transaction);
-    } catch(ClientHandlerException e) {
+    } catch(MarkLogicIOException e) {
       checkForEmptyBeans(e);
       throw e;
     }

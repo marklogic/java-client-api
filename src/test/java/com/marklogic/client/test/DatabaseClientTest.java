@@ -114,6 +114,6 @@ public class DatabaseClientTest {
   public void testGetClientImplementationObject() {
     Object impl = Common.client.getClientImplementation();
     assertNotNull("Client could not get client implementation", impl);
-    assertTrue("", impl instanceof org.apache.http.client.HttpClient);
+    assertTrue("", impl instanceof okhttp3.OkHttpClient);
   }
 }

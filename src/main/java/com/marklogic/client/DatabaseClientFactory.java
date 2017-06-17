@@ -31,13 +31,15 @@ import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.HandleFactoryRegistryImpl;
-import com.marklogic.client.impl.JerseyServices;
+import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
@@ -211,7 +213,7 @@ public class DatabaseClientFactory {
   /**
    * A ClientConfigurator provides custom configuration for the communication library
    * used to sending client requests and receiving server responses.
-   * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+   * @see com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator
    * @param <T>	the configurable class for the communication library
    */
   public interface ClientConfigurator<T> {
@@ -596,13 +598,22 @@ public class DatabaseClientFactory {
         "DigestAuthContext, KerberosAuthContext, or CertificateAuthContext");
     }
 
-    JerseyServices services = new JerseyServices();
+    OkHttpServices services = new OkHttpServices();
     services.connect(host, port, database, user, password, type, sslContext, sslVerifier);
 
     if (clientConfigurator != null) {
-      ((HttpClientConfigurator) clientConfigurator).configure(
-        services.getClientImplementation()
-      );
+      if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
+        OkHttpClient client = services.getClientImplementation();
+        OkHttpClient.Builder clientBuilder = client.newBuilder();
+        ((OkHttpClientConfigurator) clientConfigurator).configure(
+          clientBuilder
+        );
+        ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
+      } else if ( clientConfigurator instanceof HttpClientConfigurator ) {
+        // do nothing as we not longer use HttpClient so there's nothing this can configure
+      } else {
+        throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
+      }
     }
 
     DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, database, securityContext);
@@ -754,13 +765,13 @@ public class DatabaseClientFactory {
   /**
    * Adds a listener that provides custom configuration when a communication library
    * is created.
-   * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+   * @see com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator
    * @param configurator	the listener for configuring the communication library
    */
   static public void addConfigurator(ClientConfigurator<?> configurator) {
-    if (!HttpClientConfigurator.class.isInstance(configurator)) {
+    if (!HttpClientConfigurator.class.isInstance(configurator) && !OkHttpClientConfigurator.class.isInstance(configurator)) {
       throw new IllegalArgumentException(
-        "Configurator must implement HttpClientConfigurator"
+        "Configurator must implement OkHttpClientConfigurator"
       );
     }
 
