@@ -132,6 +132,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.Certificate;
@@ -5383,7 +5384,7 @@ public class OkHttpServices implements RESTServices {
         if ( isBinary == true ) {
           Files.write(path, body.bytes());
         } else {
-          Writer out = Files.newBufferedWriter(path);
+          Writer out = Files.newBufferedWriter(path, Charset.forName("UTF-8"));
           try {
             out.write(body.string());
           } finally {
