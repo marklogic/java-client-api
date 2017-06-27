@@ -499,10 +499,14 @@ public class OkHttpServices implements RESTServices {
   }
 
   private OkHttpClient getConnection() {
-    if ( client != null ) return client;
-    else if ( released ) throw new IllegalStateException(
+    if ( client != null ) {
+      return client;
+    } else if ( released ) {
+      throw new IllegalStateException(
       "You cannot use this connected object anymore--connection has already been released");
-    else throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
+    } else {
+      throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
+    }
   }
 
   @Override
@@ -520,26 +524,10 @@ public class OkHttpServices implements RESTServices {
           throw new MarkLogicIOException(e);
         } finally {
           client = null;
+          logger.debug("Releasing connection");
         }
       }
     }
-    /*
-    if (databaseClient != null) {
-      databaseClient = null;
-    }
-
-    if (client == null)
-      return;
-
-    if (logger.isDebugEnabled())
-      logger.debug("Releasing connection");
-
-    connection = null;
-    connMgr.shutdown();
-    connMgr = null;
-    client.destroy();
-    client = null;
-    */
   }
 
   private boolean isFirstRequest() {
@@ -549,8 +537,7 @@ public class OkHttpServices implements RESTServices {
     threadState.get().isFirstRequest = value;
   }
   private void checkFirstRequest() {
-    if (checkFirstRequest)
-      setFirstRequest(true);
+    if (checkFirstRequest) setFirstRequest(true);
   }
 
   private int makeFirstRequest(int retry) {
@@ -615,9 +602,10 @@ public class OkHttpServices implements RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     String uri = desc.getUri();
-    if (uri == null)
+    if (uri == null) {
       throw new IllegalArgumentException(
         "Document delete for document identifier without uri");
+    }
 
     logger.debug("Deleting {} in transaction {}", uri, getTransactionId(transaction));
 
@@ -656,18 +644,20 @@ public class OkHttpServices implements RESTServices {
     }
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
-      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
         throw new FailedRequestException(
           "Content version must match to delete document",
           failure);
-      else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+      } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
+      }
       throw new FailedRequestException("Precondition Failed", failure);
     }
-    if (status != STATUS_NO_CONTENT)
+    if (status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("delete failed: "
         + getReasonPhrase(response), extractErrorFields(response));
+    }
     Headers responseHeaders = response.headers();
     TemporalDescriptor temporalDesc = updateTemporalSystemTime(desc, responseHeaders);
 
@@ -804,9 +794,10 @@ public class OkHttpServices implements RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     String uri = desc.getUri();
-    if (uri == null)
+    if (uri == null) {
       throw new IllegalArgumentException(
         "Document read for document identifier without uri");
+    }
 
     logger.debug("Getting {} in transaction {}", uri, getTransactionId(transaction));
 
@@ -820,8 +811,9 @@ public class OkHttpServices implements RESTServices {
     requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
 
-    if (extraParams != null && extraParams.containsKey("range"))
+    if (extraParams != null && extraParams.containsKey("range")) {
       requestBldr = requestBldr.header("range", extraParams.get("range").get(0));
+    }
 
     requestBldr = addVersionHeader(desc, requestBldr, "If-None-Match");
 
@@ -832,21 +824,24 @@ public class OkHttpServices implements RESTServices {
     };
     Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
     int status = response.code();
-    if (status == STATUS_NOT_FOUND)
+    if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
         "Could not read non-existent document",
         extractErrorFields(response));
-    if (status == STATUS_FORBIDDEN)
+    }
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException(
         "User is not allowed to read documents",
         extractErrorFields(response));
+    }
     if (status == STATUS_NOT_MODIFIED) {
       response.close();
       return false;
     }
-    if (status != STATUS_OK && status != STATUS_PARTIAL_CONTENT)
+    if (status != STATUS_OK && status != STATUS_PARTIAL_CONTENT) {
       throw new FailedRequestException("read failed: "
         + getReasonPhrase(response), extractErrorFields(response));
+    }
 
     logRequest(
       reqlog,
@@ -870,9 +865,9 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
 
-    if (entity == null ||
-      (!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as)))
+    if (entity == null || (!InputStream.class.isAssignableFrom(as) && !Reader.class.isAssignableFrom(as))) {
       response.close();
+    }
 
     handleBase.receiveContent((reqlog != null) ? reqlog.copyContent(entity) : entity);
 
@@ -1071,9 +1066,10 @@ public class OkHttpServices implements RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     String uri = desc.getUri();
-    if (uri == null)
+    if (uri == null) {
       throw new IllegalArgumentException(
         "Document read for document identifier without uri");
+    }
 
     assert metadataHandle != null : "metadataHandle is null";
     assert contentHandle != null : "contentHandle is null";
@@ -1097,21 +1093,24 @@ public class OkHttpServices implements RESTServices {
     };
     Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
     int status = response.code();
-    if (status == STATUS_NOT_FOUND)
+    if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
         "Could not read non-existent document",
         extractErrorFields(response));
-    if (status == STATUS_FORBIDDEN)
+    }
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException(
         "User is not allowed to read documents",
         extractErrorFields(response));
+    }
     if (status == STATUS_NOT_MODIFIED) {
       response.close();
       return false;
     }
-    if (status != STATUS_OK)
+    if (status != STATUS_OK) {
       throw new FailedRequestException("read failed: "
         + getReasonPhrase(response), extractErrorFields(response));
+    }
 
     logRequest(
       reqlog,
@@ -1194,9 +1193,10 @@ public class OkHttpServices implements RESTServices {
 
   private Response headImpl(RequestLogger reqlog, String uri,
                             Transaction transaction, Request.Builder requestBldr) {
-    if (uri == null)
+    if (uri == null) {
       throw new IllegalArgumentException(
         "Existence check for document identifier without uri");
+    }
 
     logger.debug("Requesting head for {} in transaction {}", uri, getTransactionId(transaction));
 
@@ -1214,15 +1214,16 @@ public class OkHttpServices implements RESTServices {
       if (status == STATUS_NOT_FOUND) {
         response.close();
         return null;
-      } else if (status == STATUS_FORBIDDEN)
+      } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException(
           "User is not allowed to check the existence of documents",
           extractErrorFields(response));
-      else
+      } else {
         throw new FailedRequestException(
           "Document existence check failed: "
             + getReasonPhrase(response),
           extractErrorFields(response));
+      }
     }
     return response;
   }
@@ -1235,9 +1236,10 @@ public class OkHttpServices implements RESTServices {
                                         AbstractWriteHandle contentHandle)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    if (desc.getUri() == null)
+    if (desc.getUri() == null) {
       throw new IllegalArgumentException(
         "Document write for document identifier without uri");
+    }
 
     HandleImplementation metadataBase = HandleAccessor.checkHandle(
       metadataHandle, "metadata");
@@ -1307,16 +1309,13 @@ public class OkHttpServices implements RESTServices {
     }
     desc.setMimetype(contentMimetype);
 
-    if (extraParams == null)
-      extraParams = new RequestParameters();
+    if (extraParams == null) extraParams = new RequestParameters();
 
     String extension = template.getExtension();
-    if (extension != null)
-      extraParams.add("extension", extension);
+    if (extension != null) extraParams.add("extension", extension);
 
     String directory = template.getDirectory();
-    if (directory != null)
-      extraParams.add("directory", directory);
+    if (directory != null) extraParams.add("directory", directory);
 
     if (metadataBase != null && contentBase != null) {
       putPostDocumentImpl(reqlog, "post", desc, transaction, categories, extraParams,
@@ -1383,15 +1382,14 @@ public class OkHttpServices implements RESTServices {
       }
 
       Object value = handleBase.sendContent();
-      if (value == null)
+      if (value == null) {
         throw new IllegalArgumentException(
-          "Document write with null value for " +
-            ((uri != null) ? uri : "new document"));
+          "Document write with null value for " + ((uri != null) ? uri : "new document"));
+      }
 
       if (isFirstRequest() && !isResendable && isStreaming(value)) {
         nextDelay = makeFirstRequest(retry);
-        if (nextDelay != 0)
-          continue;
+        if (nextDelay != 0) continue;
       }
 
       MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
@@ -1416,8 +1414,7 @@ public class OkHttpServices implements RESTServices {
 
       responseHeaders = response.headers();
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -1462,19 +1459,19 @@ public class OkHttpServices implements RESTServices {
     }
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
-      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
         throw new FailedRequestException(
           "Content version must match to write document", failure);
-      else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+      } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
+      }
       throw new FailedRequestException("Precondition Failed", failure);
     }
     if (status == -1) {
       throw new FailedRequestException("write failed: Unknown Reason", extractErrorFields(response));
     }
-    if (status != STATUS_CREATED
-      && status != STATUS_NO_CONTENT) {
+    if (status != STATUS_CREATED && status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("write failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
@@ -1483,13 +1480,15 @@ public class OkHttpServices implements RESTServices {
       String location = response.header("Location");
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
-        if (offset == -1)
+        if (offset == -1) {
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
+        }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
-        if (uri == null)
+        if (uri == null) {
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
+        }
         desc.setUri(uri);
         updateVersion(desc, responseHeaders);
         updateDescriptor(desc, responseHeaders);
@@ -1550,8 +1549,7 @@ public class OkHttpServices implements RESTServices {
 
       if (isFirstRequest() && hasStreamingPart) {
         nextDelay = makeFirstRequest(retry);
-        if (nextDelay != 0)
-          continue;
+        if (nextDelay != 0) continue;
       }
 
       requestBldr = ("put".equals(method)) ?  requestBldr.put(multiPart.build()) : requestBldr.post(multiPart.build());
@@ -1560,8 +1558,7 @@ public class OkHttpServices implements RESTServices {
 
       responseHeaders = response.headers();
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -1604,16 +1601,16 @@ public class OkHttpServices implements RESTServices {
     }
     if (status == STATUS_PRECONDITION_FAILED) {
       FailedRequest failure = extractErrorFields(response);
-      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION"))
+      if (failure.getMessageCode().equals("RESTAPI-CONTENTWRONGVERSION")) {
         throw new FailedRequestException(
           "Content version must match to write document", failure);
-      else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY"))
+      } else if (failure.getMessageCode().equals("RESTAPI-EMPTYBODY")) {
         throw new FailedRequestException(
           "Empty request body sent to server", failure);
+      }
       throw new FailedRequestException("Precondition Failed", failure);
     }
-    if (status != STATUS_CREATED
-      && status != STATUS_NO_CONTENT) {
+    if (status != STATUS_CREATED && status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("write failed: "
         + getReasonPhrase(response), extractErrorFields(response));
     }
@@ -1622,13 +1619,15 @@ public class OkHttpServices implements RESTServices {
       String location = response.header("Location");
       if (location != null) {
         int offset = location.indexOf(DOCUMENT_URI_PREFIX);
-        if (offset == -1)
+        if (offset == -1) {
           throw new MarkLogicInternalException(
             "document create produced invalid location: " + location);
+        }
         uri = location.substring(offset + DOCUMENT_URI_PREFIX.length());
-        if (uri == null)
+        if (uri == null) {
           throw new MarkLogicInternalException(
             "document create produced location without uri: " + location);
+        }
         desc.setUri(uri);
         updateVersion(desc, responseHeaders);
         updateDescriptor(desc, responseHeaders);
@@ -1722,12 +1721,14 @@ public class OkHttpServices implements RESTServices {
   private void completeTransaction(Transaction transaction, String result)
     throws ForbiddenUserException, FailedRequestException
   {
-    if (result == null)
+    if (result == null) {
       throw new MarkLogicInternalException(
         "transaction completion without operation");
-    if (transaction == null)
+    }
+    if (transaction == null) {
       throw new MarkLogicInternalException(
         "transaction completion without id: " + result);
+    }
 
     logger.debug("Completing transaction {} with {}", transaction.getTransactionId(), result);
 
@@ -1747,14 +1748,16 @@ public class OkHttpServices implements RESTServices {
     Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
     int status = response.code();
 
-    if (status == STATUS_FORBIDDEN)
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException(
         "User is not allowed to complete transaction with "
           + result, extractErrorFields(response));
-    if (status != STATUS_NO_CONTENT)
+    }
+    if (status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("transaction " + result
         + " failed: " + getReasonPhrase(response),
         extractErrorFields(response));
+    }
 
     response.close();
   }
@@ -1807,8 +1810,9 @@ public class OkHttpServices implements RESTServices {
       if (categories.contains(Metadata.ALL)) {
         docParams.add("category", "metadata");
       } else {
-        for (Metadata category : categories)
+        for (Metadata category : categories) {
           docParams.add("category", category.toString().toLowerCase());
+        }
       }
     }
     if (transaction != null) {
@@ -1828,8 +1832,7 @@ public class OkHttpServices implements RESTServices {
 
   private void updateDescriptor(ContentDescriptor desc,
                                 Headers headers) {
-    if (desc == null || headers == null)
-      return;
+    if (desc == null || headers == null) return;
 
     updateFormat(desc, headers);
     updateMimetype(desc, headers);
@@ -1854,8 +1857,7 @@ public class OkHttpServices implements RESTServices {
 
   private void copyDescriptor(DocumentDescriptor desc,
                               HandleImplementation handleBase) {
-    if (handleBase == null)
-      return;
+    if (handleBase == null) return;
 
     if (desc.getFormat() != null) handleBase.setFormat(desc.getFormat());
     if (desc.getMimetype() != null) handleBase.setMimetype(desc.getMimetype());
@@ -2006,8 +2008,10 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Request.Builder addVersionHeader(DocumentDescriptor desc, Request.Builder requestBldr, String name) {
-    if (desc != null && desc instanceof DocumentDescriptorImpl
-      && !((DocumentDescriptorImpl) desc).isInternal()) {
+    if ( desc != null &&
+         desc instanceof DocumentDescriptorImpl &&
+         !((DocumentDescriptorImpl) desc).isInternal())
+    {
       long version = desc.getVersion();
       if (version != DocumentDescriptor.UNKNOWN_VERSION) {
         return requestBldr.header(name, "\"" + String.valueOf(version) + "\"");
@@ -2073,8 +2077,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     Object entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
     searchBase.receiveContent(entity);
     updateDescriptor(searchBase, response.headers());
 
@@ -2158,7 +2163,8 @@ public class OkHttpServices implements RESTServices {
         }
 
         requestBldr = setupRequest("search", params);
-        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
+        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML);
+        requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof RawQueryDefinition || queryDef instanceof RawCtsQueryDefinition) {
         logger.debug("Raw search");
 
@@ -2177,21 +2183,25 @@ public class OkHttpServices implements RESTServices {
           "qbe" : "search";
 
         requestBldr = setupRequest(path, params);
-        requestBldr = (payloadMimetype != null) ?
-          requestBldr.header(HEADER_CONTENT_TYPE, payloadMimetype).header(HEADER_ACCEPT, mimetype) :
-          requestBldr.header(HEADER_ACCEPT, mimetype);
+        if ( payloadMimetype != null ) {
+          requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, payloadMimetype);
+        }
+        requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof CombinedQueryDefinition) {
         structure = ((CombinedQueryDefinition) queryDef).serialize();
 
         logger.debug("Searching for combined query {}", structure);
 
         requestBldr = setupRequest("search", params);
-        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
+        requestBldr = requestBldr
+          .header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML)
+          .header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof StringQueryDefinition) {
         logger.debug("Searching for string [{}]", text);
 
         requestBldr = setupRequest("search", params);
-        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML).header(HEADER_ACCEPT, mimetype);
+        requestBldr = requestBldr.header(HEADER_CONTENT_TYPE, MIMETYPE_APPLICATION_XML);
+        requestBldr = requestBldr.header(HEADER_ACCEPT, mimetype);
       } else if (queryDef instanceof DeleteQueryDefinition) {
         logger.debug("Searching for deletes");
 
@@ -2240,8 +2250,7 @@ public class OkHttpServices implements RESTServices {
         status = response.code();
 
         if (status != STATUS_SERVICE_UNAVAILABLE) {
-          if (isFirstRequest())
-            setFirstRequest(false);
+          if (isFirstRequest()) setFirstRequest(false);
 
           break;
         }
@@ -2290,8 +2299,9 @@ public class OkHttpServices implements RESTServices {
   private String getMimetypeWithDefaultXML(Format payloadFormat, HandleImplementation baseHandle) {
     String payloadMimetype = baseHandle.getMimetype();
     if (payloadFormat != null) {
-      if (payloadMimetype == null)
+      if (payloadMimetype == null) {
         payloadMimetype = payloadFormat.getDefaultMimetype();
+      }
     } else if (payloadMimetype == null) {
       payloadMimetype = MIMETYPE_APPLICATION_XML;
     }
@@ -2415,18 +2425,16 @@ public class OkHttpServices implements RESTServices {
           docParams.add("options", optionsName);
         }
       } else if (queryDef.getOptionsName() != null) {
-        if (!queryDef.getOptionsName().equals(optionsName)
-          && logger.isWarnEnabled())
+        if (!queryDef.getOptionsName().equals(optionsName)) {
           logger.warn("values definition options take precedence over query definition options");
+        }
       }
 
       if (queryDef.getCollections().length > 0) {
-        if (logger.isWarnEnabled())
-          logger.warn("collections scope ignored for values query");
+        logger.warn("collections scope ignored for values query");
       }
       if (queryDef.getDirectory() != null) {
-        if (logger.isWarnEnabled())
-          logger.warn("directory scope ignored for values query");
+        logger.warn("directory scope ignored for values query");
       }
 
       String text = null;
@@ -2450,9 +2458,7 @@ public class OkHttpServices implements RESTServices {
         StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
         baseHandle = HandleAccessor.checkHandle(handle, "values");
       } else {
-        if (logger.isWarnEnabled())
-          logger.warn("unsupported query definition: "
-            + queryDef.getClass().getName());
+        logger.warn("unsupported query definition: {}", queryDef.getClass().getName());
       }
 
       ServerTransform transform = queryDef.getResponseTransform();
@@ -2504,8 +2510,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return entity;
 
@@ -2553,8 +2560,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return entity;
   }
@@ -2595,8 +2603,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return entity;
   }
@@ -2623,17 +2632,18 @@ public class OkHttpServices implements RESTServices {
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
         response.close();
-        if (!isNullable)
-          throw new ResourceNotFoundException("Could not get " + type
-            + "/" + key);
+        if (!isNullable) {
+          throw new ResourceNotFoundException("Could not get " + type + "/" + key);
+        }
         return null;
-      } else if (status == STATUS_FORBIDDEN)
+      } else if (status == STATUS_FORBIDDEN) {
         throw new ForbiddenUserException("User is not allowed to read "
           + type, extractErrorFields(response));
-      else
+      } else {
         throw new FailedRequestException(type + " read failed: "
           + getReasonPhrase(response),
           extractErrorFields(response));
+      }
     }
 
     logRequest(reqlog, "read %s value with %s key and %s mime type", type,
@@ -2641,8 +2651,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
@@ -2684,8 +2695,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
@@ -2783,8 +2795,7 @@ public class OkHttpServices implements RESTServices {
 
       if (isFirstRequest() && !isResendable && isStreaming) {
         nextDelay = makeFirstRequest(retry);
-        if (nextDelay != 0)
-          continue;
+        if (nextDelay != 0) continue;
       }
 
       if ("put".equals(method)) {
@@ -2819,8 +2830,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -2844,12 +2854,14 @@ public class OkHttpServices implements RESTServices {
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
     }
-    if (status == STATUS_FORBIDDEN)
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to write "
         + type, extractErrorFields(response));
-    if (status == STATUS_NOT_FOUND)
+    }
+    if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(type + " not found for write",
         extractErrorFields(response));
+    }
     boolean statusOk = false;
     for (int expectedStatus : expectedStatuses) {
       statusOk = statusOk || (status == expectedStatus);
@@ -2882,15 +2894,18 @@ public class OkHttpServices implements RESTServices {
     };
     Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
     int status = response.code();
-    if (status == STATUS_FORBIDDEN)
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to delete "
         + type, extractErrorFields(response));
-    if (status == STATUS_NOT_FOUND)
+    }
+    if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(type + " not found for delete",
         extractErrorFields(response));
-    if (status != STATUS_NO_CONTENT)
+    }
+    if (status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("delete failed: "
         + getReasonPhrase(response), extractErrorFields(response));
+    }
 
     response.close();
 
@@ -2913,12 +2928,14 @@ public class OkHttpServices implements RESTServices {
     };
     Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
     int status = response.code();
-    if (status == STATUS_FORBIDDEN)
+    if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to delete "
         + type, extractErrorFields(response));
-    if (status != STATUS_NO_CONTENT)
+    }
+    if (status != STATUS_NO_CONTENT) {
       throw new FailedRequestException("delete failed: "
         + getReasonPhrase(response), extractErrorFields(response));
+    }
     response.close();
 
     logRequest(reqlog, "deleted %s values", type);
@@ -3130,9 +3147,9 @@ public class OkHttpServices implements RESTServices {
     W[] input, R output)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
-    if (input == null || input.length == 0)
-      throw new IllegalArgumentException(
-        "input not specified for multipart");
+    if (input == null || input.length == 0) {
+      throw new IllegalArgumentException("input not specified for multipart");
+    }
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
@@ -3167,8 +3184,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -3232,7 +3248,8 @@ public class OkHttpServices implements RESTServices {
     if(inputBase != null) {
       inputMimetype = inputBase.getMimetype();
       if ( inputMimetype == null &&
-        (Format.JSON == inputBase.getFormat() || Format.XML == inputBase.getFormat()) )
+           ( Format.JSON == inputBase.getFormat() ||
+             Format.XML == inputBase.getFormat() ) )
       {
         inputMimetype = inputBase.getFormat().getDefaultMimetype();
       }
@@ -3324,8 +3341,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -3507,13 +3523,9 @@ public class OkHttpServices implements RESTServices {
           return EvalResult.Type.XML;
         } else if ( MIMETYPE_TEXT_XML.equals(contentType) ) {
           return EvalResult.Type.XML;
-        } else if ( "application/x-unknown-content-type".equals(contentType) &&
-          "binary()".equals(xPrimitive) )
-        {
+        } else if ( "application/x-unknown-content-type".equals(contentType) && "binary()".equals(xPrimitive) ) {
           return EvalResult.Type.BINARY;
-        } else if ( "application/octet-stream".equals(contentType) &&
-          "node()".equals(xPrimitive) )
-        {
+        } else if ( "application/octet-stream".equals(contentType) && "node()".equals(xPrimitive) ) {
           return EvalResult.Type.BINARY;
         }
       }
@@ -3655,9 +3667,7 @@ public class OkHttpServices implements RESTServices {
           String localname = name;
           if ( namespaces != null ) {
             for ( String prefix : namespaces.keySet() ) {
-              if ( name != null && prefix != null &&
-                name.startsWith(prefix + ":") )
-              {
+              if ( name != null && prefix != null && name.startsWith(prefix + ":") ) {
                 localname = name.substring(prefix.length() + 1);
                 namespace = namespaces.get(prefix);
               }
@@ -3677,7 +3687,8 @@ public class OkHttpServices implements RESTServices {
             value = "null";
             type = "null-node()";
           } else if ( valueObject instanceof JacksonHandle ||
-            valueObject instanceof JacksonParserHandle ) {
+                      valueObject instanceof JacksonParserHandle )
+          {
             JsonNode jsonNode = null;
             if ( valueObject instanceof JacksonHandle ) {
               jsonNode = ((JacksonHandle) valueObject).get();
@@ -3711,8 +3722,9 @@ public class OkHttpServices implements RESTServices {
                 "Please set the format on your handle for variable " + name + ".");
             }
           } else if ( valueObject instanceof String ||
-            valueObject instanceof Boolean ||
-            valueObject instanceof Number ) {
+                      valueObject instanceof Boolean ||
+                      valueObject instanceof Number )
+          {
             value = valueObject.toString();
             // when we send type "xs:untypedAtomic" via XDBC, the server attempts to intelligently decide
             // how to cast the type
@@ -3854,8 +3866,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -3929,8 +3940,7 @@ public class OkHttpServices implements RESTServices {
 
   private Request.Builder makeGetWebResource(String path,
                                              RequestParameters params, Object mimetype) {
-    if (path == null)
-      throw new IllegalArgumentException("Read with null path");
+    if (path == null) throw new IllegalArgumentException("Read with null path");
 
     logger.debug(String.format("Getting %s as %s", path, mimetype));
 
@@ -3941,16 +3951,14 @@ public class OkHttpServices implements RESTServices {
     requestBldr = requestBldr.get();
     Response response = sendRequestOnce(requestBldr);
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
   private Request.Builder makePutWebResource(String path,
                                              RequestParameters params) {
-    if (path == null)
-      throw new IllegalArgumentException("Write with null path");
+    if (path == null) throw new IllegalArgumentException("Write with null path");
 
     logger.debug("Putting {}", path);
 
@@ -3958,11 +3966,9 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response doPut(RequestLogger reqlog, Request.Builder requestBldr, Object value) {
-    if (value == null)
-      throw new IllegalArgumentException("Resource write with null value");
+    if (value == null) throw new IllegalArgumentException("Resource write with null value");
 
-    if (isFirstRequest() && isStreaming(value))
-      makeFirstRequest(0);
+    if (isFirstRequest() && isStreaming(value)) makeFirstRequest(0);
 
     MediaType mediaType = makeType(requestBldr.build().header(HEADER_CONTENT_TYPE));
     if (value instanceof OutputStreamSender) {
@@ -3976,29 +3982,25 @@ public class OkHttpServices implements RESTServices {
     }
     Response response = sendRequestOnce(requestBldr);
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
   private Response doPut(Request.Builder requestBldr,
                          MultipartBody.Builder multiPart, boolean hasStreamingPart) {
-    if (isFirstRequest() && hasStreamingPart)
-      makeFirstRequest(0);
+    if (isFirstRequest() && hasStreamingPart) makeFirstRequest(0);
 
     requestBldr = requestBldr.put(multiPart.build());
     Response response = sendRequestOnce(requestBldr);
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
   private Request.Builder makePostWebResource(String path, RequestParameters params) {
-    if (path == null)
-      throw new IllegalArgumentException("Apply with null path");
+    if (path == null) throw new IllegalArgumentException("Apply with null path");
 
     logger.debug("Posting {}", path);
 
@@ -4025,28 +4027,24 @@ public class OkHttpServices implements RESTServices {
     }
     Response response = sendRequestOnce(requestBldr);
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
   private Response doPost(Request.Builder requestBldr,
                           MultipartBody.Builder multiPart, boolean hasStreamingPart) {
-    if (isFirstRequest() && hasStreamingPart)
-      makeFirstRequest(0);
+    if (isFirstRequest() && hasStreamingPart) makeFirstRequest(0);
 
     Response response = sendRequestOnce(requestBldr.post(multiPart.build()));
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
   private Request.Builder makeDeleteWebResource(String path, RequestParameters params) {
-    if (path == null)
-      throw new IllegalArgumentException("Delete with null path");
+    if (path == null) throw new IllegalArgumentException("Delete with null path");
 
     logger.debug("Deleting {}", path);
 
@@ -4056,82 +4054,11 @@ public class OkHttpServices implements RESTServices {
   private Response doDelete(Request.Builder requestBldr) {
     Response response = sendRequestOnce(requestBldr.delete().build());
 
-    if (isFirstRequest())
-      setFirstRequest(false);
+    if (isFirstRequest()) setFirstRequest(false);
 
     return response;
   }
 
-  /*
-  private void addEncodedParam(RequestParameters params,
-                               String key, List<String> values) {
-    List<String> encodedParams = encodeParamValues(values);
-    if (encodedParams != null && encodedParams.size() > 0)
-      params.put(key, encodedParams);
-  }
-
-  private void addEncodedParam(RequestParameters params,
-                               String key, String[] values) {
-    List<String> encodedParams = encodeParamValues(values);
-    if (encodedParams != null && encodedParams.size() > 0)
-      params.put(key, encodedParams);
-  }
-
-  private void addEncodedParam(RequestParameters params,
-                               String key, String value) {
-    value = encodeParamValue(value);
-    if (value == null)
-      return;
-
-    params.add(key, value);
-  }
-
-  private List<String> encodeParamValues(List<String> oldValues) {
-    if (oldValues == null)
-      return null;
-
-    int oldSize = oldValues.size();
-    if (oldSize == 0)
-      return null;
-
-    List<String> newValues = new ArrayList<>(oldSize);
-    for (String value : oldValues) {
-      String newValue = encodeParamValue(value);
-      if (newValue == null)
-        continue;
-      newValues.add(newValue);
-    }
-
-    return newValues;
-  }
-
-  private List<String> encodeParamValues(String[] oldValues) {
-    if (oldValues == null)
-      return null;
-
-    int oldSize = oldValues.length;
-    if (oldSize == 0)
-      return null;
-
-    List<String> newValues = new ArrayList<>(oldSize);
-    for (String value : oldValues) {
-      String newValue = encodeParamValue(value);
-      if (newValue == null)
-        continue;
-      newValues.add(newValue);
-    }
-
-    return newValues;
-  }
-
-  private String encodeParamValue(String value) {
-    if (value == null)
-      return null;
-
-    return UriComponent.encode(value, UriComponent.Type.QUERY_PARAM)
-      .replace("+", "%20");
-  }
-  */
 
   private void addPointInTimeQueryParam(RequestParameters params, Object outputHandle) {
     HandleImplementation handleBase = HandleAccessor.as(outputHandle);
@@ -4231,12 +4158,14 @@ public class OkHttpServices implements RESTServices {
     MultipartBody.Builder multiPart, RequestLogger reqlog, String[] mimetypes,
     W[] input, Map<String, List<String>>[] headers)
   {
-    if (mimetypes != null && mimetypes.length != input.length)
+    if (mimetypes != null && mimetypes.length != input.length) {
       throw new IllegalArgumentException(
         "Mismatch between count of mimetypes and input");
-    if (headers != null && headers.length != input.length)
+    }
+    if (headers != null && headers.length != input.length) {
       throw new IllegalArgumentException(
         "Mismatch between count of headers and input");
+    }
 
     multiPart.setType(MediaType.parse(MIMETYPE_MULTIPART_MIXED));
 
@@ -4246,8 +4175,9 @@ public class OkHttpServices implements RESTServices {
       HandleImplementation handleBase = HandleAccessor.checkHandle(
         handle, "write");
 
-      if (!hasStreamingPart)
+      if (!hasStreamingPart) {
         hasStreamingPart = !handleBase.isResendable();
+      }
 
       Object value = handleBase.sendContent();
 
@@ -4395,8 +4325,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return (reqlog != null) ? reqlog.copyContent(entity) : entity;
   }
@@ -4448,12 +4379,10 @@ public class OkHttpServices implements RESTServices {
 
   private void logRequest(RequestLogger reqlog, String message,
                           Object... params) {
-    if (reqlog == null)
-      return;
+    if (reqlog == null) return;
 
     PrintStream out = reqlog.getPrintStream();
-    if (out == null)
-      return;
+    if (out == null) return;
 
     if (params == null || params.length == 0) {
       out.println(message);
@@ -4465,15 +4394,15 @@ public class OkHttpServices implements RESTServices {
 
   private String stringJoin(Collection collection, String separator,
                             String defaultValue) {
-    if (collection == null || collection.size() == 0)
-      return defaultValue;
+    if (collection == null || collection.size() == 0) return defaultValue;
 
     StringBuilder builder = null;
     for (Object value : collection) {
-      if (builder == null)
+      if (builder == null) {
         builder = new StringBuilder();
-      else
+      } else {
         builder.append(separator);
+      }
 
       builder.append(value);
     }
@@ -4510,8 +4439,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     public <R extends AbstractReadHandle> R getContent(R handle) {
-      if (part == null)
-        throw new IllegalStateException("Content already retrieved");
+      if (part == null) throw new IllegalStateException("Content already retrieved");
 
       HandleImplementation handleBase = HandleAccessor.as(handle);
 
@@ -4572,8 +4500,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     private void extractHeaders() {
-      if (part == null || extractedHeaders)
-        return;
+      if (part == null || extractedHeaders) return;
       try {
         for ( Enumeration<Header> e = part.getAllHeaders(); e.hasMoreElements(); ) {
           Header header = e.nextElement();
@@ -4658,15 +4585,13 @@ public class OkHttpServices implements RESTServices {
 
 
     public boolean hasNext() {
-      if (partQueue == null)
-        return false;
+      if (partQueue == null) return false;
       boolean hasNext = partQueue.hasNext();
       return hasNext;
     }
 
     public T next() {
-      if (partQueue == null)
-        return null;
+      if (partQueue == null) return null;
 
       try {
         java.lang.reflect.Constructor<T> constructor =
@@ -4678,8 +4603,7 @@ public class OkHttpServices implements RESTServices {
     }
 
     public void remove() {
-      if (partQueue == null)
-        return;
+      if (partQueue == null) return;
       partQueue.remove();
       if (!partQueue.hasNext()) close();
     }
@@ -4753,29 +4677,33 @@ public class OkHttpServices implements RESTServices {
 
     @Override
     public <T extends DocumentMetadataReadHandle> T getMetadata(T metadataHandle) {
-      if ( metadata == null ) throw new IllegalStateException(
-        "getMetadata called when no metadata is available");
+      if ( metadata == null ) {
+        throw new IllegalStateException("getMetadata called when no metadata is available");
+      }
       return metadata.getContent(metadataHandle);
     }
 
     @Override
     public <T> T getMetadataAs(Class<T> as) {
-      if ( as == null ) throw new IllegalStateException(
-        "getMetadataAs cannot accept null");
+      if ( as == null ) {
+        throw new IllegalStateException("getMetadataAs cannot accept null");
+      }
       return metadata.getContentAs(as);
     }
 
     @Override
     public <T extends AbstractReadHandle> T getContent(T contentHandle) {
-      if ( content == null ) throw new IllegalStateException(
-        "getContent called when no content is available");
+      if ( content == null ) {
+        throw new IllegalStateException("getContent called when no content is available");
+      }
       return content.getContent(contentHandle);
     }
 
     @Override
     public <T> T getContentAs(Class<T> as) {
-      if ( as == null ) throw new IllegalStateException(
-        "getContentAs cannot accept null");
+      if ( as == null ) {
+        throw new IllegalStateException("getContentAs cannot accept null");
+      }
       return content.getContentAs(as);
     }
   }
@@ -4840,8 +4768,9 @@ public class OkHttpServices implements RESTServices {
 
     ResponseBody body = response.body();
     T entity = body.contentLength() != 0 ? getEntity(body, as) : null;
-    if (entity == null || (as != InputStream.class && as != Reader.class))
+    if (entity == null || (as != InputStream.class && as != Reader.class)) {
       response.close();
+    }
 
     return entity;
   }
@@ -4884,8 +4813,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null)
-      response.close();
+    if (entity == null) response.close();
 
     return entity;
   }
@@ -4985,8 +4913,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       if (status != STATUS_SERVICE_UNAVAILABLE) {
-        if (isFirstRequest())
-          setFirstRequest(false);
+        if (isFirstRequest()) setFirstRequest(false);
 
         break;
       }
@@ -5017,8 +4944,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null)
-      response.close();
+    if (entity == null) response.close();
 
     return entity;
   }
@@ -5062,8 +4988,7 @@ public class OkHttpServices implements RESTServices {
     ResponseBody body = response.body();
     InputStream entity = body.contentLength() != 0 ?
       getEntity(body, InputStream.class) : null;
-    if (entity == null)
-      response.close();
+    if (entity == null) response.close();
 
     return entity;
   }
@@ -5265,7 +5190,8 @@ public class OkHttpServices implements RESTServices {
         Format format = combinedQdef.getFormat();
         input = new StringHandle(combinedQdef.serialize()).withFormat(format);
       } else if ( constrainingQuery instanceof StringQueryDefinition ||
-        constrainingQuery instanceof StructuredQueryDefinition ) {
+                  constrainingQuery instanceof StructuredQueryDefinition )
+      {
         String stringQuery = constrainingQuery instanceof StringQueryDefinition ?
           ((StringQueryDefinition) constrainingQuery).getCriteria() : null;
         StructuredQueryDefinition structuredQuery =
