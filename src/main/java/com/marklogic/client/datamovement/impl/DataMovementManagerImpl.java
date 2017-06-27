@@ -45,10 +45,12 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class DataMovementManagerImpl implements DataMovementManager {
   private static Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
   private DataMovementServices service = new DataMovementServices();
+  private ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
   // clientMap key is the hostname_database
@@ -75,13 +77,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public JobTicket startJob(WriteBatcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
-    return service.startJob(batcher);
+    return service.startJob(batcher, activeJobs);
   }
 
   @Override
   public JobTicket startJob(QueryBatcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
-    return service.startJob(batcher);
+    return service.startJob(batcher, activeJobs);
   }
 
   @Override
@@ -93,13 +95,13 @@ public class DataMovementManagerImpl implements DataMovementManager {
   @Override
   public void stopJob(JobTicket ticket) {
     if ( ticket == null ) throw new IllegalArgumentException("ticket must not be null");
-    service.stopJob(ticket);
+    service.stopJob(ticket, activeJobs);
   }
 
   @Override
   public void stopJob(Batcher batcher) {
     if ( batcher == null ) throw new IllegalArgumentException("batcher must not be null");
-    service.stopJob(batcher);
+    service.stopJob(batcher, activeJobs);
   }
 
   @Override
@@ -191,5 +193,15 @@ public class DataMovementManagerImpl implements DataMovementManager {
       clientMap.put(key, client);
     }
     return client;
+  }
+
+  @Override
+  public JobTicket getActiveJob(String jobId) {
+    if (jobId == null)  throw new IllegalArgumentException("Job id must not be null");
+    if (activeJobs.containsKey(jobId)) {
+      return activeJobs.get(jobId);
+    } else {
+      return null;
+    }
   }
 }

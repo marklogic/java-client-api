@@ -81,6 +81,15 @@ public interface DataMovementManager {
   public JobReport getJobReport(JobTicket ticket);
 
   /**
+   * Gets the job ticket for an active job that has not been stopped by calling
+   * stopJob method. It returns null if there is no such active job.
+   * 
+   * @param jobId the jobId of the active job
+   * @return a JobTicket which can be used to track the job
+   */
+  public JobTicket getActiveJob(String jobId);
+
+  /**
    * Immediately cancel all queued tasks, prevent new tasks from being added
    * to the queue, and begin to free all resources.  In-process tasks cannot be
    * cancelled because they talk to the REST server which does not have such a

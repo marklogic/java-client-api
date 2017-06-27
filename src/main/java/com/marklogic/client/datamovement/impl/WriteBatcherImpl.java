@@ -223,6 +223,7 @@ public class WriteBatcherImpl
   private boolean initialized = false;
   private CompletableThreadPoolExecutor threadPool = null;
   private final AtomicBoolean stopped = new AtomicBoolean(false);
+  private final AtomicBoolean started = new AtomicBoolean(false);
   private boolean usingTransactions = false;
   private JobTicket jobTicket;
 
@@ -631,6 +632,7 @@ public class WriteBatcherImpl
   public void start(JobTicket ticket) {
     jobTicket = ticket;
     initialize();
+    started.set(true);
   }
 
   public void stop() {
@@ -641,6 +643,11 @@ public class WriteBatcherImpl
   @Override
   public boolean isStopped() {
     return stopped.get();
+  }
+
+  @Override
+  public boolean isStarted() {
+    return started.get();
   }
 
   @Override
@@ -668,6 +675,13 @@ public class WriteBatcherImpl
   public WriteBatcher withJobName(String jobName) {
     requireNotInitialized();
     super.withJobName(jobName);
+    return this;
+  }
+
+  @Override
+  public WriteBatcher withJobId(String jobId) {
+    requireNotInitialized();
+    super.withJobId(jobId);
     return this;
   }
 

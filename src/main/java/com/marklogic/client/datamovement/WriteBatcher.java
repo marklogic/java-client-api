@@ -249,9 +249,18 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher withJobName(String jobName);
 
   /**
-   * Sets the number of documents to send per batch.  Since documents are large
-   * relative to uris, this number should be much lower than the
-   * batch size for QueryBatcher.  The default batch size is 100.
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
+   *
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  WriteBatcher withJobId(String jobId);
+
+  /**
+   * Sets the number of documents to send per batch. Since documents are large
+   * relative to uris, this number should be much lower than the batch size for
+   * QueryBatcher. The default batch size is 100.
    *
    * @return this instance for method chaining
    */

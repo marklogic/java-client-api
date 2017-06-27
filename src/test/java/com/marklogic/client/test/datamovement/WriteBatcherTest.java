@@ -398,6 +398,7 @@ public class WriteBatcherTest {
     System.out.println("Starting test " + testName + " with config=" + config);
 
     String collection = whbTestCollection + ".testWrites_" + testName;
+    String writeBatcherJobId = "WriteBatcherJobId";
     long start = System.currentTimeMillis();
 
     int docsPerExternalThread = Math.floorDiv(totalDocCount, externalThreadCount);
@@ -449,10 +450,15 @@ public class WriteBatcherTest {
             }
           }
         }
-      );
+      )
+      .withJobId(writeBatcherJobId);
     long batchMinTime = new Date().getTime();
-    JobTicket ticket = moveMgr.startJob(batcher);
+    assertFalse("Job should not be started yet", batcher.isStarted());
+    moveMgr.startJob(batcher);
+    assertTrue("Job should be started now", batcher.isStarted());
+    JobTicket ticket = moveMgr.getActiveJob(writeBatcherJobId);
     assertEquals(batchSize, batcher.getBatchSize());
+    assertEquals(writeBatcherJobId, batcher.getJobId());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()

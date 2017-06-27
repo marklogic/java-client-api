@@ -222,9 +222,18 @@ public interface QueryBatcher extends Batcher {
   public QueryBatcher withJobName(String jobName);
 
   /**
-   * Sets the number of uris to retrieve per batch.  Since uris are small
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
+   *
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  QueryBatcher withJobId(String jobId);
+
+  /**
+   * Sets the number of uris to retrieve per batch. Since uris are small
    * relative to full documents, this number should be much higher than the
-   * batch size for WriteBatcher.  The default batch size is 1000.
+   * batch size for WriteBatcher. The default batch size is 1000.
    *
    * @return this instance for method chaining
    */

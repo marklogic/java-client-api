@@ -234,6 +234,8 @@ public class QueryBatcherTest {
       int batchSize, int threadCount)
     throws Exception
   {
+    String queryBatcherJobId = "QueryBatcherJobId";
+    String queryBatcherJobName = "QueryBatcherJobName";
     int numExpected = 0;
     for ( String forest : matchesByForest.keySet() ) {
       numExpected += matchesByForest.get(forest).length;
@@ -271,15 +273,21 @@ public class QueryBatcherTest {
           throwable.printStackTrace();
           failures.append("ERROR:[" + throwable + "]\n");
         }
-      );
+      )
+        .withJobId(queryBatcherJobId)
+        .withJobName(queryBatcherJobName);
 
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
+    assertEquals(queryBatcherJobId, queryBatcher.getJobId());
     assertFalse("Job should not be stopped yet", queryBatcher.isStopped());
 
     long minTime = new Date().getTime();
-
-    JobTicket ticket = moveMgr.startJob(queryBatcher);
+    assertFalse("Job should not be started yet", queryBatcher.isStarted());
+    moveMgr.startJob(queryBatcher);
+    JobTicket ticket = moveMgr.getActiveJob(queryBatcherJobId);
+    assertTrue("Job should be started now", queryBatcher.isStarted());
+    assertEquals(queryBatcherJobName, ticket.getBatcher().getJobName());
 
     JobReport report = moveMgr.getJobReport(ticket);
     //assertFalse("Job Report has incorrect job completion information", report.isJobComplete());
@@ -290,7 +298,8 @@ public class QueryBatcherTest {
       fail("Job did not finish, it was interrupted");
     }
 
-    moveMgr.stopJob(ticket);
+    moveMgr.stopJob(ticket.getBatcher());
+
     assertTrue("Job should be stopped now", queryBatcher.isStopped());
     assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
 

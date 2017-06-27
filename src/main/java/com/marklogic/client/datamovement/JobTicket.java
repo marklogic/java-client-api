@@ -32,5 +32,11 @@ public interface JobTicket {
    */
   JobType getJobType();
 
+  /**
+   * @return the Batcher instance associated with this JobTicket. This is useful
+   *         to start/stop the job or update the forest configuration.
+   */
+  Batcher getBatcher();
+
   enum JobType { WRITE_BATCHER, QUERY_BATCHER };
 }

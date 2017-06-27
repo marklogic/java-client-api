@@ -72,6 +72,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
+  private final AtomicBoolean started = new AtomicBoolean(false);
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
   private JobTicket jobTicket;
 
@@ -188,6 +189,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
+  public QueryBatcher withJobId(String jobId) {
+    requireNotStarted();
+    super.withJobId(jobId);
+    return this;
+  }
+
+  @Override
   public QueryBatcher withBatchSize(int batchSize) {
     requireNotStarted();
     super.withBatchSize(batchSize);
@@ -233,6 +241,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   }
 
   @Override
+  public boolean isStarted() {
+    return started.get();
+  }
+
+  @Override
   public JobTicket getJobTicket() {
     requireJobStarted();
     return jobTicket;
@@ -261,6 +274,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     jobTicket = ticket;
     initialize();
+    started.set(true);
     if ( query != null ) {
       startQuerying();
     } else {

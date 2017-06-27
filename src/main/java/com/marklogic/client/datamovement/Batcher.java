@@ -31,8 +31,22 @@ public interface Batcher {
   String getJobName();
 
   /**
-   * The size of each batch (usually 50-500).  With some experimentation with
-   * your custom job, this value can be tuned.  Tuning this value is one of the
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
+   *
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  Batcher withJobId(String jobId);
+
+  /**
+   * @return the unique job id of the job
+   */
+  String getJobId();
+
+  /**
+   * The size of each batch (usually 50-500). With some experimentation with
+   * your custom job, this value can be tuned. Tuning this value is one of the
    * best ways to achieve optimal throughput.
    *
    * This method cannot be called after the job has started.
@@ -82,6 +96,15 @@ public interface Batcher {
    * @return this instance (for method chaining)
    */
   Batcher withForestConfig(ForestConfiguration forestConfig);
+
+  /**
+   * true if the job is started (e.g. {@link DataMovementManager#startJob
+   * DataMovementManager.startJob} was called), false otherwise
+   *
+   * @return true if the job is started (e.g. {@link
+   * DataMovementManager#startJob DataMovementManager.startJob} was called), false otherwise
+   */
+  boolean isStarted();
 
   /**
    * true if the job is terminated (e.g. {@link DataMovementManager#stopJob

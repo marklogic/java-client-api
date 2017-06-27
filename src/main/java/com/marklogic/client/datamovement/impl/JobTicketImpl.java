@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.datamovement.impl;
 
+import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.JobTicket.JobType;
 
@@ -41,6 +42,15 @@ public class JobTicketImpl implements JobTicket {
 
   public WriteBatcherImpl getWriteBatcher() {
     return writeBatcher;
+  }
+
+  @Override
+  public Batcher getBatcher() {
+    if (this.jobType == JobType.QUERY_BATCHER) {
+      return queryBatcher;
+    } else {
+      return writeBatcher;
+    }
   }
 
   public JobTicketImpl withWriteBatcher(WriteBatcherImpl writeBatcher) {
