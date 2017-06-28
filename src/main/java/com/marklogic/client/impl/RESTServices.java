@@ -103,6 +103,9 @@ public interface RESTServices {
   int STATUS_PRECONDITION_FAILED = 412;
   int STATUS_SERVICE_UNAVAILABLE = 503;
 
+  String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
+  String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
+
   public void connect(String host, int port, String database, String user, String password, Authentication type,
                       SSLContext context, SSLHostnameVerifier verifier);
   public DatabaseClient getDatabaseClient();
