@@ -307,13 +307,15 @@ public class OkHttpServices implements RESTServices {
     final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
     final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
 
-    DispatchingAuthenticator authenticator = new DispatchingAuthenticator.Builder()
-      .with("digest", digestAuthenticator)
-      .with("basic", basicAuthenticator)
-      .build();
+    DispatchingAuthenticator.Builder authenticator = new DispatchingAuthenticator.Builder();
+    if (authenType == Authentication.BASIC) {
+      authenticator = authenticator.with("basic", basicAuthenticator);
+    } else if (authenType == Authentication.DIGEST) {
+      authenticator = authenticator.with("digest", digestAuthenticator);
+    }
 
     this.client = new OkHttpClient.Builder()
-      .authenticator(new CachingAuthenticatorDecorator(authenticator, authCache))
+      .authenticator(new CachingAuthenticatorDecorator(authenticator.build(), authCache))
       .addInterceptor(new AuthenticationCacheInterceptor(authCache))
       /*
       .addNetworkInterceptor(
