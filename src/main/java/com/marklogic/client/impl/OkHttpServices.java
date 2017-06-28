@@ -85,7 +85,9 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import okhttp3.ConnectionPool;
 import okhttp3.Cookie;
+import okhttp3.CookieJar;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
 import okhttp3.MediaType;
@@ -145,6 +147,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 import java.util.UUID;
@@ -155,6 +158,9 @@ import java.util.concurrent.TimeUnit;
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class OkHttpServices implements RESTServices {
   static final private Logger logger = LoggerFactory.getLogger(OkHttpServices.class);
+
+  static final public String OKHTTP_LOGGINGINTERCEPTOR_LEVEL = "com.marklogic.client.okhttp.httplogginginterceptor.level";
+  static final public String OKHTTP_LOGGINGINTERCEPTOR_OUTPUT = "com.marklogic.client.okhttp.httplogginginterceptor.output";
 
   static final private String DOCUMENT_URI_PREFIX = "/documents?uri=";
 
@@ -188,6 +194,8 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
+  static final private ConnectionPool connectionPool = new ConnectionPool();
+
   private DatabaseClient databaseClient;
   private String database = null;
   private HttpUrl baseUri;
@@ -208,7 +216,6 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  // workaround: Jersey keeps the DIGEST nonce in a thread-local variable
   private final ThreadLocal<ThreadState> threadState = new ThreadLocal<ThreadState>() {
     @Override
     protected ThreadState initialValue() {
@@ -244,14 +251,10 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public void connect(String host, int port, String database, String user, String password,
-                      Authentication authenType, SSLContext context,
+                      Authentication authenType, SSLContext sslContext,
                       SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
-    if (verifier == null) {
-      if (context != null) {
-        hostnameVerifier = null;
-      }
-    } else if (verifier == SSLHostnameVerifier.ANY) {
+    if (verifier == SSLHostnameVerifier.ANY) {
       hostnameVerifier = new HostnameVerifier() {
         @Override
         public boolean verify(String hostname, SSLSession session) {
@@ -261,42 +264,27 @@ public class OkHttpServices implements RESTServices {
     } else if (verifier == SSLHostnameVerifier.COMMON) {
       hostnameVerifier = null;
     } else if (verifier == SSLHostnameVerifier.STRICT) {
-      // TODO: implement SSLHostnameVerifier.STRICT for OkHttp
-      throw new IllegalStateException("Not yet implemented");
-    } else if (context != null) {
+      hostnameVerifier = null;
+    } else if (verifier != null) {
       hostnameVerifier = new HostnameVerifierAdapter(verifier);
-    } else {
-      throw new IllegalArgumentException(
-        "Null SSLContext but non-null SSLHostnameVerifier for client");
-    }
-    connect(host, port, database, user, password, authenType, context, hostnameVerifier);
+    }// else {
+    //  throw new IllegalArgumentException(
+    //    "Null SSLContext but non-null SSLHostnameVerifier for client");
+    //}
+    connect(host, port, database, user, password, authenType, sslContext, hostnameVerifier);
   }
 
   private void connect(String host, int port, String database, String user, String password,
-                       Authentication authenType, SSLContext context,
+                       Authentication authenType, SSLContext sslContext,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
 
     if (host == null) throw new IllegalArgumentException("No host provided");
 
-    if (authenType == null) {
-      if (context != null) {
-        authenType = Authentication.BASIC;
-      }
-    }
-
-    if (authenType != null) {
-      if (user == null) throw new IllegalArgumentException("No user provided");
-      if (password == null) throw new IllegalArgumentException("No password provided");
-      if (authenType == Authentication.BASIC) {
-        checkFirstRequest = false;
-      }
-    }
-
     this.database = database;
 
     this.baseUri = new HttpUrl.Builder()
-      .scheme(context == null ? "http" : "https")
+      .scheme(sslContext == null ? "http" : "https")
       .host(host)
       .port(port)
       .encodedPath("/v1/ping")
@@ -307,45 +295,71 @@ public class OkHttpServices implements RESTServices {
     final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
     final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
 
-    DispatchingAuthenticator.Builder authenticator = new DispatchingAuthenticator.Builder();
-    if (authenType == Authentication.BASIC) {
-      authenticator = authenticator.with("basic", basicAuthenticator);
-    } else if (authenType == Authentication.DIGEST) {
-      authenticator = authenticator.with("digest", digestAuthenticator);
+    if ( authenType == null && sslContext != null ) {
+        authenType = Authentication.BASIC;
     }
 
-    this.client = new OkHttpClient.Builder()
+    DispatchingAuthenticator.Builder authenticator = new DispatchingAuthenticator.Builder();
+    if (authenType == null) {
+      checkFirstRequest = false;
+    } else {
+      if (user == null) throw new IllegalArgumentException("No user provided");
+      if (password == null) throw new IllegalArgumentException("No password provided");
+      if (authenType == Authentication.BASIC) {
+        authenticator = authenticator.with("basic", basicAuthenticator);
+        checkFirstRequest = false;
+      } else if (authenType == Authentication.DIGEST) {
+        authenticator = authenticator.with("digest", digestAuthenticator);
+        checkFirstRequest = true;
+      } else {
+          throw new MarkLogicInternalException(
+            "Internal error - unknown authentication type: " + authenType.name());
+      }
+    }
+
+    OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
       .authenticator(new CachingAuthenticatorDecorator(authenticator.build(), authCache))
       .addInterceptor(new AuthenticationCacheInterceptor(authCache))
-      /*
-      .addNetworkInterceptor(
-        new HttpLoggingInterceptor(new HttpLoggingInterceptor.Logger() {
-          public void log(String message) {
-            logger.debug(message);
-          }
-        })
-        .setLevel(HttpLoggingInterceptor.Level.HEADERS)
-      )
-      */
       .followRedirects(false)
       .followSslRedirects(false)
-      .build();
+      // all clients share a single connection pool
+      .connectionPool(connectionPool)
+      // cookies are ignored (except when a Transaction is being used)
+      .cookieJar(CookieJar.NO_COOKIES);
 
-    /*
-    if (connection != null) connection = null;
-    if (connMgr != null) {
-      connMgr.shutdown();
-      connMgr = null;
+    if ( verifier != null ) {
+      clientBldr = clientBldr.hostnameVerifier(verifier);
     }
-    if (client != null) {
-      client.destroy();
-      client = null;
-    }
-
-
-    String baseUri = ((context == null) ? "http" : "https") + "://" + host + ":" + port + "/v1/";
 
     Properties props = System.getProperties();
+
+    if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
+      final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
+      final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
+      HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(
+        new HttpLoggingInterceptor.Logger() {
+          public void log(String message) {
+            if ( useLogger == true ) {
+              logger.debug(message);
+            } else if ( useStdErr == true ) {
+              System.err.println(message);
+            } else {
+              System.out.println(message);
+            }
+          }
+        }
+      );
+      if ( "BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+      } else if ( "BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+      } else if ( "HEADERS".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+      } else if ( "NONE".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
+        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+      }
+      clientBldr = clientBldr.addNetworkInterceptor(interceptor);
+    }
 
     if (props.containsKey(MAX_DELAY_PROP)) {
       String maxDelayStr = props.getProperty(MAX_DELAY_PROP);
@@ -366,123 +380,12 @@ public class OkHttpServices implements RESTServices {
       }
     }
 
-    // TODO: integrated control of HTTP Client and Jersey Client logging
-    if (!props.containsKey("org.apache.commons.logging.Log")) {
-      System.setProperty("org.apache.commons.logging.Log",
-        "org.apache.commons.logging.impl.SimpleLog");
-    }
-    if (!props.containsKey("org.apache.commons.logging.simplelog.log.org.apache.http")) {
-      System.setProperty(
-        "org.apache.commons.logging.simplelog.log.org.apache.http",
-        "warn");
-    }
-    if (!props.containsKey("org.apache.commons.logging.simplelog.log.org.apache.http.wire")) {
-      System.setProperty(
-        "org.apache.commons.logging.simplelog.log.org.apache.http.wire",
-        "warn");
-    }
-
-    Scheme scheme = null;
-    if (context == null) {
-      SchemeSocketFactory socketFactory = PlainSocketFactory
-        .getSocketFactory();
-      scheme = new Scheme("http", port, socketFactory);
-    } else {
-      SSLSocketFactory socketFactory = new SSLSocketFactory(context,
-        verifier);
-      scheme = new Scheme("https", port, socketFactory);
-    }
-    SchemeRegistry schemeRegistry = new SchemeRegistry();
-    schemeRegistry.register(scheme);
-
-    int maxRouteConnections = 100;
-    int maxTotalConnections = 2 * maxRouteConnections;
-
-    // start 4.1
-    connMgr = new ThreadSafeClientConnManager(
-      schemeRegistry);
-    connMgr.setMaxTotal(maxTotalConnections);
-    connMgr.setDefaultMaxPerRoute(maxRouteConnections);
-    connMgr.setMaxForRoute(new HttpRoute(new HttpHost(baseUri)),
-      maxRouteConnections);
-    // end 4.1
-
-    // CredentialsProvider credentialsProvider = new
-    // BasicCredentialsProvider();
-    // credentialsProvider.setCredentials(new AuthScope(host, port),
-    // new UsernamePasswordCredentials(user, password));
-
-    HttpParams httpParams = new BasicHttpParams();
-
-    if (authenType != null) {
-      List<String> authpref = new ArrayList<String>();
-      if (authenType == Authentication.BASIC)
-        authpref.add(AuthPolicy.BASIC);
-      else if (authenType == Authentication.DIGEST)
-        authpref.add(AuthPolicy.DIGEST);
-      else
-        throw new MarkLogicInternalException(
-          "Internal error - unknown authentication type: "
-            + authenType.name());
-      httpParams.setParameter(AuthPNames.PROXY_AUTH_PREF, authpref);
-    }
-
-    httpParams.setBooleanParameter(ClientPNames.HANDLE_REDIRECTS, false);
-
-    HttpProtocolParams.setVersion(httpParams, HttpVersion.HTTP_1_1);
-
-    // HttpConnectionParams.setStaleCheckingEnabled(httpParams, false);
-
+    this.client = clientBldr.build();
+    // System.setProperty("javax.net.debug", "all"); // all or ssl
+    /*
     // long-term alternative to isFirstRequest alive
     // HttpProtocolParams.setUseExpectContinue(httpParams, false);
     // httpParams.setIntParameter(CoreProtocolPNames.WAIT_FOR_CONTINUE, 1000);
-
-    DefaultApacheHttpClient4Config config = new DefaultApacheHttpClient4Config();
-    Map<String, Object> configProps = config.getProperties();
-    configProps
-      .put(ApacheHttpClient4Config.PROPERTY_PREEMPTIVE_BASIC_AUTHENTICATION,
-        false);
-    configProps.put(ApacheHttpClient4Config.PROPERTY_DISABLE_COOKIES, true);
-    configProps.put(ApacheHttpClient4Config.PROPERTY_CONNECTION_MANAGER,
-      connMgr);
-    // ignored?
-    configProps.put(ApacheHttpClient4Config.PROPERTY_FOLLOW_REDIRECTS,
-      false);
-    // configProps.put(ApacheHttpClient4Config.PROPERTY_CREDENTIALS_PROVIDER,
-    // credentialsProvider);
-    configProps.put(ApacheHttpClient4Config.PROPERTY_HTTP_PARAMS,
-      httpParams);
-    // switches from buffered to streamed in Jersey Client
-    configProps.put(ApacheHttpClient4Config.PROPERTY_CHUNKED_ENCODING_SIZE,
-      32 * 1024);
-
-    client = ApacheHttpClient4.create(config);
-
-    // System.setProperty("javax.net.debug", "all"); // all or ssl
-
-    if (authenType == null) {
-      checkFirstRequest = false;
-    } else if (authenType == Authentication.BASIC) {
-      checkFirstRequest = false;
-
-      client.addFilter(new HTTPBasicAuthFilter(user, password));
-    } else if (authenType == Authentication.DIGEST) {
-      checkFirstRequest = true;
-
-      // workaround for JerseyClient bug 1445
-      client.addFilter(new DigestChallengeFilter());
-
-      client.addFilter(new HTTPDigestAuthFilter(user, password));
-    }
-    else {
-      throw new MarkLogicInternalException(
-        "Internal error - unknown authentication type: "
-          + authenType.name());
-    }
-
-    // client.addFilter(new LoggingFilter(System.err));
-
-    connection = client.resource(baseUri);
     */
   }
 
@@ -500,7 +403,7 @@ public class OkHttpServices implements RESTServices {
       return client;
     } else if ( released ) {
       throw new IllegalStateException(
-      "You cannot use this connected object anymore--connection has already been released");
+        "You cannot use this connected object anymore--connection has already been released");
     } else {
       throw new MarkLogicInternalException("Cannot proceed--connection is null for unknown reason");
     }
@@ -510,19 +413,15 @@ public class OkHttpServices implements RESTServices {
   public void release() {
     try {
       released = true;
-      client.dispatcher().executorService().shutdown();
+      client.dispatcher().executorService().shutdownNow();
     } finally {
       try {
-        client.connectionPool().evictAll();
+        if ( client.cache() != null ) client.cache().close();
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
       } finally {
-        try {
-          if ( client.cache() != null ) client.cache().close();
-        } catch (IOException e) {
-          throw new MarkLogicIOException(e);
-        } finally {
-          client = null;
-          logger.debug("Releasing connection");
-        }
+        client = null;
+        logger.debug("Releasing connection");
       }
     }
   }
