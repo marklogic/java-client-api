@@ -103,7 +103,6 @@ import okio.BufferedSink;
 import okio.Okio;
 import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
 import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
-import com.burgstaller.okhttp.DispatchingAuthenticator;
 import com.burgstaller.okhttp.basic.BasicAuthenticator;
 import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
@@ -292,24 +291,22 @@ public class OkHttpServices implements RESTServices {
 
     Credentials credentials = new Credentials(user, password);
     final Map<String,CachingAuthenticator> authCache = new ConcurrentHashMap<String,CachingAuthenticator>();
-    final BasicAuthenticator basicAuthenticator = new BasicAuthenticator(credentials);
-    final DigestAuthenticator digestAuthenticator = new DigestAuthenticator(credentials);
 
     if ( authenType == null && sslContext != null ) {
         authenType = Authentication.BASIC;
     }
 
-    DispatchingAuthenticator.Builder authenticator = new DispatchingAuthenticator.Builder();
+    CachingAuthenticator authenticator = null;
     if (authenType == null) {
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");
       if (password == null) throw new IllegalArgumentException("No password provided");
       if (authenType == Authentication.BASIC) {
-        authenticator = authenticator.with("basic", basicAuthenticator);
+        authenticator = new BasicAuthenticator(credentials);
         checkFirstRequest = false;
       } else if (authenType == Authentication.DIGEST) {
-        authenticator = authenticator.with("digest", digestAuthenticator);
+        authenticator = new DigestAuthenticator(credentials);
         checkFirstRequest = true;
       } else {
           throw new MarkLogicInternalException(
@@ -318,14 +315,20 @@ public class OkHttpServices implements RESTServices {
     }
 
     OkHttpClient.Builder clientBldr = new OkHttpClient.Builder()
-      .authenticator(new CachingAuthenticatorDecorator(authenticator.build(), authCache))
-      .addInterceptor(new AuthenticationCacheInterceptor(authCache))
       .followRedirects(false)
       .followSslRedirects(false)
       // all clients share a single connection pool
       .connectionPool(connectionPool)
       // cookies are ignored (except when a Transaction is being used)
-      .cookieJar(CookieJar.NO_COOKIES);
+      .cookieJar(CookieJar.NO_COOKIES)
+      // no timeouts since some of our clients' reads and writes can be massive
+      .readTimeout(0, TimeUnit.SECONDS)
+      .writeTimeout(0, TimeUnit.SECONDS);
+
+    if ( authenticator != null ) {
+      clientBldr = clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
+      clientBldr = clientBldr.addInterceptor(new AuthenticationCacheInterceptor(authCache));
+    }
 
     if ( verifier != null ) {
       clientBldr = clientBldr.hostnameVerifier(verifier);
