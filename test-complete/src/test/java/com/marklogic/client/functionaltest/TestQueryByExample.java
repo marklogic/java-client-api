@@ -16,15 +16,26 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.io.File;
 import java.io.IOException;
 
 import javax.xml.transform.TransformerException;
 
+import org.custommonkey.xmlunit.exceptions.XpathException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import org.w3c.dom.Document;
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
@@ -35,14 +46,6 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.sun.jersey.api.client.ClientHandlerException;
-
-import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
-
-import org.custommonkey.xmlunit.exceptions.XpathException;
-import org.w3c.dom.Document;
-import org.junit.*;
 
 public class TestQueryByExample extends BasicJavaClientREST {
 	private static String dbName = "TestQueryByExampleDB";
@@ -299,7 +302,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 				System.out.println(result.getUri()+ ": Uri");
 				assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
 			} 
-		}catch(ClientHandlerException e){
+		}catch(Exception e){
 			System.out.println("Negative Test Passed of executing nonreadable file");			
 		}
 		// release client
