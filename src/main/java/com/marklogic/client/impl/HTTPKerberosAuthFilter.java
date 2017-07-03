@@ -38,19 +38,13 @@ import org.ietf.jgss.GSSManager;
 import org.ietf.jgss.GSSName;
 import org.ietf.jgss.Oid;
 
-import com.sun.jersey.core.util.Base64;
-
 import com.marklogic.client.FailedRequestException;
-import com.sun.jersey.api.client.ClientHandlerException;
-import com.sun.jersey.api.client.ClientRequest;
-import com.sun.jersey.api.client.ClientResponse;
-import com.sun.jersey.api.client.filter.ClientFilter;
 import javax.security.auth.kerberos.KerberosTicket;
 
 /**
  * Client filter adding HTTP Negotiate authentication headers in the request
  */
-class HTTPKerberosAuthFilter extends ClientFilter {
+class HTTPKerberosAuthFilter {
   String host;
   String username;
   LoginContext loginContext;
@@ -160,7 +154,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
         byte[] inToken = new byte[0];
         byte[] outToken = context.initSecContext(inToken, 0, inToken.length);
         context.requestMutualAuth(true);
-        outputToken.append(new String(Base64.encode(outToken)));
+        //outputToken.append(new String(Base64.encode(outToken)));
         context.dispose();
       } catch (GSSException exception) {
         throw new FailedRequestException(exception.getMessage());
@@ -245,6 +239,7 @@ class HTTPKerberosAuthFilter extends ClientFilter {
    *            the HTTP request
    * @return the HTTP response
    */
+  /*
   @Override
   public ClientResponse handle(final ClientRequest request) throws ClientHandlerException {
 
@@ -260,4 +255,5 @@ class HTTPKerberosAuthFilter extends ClientFilter {
     ClientResponse response = getNext().handle(request);
     return response;
   }
+  */
 }
