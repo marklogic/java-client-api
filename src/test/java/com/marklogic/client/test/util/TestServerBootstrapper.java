@@ -30,6 +30,7 @@ import org.apache.http.entity.FileEntity;
 import org.apache.http.impl.client.DefaultHttpClient;
 
 import com.marklogic.client.example.util.Bootstrapper;
+import com.marklogic.client.test.Common;
 
 /**
  * This test manages a REST instance to support Java unit tests. It installs a resource
@@ -42,10 +43,10 @@ import com.marklogic.client.example.util.Bootstrapper;
  */
 public class TestServerBootstrapper {
 
-  private String username = "admin";
-  private String password = "admin";
-  private String host = "localhost";
-  private int port = 8012;
+  private String username = Common.SERVER_ADMIN_USER;
+  private String password = Common.SERVER_ADMIN_PASS;
+  private String host = Common.HOST;
+  private int port = Common.PORT;
 
   private void bootstrapRestServer() throws ClientProtocolException, IOException {
 
@@ -60,7 +61,7 @@ public class TestServerBootstrapper {
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope("localhost", 8002),
+      new AuthScope(Common.HOST, 8002),
       new UsernamePasswordCredentials(username, password));
 
     HttpDelete delete = new HttpDelete(
@@ -76,7 +77,7 @@ public class TestServerBootstrapper {
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope("localhost", port),
+      new AuthScope(Common.HOST, port),
       new UsernamePasswordCredentials(username, password));
 
     HttpPost post = new HttpPost("http://" + host + ":" + port
@@ -94,7 +95,7 @@ public class TestServerBootstrapper {
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope("localhost", port),
+      new AuthScope(Common.HOST, port),
       new UsernamePasswordCredentials(username, password));
 
     HttpPut put = new HttpPut("http://" + host + ":" + port
