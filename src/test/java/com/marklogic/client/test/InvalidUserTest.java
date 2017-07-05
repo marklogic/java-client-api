@@ -22,7 +22,7 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
@@ -33,7 +33,7 @@ public class InvalidUserTest {
     //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     // create the client
     DatabaseClient client = DatabaseClientFactory.newClient(
-      "localhost", 8012, "MyFooUser", "x", Authentication.DIGEST);
+      Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x"));
 
 
     String expectedException = "com.marklogic.client.FailedRequestException: " +
