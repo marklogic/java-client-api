@@ -101,6 +101,7 @@ public interface RESTServices {
   int STATUS_FORBIDDEN = 403;
   int STATUS_NOT_FOUND = 404;
   int STATUS_PRECONDITION_FAILED = 412;
+  int STATUS_PRECONDITION_REQUIRED = 428;
   int STATUS_SERVICE_UNAVAILABLE = 503;
 
   String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
