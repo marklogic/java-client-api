@@ -528,7 +528,7 @@ public class OkHttpServices implements RESTServices {
       throw new ResourceNotFoundException(
         "Could not delete non-existent document");
     }
-    if (status == STATUS_FORBIDDEN) {
+    if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1343,7 +1343,7 @@ public class OkHttpServices implements RESTServices {
         "Could not write non-existent document",
         extractErrorFields(response));
     }
-    if (status == STATUS_FORBIDDEN) {
+    if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
@@ -1485,7 +1485,7 @@ public class OkHttpServices implements RESTServices {
       throw new ResourceNotFoundException(
         "Could not write non-existent document");
     }
-    if (status == STATUS_FORBIDDEN) {
+    if (status == STATUS_PRECONDITION_REQUIRED) {
       FailedRequest failure = extractErrorFields(response);
       if (failure.getMessageCode().equals("RESTAPI-CONTENTNOVERSION")) {
         throw new FailedRequestException(
