@@ -745,9 +745,8 @@ public class BulkReadWriteTest {
     uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
     uris.add(uniqueDir + "test+with+plus.txt");
     uris.add(uniqueDir + "test/with/forwardslash.txt");
-    uris.add(uniqueDir + "test\\with\\backslash.txt");
     uris.add(uniqueDir + "test.with.dot.txt");
-    uris.add(uniqueDir + "test_with!every@thing#else$^*()-_[]:',~.txt");
+    uris.add(uniqueDir + "test_with!every@thing#else$*()-_[]:',~.txt");
     uris.add(uniqueDir + "test_with;.txt");
 
     test_issue_623_body( Common.client.newTextDocumentManager(), uris, "$0" );
