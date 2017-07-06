@@ -57,7 +57,7 @@ public class SSLTest {
     sslContext.init(null, new TrustManager[] { naiveTrustMgr }, null);
 
     // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8012, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
+    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x").withSSLContext( sslContext).withSSLHostnameVerifier( SSLHostnameVerifier.ANY));
 
 
     String expectedException = "com.marklogic.client.MarkLogicIOException: " +
