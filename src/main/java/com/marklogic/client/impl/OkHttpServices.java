@@ -493,10 +493,6 @@ public class OkHttpServices implements RESTServices {
         throw new FailedRequestException(
           "Content version required to delete document", failure);
       }
-      throw new FailedRequestException(
-        "Precondition required to delete document", failure);
-    } else if (status == STATUS_FORBIDDEN) {
-      FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to delete documents", failure);
     }
@@ -1303,10 +1299,6 @@ public class OkHttpServices implements RESTServices {
         throw new FailedRequestException(
           "Content version required to write document", failure);
       }
-      throw new FailedRequestException(
-        "Precondition required to write document", failure);
-    } else if (status == STATUS_FORBIDDEN) {
-      FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to write documents", failure);
     }

@@ -16,12 +16,16 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
@@ -57,5 +61,23 @@ public class InvalidUserTest {
         }
         assertEquals(expectedException, exception);
 
+    }
+
+    @Test
+    public void test_issue_762() {
+        DatabaseClient readOnlyClient = DatabaseClientFactory.newClient(
+            Common.HOST, Common.PORT, "rest-reader", "x", Authentication.DIGEST);
+        try {
+            readOnlyClient.newDocumentManager().writeAs("test.txt", "test");
+            fail("reader could write a document, but shouldn't be able to");
+        } catch (ForbiddenUserException e) {
+            String message = e.getFailedRequest().getMessageCode();
+            int statusCode = e.getFailedRequest().getStatusCode();
+            assertNotNull("Error Message is null", message);
+            assertTrue("Error Message", message.equals("SEC-PRIV"));
+            assertTrue("Status code", (statusCode == 403));
+        } finally {
+            readOnlyClient.release();
+        }
     }
 }
