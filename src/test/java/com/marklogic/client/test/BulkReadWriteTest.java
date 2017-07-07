@@ -793,6 +793,18 @@ public class BulkReadWriteTest {
     }
   }
 
+  @Test
+  // https://github.com/marklogic/java-client-api/issues/759
+  public void test_issue_759() throws Exception {
+    DocumentManager docMgr = Common.client.newDocumentManager();
+    String[] uris = new String[150];
+    for ( int i=0; i < 102; i++ ) {
+      String mapDocId = "/" + Integer.toString(i);
+      uris[i] = mapDocId;
+    }
+    docMgr.read(uris);
+  }
+
   private void verifyDeleted(DocumentManager docMgr, String uri) {
     try {
       docMgr.read(uri, new StringHandle());
