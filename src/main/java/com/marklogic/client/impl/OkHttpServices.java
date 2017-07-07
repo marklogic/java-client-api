@@ -844,7 +844,9 @@ public class OkHttpServices implements RESTServices {
     addCategoryParams(categories, params, withContent);
     if (format != null)        params.add("format",     format.toString().toLowerCase());
     for (String uri: uris) {
-      params.add("uri", uri);
+      if ( uri != null && uri.length() > 0 ) {
+        params.add("uri", uri);
+      }
     }
     OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator.class,
       reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);

@@ -682,6 +682,17 @@ public class BulkReadWriteTest {
         return countries.get(isoCode);
     }
 
+    @Test
+    // https://github.com/marklogic/java-client-api/issues/759
+    public void test_issue_759() throws Exception {
+        String[] uris = new String[150];
+        for ( int i=0; i < 102; i++ ) {
+            String mapDocId = "/" + Integer.toString(i);
+            uris[i] = mapDocId;
+        }
+        Common.client.newDocumentManager().read(uris);
+    }
+
     public static City newCity(String line, Map<String, Country> countries) {
         String[] fields = line.split("	");
         try {
