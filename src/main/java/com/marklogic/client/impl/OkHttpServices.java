@@ -1725,23 +1725,19 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Format getHeaderFormat(BodyPart part) {
-    try {
-      String contentDisposition = part.getDisposition();
-      String formatRegex = " format=(text|binary|xml|json)";
-      String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
-      String contentType = getHeader(part, HEADER_CONTENT_TYPE);
-      if ( format != null && format.length() > 0 ) {
-        return Format.valueOf(format.toUpperCase());
-      } else if ( contentDisposition != null && contentDisposition.matches(formatRegex) ) {
-        format = contentDisposition.replaceFirst("^.*" + formatRegex + ".*$", "$1");
-        return Format.valueOf(format.toUpperCase());
-      } else if ( contentType != null && contentType.length() > 0 ) {
-        return Format.getFromMimetype(contentType);
-      }
-      return null;
-    } catch (MessagingException e) {
-      throw new MarkLogicIOException(e);
+    String contentDisposition = getHeader(part, HEADER_CONTENT_DISPOSITION);
+    String formatRegex = ".* format=(text|binary|xml|json).*";
+    String format = getHeader(part, HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT);
+    String contentType = getHeader(part, HEADER_CONTENT_TYPE);
+    if ( format != null && format.length() > 0 ) {
+      return Format.valueOf(format.toUpperCase());
+    } else if ( contentDisposition != null && contentDisposition.matches(formatRegex) ) {
+      format = contentDisposition.replaceFirst("^.*" + formatRegex + ".*$", "$1");
+      return Format.valueOf(format.toUpperCase());
+    } else if ( contentType != null && contentType.length() > 0 ) {
+      return Format.getFromMimetype(contentType);
     }
+    return null;
   }
 
   private void updateMimetype(ContentDescriptor descriptor,
