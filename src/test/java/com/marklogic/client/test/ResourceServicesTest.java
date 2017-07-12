@@ -27,6 +27,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -163,6 +166,19 @@ public class ResourceServicesTest {
 		} catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
 		// since we released the existing connection, connect again in case this isn't always the last test
 		Common.connectAdmin();
+	}
+
+	@Test
+	/** Avoid regression on https://github.com/marklogic/java-client-api/issues/761 */
+	public void test_issue_761() {
+		DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, "Documents",
+			Common.USERNAME, Common.PASSWORD, Authentication.DIGEST);
+		try {
+			client.newServerConfigManager().newResourceExtensionsManager()
+				.listServices(new DOMHandle());
+		} finally {
+			client.release();
+		}
 	}
 
 	static class SimpleResourceManager extends ResourceManager {

@@ -92,7 +92,7 @@ class ResourceExtensionsImpl
 		Format listFormat = listBase.getFormat();
 		if (!(Format.JSON == listFormat || Format.XML == listFormat))
 			throw new IllegalArgumentException(
-					"list handle for unsupported format: "+listFormat.getClass().getName());
+					"list handle for unsupported format: "+listFormat);
 
 		RequestParameters extraParams = null;
 		if (!refresh) {

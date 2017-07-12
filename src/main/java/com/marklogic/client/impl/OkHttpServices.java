@@ -3982,23 +3982,13 @@ public class OkHttpServices implements RESTServices {
         }
       }
     }
-    if ( database != null ) {
+    if ( database != null && ! path.startsWith("config/") ) {
       uri.addQueryParameter("database", database);
     }
     Request.Builder request = new Request.Builder()
       .url(uri.build());
     return request;
   }
-  /*
-  private Request.Builder sendRequestBuilder(String path,
-                                      RequestParameters params) {
-    if ( params == null ) params = new RequestParameters();
-    if ( database != null ) {
-      addEncodedParam(params, "database", database);
-    }
-    return getConnection().path(path).queryParams(params);
-  }
-  */
 
   private Request.Builder setupRequest(Request.Builder requestBldr,
                                        Object inputMimetype, Object outputMimetype) {
