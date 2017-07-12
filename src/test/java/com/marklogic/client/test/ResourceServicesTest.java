@@ -27,6 +27,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.w3c.dom.Document;
 
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.util.RequestParameters;
 import com.marklogic.client.admin.ResourceExtensionsManager;
@@ -163,6 +164,18 @@ public class ResourceServicesTest {
     } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
     try { extensionMgr.deleteServices(ResourceExtensionsTest.RESOURCE_NAME);
     } catch (IllegalStateException e) { assertEquals("Wrong error", expectedMessage, e.getMessage()); }
+  }
+
+  @Test
+  /** Avoid regression on https://github.com/marklogic/java-client-api/issues/761 */
+  public void test_issue_761() {
+    DatabaseClient client = Common.newClient("Documents");
+    try {
+      client.newServerConfigManager().newResourceExtensionsManager()
+        .listServices(new DOMHandle());
+    } finally {
+      client.release();
+    }
   }
 
   static class SimpleResourceManager extends ResourceManager {
