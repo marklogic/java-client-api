@@ -89,6 +89,7 @@ import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.MultipartBody;
 import okhttp3.MultipartBody.Part;
@@ -102,7 +103,6 @@ import okio.BufferedSink;
 import okio.Okio;
 import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
 import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
-import com.burgstaller.okhttp.basic.BasicAuthenticator;
 import com.burgstaller.okhttp.digest.CachingAuthenticator;
 import com.burgstaller.okhttp.digest.Credentials;
 import com.burgstaller.okhttp.digest.DigestAuthenticator;
@@ -297,16 +297,21 @@ public class OkHttpServices implements RESTServices {
     }
 
     CachingAuthenticator authenticator = null;
-    if (authenType == null || authenType == Authentication.KERBEROS || authenType == Authentication.CERTIFICATE) {
+    Interceptor interceptor = null;
+    if (authenType == null || authenType == Authentication.CERTIFICATE) {
+      checkFirstRequest = false;
+    } else if (authenType == Authentication.KERBEROS) {
+      interceptor = new HTTPKerberosAuthInterceptor(host, user);
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");
       if (password == null) throw new IllegalArgumentException("No password provided");
       if (authenType == Authentication.BASIC) {
-        authenticator = new BasicAuthenticator(credentials);
+        interceptor = new HTTPBasicAuthInterceptor(credentials);
         checkFirstRequest = false;
       } else if (authenType == Authentication.DIGEST) {
         authenticator = new DigestAuthenticator(credentials);
+        interceptor = new AuthenticationCacheInterceptor(authCache);
         checkFirstRequest = true;
       } else {
           throw new MarkLogicInternalException(
@@ -325,10 +330,8 @@ public class OkHttpServices implements RESTServices {
       .readTimeout(0, TimeUnit.SECONDS)
       .writeTimeout(0, TimeUnit.SECONDS);
 
-    if ( authenticator != null ) {
-      clientBldr = clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
-      clientBldr = clientBldr.addInterceptor(new AuthenticationCacheInterceptor(authCache));
-    }
+    if(authenticator != null) clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));
+    if(interceptor != null) clientBldr.addInterceptor(interceptor);
 
     if ( verifier != null ) {
       clientBldr = clientBldr.hostnameVerifier(verifier);
@@ -339,7 +342,7 @@ public class OkHttpServices implements RESTServices {
     if (props.containsKey(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) {
       final boolean useLogger = "LOGGER".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
       final boolean useStdErr = "STDERR".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_OUTPUT));
-      HttpLoggingInterceptor interceptor = new HttpLoggingInterceptor(
+      HttpLoggingInterceptor networkInterceptor = new HttpLoggingInterceptor(
         new HttpLoggingInterceptor.Logger() {
           public void log(String message) {
             if ( useLogger == true ) {
@@ -353,15 +356,15 @@ public class OkHttpServices implements RESTServices {
         }
       );
       if ( "BASIC".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
+        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BASIC);
       } else if ( "BODY".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
+        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.BODY);
       } else if ( "HEADERS".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
+        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.HEADERS);
       } else if ( "NONE".equalsIgnoreCase(props.getProperty(OKHTTP_LOGGINGINTERCEPTOR_LEVEL)) ) {
-        interceptor = interceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
+        networkInterceptor = networkInterceptor.setLevel(HttpLoggingInterceptor.Level.NONE);
       }
-      clientBldr = clientBldr.addNetworkInterceptor(interceptor);
+      clientBldr = clientBldr.addNetworkInterceptor(networkInterceptor);
     }
 
     if (props.containsKey(MAX_DELAY_PROP)) {
