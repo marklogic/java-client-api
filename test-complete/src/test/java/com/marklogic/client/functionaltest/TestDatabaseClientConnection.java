@@ -83,7 +83,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 	public static void setUp() throws Exception 
 	{
 		System.out.println("In setup");	
-		System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
+		//System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
 		setupJavaRESTServer(dbName, fNames[0], restServerName,8011);
 		
 		/*
@@ -158,7 +158,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		
 		DatabaseClient client = DatabaseClientFactory.newClient("localhost", 8033, "rest-reader", "x", Authentication.DIGEST);
 		
-		String expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException: Connection to http://localhost:8033 refused";
+		String expectedException = "java.net.ConnectException: Failed to connect to localhost";
 		String exception = "";
 		
 		// write doc
@@ -167,7 +167,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST{
 		}
 		catch (Exception e) { exception = e.toString(); }
 		
-		assertEquals("Exception is not thrown", expectedException, exception);
+		assertTrue("Exception is not thrown", exception.contains(expectedException));
 		
 		// release client
 		client.release();
