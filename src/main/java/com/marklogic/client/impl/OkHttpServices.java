@@ -1471,10 +1471,6 @@ public class OkHttpServices implements RESTServices {
         throw new FailedRequestException(
           "Content version required to write document", failure);
       }
-      throw new FailedRequestException(
-        "Precondition required to write document", failure);
-    } else if (status == STATUS_FORBIDDEN) {
-      FailedRequest failure = extractErrorFields(response);
       throw new ForbiddenUserException(
         "User is not allowed to write documents", failure);
     }
@@ -3878,8 +3874,6 @@ public class OkHttpServices implements RESTServices {
         if ( cookie.getMaxAge() == 0 ) {
           continue;
         }
-        // TODO: eval if we need handling for MIN_VALUE
-        // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
         // don't forward the cookie if it has a max age and we're past the max age
         if ( cookie.getMaxAge() > 0 ) {
           Calendar expiration = (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone();

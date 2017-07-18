@@ -28,6 +28,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
+import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class InvalidUserTest {
@@ -76,6 +77,17 @@ public class InvalidUserTest {
             assertNotNull("Error Message is null", message);
             assertTrue("Error Message", message.equals("SEC-PRIV"));
             assertTrue("Status code", (statusCode == 403));
+            try {
+                DocumentMetadataHandle metadata = new DocumentMetadataHandle().withQuality(3);
+                readOnlyClient.newDocumentManager().writeAs("test.txt", metadata, "test");
+                fail("reader could write a document with metadata, but shouldn't be able to");
+            } catch (ForbiddenUserException e2) {
+                message = e2.getFailedRequest().getMessageCode();
+                statusCode = e2.getFailedRequest().getStatusCode();
+                assertNotNull("Error Message is null", message);
+                assertTrue("Error Message", message.equals("SEC-PRIV"));
+                assertTrue("Status code", (statusCode == 403));
+            }
         } finally {
             readOnlyClient.release();
         }
