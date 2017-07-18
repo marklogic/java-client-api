@@ -33,7 +33,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference
+import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
