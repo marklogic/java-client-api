@@ -116,6 +116,9 @@ import javax.mail.MessagingException;
 import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
 import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
@@ -137,6 +140,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.Certificate;
+import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -188,8 +192,38 @@ public class OkHttpServices implements RESTServices {
     }
 
     public void verify(String hostname, X509Certificate cert) throws SSLException {
-      // verifier.verify(hostname, cns, subjectAlts);
-      throw new IllegalStateException("Not yet implemented");
+      ArrayList<String> cnArray = new ArrayList<>();
+      try {
+        LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
+        for(Rdn rdn: ldapDN.getRdns()) {
+          Object value = rdn.getValue();
+          if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
+            cnArray.add((String) value);
+          }
+        }
+
+        int type_dnsName = 2;
+        int type_ipAddress = 7;
+        ArrayList<String> subjectAltArray = new ArrayList<>();
+        Collection<List<?>> alts = cert.getSubjectAlternativeNames();
+        if ( alts != null ) {
+          for ( List<?> alt : alts ) {
+            if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
+              Integer type = (Integer) alt.get(0);
+              if ( type == type_dnsName || type == type_ipAddress ) {
+                subjectAltArray.add((String) alt.get(1));
+              }
+            }
+          }
+        }
+        String[] cns = cnArray.toArray(new String[cnArray.size()]);
+        String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
+        verifier.verify(hostname, cns, subjectAlts);
+      } catch(CertificateParsingException e) {
+        throw new MarkLogicIOException(e);
+      } catch(InvalidNameException e) {
+        throw new MarkLogicIOException(e);
+      }
     }
   }
 
