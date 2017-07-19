@@ -67,9 +67,27 @@ public class DatabaseClientSingleton {
     if(client == null) {
       registerHandlers();
       client = DatabaseClientFactory.newClient(properties.host, properties.port,
-        new DigestAuthContext(properties.writerUser, properties.writerPassword));
+          new DigestAuthContext(properties.writerUser, properties.writerPassword));
     }
     return client;
+  }
+
+  public static DatabaseClient getAdmin() {
+    if (client == null) {
+      registerHandlers();
+      client = DatabaseClientFactory.newClient(properties.host, properties.port,
+          new DigestAuthContext("admin", "admin"));
+    }
+    return client;
+  }
+
+  public static synchronized DatabaseClient getAdmin(String database) {
+    if (dbSpecificClients.get("admin" + database) == null) {
+      registerHandlers();
+      dbSpecificClients.put("admin" + database, DatabaseClientFactory.newClient(properties.host, properties.port, database,
+              new DigestAuthContext("admin", "admin")));
+    }
+    return dbSpecificClients.get("admin" + database);
   }
 
   public static synchronized DatabaseClient get(String database) {
