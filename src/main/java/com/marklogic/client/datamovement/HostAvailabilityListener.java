@@ -18,8 +18,6 @@ package com.marklogic.client.datamovement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.http.NoHttpResponseException;
-
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.net.ssl.SSLException;
@@ -69,7 +67,6 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   private ScheduledFuture<?> future;
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
   {
-    hostUnavailableExceptions.add(NoHttpResponseException.class);
     hostUnavailableExceptions.add(SocketException.class);
     hostUnavailableExceptions.add(SSLException.class);
     hostUnavailableExceptions.add(UnknownHostException.class);
@@ -83,7 +80,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     this.moveMgr = moveMgr;
   }
 
-  /** If a host becomes unavailable (NoHttpResponseException, SocketException, SSLException,
+  /** If a host becomes unavailable (SocketException, SSLException,
    * UnknownHostException), adds it to the blacklist
    *
    * @param duration the amount of time an unavailable host will be suspended
