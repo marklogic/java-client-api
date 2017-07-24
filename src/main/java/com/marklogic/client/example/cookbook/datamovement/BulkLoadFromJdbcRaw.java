@@ -184,8 +184,12 @@ public class BulkLoadFromJdbcRaw {
       "    cts.jsonPropertyValueQuery('employeeId', employee.employeeId)" +
       "  ])); " +
       "  if ( fn.count(salaries) > 0 ) { " +
-      "    salaries.map(function(salary){delete salary.employeeId}); " +
-      "    employee.salaries = salaries; " +
+      "    employee.salaries = new Array(); " +
+      "    for (let salary of salaries) { " +
+      "      var employeeSalary = salary.toObject(); " +
+      "      delete employeeSalary.employeeId; " +
+      "      employee.salaries = employeeSalary; " +
+      "    } " +
       "    for ( var i=1; i <= fn.count(salaries); i++ ) { " +
       "      xdmp.documentDelete(fn.baseUri(fn.subsequence(salaries, i, 1))) " +
       "    } " +
