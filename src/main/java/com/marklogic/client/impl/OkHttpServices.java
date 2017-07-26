@@ -261,14 +261,14 @@ public class OkHttpServices implements RESTServices {
 
   private FailedRequest extractErrorFields(Response response) {
     if ( response == null ) return null;
-    if ( response.code() == STATUS_UNAUTHORIZED ) {
-      FailedRequest failure = new FailedRequest();
-      failure.setMessageString("Unauthorized");
-      failure.setStatusString("Failed Auth");
-      return failure;
-    }
-    String responseBody = getEntity(response.body(), String.class);
     try {
+      if ( response.code() == STATUS_UNAUTHORIZED ) {
+        FailedRequest failure = new FailedRequest();
+        failure.setMessageString("Unauthorized");
+        failure.setStatusString("Failed Auth");
+        return failure;
+      }
+      String responseBody = getEntity(response.body(), String.class);
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
       FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
       if ( handler.getMessage() == null ) {
@@ -1066,7 +1066,8 @@ public class OkHttpServices implements RESTServices {
       List<BodyPart> partList = getPartList(entity);
 
       if (partCount != 2) {
-        throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts");
+        throw new FailedRequestException("read expected 2 parts but got " + partCount + " parts",
+          extractErrorFields(response));
       }
 
       HandleImplementation metadataBase = HandleAccessor.as(metadataHandle);
