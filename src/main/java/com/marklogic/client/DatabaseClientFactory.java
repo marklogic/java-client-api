@@ -21,6 +21,7 @@ import java.util.Set;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
 
 import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
@@ -212,7 +213,7 @@ public class DatabaseClientFactory {
    * @return	a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port) {
-    return newClient(host, port, null, null, null, null, null, null);
+    return newClient(host, port, null, null, null, null, null, null, null);
   }
 
   /**
@@ -226,7 +227,7 @@ public class DatabaseClientFactory {
    * @return	a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database) {
-    return newClient(host, port, database, null, null, null, null, null);
+    return newClient(host, port, database, null, null, null, null, null, null);
   }
 
   /**
@@ -240,7 +241,7 @@ public class DatabaseClientFactory {
    * @return	a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
-    return newClient(host, port, null, user, password, type, null, null);
+    return newClient(host, port, null, user, password, type, null, null, null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -254,7 +255,7 @@ public class DatabaseClientFactory {
    * @return	a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
-    return newClient(host, port, database, user, password, type, null, null);
+    return newClient(host, port, database, user, password, type, null, null, null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -266,9 +267,26 @@ public class DatabaseClientFactory {
    * @param type	the type of authentication applied to the request
    * @param context	the SSL context for authenticating with the server
    * @return	a new client for making database requests
+   * @deprecated use {@link DatabaseClientFactory#newClient(String, int, String, String, Authentication, SSLContext, TrustManager)}}
    */
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, null, user, password, type, context, SSLHostnameVerifier.COMMON);
+    return newClient(host, port, null, user, password, type, context, null, SSLHostnameVerifier.COMMON);
+  }
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host  the host with the REST server
+   * @param port  the port for the REST server
+   * @param user  the user with read, write, or administrative privileges
+   * @param password  the password for the user
+   * @param type  the type of authentication applied to the request
+   * @param context the SSL context for authenticating with the server
+   * @param trustManager the TrustManager object which is responsible for
+   *                     deciding if a credential should be trusted or not.
+   * @return  a new client for making database requests
+   */
+  static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, TrustManager trustManager) {
+    return newClient(host, port, null, user, password, type, context, trustManager, SSLHostnameVerifier.COMMON);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -281,9 +299,27 @@ public class DatabaseClientFactory {
    * @param type	the type of authentication applied to the request
    * @param context	the SSL context for authenticating with the server
    * @return	a new client for making database requests
+   * @deprecated use {@link DatabaseClientFactory#newClient(String, int, String, String, String, Authentication, SSLContext, TrustManager)}}
    */
   static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, database, user, password, type, context, SSLHostnameVerifier.COMMON);
+    return newClient(host, port, database, user, password, type, context, null, SSLHostnameVerifier.COMMON);
+  }
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host  the host with the REST server
+   * @param port  the port for the REST server
+   * @param database  the database to access (default: configured database for the REST server)
+   * @param user  the user with read, write, or administrative privileges
+   * @param password  the password for the user
+   * @param type  the type of authentication applied to the request
+   * @param context the SSL context for authenticating with the server
+   * @param trustManager the TrustManager object which is responsible for
+   *                     deciding if a credential should be trusted or not.
+   * @return  a new client for making database requests
+   */
+  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, TrustManager trustManager) {
+    return newClient(host, port, database, user, password, type, context, trustManager, SSLHostnameVerifier.COMMON);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -296,9 +332,48 @@ public class DatabaseClientFactory {
    * @param context	the SSL context for authenticating with the server
    * @param verifier	a callback for checking hostnames
    * @return	a new client for making database requests
+   * @deprecated use {@link DatabaseClientFactory#newClient(String, int, String, String, Authentication, SSLContext, TrustManager, SSLHostnameVerifier)}
    */
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, context, verifier);
+    DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, context, null, verifier);
+    client.setHandleRegistry(getHandleRegistry().copy());
+    return client;
+  }
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host  the host with the REST server
+   * @param port  the port for the REST server
+   * @param user  the user with read, write, or administrative privileges
+   * @param password  the password for the user
+   * @param type  the type of authentication applied to the request
+   * @param context the SSL context for authenticating with the server
+   * @param trustManager the TrustManager object which is responsible for
+   *                     deciding if a credential should be trusted or not.
+   * @param verifier  a callback for checking hostnames
+   * @return  a new client for making database requests
+   */
+  static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, TrustManager trustManager, SSLHostnameVerifier verifier) {
+    DatabaseClientImpl client = newClientImpl(host, port, null, user, password, type, context, trustManager, verifier);
+    client.setHandleRegistry(getHandleRegistry().copy());
+    return client;
+  }
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host  the host with the REST server
+   * @param port  the port for the REST server
+   * @param database  the database to access (default: configured database for the REST server)
+   * @param user  the user with read, write, or administrative privileges
+   * @param password  the password for the user
+   * @param type  the type of authentication applied to the request
+   * @param context the SSL context for authenticating with the server
+   * @param verifier  a callback for checking hostnames
+   * @return  a new client for making database requests
+   * @deprecated use {@link DatabaseClientFactory#newClient(String, int, String, String, String, Authentication, SSLContext, TrustManager, SSLHostnameVerifier)}}
+   */
+  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+    DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, context, null, verifier);
     client.setHandleRegistry(getHandleRegistry().copy());
     return client;
   }
@@ -312,15 +387,17 @@ public class DatabaseClientFactory {
    * @param password	the password for the user
    * @param type	the type of authentication applied to the request
    * @param context	the SSL context for authenticating with the server
+   * @param trustManager the TrustManager object which is responsible for
+   *                     deciding if a credential should be trusted or not.
    * @param verifier	a callback for checking hostnames
    * @return	a new client for making database requests
    */
-  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, context, verifier);
+  static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, TrustManager trustManager, SSLHostnameVerifier verifier) {
+    DatabaseClientImpl client = newClientImpl(host, port, database, user, password, type, context, trustManager, verifier);
     client.setHandleRegistry(getHandleRegistry().copy());
     return client;
   }
-  static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
+  static private DatabaseClientImpl newClientImpl(String host, int port, String database, String user, String password, Authentication type, SSLContext context, TrustManager trustManager, SSLHostnameVerifier verifier) {
     logger.debug("Creating new database client for server at "+host+":"+port);
     OkHttpServices services = new OkHttpServices();
     services.connect(host, port, database, user, password, type, context, verifier);
@@ -421,6 +498,7 @@ public class DatabaseClientFactory {
 
     transient private SSLContext            context;
     transient private SSLHostnameVerifier   verifier;
+    transient private TrustManager          trustManager;
 
     /**
      * Zero-argument constructor for bean applications. Other
@@ -536,6 +614,22 @@ public class DatabaseClientFactory {
       this.context = context;
     }
     /**
+     * Returns the TrustManager for SSL clients created with a
+     * DatabaseClientFactory.Bean object.
+     * @return  the TrustManager
+     */
+    public TrustManager getTrustManager() {
+      return trustManager;
+    }
+    /**
+     * Specifies the TrustManager for clients created with a
+     * DatabaseClientFactory.Bean object that authenticate with SSL.
+     * @param trustManager the TrustManager
+     */
+    public void setTrustManager(TrustManager trustManager) {
+      this.trustManager = trustManager;
+    }
+    /**
      * Returns the host verifier for clients created with a
      * DatabaseClientFactory.Bean object.
      * @return	the host verifier
@@ -586,7 +680,7 @@ public class DatabaseClientFactory {
      * @return	a new client for making database requests
      */
     public DatabaseClient newClient() {
-      DatabaseClientImpl client = newClientImpl(host, port, database, user, password, authentication, context, verifier);
+      DatabaseClientImpl client = newClientImpl(host, port, database, user, password, authentication, context, trustManager, verifier);
       client.setHandleRegistry(getHandleRegistry().copy());
 
       return client;
