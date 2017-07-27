@@ -124,8 +124,6 @@ import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
 import javax.ws.rs.core.NewCookie;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -284,17 +282,10 @@ public class OkHttpServices implements RESTServices {
     }
   }
 
-  @Deprecated
-  public void connect(String host, int port, String database, String user, String password,
-                      Authentication authenType, SSLContext sslContext,
-                      SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, authenType, sslContext, null, verifier);
-  }
   @Override
-
   public void connect(String host, int port, String database, String user, String password,
-                      Authentication authenType, SSLContext sslContext, TrustManager trustManager,
-                      SSLHostnameVerifier verifier) {
+      Authentication authenType, SSLContext sslContext,
+      SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
     if (verifier == SSLHostnameVerifier.ANY) {
       hostnameVerifier = new HostnameVerifier() {
@@ -313,11 +304,11 @@ public class OkHttpServices implements RESTServices {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, authenType, sslContext, hostnameVerifier);
   }
 
   private void connect(String host, int port, String database, String user, String password,
-                       Authentication authenType, SSLContext sslContext, TrustManager trustManager,
+                       Authentication authenType, SSLContext sslContext,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
 
@@ -368,13 +359,7 @@ public class OkHttpServices implements RESTServices {
       .readTimeout(0, TimeUnit.SECONDS)
       .writeTimeout(0, TimeUnit.SECONDS);
 
-    if(sslContext != null) {
-      if(trustManager == null) {
-        clientBldr.sslSocketFactory(sslContext.getSocketFactory());
-      } else {
-        clientBldr.sslSocketFactory(sslContext.getSocketFactory(), (X509TrustManager) trustManager);
-      }
-    }
+    if(sslContext != null)  clientBldr.sslSocketFactory(sslContext.getSocketFactory());
 
     if ( authenticator != null ) {
       clientBldr = clientBldr.authenticator(new CachingAuthenticatorDecorator(authenticator, authCache));

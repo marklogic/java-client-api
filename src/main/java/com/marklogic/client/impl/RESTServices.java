@@ -21,7 +21,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -103,11 +102,8 @@ public interface RESTServices {
 	String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
 	String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
 
-	@Deprecated
 	public void connect(String host, int port, String database, String user, String password, Authentication type,
 			SSLContext context, SSLHostnameVerifier verifier);
-	public void connect(String host, int port, String database, String user, String password, Authentication type,
-			SSLContext context, TrustManager trustManager, SSLHostnameVerifier verifier);
 	public DatabaseClient getDatabaseClient();
 	public void setDatabaseClient(DatabaseClient client);
 	public void release();
