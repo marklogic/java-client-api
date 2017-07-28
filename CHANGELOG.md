@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 4.0.0
+## 4.0.1
 
 #### New Functionality
 - [#400](https://github.com/marklogic/java-client-api/issues/400) - Optic API
