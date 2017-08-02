@@ -22,6 +22,7 @@ import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.example.cookbook.Util.ExampleProperties;
 import com.marklogic.client.example.cookbook.Util;
+import com.marklogic.client.example.cookbook.datamovement.Employee.Gender;
 import com.marklogic.client.example.cookbook.datamovement.Employee.Salary;
 import com.marklogic.client.example.cookbook.datamovement.Employee.Title;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -48,14 +49,15 @@ import java.util.Calendar;
 import java.util.ArrayList;
 import java.util.List;
 import javax.sql.DataSource;
+
 import java.text.SimpleDateFormat;
 
 public class BulkExportToJdbc {
   private static Logger logger = LoggerFactory.getLogger(BulkExportToJdbc.class);
   public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-  private static int threadCount = 10;
-  private static int batchSize   = 1000;
+  private static int threadCount = 3;
+  private static int batchSize   = 3;
 
   public static final DataMovementManager moveMgr =
     DatabaseClientSingleton.get().newDataMovementManager();
@@ -66,6 +68,14 @@ public class BulkExportToJdbc {
 
   public void run() throws IOException, SQLException {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(getDataSource());
+    final boolean isMySQLDB;
+    SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+    if (jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName().toLowerCase()
+        .contains("hsql")) {
+      isMySQLDB = false;
+    } else {
+      isMySQLDB = true;
+    }
     StructuredQueryDefinition query = new StructuredQueryBuilder().directory(true, "/employees/");
     QueryBatcher qb = moveMgr.newQueryBatcher(query)
       .withBatchSize(batchSize)
@@ -75,32 +85,72 @@ public class BulkExportToJdbc {
           .withConsistentSnapshot()
           .onDocumentReady(record -> {
             Employee employee = record.getContentAs(Employee.class);
-            jdbcTemplate.update(
-              "INSERT INTO employees (emp_no, hire_date, first_name, last_name, birth_date) " +
-              "VALUES (?, ?, ?, ?, ?) " +
-              "ON DUPLICATE KEY UPDATE emp_no=?, hire_date=?, first_name=?, last_name=?, birth_date=?",
-              employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
-              employee.getLastName(), employee.getBirthDate(),
-              employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
-              employee.getLastName(), employee.getBirthDate());
+            if(isMySQLDB) {
+              jdbcTemplate.update(
+                "INSERT INTO employees (emp_no, hire_date, first_name, last_name, birth_date) " +
+                "VALUES (?, ?, ?, ?, ?) " +
+                "ON DUPLICATE KEY UPDATE emp_no=?, hire_date=?, first_name=?, last_name=?, birth_date=?",
+                employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
+                employee.getLastName(), employee.getBirthDate(),
+                employee.getEmployeeId(), employee.getHireDate(), employee.getFirstName(),
+                employee.getLastName(), employee.getBirthDate());
+            } else {
+              jdbcTemplate.update(
+                "MERGE INTO employees USING (VALUES ?, ?, ?, ?, ?, ?)  " +
+                    "temp (emp_no, hire_date, first_name, last_name, gender, birth_date) " +
+                "ON employees.emp_no = temp.emp_no " +
+                "WHEN MATCHED THEN UPDATE SET employees.hire_date=temp.hire_date, " +
+                  "employees.first_name=temp.first_name, employees.last_name=temp.last_name, " +
+                  "employees.gender = temp.gender, employees.birth_date=temp.birth_date " +
+                "WHEN NOT MATCHED THEN INSERT (emp_no, hire_date, first_name, last_name, gender, birth_date)  "
+                + "VALUES (temp.emp_no, temp.hire_date, temp.first_name, temp.last_name, temp.gender, temp.birth_date) ",
+                employee.getEmployeeId(), dateFormat.format(employee.getHireDate().getTime()), employee.getFirstName(),
+                employee.getLastName(), employee.getGender() == Gender.MALE ? "M" : "F",
+                dateFormat.format(employee.getBirthDate().getTime()));
+            }
             if ( employee.getSalaries() != null ) {
               for ( Salary salary : employee.getSalaries() ) {
-                jdbcTemplate.update(
-                  "INSERT INTO salaries (emp_no, salary, from_date, to_date) " +
-                  "VALUES(?, ?, ?, ?)" +
-                  "ON DUPLICATE KEY UPDATE emp_no=?, salary=?, from_date=?, to_date=?",
-                  employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate(),
-                  employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate());
+                if(isMySQLDB) {
+                  jdbcTemplate.update(
+                    "INSERT INTO salaries (emp_no, salary, from_date, to_date) " +
+                    "VALUES(?, ?, ?, ?)" +
+                    "ON DUPLICATE KEY UPDATE emp_no=?, salary=?, from_date=?, to_date=?",
+                    employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate(),
+                    employee.getEmployeeId(), salary.getSalary(), salary.getFromDate(), salary.getToDate());
+                } else {
+                  jdbcTemplate.update(
+                    "MERGE INTO salaries USING (VALUES ?, ?, ?, ?) " +
+                        "temp (emp_no, salary, from_date, to_date) " +
+                    "ON salaries.emp_no = temp.emp_no AND salaries.from_date = temp.from_date " +
+                    "WHEN MATCHED THEN UPDATE SET salaries.salary=temp.salary, " +
+                      "salaries.to_date=temp.to_date " +
+                    "WHEN NOT MATCHED THEN INSERT (emp_no, salary, from_date, to_date) " +
+                    "VALUES (temp.emp_no, temp.salary, temp.from_date, temp.to_date)",
+                    employee.getEmployeeId(), salary.getSalary(), dateFormat.format(salary.getFromDate().getTime()),
+                    dateFormat.format(salary.getToDate().getTime()));
+                }
               }
             }
             if ( employee.getTitles() != null ) {
               for ( Title title : employee.getTitles() ) {
-                jdbcTemplate.update(
-                  "INSERT INTO titles (emp_no, title, from_date, to_date) " +
-                  "VALUES(?, ?, ?, ?)" +
-                  "ON DUPLICATE KEY UPDATE emp_no=?, title=?, from_date=?, to_date=?",
-                  employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate(),
-                  employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate());
+                if(isMySQLDB) {
+                  jdbcTemplate.update(
+                    "INSERT INTO titles (emp_no, title, from_date, to_date) " +
+                    "VALUES(?, ?, ?, ?)" +
+                    "ON DUPLICATE KEY UPDATE emp_no=?, title=?, from_date=?, to_date=?",
+                    employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate(),
+                    employee.getEmployeeId(), title.getTitle(), title.getFromDate(), title.getToDate());
+                } else {
+                  jdbcTemplate.update(
+                    "MERGE INTO titles USING (VALUES ?, ?, ?, ?)  " +
+                        "temp (emp_no, title, from_date, to_date) " +
+                    "ON titles.emp_no = temp.emp_no AND titles.title = temp.title AND titles.from_date=temp.from_date " +
+                    "WHEN MATCHED THEN UPDATE SET titles.to_date=temp.to_date " +
+                    "WHEN NOT MATCHED THEN INSERT (emp_no, title, from_date, to_date) " +
+                    "VALUES (temp.emp_no, temp.title, temp.from_date, temp.to_date)",
+                    employee.getEmployeeId(), title.getTitle(), dateFormat.format(title.getFromDate().getTime()),
+                    dateFormat.format(title.getToDate().getTime()));
+                }
               }
             }
           })
@@ -123,6 +173,6 @@ public class BulkExportToJdbc {
 
   private DataSource getDataSource() throws IOException {
     ExampleProperties properties = Util.loadProperties();
-    return new DriverManagerDataSource(properties.jdbcUrl);
+    return new DriverManagerDataSource(properties.jdbcUrl, properties.jdbcUser, properties.jdbcPassword);
   }
 }

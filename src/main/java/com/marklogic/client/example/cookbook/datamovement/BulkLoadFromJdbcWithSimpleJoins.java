@@ -51,8 +51,8 @@ public class BulkLoadFromJdbcWithSimpleJoins {
   private static Logger logger = LoggerFactory.getLogger(BulkLoadFromJdbcWithSimpleJoins.class);
   public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-  private static int threadCount = 10;
-  private static int batchSize   = 1000;
+  private static int threadCount = 3;
+  private static int batchSize = 3;
   private Employee lastEmployee;
   private List<Salary> salaries = new ArrayList<>();
   private List<Title> titles = new ArrayList<>();
@@ -154,16 +154,17 @@ public class BulkLoadFromJdbcWithSimpleJoins {
     JobTicket ticket = moveMgr.startJob(wb);
     jdbcTemplate.query(
       // perform the simplest possible join between three tables
-      "SELECT *, s.from_date s_from_date, s.to_date s_to_date, t.from_date t_from_date, t.to_date t_to_date " +
+      "SELECT e.*, s.salary, t.title, s.from_date s_from_date, s.to_date s_to_date, " +
+      "    t.from_date t_from_date, t.to_date t_to_date " +
       "FROM employees e, salaries s, titles t " +
       "WHERE e.emp_no=s.emp_no " +
       "  AND e.emp_no=t.emp_no " +
-      "ORDER BY e.emp_no, s.from_date, s.to_date, t.from_date, t.to_date LIMIT 10000",
+      "ORDER BY e.emp_no, s.from_date, s.to_date, t.from_date, t.to_date",
       row -> {
         addRow(row, wb);
       }
     );
-    processEmployee(wb, denormalize(lastEmployee));
+    denormalize(lastEmployee);
     wb.flushAndWait();
     moveMgr.stopJob(wb);
     JobReport report = moveMgr.getJobReport(ticket);
@@ -175,7 +176,7 @@ public class BulkLoadFromJdbcWithSimpleJoins {
 
   private DataSource getDataSource() throws IOException {
     ExampleProperties properties = Util.loadProperties();
-    return new DriverManagerDataSource(properties.jdbcUrl);
+    return new DriverManagerDataSource(properties.jdbcUrl, properties.jdbcUser, properties.jdbcPassword);
   }
 }
 

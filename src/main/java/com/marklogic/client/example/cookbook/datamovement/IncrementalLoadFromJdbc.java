@@ -35,6 +35,7 @@ import javax.sql.DataSource;
 import java.io.IOException;
 import java.sql.SQLException;
 import java.text.SimpleDateFormat;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -43,8 +44,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
-  private static int threadCount = 10;
-  private static int batchSize   = 1000;
+  private static int threadCount = 3;
+  private static int batchSize = 3;
 
   private static Logger logger = LoggerFactory.getLogger(IncrementalLoadFromJdbc.class);
   private static DatabaseClient client = DatabaseClientSingleton.get();
@@ -71,7 +72,6 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
 
   public void run() throws IOException, SQLException {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(getDataSource());
-    jdbcTemplate.setFetchSize(Integer.MIN_VALUE);
 
     // the batcher to write employees and loadDetail side-car docs
     WriteBatcher docWb = moveMgr.newWriteBatcher()
@@ -97,6 +97,7 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
           nextUri = uriQueue.poll(600, TimeUnit.SECONDS);
           // this is the indicator that we hit the end
           if ( "\u0000".equals(nextUri) ) {
+            nextUri = null;
             finished = true;
             return false;
           }
@@ -153,7 +154,7 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
     JobTicket qbTicket = moveMgr.startJob(qb);
     jdbcTemplate.query(
       // perform the simplest possible join between three tables
-      "SELECT *, s.from_date s_from_date, s.to_date s_to_date, t.from_date t_from_date, t.to_date t_to_date " +
+      "SELECT e.*, s.salary, t.title, s.from_date s_from_date, s.to_date s_to_date, t.from_date t_from_date, t.to_date t_to_date " +
       "FROM employees e, salaries s, titles t " +
       "WHERE e.emp_no=s.emp_no " +
       "  AND e.emp_no=t.emp_no " +
@@ -191,6 +192,6 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
 
   private DataSource getDataSource() throws IOException {
     ExampleProperties properties = Util.loadProperties();
-    return new DriverManagerDataSource(properties.jdbcUrl);
+    return new DriverManagerDataSource(properties.jdbcUrl, properties.jdbcUser, properties.jdbcPassword);
   }
 }

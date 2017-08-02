@@ -52,8 +52,8 @@ import javax.sql.DataSource;
 public class BulkLoadFromJdbcRaw {
   private static Logger logger = LoggerFactory.getLogger(BulkLoadFromJdbcRaw.class);
 
-  private static int threadCount = 10;
-  private static int batchSize   = 10000;
+  private static int threadCount = 3;
+  private static int batchSize = 3;
 
   public static final DataMovementManager moveMgr =
     DatabaseClientSingleton.get().newDataMovementManager();
@@ -116,21 +116,21 @@ public class BulkLoadFromJdbcRaw {
       .onBatchSuccess(batch -> System.out.println("Written: " + batch.getJobWritesSoFar()))
       .onBatchFailure((batch,exception) -> exception.printStackTrace());
     JobTicket ticket = moveMgr.startJob(wb);
-    jdbcTemplate.query("SELECT * FROM employees LIMIT 100",
+    jdbcTemplate.query("SELECT * FROM employees",
       (RowCallbackHandler) row -> {
         Employee employee = new Employee();
         populateEmployee(row, employee);
         wb.addAs("/employees/" + employee.getEmployeeId() + ".json", employee);
       }
     );
-    jdbcTemplate.query("SELECT * FROM salaries LIMIT 100",
+    jdbcTemplate.query("SELECT * FROM salaries",
       (RowCallbackHandler) row -> {
         ObjectNode salary = mapper.createObjectNode();
         populateSalary(row, salary);
         wb.addAs("/salaries/" + UUID.randomUUID().toString() + ".json", salary);
       }
     );
-    jdbcTemplate.query("SELECT * FROM titles LIMIT 100",
+    jdbcTemplate.query("SELECT * FROM titles",
       (RowCallbackHandler) row -> {
         ObjectNode title = mapper.createObjectNode();
         populateTitle(row, title);
@@ -171,7 +171,7 @@ public class BulkLoadFromJdbcRaw {
 
   private DataSource getDataSource() throws IOException {
     ExampleProperties properties = Util.loadProperties();
-    return new DriverManagerDataSource(properties.jdbcUrl);
+    return new DriverManagerDataSource(properties.jdbcUrl, properties.jdbcUser, properties.jdbcPassword);
   }
 
   public void installTransform(DatabaseClient client) {

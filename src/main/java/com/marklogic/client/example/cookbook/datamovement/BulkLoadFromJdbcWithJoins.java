@@ -45,8 +45,8 @@ public class BulkLoadFromJdbcWithJoins {
   private static Logger logger = LoggerFactory.getLogger(BulkLoadFromJdbcWithJoins.class);
   public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
 
-  private static int threadCount = 10;
-  private static int batchSize   = 1000;
+  private static int threadCount = 3;
+  private static int batchSize   = 3;
 
   public static final DataMovementManager moveMgr =
     DatabaseClientSingleton.get().newDataMovementManager();
@@ -69,39 +69,40 @@ public class BulkLoadFromJdbcWithJoins {
 
   public void run() throws IOException, SQLException {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(getDataSource());
+    if(jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"))
+      // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
+      jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
     WriteBatcher wb = moveMgr.newWriteBatcher()
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onBatchSuccess(batch -> System.out.println("Written: " + batch.getJobWritesSoFar()))
       .onBatchFailure((batch,exception) -> exception.printStackTrace());
     JobTicket ticket = moveMgr.startJob(wb);
-    // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
-    jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
+
     jdbcTemplate.query(
       /******** Generate JSON Employee record with nested salaries and titles arrays ********/
-      "SELECT CONCAT('{employeeId:', e.emp_no, ',', " +
-      "              ' firstName:\"', e.first_name, '\",', " +
-      "              ' lastName:\"', e.last_name, '\",', " +
-      "              ' gender:\"', IF(e.gender='M','MALE',IF(e.gender='F','FEMALE','UNKNOWN')), '\",', " +
-      "              ' birthDate:\"', DATE_FORMAT(e.birth_date,'%Y-%m-%d'), '\",'," +
-      "              ' hireDate:\"', DATE_FORMAT(e.hire_date,'%Y-%m-%d'), '\",', " +
-      "              ' salaries:[', " +
-      "                GROUP_CONCAT(CONCAT('{salary:',salary,',', " +
-      "                  ' fromDate:\"', DATE_FORMAT(s.from_date,'%Y-%m-%d'), '\"', " +
-      "                  IF(s.to_date='9999-01-01','',CONCAT(', toDate:\"', DATE_FORMAT(s.to_date,'%Y-%m-%d'), '\"')), " +
-      "                '}') SEPARATOR ','), " +
-      "              '], titles:[', titles, ']}') " +
-      "FROM salaries s, " +
-      "  (SELECT employees.*, GROUP_CONCAT(CONCAT('{title:\"',title,'\",', " +
-      "    ' fromDate:\"', DATE_FORMAT(t.from_date,'%Y-%m-%d'), '\"', " +
-      "    IF(t.to_date='9999-01-01','',CONCAT(', toDate:\"', DATE_FORMAT(t.to_date,'%Y-%m-%d'), '\"')), " +
-      "  '}') SEPARATOR ',') titles " +
-      "   FROM employees, titles t " +
-      "   WHERE employees.emp_no=t.emp_no " +
-      "   GROUP BY employees.emp_no) e " +
-      "WHERE e.emp_no=s.emp_no " +
-      "GROUP BY e.emp_no " +
-      "LIMIT 100",
+    "SELECT CONCAT('{employeeId:', e.emp_no, ',', " +
+            "' firstName:\"', e.first_name, '\",', " +
+            "' lastName:\"', e.last_name, '\",', " +
+            "' gender:\"', CASEWHEN(e.gender='M',RTRIM('MALE'), CASEWHEN(e.gender='F',RTRIM('FEMALE'),RTRIM('UNKNOWN'))), '\",', " +
+            "' birthDate:\"', TO_CHAR(e.birth_date,'YYYY-MM-DD'), '\",', " +
+            "' hireDate:\"', TO_CHAR(e.hire_date,'YYYY-MM-DD'), '\",', " +
+            "' salaries:[', " +
+             " GROUP_CONCAT(CONCAT('{salary:',salary,',', " +
+             "  ' fromDate:\"', TO_CHAR(s.from_date,'YYYY-MM-DD'), '\"', " +
+             "   CASEWHEN(s.to_date='9999-01-01','',CONCAT(', toDate:\"', TO_CHAR(s.to_date,'YYYY-MM-DD'), '\"')), " +
+             " '}') SEPARATOR ','), " +
+             "'], titles:[', titles, ']}') " +
+     "FROM salaries s, " +
+           "(SELECT employees.*, GROUP_CONCAT(CONCAT('{title:\"',title,'\",', " +
+                 "' fromDate:\"', TO_CHAR(t.from_date,'YYYY-MM-DD'), '\"', " +
+                 "CASEWHEN(t.to_date='9999-01-01','',CONCAT(', toDate:\"', TO_CHAR(t.to_date,'YYYY-MM-DD'), '\"'))," +
+                 "'}') SEPARATOR ',') titles " +
+            "FROM employees, titles t " +
+            "WHERE employees.emp_no=t.emp_no " +
+            "GROUP BY employees.emp_no) e " +
+     "WHERE e.emp_no=s.emp_no " +
+     "GROUP BY e.emp_no, e.first_name, e.last_name, e.gender, e.birth_date, e.hire_date, e.titles",
       (RowCallbackHandler) row -> {
         Employee employee = parseEmployee(row);
         wb.addAs(employee.getEmployeeId() + ".json", employee);
@@ -118,6 +119,6 @@ public class BulkLoadFromJdbcWithJoins {
 
   private DataSource getDataSource() throws IOException {
     ExampleProperties properties = Util.loadProperties();
-    return new DriverManagerDataSource(properties.jdbcUrl);
+    return new DriverManagerDataSource(properties.jdbcUrl, properties.jdbcUser, properties.jdbcPassword);
   }
 }

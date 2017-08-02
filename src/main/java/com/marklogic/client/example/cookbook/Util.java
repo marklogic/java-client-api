@@ -39,6 +39,8 @@ public class Util {
     public String         writerPassword;
     public Authentication authType;
     public String         jdbcUrl;
+    public String         jdbcUser;
+    public String         jdbcPassword;
     public ExampleProperties(Properties props) {
       super();
       host           = props.getProperty("example.host");
@@ -53,6 +55,8 @@ public class Util {
         props.getProperty("example.authentication_type").toUpperCase()
       );
       jdbcUrl = props.getProperty("example.jdbc.url");
+      jdbcUser = props.getProperty("example.jdbc.user");
+      jdbcPassword = props.getProperty("example.jdbc.password");
     }
   }
 
