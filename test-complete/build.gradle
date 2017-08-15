@@ -26,7 +26,7 @@ jacocoTestReport {
                 }
 
 dependencies {
-	compile('com.marklogic:java-client-api:3.0-SNAPSHOT')
+	compile('com.marklogic:java-client-api:3.0.8')
 	compile('xmlunit:xmlunit:1.5')
 	compile('junit:junit:4.11')
 	compile('org.skyscreamer:jsonassert:1.2.3')
