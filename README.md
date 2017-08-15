@@ -44,6 +44,15 @@ For more details, please read this [deeper dive](http://developer.marklogic.com/
 * Enable [MarkLogic Jena API](https://github.com/marklogic/marklogic-jena) (separate project)
 * Enable [MarkLogic Sesame API](https://github.com/marklogic/marklogic-sesame) (separate project)
 
+### What's New in Java Client API 3.0.5 - 3.0.7
+
+* Bug fixes
+
+### What's New in Java Client API 3.0.8
+
+* Replace Jersey with OkHttp as the underlying HTTP library
+
+
 ### QuickStart
 
 To use the API in your maven project, include the following in your pom.xml:
