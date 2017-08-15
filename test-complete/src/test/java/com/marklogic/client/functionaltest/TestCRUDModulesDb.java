@@ -148,11 +148,11 @@ public void testXQueryModuleCRUDBinaryFile() {
 		String Path = "/ext/my/path/to/my/module.xqy";
 		
 		// write XQuery file to the modules database
-		libsMgr.write(Path, new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg")).withFormat(Format.BINARY));
+		File fBin = new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg");
+		libsMgr.write(Path, new FileHandle(fBin).withFormat(Format.BINARY));
 
 		// read it back
-			FileHandle f = new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/binary.jpg"));
-		assertEquals(f.getByteLength(),libsMgr.read(Path, new StringHandle()).getByteLength());
+		assertEquals(fBin.length(), libsMgr.read(Path, new StringHandle()).getByteLength());
 		
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();
@@ -170,8 +170,7 @@ public void testXQueryModuleCRUDBinaryFile() {
 		    libsMgr.read(Path, new StringHandle()).get();
 		} catch (ResourceNotFoundException e) {
 			// pass;
-		}
-		
+		}		
 	}
 
 
@@ -220,13 +219,16 @@ public void testXQueryModuleCRUDBinaryFile() {
 		ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 		
 		String Path = "/ext/my/path/to/my/module.xqy";
-		FileHandle f = new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/all_well.xml")).withFormat(Format.XML);
-
+		File fXML = new File("src/test/java/com/marklogic/client/functionaltest/data/all_well.xml");
+		FileHandle f = new FileHandle().with(fXML).withFormat(Format.XML);
 		// write XQuery file to the modules database
 		libsMgr.write(Path, f);
+		StringHandle strHandle = new StringHandle();
 
 		// read it back
-		assertEquals(f.getByteLength(), libsMgr.read(Path, new StringHandle()).getByteLength());
+		assertTrue(libsMgr.read(Path, strHandle).getByteLength()>0);
+		assertTrue(strHandle.get().contains("All's Well That Ends Well"));
+		assertTrue(strHandle.get().contains("Exeunt"));
 		
 		// get the list of descriptors
 		ExtensionLibraryDescriptor[] descriptors = libsMgr.list();

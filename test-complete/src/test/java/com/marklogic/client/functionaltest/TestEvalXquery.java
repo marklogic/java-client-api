@@ -144,7 +144,7 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 			 else if(er.getType().equals(Type.STRING)){
 				//There is git issue 152
 				 assertEquals("String?","xml",er.getString());
-				 System.out.println("type string: "+er.getString());
+				 //System.out.println("type string: "+er.getString());
 			 }else if(er.getType().equals(Type.NULL)){
 				 //There is git issue 151
 //				 assertNull(er.getAs(String.class));
@@ -209,8 +209,9 @@ public class TestEvalXquery  extends BasicJavaClientREST {
 //				 System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
 				 assertEquals("Returns me a HEXBINARY :","BEEF",er.getAs(String.class));
 			 }else if(er.getType().equals(Type.QNAME)){
+				 String qname = er.getString();
 //				 System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-				 assertTrue("Returns me a QNAME :",er.getString().contains("integer") || er.getString().contains("fn:empty"));
+				 assertTrue("Returns me a QNAME :",qname.contains("integer") || qname.contains("fn:empty"));
 			 }else if(er.getType().equals(Type.TIME)){
 //				 System.out.println("Testing is TIME? "+er.getAs(String.class));
 				 assertEquals("Returns me a TIME :","10:00:00",er.getAs(String.class));

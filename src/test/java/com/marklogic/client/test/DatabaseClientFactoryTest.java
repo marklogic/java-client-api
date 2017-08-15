@@ -20,7 +20,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 import java.io.IOException;
 
-import org.apache.http.client.HttpClient;
+import okhttp3.OkHttpClient;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -38,7 +38,7 @@ import com.marklogic.client.document.DocumentUriTemplate;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.eval.ServerEvaluationCall;
-import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
@@ -160,10 +160,10 @@ public class DatabaseClientFactoryTest {
 				configurator.isConfigured);
 	}
 
-	static class ConfiguratorImpl implements HttpClientConfigurator {
+	static class ConfiguratorImpl implements OkHttpClientConfigurator {
 		public boolean isConfigured = false;
 		@Override
-		public void configure(HttpClient client) {
+		public void configure(OkHttpClient.Builder client) {
 			if (client != null) {
 				isConfigured = true;
 			}

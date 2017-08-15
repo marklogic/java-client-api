@@ -17,22 +17,20 @@ package com.marklogic.client.impl;
 
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.ws.rs.core.AbstractMultivaluedMap;
 import javax.ws.rs.core.MultivaluedMap;
 
-import com.sun.jersey.core.util.MultivaluedMapImpl;
-
 public abstract class RequestParametersImplementation {
-	private MultivaluedMap<String, String> map = new MultivaluedMapImpl();
+	private MultivaluedMap<String, String> map =
+    new AbstractMultivaluedMap<String,String>(new ConcurrentHashMap<String,List<String>>()) {};
 
 	protected RequestParametersImplementation() {
 		super();
 	}
 
 	protected Map<String,List<String>> getMap() {
-		return map;
-	}
-	final MultivaluedMap<String, String> getMapImpl() {
 		return map;
 	}
 }

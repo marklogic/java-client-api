@@ -165,10 +165,11 @@ public class TestEvalJavaScript  extends BasicJavaClientREST {
 				assertEquals("count of documents ", 31, er.getNumber()
 						.intValue());
 			} else if (er.getType().equals(Type.STRING)) {
+				String str = er.getString();
 				// There is git issue 152
-				System.out.println("type string: " + er.getString());
-				assertTrue("String?",er.getString().contains("true")||er.getString().contains("xml")
-						||er.getString().contains("31") ||er.getString().contains("1.0471975511966"));
+				//System.out.println("type string: " + str);
+				assertTrue("String?",str.contains("true")||str.contains("xml")
+						||str.contains("31") ||str.contains("1.0471975511966"));
 
 			} else if (er.getType().equals(Type.NULL)) {
 				// There is git issue 151

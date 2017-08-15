@@ -111,27 +111,6 @@ import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 
-
-
-//import com.sun.xml.internal.ws.util.xml.StAXSource;
-//Importing for http client calls
-import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
-import org.apache.http.util.*;
-import org.apache.http.auth.AuthScope;
-import org.apache.http.auth.UsernamePasswordCredentials;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpDelete;
-import org.apache.http.client.methods.HttpPost;
-import org.apache.http.client.methods.HttpPut;
-import org.apache.http.entity.FileEntity;
-import org.apache.http.entity.StringEntity;
-import org.apache.http.impl.client.DefaultHttpClient;
-import org.apache.http.NameValuePair;
-import org.apache.http.message.BasicNameValuePair;
-import org.apache.http.client.entity.*;
-
-
 public abstract class BasicJavaClientREST extends ConnectedRESTQA
 {
     protected static String checkDoc =

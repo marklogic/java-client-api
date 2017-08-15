@@ -19,6 +19,8 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.File;
 import java.util.ArrayList;
 
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -34,6 +36,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -41,6 +44,8 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.StringHandle;
 
 public class DocumentMetadataHandleTest {
@@ -164,5 +169,27 @@ public class DocumentMetadataHandleTest {
 			}
 			assertEquals("Wrong quality", 3, metaReadHandle.getQuality());
 		}
+	}
+
+	// testing https://github.com/marklogic/java-client-api/issues/783
+	@Test
+	public void testStack20170725() throws IOException {
+		XMLDocumentManager documentManager = Common.client.newXMLDocumentManager();
+		Transaction transaction = Common.client.openTransaction();
+		DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+		documentManager.writeAs("all_well.xml", new FileHandle(
+			new File("test-complete/src/test/java/com/marklogic/client/functionaltest/data/all_well.xml")));
+		InputStreamHandle handle = documentManager.read("all_well.xml", metadataHandle, new InputStreamHandle(), transaction);
+		try {
+			InputStream stream = handle.get();
+			try {
+				while ( stream.read() > -1 ) {}
+			} finally {
+				stream.close();
+			}
+		} finally {
+			handle.close();
+		}
+		// if we ran without throwing any exceptions, then this test passes
 	}
 }
