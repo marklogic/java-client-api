@@ -47,7 +47,6 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.sun.jersey.api.client.ClientHandlerException;
 
 public class TestQueryByExample extends BasicJavaClientREST {
   private static String dbName = "TestQueryByExampleDB";
@@ -307,7 +306,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
         System.out.println(result.getUri() + ": Uri");
         assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
       }
-    } catch (ClientHandlerException e) {
+    } catch (Exception e) {
       System.out.println("Negative Test Passed of executing nonreadable file");
     }
     // release client
