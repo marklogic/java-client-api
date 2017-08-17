@@ -941,4 +941,14 @@ public class WriteBatcherTest {
 
     ihb2.flushAndWait();
   }
+
+  @Test
+  public void testIssue793() {
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
+
+    batcher.addAs("test.txt", "test");
+
+    moveMgr.startJob(batcher);
+    moveMgr.stopJob(batcher);
+  }
 }

@@ -260,6 +260,7 @@ public class WriteBatcherImpl
       logger.info("threadCount={}", getThreadCount());
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
+      started.set(true);
     }
   }
 
@@ -632,7 +633,6 @@ public class WriteBatcherImpl
   public void start(JobTicket ticket) {
     jobTicket = ticket;
     initialize();
-    started.set(true);
   }
 
   public void stop() {

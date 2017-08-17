@@ -69,13 +69,13 @@ public class DataMovementServices {
 
   public JobTicket startJob(WriteBatcher batcher, ConcurrentHashMap<String, JobTicket> activeJobs) {
     String jobId = batcher.getJobId() != null ? batcher.getJobId() : generateJobId();
-    if (batcher.getJobId() == null) batcher.withJobId(jobId);
+    if (batcher.getJobId() == null && ! batcher.isStarted() ) batcher.withJobId(jobId);
     if (!batcher.isStarted() && activeJobs.containsKey(jobId)) {
       throw new DataMovementException(
           "Cannot start the batcher because the given job Id already exists in the active jobs", null);
     }
     JobTicket jobTicket = new JobTicketImpl(jobId, JobTicket.JobType.WRITE_BATCHER)
-        .withWriteBatcher((WriteBatcherImpl) batcher.withJobId(jobId));
+        .withWriteBatcher((WriteBatcherImpl) batcher);
     ((WriteBatcherImpl) batcher).start(jobTicket);
     activeJobs.put(jobId, jobTicket);
     return jobTicket;
