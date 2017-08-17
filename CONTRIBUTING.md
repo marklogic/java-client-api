@@ -16,14 +16,15 @@ with MarkLogic.
 
 ## <a name="issue"></a> Found an Issue?
 If you find a bug in the source code or a mistake in the documentation, you can help us by
-submitting an issue to our [GitHub Issue Tracker][issue tracker]. Even better 
-you can submit a Pull Request with a fix for the issue you filed.
+submitting an issue to our [GitHub Issue
+Tracker](https://github.com/marklogic/java-client-api/issues). Even better you
+can submit a Pull Request with a fix for the issue you filed.
 
 ## <a name="feature"></a> Want a Feature?
 You can request a new feature by submitting an issue to our 
-[GitHub Issue Tracker][issue tracker].  If you would like to implement a new 
-feature then first create a new issue and discuss it with one of our project 
-maintainers.
+[GitHub Issue Tracker](https://github.com/marklogic/java-client-api/issues).
+If you would like to implement a new feature then first create a new issue and
+discuss it with one of our project maintainers.
 
 ## <a name="submit"></a> Submission Guidelines
 
@@ -54,10 +55,13 @@ and clone your copy.
     $ cd java-client-api
     $ git remote add upstream git://github.com/marklogic/java-client-api.git
 
-All bug fixes and new features go into the [develop](https://github.com/marklogic/java-client-api/tree/develop) branch.
+All bug fixes and new features go into the
+[develop](https://github.com/marklogic/java-client-api/tree/develop) branch.
 
-We ask that you open an issue in the [issue tracker][] and get agreement from
-at least one of the project maintainers before you start coding.
+We ask that you open an issue in the
+[issue tracker](https://github.com/marklogic/java-client-api/issues)
+and get agreement from at least one of the project maintainers before you start
+coding.
 
 Nothing is more frustrating than seeing your hard work go to waste because
 your vision does not align with that of a project maintainer.
@@ -182,4 +186,3 @@ local shell as follows:
 * Update your *develop* with the latest upstream version:
 
     $ git pull --ff upstream develop
-[issue tracker]: https://github.com/marklogic/java-client-api/issues
