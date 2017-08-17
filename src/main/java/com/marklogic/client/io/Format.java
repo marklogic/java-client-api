@@ -65,11 +65,11 @@ public enum Format {
 
   public static Format getFromMimetype(String mimeType) {
     if      ( mimeType == null ) return UNKNOWN;
-    else if ( "application/xml".equals(mimeType) ) return XML;
-    else if ( "text/xml".equals(mimeType) ) return XML;
-    else if ( "application/json".equals(mimeType) ) return JSON;
-    else if ( "text/xml".equals(mimeType) ) return JSON;
-    else if ( "application/octet-stream".equals(mimeType) ) return BINARY;
+    else if ( mimeType.startsWith("application/xml") ) return XML;
+    else if ( mimeType.startsWith("text/xml") ) return XML;
+    else if ( mimeType.startsWith("application/json") ) return JSON;
+    else if ( mimeType.startsWith("text/xml") ) return JSON;
+    else if ( mimeType.startsWith("application/octet-stream") ) return BINARY;
     else if ( mimeType.startsWith("text/") ) return TEXT;
     else return UNKNOWN;
   }
