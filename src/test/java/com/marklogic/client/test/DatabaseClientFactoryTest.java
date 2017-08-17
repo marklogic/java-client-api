@@ -19,8 +19,10 @@ import static org.junit.Assert.*;
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 
 import java.io.IOException;
+import java.util.concurrent.TimeUnit;
 
 import okhttp3.OkHttpClient;
+import okhttp3.OkHttpClient.Builder;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -28,6 +30,7 @@ import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.ClientConfigurator;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -145,6 +148,7 @@ public class DatabaseClientFactoryTest {
     }
   }
 
+  static int testConnectTimeoutMillis = 123456;
   @Test
   public void testConfigurator() {
     ConfiguratorImpl configurator = new ConfiguratorImpl();
@@ -154,8 +158,9 @@ public class DatabaseClientFactoryTest {
     DatabaseClient client = DatabaseClientFactory.newClient(
       Common.HOST, Common.PORT, new DigestAuthContext(Common.USER, Common.PASS));
     try {
-      assertTrue("Factory did not apply custom configurator",
-        configurator.isConfigured);
+      assertTrue("Factory did not apply custom configurator", configurator.isConfigured);
+      OkHttpClient okClient = (OkHttpClient) client.getClientImplementation();
+      assertEquals(testConnectTimeoutMillis, okClient.connectTimeoutMillis());
     } finally {
       client.release();
     }
@@ -164,11 +169,11 @@ public class DatabaseClientFactoryTest {
   static class ConfiguratorImpl implements OkHttpClientConfigurator {
     public boolean isConfigured = false;
     @Override
-    public void configure(OkHttpClient.Builder client) {
-      if (client != null) {
+    public void configure(OkHttpClient.Builder clientBldr) {
+      if (clientBldr != null) {
         isConfigured = true;
+        clientBldr.connectTimeout(testConnectTimeoutMillis, TimeUnit.MILLISECONDS);
       }
     }
-    
   }
 }
