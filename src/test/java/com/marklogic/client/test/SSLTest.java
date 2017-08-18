@@ -50,7 +50,7 @@ public class SSLTest {
 
     // create an SSL context
     SSLContext sslContext = SSLContext.getInstance("SSLv3");
-    sslContext.init(null, new TrustManager[] { mock(X509TrustManager.class) }, null);
+    sslContext.init(null, null, null);
 
     // create the client
     DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x")
