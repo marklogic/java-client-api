@@ -169,12 +169,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public DatabaseClient getForestClient(Forest forest) {
     if ( forest == null ) throw new IllegalArgumentException("forest must not be null");
-    String hostName = forest.getHost();
-    if ( forest.getOpenReplicaHost() != null ) {
-      hostName = forest.getOpenReplicaHost();
-    } else if ( forest.getAlternateHost() != null ) {
-      hostName = forest.getAlternateHost();
-    }
+    String hostName = forest.getPreferredHost();
     String key = hostName;
     DatabaseClient client = clientMap.get(key);
     if ( client != null ) return client;

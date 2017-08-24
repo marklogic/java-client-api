@@ -18,6 +18,8 @@ package com.marklogic.client.datamovement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.datamovement.Forest.HostType;
+
 import java.net.SocketException;
 import java.net.UnknownHostException;
 import javax.net.ssl.SSLException;
@@ -189,7 +191,19 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     boolean shouldWeRetry = isHostUnavailableException;
     if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
-      String[] preferredHosts = existingForestConfig.getPreferredHosts();
+      Set<String> preferredHostsList = new HashSet<String>(Arrays.asList(existingForestConfig.getPreferredHosts()));
+      if(existingForestConfig instanceof FilteredForestConfiguration) {
+        FilteredForestConfiguration existingFilteredForestConfiguration = (FilteredForestConfiguration) existingForestConfig;
+        for( Forest forest : existingFilteredForestConfiguration.listForests()) {
+          if(forest.getPreferredHostType() == HostType.REQUEST_HOST
+              && !forest.getHost().toLowerCase().equals(forest.getRequestHost().toLowerCase())) {
+            if(preferredHostsList.contains(forest.getHost())) {
+              preferredHostsList.remove(forest.getHost());
+            }
+          }
+        }
+      }
+      String[] preferredHosts = preferredHostsList.toArray(new String[preferredHostsList.size()]);
       if ( ! Arrays.asList(preferredHosts).contains(host) ) {
         // skip all the logic below because the host in question here is already
         // missing from the list of hosts for this batcher

@@ -71,6 +71,7 @@ import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
+import com.marklogic.client.datamovement.Forest.HostType;
 import com.marklogic.client.datamovement.WriteBatcher;
 
 /**
@@ -748,6 +749,12 @@ public class WriteBatcherImpl
       }
       hosts.put(forest.getPreferredHost(), forest);
     }
+    for ( Forest forest : forests ) {
+      if(forest.getPreferredHostType() == HostType.REQUEST_HOST &&
+          !forest.getHost().toLowerCase().equals(forest.getRequestHost().toLowerCase())) {
+        if(hosts.containsKey(forest.getHost())) hosts.remove(forest.getHost());
+      }
+    }
     Map<String,HostInfo> existingHostInfos = new HashMap<>();
     Map<String,HostInfo> removedHostInfos = new HashMap<>();
     if ( hostInfos != null ) {
@@ -788,13 +795,26 @@ public class WriteBatcherImpl
           if ( removedHostInfos.containsKey(writerTask.writeSet.getClient().getHost()) ) {
             // this batch was targeting a host that's no longer on the list
             // if we re-add these docs they'll now be in batches that target acceptable hosts
-            add(writerTask.writeSet.getBatchOfWriteEvents().getItems());
+            boolean forceNewTransaction = true;
+            BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, writerTask.writeSet.getBatchNumber());
+            writeSet.setItemsSoFar(itemsSoFar.get());
+            writeSet.onFailure(throwable -> {
+              if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
+              else throw new DataMovementException("Failed to retry batch after failover", throwable);
+            });
+            for ( WriteEvent doc : writerTask.writeSet.getBatchOfWriteEvents().getItems() ) {
+              writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
+            }
+            BatchWriter retryWriterTask = new BatchWriter(writeSet);
+            Runnable fretryWriterTask = (Runnable) threadPool.submit(retryWriterTask);
+            threadPool.replaceTask(writerTask, fretryWriterTask);
             // jump to the next task
             continue;
           }
         }
         // this task is still valid so add it back to the queue
-        threadPool.submit(task);
+        Runnable fTask = (Runnable) threadPool.submit(task);
+        threadPool.replaceTask(task, fTask);
       }
       for ( HostInfo removedHostInfo : removedHostInfos.values() ) {
         cleanupUnfinishedTransactions(removedHostInfo);
@@ -1114,7 +1134,7 @@ public class WriteBatcherImpl
     // thinking they were the same.  So while the thread isn't needed, it works
     // as a key.  We are trusting that shapshots will always get removed when
     // each call to awaitCompletion is done.
-    Map<Thread,Set<Runnable>> activeSnapshots = new ConcurrentHashMap<>();
+    Map<Thread, ConcurrentLinkedQueue<Runnable>> activeSnapshots = new ConcurrentHashMap<>();
 
     public CompletableThreadPoolExecutor(int corePoolSize, int maximumPoolSize, long keepAliveTime,
                                          TimeUnit unit, BlockingQueue<Runnable> queue)
@@ -1142,8 +1162,8 @@ public class WriteBatcherImpl
       super.afterExecute(r, t);
     }
 
-    public Set<Runnable> snapshotQueuedAndExecutingTasks() {
-      Set<Runnable> snapshot = ConcurrentHashMap.<Runnable>newKeySet();
+    public ConcurrentLinkedQueue<Runnable> snapshotQueuedAndExecutingTasks() {
+      ConcurrentLinkedQueue<Runnable> snapshot = new ConcurrentLinkedQueue<>();
       activeSnapshots.put( Thread.currentThread(), snapshot );
       snapshot.addAll(queuedAndExecutingTasks);
       return snapshot;
@@ -1163,7 +1183,7 @@ public class WriteBatcherImpl
     public void taskComplete(Runnable r) {
       boolean removedFromASnapshot = false;
       queuedAndExecutingTasks.remove(r);
-      for ( Set<Runnable> snapshot : activeSnapshots.values() ) {
+      for ( ConcurrentLinkedQueue<Runnable> snapshot : activeSnapshots.values() ) {
         if ( snapshot.remove(r) ) {
           removedFromASnapshot = true;
         }
@@ -1174,16 +1194,39 @@ public class WriteBatcherImpl
       }
     }
 
+    // During failover, in order to re-submit the tasks which are meant
+    // for a failed host, we drain the thread pool and re-submit all the tasks appropriately.
+    // We would need awaitCompletion() to wait until these resubmitted tasks are also finished.
+    // Hence we need to remove the old tasks from queuedAndExecutingTasks and any active 
+    // snapshots which contains them and replace it with new tasks which are submitted. 
+    public void replaceTask(Runnable oldTask, Runnable newTask) {
+      boolean removedFromASnapshot = false;
+      if(queuedAndExecutingTasks.remove(oldTask)) {
+        queuedAndExecutingTasks.add(newTask);
+      }
+
+      for ( ConcurrentLinkedQueue<Runnable> snapshot : activeSnapshots.values() ) {
+        if ( snapshot.remove(oldTask) ) {
+          snapshot.add(newTask);
+          removedFromASnapshot = true;
+        }
+      }
+      // if no snapshots contained this task, we can avoid the synchronized block
+      if ( removedFromASnapshot == true ) {
+        synchronized(oldTask) { oldTask.notifyAll(); }
+      }
+    }
     public boolean awaitCompletion(long timeout, TimeUnit unit) throws InterruptedException {
       if ( unit == null ) throw new IllegalArgumentException("unit cannot be null");
       // get a snapshot so we only look at tasks already queued, not any that
       // get asynchronously queued after this point
-      Set<Runnable> snapshotQueuedAndExecutingTasks = snapshotQueuedAndExecutingTasks();
+      ConcurrentLinkedQueue<Runnable> snapshotQueuedAndExecutingTasks = snapshotQueuedAndExecutingTasks();
       try {
         long duration = unit.convert(timeout, TimeUnit.MILLISECONDS);
         // we can iterate even when the underlying set is being modified
         // since we're using ConcurrentHashMap
-        for ( Runnable task : snapshotQueuedAndExecutingTasks ) {
+        Runnable task = null;
+        while((task = snapshotQueuedAndExecutingTasks.peek()) != null) {
           // Lock task before we re-check whether it is queued or executing in
           // the main set and in the snapshot.  Thus there's no way for the
           // notifyAll to sneak in right after our check and leave us waiting

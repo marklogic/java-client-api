@@ -54,12 +54,14 @@ public class FilteredForestConfigTest {
   private DataMovementManager moveMgr = client.newDataMovementManager();
 
   private ForestConfiguration forests = () -> new Forest[] {
-    new ForestImpl("host1", "openReplicaHost1", "alternateHost1", "databaseName1",
+    new ForestImpl("host1", "openReplicaHost1", "requestHost1", "alternateHost1", "databaseName1",
       "forestName1", "forestId1", true, false),
-    new ForestImpl("host2", "openReplicaHost2", null, "databaseName2",
+    new ForestImpl("host2", "openReplicaHost2", null, null, "databaseName2",
       "forestName2", "forestId2", true, false),
-    new ForestImpl("host3", null, "alternateHost3", "databaseName3",
-      "forestName3", "forestId3", true, false)
+    new ForestImpl("host3", null, null, "alternateHost3", "databaseName3",
+      "forestName3", "forestId3", true, false),
+    new ForestImpl("host4", null, "requestHost4", null, "databaseName4", 
+      "forestName4", "forestId4", true, false)
   };
 
   @Test
@@ -72,6 +74,7 @@ public class FilteredForestConfigTest {
     assertEquals("host1a", filteredForests[0].getHost());
     assertEquals("openreplicahost1", filteredForests[0].getOpenReplicaHost());
     assertEquals("alternatehost1", filteredForests[0].getAlternateHost());
+    assertEquals("requesthost1", filteredForests[0].getRequestHost());
     assertEquals("forestId1", filteredForests[0].getForestId());
 
     ffg.withRenamedHost("openReplicaHost1", "openReplicaHost1a");
@@ -81,6 +84,7 @@ public class FilteredForestConfigTest {
     assertEquals("host1a", filteredForests[0].getHost());
     assertEquals("openreplicahost1a", filteredForests[0].getOpenReplicaHost());
     assertEquals("alternatehost1", filteredForests[0].getAlternateHost());
+    assertEquals("requesthost1", filteredForests[0].getRequestHost());
     assertEquals("forestId1", filteredForests[0].getForestId());
 
     ffg.withRenamedHost("alternateHost1", "alternateHost1a");
@@ -90,6 +94,17 @@ public class FilteredForestConfigTest {
     assertEquals("host1a", filteredForests[0].getHost());
     assertEquals("openreplicahost1a", filteredForests[0].getOpenReplicaHost());
     assertEquals("alternatehost1a", filteredForests[0].getAlternateHost());
+    assertEquals("requesthost1", filteredForests[0].getRequestHost());
+    assertEquals("forestId1", filteredForests[0].getForestId());
+
+    ffg.withRenamedHost("requestHost1", "requestHost1a");
+
+    filteredForests = ffg.listForests();
+
+    assertEquals("host1a", filteredForests[0].getHost());
+    assertEquals("openreplicahost1a", filteredForests[0].getOpenReplicaHost());
+    assertEquals("alternatehost1a", filteredForests[0].getAlternateHost());
+    assertEquals("requesthost1a", filteredForests[0].getRequestHost());
     assertEquals("forestId1", filteredForests[0].getForestId());
   }
 
@@ -98,7 +113,8 @@ public class FilteredForestConfigTest {
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withBlackList("host1")
       .withBlackList("openReplicaHost2")
-      .withBlackList("alternateHost3");
+      .withBlackList("alternateHost3")
+      .withBlackList("requestHost4");
 
     Forest[] filteredForests = ffg.listForests();
 
@@ -106,6 +122,7 @@ public class FilteredForestConfigTest {
     assertEquals("host1", filteredForests[0].getHost());
     assertEquals("alternatehost1", filteredForests[0].getPreferredHost());
     assertEquals("openreplicahost1", filteredForests[0].getOpenReplicaHost());
+    assertEquals("requesthost1", filteredForests[0].getRequestHost());
     assertEquals("alternatehost1", filteredForests[0].getAlternateHost());
     assertEquals("forestId1", filteredForests[0].getForestId());
 
@@ -113,6 +130,7 @@ public class FilteredForestConfigTest {
     assertFalse("openreplicahost2".equals(filteredForests[1].getOpenReplicaHost()));
     assertFalse("openreplicahost2".equals(filteredForests[1].getPreferredHost()));
     assertEquals("host2", filteredForests[1].getHost());
+    assertEquals(null, filteredForests[1].getRequestHost());
     assertEquals(null, filteredForests[1].getAlternateHost());
     assertEquals("forestId2", filteredForests[1].getForestId());
 
@@ -121,8 +139,16 @@ public class FilteredForestConfigTest {
     assertFalse("alternatehost3".equals(filteredForests[2].getPreferredHost()));
     assertEquals("host3", filteredForests[2].getHost());
     assertEquals(null, filteredForests[2].getOpenReplicaHost());
+    assertEquals(null, filteredForests[2].getRequestHost());
     assertEquals("forestId3", filteredForests[2].getForestId());
 
+    // we black-listed "requestHost4", and it's changed because it's the preferredHost
+    assertFalse("requestHost4".equals(filteredForests[3].getRequestHost()));
+    assertFalse("requestHost4".equals(filteredForests[3].getPreferredHost()));
+    assertFalse("host4".equals(filteredForests[3].getHost()));
+    assertEquals(null, filteredForests[3].getOpenReplicaHost());
+    assertEquals(null, filteredForests[3].getAlternateHost());
+    assertEquals("forestId4", filteredForests[3].getForestId());
   }
 
   @Test
@@ -130,7 +156,8 @@ public class FilteredForestConfigTest {
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withWhiteList("host1")
       .withWhiteList("openReplicaHost2")
-      .withWhiteList("alternateHost3");
+      .withWhiteList("alternateHost3")
+      .withWhiteList("requestHost4");
 
     Forest[] filteredForests = ffg.listForests();
 
@@ -140,6 +167,7 @@ public class FilteredForestConfigTest {
     assertFalse("alternatehost1".equals(filteredForests[0].getAlternateHost()));
     assertFalse("alternatehost1".equals(filteredForests[0].getPreferredHost()));
     assertFalse("openreplicahost1".equals(filteredForests[0].getOpenReplicaHost()));
+    assertFalse("requesthost1".equals(filteredForests[0].getRequestHost()));
     assertEquals("forestId1", filteredForests[0].getForestId());
 
     // we white-listed "openReplicaHost2", so it's used
@@ -148,6 +176,7 @@ public class FilteredForestConfigTest {
     // and since the preferredHost is white-listed, we left alone the non-preferred hosts
     assertEquals("host2", filteredForests[1].getHost());
     assertEquals(null, filteredForests[1].getAlternateHost());
+    assertEquals(null, filteredForests[1].getRequestHost());
     assertEquals("forestId2", filteredForests[1].getForestId());
 
     // we white-listed "alternateHost3", and it's used
@@ -156,7 +185,17 @@ public class FilteredForestConfigTest {
     // and since the preferredHost is white-listed, we left alone the non-preferred hosts
     assertEquals("host3", filteredForests[2].getHost());
     assertEquals(null, filteredForests[2].getOpenReplicaHost());
+    assertEquals(null, filteredForests[1].getRequestHost());
     assertEquals("forestId3", filteredForests[2].getForestId());
+
+    // we white-listed "requestHost4", and it's used
+    assertEquals("requesthost4", filteredForests[3].getRequestHost());
+    assertEquals("requesthost4", filteredForests[3].getPreferredHost());
+    // and since the preferredHost is white-listed, we left alone the non-preferred hosts
+    assertEquals("host4", filteredForests[3].getHost());
+    assertEquals(null, filteredForests[3].getOpenReplicaHost());
+    assertEquals(null, filteredForests[3].getAlternateHost());
+    assertEquals("forestId4", filteredForests[3].getForestId());
   }
 
   @Test

@@ -15,11 +15,18 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.datamovement.Forest.HostType;
+import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
 import com.marklogic.client.datamovement.impl.ForestImpl;
+
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -71,6 +78,11 @@ public class FilteredForestConfiguration implements ForestConfiguration {
       if ( renames.containsKey(openReplicaHost) ) {
         openReplicaHost = renames.get(openReplicaHost);
       }
+      String requestHost = forest.getRequestHost();
+      if ( requestHost != null ) requestHost = requestHost.toLowerCase();
+      if ( renames.containsKey(requestHost) ) {
+        requestHost = renames.get(requestHost);
+      }
       String alternateHost = forest.getAlternateHost();
       if ( alternateHost != null ) alternateHost = alternateHost.toLowerCase();
       if ( renames.containsKey(alternateHost) ) {
@@ -81,12 +93,19 @@ public class FilteredForestConfiguration implements ForestConfiguration {
       if ( renames.containsKey(host) ) {
         host = renames.get(host);
       }
-      return new ForestImpl(host, openReplicaHost, alternateHost, forest.getDatabaseName(),
+      return new ForestImpl(host, openReplicaHost, requestHost, alternateHost, forest.getDatabaseName(),
         forest.getForestName(), forest.getForestId(), forest.isUpdateable(), false);
     }).toArray(Forest[]::new);
 
-    String[] validHosts = Stream.of(renamedForests).flatMap( forest ->
-      Stream.of(new String[] {forest.getHost(), forest.getOpenReplicaHost(), forest.getAlternateHost()})
+    String[] validHosts = Stream.of(renamedForests).flatMap( forest -> {
+      String[] hostArray;
+      if((blackList.contains(forest.getPreferredHost()) || blackList.contains(forest.getHost()))
+          && forest.getPreferredHostType() == HostType.REQUEST_HOST) {
+        hostArray = new String[] {forest.getOpenReplicaHost(), forest.getAlternateHost()};
+      } else {
+        hostArray = new String[] {forest.getHost(), forest.getOpenReplicaHost(), forest.getAlternateHost(), forest.getRequestHost()};
+      }
+      return Stream.of(hostArray)
         .filter( host -> host != null )
         .map   ( host -> host.toLowerCase() )
         .filter( host -> {
@@ -100,13 +119,14 @@ public class FilteredForestConfiguration implements ForestConfiguration {
           }
           // this host is valid, add it to the list
           return true;
-        })
-    ).distinct().toArray(String[]::new);
+        });
+    }).distinct().toArray(String[]::new);
 
     Stream<Forest> replaced = Stream.of(renamedForests);
     if ( blackList.size() > 0 ) {
       replaced = replaced.map( forest -> {
-        if ( blackList.contains(forest.getPreferredHost()) ) {
+        if ( blackList.contains(forest.getPreferredHost()) ||
+            (forest.getPreferredHostType() == HostType.REQUEST_HOST && blackList.contains(forest.getHost()))) {
           if ( validHosts.length == 0 ) {
             throw new IllegalStateException("White list or black list rules are too restrictive:" +
               " no valid hosts are left");
@@ -117,15 +137,21 @@ public class FilteredForestConfiguration implements ForestConfiguration {
           if ( blackList.contains(openReplicaHost) ) {
             openReplicaHost = replaceHost(openReplicaHost, validHosts);
           }
+          String requestHost = forest.getRequestHost();
+          String host = forest.getHost();
+          if ( blackList.contains(requestHost) ) {
+            requestHost = replaceHost(requestHost, validHosts);
+            host = requestHost;
+          }
           String alternateHost = forest.getAlternateHost();
           if ( blackList.contains(alternateHost) ) {
             alternateHost = replaceHost(alternateHost, validHosts);
           }
-          String host = forest.getHost();
           if ( blackList.contains(host) ) {
             host = replaceHost(host, validHosts);
+            if(requestHost != null) requestHost = host;
           }
-          return new ForestImpl(host, openReplicaHost, alternateHost, forest.getDatabaseName(),
+          return new ForestImpl(host, openReplicaHost, requestHost, alternateHost, forest.getDatabaseName(),
             forest.getForestName(), forest.getForestId(), forest.isUpdateable(), false);
         } else {
           return forest;
@@ -145,6 +171,10 @@ public class FilteredForestConfiguration implements ForestConfiguration {
           if ( ! whiteList.contains(openReplicaHost) ) {
             openReplicaHost = replaceHost(openReplicaHost, validHosts);
           }
+          String requestHost = forest.getRequestHost();
+          if ( ! whiteList.contains(requestHost) ) {
+            requestHost = replaceHost(requestHost, validHosts);
+          }
           String alternateHost = forest.getAlternateHost();
           if ( ! whiteList.contains(alternateHost) ) {
             alternateHost = replaceHost(alternateHost, validHosts);
@@ -153,7 +183,7 @@ public class FilteredForestConfiguration implements ForestConfiguration {
           if ( ! whiteList.contains(host) ) {
             host = replaceHost(host, validHosts);
           }
-          return new ForestImpl(host, openReplicaHost, alternateHost, forest.getDatabaseName(),
+          return new ForestImpl(host, openReplicaHost, requestHost, alternateHost, forest.getDatabaseName(),
             forest.getForestName(), forest.getForestId(), forest.isUpdateable(), false);
         } else {
           return forest;
@@ -182,6 +212,7 @@ public class FilteredForestConfiguration implements ForestConfiguration {
    */
   public FilteredForestConfiguration withBlackList(String... hostNames) {
     if ( whiteList.size() > 0 ) throw new IllegalStateException("whiteList already initialized");
+    if ( hostNames == null ) throw new IllegalArgumentException("hostNames must not be null");
     for ( String hostName : hostNames ) {
       if ( hostName != null ) blackList.add(hostName.toLowerCase());
     }
@@ -198,6 +229,7 @@ public class FilteredForestConfiguration implements ForestConfiguration {
    */
   public FilteredForestConfiguration withWhiteList(String... hostNames) {
     if ( blackList.size() > 0 ) throw new IllegalStateException("blackList already initialized");
+    if ( hostNames == null ) throw new IllegalArgumentException("hostNames must not be null");
     for ( String hostName : hostNames ) {
       if ( hostName != null ) whiteList.add(hostName.toLowerCase());
     }
