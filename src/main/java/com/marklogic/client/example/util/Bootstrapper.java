@@ -170,7 +170,8 @@ public class Bootstrapper {
 
     if (statusCode >= 300) {
       throw new RuntimeException(
-        "Failed to create REST server: "+
+        "Failed to create REST server using host=" + host +
+        " and port=" + configPort + ": "+
         statusCode+" "+
         statusPhrase+"\n"+
         "Please check the server log for detail"
