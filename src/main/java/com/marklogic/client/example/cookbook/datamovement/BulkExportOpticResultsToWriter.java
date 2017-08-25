@@ -1,5 +1,6 @@
 package com.marklogic.client.example.cookbook.datamovement;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
@@ -59,7 +60,7 @@ public class BulkExportOpticResultsToWriter {
   private int batchSize = 3;
   private int threadCount = 3;
   private String schemaDB = "Schemas";
-  private String outputFile = System.getProperty("java.io.tmpdir") + "opticExampleOutput.txt";
+  private String outputFileName = "opticExampleOutput";
   private String customerTemplateFile = "/opticExample/customer.tdex";
   private String orderTemplateFile = "/opticExample/order.tdex";
   private DatabaseClient schemaDBclient = DatabaseClientSingleton.getAdmin(schemaDB);
@@ -199,7 +200,8 @@ public class BulkExportOpticResultsToWriter {
     // Create a Row manager to construct plans and query on
     // rows projected from the documents
     RowManager rowMgr = client.newRowManager();
-    System.out.println("Writing the results to " + outputFile);
+    File outputFile = File.createTempFile(outputFileName, ".txt");
+    System.out.println("Writing the results to " + outputFile.getAbsolutePath());
     try (FileWriter writer = new FileWriter(outputFile)) {
       // Create a Function to pass to the OpticExportToWriterListener which
       // would take each batch and do the necessary optic operations and return
