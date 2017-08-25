@@ -92,6 +92,31 @@ public class DMSDKJdbcCookbookTests {
     "FOREIGN KEY (emp_no) REFERENCES employees (emp_no) ON DELETE CASCADE," +
     "PRIMARY KEY (emp_no, from_date));"); 
 
+    hsqlDB.execute("CREATE TABLE employees_export (" +
+        "emp_no      INTEGER         NOT NULL," +
+        "birth_date  DATE            NOT NULL," +
+        "first_name  VARCHAR(14)     NOT NULL," +
+        "last_name   VARCHAR(16)     NOT NULL," +
+        "gender      VARCHAR(2)      NOT NULL," +
+        "hire_date   DATE            NOT NULL," +
+        "PRIMARY KEY (emp_no));");
+
+      hsqlDB.execute("CREATE TABLE titles_export (" +
+        "emp_no      INTEGER         NOT NULL," +
+        "title       VARCHAR(50)     NOT NULL," +
+        "from_date   DATE            NOT NULL," +
+        "to_date     DATE," +
+        "FOREIGN KEY (emp_no) REFERENCES employees_export (emp_no) ON DELETE CASCADE," +
+        "PRIMARY KEY (emp_no,title, from_date));");
+
+      hsqlDB.execute("CREATE TABLE salaries_export (" +
+      "emp_no      INTEGER         NOT NULL," +
+      "salary      INTEGER         NOT NULL," +
+      "from_date   DATE            NOT NULL," +
+      "to_date     DATE            NOT NULL," +
+      "FOREIGN KEY (emp_no) REFERENCES employees_export (emp_no) ON DELETE CASCADE," +
+      "PRIMARY KEY (emp_no, from_date));");
+
     hsqlDB.execute("INSERT INTO employees VALUES (1, '1990-10-04', 'Alice', 'Edward', 'F', '2012-04-05');");
     hsqlDB.execute("INSERT INTO employees VALUES (2, '1992-12-23', 'Bob', 'Miller', 'M', '2010-06-01');");
     hsqlDB.execute("INSERT INTO employees VALUES (3, '1985-11-30', 'Gerard', 'Steven', 'M', '2011-07-29');");

@@ -59,7 +59,7 @@ public class BulkExportOpticResultsToWriter {
   private int batchSize = 3;
   private int threadCount = 3;
   private String schemaDB = "Schemas";
-  private String outputFile = "/tmp/opticExampleOutput.txt";
+  private String outputFile = System.getProperty("java.io.tmpdir") + "opticExampleOutput.txt";
   private String customerTemplateFile = "/opticExample/customer.tdex";
   private String orderTemplateFile = "/opticExample/order.tdex";
   private DatabaseClient schemaDBclient = DatabaseClientSingleton.getAdmin(schemaDB);
@@ -199,6 +199,7 @@ public class BulkExportOpticResultsToWriter {
     // Create a Row manager to construct plans and query on
     // rows projected from the documents
     RowManager rowMgr = client.newRowManager();
+    System.out.println("Writing the results to " + outputFile);
     try (FileWriter writer = new FileWriter(outputFile)) {
       // Create a Function to pass to the OpticExportToWriterListener which
       // would take each batch and do the necessary optic operations and return

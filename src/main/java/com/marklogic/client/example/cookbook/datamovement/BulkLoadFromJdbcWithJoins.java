@@ -35,6 +35,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
+import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Calendar;
@@ -69,9 +70,11 @@ public class BulkLoadFromJdbcWithJoins {
 
   public void run() throws IOException, SQLException {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(getDataSource());
-    if(jdbcTemplate.getDataSource().getConnection().getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"))
+    Connection conn = jdbcTemplate.getDataSource().getConnection();
+    if(conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"))
       // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
       jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
+    conn.close();
     WriteBatcher wb = moveMgr.newWriteBatcher()
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)

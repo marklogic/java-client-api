@@ -52,7 +52,6 @@ public class BulkExportOpticResults {
   private int batchSize = 3;
   private int threadCount = 3;
   private String schemaDB = "Schemas";
-  private String outputFile = "/tmp/opticExampleOutput.txt";
   private String customerTemplateFile = "/opticExample/customer.tdex";
   private String orderTemplateFile = "/opticExample/order.tdex";
   private DatabaseClient schemaDBclient = DatabaseClientSingleton.getAdmin(schemaDB);
@@ -192,7 +191,6 @@ public class BulkExportOpticResults {
     // Create a Row manager to construct plans and query on
     // rows projected from the documents
     RowManager rowMgr = client.newRowManager();
-    try (FileWriter writer = new FileWriter(outputFile)) {
       // Create a QueryBatcher to get the uris from the database which match the
       // query definition and pass it to the OpticExportToWriterListener for
       // creating the Optic API plans and writing the results of the plan to the
@@ -237,7 +235,6 @@ public class BulkExportOpticResults {
       // Wait till the batch completes
       queryBatcher.awaitCompletion();
       moveMgr.stopJob(queryBatcher);
-    }
   }
 
   private void tearDown() {
