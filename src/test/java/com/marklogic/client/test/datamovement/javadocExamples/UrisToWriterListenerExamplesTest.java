@@ -43,8 +43,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-public class UrisToWriterListenerExamples {
-  private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamples.class);
+public class UrisToWriterListenerExamplesTest {
+  private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamplesTest.class);
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "UrisToWriterListenerExamples_" +
