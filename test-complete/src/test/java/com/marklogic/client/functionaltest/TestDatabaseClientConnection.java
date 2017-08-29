@@ -168,15 +168,16 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String expectedException = null;
     String exception = "";
     if (IsSecurityEnabled())
-      expectedException = "com.sun.jersey.api.client.ClientHandlerException: java.net.ConnectException: Connection refused";
+      expectedException = "Connection refused";
     else
-      expectedException = "com.sun.jersey.api.client.ClientHandlerException: org.apache.http.conn.HttpHostConnectException";
+      expectedException = "com.marklogic.client.MarkLogicIOException";
 
     // write doc
     try {
       writeDocumentUsingStringHandle(client, filename, "/write-text-doc/", "Text");
     } catch (Exception e) {
       exception = e.toString();
+      System.out.println("Exception is " + exception);
     }
 
     assertTrue("Exception is not thrown", exception.contains(expectedException));

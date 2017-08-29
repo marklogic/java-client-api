@@ -1542,8 +1542,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       System.out.println("Contents are : " + contents);
       assertTrue("Lookup for a document from Callback using the client failed", xmlStr1.contains(contents) || xmlStr2.contains(contents));
     }
-    // release client
-    client.release();
   }
 
   /*

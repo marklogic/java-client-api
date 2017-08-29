@@ -31,6 +31,7 @@ import org.json.JSONException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.w3c.dom.Document;
@@ -83,7 +84,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     System.out.println("Running clear script");
   }
 
-  @Test(expected = com.marklogic.client.FailedRequestException.class)
+  @Ignore
   public void testSortOrderDescendingScore() throws FileNotFoundException, XpathException, TransformerException
   {
     System.out.println("Running testSortOrderDescendingScore");
@@ -147,7 +148,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     client.release();
   }
 
-  @Test(expected = com.marklogic.client.FailedRequestException.class)
+  @Ignore
   public void testSortOrderPrimaryDescScoreSecondaryAscDate() throws FileNotFoundException, XpathException, TransformerException, IOException, JSONException
   {
     System.out.println("Running testSortOrderPrimaryDescScoreSecondaryAscDate");
@@ -219,7 +220,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     client.release();
   }
 
-  @Test(expected = com.marklogic.client.FailedRequestException.class)
+  @Ignore
   public void testMultipleSortOrder() throws FileNotFoundException, XpathException, TransformerException, IOException
   {
     System.out.println("Running testMultipleSortOrder");
@@ -368,7 +369,7 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     client.release();
   }
 
-  @Test(expected = com.marklogic.client.FailedRequestException.class)
+  @Ignore
   public void testSortOrderAttribute() throws FileNotFoundException, XpathException, TransformerException, IOException
   {
     System.out.println("Running testSortOrderAttribute");
