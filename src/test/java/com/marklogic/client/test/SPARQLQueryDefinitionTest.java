@@ -356,15 +356,13 @@ public class SPARQLQueryDefinitionTest {
     askQuery.withBinding("o", "2", RDFTypes.ANYURI);
     assertFalse(smgr.executeAsk(askQuery));
     bindings.clear();
-
-    /** Comment until BugTrack 35678 is fixed
-     askQuery.withBinding("o", "en", RDFTypes.LANGUAGE);
-     assertTrue(smgr.executeAsk(askQuery));
-     bindings.clear();
-     askQuery.withBinding("o", "es", RDFTypes.LANGUAGE);
-     assertFalse(smgr.executeAsk(askQuery));
-     bindings.clear();
-     */
+    
+    askQuery.withBinding("o", "en", RDFTypes.LANGUAGE);
+    assertTrue(smgr.executeAsk(askQuery));
+    bindings.clear();
+    askQuery.withBinding("o", "es", RDFTypes.LANGUAGE);
+    assertFalse(smgr.executeAsk(askQuery));
+    bindings.clear();
 
     askQuery.withBinding("o", "1", RDFTypes.NORMALIZEDSTRING);
     assertTrue(smgr.executeAsk(askQuery));
