@@ -104,7 +104,10 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
       docMgr.write("/binary4mbdoc", handle1);
       String query = "declare variable $myInteger as xs:integer external;"
           + "(fn:doc()/binary(),$myInteger,xdmp:database-name(xdmp:database()))";
-      long sizeOfBinary = docMgr.read("/binary4mbdoc", new InputStreamHandle()).getByteLength();
+      long sizeOfBinary;
+      try ( InputStreamHandle doc =docMgr.read("/binary4mbdoc",new InputStreamHandle()) ) {
+        sizeOfBinary = doc.getByteLength();
+      }
       for (int i = 0; i <= 330; i++) {
         ServerEvaluationCall evl = client.newServerEval().xquery(query);
         evl.addVariable("myInteger", (int) i);
