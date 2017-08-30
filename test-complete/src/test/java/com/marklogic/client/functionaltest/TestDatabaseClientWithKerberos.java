@@ -348,160 +348,128 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
         jh = er.get(jh);
 
         if (jh.get().isArray()) {
-          System.out.println("Type Array :" + jh.get().toString());
-          assertEquals("array value at index 0 ", 1, jh.get().get(0)
-              .asInt());
-          assertEquals("array value at index 1 ", 2, jh.get().get(1)
-              .asInt());
-          assertEquals("array value at index 2 ", 3, jh.get().get(2)
-              .asInt());
-        } else if (jh.get().isObject()) {
-          System.out.println("Type Object :" + jh.get().toString());
-          if (jh.get().has("foo")) {
-            assertNull("this object also has null node", jh.get()
-                .get("testNull").textValue());
-          } else if (jh.get().has("obj")) {
-            assertEquals("Value of the object is ", "value", jh
-                .get().get("obj").asText());
-          } else {
-            assertFalse("getting a wrong object ", true);
-          }
+            System.out.println("Type Array :" + jh.get().toString());
+            assertEquals("array value at index 0 ", 1, jh.get().get(0).asInt());
+            assertEquals("array value at index 1 ", 2, jh.get().get(1).asInt());
+            assertEquals("array value at index 2 ", 3, jh.get().get(2).asInt());
+         } else if (jh.get().isObject()) {
+           System.out.println("Type Object :" + jh.get().toString());
+           if (jh.get().has("foo")) {
+               assertNull("this object also has null node", jh.get().get("testNull").textValue());
+           } else if (jh.get().has("obj")) {
+               assertEquals("Value of the object is ", "value", jh.get().get("obj").asText());
+           } else {
+               assertFalse("getting a wrong object ", true);
+           }
 
-        } else if (jh.get().isNumber()) {
-          System.out.println("Type Number :" + jh.get().toString());
-          assertEquals("Number value", 1, jh.get().asInt());
-        } else if (jh.get().isNull()) {
-          System.out.println("Type Null :" + jh.get().toString());
-          assertNull("Returned Null", jh.get().textValue());
-        } else if (jh.get().isBoolean()) {
-          System.out.println("Type boolean :" + jh.get().toString());
-          assertTrue("Boolean value returned false", jh.get()
-              .asBoolean());
-        } else {
-          // System.out.println("Running into different types than expected");
-          assertFalse("Running into different types than expected",
-              true);
-        }
+           } else if (jh.get().isNumber()) {
+               System.out.println("Type Number :" + jh.get().toString());
+               assertEquals("Number value", 1, jh.get().asInt());
+           } else if (jh.get().isNull()) {
+               System.out.println("Type Null :" + jh.get().toString());
+               assertNull("Returned Null", jh.get().textValue());
+           } else if (jh.get().isBoolean()) {
+               System.out.println("Type boolean :" + jh.get().toString());
+               assertTrue("Boolean value returned false", jh.get().asBoolean());
+           } else {
+               // System.out.println("Running into different types than expected");
+               assertFalse("Running into different types than expected", true);
+           }
 
       } else if (er.getType().equals(Type.TEXTNODE)) {
-        assertTrue("document contains",
-            er.getAs(String.class).equals("test1"));
-        // System.out.println("type txt node :"+er.getAs(String.class));
+          assertTrue("document contains", er.getAs(String.class).equals("test1"));
+              // System.out.println("type txt node :"+er.getAs(String.class));
 
       } else if (er.getType().equals(Type.BINARY)) {
-        FileHandle fh = new FileHandle();
-        fh = er.get(fh);
-        // System.out.println("type binary :"+fh.get().length());
-        assertEquals("files size", 2, fh.get().length());
+          FileHandle fh = new FileHandle();
+          fh = er.get(fh);
+          // System.out.println("type binary :"+fh.get().length());
+          assertEquals("files size", 2, fh.get().length());
       } else if (er.getType().equals(Type.BOOLEAN)) {
-        assertTrue("Documents exist?", er.getBoolean());
-        // System.out.println("type boolean:"+er.getBoolean());
+          assertTrue("Documents exist?", er.getBoolean());
+          // System.out.println("type boolean:"+er.getBoolean());
       } else if (er.getType().equals(Type.INTEGER)) {
-        System.out.println("type Integer: "
-            + er.getNumber().longValue());
-        assertEquals("count of documents ", 31, er.getNumber()
-            .intValue());
+          System.out.println("type Integer: "+ er.getNumber().longValue());
+          assertEquals("count of documents ", 31, er.getNumber().intValue());
       } else if (er.getType().equals(Type.STRING)) {
-        // There is git issue 152
-        System.out.println("type string: " + er.getString());
-        assertTrue("String?", er.getString().contains("true") || er.getString().contains("xml")
-            || er.getString().contains("31") || er.getString().contains("1.0471975511966"));
+          String str = er.getString();
+          // There is git issue 152
+          System.out.println("type string: " + str );
+          assertTrue("String?", str.contains("true") || str.contains("xml")
+                      || str.contains("31") || str.contains("1.0471975511966"));
 
       } else if (er.getType().equals(Type.NULL)) {
-        // There is git issue 151
-        // assertNull(er.getAs(String.class));
-        System.out.println("Testing is empty sequence is NUll?"
-            + er.getAs(String.class));
+          // There is git issue 151
+          // assertNull(er.getAs(String.class));
+          System.out.println("Testing is empty sequence is NUll?"+ er.getAs(String.class));
       } else if (er.getType().equals(Type.OTHER)) {
-        // There is git issue 151
-        System.out.println("Testing is Others? "
-            + er.getAs(String.class));
-        // assertEquals("Returns OTHERs","xdmp:forest-restart#1",er.getString());
+          // There is git issue 151
+          System.out.println("Testing is Others? "+ er.getAs(String.class));
+          // assertEquals("Returns OTHERs","xdmp:forest-restart#1",er.getString());
 
       } else if (er.getType().equals(Type.ANYURI)) {
-        // System.out.println("Testing is AnyUri? "+er.getAs(String.class));
-        assertEquals("Returns me a uri :", "test1.xml",
-            er.getAs(String.class));
+          // System.out.println("Testing is AnyUri? "+er.getAs(String.class));
+          assertEquals("Returns me a uri :", "test1.xml", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DATE)) {
-        // System.out.println("Testing is DATE? "+er.getAs(String.class));
-        assertEquals("Returns me a date :", "2002-03-07-07:00",
-            er.getAs(String.class));
+          // System.out.println("Testing is DATE? "+er.getAs(String.class));
+          assertEquals("Returns me a date :", "2002-03-07-07:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.DATETIME)) {
-        // System.out.println("Testing is DATETIME? "+er.getAs(String.class));
-        assertEquals("Returns me a dateTime :",
-            "2010-01-06T18:13:50.874-07:00", er.getAs(String.class));
-
+          // System.out.println("Testing is DATETIME? "+er.getAs(String.class));
+          assertEquals("Returns me a dateTime :", "2010-01-06T18:13:50.874-07:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.DECIMAL)) {
-        // System.out.println("Testing is Decimal? "+er.getAs(String.class));
-        assertEquals("Returns me a Decimal :", "1.0471975511966",
-            er.getAs(String.class));
+          // System.out.println("Testing is Decimal? "+er.getAs(String.class));
+          assertEquals("Returns me a Decimal :", "1.0471975511966", er.getAs(String.class));
 
       } else if (er.getType().equals(Type.DOUBLE)) {
-        // System.out.println("Testing is Double? "+er.getAs(String.class));
-        assertEquals(1.0471975511966, er.getNumber().doubleValue(), 0);
-
+          // System.out.println("Testing is Double? "+er.getAs(String.class));
+          assertEquals(1.0471975511966, er.getNumber().doubleValue(), 0);
       } else if (er.getType().equals(Type.DURATION)) {
-        System.out.println("Testing is Duration? "
-            + er.getAs(String.class));
-        // assertEquals("Returns me a Duration :",0.4903562,er.getNumber().floatValue());
+          System.out.println("Testing is Duration? "+ er.getAs(String.class));
+          // assertEquals("Returns me a Duration :",0.4903562,er.getNumber().floatValue());
       } else if (er.getType().equals(Type.FLOAT)) {
-        // System.out.println("Testing is Float? "+er.getAs(String.class));
-        assertEquals(20, er.getNumber().floatValue(), 0);
+          // System.out.println("Testing is Float? "+er.getAs(String.class));
+          assertEquals(20, er.getNumber().floatValue(), 0);
       } else if (er.getType().equals(Type.GDAY)) {
-        // System.out.println("Testing is GDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GDAY :", "---01",
-            er.getAs(String.class));
+          // System.out.println("Testing is GDay? "+er.getAs(String.class));
+          assertEquals("Returns me a GDAY :", "---01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTH)) {
-        // System.out.println("Testing is GMonth "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTH :", "--01",
-            er.getAs(String.class));
+          // System.out.println("Testing is GMonth "+er.getAs(String.class));
+          assertEquals("Returns me a GMONTH :", "--01", er.getAs(String.class));
       } else if (er.getType().equals(Type.GMONTHDAY)) {
-        // System.out.println("Testing is GMonthDay? "+er.getAs(String.class));
-        assertEquals("Returns me a GMONTHDAY :", "--12-25-14:00",
-            er.getAs(String.class));
+          // System.out.println("Testing is GMonthDay? "+er.getAs(String.class));
+          assertEquals("Returns me a GMONTHDAY :", "--12-25-14:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEAR)) {
-        // System.out.println("Testing is GYear? "+er.getAs(String.class));
-        assertEquals("Returns me a GYEAR :", "2005-12:00",
-            er.getAs(String.class));
+          // System.out.println("Testing is GYear? "+er.getAs(String.class));
+          assertEquals("Returns me a GYEAR :", "2005-12:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.GYEARMONTH)) {
-        // System.out.println("Testing is GYearMonth?1976-02 "+er.getAs(String.class));
-        assertEquals("Returns me a GYEARMONTH :", "1976-02",
-            er.getAs(String.class));
+          // System.out.println("Testing is GYearMonth?1976-02 "+er.getAs(String.class));
+          assertEquals("Returns me a GYEARMONTH :", "1976-02", er.getAs(String.class));
       } else if (er.getType().equals(Type.HEXBINARY)) {
-        // System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
-        assertEquals("Returns me a HEXBINARY :", "BEEF",
-            er.getAs(String.class));
+          // System.out.println("Testing is HEXBINARY? "+er.getAs(String.class));
+          assertEquals("Returns me a HEXBINARY :", "BEEF", er.getAs(String.class));
       } else if (er.getType().equals(Type.QNAME)) {
-        // System.out.println("Testing is QNAME integer"+er.getAs(String.class));
-        assertEquals("Returns me a QNAME :", "integer",
-            er.getAs(String.class));
+          // System.out.println("Testing is QNAME integer"+er.getAs(String.class));
+          assertEquals("Returns me a QNAME :", "integer", er.getAs(String.class));
       } else if (er.getType().equals(Type.TIME)) {
-        // System.out.println("Testing is TIME? "+er.getAs(String.class));
-        assertEquals("Returns me a TIME :", "10:00:00",
-            er.getAs(String.class));
+          // System.out.println("Testing is TIME? "+er.getAs(String.class));
+          assertEquals("Returns me a TIME :", "10:00:00", er.getAs(String.class));
       } else if (er.getType().equals(Type.ATTRIBUTE)) {
-        // System.out.println("Testing is ATTRIBUTE? "+er.getAs(String.class));
-        assertEquals("Returns me a ATTRIBUTE :", "attribute",
-            er.getAs(String.class));
-
+          // System.out.println("Testing is ATTRIBUTE? "+er.getAs(String.class));
+          assertEquals("Returns me a ATTRIBUTE :", "attribute", er.getAs(String.class));
       } else if (er.getType().equals(Type.PROCESSINGINSTRUCTION)) {
-        // System.out.println("Testing is ProcessingInstructions? "+er.getAs(String.class));
-        assertEquals("Returns me a PROCESSINGINSTRUCTION :",
-            "<?processing instruction?>", er.getAs(String.class));
+          // System.out.println("Testing is ProcessingInstructions? "+er.getAs(String.class));
+          assertEquals("Returns me a PROCESSINGINSTRUCTION :", "<?processing instruction?>", er.getAs(String.class));
       } else if (er.getType().equals(Type.COMMENT)) {
-        // System.out.println("Testing is Comment node? "+er.getAs(String.class));
-        assertEquals("Returns me a COMMENT :", "<!--comment-->",
-            er.getAs(String.class));
+          // System.out.println("Testing is Comment node? "+er.getAs(String.class));
+          assertEquals("Returns me a COMMENT :", "<!--comment-->", er.getAs(String.class));
       } else if (er.getType().equals(Type.BASE64BINARY)) {
-        // System.out.println("Testing is Base64Binary  "+er.getAs(String.class));
-        assertEquals("Returns me a BASE64BINARY :", "DEADBEEF",
-            er.getAs(String.class));
+          // System.out.println("Testing is Base64Binary  "+er.getAs(String.class));
+          assertEquals("Returns me a BASE64BINARY :", "DEADBEEF", er.getAs(String.class));
       } else {
-        System.out
-            .println("Got something which is not belongs to anytype we support "
-                + er.getAs(String.class));
-        assertFalse("getting in else part, missing a type  ", true);
+          System.out.println("Got something which is not belongs to anytype we support "
+                      + er.getAs(String.class));
+          assertFalse("getting in else part, missing a type  ", true);
       }
     }
   }
