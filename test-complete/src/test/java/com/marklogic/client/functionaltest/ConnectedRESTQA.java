@@ -2390,7 +2390,7 @@ public abstract class ConnectedRESTQA {
    * specific database on non uber port i.e., 8012 Access a specific database
    * through uber server on port (specifically port 8000)
    */
-  public DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName, String user, String password, Authentication authType)
+  public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName, String user, String password, Authentication authType)
       throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
     DatabaseClient client = null;

@@ -39,6 +39,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -72,6 +73,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
   public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
     System.out.println("In TestOpticOnLexicons setup");
+    DatabaseClient schemaDBclient = null;
 
     configureRESTServer(dbName, fNames);
 
@@ -126,11 +128,14 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
 
-    DatabaseClient schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
-
-    // You can enable the triple positions index for faster near searches using
-    // cts:triple-range-query.
-    client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
+    if (IsSecurityEnabled()) {
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "admin", "admin", Authentication.DIGEST);
+        client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+    }
+    else {
+        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
+        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
+    }
 
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)

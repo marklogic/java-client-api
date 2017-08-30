@@ -84,6 +84,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
     System.out.println("In TestOpticOnLiterals setup");
+    DatabaseClient schemaDBclient = null;
 
     configureRESTServer(dbName, fNames);
 
@@ -138,11 +139,14 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
 
-    DatabaseClient schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
-
-    // You can enable the triple positions index for faster near searches using
-    // cts:triple-range-query.
-    client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
+    if (IsSecurityEnabled()) {
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "admin", "admin", Authentication.DIGEST);
+        client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+    }
+    else {
+        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
+        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
+    }
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)
     loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
@@ -275,8 +279,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     // Map and Reduce tests.
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
-
-    DatabaseClient clientRes = DatabaseClientFactory.newClient(getRestAppServerHostName(), getRestServerPort(), dbName, "eval-user", "x", Authentication.DIGEST);
+    
+    
+    DatabaseClient clientRes = getDatabaseClient("eval-user", "x", Authentication.DIGEST); 
+    
     resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
     resextMetadata.setTitle("BasicJSTest");
@@ -293,6 +299,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata, getParams);
     Thread.sleep(10000);
     schemaDBclient.release();
+    clientRes.release();
   }
 
   /**
