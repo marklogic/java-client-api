@@ -199,4 +199,12 @@ public class DataMovementManagerImpl implements DataMovementManager {
       return null;
     }
   }
+
+  public DataMovementServices getDataMovementServices() {
+    return service;
+  }
+
+  public void setDataMovementServices(DataMovementServices service) {
+    this.service = service;
+  }
 }
