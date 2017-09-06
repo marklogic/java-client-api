@@ -70,11 +70,11 @@ public class BulkLoadFromJdbcWithJoins {
 
   public void run() throws IOException, SQLException {
     JdbcTemplate jdbcTemplate = new JdbcTemplate(getDataSource());
-    Connection conn = jdbcTemplate.getDataSource().getConnection();
-    if(conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"))
-      // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
-      jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
-    conn.close();
+    try ( Connection conn = jdbcTemplate.getDataSource().getConnection() ) {
+      if(conn.getMetaData().getDatabaseProductName().toLowerCase().contains("mysql"))
+        // the following is required because GROUP_CONCAT calls in following SQL can generate long strings
+        jdbcTemplate.execute("SET GLOBAL group_concat_max_len = 1000000");
+    }
     WriteBatcher wb = moveMgr.newWriteBatcher()
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)

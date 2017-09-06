@@ -53,7 +53,7 @@ public class SSLTest {
     sslContext.init(null, null, null);
 
     // create the client
-    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x")
+    DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext("rest-writer", "x")
       .withSSLContext(sslContext)
       .withSSLHostnameVerifier(SSLHostnameVerifier.ANY));
 
@@ -63,20 +63,23 @@ public class SSLTest {
     String exception = "";
 
     try {
-      // make use of the client connection so we get an auth error
+      // make use of the client connection so we get an auth exception if it
+      // is a non SSL connection and a successful write if it is an SSL connection
       TextDocumentManager docMgr = client.newTextDocumentManager();
       String docId = "/example/text.txt";
       StringHandle handle = new StringHandle();
-      handle.set("A simple text document");
+      handle.set("A simple text document by SSL connection");
       docMgr.write(docId, handle);
-      // the next line will only run if write doesn't throw an exception
+      // subsequent lines will only run if write doesn't throw an exception
+      handle = new StringHandle();
+      docMgr.read(docId, handle);
+      assertEquals(handle.get(), "A simple text document by SSL connection");
       docMgr.delete(docId);
     }
     catch (Exception e) {
       exception = e.toString();
+      assertEquals(expectedException, exception);
     }
-    assertEquals(expectedException, exception);
-
   }
 
   private static class SSLTestServices extends OkHttpServices {
