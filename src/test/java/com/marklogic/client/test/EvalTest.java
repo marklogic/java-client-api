@@ -463,4 +463,27 @@ public class EvalTest {
       assertTrue(fre.getMessage().contains("SEC-PRIV: Need privilege: http://marklogic.com/xdmp/privileges/xdbc-eval"));
     }
   }
+
+  @Test
+  public void test_issue725() throws IOException {
+    String inputText = "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor " +
+      "incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation";
+    String javascript =
+      "var inputText;" +
+      "var output = new String();" +
+      "for ( i=0; i < 10000; i++ ) {" +
+      "  output = output + inputText;" +
+      "}" +
+      "output;";
+    ServerEvaluationCall query = Common.evalClient.newServerEval()
+      .javascript(javascript)
+      .addVariable("inputText", inputText);
+    Reader response = query.evalAs(Reader.class);
+    String strVal = new BufferedReader(response).readLine();
+    StringBuilder expectedOutput = new StringBuilder();
+    for ( int i=0; i < 10000; i++ ) {
+      expectedOutput.append(inputText);
+    }
+    assertEquals(expectedOutput.toString(), strVal);
+  }
 }
