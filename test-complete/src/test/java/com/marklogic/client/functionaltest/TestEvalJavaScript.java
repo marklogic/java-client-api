@@ -40,6 +40,7 @@ import org.junit.runners.MethodSorters;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -351,6 +352,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
         System.out.println("Something went wrong");
       }
     }
+    evr.close();
   }
 
   // This test is intended to test eval(T handle), passing input stream handle
@@ -390,6 +392,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
           System.out.println("Something went wrong");
         }
       }
+      evr.close();
     } catch (Exception e) {
       throw e;
     } finally {
@@ -439,7 +442,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
       System.out.println(new ObjectMapper().createObjectNode().nullNode().toString());
       EvalResultIterator evr = evl.eval();
       this.validateReturnTypes(evr);
-
+      evr.close();
     } catch (Exception e) {
       throw e;
     }
@@ -486,7 +489,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
       System.out.println(new ObjectMapper().createObjectNode().nullNode().toString());
       EvalResultIterator evr = evl.eval();
       this.validateReturnTypes(evr);
-
+      evr.close();
     } catch (Exception e) {
       throw e;
     }
@@ -528,6 +531,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
       System.out.println(new ObjectMapper().createObjectNode().nullNode().toString());
       EvalResultIterator evr = evl.eval();
       this.validateReturnTypes(evr);
+      evr.close();
 
     } catch (Exception e) {
       throw e;
@@ -605,6 +609,7 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
           System.out.println("Something went wrong");
         }
       }
+      evr.close();
     } catch (Exception e) {
       throw e;
     } finally {
@@ -612,6 +617,71 @@ public class TestEvalJavaScript extends BasicJavaClientREST {
         inputStream.close();
       }
       moduleClient.release();
+    }
+  }
+  
+  /*
+   * Test is intended to test ServerEvaluationCall.evalAs(Class<T>) closing underlying streams prematurely 
+   * Git Issue 725
+   */
+  @Test
+  public void testStreamClosingWithEvalAs() throws KeyManagementException, NoSuchAlgorithmException, Exception {
+    try {
+      String query1 = 
+           "var phrase = 'MarkLogic Corp';"
+          + "var repeat = 10;"
+          + "for (var i = 0; i < repeat; i++) {"
+          + "phrase += phrase.concat(phrase);"
+          + "}"          
+          + "phrase;";
+      
+      String query2 = 
+              "var phrase2 = 'Java Client API';"
+             + "var repeat = 10;"
+             + "for (var i = 0; i < repeat; i++) {"
+             + "phrase2 += phrase2.concat(phrase2);"
+             + "}"          
+             + "var jsStr = JSON.stringify(phrase2);"
+             + "jsStr;";
+
+      ServerEvaluationCall evl = client.newServerEval().javascript(query1);
+      
+      // Using evalAs(String.class)
+      String evr = evl.evalAs(String.class);
+      
+      int nLen = evr.length();
+      String firstFiftyChars = evr.substring(0, 50);
+      String lastTenChars = evr.substring(evr.length() - 10);
+      
+      // Make sure we can access results that are greater than 17,400 chars. See Git Issue 725.
+      System.out.println("String length is " + nLen);
+      System.out.println("First Fifty String output is " + firstFiftyChars);
+      System.out.println("Last Ten String output is " + lastTenChars);
+      
+      assertTrue("String length incorrect", nLen==826686);
+      assertTrue("First Fifty String output incorrect ", firstFiftyChars.equalsIgnoreCase("MarkLogic CorpMarkLogic CorpMarkLogic CorpMarkLogi"));
+      assertTrue("Last Ten String output incorrect ", lastTenChars.equalsIgnoreCase("Logic Corp"));
+      
+      // Using evalAs(JsonNode.class)
+      ServerEvaluationCall ev2 = client.newServerEval().javascript(query2);
+      JsonNode jNode = ev2.evalAs(JsonNode.class);
+      
+      String jsonStr = jNode.asText();
+      int nJLen = jsonStr.length();
+      String firstFiftyCharsJson = jsonStr.substring(0, 50);
+      String lastTenCharsJson = jsonStr.substring(jsonStr.length() - 10);
+      
+      // Make sure we can access results that are greater than 17,400 chars. See Git Issue 725.
+      System.out.println("JSON String length is " + nJLen);
+      System.out.println("First Fifty String JSON output is " + firstFiftyCharsJson);
+      System.out.println("Last Ten String JSON output is " + lastTenCharsJson);
+      
+      assertTrue("JSON String length incorrect", nJLen==885735);
+      assertTrue("First Fifty JSON String output incorrect ", firstFiftyCharsJson.equalsIgnoreCase("Java Client APIJava Client APIJava Client APIJava "));
+      assertTrue("Last Ten JSON String output incorrect ", lastTenCharsJson.equalsIgnoreCase("Client API"));
+      
+    } catch (Exception e) {
+      throw e;
     }
   }
 }

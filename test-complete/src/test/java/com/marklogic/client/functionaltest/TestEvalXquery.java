@@ -229,6 +229,7 @@ public class TestEvalXquery extends BasicJavaClientREST {
         assertFalse("getting in else part, missing a type  ", true);
       }
     }
+    evr.close();
   }
 
   // This test intended to verify a simple xquery for inserting and reading
@@ -291,8 +292,8 @@ public class TestEvalXquery extends BasicJavaClientREST {
       } else {
         System.out.println("Something went wrong");
       }
-
     }
+    evr.close();
   }
 
   // This test is intended to test eval(T handle), passing input stream handle
@@ -303,15 +304,17 @@ public class TestEvalXquery extends BasicJavaClientREST {
     InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/xqueries.txt");
     InputStreamHandle ish = new InputStreamHandle();
     ish.set(inputStream);
+    EvalResultIterator evr = null;
 
     try {
-      EvalResultIterator evr = client.newServerEval().xquery(ish).eval();
+      evr = client.newServerEval().xquery(ish).eval();
       this.validateReturnTypes(evr);
     } catch (Exception e) {
       throw e;
     } finally {
       inputStream.close();
     }
+    evr.close();
   }
 
   // Test is intended to test different types of variable passed to xquery from
@@ -412,7 +415,8 @@ public class TestEvalXquery extends BasicJavaClientREST {
           System.out.println("No corresponding type found for :" + er.getType());
         }
       }
-
+      evr.close();
+      
     } catch (Exception e) {
       throw e;
     }
@@ -455,6 +459,7 @@ public class TestEvalXquery extends BasicJavaClientREST {
         // System.out.println("Type XML  :"+convertXMLDocumentToString(dh.get()));
         assertEquals("document has content", "<foo attr=\"attribute\"><?processing instruction?><!--comment-->test1</foo>", convertXMLDocumentToString(dh.get()));
       }
+      evr.close();
     } catch (Exception e) {
       throw e;
     }
@@ -493,6 +498,7 @@ public class TestEvalXquery extends BasicJavaClientREST {
           .addVariableAs("myNull", (String) null);
       EvalResultIterator evr = evl.eval();
       this.validateReturnTypes(evr);
+      evr.close();
 
     } catch (Exception e) {
       throw e;
