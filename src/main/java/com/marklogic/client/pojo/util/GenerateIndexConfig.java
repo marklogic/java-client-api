@@ -30,6 +30,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationConfig;
 import com.fasterxml.jackson.databind.introspect.AnnotatedParameter;
 import com.fasterxml.jackson.databind.introspect.BeanPropertyDefinition;
+import com.fasterxml.jackson.databind.type.TypeFactory;
 import com.fasterxml.jackson.databind.util.ClassUtil;
 import com.marklogic.client.pojo.annotation.GeospatialLatitude;
 import com.marklogic.client.pojo.annotation.GeospatialLongitude;
@@ -132,7 +133,7 @@ public class GenerateIndexConfig {
     List<GeoPathIndexFound> geoPaths = new ArrayList<>();
     List<GeoPairFound> geoPairs = new ArrayList<>();
     for ( String className : classes ) {
-      Class<?> clazz = ClassUtil.findClass(className);
+      Class<?> clazz = TypeFactory.defaultInstance().findClass(className);
       SerializationConfig serializationConfig = new ObjectMapper().getSerializationConfig();
       JavaType javaType = serializationConfig.constructType(clazz);
       BeanDescription beanDescription = serializationConfig.introspect(javaType);
