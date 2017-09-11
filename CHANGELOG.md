@@ -1,5 +1,18 @@
 # CHANGELOG
 
+## 4.0.2
+
+#### New Functionality
+- [#720](https://github.com/marklogic/java-client-api/pull/720) - Add a RawCtsQueryDefinition to parallel RawCombinedQueryDefinition and RawStructuredQueryDefinition
+- [#722](https://github.com/marklogic/java-client-api/pull/722) - add support for minimum distance on near-query
+
+#### Improvements and Bug Fixes
+- [#65](https://github.com/marklogic/java-client-api/issues/65) - Replace internal HTTP library Jersey with OkHttp to improve performance, future readiness [#391](https://github.com/marklogic/java-client-api/issues/391), and overcome version conflicts [#769](https://github.com/marklogic/java-client-api/issues/769), [#282](https://github.com/marklogic/java-client-api/issues/282)
+- [#367](https://github.com/marklogic/java-client-api/issues/367) - Upgrade version of jdom2 dependency to 2.0.6 to overcome vulnerability in dependency xalan-2.7.1
+- [#368](https://github.com/marklogic/java-client-api/issues/368) - Remove dependency on jersey-apache-client4-1.17 to overcome vulnerability in dependency HttpClient 4.1.1
+- [#711](https://github.com/marklogic/java-client-api/pull/711) - Upgrade dependencies slf4j-api to 1.7.25
+- [#715](https://github.com/marklogic/java-client-api/pull/715) - Upgrade dependencies jdom2 to 2.0.6, gson to 2.8.0, and htmlcleaner to 2.19
+
 ## 4.0.1
 
 #### New Functionality
