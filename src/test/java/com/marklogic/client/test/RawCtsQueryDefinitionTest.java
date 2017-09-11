@@ -237,8 +237,7 @@ public class RawCtsQueryDefinitionTest {
     }
   }
 
-  // Uncomment next test when 45872 is fixed
-  //@Test
+  @Test
   public void testRawCombinedCtsQueryFromFileHandle() throws Exception {
     Common.client.newDocumentManager().write("testRawCtsQueryFromFileHandle.xml",
       new FileHandle(new File("src/test/resources/constraint5.xml")).withFormat(Format.XML));
