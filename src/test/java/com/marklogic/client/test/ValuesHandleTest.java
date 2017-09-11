@@ -39,12 +39,14 @@ import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.QueryOptionsManager;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.ValuesListHandle;
 import com.marklogic.client.query.AggregateResult;
 import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
@@ -112,7 +114,7 @@ public class ValuesHandleTest {
 
     ValuesDefinition vdef = queryMgr.newValuesDefinition("double", optionsName);
 
-    for (int i=0; i < 2; i++) {
+    for (int i=0; i < 4; i++) {
       ValueQueryDefinition vQuery = null;
       switch (i) {
         case 0:
@@ -124,6 +126,17 @@ public class ValuesHandleTest {
           StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder(null);
           StructuredQueryDefinition t = qb.term("10");
           vQuery = t;
+          break;
+        case 2:
+          RawCtsQueryDefinition query = queryMgr.newRawCtsQueryDefinition(null);
+          query.setCriteria("10");
+          vQuery = query;
+          break;
+        case 3:
+          String ctsQuery = "<word-query xmlns=\"http://marklogic.com/cts\"><text>10</text></word-query>";
+          StringHandle handle = new StringHandle(ctsQuery).withFormat(Format.XML);
+          RawCtsQueryDefinition rawCtsQuery = queryMgr.newRawCtsQueryDefinition(handle);
+          vQuery = rawCtsQuery;
           break;
         default:
           assertTrue("test case error", false);

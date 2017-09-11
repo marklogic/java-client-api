@@ -21,7 +21,7 @@ import com.marklogic.client.io.marker.CtsQueryWriteHandle;
  * A RawCtsQueryDefinition allows you to create a query with a serialized cts
  * query in a JSON or XML representation.
  */
-public interface RawCtsQueryDefinition extends QueryDefinition {
+public interface RawCtsQueryDefinition extends QueryDefinition, ValueQueryDefinition {
   /**
    * Returns the query criteria, that is the query string.
    * @return The query string.

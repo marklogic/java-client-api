@@ -2397,6 +2397,8 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) queryDef).getCriteria();
       } else if (queryDef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
+      } else if (queryDef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
         docParams.add("q", text);
@@ -2409,6 +2411,9 @@ public class OkHttpServices implements RESTServices {
         }
       } else if (queryDef instanceof RawQueryDefinition) {
         StructureWriteHandle handle = ((RawQueryDefinition) queryDef).getHandle();
+        baseHandle = HandleAccessor.checkHandle(handle, "values");
+      } else if (queryDef instanceof RawCtsQueryDefinition) {
+        CtsQueryWriteHandle handle = ((RawCtsQueryDefinition) queryDef).getHandle();
         baseHandle = HandleAccessor.checkHandle(handle, "values");
       } else {
         logger.warn("unsupported query definition: {}", queryDef.getClass().getName());
