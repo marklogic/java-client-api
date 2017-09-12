@@ -8,6 +8,7 @@
 
 #### Improvements and Bug Fixes
 - [#65](https://github.com/marklogic/java-client-api/issues/65) - Replace internal HTTP library Jersey with OkHttp to improve performance, future readiness [#391](https://github.com/marklogic/java-client-api/issues/391), and overcome version conflicts [#769](https://github.com/marklogic/java-client-api/issues/769), [#282](https://github.com/marklogic/java-client-api/issues/282)
+- [#470](https://github.com/marklogic/java-client-api/issues/470) - Share http connection pool across DatabaseClient instances to allow scenarios where many DatabaseClient instances are desirable
 - [#367](https://github.com/marklogic/java-client-api/issues/367) - Upgrade version of jdom2 dependency to 2.0.6 to overcome vulnerability in dependency xalan-2.7.1
 - [#368](https://github.com/marklogic/java-client-api/issues/368) - Remove dependency on jersey-apache-client4-1.17 to overcome vulnerability in dependency HttpClient 4.1.1
 - [#711](https://github.com/marklogic/java-client-api/pull/711) - Upgrade dependencies slf4j-api to 1.7.25
