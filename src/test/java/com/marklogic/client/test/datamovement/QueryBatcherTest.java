@@ -509,6 +509,10 @@ public class QueryBatcherTest {
           public DatabaseClient getClient() {
             throw new InternalError(errorMessage);
           }
+
+        public QueryBatcher getBatcher() {
+          return moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"));
+          }
         };
         listener.processEvent(mockQueryBatch);
       }
