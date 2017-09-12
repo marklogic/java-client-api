@@ -464,6 +464,10 @@ public class WriteBatcherImpl
 
   @Override
   public void retry(WriteBatch batch) {
+    if ( isStopped() == true ) {
+      logger.warn("Job is now stopped, aborting the retry");
+      return;
+    }
     if ( batch == null ) throw new IllegalArgumentException("batch must not be null");
     boolean forceNewTransaction = true;
     BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());

@@ -83,6 +83,7 @@ public class ApplyTransformListener implements QueryBatchListener {
   private List<QueryBatchListener> successListeners = new ArrayList<>();
   private List<QueryBatchListener> skippedListeners = new ArrayList<>();
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
+  private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public ApplyTransformListener() {
     logger.debug("new ApplyTransformListener - this should print once/job; " +
@@ -93,6 +94,11 @@ public class ApplyTransformListener implements QueryBatchListener {
    * The standard BatchListener action called by QueryBatcher.
    */
   public void processEvent(QueryBatch batch) {
+    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
+      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
+          .initializeRetryListener(this);
+      if( retryListener != null )  onFailure(retryListener);
+    }
     if ( ! (batch.getClient() instanceof DatabaseClientImpl) ) {
       throw new IllegalStateException("DatabaseClient must be instanceof DatabaseClientImpl");
     }
@@ -146,6 +152,13 @@ public class ApplyTransformListener implements QueryBatchListener {
           logger.error("Exception thrown by an onBatchFailure listener", t2);
         }
       }
+      for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
+        try {
+          queryBatchFailureListener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onFailure listener", t2);
+        }
+      }
     }
   }
 
@@ -182,9 +195,24 @@ public class ApplyTransformListener implements QueryBatchListener {
    * @param listener the code to run when a failure occurs
    *
    * @return this instance for method chaining
+   * @deprecated  use {@link #onFailure(BatchFailureListener)}
    */
+  @Deprecated
   public ApplyTransformListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
     failureListeners.add(listener);
+    return this;
+  }
+
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public ApplyTransformListener onFailure(BatchFailureListener<QueryBatch> listener) {
+    queryBatchFailureListeners.add(listener);
     return this;
   }
 

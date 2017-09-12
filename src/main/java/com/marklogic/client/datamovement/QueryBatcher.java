@@ -300,4 +300,14 @@ public interface QueryBatcher extends Batcher {
    * @throws IllegalStateException if this job has not yet been started
    */
   JobTicket getJobTicket();
+
+  /**
+   * Retries processing the listener to the batch of URIs, when the batch has
+   * been successfully retrieved from the server but applying the listener
+   * on the batch failed.
+   *
+   * @param batch  the QueryBatch for which we need to process the listener
+   * @param queryBatchListener  the QueryBatchListener which needs to be applied
+   */
+  void retryListener(QueryBatch batch, QueryBatchListener queryBatchListener);
 }

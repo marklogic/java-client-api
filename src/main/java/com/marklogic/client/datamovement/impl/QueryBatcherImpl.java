@@ -124,6 +124,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
    */
   @Override
   public void retry(QueryEvent queryEvent) {
+    if ( isStopped() == true ) {
+      logger.warn("Job is now stopped, aborting the retry");
+      return;
+    }
     boolean callFailListeners = false;
     Forest retryForest = null;
     for ( Forest forest : getForestConfig().listForests() ) {
@@ -148,6 +152,36 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     runnable.run();
   }
 
+  /*
+   * Accepts a QueryBatch which was successfully retrieved from the server and a 
+   * QueryBatchListener which was failed to apply and retry that listener on the batch. 
+   * 
+   */
+  @Override
+  public void retryListener(QueryBatch batch, QueryBatchListener queryBatchListener) {
+    // We get the batch and modify the client alone in order to make use
+    // of the new forest client in case if the original host is unavailable.
+    DatabaseClient client = null;
+    Forest[] forests = batch.getBatcher().getForestConfig().listForests();
+    for(Forest forest : forests) {
+      if(forest.equals(batch.getForest()))
+        client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+    }
+    QueryBatchImpl retryBatch = new QueryBatchImpl()
+        .withClient( client )
+        .withBatcher( batch.getBatcher() )
+        .withTimestamp( batch.getTimestamp() )
+        .withServerTimestamp( batch.getServerTimestamp() )
+        .withItems( batch.getItems() )
+        .withJobTicket( batch.getJobTicket() )
+        .withJobBatchNumber( batch.getJobBatchNumber() )
+        .withJobResultsSoFar( batch.getJobResultsSoFar() )
+        .withForestBatchNumber( batch.getForestBatchNumber() )
+        .withForestResultsSoFar( batch.getForestResultsSoFar() )
+        .withForest( batch.getForest() )
+        .withJobTicket( batch.getJobTicket() );
+    queryBatchListener.processEvent(retryBatch);
+  }
 
   @Override
   public QueryBatchListener[]   getQuerySuccessListeners() {
@@ -557,6 +591,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
             .withServerTimestamp(serverTimestamp.get())
             .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
             .withForestResultsSoFar(forestResults.get(forest).addAndGet(uris.size()));
+
           logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}, forest={}", uris.size(),
             batch.getJobBatchNumber(), batch.getJobResultsSoFar(), forest.getForestName());
           // now that we have the QueryBatch, let's send it to each onUrisReady listener

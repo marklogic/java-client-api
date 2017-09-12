@@ -67,11 +67,37 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
+  Set<QueryBatchListener> retryListenersSet = new HashSet<>();
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
   {
     hostUnavailableExceptions.add(SocketException.class);
     hostUnavailableExceptions.add(SSLException.class);
     hostUnavailableExceptions.add(UnknownHostException.class);
+  }
+
+  // Retry listener for Query batches, for which the list of URIs have been
+  // retrieved from the server but the batch failed while applying the listener
+  class RetryListener implements BatchFailureListener<QueryBatch> {
+    QueryBatchListener queryBatchListener;
+
+    public RetryListener(QueryBatchListener queryBatchListener) {
+      this.queryBatchListener = queryBatchListener;
+    }
+
+    @Override
+    public void processFailure(QueryBatch batch, Throwable throwable) {
+      boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, batch.getClient().getHost());
+      if ( isHostUnavailableException == true ) {
+        try {
+          logger.warn("Retrying failed listener batch: {}, results so far: {}, uris: {}",
+              batch.getJobBatchNumber(), batch.getJobResultsSoFar(), Arrays.toString(batch.getItems()));
+          batch.getBatcher().retryListener(batch, queryBatchListener);
+        } catch (RuntimeException e) {
+          logger.error("Exception during listener retry", e);
+          processFailure(batch, e);
+        }
+      }
+    }
   }
 
   /**
@@ -268,5 +294,57 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       if ( isCauseHostUnavailableException == true ) return true;
     }
     return false;
+  }
+
+  /**
+   * Initializes the RetryListener for the given QueryBatchListener.
+   *
+   * @param queryBatchListener the QueryBatchListener for which the RetryListener
+   *                           has to be initialized.
+   * @return the RetryListener if not initialized and null if already initialized.
+   */
+  public BatchFailureListener<QueryBatch> initializeRetryListener(QueryBatchListener queryBatchListener) {
+    if(! retryListenersSet.contains(queryBatchListener)) {
+      synchronized(this) {
+        if(! retryListenersSet.contains(queryBatchListener)) {
+          RetryListener retryListener = new RetryListener(queryBatchListener);
+          retryListenersSet.add(queryBatchListener);
+          return retryListener;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Returns the first HostAvailabilityListener instance registered
+   * with the Batcher.
+   *
+   * @param batcher the Batcher instance for which the registered
+   *                HostAvailabilityListener is returned
+   * @return the first HostAvailabilityListener instance with the batcher or null
+   *          if there is no HostAvailabilityListener registered
+   * @throws IllegalStateException if the passed Batcher is neither a QueryBatcher nor a WriteBatcher  
+   */
+  public static HostAvailabilityListener getInstance(Batcher batcher) {
+    if ( batcher instanceof WriteBatcher ) {
+      WriteFailureListener[] writeFailureListeners = ((WriteBatcher) batcher).getBatchFailureListeners();
+      for(WriteFailureListener writeFailureListener : writeFailureListeners) {
+        if ( writeFailureListener instanceof HostAvailabilityListener ) {
+          return (HostAvailabilityListener) writeFailureListener;
+        }
+      }
+    } else if ( batcher instanceof QueryBatcher ) {
+      QueryFailureListener[] queryFailureListeners = ((QueryBatcher) batcher).getQueryFailureListeners();
+      for(QueryFailureListener queryFailureListener : queryFailureListeners) {
+        if ( queryFailureListener instanceof HostAvailabilityListener ) {
+          return (HostAvailabilityListener) queryFailureListener;
+        }
+      }
+    } else {
+      throw new IllegalStateException(
+          "The Batcher should be either a QueryBatcher instance or a WriteBatcher instance");
+    }
+    return null;
   }
 }

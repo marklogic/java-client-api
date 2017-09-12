@@ -77,6 +77,7 @@ public class ExportListener implements QueryBatchListener {
   private List<Consumer<DocumentRecord>> exportListeners = new ArrayList<>();
   private boolean consistentSnapshot = false;
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
+  private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public ExportListener() {
     logger.debug("new ExportListener - this should print once/job; " +
@@ -103,6 +104,11 @@ public class ExportListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
+    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
+      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
+          .initializeRetryListener(this);
+      if( retryListener != null )  onFailure(retryListener);
+    }
     try ( DocumentPage docs = getDocs(batch) ) {
       while ( docs.hasNext() ) {
         for ( Consumer<DocumentRecord> listener : exportListeners ) {
@@ -119,6 +125,13 @@ public class ExportListener implements QueryBatchListener {
           listener.processFailure(batch, t);
         } catch (Throwable t2) {
           logger.error("Exception thrown by an onBatchFailure listener", t2);
+        }
+      }
+      for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
+        try {
+          queryBatchFailureListener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onFailure listener", t2);
         }
       }
     }
@@ -224,13 +237,33 @@ public class ExportListener implements QueryBatchListener {
    * @param listener the code to run when a failure occurs
    *
    * @return this instance for method chaining
+   * @deprecated  use {@link #onFailure(BatchFailureListener)}
    */
+  @Deprecated
   public ExportListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
     failureListeners.add(listener);
     return this;
   }
 
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public ExportListener onFailure(BatchFailureListener<QueryBatch> listener) {
+    queryBatchFailureListeners.add(listener);
+    return this;
+  }
+
+  @Deprecated
   protected List<BatchFailureListener<Batch<String>>> getFailureListeners() {
     return failureListeners;
+  }
+
+  protected List<BatchFailureListener<QueryBatch>> getBatchFailureListeners() {
+    return queryBatchFailureListeners;
   }
 }

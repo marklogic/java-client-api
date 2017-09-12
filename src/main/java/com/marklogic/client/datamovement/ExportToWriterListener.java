@@ -64,6 +64,11 @@ public class ExportToWriterListener extends ExportListener {
 
   @Override
   public void processEvent(QueryBatch batch) {
+    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
+      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
+          .initializeRetryListener(this);
+      if( retryListener != null )  onFailure(retryListener);
+    }
     try ( DocumentPage docs = getDocs(batch) ) {
       synchronized(writer) {
         for ( DocumentRecord doc : docs ) {
@@ -102,6 +107,13 @@ public class ExportToWriterListener extends ExportListener {
           listener.processFailure(batch, t);
         } catch (Throwable t2) {
           logger.error("Exception thrown by an onBatchFailure listener", t2);
+        }
+      }
+      for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : getBatchFailureListeners() ) {
+        try {
+          queryBatchFailureListener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onFailure listener", t2);
         }
       }
     }

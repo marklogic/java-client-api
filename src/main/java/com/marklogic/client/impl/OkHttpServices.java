@@ -469,6 +469,7 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   public void release() {
+    if ( client == null ) return;
     try {
       released = true;
       client.dispatcher().executorService().shutdownNow();
