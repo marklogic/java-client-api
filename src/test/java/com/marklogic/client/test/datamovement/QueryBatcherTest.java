@@ -510,8 +510,8 @@ public class QueryBatcherTest {
             throw new InternalError(errorMessage);
           }
 
-        public QueryBatcher getBatcher() {
-          return moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"));
+          public QueryBatcher getBatcher() {
+            return moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"));
           }
         };
         listener.processEvent(mockQueryBatch);
