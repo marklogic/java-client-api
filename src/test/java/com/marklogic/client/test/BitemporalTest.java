@@ -144,24 +144,25 @@ public class BitemporalTest {
     docMgr.write(writeSet, null, null, temporalCollection);
 
     StringQueryDefinition query = queryMgr.newStringDefinition().withCriteria(uniqueBulkTerm);
-    DocumentPage page = docMgr.search(query, 0);
-    assertEquals("Wrong number of results", 8, page.size());
-    for ( DocumentRecord record : page ) {
-      Document doc = record.getContentAs(Document.class);
-      if ( record.getUri().startsWith(prefix + "_1") ) {
-        assertXpathEvaluatesTo("2014-08-19T00:00:00Z", "//valid-start", doc);
-        continue;
-      } else if ( record.getUri().startsWith(prefix + "_2") ) {
-        assertXpathEvaluatesTo("2014-08-19T00:00:02Z", "//valid-start", doc);
-        continue;
-      } else if ( record.getUri().startsWith(prefix + "_3") ) {
-        assertXpathEvaluatesTo("2014-08-19T00:00:03Z", "//valid-start", doc);
-        continue;
-      } else if ( record.getUri().startsWith(prefix + "_4") ) {
-        assertXpathEvaluatesTo("2014-08-19T00:00:05Z", "//valid-start", doc);
-        continue;
+    try ( DocumentPage page = docMgr.search(query, 0) ) {
+      assertEquals("Wrong number of results", 8, page.size());
+      for ( DocumentRecord record : page ) {
+        Document doc = record.getContentAs(Document.class);
+        if ( record.getUri().startsWith(prefix + "_1") ) {
+          assertXpathEvaluatesTo("2014-08-19T00:00:00Z", "//valid-start", doc);
+          continue;
+        } else if ( record.getUri().startsWith(prefix + "_2") ) {
+          assertXpathEvaluatesTo("2014-08-19T00:00:02Z", "//valid-start", doc);
+          continue;
+        } else if ( record.getUri().startsWith(prefix + "_3") ) {
+          assertXpathEvaluatesTo("2014-08-19T00:00:03Z", "//valid-start", doc);
+          continue;
+        } else if ( record.getUri().startsWith(prefix + "_4") ) {
+          assertXpathEvaluatesTo("2014-08-19T00:00:05Z", "//valid-start", doc);
+          continue;
+        }
+        throw new IllegalStateException("Unexpected doc:[" + record.getUri() + "]");
       }
-      throw new IllegalStateException("Unexpected doc:[" + record.getUri() + "]");
     }
   }
 
@@ -218,18 +219,20 @@ public class BitemporalTest {
     docMgr.write(docId, null, handle4, null, null, temporalCollection);
 
     // make sure non-temporal document read only returns the latest version
-    DocumentPage readResults = docMgr.read(docId);
-    assertEquals("Wrong number of results", 1, readResults.size());
-    DocumentRecord latestDoc = readResults.next();
-    assertEquals("Document uri wrong", docId, latestDoc.getUri());
+    try ( DocumentPage readResults = docMgr.read(docId) ) {
+      assertEquals("Wrong number of results", 1, readResults.size());
+      DocumentRecord latestDoc = readResults.next();
+      assertEquals("Document uri wrong", docId, latestDoc.getUri());
+    }
 
     // make sure a simple term query returns all versions of bulk and other docs
     StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
     StructuredQueryDefinition termsQuery =
       sqb.or( sqb.term(uniqueTerm), sqb.term(uniqueBulkTerm) );
     long start = 1;
-    DocumentPage termQueryResults = docMgr.search(termsQuery, start);
-    assertEquals("Wrong number of results", 12, termQueryResults.size());
+    try ( DocumentPage termQueryResults = docMgr.search(termsQuery, start) ) {
+      assertEquals("Wrong number of results", 12, termQueryResults.size());
+    }
 
     // temporal-collection is configured to automatically advance lsqt every 1 second
     // so we'll sleep for 2 seconds to make sure lsqt has advanced beyond the lsqt
@@ -241,15 +244,17 @@ public class BitemporalTest {
     // not greater than the timestamp of this lsqt query
     StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, thirdWriteTime, 1);
     StructuredQueryDefinition currentDocQuery = sqb.and(termsQuery, currentQuery);
-    DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start);
-    assertEquals("Wrong number of results", 11, currentDocQueryResults.size());
+    try ( DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start) ) {
+      assertEquals("Wrong number of results", 11, currentDocQueryResults.size());
+    }
 
     // query with blank lsqt indicating current time
     // will match all four versions
     currentQuery = sqb.temporalLsqtQuery(temporalCollection, "", 1);
     currentDocQuery = sqb.and(termsQuery, currentQuery);
-    currentDocQueryResults = docMgr.search(currentDocQuery, start);
-    assertEquals("Wrong number of results", 12, currentDocQueryResults.size());
+    try ( DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start) ) {
+      assertEquals("Wrong number of results", 12, currentDocQueryResults.size());
+    }
 
     StructuredQueryBuilder.Axis validAxis = sqb.axis("valid-axis");
 
@@ -261,8 +266,9 @@ public class BitemporalTest {
     // find all documents contained in the time range of our query axis
     StructuredQueryDefinition periodQuery1 = sqb.and(termsQuery,
       sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period1));
-    DocumentPage periodQuery1Results = docMgr.search(periodQuery1, start);
-    assertEquals("Wrong number of results", 3, periodQuery1Results.size());
+    try ( DocumentPage periodQuery1Results = docMgr.search(periodQuery1, start) ) {
+      assertEquals("Wrong number of results", 3, periodQuery1Results.size());
+    }
 
     // create a second time axis to query the versions against
     Calendar start2 = DatatypeConverter.parseDateTime("2014-08-19T00:00:04Z");
@@ -272,29 +278,32 @@ public class BitemporalTest {
     // find all documents contained in the time range of our second query axis
     StructuredQueryDefinition periodQuery2 = sqb.and(termsQuery,
       sqb.temporalPeriodRange(validAxis, TemporalOperator.ALN_CONTAINED_BY, period2));
-    DocumentPage periodQuery2Results = docMgr.search(periodQuery2, start);
-    assertEquals("Wrong number of results", 3, periodQuery2Results.size());
-    for ( DocumentRecord result : periodQuery2Results ) {
-      if ( docId.equals(result.getUri()) ) {
-        continue;
-      } else if ( result.getUri().startsWith("test_" + uniqueBulkTerm + "_4") ) {
-        continue;
+    try ( DocumentPage periodQuery2Results = docMgr.search(periodQuery2, start) ) {
+      assertEquals("Wrong number of results", 3, periodQuery2Results.size());
+      for ( DocumentRecord result : periodQuery2Results ) {
+        if ( docId.equals(result.getUri()) ) {
+          continue;
+        } else if ( result.getUri().startsWith("test_" + uniqueBulkTerm + "_4") ) {
+          continue;
+        }
+        fail("Unexpected uri for ALN_CONTAINED_BY test:" + result.getUri());
       }
-      fail("Unexpected uri for ALN_CONTAINED_BY test:" + result.getUri());
     }
 
     // find all documents where valid time is after system time in the document
     StructuredQueryBuilder.Axis systemAxis = sqb.axis("system-axis");
     StructuredQueryDefinition periodCompareQuery1 = sqb.and(termsQuery,
       sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_AFTER, validAxis));
-    DocumentPage periodCompareQuery1Results = docMgr.search(periodCompareQuery1, start);
-    assertEquals("Wrong number of results", 12, periodCompareQuery1Results.size());
+    try ( DocumentPage periodCompareQuery1Results = docMgr.search(periodCompareQuery1, start) ) {
+      assertEquals("Wrong number of results", 12, periodCompareQuery1Results.size());
+    }
 
     // find all documents where valid time is before system time in the document
     StructuredQueryDefinition periodCompareQuery2 = sqb.and(termsQuery,
       sqb.temporalPeriodCompare(systemAxis, TemporalOperator.ALN_BEFORE, validAxis));
-    DocumentPage periodCompareQuery2Results = docMgr.search(periodCompareQuery2, start);
-    assertEquals("Wrong number of results", 0, periodCompareQuery2Results.size());
+    try ( DocumentPage periodCompareQuery2Results = docMgr.search(periodCompareQuery2, start) ) {
+      assertEquals("Wrong number of results", 0, periodCompareQuery2Results.size());
+    }
 
     // check that we get a system time when we delete
     desc = docMgr.delete(docId, null, temporalCollection);
@@ -303,6 +312,7 @@ public class BitemporalTest {
     assertNotNull("Missing temporalSystemTime from delete", desc.getTemporalSystemTime());
 
   }
+
 
   static public void cleanUp() {
     DatabaseClient client = DatabaseClientFactory.newClient(Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
