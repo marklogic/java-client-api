@@ -78,6 +78,7 @@ public interface RESTServices {
   String HEADER_VND_MARKLOGIC_PAGELENGTH = "vnd.marklogic.pageLength";
   String HEADER_VND_MARKLOGIC_RESULT_ESTIMATE = "vnd.marklogic.result-estimate";
   String HEADER_X_MARKLOGIC_SYSTEM_TIME = "x-marklogic-system-time";
+  String HEADER_ML_LSQT = "ML-LSQT";
   String HEADER_X_PRIMITIVE = "X-Primitive";
 
   String DISPOSITION_TYPE_ATTACHMENT = "attachment";
@@ -385,6 +386,8 @@ public interface RESTServices {
     public Map<String,List<String>> getHeaders();
   }
 
+  public String advanceLsqt(RequestLogger reqlog, String temporalCollection, long lag);
+
   public void wipeDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
                            RequestParameters extraParams);
 
@@ -393,6 +396,11 @@ public interface RESTServices {
   public <R extends AbstractReadHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output, String operation)
+    throws ResourceNotFoundException, ResourceNotResendableException,
+    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+  public <R extends AbstractReadHandle> R postResource(
+    RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
+    AbstractWriteHandle input, R output, String operation, Map<String,List<String>> responseHeaders)
     throws ResourceNotFoundException, ResourceNotResendableException,
     ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
   void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction, Set<Metadata> categories, boolean isOnContent,

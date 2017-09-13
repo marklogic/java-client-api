@@ -148,6 +148,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -525,6 +526,25 @@ public class OkHttpServices implements RESTServices {
     if (archivePath != null)
       params.add("archivePath", archivePath);
     return params;
+  }
+
+  @Override
+  public String advanceLsqt(RequestLogger reqlog, String temporalCollection, long lag) {
+    if (logger.isDebugEnabled())
+      logger.debug("Advancing LSQT in temporal collection {}", temporalCollection);
+    logRequest(reqlog, "wiped %s document", temporalCollection);
+    RequestParameters params = new RequestParameters();
+    params.add("result", "advance-lsqt");
+    if ( lag > 0 ) params.add("lag", String.valueOf(lag));
+    Map<String,List<String>> headers = new HashMap<>();
+    postResource(reqlog, "temporal/collections/" + temporalCollection,
+      null, params, null, null, "advanceLsqt", headers);
+    List<String> values = headers.get(HEADER_ML_LSQT.toLowerCase());
+    if ( values != null && values.size() > 0 ) {
+      return values.get(0);
+    } else {
+      throw new FailedRequestException("Response missing header \"" + HEADER_ML_LSQT + "\"");
+    }
   }
 
   @Override
@@ -3195,6 +3215,16 @@ public class OkHttpServices implements RESTServices {
                                                        AbstractWriteHandle input, R output, String operation)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
+    return postResource(reqlog, path, transaction, params, input, output, operation, null);
+  }
+
+  @Override
+  public <R extends AbstractReadHandle> R postResource(RequestLogger reqlog,
+                                                       String path, Transaction transaction, RequestParameters params,
+                                                       AbstractWriteHandle input, R output, String operation,
+                                                       Map<String,List<String>> responseHeaders)
+    throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
+  {
     if ( params == null ) params = new RequestParameters();
     if ( transaction != null ) params.add("txid", transaction.getTransactionId());
 
@@ -3242,6 +3272,11 @@ public class OkHttpServices implements RESTServices {
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
 
+    if ( responseHeaders != null ) {
+      // add all the headers from the OkHttp Headers object to the caller-provided map
+      responseHeaders.putAll( response.headers().toMultimap() );
+    }
+
     if (as != null) {
       outputBase.receiveContent(makeResult(reqlog, operation, "resource",
         response, as));
@@ -3264,7 +3299,7 @@ public class OkHttpServices implements RESTServices {
   @Override
   public <R extends AbstractReadHandle, W extends AbstractWriteHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
-    W[] input, Map<String, List<String>>[] headers, R output)
+    W[] input, Map<String, List<String>>[] requestHeaders, R output)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
   {
     if ( params == null ) params = new RequestParameters();
@@ -3289,7 +3324,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       MultipartBody.Builder multiPart = new MultipartBody.Builder();
-      boolean hasStreamingPart = addParts(multiPart, reqlog, null, input, headers);
+      boolean hasStreamingPart = addParts(multiPart, reqlog, null, input, requestHeaders);
 
       Request.Builder requestBldr = makePostWebResource(path, params);
       requestBldr = setupRequest(requestBldr, multiPart, outputMimetype);

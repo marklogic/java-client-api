@@ -58,6 +58,7 @@ public class Common {
 
   public static DatabaseClient client;
   public static DatabaseClient adminClient;
+  public static DatabaseClient serverAdminClient;
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
 
@@ -70,6 +71,11 @@ public class Common {
     if (adminClient != null) return adminClient;
     adminClient = newAdminClient();
     return adminClient;
+  }
+  public static DatabaseClient connectServerAdmin() {
+    if (serverAdminClient != null) return serverAdminClient;
+    serverAdminClient = newServerAdminClient();
+    return serverAdminClient;
   }
   public static DatabaseClient connectEval() {
     if (evalClient != null) return evalClient;
@@ -91,6 +97,10 @@ public class Common {
   public static DatabaseClient newAdminClient() {
     return DatabaseClientFactory.newClient(
       Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS));
+  }
+  public static DatabaseClient newServerAdminClient() {
+    return DatabaseClientFactory.newClient(
+      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
   }
   public static DatabaseClient newEvalClient() {
     return newEvalClient(null);

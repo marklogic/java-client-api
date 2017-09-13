@@ -21,6 +21,7 @@ import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.util.Calendar;
+import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -41,6 +42,7 @@ import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
@@ -61,8 +63,8 @@ public class BitemporalTest {
   static String temporalCollection = "temporal-collection";
   static XMLDocumentManager docMgr;
   static QueryManager queryMgr;
-  static String uniqueBulkTerm = "temporalBulkDoc";
-  static String uniqueTerm = "temporalDoc";
+  static String uniqueBulkTerm = "temporalBulkDoc" + new Random().nextInt(10000);
+  static String uniqueTerm = "temporalDoc" + new Random().nextInt(10000);
   static String docId = "test-" + uniqueTerm + ".xml";
 
   @BeforeClass
@@ -208,12 +210,7 @@ public class BitemporalTest {
     assertNotNull("Missing TemporalDescriptor from write", desc);
     assertEquals(docId, desc.getUri());
     String thirdWriteTimestamp = desc.getTemporalSystemTime();
-    Calendar thirdWriteTime = DatatypeConverter.parseDateTime(thirdWriteTimestamp);
-    assertNotNull(thirdWriteTime);
-    // add one millisecond since server precision is more precise, so Java truncates
-    // fractions of a second here.  Adding one millisecond ensures we're above the
-    // system time for the last write for the document
-    thirdWriteTime.roll(Calendar.MILLISECOND, true);
+    assertNotNull(thirdWriteTimestamp);
 
     StringHandle handle4 = new StringHandle(version4).withFormat(Format.XML);
     docMgr.write(docId, null, handle4, null, null, temporalCollection);
@@ -234,16 +231,24 @@ public class BitemporalTest {
       assertEquals("Wrong number of results", 12, termQueryResults.size());
     }
 
-    // temporal-collection is configured to automatically advance lsqt every 1 second
-    // so we'll sleep for 2 seconds to make sure lsqt has advanced beyond the lsqt
-    // when we inserted our documents
-    Thread.sleep(2000);
+    StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, thirdWriteTimestamp, 1);
+    StructuredQueryDefinition currentDocQuery = sqb.and(termsQuery, currentQuery);
+    try {
+      // query with lsqt of last inserted document
+      // will throw an error because lsqt has not yet advanced
+      try ( DocumentPage results = docMgr.search(currentDocQuery, start) ) {
+        fail("Negative test should have generated a FailedRequestException of type TEMPORAL-GTLSQT");
+      }
+    } catch (FailedRequestException e) {
+      assertTrue(e.getMessage().contains("TEMPORAL-GTLSQT"));
+    }
 
-    // query with lsqt of last inserted document
+    // now update lsqt
+    Common.connectServerAdmin().newXMLDocumentManager().advanceLsqt(temporalCollection);
+
+    // query again with lsqt of last inserted document
     // will match the first three versions -- not the last because it's equal to
     // not greater than the timestamp of this lsqt query
-    StructuredQueryDefinition currentQuery = sqb.temporalLsqtQuery(temporalCollection, thirdWriteTime, 1);
-    StructuredQueryDefinition currentDocQuery = sqb.and(termsQuery, currentQuery);
     try ( DocumentPage currentDocQueryResults = docMgr.search(currentDocQuery, start) ) {
       assertEquals("Wrong number of results", 11, currentDocQueryResults.size());
     }

@@ -1012,6 +1012,16 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
   }
 
   @Override
+  public String advanceLsqt(String temporalCollection) {
+    return services.advanceLsqt(requestLogger, temporalCollection, -1);
+  }
+
+  @Override
+  public String advanceLsqt(String temporalCollection, long lag) {
+    return services.advanceLsqt(requestLogger, temporalCollection, lag);
+  }
+
+  @Override
   public void wipe(String temporalDocumentURI, String temporalCollection) {
     wipe(temporalDocumentURI, null, temporalCollection);
   }
