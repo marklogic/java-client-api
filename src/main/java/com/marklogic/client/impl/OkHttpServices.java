@@ -857,7 +857,8 @@ public class OkHttpServices implements RESTServices {
     {
     boolean hasMetadata = categories != null && categories.size() > 0;
     OkHttpResultIterator iterator =
-      getBulkDocumentsImpl(reqlog, serverTimestamp, transaction, categories, format, extraParams, withContent, uris);
+      getBulkDocumentsImpl(reqlog, serverTimestamp, transaction, categories, format, extraParams,
+        withContent, uris);
     return new OkHttpDocumentPage(iterator, withContent, hasMetadata);
   }
 
@@ -867,14 +868,15 @@ public class OkHttpServices implements RESTServices {
                                        long start, long pageLength,
                                        Transaction transaction,
                                        SearchReadHandle searchHandle, QueryView view,
-                                       Set<Metadata> categories, Format format, RequestParameters extraParams)
+                                       Set<Metadata> categories, Format format, ServerTransform responseTransform,
+                                       RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     boolean hasMetadata = categories != null && categories.size() > 0;
     boolean hasContent = true;
     OkHttpResultIterator iterator =
       getBulkDocumentsImpl(reqlog, serverTimestamp, querydef, start, pageLength, transaction,
-        searchHandle, view, categories, format, extraParams);
+        searchHandle, view, categories, format, responseTransform, extraParams);
     return new OkHttpDocumentPage(iterator, hasContent, hasMetadata);
   }
 
@@ -953,7 +955,8 @@ public class OkHttpServices implements RESTServices {
 
   private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
                                                     Transaction transaction, Set<Metadata> categories,
-                                                    Format format, RequestParameters extraParams, boolean withContent, String... uris)
+                                                    Format format, RequestParameters extraParams, boolean withContent,
+                                                    String... uris)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
 
@@ -968,6 +971,7 @@ public class OkHttpServices implements RESTServices {
         params.add("uri", uri);
       }
     }
+
     OkHttpResultIterator iterator = getIteratedResourceImpl(DefaultOkHttpResultIterator.class,
       reqlog, path, transaction, params, MIMETYPE_MULTIPART_MIXED);
     if ( iterator != null ) {
@@ -983,7 +987,8 @@ public class OkHttpServices implements RESTServices {
   private OkHttpResultIterator getBulkDocumentsImpl(RequestLogger reqlog, long serverTimestamp,
                                                     QueryDefinition querydef, long start, long pageLength,
                                                     Transaction transaction, SearchReadHandle searchHandle, QueryView view,
-                                                    Set<Metadata> categories, Format format, RequestParameters extraParams)
+                                                    Set<Metadata> categories, Format format, ServerTransform responseTransform,
+                                                    RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     try {
@@ -1007,7 +1012,7 @@ public class OkHttpServices implements RESTServices {
       }
 
       OkHttpSearchRequest request =
-        generateSearchRequest(reqlog, querydef, MIMETYPE_MULTIPART_MIXED, transaction, params, null);
+        generateSearchRequest(reqlog, querydef, MIMETYPE_MULTIPART_MIXED, transaction, responseTransform, params, null);
       Response response = request.getResponse();
       if ( response == null ) return null;
       MimeMultipart entity = null;
@@ -2041,7 +2046,7 @@ public class OkHttpServices implements RESTServices {
 
     String mimetype = searchFormat.getDefaultMimetype();
 
-    OkHttpSearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, params, forestName);
+    OkHttpSearchRequest request = generateSearchRequest(reqlog, queryDef, mimetype, transaction, null, params, forestName);
 
     Response response = request.getResponse();
     if ( response == null ) return null;
@@ -2065,10 +2070,12 @@ public class OkHttpServices implements RESTServices {
   }
 
   private OkHttpSearchRequest generateSearchRequest(RequestLogger reqlog, QueryDefinition queryDef,
-                                                    String mimetype, Transaction transaction, RequestParameters params, String forestName) {
+                                                    String mimetype, Transaction transaction, ServerTransform responseTransform,
+                                                    RequestParameters params, String forestName)
+  {
     if ( params == null ) params = new RequestParameters();
     if ( forestName != null ) params.add("forest-name", forestName);
-    return new OkHttpSearchRequest(reqlog, queryDef, mimetype, transaction, params);
+    return new OkHttpSearchRequest(reqlog, queryDef, mimetype, transaction, responseTransform, params);
   }
 
   private class OkHttpSearchRequest {
@@ -2076,6 +2083,7 @@ public class OkHttpServices implements RESTServices {
     QueryDefinition queryDef;
     String mimetype;
     RequestParameters params;
+    ServerTransform responseTransform;
     Transaction transaction;
 
     Request.Builder requestBldr = null;
@@ -2083,11 +2091,12 @@ public class OkHttpServices implements RESTServices {
     HandleImplementation baseHandle = null;
 
     OkHttpSearchRequest(RequestLogger reqlog, QueryDefinition queryDef, String mimetype,
-                        Transaction transaction, RequestParameters params) {
+                        Transaction transaction, ServerTransform responseTransform, RequestParameters params) {
       this.reqlog = reqlog;
       this.queryDef = queryDef;
       this.mimetype = mimetype;
       this.transaction = transaction;
+      this.responseTransform = responseTransform;
       this.params = params != null ? params : new RequestParameters();
       addParams();
       init();
@@ -2108,7 +2117,16 @@ public class OkHttpServices implements RESTServices {
 
       ServerTransform transform = queryDef.getResponseTransform();
       if (transform != null) {
+        if (responseTransform != null) {
+          if ( ! transform.getName().equals(responseTransform.getName()) ) {
+            throw new IllegalStateException("QueryDefinition transform and DocumentManager transform have different names (" +
+              transform.getName() + ", " + responseTransform.getName() + ")");
+          }
+          logger.warn("QueryDefinition and DocumentManager both specify a ServerTransform--using params from QueryDefinition");
+        }
         transform.merge(params);
+      } else if (responseTransform != null) {
+        responseTransform.merge(params);
       }
 
       if (transaction != null) {

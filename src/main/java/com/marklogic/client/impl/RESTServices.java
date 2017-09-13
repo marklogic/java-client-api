@@ -136,7 +136,7 @@ public interface RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
   public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
-                                       QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
+                                       QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform, RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
   public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
