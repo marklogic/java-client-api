@@ -148,7 +148,7 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
+import java.util.TreeMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -536,10 +536,10 @@ public class OkHttpServices implements RESTServices {
     RequestParameters params = new RequestParameters();
     params.add("result", "advance-lsqt");
     if ( lag > 0 ) params.add("lag", String.valueOf(lag));
-    Map<String,List<String>> headers = new HashMap<>();
+    Map<String,List<String>> headers = new TreeMap<>(String.CASE_INSENSITIVE_ORDER);
     postResource(reqlog, "temporal/collections/" + temporalCollection,
       null, params, null, null, "advanceLsqt", headers);
-    List<String> values = headers.get(HEADER_ML_LSQT.toLowerCase());
+    List<String> values = headers.get(HEADER_ML_LSQT);
     if ( values != null && values.size() > 0 ) {
       return values.get(0);
     } else {
