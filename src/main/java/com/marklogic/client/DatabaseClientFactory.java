@@ -235,6 +235,31 @@ public class DatabaseClientFactory {
     void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
     @Deprecated
     SecurityContext withSSLContext(SSLContext context);
+
+    /**
+     * The SSLContext should be initialized with KeyManager and TrustManager
+     * using a KeyStore. <br>
+     * <br>
+     *
+     * If we init the sslContext with null TrustManager, it would use the
+     * <java-home>/lib/security/cacerts file for trusted root certificates, if
+     * javax.net.ssl.trustStore system property is not set and
+     * <java-home>/lib/security/jssecacerts is not present. See <a href =
+     * "http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html">JSSE
+     * Reference Guide</a> for more information on SSL and TrustManagers.<br>
+     * <br>
+     *
+     * If self signed certificates, signed by CAs created internally are used,
+     * then the internal CA's root certificate should be added to the keystore.
+     * See this <a href =
+     * "https://docs.oracle.com/cd/E19226-01/821-0027/geygn/index.html">link</a>
+     * for adding a root certificate in the keystore.
+     *
+     * @param context - the SSLContext object required for the SSL connection
+     * @param trustManager - X509TrustManager with which we initialize the
+     *          SSLContext
+     * @return a context containing authentication information
+     */
     SecurityContext withSSLContext(SSLContext context, X509TrustManager trustManager);
     SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier);
   }
@@ -739,7 +764,7 @@ public class DatabaseClientFactory {
     }
 
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, type, sslContext, sslVerifier);
+    services.connect(host, port, database, user, password, type, sslContext, trustManager, sslVerifier);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
