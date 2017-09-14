@@ -101,6 +101,7 @@ import okhttp3.ResponseBody;
 import okhttp3.logging.HttpLoggingInterceptor;
 import okio.BufferedSink;
 import okio.Okio;
+import okio.Source;
 import com.burgstaller.okhttp.AuthenticationCacheInterceptor;
 import com.burgstaller.okhttp.CachingAuthenticatorDecorator;
 import com.burgstaller.okhttp.basic.BasicAuthenticator;
@@ -5117,7 +5118,12 @@ public class OkHttpServices implements RESTServices {
       if ( obj instanceof InputStream ) {
         sink.writeAll(Okio.source((InputStream) obj));
       } else if ( obj instanceof File ) {
-        sink.writeAll(Okio.source((File) obj));
+        Source source = Okio.source((File) obj);
+        try {
+          sink.writeAll(source);
+        } finally {
+          source.close();
+        }
       } else if ( obj instanceof byte[] ) {
         sink.write((byte[]) obj);
       } else if ( obj instanceof String) {
