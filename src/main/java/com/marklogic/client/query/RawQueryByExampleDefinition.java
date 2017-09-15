@@ -20,13 +20,12 @@ import com.marklogic.client.io.marker.StructureWriteHandle;
 /**
  * A RawQueryByExampleDefinition provides access to a simple
  * query by example in an JSON or XML representation. For instance:
- * <pre>{@code
- *QueryManager queryMgr = databaseClient.newQueryManager();
- *String rawXMLQuery = "{ \"$query\": { \"author\": \"Mark Twain\" } }";
- *StringHandle qbeHandle = new StringHandle(rawXMLQuery).withFormat(Format.JSON);
- *RawQueryByExampleDefinition query = queryMgr.newRawQueryByExampleDefinition(qbeHandle, "myoptions");
- *SearchHandle resultsHandle = queryMgr.search(query, new SearchHandle());
- *}</pre>
+ *
+ *     QueryManager queryMgr = databaseClient.newQueryManager();
+ *     String rawJSONQuery = "{ \"$query\": { \"author\": \"Mark Twain\" } }";
+ *     StringHandle qbeHandle = new StringHandle(rawJSONQuery).withFormat(Format.JSON);
+ *     RawQueryByExampleDefinition query = queryMgr.newRawQueryByExampleDefinition(qbeHandle, "myoptions");
+ *     SearchHandle resultsHandle = queryMgr.search(query, new SearchHandle());
  *
  * @see QueryManager#newRawCombinedQueryDefinitionAs(Format, Object)
  * @see QueryManager#newRawCombinedQueryDefinitionAs(Format, Object, String)
