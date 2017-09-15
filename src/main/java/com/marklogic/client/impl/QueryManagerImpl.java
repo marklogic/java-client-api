@@ -161,7 +161,7 @@ public class QueryManagerImpl
   @Override
   @SuppressWarnings("unchecked")
   public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-    return search(querydef, searchHandle, 1, transaction, null);
+    return search(querydef, searchHandle, start, transaction, null);
   }
   @Override
   @SuppressWarnings("unchecked")

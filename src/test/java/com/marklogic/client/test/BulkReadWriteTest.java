@@ -692,6 +692,10 @@ public class BulkReadWriteTest {
       assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
       assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
 
+      long start = 2;
+      SearchHandle page2 = queryMgr.search(directoryQuery, new SearchHandle(), start, t1);
+      assertEquals("Count of documents inside the transaction on page 2", 1, page2.getMatchResults().length);
+
     }catch(Exception e){
       System.out.println(e.getMessage());
       tstatus=true;
