@@ -2454,6 +2454,7 @@ public class OkHttpServices implements RESTServices {
       } else if (queryDef instanceof RawCtsQueryDefinition) {
         CtsQueryWriteHandle handle = ((RawCtsQueryDefinition) queryDef).getHandle();
         baseHandle = HandleAccessor.checkHandle(handle, "values");
+      } else if (queryDef instanceof StringQueryDefinition) {
       } else {
         logger.warn("unsupported query definition: {}", queryDef.getClass().getName());
       }
