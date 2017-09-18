@@ -66,8 +66,8 @@ To use the API in your maven project, include the following in your pom.xml:
 And add this repository to your pom.xml repositories section:
 
     <repository>
-      <id>jcenter</id>
-      <url>http://jcenter.bintray.com</url>
+        <id>jcenter</id>
+        <url>http://jcenter.bintray.com</url>
     </repository>
 
 For gradle projects, include the following:
