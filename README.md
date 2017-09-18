@@ -29,7 +29,7 @@ The Java API supports the following core features of the MarkLogic database:
 *  Execute ACID modifications so the change either succeeds or throws an exception.
 *  Execute multi-statement transactions so changes to multiple documents succeed or fail together.
 
-### What's New in Java Client API 4.0.1
+### What's New in Java Client API 4
 
 * Optic API - blends relational with NoSQL by providing joins and aggregates over documents
   * is powered by the new row index and query optimizer
@@ -59,15 +59,26 @@ To use the API in your maven project, include the following in your pom.xml:
 
     <dependency>
         <groupId>com.marklogic</groupId>
-        <artifactId>java-client-api</artifactId>
-        <version>3.0.5</version>
+        <artifactId>marklogic-client-api</artifactId>
+        <version>4.0.2</version>
     </dependency>
+
+And add this repository to your pom.xml repositories section:
+
+    <repository>
+      <id>jcenter</id>
+      <url>http://jcenter.bintray.com</url>
+    </repository>
 
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'java-client-api', version: '3.0.5'
+        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '4.0.2'
     }
+
+Use gradle 1.7+ and add this to your build.gradle repositories section:
+
+    jcenter()
 
 Read [The Java API in Five Minutes](http://developer.marklogic.com/try/java/index)
 
@@ -91,14 +102,14 @@ https://developer.marklogic.com/free-developer
 
 To obtain verified downloads signed with MarkLogic's PGP key, use maven tools or directly download
 the .jar and .asc files from
-[maven central](http://repo1.maven.org/maven2/com/marklogic/java-client-api/3.0.5/).  MarkLogic's
+[maven central](http://repo1.maven.org/maven2/com/marklogic/marklogic-client-api/4.0.2/).  MarkLogic's
 pgp key ID is 48D4B86E and it is available from pgp.mit.edu by installing gnupg and running the command:
 
     $ gpg --keyserver pgp.mit.edu --recv-key 48D4B86E
 
 Files can be verified with the command:
 
-    $ gpg java-client-api-3.0.5.jar.asc
+    $ gpg marklogic-client-api-4.0.2.jar.asc
 
 
 ### Building and Contributing
