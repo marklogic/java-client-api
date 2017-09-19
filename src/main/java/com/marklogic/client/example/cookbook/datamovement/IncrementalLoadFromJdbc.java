@@ -43,7 +43,92 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Demonstrates a way to load a massive volume of data updates from JDBC into
+ * MarkLogic, assuming the source cannot identify changes and deletes. In this
+ * example source data (accessed via JDBC) continues to grow and evolve, so
+ * updates from the source must be regularly incporated into the target system
+ * (MarkLogic Server).  These updates include new documents, updated documents,
+ * and deleted documents.  The source data is too large to ingest completely
+ * every time.  So this example addresses the more difficult scenario where
+ * incremental loads are required to include only the updates.  Additionally,
+ * this example addresses the more difficult scenario where the source system
+ * can provide a list of all current document uris, but cannot provide any
+ * information about modified or deleted documents.
+ *
+ * # Solution
+ *
+ * ## Step 1
+ *
+ * The process begins reading documents directly from JDBC, adding each to
+ * uriQueue and sourceEmployees.  One batch at a time the uris from uriQueue
+ * are used to retrieve hashcodes from the target.  For each source document
+ * the hashcode is generated in memory and compared to the hashcode from the
+ * target (if available).  Documents with no hashcode in the target are
+ * considered new and written to the target.  Documents with a hashcode
+ * different from the target are considered updated and written to the target.
+ * In all cases a sidecar document including the current source hashcode is
+ * written to the target.  This is all done in batches to reduce overhead on
+ * the application, source, and target systems.  In addition, DMSDK processes
+ * batches in multiple threads and against multiple MarkLogic hosts to fully
+ * utilize the MarkLogic cluster.
+ *
+ * ## Step 2
+ *
+ * Any document written to MarkLogic Server also has written a "sidecar"
+ * document containing metadata including the document uri, a hashcode and a
+ * jobName.  The sidecar document has a collection representing the data
+ * source.  The hascode is generated based on the source document contents.
+ * The hascode algorithm is consistent when the source document hasn't changed
+ * and different any time the source document has changed.  The jobName is any
+ * id or timestamp representing the last job which validated the document, and
+ * should differ from previous job runs.  This sidecar document is updated with
+ * each job run to reflect the latest jobName.
+ *
+ * ## Step 3
+ *
+ * As the last step of a job run, a query returns all sidecar files with the
+ * collection for this datasource but a jobName different than the current
+ * jobName which indicates these documents are in MarkLogic but were missing
+ * from this job run and are therefore not in the datasource.  After confirming
+ * that these documents are legitimately not in the datasource, they are
+ * deleted from MarkLogic Server.  This is how we stay up-to-date with deletes
+ * when the source system offers no way to track deleted documents.
+ *
+ * # Solution Alternative
+ *
+ * If your scenario allows you to load all the documents each time, do that
+ * because it's simpler.  Simply delete in the target all data from that one
+ * source then reload the latest data from that source.  This addresses new
+ * documents, updated documents, and deleted documents.
+ *
+ * # Solution Adjustment 1
+ *
+ * The sidecar document can be written to a different MarkLogic database,
+ * cluster, or non-MarkLogic system (including the file system).  This will
+ * reduce the read load on the database with the actual document contents.
+ * This also opens more options to write sidecar to a database with a different
+ * configuration including forests on less expensive storage.
+ *
+ * # Solution Adjustment 2
+ *
+ * For systems that offer a way to track deleted documents, use that instead of
+ * step 3.  Get the list of uris of source documents deleted since the last job
+ * run.  Delete those documents (and associated sidecar files) from MarkLogic
+ * Server.
+ *
+ * # Solution Adjustment 3
+ *
+ * The source documents can be read from a staging area containing at least the
+ * uri and the up-to-date hashcode for each document.  This will reduce the
+ * read load on the source system to only documents found to be missing from
+ * MarkLogic or updated from what is in MarkLogic.
+ *
+ */
 public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
+  // threadCount and batchSize are only small because this recipe ships with a
+  // very small dataset to reduce download size.  In a large production app
+  // these numbers would be much higher
   private static int threadCount = 3;
   private static int batchSize = 3;
 
@@ -52,21 +137,34 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
   public static final DataMovementManager moveMgr =
     DatabaseClientSingleton.get().newDataMovementManager();
   public static final SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+
+  // uriQueue is where we queue up uris from the source which we still need to
+  // compare against the target.  This is the basis for the uris Iterator below.
   private static final LinkedBlockingQueue<String> uriQueue = new LinkedBlockingQueue<>(batchSize * 3);
+
+  // sourceEmployees is where we cache Employees that have been retrieved from
+  // the source but not yet compared against what's in the target.  As soon as
+  // they are compared and written to MarkLogic if needed, they are deleted
+  // from sourceEmployees to reduce memory usage if this is run against a very
+  // large dataset
   private static final ConcurrentHashMap<String,Employee> sourceEmployees = new ConcurrentHashMap<>();
 
   public static void main(String[] args) throws IOException, SQLException {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     new IncrementalLoadFromJdbc().run();
   }
 
+  // processEmployee is called by BulkLoadFromJdbcWithSimpleJoins.addRow method
+  // for each Employee record retrieved from the source
   public void processEmployee(WriteBatcher wb, Employee employee) {
     String uri = "/employees/" + employee.getEmployeeId() + ".json";
     try {
+      // queue this uri to see if it's in the server and unchanged
       uriQueue.put(uri);
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     };
+    // queue this employee to generate a local hashcode to compare against the
+    // server and write this employee to the target if needed
     sourceEmployees.put(uri, employee);
   }
 
@@ -84,7 +182,8 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
       .onBatchFailure((batch,exception) -> exception.printStackTrace());
     JobTicket docWbTicket = moveMgr.startJob(docWb);
 
-    // the iterator to step through employees uris provided by the source
+    // the iterator to step through employees uris provided by the source and
+    // queued in uriQueue
     Iterator<String> uris = new Iterator<String>() {
       String nextUri;
       boolean finished = false;
@@ -113,45 +212,57 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
         return next;
       }
     };
+
+    // changedEmployees and unchangedEmployees are just used for debugging
     AtomicInteger changedEmployees = new AtomicInteger(0);
     AtomicInteger unchangedEmployees = new AtomicInteger(0);
-    // the batcher to step through employee uris
+
+    // the batcher to step through source employee uris (queued in uriQueue)
     QueryBatcher qb = moveMgr.newQueryBatcher(uris)
       .withJobName(String.valueOf(System.currentTimeMillis()))
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onUrisReady(batch -> {
         logger.debug("processing batch=" + batch.getJobBatchNumber() + ", so far=" + batch.getJobResultsSoFar());
-        // for each batch of employee uris from the source
-        // download the most recent load details for the batch
+        // for each batch of employee uris from the source download the most
+        // recent sidecar (LoadDetail) documents for the batch
         DocumentPage records = client.newDocumentManager().read(LoadDetail.makeUris(batch.getItems()));
+        // "details" allows us to find sidecar (LoadDetail) documents by uri
         HashMap<String,LoadDetail> details = new HashMap<>();
         for ( DocumentRecord record : records ) {
           details.put(record.getUri(), record.getContentAs(LoadDetail.class));
         }
+        // loop through the source uris (not the target since it doesn't yet
+        // contain new documents from the source)
         for ( String uri : batch.getItems() ) {
           String ldUri = LoadDetail.makeUri(uri);
           LoadDetail detail = details.get(ldUri);
           Employee employee = sourceEmployees.get(uri);
           sourceEmployees.remove(uri);
           if ( detail != null && detail.getHashCode() == employee.hashCode() ) {
-            // this employee hasn't changed, so just update the details record
-            // with the current job name
             logger.trace("employee hasn't changed; uri=[" + uri + "]");
             unchangedEmployees.incrementAndGet();
+            // this employee hasn't changed, so just update the sidecar document
+            // with the current job name
             detail.setJobName(batch.getBatcher().getJobName());
             docWb.addAs(ldUri, detail);
           } else {
-            // this employee has changed, so let's overwrite them
+            // this employee is new or has changed, so let's write it
             changedEmployees.incrementAndGet();
             logger.trace("employee changed; uri=[" + uri + "]");
             docWb.addAs(uri, employee);
+            // plus write an updated sidecar document
             docWb.addAs(ldUri, new LoadDetail(batch.getBatcher().getJobName(), employee.hashCode()));
           }
         }
       })
       .onQueryFailure(exception -> exception.printStackTrace());
     JobTicket qbTicket = moveMgr.startJob(qb);
+
+    // query the source for a joined dataset representing Employees, their
+    // salaries, and their titles.  Each employee will have one row per
+    // salary/title combination.  BulkLoadFromJdbcWithSimpleJoins.addRow does
+    // the magic of combining multiple rows down into one Employee as needed.
     jdbcTemplate.query(
       // perform the simplest possible join between three tables
       "SELECT e.*, s.salary, t.title, s.from_date s_from_date, s.to_date s_to_date, t.from_date t_from_date, t.to_date t_to_date " +
@@ -166,20 +277,29 @@ public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
     // we're done loading
     logger.debug("Loading finished");
     try {
+        // send our magic uri through the queue so the Iterator knows it's now done
+        // and can return false from hasNext()
         uriQueue.put("\u0000");
     } catch (InterruptedException e) {
       throw new RuntimeException(e);
     };
     qb.awaitCompletion();
     moveMgr.stopJob(qb);
+
+    // some debugging output about the QueryBatcher job that processed the
+    // source uris
     JobReport report = moveMgr.getJobReport(qbTicket);
     logger.debug("Compared " + report.getSuccessEventsCount() + " employees in " + report.getSuccessBatchesCount() + " batches");
     if ( report.getFailureBatchesCount() > 0 ) {
       throw new IllegalStateException("Encountered " +
         report.getFailureBatchesCount() + " failed query batches");
     }
+
+    // wait for any writes to finish
     docWb.flushAndWait();
     moveMgr.stopJob(docWb);
+
+    // more debugging output about the WriteBatcher job that wrote to the target
     logger.debug("Wrote " + report.getSuccessEventsCount() + " docs in " + report.getSuccessBatchesCount() + " batches");
     logger.debug(changedEmployees.get() + " employees were changed");
     logger.debug(unchangedEmployees.get() + " employees were unchanged");
