@@ -96,6 +96,15 @@ public class ExportListener implements QueryBatchListener {
     }
   }
 
+  @Override
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if ( retryListener != null )  onFailure(retryListener);
+    }
+  }
+
   /**
    * This is the method QueryBatcher calls for ExportListener to do its
    * thing.  You should not need to call it.
@@ -104,11 +113,7 @@ public class ExportListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
-    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
-      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
-          .initializeRetryListener(this);
-      if( retryListener != null )  onFailure(retryListener);
-    }
+    initializeListener(batch.getBatcher());
     try ( DocumentPage docs = getDocs(batch) ) {
       while ( docs.hasNext() ) {
         for ( Consumer<DocumentRecord> listener : exportListeners ) {

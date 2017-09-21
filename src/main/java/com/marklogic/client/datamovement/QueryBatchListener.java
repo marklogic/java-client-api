@@ -46,4 +46,10 @@ public interface QueryBatchListener extends BatchListener<QueryBatch> {
    * @param batch the batch of uris and some metadata about the current status of the job
    */
   void processEvent(QueryBatch batch);
+
+  /**
+   * This default method should be implemented by custom listeners that should
+   * be retried in case of failover.
+   */
+  default void initializeListener(QueryBatcher queryBatcher) {}
 }

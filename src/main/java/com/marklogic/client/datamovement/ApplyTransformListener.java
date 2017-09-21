@@ -90,15 +90,20 @@ public class ApplyTransformListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  @Override
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if( retryListener != null )  onFailure(retryListener);
+    }
+  }
+
   /**
    * The standard BatchListener action called by QueryBatcher.
    */
   public void processEvent(QueryBatch batch) {
-    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
-      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
-          .initializeRetryListener(this);
-      if( retryListener != null )  onFailure(retryListener);
-    }
+    initializeListener(batch.getBatcher());
     if ( ! (batch.getClient() instanceof DatabaseClientImpl) ) {
       throw new IllegalStateException("DatabaseClient must be instanceof DatabaseClientImpl");
     }

@@ -69,13 +69,18 @@ public class UrisToWriterListener implements QueryBatchListener {
   }
 
   @Override
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if ( retryListener != null )  onFailure(retryListener);
+    }
+  }
+
+  @Override
   public void processEvent(QueryBatch batch) {
     try {
-      if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
-        BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
-            .initializeRetryListener(this);
-        if( retryListener != null )  onFailure(retryListener);
-      }
+      initializeListener(batch.getBatcher());
       synchronized(writer) {
         for ( String uri : batch.getItems() ) {
           try {

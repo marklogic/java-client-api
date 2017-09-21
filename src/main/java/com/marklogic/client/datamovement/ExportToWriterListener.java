@@ -63,12 +63,17 @@ public class ExportToWriterListener extends ExportListener {
   }
 
   @Override
-  public void processEvent(QueryBatch batch) {
-    if ( HostAvailabilityListener.getInstance(batch.getBatcher()) != null ) {
-      BatchFailureListener<QueryBatch> retryListener = HostAvailabilityListener.getInstance(batch.getBatcher())
-          .initializeRetryListener(this);
-      if( retryListener != null )  onFailure(retryListener);
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if ( retryListener != null )  onFailure(retryListener);
     }
+  }
+
+  @Override
+  public void processEvent(QueryBatch batch) {
+    initializeListener(batch.getBatcher());
     try ( DocumentPage docs = getDocs(batch) ) {
       synchronized(writer) {
         for ( DocumentRecord doc : docs ) {
