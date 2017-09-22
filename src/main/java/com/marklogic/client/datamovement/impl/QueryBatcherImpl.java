@@ -309,6 +309,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     jobTicket = ticket;
     initialize();
     started.set(true);
+    for (QueryBatchListener urisReadyListener : urisReadyListeners) {
+      urisReadyListener.initializeListener(this);
+    }
     if ( query != null ) {
       startQuerying();
     } else {

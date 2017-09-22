@@ -82,7 +82,6 @@ public class DeleteListener implements QueryBatchListener {
    */
   @Override
   public void processEvent(QueryBatch batch) {
-    initializeListener(batch.getBatcher());
     try {
       batch.getClient().newDocumentManager().delete( batch.getItems() );
     } catch (Throwable t) {

@@ -80,7 +80,6 @@ public class UrisToWriterListener implements QueryBatchListener {
   @Override
   public void processEvent(QueryBatch batch) {
     try {
-      initializeListener(batch.getBatcher());
       synchronized(writer) {
         for ( String uri : batch.getItems() ) {
           try {

@@ -103,7 +103,6 @@ public class ApplyTransformListener implements QueryBatchListener {
    * The standard BatchListener action called by QueryBatcher.
    */
   public void processEvent(QueryBatch batch) {
-    initializeListener(batch.getBatcher());
     if ( ! (batch.getClient() instanceof DatabaseClientImpl) ) {
       throw new IllegalStateException("DatabaseClient must be instanceof DatabaseClientImpl");
     }
