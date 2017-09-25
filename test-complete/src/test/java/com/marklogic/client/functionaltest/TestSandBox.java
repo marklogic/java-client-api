@@ -816,7 +816,7 @@ public class TestSandBox extends BasicJavaClientREST {
     Transaction trxDelIn = null;
     try {
       String ntriple6 = "<http://example.org/s6> <http://example.com/mergeQuadP> <http://example.org/o2> <http://test.sem.quads/json-quads>.";
-      File file = new File(datasource + "bug25348.json");
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/data/semantics/bug25348.json");
       FileHandle filehandle = new FileHandle();
       filehandle.set(file);
 
