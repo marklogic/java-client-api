@@ -41,6 +41,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
+import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -49,7 +50,13 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
+import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCtsQueryDefinition;
+
 import java.util.Map;
 
 public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
@@ -186,9 +193,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
       assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
       count++;
     }
-
     assertEquals("document count", 102, count);
-
   }
 
   @Test
@@ -210,12 +215,12 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     transform.put("name", "Land");
     transform.put("value", "USA");
     int count = 1;
+    
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     docMgr.setWriteTransform(transform);
     Map<String, String> map = new HashMap<>();
     DocumentWriteSet writeset = docMgr.newWriteSet();
     for (int i = 0; i < 10; i++) {
-
       writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
       map.put(DIRECTORY + "foo" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
       if (count % BATCH_SIZE == 0) {
@@ -233,6 +238,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
       uris[i] = DIRECTORY + "foo" + i + ".xml";
     }
     count = 0;
+    
     XMLDocumentManager docMgrRd = client.newXMLDocumentManager();
     DocumentPage page = docMgrRd.read(uris);
     DOMHandle dh = new DOMHandle();
@@ -240,7 +246,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
       DocumentRecord rec = page.next();
       rec.getContent(dh);
       assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
-
       count++;
     }
 
@@ -258,7 +263,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     Map<String, String> mapRd = new HashMap<>();
     DocumentWriteSet writesetRd = docMgrRd.newWriteSet();
     for (int i = 10; i < 20; i++) {
-
       writesetRd.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
       mapRd.put(DIRECTORY + "foo" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
       if (count % BATCH_SIZE == 0) {
@@ -337,6 +341,98 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     String content = dhRdNull.toString();
 
     assertTrue("Attribute value incorrect :", content.contains("<foo>This is so foo Multiple</foo>"));
+    
+    // Git Issue 639 - Case 1: Test using documentManager.setReadTransform and passing in a SearchReadHandle 
+    // to verify it gets transformed .
+    
+    DocumentWriteSet writesetSearch = docMgrRd.newWriteSet();
+    writesetSearch.add(DIRECTORY + "MarkLogic9.0" + ".xml", new DOMHandle(getDocumentContent("This is the best NoSQL product")));
+    docMgrRd.write(writesetSearch);    
+
+    ServerTransform transformSrch = new ServerTransform("add-attr-xquery-transform");
+    transformSrch.put("name", "Domicile");
+    transformSrch.put("value", "USA");
+
+    XMLDocumentManager docMgrSrch = client.newXMLDocumentManager();
+    docMgrSrch.setReadTransform(transformSrch);
+    QueryManager queryMgr = client.newQueryManager();
+    // Search for word NoSQL and then verify if transform runs with search
+    String wordQuery = "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+            "<cts:text>NoSQL</cts:text></cts:word-query>";
+    StringHandle handle = new StringHandle().with(wordQuery);
+    RawCtsQueryDefinition querydef = queryMgr.newRawCtsQueryDefinition(handle);
+    
+    DocumentPage pageSrch = docMgrSrch.search(querydef, 1);
+    
+    DOMHandle dhSrch = new DOMHandle();
+    DocumentRecord recSrch = pageSrch.next();
+    recSrch.getContent(dhSrch);
+    attribute = dhSrch.get().getDocumentElement().getAttributes().getNamedItem("Domicile").toString();
+
+    assertTrue("Transform value incorrect :", attribute.contains("Domicile=\"USA\""));
+    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+    
+    // Test search() with SearchReadHandle
+    // create result handle
+    JacksonHandle resultsJacksonHandle = new JacksonHandle();
+    DOMHandle resultsDOMHandle = new DOMHandle();
+    // DocumentPage pageSrch1 = docMgrSrch.search(querydef, 1, resultsJacksonHandle);
+    // JsonNode jsonfromReadHandle = resultsHandle.get();
+    //System.out.println("JSON " + resultsDOMHandle.toString());
+    
+    // Test with documentManager.setReadTransform and queryDefinition.setResponseTransform set to different transforms.
+    // Case 1 : Transform applies to same location 
+    RawCtsQueryDefinition qdefWithTransform = queryMgr.newRawCtsQueryDefinition(handle);
+    ServerTransform transformOnQdef = new ServerTransform("add-attr-xquery-transform");
+    transformOnQdef.put("name", "Continent");
+    transformOnQdef.put("value", "North America");
+    
+    qdefWithTransform.setResponseTransform(transformOnQdef);
+    DocumentPage pageSrch2 = docMgrSrch.search(qdefWithTransform, 1);
+    
+    DOMHandle dhSrch2 = new DOMHandle();
+    DocumentRecord recSrch2 = pageSrch2.next();
+    recSrch2.getContent(dhSrch2);
+    System.out.println("DOMHandle multiple Transforms " + dhSrch2.toString());
+    attribute = dhSrch2.get().getDocumentElement().getAttributes().getNamedItem("Continent").toString();
+    
+    assertTrue("Transform value incorrect :", attribute.contains("Continent=\"North America\""));
+    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+    
+    // Case 2 : Apply different transforms. QueryDef has add element transformation
+    // throws java.lang.IllegalStateException
+    String strExptdMsg = "QueryDefinition transform and DocumentManager transform have different names (add-element-xquery-transform, add-attr-xquery-transform)";
+    String actualMsg = null;
+    try {
+        TransformExtensionsManager transMgr2 = client.newServerConfigManager().newTransformExtensionsManager();
+        ExtensionMetadata metadata2 = new ExtensionMetadata();
+        metadata2.setTitle("Adding new element xquery Transform");
+        metadata2.setDescription("This plugin transforms an XML document by adding new element to root node");
+        metadata2.setProvider("MarkLogic");
+        metadata2.setVersion("0.1");
+        // get the transform file
+        File transformFile2 = new File(
+                "src/test/java/com/marklogic/client/functionaltest/transforms/add-element-xquery-transform.xqy");
+        FileHandle transformHandle2 = new FileHandle(transformFile2);
+        transMgr2.writeXQueryTransform("add-element-xquery-transform", transformHandle2, metadata2);        
+        ServerTransform transform2 = new ServerTransform("add-element-xquery-transform");
+        transform2.put("name", "Planet");
+        transform2.put("value", "Earth");
+
+        RawCtsQueryDefinition qdefWithTransform2 = queryMgr.newRawCtsQueryDefinition(handle);
+        qdefWithTransform2.setResponseTransform(transform2);
+        DocumentPage pageAddElement = docMgrSrch.search(qdefWithTransform2, 1);
+
+        DOMHandle domAddElement = new DOMHandle();
+        DocumentRecord recAddElement = pageAddElement.next();
+        recAddElement.getContent(domAddElement);
+        System.out.println("DOMHandle multiple Transforms " + domAddElement.toString());
+        attribute = dhSrch2.get().getDocumentElement().getAttributes().getNamedItem("Continent").toString();
+    }
+    catch(Exception ex /* throws java.lang.IllegalStateException */) {
+        actualMsg = ex.getMessage();
+    }
+    assertTrue("Exception message incorrect :", actualMsg.contains(strExptdMsg));
   }
 
   /*
@@ -370,7 +466,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     DocumentWriteSet writesetRollback = docMgr.newWriteSet();
     // Verify rollback with a smaller number of documents.
     for (int i = 0; i < 12; i++) {
-
       writesetRollback.add(DIRECTORY + "fooWithTrans" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
       map.put(DIRECTORY + "fooWithTrans" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
       if (count % 10 == 0) {
@@ -388,41 +483,40 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     }
 
     try {
-      // Verify rollback on DocumentManager write method with transform.
-      tRollback.rollback();
-      DocumentPage pageRollback = docMgr.read(uris);
-      assertEquals("Document count is not zero. Transaction did not rollback", 0, pageRollback.size());
+        // Verify rollback on DocumentManager write method with transform.
+        tRollback.rollback();
+        DocumentPage pageRollback = docMgr.read(uris);
+        assertEquals("Document count is not zero. Transaction did not rollback", 0, pageRollback.size());
 
-      // Perform write with a commit.
-      Transaction tCommit = client.openTransaction();
-      DocumentWriteSet writeset = docMgr.newWriteSet();
-      for (int i = 0; i < 102; i++) {
-
-        writeset.add(DIRECTORY + "fooWithTrans" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
-        map.put(DIRECTORY + "fooWithTrans" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
-        if (count % BATCH_SIZE == 0) {
-          docMgr.write(writeset, transform, tCommit);
-          writeset = docMgr.newWriteSet();
+        // Perform write with a commit.
+        Transaction tCommit = client.openTransaction();
+        DocumentWriteSet writeset = docMgr.newWriteSet();
+        for (int i = 0; i < 102; i++) {
+            writeset.add(DIRECTORY + "fooWithTrans" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
+            map.put(DIRECTORY + "fooWithTrans" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
+            if (count % BATCH_SIZE == 0) {
+                docMgr.write(writeset, transform, tCommit);
+                writeset = docMgr.newWriteSet();
+            }
+            count++;
         }
-        count++;
-      }
-      if (count % BATCH_SIZE > 0) {
-        docMgr.write(writeset, transform, tCommit);
-      }
-      tCommit.commit();
-      count = 0;
-      DocumentPage page = docMgr.read(uris);
-      DOMHandle dh = new DOMHandle();
-      // To verify that transformation did run on all docs.
-      String verifyAttrValue = null;
-      while (page.hasNext()) {
-        DocumentRecord rec = page.next();
-        rec.getContent(dh);
-        assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
-        verifyAttrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().getNamedItem("Lang").getNodeValue();
-        assertTrue("Server Transform did not go through ", verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
-        count++;
-      }
+        if (count % BATCH_SIZE > 0) {
+            docMgr.write(writeset, transform, tCommit);
+        }
+        tCommit.commit();
+        count = 0;
+        DocumentPage page = docMgr.read(uris);
+        DOMHandle dh = new DOMHandle();
+        // To verify that transformation did run on all docs.
+        String verifyAttrValue = null;
+        while (page.hasNext()) {
+            DocumentRecord rec = page.next();
+            rec.getContent(dh);
+            assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+            verifyAttrValue = dh.get().getElementsByTagName("foo").item(0).getAttributes().getNamedItem("Lang").getNodeValue();
+            assertTrue("Server Transform did not go through ", verifyAttrValue.equalsIgnoreCase("testBulkXQYTransformWithTrans"));
+            count++;
+        }
     } catch (Exception e) {
       System.out.println(e.getMessage());
       throw e;
@@ -452,7 +546,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     Map<String, String> map = new HashMap<>();
     DocumentWriteSet writeset = docMgr.newWriteSet();
     for (int i = 0; i < 102; i++) {
-
       writeset.add(DIRECTORY + "sec" + i + ".xml", new DOMHandle(getDocumentContent("This is to read" + i)));
       map.put(DIRECTORY + "sec" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is to read" + i)));
       if (count % BATCH_SIZE == 0) {
@@ -478,9 +571,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
       assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
       count++;
     }
-
     assertEquals("document count", 102, count);
-
   }
-
 }
