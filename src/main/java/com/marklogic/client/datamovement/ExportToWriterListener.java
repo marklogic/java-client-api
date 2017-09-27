@@ -69,6 +69,11 @@ public class ExportToWriterListener extends ExportListener {
       BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
       if ( retryListener != null )  onFailure(retryListener);
     }
+    NoResponseListener noResponseListener = NoResponseListener.getInstance(queryBatcher);
+    if ( noResponseListener != null ) {
+      BatchFailureListener<QueryBatch> noResponseRetryListener = noResponseListener.initializeRetryListener(this);
+      if ( noResponseRetryListener != null )  onFailure(noResponseRetryListener);
+    }
   }
 
   @Override

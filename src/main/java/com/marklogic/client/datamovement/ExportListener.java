@@ -103,6 +103,11 @@ public class ExportListener implements QueryBatchListener {
       BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
       if ( retryListener != null )  onFailure(retryListener);
     }
+    NoResponseListener noResponseListener = NoResponseListener.getInstance(queryBatcher);
+    if ( noResponseListener != null ) {
+      BatchFailureListener<QueryBatch> noResponseRetryListener = noResponseListener.initializeRetryListener(this);
+      if ( noResponseRetryListener != null )  onFailure(noResponseRetryListener);
+    }
   }
 
   /**

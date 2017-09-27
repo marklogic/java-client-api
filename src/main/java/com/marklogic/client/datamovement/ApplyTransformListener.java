@@ -75,6 +75,21 @@ import java.util.stream.Collectors;
  * code so you can write your own custom listeners.
  *
  * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java
+ *
+ * In this listener, we initialize only the HostAvailabilityListener's
+ * RetryListener and not NoResponseListener's RetryListener because if we get
+ * empty responses when we try to apply a transform to the batch of URIs
+ * retrieved from the server, we are not sure what happened in the server - if
+ * the transform has been applied or it has not been applied. Retrying in those
+ * scenarios would apply the transform twice if the transform has been already
+ * applied and this is not desirable.
+ *
+ * In order to handle such scenarios where we get an empty response, it is
+ * recommended to add a BatchFailureListener which would take care of apply
+ * transform failures and retry only for those URIs for which the apply
+ * transform has failed. If the transform is idempotent, we can just initialize 
+ * the RetryListener of the NoResponseListener by calling NoResponseListener.initializeRetryListener(this)
+ * and add it to the BatchFailureListeners similar to what we have in the other listeners.
  */
 public class ApplyTransformListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(ApplyTransformListener.class);

@@ -28,6 +28,7 @@ import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.impl.QueryJobReportListener;
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -110,6 +111,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     batcher.onBatchFailure(new HostAvailabilityListener(this));
     WriteJobReportListener writeJobListener = new WriteJobReportListener();
     batcher.onBatchFailure(writeJobListener);
+    batcher.onBatchFailure(new NoResponseListener(this));
     batcher.onBatchSuccess(writeJobListener);
     return batcher;
   }
@@ -140,6 +142,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
     batcher.onQueryFailure(queryJobListener);
+    batcher.onQueryFailure(new NoResponseListener(this));
     batcher.onUrisReady(queryJobListener);
     return batcher;
   }
@@ -152,6 +155,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
     batcher.onQueryFailure(queryJobListener);
+    batcher.onQueryFailure(new NoResponseListener(this));
     batcher.onUrisReady(queryJobListener);
     return batcher;
   }

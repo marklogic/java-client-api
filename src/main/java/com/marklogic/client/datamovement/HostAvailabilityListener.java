@@ -280,7 +280,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     return shouldWeRetry;
   }
 
-  private boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
+  protected boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
     for ( Class<?> type : hostUnavailableExceptions ) {
       if ( type.isInstance(throwable) ) {
         return true;
@@ -317,14 +317,22 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * Returns the first HostAvailabilityListener instance registered
-   * with the Batcher.
+   * Returns the first HostAvailabilityListener instance registered with the
+   * Batcher.
+   *
+   * You can customize the HostAvailabilityListener instance registered with the
+   * Batcher like: <br>
+   * <br>
+   * HostAvailabilityListener.getInstance(Batcher)<br>
+   * .withSuspendTimeForHostUnavailable(Duration.ofMinutes(60))<br>
+   * .withMinHosts(2)
    *
    * @param batcher the Batcher instance for which the registered
-   *                HostAvailabilityListener is returned
-   * @return the first HostAvailabilityListener instance with the batcher or null
-   *          if there is no HostAvailabilityListener registered
-   * @throws IllegalStateException if the passed Batcher is neither a QueryBatcher nor a WriteBatcher  
+   *          HostAvailabilityListener is returned
+   * @return the first HostAvailabilityListener instance with the batcher or
+   *         null if there is no HostAvailabilityListener registered
+   * @throws IllegalStateException if the passed Batcher is neither a
+   *           QueryBatcher nor a WriteBatcher
    */
   public static HostAvailabilityListener getInstance(Batcher batcher) {
     if ( batcher instanceof WriteBatcher ) {

@@ -71,6 +71,7 @@ import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -237,13 +238,14 @@ public class WriteBatcherTest {
     assertEquals(successListener, successListeners[1]);
 
     WriteFailureListener[] failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(2, failureListeners.length);
+    assertEquals(3, failureListeners.length);
     assertEquals(HostAvailabilityListener.class, failureListeners[0].getClass());
+    assertEquals(NoResponseListener.class, failureListeners[2].getClass());
 
     batcher.onBatchFailure(failureListener);
     failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(3, failureListeners.length);
-    assertEquals(failureListener, failureListeners[2]);
+    assertEquals(4, failureListeners.length);
+    assertEquals(failureListener, failureListeners[3]);
 
     batcher.setBatchSuccessListeners();
     successListeners = batcher.getBatchSuccessListeners();
