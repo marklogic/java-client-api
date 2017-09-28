@@ -301,7 +301,6 @@ public class WriteBatcherImpl
           break;
         }
       }
-      writeSet.setItemsSoFar(itemsSoFar.addAndGet(i));
       if ( writeSet.getWriteSet().size() > 0 ) {
         threadPool.submit( new BatchWriter(writeSet) );
       }
@@ -475,7 +474,6 @@ public class WriteBatcherImpl
       if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
       else throw new DataMovementException("Failed to retry batch", throwable);
     });
-    writeSet.setItemsSoFar(itemsSoFar.get());
     for ( WriteEvent doc : batch.getItems() ) {
       writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
     }
@@ -547,7 +545,6 @@ public class WriteBatcherImpl
         DocumentToWrite doc = iter.next();
         writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
       }
-      writeSet.setItemsSoFar(itemsSoFar.addAndGet(j));
       threadPool.submit( new BatchWriter(writeSet) );
     }
 
@@ -606,6 +603,7 @@ public class WriteBatcherImpl
   }
 
   private void sendSuccessToListeners(BatchWriteSet batchWriteSet) {
+    batchWriteSet.setItemsSoFar(itemsSoFar.addAndGet(batchWriteSet.getWriteSet().size()));
     WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
     for ( WriteBatchListener successListener : successListeners ) {
       try {
@@ -801,7 +799,6 @@ public class WriteBatcherImpl
             // if we re-add these docs they'll now be in batches that target acceptable hosts
             boolean forceNewTransaction = true;
             BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, writerTask.writeSet.getBatchNumber());
-            writeSet.setItemsSoFar(itemsSoFar.get());
             writeSet.onFailure(throwable -> {
               if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
               else throw new DataMovementException("Failed to retry batch after failover", throwable);
