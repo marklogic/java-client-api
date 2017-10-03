@@ -16,11 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -37,13 +40,19 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
+import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.CtsQueryWriteHandle;
+import com.marklogic.client.query.CountedDistinctValue;
 import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawCtsQueryDefinition;
+import com.marklogic.client.query.ValuesDefinition;
 
 /*
  * These tests are intended to verify the methods of RawCtsQueryDefinition class.
@@ -291,6 +300,123 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     String txt2 = highlightNode2.get(0).toString().trim();
     assertTrue("Highlight text 2 returned incorrect", highlightNode2.toString().contains("intellectual"));
     assertTrue("Highlight text 2 returned incorrect", txt2.contains("Vannevar served as a prominent policymaker and public"));
+  }
+  
+  @Test
+  public void testValuesWithRawCtsQueryDefinition() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testValuesWithRawCtsQueryDefinition");
+
+    String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
+    String queryOptionName = "aggregatesOpt5Occ.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/raw-cts-query/", "XML");
+    }
+
+    setQueryOption(client, queryOptionName);
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create ValuesDefinition def
+    ValuesDefinition valuesDef = queryMgr.newValuesDefinition("title-val", "aggregatesOpt5Occ.xml");
+    // create a search definition
+    String wordQuery = "<cts:or-query xmlns:cts=\"http://marklogic.com/cts\">" + 
+            "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+            "<cts:text>Bush</cts:text>" +
+            "</cts:word-query>" + 
+            "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+            "<cts:text>1945</cts:text>" +
+            "</cts:word-query>" + 
+            "</cts:or-query>";
+     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);
+    // create query def
+    RawCtsQueryDefinition queryRawDef = queryMgr.newRawCtsQueryDefinition(handle);
+    valuesDef.setQueryDefinition(queryRawDef);
+   
+   // create handle
+    ValuesHandle vHandle = queryMgr.values(valuesDef, new ValuesHandle());
+    CountedDistinctValue distinctValues[] = vHandle.getValues();
+    ArrayList<String> arr = new ArrayList<String>();
+    arr.add(distinctValues[0].get("value", String.class));
+    arr.add(distinctValues[1].get("value", String.class));
+    arr.add(distinctValues[2].get("value", String.class));
+    arr.sort(null);
+    
+    System.out.println("ValuesHandle name is " + vHandle.getName().toString());
+    System.out.println("ValuesHandle length is " + vHandle.getValues().length);
+    assertTrue("ValuesHandle name is incorrect", vHandle.getName().toString().trim().contains("title-val"));
+    assertEquals("ValuesHandle length is incorrect", 3, vHandle.getValues().length);
+    assertTrue("ValuesHandle element 1 is incorrect", arr.get(0).contains("For 1945"));
+    assertTrue("ValuesHandle element 2 is incorrect", arr.get(1).contains("The Bush article"));
+    assertTrue("ValuesHandle element 3 is incorrect", arr.get(2).contains("Vannevar Bush"));
+    // release client
+    client.release();
+  }
+  
+  @Test
+  public void testValuesWithRawCtsQueryCombinedDefinition() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testValuesWithRawCtsQueryCombinedDefinition");
+
+    String[] filenames = { "aggr1.xml", "aggr2.xml", "aggr3.xml", "aggr4.xml" };
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/rew-cts-combined-query/", "XML");
+    }
+
+    QueryManager queryMgr = client.newQueryManager();
+    // create a search definition
+    String options = "<options xmlns=\"http://marklogic.com/appservices/search\">" +
+            "<values name=\"Combined-title-val\">" +
+            "<range type=\"xs:string\">" +
+            "<element ns=\"\" name=\"title\"/>" +
+            "</range>" +
+            "</values>" +
+            "</options>";
+    
+    String wordQuery = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">" +
+            "<cts:or-query xmlns:cts=\"http://marklogic.com/cts\">" + 
+            "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+            "<cts:text>Bush</cts:text>" +
+            "</cts:word-query>" + 
+            "<cts:word-query xmlns:cts=\"http://marklogic.com/cts\">" +
+            "<cts:text>1945</cts:text>" +
+            "</cts:word-query>" + 
+            "</cts:or-query>" +
+            options +
+            "</search:search>";
+     StringHandle handle = new StringHandle().with(wordQuery).withFormat(Format.XML);
+    // create query def
+    RawCtsQueryDefinition queryRawDef = queryMgr.newRawCtsQueryDefinition(handle);
+    // create ValuesDefinition def
+    ValuesDefinition valuesDef = queryMgr.newValuesDefinition("Combined-title-val");
+    valuesDef.setQueryDefinition(queryRawDef);
+   
+   // create handle
+    ValuesHandle vHandle = queryMgr.values(valuesDef, new ValuesHandle());
+    CountedDistinctValue distinctValues[] = vHandle.getValues();
+    ArrayList<String> arr = new ArrayList<String>();
+    arr.add(distinctValues[0].get("value", String.class));
+    arr.add(distinctValues[1].get("value", String.class));
+    arr.add(distinctValues[2].get("value", String.class));
+    arr.sort(null);
+    
+    System.out.println("ValuesHandle name is " + vHandle.getName().toString());
+    System.out.println("ValuesHandle length is " + vHandle.getValues().length);
+    assertTrue("ValuesHandle name is incorrect", vHandle.getName().toString().trim().contains("Combined-title-val"));
+    assertEquals("ValuesHandle length is incorrect", 3, vHandle.getValues().length);
+    assertTrue("ValuesHandle element 1 is incorrect", arr.get(0).contains("For 1945"));
+    assertTrue("ValuesHandle element 2 is incorrect", arr.get(1).contains("The Bush article"));
+    assertTrue("ValuesHandle element 3 is incorrect", arr.get(2).contains("Vannevar Bush"));
+    // release client
+    client.release();
   }
   
   @AfterClass
