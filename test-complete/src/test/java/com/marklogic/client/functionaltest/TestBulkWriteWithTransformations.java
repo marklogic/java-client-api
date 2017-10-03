@@ -376,10 +376,16 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     // create result handle
     JacksonHandle resultsJacksonHandle = new JacksonHandle();
     DOMHandle resultsDOMHandle = new DOMHandle();
-    // DocumentPage pageSrch1 = docMgrSrch.search(querydef, 1, resultsJacksonHandle);
-    // JsonNode jsonfromReadHandle = resultsHandle.get();
-    //System.out.println("JSON " + resultsDOMHandle.toString());
+    DocumentPage pageSrch1 = docMgrSrch.search(querydef, 1, resultsDOMHandle);
     
+    //DOMHandle dhSrchHandle = new DOMHandle();
+    DocumentRecord recSrchHandle = pageSrch1.next();
+    recSrchHandle.getContent(resultsDOMHandle);
+    attribute = resultsDOMHandle.get().getDocumentElement().getAttributes().getNamedItem("Domicile").toString();
+
+    assertTrue("Transform value incorrect :", attribute.contains("Domicile=\"USA\""));
+    assertTrue("URI value incorrect :", recSrch.getUri().trim().contains("/bulkTransform/MarkLogic9.0.xml"));
+
     // Test with documentManager.setReadTransform and queryDefinition.setResponseTransform set to different transforms.
     // Case 1 : Transform applies to same location 
     RawCtsQueryDefinition qdefWithTransform = queryMgr.newRawCtsQueryDefinition(handle);

@@ -33,7 +33,7 @@ declare function example:transform(
     (
     document {
       $root/preceding-sibling::node(),
-      element {fn:name($root)} {
+      element {fn:node-name($root)} {
         attribute { fn:QName("", $name) } {$value},
         $root/@*,
         $root/node()
