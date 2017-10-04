@@ -61,7 +61,6 @@ public class BulkLoadFromJdbcWithSimpleJoins {
     DatabaseClientSingleton.get().newDataMovementManager();
 
   public static void main(String[] args) throws IOException, SQLException {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     new BulkLoadFromJdbcWithSimpleJoins().run();
   }
 

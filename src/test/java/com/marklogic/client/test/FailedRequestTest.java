@@ -45,7 +45,6 @@ public class FailedRequestTest {
   public void testFailedRequest()
   throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException, XMLStreamException
   {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     Common.connectAdmin();
     QueryOptionsManager mgr = Common.adminClient.newServerConfigManager()
       .newQueryOptionsManager();

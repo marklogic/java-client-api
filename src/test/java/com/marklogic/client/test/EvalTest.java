@@ -81,7 +81,6 @@ public class EvalTest {
 
     septFirst.set(2014, Calendar.SEPTEMBER, 1, 0, 0, 0);
     septFirst.set(Calendar.MILLISECOND, 0);
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
   @AfterClass
   public static void afterClass() {

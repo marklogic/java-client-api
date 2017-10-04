@@ -70,7 +70,6 @@ public class BitemporalTest {
   @BeforeClass
   public static void beforeClass() {
     Common.connect();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     docMgr = Common.client.newXMLDocumentManager();
     queryMgr = Common.client.newQueryManager();
   }

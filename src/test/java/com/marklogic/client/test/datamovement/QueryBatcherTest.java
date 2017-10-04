@@ -100,7 +100,6 @@ public class QueryBatcherTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     setup();
   }
 

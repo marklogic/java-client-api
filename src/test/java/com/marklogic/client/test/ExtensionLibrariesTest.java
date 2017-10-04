@@ -40,8 +40,6 @@ public class ExtensionLibrariesTest {
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException {
 
     Common.connectAdmin();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-
     // get a manager
     ExtensionLibrariesManager libsMgr = Common.adminClient
       .newServerConfigManager().newExtensionLibrariesManager();
@@ -90,7 +88,6 @@ public class ExtensionLibrariesTest {
 
   @Test
   public void testXQueryModuleCRUDXmlFileNegative() {
-    System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     Common.connectAdmin();
 
     // get a manager

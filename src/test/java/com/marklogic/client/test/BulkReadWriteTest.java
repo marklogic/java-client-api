@@ -85,7 +85,6 @@ public class BulkReadWriteTest {
     DatabaseClientFactory.getHandleRegistry().register(
       JAXBHandle.newFactory(City.class)
     );
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
   @AfterClass
   public static void afterClass() {

@@ -54,8 +54,6 @@ public class JavascriptResourceExtension {
   public static void run(ExampleProperties props)
     throws IOException, ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-
     System.out.println("example: "+JavascriptResourceExtension.class.getName());
 
     installResourceExtension(props.host, props.port,

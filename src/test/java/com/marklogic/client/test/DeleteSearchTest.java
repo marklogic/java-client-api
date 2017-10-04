@@ -49,7 +49,6 @@ public class DeleteSearchTest {
 
   @BeforeClass
   public static void beforeClass() throws Exception {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     writeDoc();
   }
 

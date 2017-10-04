@@ -38,7 +38,6 @@ public class QueryByExampleTest {
   @BeforeClass
   public static void beforeClass() {
     Common.connectAdmin();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     setupData();
   }
 

@@ -59,7 +59,6 @@ public class ApplyTransformTest {
 
   @BeforeClass
   public static void beforeClass() {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     installModule();
   }
 

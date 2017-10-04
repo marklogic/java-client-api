@@ -29,8 +29,6 @@ import com.marklogic.client.io.StringHandle;
 public class InvalidUserTest {
   @Test
   public void testInvalidUserAuth() {
-
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     // create the client
     DatabaseClient client = DatabaseClientFactory.newClient(
       Common.HOST, Common.PORT, new DigestAuthContext("MyFooUser", "x"));
