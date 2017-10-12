@@ -622,6 +622,7 @@ public class WriteBatcherImpl
   }
 
   private void sendThrowableToListeners(Throwable t, String message, BatchWriteSet batchWriteSet) {
+    batchWriteSet.setItemsSoFar(itemsSoFar.get());
     WriteBatch batch = batchWriteSet.getBatchOfWriteEvents();
     for ( WriteFailureListener failureListener : failureListeners ) {
       try {
