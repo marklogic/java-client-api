@@ -1,6 +1,6 @@
 package com.marklogic.client.datamovement.functionaltests;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -13,6 +13,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -197,7 +198,11 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
     AtomicLong count1 = new AtomicLong(0);
     AtomicLong count2 = new AtomicLong(0);
     AtomicLong count3 = new AtomicLong(0);
-    QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500).withThreadCount(20);
+    String jobId = UUID.randomUUID().toString();
+    
+    QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500).withThreadCount(20)
+                                     .withJobId(jobId).withJobName("XmlTransform");
+    
     batcher.onUrisReady(batch -> {
       System.out.println("Yes");
       if (dmManager.getJobReport(queryTicket).getSuccessBatchesCount() == batchCount.incrementAndGet()) {
@@ -206,6 +211,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
     });
     batcher.onQueryFailure(throwable -> throwable.printStackTrace());
     queryTicket = dmManager.startJob(batcher);
+    Assert.assertTrue("Job Id incorrect", jobId.equalsIgnoreCase(queryTicket.getJobId()));
+    Assert.assertTrue("Job Name incorrect", batcher.getJobName().trim().equalsIgnoreCase("XmlTransform"));
     batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
     dmManager.stopJob(queryTicket);
 
@@ -384,6 +391,52 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
       batchCount.incrementAndGet();
       if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40) {
         dmManager.stopJob(queryTicket);
+      }
+
+    });
+    batcher.onQueryFailure(throwable -> throwable.printStackTrace());
+
+    queryTicket = dmManager.startJob(batcher);
+    batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+
+    queryTicket = dmManager.startJob(batcher);
+    batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
+
+    System.out.println("Success event: " + dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+    System.out.println("Success batch: " + dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+    System.out.println("Failure event: " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
+    System.out.println("Failure batch: " + dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+
+    Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40);
+    Assert.assertTrue(dmManager.getJobReport(queryTicket).getSuccessEventsCount() < 1000);
+    Assert.assertTrue(dmManager.getJobReport(queryTicket).getFailureEventsCount() == 0);
+    Assert.assertTrue(dmManager.getJobReport(queryTicket).getFailureBatchesCount() == 0);
+
+    Assert.assertTrue(batchCount.get() == dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
+
+  }
+  
+  // Making sure we can stop jobs based on the JobId.
+  @Test
+  public void stopJobUsingJobId() throws Exception {
+      
+    String jobId = UUID.randomUUID().toString();
+
+    QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+                                    .withBatchSize(20)
+                                    .withThreadCount(20)
+                                    .withJobId(jobId);
+
+    AtomicInteger batchCount = new AtomicInteger(0);
+
+    Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
+
+    batcher.onUrisReady(batch -> {
+      uris.addAll(Arrays.asList(batch.getItems()));
+      batchCount.incrementAndGet();
+      if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() > 40) {
+          // Using JobId here to stop Job
+        dmManager.stopJob(dmManager.getActiveJob(jobId));
       }
 
     });
