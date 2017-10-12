@@ -782,7 +782,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
     System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
     System.out.println("stopTransformJobTest: Failed: " + failedBatch.size());
     System.out.println("stopTransformJobTest : count " + count);
-    Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() + failedBatch.size() + count);
+    Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() +  count);
     Assert.assertEquals(2000 - count, successBatch.size());
 
   }
