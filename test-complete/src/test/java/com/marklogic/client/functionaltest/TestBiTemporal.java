@@ -22,6 +22,7 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
@@ -43,14 +44,17 @@ import org.w3c.dom.ls.DOMImplementationLS;
 
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
+import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
@@ -63,11 +67,14 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonDatabindHandle;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
@@ -684,6 +691,46 @@ public class TestBiTemporal extends BasicJavaClientREST {
 
     return handle;
   }
+  
+  public void insertSimpleDocument(String docId, String transformName, Transaction transaction) throws Exception {
+
+      System.out.println("Inside getDocumentDescriptor");
+      TemporalDescriptor desc = null;
+
+      JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+              "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+              docId);
+
+      JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
+      docMgr.setMetadataCategories(Metadata.ALL);
+
+      // put meta-data
+      DocumentMetadataHandle mh = setMetadata(false);
+
+      if (transformName != null) {
+          TransformExtensionsManager transMgr = writerClient.newServerConfigManager()
+                  .newTransformExtensionsManager();
+          ExtensionMetadata metadata = new ExtensionMetadata();
+          metadata.setTitle("Adding sjs Transform");
+          metadata.setDescription("This plugin adds 2 properties to JSON document");
+          metadata.setProvider("MarkLogic");
+          metadata.setVersion("0.1");
+          // get the transform file
+          File transformFile = new File(
+                  "src/test/java/com/marklogic/client/functionaltest/transforms/" + transformName
+                  + ".js");
+          FileHandle transformHandle = new FileHandle(transformFile);
+          transMgr.writeJavascriptTransform(transformName, transformHandle,
+                  metadata);
+          ServerTransform transformer = new ServerTransform(transformName);
+          transformer.put("name", "Lang");
+          transformer.put("value", "English");
+          docMgr.write(docId, mh, handle, transformer, null);
+      }
+      else {
+          docMgr.write(docId, mh, handle);
+      }
+}
 
   /*
    * Insert multiple temporal documents to test bulk write of temporal
@@ -1428,835 +1475,277 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
   }
 
+  // Test LSQT advance manually. Should have automation set to false on the temporal collection used. 
   @Test
-  // Test bitemporal create, update and delete works with a JSON document while
-  // passing
-  // system time. The temporal collection needs to be enabled for lsqt and we
-  // have enabled
-  // automation for lsqt (lsqt will be advanced every second and system time
-  // will be set with
-  // a lag of 1 second)
-  public void testSystemTime() throws Exception {
+  public void testAdvancingLSQT() throws Exception {
+      try {
+          System.out.println("Inside testAdvancingLSQT");
+          ConnectedRESTQA.disableAutomationOnTemporalCollection(dbName, temporalLsqtCollectionName, true);
 
-    System.out.println("Inside testSystemTime");
-    ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
-        temporalLsqtCollectionName, true);
+          String docId = "javaSingleJSONDoc.json";
+          String afterLSQTAdvance = null;
 
-    String docId = "javaSingleJSONDoc.json";
+          Calendar firstInsertTime = DatatypeConverter.parseDateTime("2010-01-01T00:00:01");
+          JSONDocumentManager docMgr = writerClient.newJSONDocumentManager();
 
-    Calendar firstInsertTime = DatatypeConverter
-        .parseDateTime("2010-01-01T00:00:01");
-    insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
-        firstInsertTime);
+          JacksonDatabindHandle<ObjectNode> handle = getJSONDocumentHandle(
+                  "2001-01-01T00:00:00", "2011-12-31T23:59:59", "999 Skyway Park - JSON",
+                  docId);
+          TemporalDescriptor desc = docMgr.write(docId, null, handle, null, null, temporalLsqtCollectionName, firstInsertTime);
+          // Verify permissions for LSQT advance
+          String permnExceptMsg = "User is not allowed to advanceLsqt resource at temporal/collections/" + temporalLsqtCollectionName;
+          String extMsg = null;
+          try {
+              JSONDocumentManager docMgr1 = readerClient.newJSONDocumentManager();
+              docMgr1.advanceLsqt(temporalLsqtCollectionName);
+          }
+          catch (ForbiddenUserException ex) {
+              extMsg = ex.getMessage();
+              System.out.println("Permissions exception message for LSQT advance is " + extMsg);
+          }
+          assertTrue("Expected exception message incorrect for LSQT advance user permission", extMsg.contains(permnExceptMsg));
 
-    // Verify that the document was inserted
-    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
-        ObjectNode.class);
-    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
-    docMgr.read(docId, metadataHandle, recordHandle);
-    DocumentPage readResults = docMgr.read(docId);
+          QueryManager queryMgrLSQT = adminClient.newQueryManager();
+          StructuredQueryBuilder sqbLSQT = queryMgrLSQT.newStructuredQueryBuilder();
 
-    System.out.println("Number of results = " + readResults.size());
-    assertEquals("Wrong number of results", 1, readResults.size());
+          Calendar queryTimeLSQT = DatatypeConverter.parseDateTime("2007-01-01T00:00:01");
+          StructuredQueryDefinition periodQueryLSQT = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT, 0, new String[] {});
 
-    DocumentRecord record = readResults.next();
-    System.out.println("URI after insert = " + record.getUri());
-    assertEquals("Document uri wrong after insert", docId, record.getUri());
-    System.out.println("Content = " + recordHandle.toString());
+          long startLSQT = 1;
+          JSONDocumentManager docMgrQy = adminClient.newJSONDocumentManager();
+          String WithoutAdvaceSetExceptMsg = "Timestamp 2007-01-01T00:00:01-08:00 provided is greater than LSQT 1601-01-01T00:00:00Z";
+          String actualNoAdvanceMsg = null;
+          DocumentPage termQueryResultsLSQT = null;
+          try {
+              termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
+          }
+          catch(Exception ex) {
+              actualNoAdvanceMsg = ex.getMessage();
+              System.out.println("Exception message for LSQT without advance set is " + actualNoAdvanceMsg);
+          }
+          assertTrue("Expected exception message not available for LSQT advance user permission", actualNoAdvanceMsg.contains(WithoutAdvaceSetExceptMsg));
 
-    // Make sure System start time was what was set ("2010-01-01T00:00:01")
-    if (record.getFormat() != Format.JSON) {
-      assertFalse("Invalid document format: " + record.getFormat(), true);
-    } else {
-      JsonFactory factory = new JsonFactory();
-      ObjectMapper mapper = new ObjectMapper(factory);
-      TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-      };
+          // Set the Advance manually.
+          docMgr.advanceLsqt(temporalLsqtCollectionName);
+          termQueryResultsLSQT = docMgrQy.search(periodQueryLSQT, startLSQT);
 
-      Map<String, Object> docObject = mapper.readValue(
-          recordHandle.toString(), typeRef);
+          assertTrue("LSQT Query results (Total Pages) before advance is incorrect", termQueryResultsLSQT.getTotalPages() == 0);
+          assertTrue("LSQT Query results (Size) before advance is incorrect", termQueryResultsLSQT.size() == 0);
 
-      @SuppressWarnings("unchecked")
-      Map<String, Object> validNode = (HashMap<String, Object>) (docObject
-          .get(systemNodeName));
+          // After Advance of the LSQT, query again with new query time greater than LSQT
 
-      String systemStartDate = (String) validNode.get(systemStartERIName);
-      String systemEndDate = (String) validNode.get(systemEndERIName);
-      System.out.println("systemStartDate = " + systemStartDate);
-      System.out.println("systemEndDate = " + systemEndDate);
+          afterLSQTAdvance = desc.getTemporalSystemTime();
+          Calendar queryTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
+          queryTimeLSQT2.add(Calendar.YEAR, 10);
+          docMgrQy = adminClient.newJSONDocumentManager();
+          docMgrQy.setMetadataCategories(Metadata.ALL); // Get all meta-data
+          StructuredQueryDefinition periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0, new String[] {});
 
-      assertTrue("System start date check failed",
-          (systemStartDate.contains("2010-01-01T00:00:01")));
-      assertTrue("System end date check failed",
-          (systemEndDate.contains("9999-12-31T11:59:59")));
+          String excepMsgGrtr = "Timestamp 2020-01-01T00:00:01-08:00 provided is greater than LSQT 2010-01-01T08:00:01Z";
+          String actGrMsg = null;
+          DocumentPage termQueryResultsLSQT2 = null;
+          try {
+              termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+          }
+          catch(Exception ex) {
+              actGrMsg = ex.getMessage();
+          }
+          assertTrue("Expected exception message not available for LSQT advance user permission", actGrMsg.contains(excepMsgGrtr));
 
-      // Validate collections
-      Iterator<String> resCollections = metadataHandle.getCollections()
-          .iterator();
-      while (resCollections.hasNext()) {
-        String collection = resCollections.next();
-        System.out.println("Collection = " + collection);
+          // Query again with query time less than LSQT. 10 minutes less than the LSQT
+          Calendar lessTime = DatatypeConverter.parseDateTime("2009-01-01T00:00:01");
 
-        if (!collection.equals(docId)
-            && !collection.equals(insertCollectionName)
-            && !collection.equals(temporalLsqtCollectionName)
-            && !collection.equals(latestCollectionName)) {
-          assertFalse("Collection not what is expected: " + collection, true);
-        }
+          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, lessTime, 0, new String[] {});
+          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+
+          System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
+          System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
+          assertTrue("LSQT Query results (Total Pages) after advance is incorrect", termQueryResultsLSQT2.getTotalPages() == 0);
+          assertTrue("LSQT Query results (Size) after advance is incorrect", termQueryResultsLSQT2.size() == 0);
+
+          // Query again with query time equal to LSQT.
+          queryTimeLSQT2 = DatatypeConverter.parseDateTime(afterLSQTAdvance);
+          periodQueryLSQT2 = sqbLSQT.temporalLsqtQuery(temporalLsqtCollectionName, queryTimeLSQT2, 0, new String[] {});
+          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+
+          System.out.println("LSQT Query results (Total Pages) after advance " + termQueryResultsLSQT2.getTotalPages());
+          System.out.println("LSQT Query results (Size) after advance " + termQueryResultsLSQT2.size());
+          assertTrue("LSQT Query results (Total Pages) after advance is incorrect", termQueryResultsLSQT2.getTotalPages() == 1);
+          assertTrue("LSQT Query results (Size) after advance is incorrect", termQueryResultsLSQT2.size() == 1);
+
+          while (termQueryResultsLSQT2.hasNext()) {
+              DocumentRecord record = termQueryResultsLSQT2.next();
+              System.out.println("URI = " + record.getUri());
+              StringHandle resultHandleOfLSQT2 = new StringHandle();
+              record.getContent(resultHandleOfLSQT2);
+              String strResOfLSQT2 = resultHandleOfLSQT2.get();
+
+              System.out.println("Result of LSQT Query 2 is " + strResOfLSQT2);
+          }
+
+          // Verify that the document was inserted
+          JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
+          DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+          docMgr.read(docId, metadataHandle, recordHandle);
+          DocumentPage readResults = docMgr.read(docId);
+
+          System.out.println("Number of results = " + readResults.size());
+          assertEquals("Wrong number of results", 1, readResults.size());
+
+          DocumentRecord record = readResults.next();
+          System.out.println("URI after insert = " + record.getUri());
+          assertEquals("Document uri wrong after insert", docId, record.getUri());
+          System.out.println("Content = " + recordHandle.toString());
+
+          // Make sure System start time was what was set ("2010-01-01T00:00:01")
+          if (record.getFormat() != Format.JSON) {
+              assertFalse("Invalid document format: " + record.getFormat(), true);
+          } else {
+              JsonFactory factory = new JsonFactory();
+              ObjectMapper mapper = new ObjectMapper(factory);
+              TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {};
+
+              Map<String, Object> docObject = mapper.readValue(recordHandle.toString(), typeRef);
+
+              @SuppressWarnings("unchecked")
+              Map<String, Object> validNode = (HashMap<String, Object>) (docObject.get(systemNodeName));
+
+              String systemStartDate = (String) validNode.get(systemStartERIName);
+              String systemEndDate = (String) validNode.get(systemEndERIName);
+              System.out.println("systemStartDate = " + systemStartDate);
+              System.out.println("systemEndDate = " + systemEndDate);
+
+              assertTrue("System start date check failed", (systemStartDate.contains("2010-01-01T00:00:01")));
+              assertTrue("System end date check failed", (systemEndDate.contains("9999-12-31T11:59:59")));
+
+              // Validate collections
+              Iterator<String> resCollections = metadataHandle.getCollections().iterator();
+              while (resCollections.hasNext()) {
+                  String collection = resCollections.next();
+                  System.out.println("Collection = " + collection);
+
+                  if (!collection.equals(docId)
+                          && !collection.equals(insertCollectionName)
+                          && !collection.equals(temporalLsqtCollectionName)
+                          && !collection.equals(latestCollectionName)) {
+                      assertFalse("Collection not what is expected: " + collection, true);
+                  }
+              }
+
+              // Validate permissions
+              DocumentPermissions permissions = metadataHandle.getPermissions();
+              System.out.println("Permissions: " + permissions);
+
+              String actualPermissions = getDocumentPermissionsString(permissions);
+              System.out.println("actualPermissions: " + actualPermissions);
+
+              assertTrue("Document permissions difference in size value",
+                      actualPermissions.contains("size:3"));
+
+              assertTrue("Document permissions difference in rest-reader permission",
+                      actualPermissions.contains("rest-reader:[READ]"));
+              // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+              String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+              assertTrue("Document permissions difference in rest-writer permission - first permission",
+                      writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+              assertTrue("Document permissions difference in rest-writer permission - second permission",
+                      writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+              assertTrue("Document permissions difference in rest-writer permission - third permission",
+                      writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+
+              // Split up temporal-admin=[READ, UPDATE] string
+              String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+              assertTrue("Document permissions difference in temporal-admin permission - first permission",
+                      temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+              assertTrue("Document permissions difference in rest-writer permission - second permission",
+                      temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+          }
+
+          // =============================================================================
+          // Check update works
+          // =============================================================================
+          Calendar updateTime = DatatypeConverter.parseDateTime(afterLSQTAdvance);
+          // Advance the system time for update. To be greater than LSQT time.
+          updateTime.add(Calendar.DAY_OF_MONTH, 5);
+          JacksonDatabindHandle<ObjectNode> handleUpd = getJSONDocumentHandle("2003-01-01T00:00:00", "2008-12-31T23:59:59",
+                  "1999 Skyway Park - Updated - JSON", docId);
+          docMgr.setMetadataCategories(Metadata.ALL);
+          DocumentMetadataHandle mh = setMetadata(true);
+
+          desc = docMgr.write(docId, mh, handleUpd, null, null, temporalLsqtCollectionName, updateTime);
+          // Validate the advance from desc
+          docMgr.advanceLsqt(temporalLsqtCollectionName);
+          afterLSQTAdvance = desc.getTemporalSystemTime();
+          System.out.println("LSQT on collection after update and manual advance is " + afterLSQTAdvance);
+          assertTrue("LSQT Advance incorrect", desc.getTemporalSystemTime().trim().contains("2010-01-06T00:00:01-08:00"));
+
+          // Verify that the document was updated 
+          // Make sure there are 1 documents in latest collection
+          QueryManager queryMgr = readerClient.newQueryManager();
+          StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+          StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
+          long start = 1;
+          DocumentPage termQueryResults = docMgr.search(termQuery, start);
+          System.out.println("Number of results = " + termQueryResults.getTotalSize());
+          assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
+
+          // Document URIs in latest collection must be the same as the one as the
+          // original documents
+          while (termQueryResults.hasNext()) {
+              record = termQueryResults.next();
+              String uri = record.getUri();
+              System.out.println("URI = " + uri);
+              assertTrue("URIs are not what is expected", uri.equals(docId));
+          }
+
+          // Make sure there are 4 documents in jsonDocId collection
+          queryMgr = readerClient.newQueryManager();
+          sqb = queryMgr.newStructuredQueryBuilder();
+          termQuery = sqb.collection(docId);
+
+          start = 1;
+          termQueryResults = docMgr.search(termQuery, start);
+          System.out.println("Number of results = " + termQueryResults.getTotalSize());
+          assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+          // Make sure there are 4 documents in temporal collection
+          queryMgr = readerClient.newQueryManager();
+          sqb = queryMgr.newStructuredQueryBuilder();
+          termQuery = sqb.collection(temporalLsqtCollectionName);
+
+          start = 1;
+          termQueryResults = docMgr.search(termQuery, start);
+          System.out.println("Number of results = " + termQueryResults.getTotalSize());
+          assertEquals("Wrong number of results", 5, termQueryResults.getTotalSize());
+
+          // Issue a period range search to make sure update went fine.
+          StructuredQueryBuilder.Axis axis = sqbLSQT.axis(axisValidName);
+          StructuredQueryBuilder.Period period = sqbLSQT.period("2003-01-01T00:00:00", "2009-12-31T23:59:59");
+
+          periodQueryLSQT2 = sqbLSQT.temporalPeriodRange(axis, StructuredQueryBuilder.TemporalOperator.ALN_CONTAINS, period, new String[] {});
+          termQueryResultsLSQT2 = docMgrQy.search(periodQueryLSQT2, startLSQT);
+          assertTrue("CTS Period range query returned incorrect results", termQueryResultsLSQT2.getTotalSize() == 1);
+
+          while (termQueryResultsLSQT2.hasNext()) {
+              DocumentRecord recordContains = termQueryResultsLSQT2.next();
+              System.out.println("URI = " + recordContains.getUri());
+
+              JacksonDatabindHandle<ObjectNode> recordContainsHandle = new JacksonDatabindHandle<>(
+                      ObjectNode.class);
+              recordContains.getContent(recordContainsHandle);
+              String docContents = recordContainsHandle.toString();
+              System.out.println("Content = " + docContents);
+              assertTrue("CTS Period range query returned incorrect results",docContents.contains("\"javaValidStartERI\":\"2001-01-01T00:00:00\",\"javaValidEndERI\":\"2011-12-31T23:59:59\""));
+          }
       }
-
-      // Validate permissions
-      DocumentPermissions permissions = metadataHandle.getPermissions();
-      System.out.println("Permissions: " + permissions);
-
-      String actualPermissions = getDocumentPermissionsString(permissions);
-      System.out.println("actualPermissions: " + actualPermissions);
-
-      assertTrue("Document permissions difference in size value",
-          actualPermissions.contains("size:4"));
-
-      assertTrue("Document permissions difference in rest-reader permission",
-          actualPermissions.contains("rest-reader:[READ]"));
-      // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-      String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-      assertTrue("Document permissions difference in rest-writer permission - first permission",
-          writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-      assertTrue("Document permissions difference in rest-writer permission - second permission",
-          writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-      assertTrue("Document permissions difference in rest-writer permission - third permission",
-          writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-      // Split up app-user app-user:[UPDATE, EXECUTE, READ] string
-      String[] appUserPerms = actualPermissions.split("app\\-user:\\[")[1].split("\\]")[0].split(",");
-
-      assertTrue("Document permissions difference in App User permission - first permission",
-          appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-      assertTrue("Document permissions difference in App User permission - second permission",
-          appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-      assertTrue("Document permissions difference in App User permission - third permission",
-          appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-
-      // Split up temporal-admin=[READ, UPDATE] string
-      String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-      assertTrue("Document permissions difference in temporal-admin permission - first permission",
-          temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-      assertTrue("Document permissions difference in rest-writer permission - second permission",
-          temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-      // Validate quality
-      int quality = metadataHandle.getQuality();
-      System.out.println("Quality: " + quality);
-      assertEquals(quality, 11);
-
-      validateMetadata(metadataHandle);
+    catch (Exception ex) {
+        System.out.println("Exception thrown from testAdvacingLSQT method " + ex.getMessage() );
     }
-
-    // =============================================================================
-    // Check update works
-    // =============================================================================
-    Calendar updateTime = DatatypeConverter
-        .parseDateTime("2011-01-01T00:00:01");
-    updateJSONSingleDocument(temporalLsqtCollectionName, docId, null,
-        updateTime);
-
-    // Verify that the document was updated
-    // Make sure there is 1 document in latest collection
-    QueryManager queryMgr = readerClient.newQueryManager();
-    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
-    StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
-    long start = 1;
-    DocumentPage termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
-
-    // Document URIs in latest collection must be the same as the one as the
-    // original document
-    while (termQueryResults.hasNext()) {
-      record = termQueryResults.next();
-
-      String uri = record.getUri();
-      System.out.println("URI = " + uri);
-
-      if (!uri.equals(docId)) {
-        assertFalse("URIs are not what is expected", true);
-      }
+    finally {
+        ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName, temporalLsqtCollectionName, true);
     }
-
-    // Make sure there are 4 documents in jsonDocId collection
-    queryMgr = readerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-    termQuery = sqb.collection(docId);
-
-    start = 1;
-    termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-
-    // Make sure there are 4 documents in temporal collection
-    queryMgr = readerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-    termQuery = sqb.collection(temporalLsqtCollectionName);
-
-    start = 1;
-    termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-
-    // Make sure there are 4 documents in total. Use string search for this
-    queryMgr = readerClient.newQueryManager();
-    StringQueryDefinition stringQD = queryMgr.newStringDefinition();
-    stringQD.setCriteria("");
-
-    start = 1;
-    docMgr.setMetadataCategories(Metadata.ALL);
-    termQueryResults = docMgr.search(stringQD, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-
-    while (termQueryResults.hasNext()) {
-      record = termQueryResults.next();
-      System.out.println("URI = " + record.getUri());
-
-      metadataHandle = new DocumentMetadataHandle();
-      record.getMetadata(metadataHandle);
-
-      if (record.getFormat() != Format.JSON) {
-        assertFalse("Format is not JSON: " + Format.JSON, true);
-      } else {
-        // Make sure that system and valid times are what is expected
-        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
-
-        JsonFactory factory = new JsonFactory();
-        ObjectMapper mapper = new ObjectMapper(factory);
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
-
-        Map<String, Object> docObject = mapper.readValue(
-            recordHandle.toString(), typeRef);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
-            .get(systemNodeName));
-
-        String systemStartDate = (String) systemNode.get(systemStartERIName);
-        String systemEndDate = (String) systemNode.get(systemEndERIName);
-        System.out.println("systemStartDate = " + systemStartDate);
-        System.out.println("systemEndDate = " + systemEndDate);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
-            .get(validNodeName));
-
-        String validStartDate = (String) validNode.get(validStartERIName);
-        String validEndDate = (String) validNode.get(validEndERIName);
-        System.out.println("validStartDate = " + validStartDate);
-        System.out.println("validEndDate = " + validEndDate);
-
-        // Permissions
-        DocumentPermissions permissions = metadataHandle.getPermissions();
-        System.out.println("Permissions: " + permissions);
-
-        String actualPermissions = getDocumentPermissionsString(permissions);
-        System.out.println("actualPermissions: " + actualPermissions);
-
-        int quality = metadataHandle.getQuality();
-        System.out.println("Quality: " + quality);
-
-        if (validStartDate.contains("2003-01-01T00:00:00")
-            && validEndDate.contains("2008-12-31T23:59:59")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System end date check failed",
-              (systemEndDate.contains("9999-12-31T11:59:59")));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(updateCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[UPDATE, READ] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertFalse("Document permissions difference in app-user permission",
-              actualPermissions.split("app-user:\\[")[1].split("\\]")[0].contains("EXECUTE"));
-
-          assertEquals(quality, 99);
-        }
-
-        if (validStartDate.contains("2001-01-01T00:00:00")
-            && validEndDate.contains("2003-01-01T00:00:00")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System end date check failed",
-              (systemEndDate.contains("9999-12-31T11:59:59")));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-        }
-
-        if (validStartDate.contains("2008-12-31T23:59:59")
-            && validEndDate.contains("2011-12-31T23:59:59")) {
-          // This is the latest document
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System end date check failed",
-              (systemEndDate.contains("9999-12-31T11:59:59")));
-          assertTrue("URI should be the doc uri ", record.getUri()
-              .equals(docId));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)
-                && !collection.equals(latestCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-
-          validateMetadata(metadataHandle);
-        }
-
-        if (validStartDate.contains("2001-01-01T00:00:00")
-            && validEndDate.contains("2011-12-31T23:59:59")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2010-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("2011-01-01T00:00:01")));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-        }
-      }
-    }
-
-    // =============================================================================
-    // Check delete works
-    // =============================================================================
-    // Delete one of the document
-    Calendar deleteTime = DatatypeConverter
-        .parseDateTime("2012-01-01T00:00:01");
-    deleteJSONSingleDocument(temporalLsqtCollectionName, docId, null,
-        deleteTime);
-
-    // Make sure there are still 4 documents in docId collection
-    queryMgr = readerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-    termQuery = sqb.collection(docId);
-
-    start = 1;
-    termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-
-    // Make sure there is one document with docId uri
-    docMgr = readerClient.newJSONDocumentManager();
-    readResults = docMgr.read(docId);
-
-    System.out.println("Number of results = " + readResults.size());
-    assertEquals("Wrong number of results", 1, readResults.size());
-
-    // Make sure there are no documents in latest collection
-    queryMgr = readerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-    termQuery = sqb.collection(latestCollectionName);
-
-    start = 1;
-    termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
-
-    // Make sure there are 4 documents in temporal collection
-    queryMgr = readerClient.newQueryManager();
-    sqb = queryMgr.newStructuredQueryBuilder();
-    termQuery = sqb.collection(temporalLsqtCollectionName);
-
-    start = 1;
-    docMgr.setMetadataCategories(Metadata.ALL);
-    termQueryResults = docMgr.search(termQuery, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
-
-    while (termQueryResults.hasNext()) {
-      record = termQueryResults.next();
-      System.out.println("URI = " + record.getUri());
-
-      metadataHandle = new DocumentMetadataHandle();
-      record.getMetadata(metadataHandle);
-
-      if (record.getFormat() != Format.JSON) {
-        assertFalse("Format is not JSON: " + Format.JSON, true);
-      } else {
-        // Make sure that system and valid times are what is expected
-        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
-        record.getContent(recordHandle);
-        System.out.println("Content = " + recordHandle.toString());
-
-        JsonFactory factory = new JsonFactory();
-        ObjectMapper mapper = new ObjectMapper(factory);
-        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
-        };
-
-        Map<String, Object> docObject = mapper.readValue(
-            recordHandle.toString(), typeRef);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
-            .get(systemNodeName));
-
-        String systemStartDate = (String) systemNode.get(systemStartERIName);
-        String systemEndDate = (String) systemNode.get(systemEndERIName);
-        System.out.println("systemStartDate = " + systemStartDate);
-        System.out.println("systemEndDate = " + systemEndDate);
-
-        @SuppressWarnings("unchecked")
-        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
-            .get(validNodeName));
-
-        String validStartDate = (String) validNode.get(validStartERIName);
-        String validEndDate = (String) validNode.get(validEndERIName);
-        System.out.println("validStartDate = " + validStartDate);
-        System.out.println("validEndDate = " + validEndDate);
-
-        // Permissions
-        DocumentPermissions permissions = metadataHandle.getPermissions();
-        System.out.println("Permissions: " + permissions);
-
-        String actualPermissions = getDocumentPermissionsString(permissions);
-        System.out.println("actualPermissions: " + actualPermissions);
-
-        int quality = metadataHandle.getQuality();
-        System.out.println("Quality: " + quality);
-
-        if (validStartDate.contains("2003-01-01T00:00:00")
-            && validEndDate.contains("2008-12-31T23:59:59")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("2012-01-01T00:00:01")));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(updateCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-          assertEquals(quality, 99);
-        }
-
-        if (validStartDate.contains("2001-01-01T00:00:00")
-            && validEndDate.contains("2003-01-01T00:00:00")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("2012-01-01T00:00:01")));
-
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-        }
-
-        if (validStartDate.contains("2008-12-31T23:59:59")
-            && validEndDate.contains("2011-12-31T23:59:59")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2011-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("2012-01-01T00:00:01")));
-
-          assertTrue("URI should be the doc uri ", record.getUri()
-              .equals(docId));
-
-          // Document should not be in latest collection
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-
-          validateMetadata(metadataHandle);
-        }
-
-        if (validStartDate.contains("2001-01-01T00:00:00")
-            && validEndDate.contains("2011-12-31T23:59:59")) {
-          assertTrue("System start date check failed",
-              (systemStartDate.contains("2010-01-01T00:00:01")));
-          assertTrue("System start date check failed",
-              (systemEndDate.contains("2011-01-01T00:00:01")));
-          Iterator<String> resCollections = metadataHandle.getCollections()
-              .iterator();
-          while (resCollections.hasNext()) {
-            String collection = resCollections.next();
-            System.out.println("Collection = " + collection);
-
-            if (!collection.equals(docId)
-                && !collection.equals(insertCollectionName)
-                && !collection.equals(temporalLsqtCollectionName)) {
-              assertFalse("Collection not what is expected: " + collection,
-                  true);
-            }
-          }
-
-          assertTrue("Properties should be empty", metadataHandle
-              .getProperties().isEmpty());
-
-          assertTrue("Document permissions difference in size value",
-              actualPermissions.contains("size:4"));
-
-          assertTrue(
-              "Document permissions difference in rest-reader permission",
-              actualPermissions.contains("rest-reader:[READ]"));
-
-          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
-          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in rest-writer permission - first permission",
-              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
-          assertTrue("Document permissions difference in rest-writer permission - third permission",
-              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
-          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
-          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in App User permission - first permission",
-              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
-          assertTrue("Document permissions difference in App user permission - second permission",
-              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
-          assertTrue("Document permissions difference in App user permission - third permission",
-              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
-          // Split up temporal-admin=[READ, UPDATE] string
-          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
-
-          assertTrue("Document permissions difference in temporal-admin permission - first permission",
-              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
-          assertTrue("Document permissions difference in rest-writer permission - second permission",
-              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
-
-          assertEquals(quality, 11);
-        }
-      }
-    }
-
-    // Make sure there are 4 documents in total. Use string search for this
-    queryMgr = readerClient.newQueryManager();
-
-    start = 1;
-    termQueryResults = docMgr.search(stringQD, start);
-    System.out
-        .println("Number of results = " + termQueryResults.getTotalSize());
-    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
   }
 
   @Test
@@ -3248,4 +2737,836 @@ public class TestBiTemporal extends BasicJavaClientREST {
     assertTrue("Exception not thrown for invalid temporal collection",
         exceptionThrown);
   }
+  
+  @Test
+  // Test bitemporal create, update and delete works with a JSON document while
+  // passing
+  // system time. The temporal collection needs to be enabled for lsqt and we
+  // have enabled
+  // automation for lsqt (lsqt will be advanced every second and system time
+  // will be set with
+  // a lag of 1 second)
+  public void testSystemTime() throws Exception {
+
+    System.out.println("Inside testSystemTime");
+    ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
+        temporalLsqtCollectionName, true);
+
+    String docId = "javaSingleJSONDoc.json";
+
+    Calendar firstInsertTime = DatatypeConverter
+        .parseDateTime("2010-01-01T00:00:01");
+    insertJSONSingleDocument(temporalLsqtCollectionName, docId, null, null,
+        firstInsertTime);
+
+    // Verify that the document was inserted
+    JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
+    JacksonDatabindHandle<ObjectNode> recordHandle = new JacksonDatabindHandle<>(
+        ObjectNode.class);
+    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+    docMgr.read(docId, metadataHandle, recordHandle);
+    DocumentPage readResults = docMgr.read(docId);
+
+    System.out.println("Number of results = " + readResults.size());
+    assertEquals("Wrong number of results", 1, readResults.size());
+
+    DocumentRecord record = readResults.next();
+    System.out.println("URI after insert = " + record.getUri());
+    assertEquals("Document uri wrong after insert", docId, record.getUri());
+    System.out.println("Content = " + recordHandle.toString());
+
+    // Make sure System start time was what was set ("2010-01-01T00:00:01")
+    if (record.getFormat() != Format.JSON) {
+      assertFalse("Invalid document format: " + record.getFormat(), true);
+    } else {
+      JsonFactory factory = new JsonFactory();
+      ObjectMapper mapper = new ObjectMapper(factory);
+      TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+      };
+
+      Map<String, Object> docObject = mapper.readValue(
+          recordHandle.toString(), typeRef);
+
+      @SuppressWarnings("unchecked")
+      Map<String, Object> validNode = (HashMap<String, Object>) (docObject
+          .get(systemNodeName));
+
+      String systemStartDate = (String) validNode.get(systemStartERIName);
+      String systemEndDate = (String) validNode.get(systemEndERIName);
+      System.out.println("systemStartDate = " + systemStartDate);
+      System.out.println("systemEndDate = " + systemEndDate);
+
+      assertTrue("System start date check failed",
+          (systemStartDate.contains("2010-01-01T00:00:01")));
+      assertTrue("System end date check failed",
+          (systemEndDate.contains("9999-12-31T11:59:59")));
+
+      // Validate collections
+      Iterator<String> resCollections = metadataHandle.getCollections()
+          .iterator();
+      while (resCollections.hasNext()) {
+        String collection = resCollections.next();
+        System.out.println("Collection = " + collection);
+
+        if (!collection.equals(docId)
+            && !collection.equals(insertCollectionName)
+            && !collection.equals(temporalLsqtCollectionName)
+            && !collection.equals(latestCollectionName)) {
+          assertFalse("Collection not what is expected: " + collection, true);
+        }
+      }
+
+      // Validate permissions
+      DocumentPermissions permissions = metadataHandle.getPermissions();
+      System.out.println("Permissions: " + permissions);
+
+      String actualPermissions = getDocumentPermissionsString(permissions);
+      System.out.println("actualPermissions: " + actualPermissions);
+
+      assertTrue("Document permissions difference in size value",
+          actualPermissions.contains("size:4"));
+
+      assertTrue("Document permissions difference in rest-reader permission",
+          actualPermissions.contains("rest-reader:[READ]"));
+      // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+      String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+      assertTrue("Document permissions difference in rest-writer permission - first permission",
+          writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+      assertTrue("Document permissions difference in rest-writer permission - second permission",
+          writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+      assertTrue("Document permissions difference in rest-writer permission - third permission",
+          writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+      // Split up app-user app-user:[UPDATE, EXECUTE, READ] string
+      String[] appUserPerms = actualPermissions.split("app\\-user:\\[")[1].split("\\]")[0].split(",");
+
+      assertTrue("Document permissions difference in App User permission - first permission",
+          appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+      assertTrue("Document permissions difference in App User permission - second permission",
+          appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+      assertTrue("Document permissions difference in App User permission - third permission",
+          appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+
+      // Split up temporal-admin=[READ, UPDATE] string
+      String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+      assertTrue("Document permissions difference in temporal-admin permission - first permission",
+          temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+      assertTrue("Document permissions difference in rest-writer permission - second permission",
+          temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+      // Validate quality
+      int quality = metadataHandle.getQuality();
+      System.out.println("Quality: " + quality);
+      assertEquals(quality, 11);
+
+      validateMetadata(metadataHandle);
+    }
+
+    // =============================================================================
+    // Check update works
+    // =============================================================================
+    Calendar updateTime = DatatypeConverter
+        .parseDateTime("2011-01-01T00:00:01");
+    updateJSONSingleDocument(temporalLsqtCollectionName, docId, null,
+        updateTime);
+
+    // Verify that the document was updated
+    // Make sure there is 1 document in latest collection
+    QueryManager queryMgr = readerClient.newQueryManager();
+    StructuredQueryBuilder sqb = queryMgr.newStructuredQueryBuilder();
+    StructuredQueryDefinition termQuery = sqb.collection(latestCollectionName);
+    long start = 1;
+    DocumentPage termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 1, termQueryResults.getTotalSize());
+
+    // Document URIs in latest collection must be the same as the one as the
+    // original document
+    while (termQueryResults.hasNext()) {
+      record = termQueryResults.next();
+
+      String uri = record.getUri();
+      System.out.println("URI = " + uri);
+
+      if (!uri.equals(docId)) {
+        assertFalse("URIs are not what is expected", true);
+      }
+    }
+
+    // Make sure there are 4 documents in jsonDocId collection
+    queryMgr = readerClient.newQueryManager();
+    sqb = queryMgr.newStructuredQueryBuilder();
+    termQuery = sqb.collection(docId);
+
+    start = 1;
+    termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+    // Make sure there are 4 documents in temporal collection
+    queryMgr = readerClient.newQueryManager();
+    sqb = queryMgr.newStructuredQueryBuilder();
+    termQuery = sqb.collection(temporalLsqtCollectionName);
+
+    start = 1;
+    termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+    // Make sure there are 4 documents in total. Use string search for this
+    queryMgr = readerClient.newQueryManager();
+    StringQueryDefinition stringQD = queryMgr.newStringDefinition();
+    stringQD.setCriteria("");
+
+    start = 1;
+    docMgr.setMetadataCategories(Metadata.ALL);
+    termQueryResults = docMgr.search(stringQD, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+    while (termQueryResults.hasNext()) {
+      record = termQueryResults.next();
+      System.out.println("URI = " + record.getUri());
+
+      metadataHandle = new DocumentMetadataHandle();
+      record.getMetadata(metadataHandle);
+
+      if (record.getFormat() != Format.JSON) {
+        assertFalse("Format is not JSON: " + Format.JSON, true);
+      } else {
+        // Make sure that system and valid times are what is expected
+        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+
+        JsonFactory factory = new JsonFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+        };
+
+        Map<String, Object> docObject = mapper.readValue(
+            recordHandle.toString(), typeRef);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
+            .get(systemNodeName));
+
+        String systemStartDate = (String) systemNode.get(systemStartERIName);
+        String systemEndDate = (String) systemNode.get(systemEndERIName);
+        System.out.println("systemStartDate = " + systemStartDate);
+        System.out.println("systemEndDate = " + systemEndDate);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
+            .get(validNodeName));
+
+        String validStartDate = (String) validNode.get(validStartERIName);
+        String validEndDate = (String) validNode.get(validEndERIName);
+        System.out.println("validStartDate = " + validStartDate);
+        System.out.println("validEndDate = " + validEndDate);
+
+        // Permissions
+        DocumentPermissions permissions = metadataHandle.getPermissions();
+        System.out.println("Permissions: " + permissions);
+
+        String actualPermissions = getDocumentPermissionsString(permissions);
+        System.out.println("actualPermissions: " + actualPermissions);
+
+        int quality = metadataHandle.getQuality();
+        System.out.println("Quality: " + quality);
+
+        if (validStartDate.contains("2003-01-01T00:00:00")
+            && validEndDate.contains("2008-12-31T23:59:59")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(updateCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[UPDATE, READ] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertFalse("Document permissions difference in app-user permission",
+              actualPermissions.split("app-user:\\[")[1].split("\\]")[0].contains("EXECUTE"));
+
+          assertEquals(quality, 99);
+        }
+
+        if (validStartDate.contains("2001-01-01T00:00:00")
+            && validEndDate.contains("2003-01-01T00:00:00")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+        }
+
+        if (validStartDate.contains("2008-12-31T23:59:59")
+            && validEndDate.contains("2011-12-31T23:59:59")) {
+          // This is the latest document
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System end date check failed",
+              (systemEndDate.contains("9999-12-31T11:59:59")));
+          assertTrue("URI should be the doc uri ", record.getUri()
+              .equals(docId));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)
+                && !collection.equals(latestCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+
+          validateMetadata(metadataHandle);
+        }
+
+        if (validStartDate.contains("2001-01-01T00:00:00")
+            && validEndDate.contains("2011-12-31T23:59:59")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2010-01-01T00:00:01")));
+          assertTrue("System start date check failed",
+              (systemEndDate.contains("2011-01-01T00:00:01")));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+        }
+      }
+    }
+
+    // =============================================================================
+    // Check delete works
+    // =============================================================================
+    // Delete one of the document
+    Calendar deleteTime = DatatypeConverter
+        .parseDateTime("2012-01-01T00:00:01");
+    deleteJSONSingleDocument(temporalLsqtCollectionName, docId, null,
+        deleteTime);
+
+    // Make sure there are still 4 documents in docId collection
+    queryMgr = readerClient.newQueryManager();
+    sqb = queryMgr.newStructuredQueryBuilder();
+    termQuery = sqb.collection(docId);
+
+    start = 1;
+    termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+    // Make sure there is one document with docId uri
+    docMgr = readerClient.newJSONDocumentManager();
+    readResults = docMgr.read(docId);
+
+    System.out.println("Number of results = " + readResults.size());
+    assertEquals("Wrong number of results", 1, readResults.size());
+
+    // Make sure there are no documents in latest collection
+    queryMgr = readerClient.newQueryManager();
+    sqb = queryMgr.newStructuredQueryBuilder();
+    termQuery = sqb.collection(latestCollectionName);
+
+    start = 1;
+    termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 0, termQueryResults.getTotalSize());
+
+    // Make sure there are 4 documents in temporal collection
+    queryMgr = readerClient.newQueryManager();
+    sqb = queryMgr.newStructuredQueryBuilder();
+    termQuery = sqb.collection(temporalLsqtCollectionName);
+
+    start = 1;
+    docMgr.setMetadataCategories(Metadata.ALL);
+    termQueryResults = docMgr.search(termQuery, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+
+    while (termQueryResults.hasNext()) {
+      record = termQueryResults.next();
+      System.out.println("URI = " + record.getUri());
+
+      metadataHandle = new DocumentMetadataHandle();
+      record.getMetadata(metadataHandle);
+
+      if (record.getFormat() != Format.JSON) {
+        assertFalse("Format is not JSON: " + Format.JSON, true);
+      } else {
+        // Make sure that system and valid times are what is expected
+        recordHandle = new JacksonDatabindHandle<>(ObjectNode.class);
+        record.getContent(recordHandle);
+        System.out.println("Content = " + recordHandle.toString());
+
+        JsonFactory factory = new JsonFactory();
+        ObjectMapper mapper = new ObjectMapper(factory);
+        TypeReference<HashMap<String, Object>> typeRef = new TypeReference<HashMap<String, Object>>() {
+        };
+
+        Map<String, Object> docObject = mapper.readValue(
+            recordHandle.toString(), typeRef);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> systemNode = (HashMap<String, Object>) (docObject
+            .get(systemNodeName));
+
+        String systemStartDate = (String) systemNode.get(systemStartERIName);
+        String systemEndDate = (String) systemNode.get(systemEndERIName);
+        System.out.println("systemStartDate = " + systemStartDate);
+        System.out.println("systemEndDate = " + systemEndDate);
+
+        @SuppressWarnings("unchecked")
+        Map<String, Object> validNode = (HashMap<String, Object>) (docObject
+            .get(validNodeName));
+
+        String validStartDate = (String) validNode.get(validStartERIName);
+        String validEndDate = (String) validNode.get(validEndERIName);
+        System.out.println("validStartDate = " + validStartDate);
+        System.out.println("validEndDate = " + validEndDate);
+
+        // Permissions
+        DocumentPermissions permissions = metadataHandle.getPermissions();
+        System.out.println("Permissions: " + permissions);
+
+        String actualPermissions = getDocumentPermissionsString(permissions);
+        System.out.println("actualPermissions: " + actualPermissions);
+
+        int quality = metadataHandle.getQuality();
+        System.out.println("Quality: " + quality);
+
+        if (validStartDate.contains("2003-01-01T00:00:00")
+            && validEndDate.contains("2008-12-31T23:59:59")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System start date check failed",
+              (systemEndDate.contains("2012-01-01T00:00:01")));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(updateCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+          assertEquals(quality, 99);
+        }
+
+        if (validStartDate.contains("2001-01-01T00:00:00")
+            && validEndDate.contains("2003-01-01T00:00:00")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System start date check failed",
+              (systemEndDate.contains("2012-01-01T00:00:01")));
+
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+        }
+
+        if (validStartDate.contains("2008-12-31T23:59:59")
+            && validEndDate.contains("2011-12-31T23:59:59")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2011-01-01T00:00:01")));
+          assertTrue("System start date check failed",
+              (systemEndDate.contains("2012-01-01T00:00:01")));
+
+          assertTrue("URI should be the doc uri ", record.getUri()
+              .equals(docId));
+
+          // Document should not be in latest collection
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+
+          validateMetadata(metadataHandle);
+        }
+
+        if (validStartDate.contains("2001-01-01T00:00:00")
+            && validEndDate.contains("2011-12-31T23:59:59")) {
+          assertTrue("System start date check failed",
+              (systemStartDate.contains("2010-01-01T00:00:01")));
+          assertTrue("System start date check failed",
+              (systemEndDate.contains("2011-01-01T00:00:01")));
+          Iterator<String> resCollections = metadataHandle.getCollections()
+              .iterator();
+          while (resCollections.hasNext()) {
+            String collection = resCollections.next();
+            System.out.println("Collection = " + collection);
+
+            if (!collection.equals(docId)
+                && !collection.equals(insertCollectionName)
+                && !collection.equals(temporalLsqtCollectionName)) {
+              assertFalse("Collection not what is expected: " + collection,
+                  true);
+            }
+          }
+
+          assertTrue("Properties should be empty", metadataHandle
+              .getProperties().isEmpty());
+
+          assertTrue("Document permissions difference in size value",
+              actualPermissions.contains("size:4"));
+
+          assertTrue(
+              "Document permissions difference in rest-reader permission",
+              actualPermissions.contains("rest-reader:[READ]"));
+
+          // Split up rest-writer:[READ, EXECUTE, UPDATE] string
+          String[] writerPerms = actualPermissions.split("rest-writer:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in rest-writer permission - first permission",
+              writerPerms[0].contains("UPDATE") || writerPerms[1].contains("UPDATE") || writerPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              writerPerms[0].contains("EXECUTE") || writerPerms[1].contains("EXECUTE") || writerPerms[2].contains("EXECUTE"));
+          assertTrue("Document permissions difference in rest-writer permission - third permission",
+              writerPerms[0].contains("READ") || writerPerms[1].contains("READ") || writerPerms[2].contains("READ"));
+          // Split up app-user app-user:[READ, UPDATE, EXECUTE] string
+          String[] appUserPerms = actualPermissions.split("app-user:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in App User permission - first permission",
+              appUserPerms[0].contains("UPDATE") || appUserPerms[1].contains("UPDATE") || appUserPerms[2].contains("UPDATE"));
+          assertTrue("Document permissions difference in App user permission - second permission",
+              appUserPerms[0].contains("READ") || appUserPerms[1].contains("READ") || appUserPerms[2].contains("READ"));
+          assertTrue("Document permissions difference in App user permission - third permission",
+              appUserPerms[0].contains("EXECUTE") || appUserPerms[1].contains("EXECUTE") || appUserPerms[2].contains("EXECUTE"));
+          // Split up temporal-admin=[READ, UPDATE] string
+          String[] temporalAdminPerms = actualPermissions.split("temporal-admin:\\[")[1].split("\\]")[0].split(",");
+
+          assertTrue("Document permissions difference in temporal-admin permission - first permission",
+              temporalAdminPerms[0].contains("UPDATE") || temporalAdminPerms[1].contains("UPDATE"));
+          assertTrue("Document permissions difference in rest-writer permission - second permission",
+              temporalAdminPerms[0].contains("READ") || temporalAdminPerms[1].contains("READ"));
+
+          assertEquals(quality, 11);
+        }
+      }
+    }
+
+    // Make sure there are 4 documents in total. Use string search for this
+    queryMgr = readerClient.newQueryManager();
+
+    start = 1;
+    termQueryResults = docMgr.search(stringQD, start);
+    System.out
+        .println("Number of results = " + termQueryResults.getTotalSize());
+    assertEquals("Wrong number of results", 4, termQueryResults.getTotalSize());
+  }
+
 }

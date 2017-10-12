@@ -2869,4 +2869,51 @@ public abstract class ConnectedRESTQA {
 		}
 		return null;
 	}
+	
+	// Disable automation for a LSQT enabled DB on a collection. Tests need to manually advance LSQT.
+	  public static void disableAutomationOnTemporalCollection(String dbName, String collectionName, boolean enable)
+	          throws Exception {
+	      ObjectMapper mapper = new ObjectMapper();
+	      ObjectNode rootNode = mapper.createObjectNode();
+	      rootNode.put("lsqt-enabled", enable);
+
+	      // Set automation value to false
+	      ObjectNode automation = mapper.createObjectNode();
+	      automation.put("enabled", false);
+
+	      rootNode.set("automation", automation);
+
+	      System.out.println(rootNode.toString());
+
+	      DefaultHttpClient client = new DefaultHttpClient();
+	      client.getCredentialsProvider().setCredentials(
+	              new AuthScope(host_name, getAdminPort()),
+	              new UsernamePasswordCredentials("admin", "admin"));
+
+	      HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName + "/temporal/collections/lsqt/properties?collection=" + collectionName);
+
+	      put.addHeader("Content-type", "application/json");
+	      put.addHeader("accept", "application/json");
+	      put.setEntity(new StringEntity(rootNode.toString()));
+
+	      HttpResponse response = client.execute(put);
+	      HttpEntity respEntity = response.getEntity();
+	      if (response.getStatusLine().getStatusCode() == 400) {
+	          HttpEntity entity = response.getEntity();
+	          String responseString = EntityUtils.toString(entity, "UTF-8");
+	          System.out.println(responseString);
+	      }
+	      else if (respEntity != null) {
+	          // EntityUtils to get the response content
+	          String content = EntityUtils.toString(respEntity);
+	          System.out.println(content);
+
+	          System.out.println("Temporal collection: " + collectionName + " created");
+	          System.out.println("==============================================================");
+	      }
+	      else {
+	          System.out.println("No Proper Response");
+	      }
+	      client.getConnectionManager().shutdown();
+	  }
 }
