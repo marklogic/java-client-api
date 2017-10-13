@@ -1,4 +1,4 @@
-* Using Cookbook Examples
+# Using Cookbook Examples
 
 The most important use of cookbook examples is reading the source code.  You
 can do this on [github](https://github.com/marklogic/java-client-api) or on
@@ -19,7 +19,7 @@ command:
 
     mvn dependency:build-classpath
 
-* Testing Cookbook Examples
+# Testing Cookbook Examples
 
 Most cookbook examples pass their unit test if they run without error.  First
 edit the [Example.properties](../../../../../../resources/Example.properties) file
@@ -28,7 +28,7 @@ run `mvn test` while specifying the unit test you want to run, for example:
 
     mvn test -Dtest=DocumentWriteTest
 
-* Creating a Cookbook Example
+# Creating a Cookbook Example
 
 We encourage community-contributed cookbook examples!  Make sure you follow
 the guidelines in [CONTRIBUTING.md](../../../../../../../../CONTRIBUTING.md)
