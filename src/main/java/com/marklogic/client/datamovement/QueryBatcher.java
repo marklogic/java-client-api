@@ -310,4 +310,18 @@ public interface QueryBatcher extends Batcher {
    * @param queryBatchListener  the QueryBatchListener which needs to be applied
    */
   void retryListener(QueryBatch batch, QueryBatchListener queryBatchListener);
+
+  /**
+   * Retry in the same thread to query a batch that failed. If it fails again,
+   * all the failure listeners associated with the batcher using onQueryFailure
+   * method would be processed.
+   * 
+   * Note : Use this method with caution as there is a possibility of infinite
+   * loops. If a batch fails and one of the failure listeners calls this method
+   * to retry with failure listeners and if the batch again fails, this would go
+   * on as an infinite loop until the batch succeeds.
+   * 
+   * @param queryEvent the information about the batch that failed
+   */
+  void retryWithFailureListeners(QueryEvent queryEvent);
 }

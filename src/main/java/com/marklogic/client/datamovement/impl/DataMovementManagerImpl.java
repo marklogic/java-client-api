@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class DataMovementManagerImpl implements DataMovementManager {
   private static Logger logger = LoggerFactory.getLogger(DataMovementManager.class);
   private DataMovementServices service = new DataMovementServices();
-  private ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
+  private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
   // clientMap key is the hostname_database
