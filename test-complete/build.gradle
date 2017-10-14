@@ -33,6 +33,8 @@ task testSandbox(type:Test) {
 repositories {
 	mavenLocal()
 	mavenCentral()
+	jcenter()
+	maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
 	maven { url "http://developer.marklogic.com/maven2" }
 	maven { url "http://repo.maven.apache.org/maven2" }
 }
