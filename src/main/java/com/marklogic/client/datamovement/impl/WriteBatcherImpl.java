@@ -462,7 +462,16 @@ public class WriteBatcherImpl
   }
 
   @Override
+  public void retryWithFailureListeners(WriteBatch batch) {
+    retry(batch, true);
+  }
+
+  @Override
   public void retry(WriteBatch batch) {
+    retry(batch, false);
+  }
+
+  private void retry(WriteBatch batch, boolean callFailListeners) {
     if ( isStopped() == true ) {
       logger.warn("Job is now stopped, aborting the retry");
       return;
@@ -470,17 +479,20 @@ public class WriteBatcherImpl
     if ( batch == null ) throw new IllegalArgumentException("batch must not be null");
     boolean forceNewTransaction = true;
     BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction, batch.getJobBatchNumber());
-    writeSet.onFailure(throwable -> {
-      if ( throwable instanceof RuntimeException ) throw (RuntimeException) throwable;
-      else throw new DataMovementException("Failed to retry batch", throwable);
-    });
-    for ( WriteEvent doc : batch.getItems() ) {
+    if ( !callFailListeners ) {
+      writeSet.onFailure(throwable -> {
+        if ( throwable instanceof RuntimeException )
+          throw (RuntimeException) throwable;
+        else
+          throw new DataMovementException("Failed to retry batch", throwable);
+      });
+    }
+    for (WriteEvent doc : batch.getItems()) {
       writeSet.getWriteSet().add(doc.getTargetUri(), doc.getMetadata(), doc.getContent());
     }
     BatchWriter runnable = new BatchWriter(writeSet);
     runnable.run();
   }
-
   @Override
   public WriteBatchListener[]        getBatchSuccessListeners() {
     return successListeners.toArray(new WriteBatchListener[successListeners.size()]);

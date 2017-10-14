@@ -321,4 +321,18 @@ public interface WriteBatcher extends Batcher {
    * @throws IllegalStateException if this job has not yet been started
    */
   JobTicket getJobTicket();
+
+  /**
+   * Retry in the same thread to send a batch that failed. If it fails again,
+   * all the failure listeners associated with the batcher using onBatchFailure
+   * method would be processed.
+   * 
+   * Note : Use this method with caution as there is a possibility of infinite
+   * loops. If a batch fails and one of the failure listeners calls this method
+   * to retry with failure listeners and if the batch again fails, this would go
+   * on as an infinite loop until the batch succeeds.
+   * 
+   * @param queryEvent the information about the batch that failed
+   */
+  public void retryWithFailureListeners(WriteBatch writeBatch);
 }

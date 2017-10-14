@@ -124,11 +124,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
    */
   @Override
   public void retry(QueryEvent queryEvent) {
+    retry(queryEvent, false);
+  }
+
+  @Override
+  public void retryWithFailureListeners(QueryEvent queryEvent) {
+    retry(queryEvent, true);
+  }
+
+  private void retry(QueryEvent queryEvent, boolean callFailListeners) {
     if ( isStopped() == true ) {
       logger.warn("Job is now stopped, aborting the retry");
       return;
     }
-    boolean callFailListeners = false;
     Forest retryForest = null;
     for ( Forest forest : getForestConfig().listForests() ) {
       if ( forest.equals(queryEvent.getForest()) ) {
@@ -151,7 +159,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       queryEvent.getForestBatchNumber(), start, queryEvent.getJobBatchNumber(), callFailListeners);
     runnable.run();
   }
-
   /*
    * Accepts a QueryBatch which was successfully retrieved from the server and a 
    * QueryBatchListener which was failed to apply and retry that listener on the batch. 

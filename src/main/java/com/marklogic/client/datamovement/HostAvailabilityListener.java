@@ -182,7 +182,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         logger.warn("Retrying failed batch: {}, results so far: {}, uris: {}",
           batch.getJobBatchNumber(), batch.getJobWritesSoFar(),
           Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList()));
-        batch.getBatcher().retry(batch);
+        batch.getBatcher().retryWithFailureListeners(batch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
         processFailure(batch, e);
@@ -202,7 +202,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         logger.warn("Retrying failed batch: {}, results so far: {}, forest: {}, forestBatch: {}, forest results so far: {}",
           queryBatch.getJobBatchNumber(), queryBatch.getJobResultsSoFar(), queryBatch.getForest().getForestName(),
           queryBatch.getForestBatchNumber(), queryBatch.getForestResultsSoFar());
-        queryBatch.getBatcher().retry(queryBatch);
+        queryBatch.getBatcher().retryWithFailureListeners(queryBatch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
         processFailure(new QueryBatchException(queryBatch, e));
