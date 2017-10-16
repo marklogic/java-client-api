@@ -83,33 +83,30 @@ public class QBFailover extends BasicJavaClientREST {
 	private static String stringTriple;
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames;
-	private static String  dataDir;
+	private static String dataDir;
 	private static JobTicket ticket;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
-	
-	
+
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
-	    //Add all possible hostnames and pick a random one to create a client
+		// Add all possible hostnames and pick a random one to create a client
 		List<String> hostLists = new ArrayList<String>();
 		String localhost = InetAddress.getLocalHost().getHostName().toLowerCase();
-		Pattern pattern = Pattern.compile(localhost+"(.*)");
+		Pattern pattern = Pattern.compile(localhost + "(.*)");
 		Matcher matcher = pattern.matcher(hostNames[0]);
 		String domain = null;
-		if (matcher.find())
-		{
-		    domain = matcher.group(1);
-		    System.out.println(domain);
+		if (matcher.find()) {
+			domain = matcher.group(1);
+			System.out.println(domain);
 		}
-		for(String host: hostNames){
+		for (String host : hostNames) {
 			hostLists.add(host);
-			pattern = Pattern.compile("(.*)"+domain);
+			pattern = Pattern.compile("(.*)" + domain);
 			matcher = pattern.matcher(host);
-			if (matcher.find())
-			{
+			if (matcher.find()) {
 				hostLists.add(matcher.group(1));
 			}
 		}
@@ -117,28 +114,31 @@ public class QBFailover extends BasicJavaClientREST {
 		int index = new Random().nextInt(hostLists.size());
 		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
 		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		System.out.println("Connected to: "+dbClient.getHost());
+		System.out.println("Connected to: " + dbClient.getHost());
 		dmManager = dbClient.newDataMovementManager();
 		tempMgr = evalClient.newDataMovementManager();
-	
+
 		Map<String, String> props = new HashMap<>();
-		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()").eval().next().getString().charAt(0));
-/*		if (OS.indexOf("win") >= 0) {
-			dataDir = "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/"+version+"/temp-";
-		}else*/ 
-		if(OS.indexOf("nux")  >= 0){
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/"+version+"/temp-";
-		}else if(OS.indexOf("mac")  >= 0){
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/"+version+"/temp-";
-		}else{
+		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
+				.eval().next().getString().charAt(0));
+		/*
+		 * if (OS.indexOf("win") >= 0) { dataDir =
+		 * "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/"+
+		 * version+"/temp-"; }else
+		 */
+		if (OS.indexOf("nux") >= 0) {
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
+		} else if (OS.indexOf("mac") >= 0) {
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
+		} else {
 			Assert.fail("Unsupported platform");
 		}
-		
+
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);
 		for (int i = 0; i < hostNames.length; i++) {
 			if (i != 0) {
-				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1),hostNames[0]);
+				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
 			} else {
 				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), null);
 
@@ -206,7 +206,13 @@ public class QBFailover extends BasicJavaClientREST {
 	@Before
 	public void setUp() throws Exception {
 		for (int i = 0; i < hostNames.length; i++) {
+			if (!isRunning(hostNames[i])) {
+				serverStartStop(hostNames[i], "start");
+			}
 			Assert.assertTrue(isRunning(hostNames[i]));
+		}
+		if (!(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
+			clearDB(port);
 		}
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		ForestConfiguration fc = dmManager.readForestConfig();
@@ -230,7 +236,7 @@ public class QBFailover extends BasicJavaClientREST {
 			System.out.println("Disabling " + dbName + "-" + (i + 1));
 			changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 			Thread.currentThread().sleep(1000L);
-			System.out.println("Restarting server: "+hostNames[i]);
+			System.out.println("Restarting server: " + hostNames[i]);
 			serverStartStop(hostNames[i], "start");
 			Thread.currentThread().sleep(1000L);
 			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm:ss").format(new Date()));
@@ -278,7 +284,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 15000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
-	
+
 	@Test
 	public void testRestart() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -503,18 +509,18 @@ public class QBFailover extends BasicJavaClientREST {
 								modified.incrementAndGet();
 							}
 						} else {
-							passed.set(false);					
+							passed.set(false);
 						}
 					}
 				});
 		tempMgr.startJob(readBatcher);
 		readBatcher.awaitCompletion();
-		System.out.println("Modified docs: "+modified.intValue());
+		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
 		assertEquals("document count", 15000, modified.intValue());
 		assertEquals("document count", 15000, success.intValue());
 		assertEquals("document count", 0, skipped.intValue());
-	
+
 	}
 
 	@Test
@@ -576,13 +582,13 @@ public class QBFailover extends BasicJavaClientREST {
 								modified.incrementAndGet();
 							}
 						} else {
-							passed.set(false);					
+							passed.set(false);
 						}
 					}
 				});
 		tempMgr.startJob(readBatcher);
 		readBatcher.awaitCompletion();
-		System.out.println("Modified docs: "+modified.intValue());
+		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
 		assertEquals("document count", 15000, modified.intValue());
 		assertEquals("document count", 15000, success.intValue());
@@ -654,13 +660,13 @@ public class QBFailover extends BasicJavaClientREST {
 								modified.incrementAndGet();
 							}
 						} else {
-							passed.set(false);					
+							passed.set(false);
 						}
 					}
 				});
 		tempMgr.startJob(readBatcher);
 		readBatcher.awaitCompletion();
-		System.out.println("Modified docs: "+modified.intValue());
+		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
 		assertEquals("document count", 15000, modified.intValue());
 		assertEquals("document count", 15000, success.intValue());
@@ -754,6 +760,7 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		ihb2.flushAndWait();
 	}
+
 	private boolean isRunning(String host) {
 		try {
 
@@ -765,7 +772,7 @@ public class QBFailover extends BasicJavaClientREST {
 			HttpResponse response = client.execute(get);
 			ResponseHandler<String> handler = new BasicResponseHandler();
 			String body = handler.handleResponse(response);
-			if(body.contains("Healthy")){
+			if (body.contains("Healthy")) {
 				return true;
 			}
 

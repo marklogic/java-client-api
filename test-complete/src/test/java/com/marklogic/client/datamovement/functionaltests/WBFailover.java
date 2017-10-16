@@ -5,6 +5,7 @@ import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -14,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -34,6 +36,7 @@ import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
+import com.marklogic.client.datamovement.Forest;
 import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
@@ -91,9 +94,11 @@ public class WBFailover extends BasicJavaClientREST {
 		Map<String, String> props = new HashMap<>();
 		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
 				.eval().next().getString().charAt(0));
-/*		if (OS.indexOf("win") >= 0) {
-			dataDir = "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/" + version + "/temp-";
-		} else */
+		/*
+		 * if (OS.indexOf("win") >= 0) { dataDir =
+		 * "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/" +
+		 * version + "/temp-"; } else
+		 */
 		if (OS.indexOf("nux") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
@@ -160,11 +165,20 @@ public class WBFailover extends BasicJavaClientREST {
 	@Before
 	public void setUp() throws Exception {
 		for (int i = 0; i < hostNames.length; i++) {
+			if (!isRunning(hostNames[i])) {
+				serverStartStop(hostNames[i], "start");
+			}
 			Assert.assertTrue(isRunning(hostNames[i]));
 		}
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		if (!(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
+			clearDB(port);
+		}
 		ForestConfiguration fc = dmManager.readForestConfig();
-		Assert.assertEquals(fc.listForests().length, hostNames.length);
+		Forest[] f = fc.listForests();
+		f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
+				.toArray(new Forest[hostNames.length]);
+		Assert.assertEquals(f.length, hostNames.length);
+		Assert.assertEquals(f.length, 3L);
 	}
 
 	@After
