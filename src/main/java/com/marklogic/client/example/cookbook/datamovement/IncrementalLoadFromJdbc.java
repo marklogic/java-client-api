@@ -49,12 +49,19 @@ import java.util.concurrent.TimeUnit;
  * example source data (accessed via JDBC) continues to grow and evolve, so
  * updates from the source must be regularly incporated into the target system
  * (MarkLogic Server).  These updates include new documents, updated documents,
- * and deleted documents.  The source data is too large to ingest completely
- * every time.  So this example addresses the more difficult scenario where
- * incremental loads are required to include only the updates.  Additionally,
- * this example addresses the more difficult scenario where the source system
- * can provide a list of all current document uris, but cannot provide any
- * information about modified or deleted documents.
+ * and deleted documents.
+ *
+ * The source data is too large to ingest completely every time.  So this
+ * example addresses the more difficult scenario where incremental loads are
+ * required to include only the updates.
+ *
+ * Many source systems offer a document version or last updated time-stamp.
+ * This pattern addresses the more difficult scenario where the source system
+ * offers no such option.
+ *
+ * Additionally, this example addresses the more difficult scenario where the
+ * source system can provide a list of all current document uris, but cannot
+ * provide any information about modified or deleted documents.
  *
  * # Solution
  *
@@ -78,12 +85,13 @@ import java.util.concurrent.TimeUnit;
  * Any document written to MarkLogic Server also has written a "sidecar"
  * document containing metadata including the document uri, a hashcode and a
  * jobName.  The sidecar document has a collection representing the data
- * source.  The hascode is generated based on the source document contents.
- * The hascode algorithm is consistent when the source document hasn't changed
- * and different any time the source document has changed.  The jobName is any
- * id or timestamp representing the last job which validated the document, and
- * should differ from previous job runs.  This sidecar document is updated with
- * each job run to reflect the latest jobName.
+ * source.  The hascode is generated based on select portions of the source
+ * document contents.  The hascode algorithm is consistent when the source
+ * document hasn't changed and different any time the source document has
+ * changed.  The jobName is any id or timestamp representing the last job which
+ * checked the hashcode of the document, and should differ from previous job
+ * runs.  This sidecar document is updated with each job run to reflect the
+ * latest jobName.
  *
  * ## Step 3
  *
@@ -92,17 +100,39 @@ import java.util.concurrent.TimeUnit;
  * jobName which indicates these documents are in MarkLogic but were missing
  * from this job run and are therefore not in the datasource.  After confirming
  * that these documents are legitimately not in the datasource, they are
- * deleted from MarkLogic Server.  This is how we stay up-to-date with deletes
- * when the source system offers no way to track deleted documents.
+ * archived in MarkLogic Server.  To archive documents we remove the collection
+ * for this datasource and add an "archived" collection.  This effectively
+ * removes the documents from queries that are looking for documents in the
+ * collection for this datasource.  This is how we stay up-to-date with
+ * deletes when the source system offers no way to track deleted documents.
  *
- * # Solution Alternative
+ * # Alternative Solutions
+ *
+ * ## Alternative Solution 1
  *
  * If your scenario allows you to load all the documents each time, do that
  * because it's simpler.  Simply delete in the target all data from that one
  * source then reload the latest data from that source.  This addresses new
  * documents, updated documents, and deleted documents.
  *
+ * ## Alternative Solution 2
+ *
+ * Your scenario may be different if it requires a one-time data migration
+ * rather than an ongoing load of updates from the source.  For example, a
+ * one-time load for a production cut-over may have significant performance
+ * requirements this solution cannot address.  Also, some one-time migrations
+ * will not require comparison of hashcodes nor tracking of deletes.
+ *
+ * # Adjustments
+ *
  * # Solution Adjustment 1
+ *
+ * If the source can provide you with last updated timestamps, compare those
+ * instead of hashcodes.  This reduces the effort to select which portions of
+ * the document to include in the hashcode.  This also reduces the processing
+ * of calculating hashcodes each time.
+ *
+ * # Solution Adjustment 2
  *
  * The sidecar document can be written to a different MarkLogic database,
  * cluster, or non-MarkLogic system (including the file system).  This will
@@ -110,20 +140,48 @@ import java.util.concurrent.TimeUnit;
  * This also opens more options to write sidecar to a database with a different
  * configuration including forests on less expensive storage.
  *
- * # Solution Adjustment 2
+ * # Solution Adjustment 3
  *
  * For systems that offer a way to track deleted documents, use that instead of
  * step 3.  Get the list of uris of source documents deleted since the last job
- * run.  Delete those documents (and associated sidecar files) from MarkLogic
- * Server.
+ * run.  Archive or delete those documents (and associated sidecar files) from
+ * MarkLogic Server.
  *
- * # Solution Adjustment 3
+ * # Solution Adjustment 4
  *
  * The source documents can be read from a staging area containing at least the
  * uri and the up-to-date hashcode for each document.  This will reduce the
  * read load on the source system to only documents found to be missing from
  * MarkLogic or updated from what is in MarkLogic.
  *
+ * # Gotchas
+ *
+ * ## No Staging of Source Documents in Target
+ *
+ * We recommend loading documents to a staging area in MarkLogic without
+ * transformations so we can see the documents in MarkLogic as they look in the
+ * source system.  If we don't do that, and we transform the documents in
+ * MarkLogic, it may be confusing how to calculate hashcodes.  Nevertheless,
+ * this pattern can still be applied, it just requires more careful design and
+ * documentation so it can reasonably be maintained.
+ *
+ * ## Documents are not 1-1 from Source to Target
+ *
+ * Not all documents (or records, or rows) from a source system map 1-1 to
+ * final documents in a target system.  This may make it less obvious how to
+ * apply this pattern.  Sometimes mapping source documents to target documents
+ * occurs client-side.  Sometimes mapping source documents to target documents
+ * happens server-side, as in the Data Hub Framwork.  One key to resolving this
+ * is to generate hashcodes that help determine whether relevant source data
+ * changed, so hashcodes should incorporate all relevant source data but not
+ * data generated solely by transformations (or harmonization).
+ *
+ * When all relevant source data comes from multiple records, and no staging
+ * documents match source documents, the source records must of course be
+ * combined prior to calculating hashcodes, as we do in this example.  Here we
+ * perform a join in the source relational database to combine all relevant
+ * data into multiple rows.  Additionally, we combine multiple rows into a
+ * single Employee object before we calculate the hashcodes.
  */
 public class IncrementalLoadFromJdbc extends BulkLoadFromJdbcWithSimpleJoins {
   // threadCount and batchSize are only small because this recipe ships with a
