@@ -4,6 +4,9 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.text.SimpleDateFormat;
@@ -14,6 +17,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -100,7 +104,6 @@ public class QBFailover extends BasicJavaClientREST {
 		String domain = null;
 		if (matcher.find()) {
 			domain = matcher.group(1);
-			System.out.println(domain);
 		}
 		for (String host : hostNames) {
 			hostLists.add(host);
@@ -121,12 +124,32 @@ public class QBFailover extends BasicJavaClientREST {
 		Map<String, String> props = new HashMap<>();
 		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
 				.eval().next().getString().charAt(0));
-		/*
-		 * if (OS.indexOf("win") >= 0) { dataDir =
-		 * "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/"+
-		 * version+"/temp-"; }else
-		 */
-		if (OS.indexOf("nux") >= 0) {
+		if (OS.indexOf("win") >= 0) {
+			Properties prop = new Properties();
+			InputStream input = null;
+			String location = null;
+			String seperator = File.separator;
+			try {
+				input = new FileInputStream(System.getProperty("user.dir") + ".." + seperator + ".." + seperator + "qa"
+						+ seperator + "failover-location.properties");
+				prop.load(input);
+				location = prop.getProperty("location");
+				System.out.println(prop.getProperty("location"));
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				Assert.fail("Forest location file not found");
+			} finally {
+				if (input != null) {
+					try {
+						input.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+						Assert.fail("Forest location file not found");
+					}
+				}
+			}
+			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
+		} else if (OS.indexOf("nux") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
@@ -222,7 +245,7 @@ public class QBFailover extends BasicJavaClientREST {
 		Assert.assertEquals(f.length, hostNames.length);
 		Assert.assertEquals(f.length, 3L);
 		addDocs();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 15000);
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
 	}
 
 	@After
@@ -281,7 +304,7 @@ public class QBFailover extends BasicJavaClientREST {
 		System.out.println("Success " + success.intValue());
 		System.out.println("Failure " + failure.intValue());
 
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
 
@@ -318,7 +341,7 @@ public class QBFailover extends BasicJavaClientREST {
 		System.out.println("Success " + success.intValue());
 		System.out.println("Failure " + failure.intValue());
 
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
 
@@ -362,7 +385,7 @@ public class QBFailover extends BasicJavaClientREST {
 		System.out.println("Success " + success.intValue());
 		System.out.println("Failure " + failure.intValue());
 
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
 
@@ -407,7 +430,7 @@ public class QBFailover extends BasicJavaClientREST {
 		Thread.currentThread().sleep(20000L);
 		System.out.println("Success " + success.intValue());
 		System.out.println("Failure " + failure.intValue());
-		Assert.assertTrue(success.intValue() < 15000);
+		Assert.assertTrue(success.intValue() < 20000);
 	}
 
 	@Test
@@ -447,7 +470,7 @@ public class QBFailover extends BasicJavaClientREST {
 			batcher.awaitCompletion();
 			dmManager.stopJob(ticket);
 			System.out.println("Success " + success.intValue());
-			assertEquals("document count", 15000, success.intValue());
+			assertEquals("document count", 20000, success.intValue());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -517,8 +540,8 @@ public class QBFailover extends BasicJavaClientREST {
 		readBatcher.awaitCompletion();
 		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
-		assertEquals("document count", 15000, modified.intValue());
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, modified.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, skipped.intValue());
 
 	}
@@ -590,8 +613,8 @@ public class QBFailover extends BasicJavaClientREST {
 		readBatcher.awaitCompletion();
 		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
-		assertEquals("document count", 15000, modified.intValue());
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, modified.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, skipped.intValue());
 	}
 
@@ -668,8 +691,8 @@ public class QBFailover extends BasicJavaClientREST {
 		readBatcher.awaitCompletion();
 		System.out.println("Modified docs: " + modified.intValue());
 		Assert.assertTrue(passed.get());
-		assertEquals("document count", 15000, modified.intValue());
-		assertEquals("document count", 15000, success.intValue());
+		assertEquals("document count", 20000, modified.intValue());
+		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
 
@@ -754,7 +777,7 @@ public class QBFailover extends BasicJavaClientREST {
 
 		dmManager.startJob(ihb2);
 
-		for (int j = 0; j < 15000; j++) {
+		for (int j = 0; j < 20000; j++) {
 			String uri = "/local/string-" + j;
 			ihb2.add(uri, meta2, stringHandle);
 		}

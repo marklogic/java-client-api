@@ -1,6 +1,9 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import java.io.BufferedReader;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
@@ -10,6 +13,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -94,12 +98,30 @@ public class WBFailover extends BasicJavaClientREST {
 		Map<String, String> props = new HashMap<>();
 		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
 				.eval().next().getString().charAt(0));
-		/*
-		 * if (OS.indexOf("win") >= 0) { dataDir =
-		 * "//netapp1-10g.colo.marklogic.com/lab1/space/dmsdk-failover/win/" +
-		 * version + "/temp-"; } else
-		 */
-		if (OS.indexOf("nux") >= 0) {
+		if (OS.indexOf("win") >= 0) {
+			Properties prop = new Properties();
+			InputStream input = null;
+			String location = null;
+			try {
+				input = new FileInputStream("failover-location.properties");
+				prop.load(input);
+				location = prop.getProperty("location");
+				System.out.println(prop.getProperty("location"));
+			} catch (IOException ex) {
+				ex.printStackTrace();
+				Assert.fail("Forest location file not found");
+			} finally {
+				if (input != null) {
+					try {
+						input.close();
+					} catch (IOException e) {
+						e.printStackTrace();
+						Assert.fail("Forest location file not found");
+					}
+				}
+			}
+			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
+		} else if (OS.indexOf("nux") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
@@ -227,7 +249,6 @@ public class WBFailover extends BasicJavaClientREST {
 			HostAvailabilityListener.getInstance(ihb2).withMinHosts(2);
 			NoResponseListener.getInstance(ihb2).withMinHosts(2);
 			ihb2.onBatchSuccess(batch -> {
-				System.out.println(batch.getClient().getHost());
 				if (batch.getClient().getHost().equals(hostLists.get(2))
 						|| batch.getClient().getHost().equals(hostLists.get(3))) {
 					containsBLHost.set(true);
@@ -254,6 +275,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testStopOneNode() throws Exception {
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
@@ -298,6 +320,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testRestart() throws Exception {
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicBoolean failState = new AtomicBoolean(false);
@@ -345,6 +368,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testRepeatedStopOneNode() throws Exception {
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
 			final AtomicBoolean failState = new AtomicBoolean(false);
@@ -401,6 +425,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testStopTwoNodes() throws Exception {
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
 			final AtomicBoolean failState = new AtomicBoolean(false);
@@ -459,7 +484,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testMinHosts() throws Exception {
-		System.out.println("Starting min test");
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicInteger failCount = new AtomicInteger(0);
 		WriteBatcher ihb2 = null;
@@ -502,6 +527,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test
 	public void testWhiteBlackListNPE() throws Exception {
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
 					.withBlackList(null);
