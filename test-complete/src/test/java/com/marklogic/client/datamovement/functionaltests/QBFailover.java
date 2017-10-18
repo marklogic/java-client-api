@@ -130,8 +130,8 @@ public class QBFailover extends BasicJavaClientREST {
 			String location = null;
 			String seperator = File.separator;
 			try {
-				input = new FileInputStream(System.getProperty("user.dir") + ".." + seperator + ".." + seperator + "qa"
-						+ seperator + "failover-location.properties");
+				input = new FileInputStream(System.getProperty("user.dir") + seperator + ".." + seperator + ".."
+						+ seperator + "qa" + seperator + "failover-location.properties");
 				prop.load(input);
 				location = prop.getProperty("location");
 				System.out.println(prop.getProperty("location"));

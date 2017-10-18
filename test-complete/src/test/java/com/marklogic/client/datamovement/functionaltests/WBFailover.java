@@ -1,6 +1,7 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -102,8 +103,10 @@ public class WBFailover extends BasicJavaClientREST {
 			Properties prop = new Properties();
 			InputStream input = null;
 			String location = null;
+			String seperator = File.separator;
 			try {
-				input = new FileInputStream("failover-location.properties");
+				input = new FileInputStream(System.getProperty("user.dir") + seperator + ".." + seperator + ".."
+						+ seperator + "qa" + seperator + "failover-location.properties");
 				prop.load(input);
 				location = prop.getProperty("location");
 				System.out.println(prop.getProperty("location"));
