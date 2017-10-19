@@ -231,7 +231,7 @@ public class WBFailover extends BasicJavaClientREST {
 		clearDB(port);
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testBlackListHost() throws Exception {
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -276,7 +276,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -321,7 +321,7 @@ public class WBFailover extends BasicJavaClientREST {
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testRestart() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -369,7 +369,7 @@ public class WBFailover extends BasicJavaClientREST {
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testRepeatedStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -426,7 +426,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testStopTwoNodes() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -485,7 +485,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testMinHosts() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -528,7 +528,7 @@ public class WBFailover extends BasicJavaClientREST {
 		System.out.println("Ending min test");
 	}
 
-	@Test
+	@Test(timeout = 200000)
 	public void testWhiteBlackListNPE() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
