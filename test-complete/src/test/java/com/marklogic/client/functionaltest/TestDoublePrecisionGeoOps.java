@@ -44,7 +44,9 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
@@ -106,7 +108,7 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
     // create query def
     StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
     StructuredQueryDefinition t = qb.geospatial(qb.geoRegionPath(qb.pathIndex("/root/item/linestring"), CoordinateSystem.WGS84DOUBLE),
-        GeospatialOperator.CONTAINS, qb.point(0, -66.09375));
+        GeospatialOperator.CONTAINS, qb.point(2.85526278436658, -80.5078125));
 
     // create handle
     JacksonHandle resultsJsonHandle = new JacksonHandle();
@@ -135,34 +137,25 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
     TreeMap<String, String> readMap = new TreeMap<String, String>();
     String linedesc = null;
 
-    String snippetFromSummary = null;
-    String snippetFromRead = null;
-
     // Making sure that we proper results. Snippets are not complete. Taking in
     // what appears in summary.
-    expectedMap.put("/Equator-json.json", "Json Point In Equator - South America");
-    expectedMap.put("/Equator.xml", "Point In Equator - South America");
+    expectedMap.put("/Equator-json.json", "Json Linestring In Equator - South America");
+    expectedMap.put("/Equator.xml", "Linestring In Equator - South America");
 
     for (MatchDocumentSummary summary : matches) {
       String docUri = summary.getUri();
       System.out.println("docURI is " + docUri);
       System.out.println("Snippet from Summary is " + summary.getFirstSnippetText());
-      // Get only the numbers. Strip away others. Refer to data files.
-      snippetFromSummary = summary.getFirstSnippetText().split("LINESTRING\\(")[0];
-      // Strip the ... characters from snippets.
-      if (snippetFromSummary.contains("Json"))
-        snippetFromSummary = "Json " + snippetFromSummary.split("Json")[1].trim();
-      else
-        snippetFromSummary = "Point " + snippetFromSummary.split("Point")[1].trim();
+
       if (summary.getFormat().name().equalsIgnoreCase("XML")) {
         DOMHandle contentHandle = readDocumentUsingDOMHandle(client, docUri, "XML");
         Document readDoc = contentHandle.get();
-        linedesc = readDoc.getElementsByTagName("point-desc").item(0).getFirstChild().getNodeValue().trim();
+        linedesc = readDoc.getElementsByTagName("line-desc").item(0).getFirstChild().getNodeValue().trim();
 
-        System.out.println("Point desc from XML file is " + linedesc);
+        System.out.println("Line desc from XML file is " + linedesc);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from XML file are incorrect ", linedesc.contains(snippetFromSummary));
+        assertTrue("Snippets from summary and from XML file are incorrect ", linedesc.contains("Linestring In Equator - South America"));
 
         readDoc = null;
         contentHandle = null;
@@ -171,12 +164,12 @@ public class TestDoublePrecisionGeoOps extends BasicJavaClientREST {
         JacksonHandle jacksonhandle = new JacksonHandle();
         docMgr.read(docUri, jacksonhandle);
         JsonNode resultNode = jacksonhandle.get();
-        linedesc = resultNode.path("root").path("item").path("point-desc").asText().trim();
+        linedesc = resultNode.path("root").path("item").path("line-desc").asText().trim();
 
-        System.out.println("Snippet point-desc from JSON file is " + linedesc);
+        System.out.println("Snippet line-desc from JSON file is " + linedesc);
 
         // Verify that snippets from qb and read contain the same.
-        assertTrue("Snippets from summary and from JSON file are incorrect ", linedesc.contains(snippetFromSummary));
+        assertTrue("Snippets from summary and from JSON file are incorrect ", linedesc.contains("Json Linestring In Equator - South America"));
         jacksonhandle = null;
         resultNode = null;
       }
