@@ -195,9 +195,10 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			Assert.assertTrue(isRunning(hostNames[i]));
 		}
-		if (!(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
+		if (!(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
 			clearDB(port);
 		}
+		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		ForestConfiguration fc = dmManager.readForestConfig();
 		Forest[] f = fc.listForests();
 		f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
@@ -218,7 +219,11 @@ public class WBFailover extends BasicJavaClientREST {
 			changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 			Thread.currentThread().sleep(1000L);
 			System.out.println("Restarting server " + hostNames[i]);
-			serverStartStop(hostNames[i], "start");
+			try {
+				serverStartStop(hostNames[i], "start");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Thread.currentThread().sleep(1000L);
 			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
 			System.out.println("Enabling " + dbName + "-" + (i + 1));
@@ -231,7 +236,7 @@ public class WBFailover extends BasicJavaClientREST {
 		clearDB(port);
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testBlackListHost() throws Exception {
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
@@ -276,7 +281,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -321,7 +326,7 @@ public class WBFailover extends BasicJavaClientREST {
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testRestart() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -369,7 +374,7 @@ public class WBFailover extends BasicJavaClientREST {
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testRepeatedStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -426,7 +431,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testStopTwoNodes() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -485,7 +490,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testMinHosts() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -528,7 +533,7 @@ public class WBFailover extends BasicJavaClientREST {
 		System.out.println("Ending min test");
 	}
 
-	@Test(timeout = 300000)
+	@Test(timeout = 350000)
 	public void testWhiteBlackListNPE() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {

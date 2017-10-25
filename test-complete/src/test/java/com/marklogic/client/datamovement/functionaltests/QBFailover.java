@@ -212,7 +212,7 @@ public class QBFailover extends BasicJavaClientREST {
 
 		query += "let $save := admin:save-configuration($forest-create)" + "return ()";
 		System.out.println("Query is " + query);
-		dbClient.newServerEval().xquery(query).eval();
+		evalClient.newServerEval().xquery(query).eval();
 	}
 
 	@AfterClass
@@ -234,10 +234,10 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			Assert.assertTrue(isRunning(hostNames[i]));
 		}
-		if (!(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
+		if (!(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
 			clearDB(port);
 		}
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		ForestConfiguration fc = dmManager.readForestConfig();
 		Forest[] f = fc.listForests();
 		f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
@@ -245,7 +245,7 @@ public class QBFailover extends BasicJavaClientREST {
 		Assert.assertEquals(f.length, hostNames.length);
 		Assert.assertEquals(f.length, 3L);
 		addDocs();
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
+		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
 	}
 
 	@After
@@ -260,7 +260,11 @@ public class QBFailover extends BasicJavaClientREST {
 			changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 			Thread.currentThread().sleep(1000L);
 			System.out.println("Restarting server: " + hostNames[i]);
-			serverStartStop(hostNames[i], "start");
+			try {
+				serverStartStop(hostNames[i], "start");
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
 			Thread.currentThread().sleep(1000L);
 			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm:ss").format(new Date()));
 			System.out.println("Enabling " + dbName + "-" + (i + 1));
@@ -273,7 +277,7 @@ public class QBFailover extends BasicJavaClientREST {
 		clearDB(port);
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void testStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
@@ -308,7 +312,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 0, failure.intValue());
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void testRestart() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
@@ -345,7 +349,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 0, failure.intValue());
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void testRepeatedStopOneNode() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
@@ -389,7 +393,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 0, failure.intValue());
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void testMinNodes() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
@@ -433,7 +437,7 @@ public class QBFailover extends BasicJavaClientREST {
 		Assert.assertTrue(success.intValue() < 20000);
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void testStopTwoNodes() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
@@ -476,7 +480,7 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void xQueryMasstransformReplace() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
@@ -546,7 +550,7 @@ public class QBFailover extends BasicJavaClientREST {
 
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceTwoNodes() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
@@ -618,7 +622,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 0, skipped.intValue());
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceRepeated() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
@@ -696,7 +700,7 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 0, failure.intValue());
 	}
 
-	@Test(timeout = 400000)
+	@Test(timeout = 450000)
 	public void massDeleteConsistentSnapShot() throws Exception {
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicBoolean isRunning = new AtomicBoolean(true);
