@@ -22,42 +22,46 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Sends a Java API bulk {@link com.marklogic.client.document.DocumentManager#delete(String...) delete}
+ * <p>Sends a Java API bulk {@link com.marklogic.client.document.DocumentManager#delete(String...) delete}
  * request for all the documents from each batch.  Because it deletes
- * documents, it should only be used when:
+ * documents, it should only be used when:</p>
  *
- * 1. [merge timestamp][] is enabled and
- * {@link QueryBatcher#withConsistentSnapshot} is called, or
- * 2. {@link DataMovementManager#newQueryBatcher(Iterator)
- * newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
+ * <ol>
+ *   <li><a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>
+ *     is enabled and {@link QueryBatcher#withConsistentSnapshot} is called, or</li>
+ *   <li>{@link DataMovementManager#newQueryBatcher(Iterator)
+ *     newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set</li>
+ * </ol>
  *
- * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
- *
- * When merge timestamp is enabled, pass a DeleteListener instance to
+ * <br>When merge timestamp is enabled, pass a DeleteListener instance to
  * QueryBatcher onUrisReady like so:
  *
+ * <pre>{@code
  *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
  *       .onUrisReady(new DeleteListener())
  *       .withConsistentSnapshot();
  *     JobTicket ticket = moveMgr.startJob(deleteBatcher);
  *     deleteBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
+ *}</pre>
  *
  * With Iterator&lt;String&gt;, pass a DeleteListener instance to
  * QueryBatcher onUrisReady like so:
  *
+ * <pre>{@code
  *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
  *       .onUrisReady(new DeleteListener());
  *     JobTicket ticket = moveMgr.startJob(deleteBatcher);
  *     deleteBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
+ *}</pre>
  *
- * As with all the provided listeners, this listener will not meet the needs of
- * all applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom listeners.
- *
- * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/DeleteListener.java
- */
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/DeleteListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
+*/
 public class DeleteListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(DeleteListener.class);
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
@@ -68,6 +72,11 @@ public class DeleteListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  /**
+   * This implementation of initializeListener adds this instance of
+   * DeleteListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the delete request.
+   */
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
     HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);

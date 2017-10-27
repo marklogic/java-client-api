@@ -34,20 +34,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
- * An extension of ExportListener which facilitates writing all documents to a
+ * <p>An extension of ExportListener which facilitates writing all documents to a
  * single Writer output stream.  The Writer could be a FileWriter, for example,
  * to write output to a CSV file.  The Writer could pipe to a socket, for
- * example, to send the output directly to another server endpoint.
+ * example, to send the output directly to another server endpoint.</p>
  *
- * By default only document contents are retrieved.  If you would also like
+ * <p>By default only document contents are retrieved.  If you would also like
  * metadata, make sure to call {@link #withMetadataCategory withMetadataCategory}
- * to configure which categories of metadata you desire.
+ * to configure which categories of metadata you desire.</p>
  *
- * As with all the provided listeners, this listener will not meet the needs of
- * all applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom listeners.
- *
- * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportToWriterListener.java
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportToWriterListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
  */
 public class ExportToWriterListener extends ExportListener {
   private static Logger logger = LoggerFactory.getLogger(ExportToWriterListener.class);
@@ -62,6 +62,11 @@ public class ExportToWriterListener extends ExportListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  /**
+   * This implementation of initializeListener adds this instance of
+   * ExportToWriterListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the read request.
+   */
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
     HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);

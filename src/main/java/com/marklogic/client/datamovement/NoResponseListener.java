@@ -5,22 +5,21 @@ import java.util.Set;
 import java.util.stream.Stream;
 
 /**
- * NoResponseListener is a default listener like HostAvailabilityListener that
+ * <p>NoResponseListener is a default listener like HostAvailabilityListener that
  * is automatically registered with the QueryBatcher and WriteBatcher instances.
  * This listener is used to handle empty responses from the server. For some
  * requests, we might not have any response from the server for a request when
  * the server goes down or is unavailable. To handle such scenarios, we register
- * this listener and this would automatically take care of retrying the batches.
- * <br>
- * <br>
- * This is different from HostAvailabilityListener in the fact that this
+ * this listener and this would automatically take care of retrying the batches.</p>
+ *
+ * <p>This is different from HostAvailabilityListener in the fact that this
  * listener's RetryListener inherited from HostAvailabilityListener might not be
  * desirable when using an ApplyTransformListener. If we get empty responses
  * when we try to apply a transform to the batch of URIs retrieved from the
  * server, we are not sure what happened in the server - if the transform has
  * been applied or it has not been applied. Retrying in those scenarios would
  * apply the transform twice if the transform has been already applied and this
- * is not desirable.
+ * is not desirable.</p>
  *
  */
 public class NoResponseListener extends HostAvailabilityListener {

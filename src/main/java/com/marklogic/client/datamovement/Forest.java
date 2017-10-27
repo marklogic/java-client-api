@@ -61,7 +61,7 @@ public interface Forest {
   String getAlternateHost();
 
   /** The request host name associated with the forest in the MarkLogic server.
-   * The host name with which we have created the client - host name on the 
+   * The host name with which we have created the client - host name on the
    * request header.
    *
    * @return the host name of the request host in the MarkLogic server
@@ -95,29 +95,29 @@ public interface Forest {
   }
 
   /**
-   * Enum containing the list of host types a forest can have.
-   * 
-   * FOREST_HOST - host type indicating the host associated with 
-   * the forest in the MarkLogic server
-   * 
-   * REQUEST_HOST - host type indicating the request host with which 
-   * we have created the client - host on the request header.
+   * <p>Enum containing the list of host types a forest can have.</p>
    *
-   * ALTERNATE_HOST - host type indicating the alternate host of the forest -
-   * the host of the e - node when this forest belongs to an d - node.
-   * 
-   * OPEN_REPLICA_HOST - host type indicating the replica host associated
-   * with the forest in the MarkLogic server
+   * <p>FOREST_HOST - host type indicating the host associated with
+   * the forest in the MarkLogic server</p>
+   *
+   * <p>REQUEST_HOST - host type indicating the request host with which
+   * we have created the client - host on the request header.</p>
+   *
+   * <p>ALTERNATE_HOST - host type indicating the alternate host of the forest -
+   * the host of the e - node when this forest belongs to an d - node.</p>
+   *
+   * <p>OPEN_REPLICA_HOST - host type indicating the replica host associated
+   * with the forest in the MarkLogic server</p>
    */
   enum HostType { FOREST_HOST, REQUEST_HOST, ALTERNATE_HOST, OPEN_REPLICA_HOST };
 
   /**
    * Returns the preferred host type for this forest.  If
    * getAlternateHost() is not null, return ALTERNATE_HOST. Otherwise, if
-   * getOpenReplicaHost() is not null, return OPEN_REPLICA_HOST. Otherwise, 
-   * if getRequestHost() is  not null, return REQUEST_HOST. 
+   * getOpenReplicaHost() is not null, return OPEN_REPLICA_HOST. Otherwise,
+   * if getRequestHost() is  not null, return REQUEST_HOST.
    * Otherwise, return FOREST_HOST.
-   * 
+   *
    * @return the host type of the forest
    */
   public default HostType getPreferredHostType() {

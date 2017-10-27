@@ -34,39 +34,41 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reads document contents (and optionally metadata) for each batch, then sends
+ * <p>Reads document contents (and optionally metadata) for each batch, then sends
  * each document to any listeners registered with {@link #onDocumentReady
  * onDocumentReady} for further processing or writing to any target supported
  * by Java.  Supports reading partial documents via transforms.  Supports
  * exporting all documents at a consistent point-in-time using
- * withConsistentSnapshot.
+ * withConsistentSnapshot.</p>
  *
  * For example:
  *
+ * <pre>{@code
  *     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady(
  *           new ExportListener()
- *               .withConsistentSnapshot()
- *               .onDocumentReady(doc -&gt; {
- *                 logger.debug("Contents=[{}]", doc.getContentAs(String.class));
- *               })
+ *             .withConsistentSnapshot()
+ *             .onDocumentReady(doc -> {
+ *               logger.debug("Contents=[{}]", doc.getContentAs(String.class));
+ *             })
  *         )
- *         .onQueryFailure(exception -&gt; exception.printStackTrace());
+ *         .onQueryFailure(exception -> exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
+ *}</pre>
  *
- * By default only document contents are retrieved.  If you would also like
+ * <p>By default only document contents are retrieved.  If you would also like
  * metadata, make sure to call {@link #withMetadataCategory withMetadataCategory}
- * to configure which categories of metadata you desire.
+ * to configure which categories of metadata you desire.</p>
  *
- * As with all the provided listeners, this listener will not meet the needs of
- * all applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom listeners.
- *
- * [source code]: https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/datamovement/ExportListener.java
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
  */
 public class ExportListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(ExportListener.class);
@@ -96,6 +98,11 @@ public class ExportListener implements QueryBatchListener {
     }
   }
 
+  /**
+   * This implementation of initializeListener adds this instance of
+   * ExportListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the read request.
+   */
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
     HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);

@@ -26,7 +26,7 @@ import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import java.util.Iterator;
 
 /**
- * DataMovementManager is the starting point for getting new instances of
+ * <p>DataMovementManager is the starting point for getting new instances of
  * QueryBatcher and WriteBatcher, configured with a DatabaseClient and
  * ForestConfiguration.  On instantiation, it will immediately call
  * readForestConfig to obtain the ForestConfiguration from which it can create
@@ -36,16 +36,18 @@ import java.util.Iterator;
  * the port in the DatabaseClient.  Call {@link #release()
  * dataMovementMangaer.release()} when you're done with your
  * DataMovementManager instance to free resources associated with those
- * host-specific DatabaseClient instances.
+ * host-specific DatabaseClient instances.</p>
  *
  * Sample Usage:
  *
+ * <pre>{@code
  *     DataMovementManager dataMovementManager = databaseClient.newDataMovementManager();
  *     WriteBatcher batcher = dataMovementManager.newWriteBatcher();
  *     dataMovementManager.startJob(batcher);
  *     . . .
  *     dataMovementManager.stopJob(batcher);
  *     dataMovementManager.release();
+ *}</pre>
  */
 public interface DataMovementManager {
   /** Calls release() on all host-specific DatabaseClient instances (but not on
@@ -159,17 +161,16 @@ public interface DataMovementManager {
   public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query);
 
   /**
-   * Create a new QueryBatcher instance configured to retrieve uris from this
+   * <p>Create a new QueryBatcher instance configured to retrieve uris from this
    * Iterator.  This form enables the uris (actually any String) to come from
    * any source, whereas the other form requires the uris to come from the
    * results of a query.  This form is helpful when deleting documents when one
-   * cannot set the server's [merge timestamp][].  For more discussion, see
-   * {@link QueryBatcher}.
+   * cannot set the server's
+   * <a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>.
+   * For more discussion, see {@link QueryBatcher}.</p>
    *
-   * The Iterator needn't be thread-safe as it is only iterated from one
-   * thread.
-   *
-   * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
+   * <p>The Iterator needn't be thread-safe as it is only iterated from one
+   * thread.</p>
    *
    * @param iterator the provider of uris
    *

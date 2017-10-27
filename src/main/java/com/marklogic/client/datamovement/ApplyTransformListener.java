@@ -31,65 +31,72 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /**
- * Modifies documents in-place in the database by applying a {@link
+ * <p>Modifies documents in-place in the database by applying a {@link
  * com.marklogic.client.document.ServerTransform server-side transform}.
  * If the transform modifies documents to no longer match the query,
- * ApplyTransformListener should only be used when:
+ * ApplyTransformListener should only be used when:</p>
  *
- * 1. [merge timestamp][] is enabled and
- * {@link QueryBatcher#withConsistentSnapshot} is called, or
- * 2. {@link DataMovementManager#newQueryBatcher(Iterator)
- * newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set
+ * <ol>
+ *   <li><a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>
+ *     is enabled and {@link QueryBatcher#withConsistentSnapshot} is called, or</li>
+ *   <li>{@link DataMovementManager#newQueryBatcher(Iterator)
+ *     newQueryBatcher(Iterator&lt;String&gt;)} is used to traverse a static data set</li>
+ * </ol>
  *
- * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
+ * <br>For example, given the REST transform myTransform.sjs:
  *
- * For example, given the REST transform myTransform.sjs:
- *
- *     function transform_function(context, params, content) {
- *       var document = content.toObject();
- *       document.someProperty = params.newValue;
- *       return document;
- *     };
- *     exports.transform = transform_function;
+ * <pre>{@code
+ *    function transform_function(context, params, content) {
+ *      var document = content.toObject();
+ *      document.someProperty = params.newValue;
+ *      return document;
+ *    };
+ *    exports.transform = transform_function;
+ *}</pre>
  *
  * installed in the server like so (using the MarkLogic Java Client API):
  *
- *     restAdminClient.newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
- *       "myTransform", new FileHandle(new File("myTransform.sjs")));
+ * <pre>{@code
+ *    restAdminClient.newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
+ *      "myTransform", new FileHandle(new File("myTransform.sjs")));
+ *}</pre>
  *
  * you can run the transform on documents matching a query like so:
  *
- *     ServerTransform transform = new ServerTransform(transformName2)
- *         .addParameter("newValue", "some new value");
- *     ApplyTransformListener listener = new ApplyTransformListener()
- *       .withTransform(transform)
- *       .withApplyResult(ApplyResult.REPLACE);
- *     QueryBatcher batcher = moveMgr.newQueryBatcher(query)
- *         .onUrisReady(listener);
- *     JobTicket ticket = moveMgr.startJob( batcher );
- *     batcher.awaitCompletion();
- *     moveMgr.stopJob(ticket);
+ * <pre>{@code
+ *    ServerTransform transform = new ServerTransform(transformName2)
+ *      .addParameter("newValue", "some new value");
+ *    ApplyTransformListener listener = new ApplyTransformListener()
+ *      .withTransform(transform)
+ *      .withApplyResult(ApplyResult.REPLACE);
+ *    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
+ *      .onUrisReady(listener);
+ *    JobTicket ticket = moveMgr.startJob( batcher );
+ *    batcher.awaitCompletion();
+ *    moveMgr.stopJob(ticket);
+ *}</pre>
  *
- * As with all the provided listeners, this listener will not meet the needs of
- * all applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom listeners.
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
  *
- * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ApplyTransformListener.java
- *
- * In this listener, we initialize only the HostAvailabilityListener's
+ * <p>In this listener, we initialize only the HostAvailabilityListener's
  * RetryListener and not NoResponseListener's RetryListener because if we get
  * empty responses when we try to apply a transform to the batch of URIs
  * retrieved from the server, we are not sure what happened in the server - if
  * the transform has been applied or it has not been applied. Retrying in those
  * scenarios would apply the transform twice if the transform has been already
- * applied and this is not desirable.
+ * applied and this is not desirable.</p>
  *
- * In order to handle such scenarios where we get an empty response, it is
+ * <p>In order to handle such scenarios where we get an empty response, it is
  * recommended to add a BatchFailureListener which would take care of apply
  * transform failures and retry only for those URIs for which the apply
  * transform has failed. If the transform is idempotent, we can just initialize 
- * the RetryListener of the NoResponseListener by calling NoResponseListener.initializeRetryListener(this)
- * and add it to the BatchFailureListeners similar to what we have in the other listeners.
+ * the RetryListener of the NoResponseListener by calling
+ * NoResponseListener.initializeRetryListener(this) and add it to the
+ * BatchFailureListeners similar to what we have in the other listeners.</p>
  */
 public class ApplyTransformListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(ApplyTransformListener.class);
@@ -105,6 +112,11 @@ public class ApplyTransformListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  /**
+   * This implementation of initializeListener adds this instance of
+   * ApplyTransformListener to the two RetryListener's in this QueryBatcher so
+   * they will retry any batches that fail during the apply-transform request.
+   */
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
     HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);

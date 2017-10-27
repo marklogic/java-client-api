@@ -45,11 +45,11 @@ public interface Batcher {
   String getJobId();
 
   /**
-   * The size of each batch (usually 50-500). With some experimentation with
+   * <p>The size of each batch (usually 50-500). With some experimentation with
    * your custom job, this value can be tuned. Tuning this value is one of the
-   * best ways to achieve optimal throughput.
+   * best ways to achieve optimal throughput.</p>
    *
-   * This method cannot be called after the job has started.
+   * <p>This method cannot be called after the job has started.</p>
    *
    * @param batchSize the batch size -- must be 1 or greater
    * @return this instance (for method chaining)
@@ -62,15 +62,15 @@ public interface Batcher {
   int getBatchSize();
 
   /**
-   * The number of threads to be used internally by this job to perform
+   * <p>The number of threads to be used internally by this job to perform
    * concurrent tasks on batches (usually &gt; 10).  With some experimentation with your custom
    * job and client environment, this value can be tuned.  Tuning this value is
    * one of the best ways to achieve optimal throughput or to throttle the
    * server resources used by this job.  Setting this to 1 does not guarantee
    * that batches will be processed sequentially because the calling thread
-   * will sometimes also process batches.
+   * will sometimes also process batches.</p>
    *
-   * This method cannot be called after the job has started.
+   * <p>This method cannot be called after the job has started.</p>
    *
    * @param threadCount the number of threads to use in this Batcher
    *

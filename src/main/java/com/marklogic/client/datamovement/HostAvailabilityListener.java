@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-/** HostAvailabilityListener is automatically registered with all QueryBatcher
+/** <p>HostAvailabilityListener is automatically registered with all QueryBatcher
  * and WriteBatcher instances to monitor for failover scenarios.  When
  * HostAvailabilityListener detects that a host is unavailable (matches one of
  * {@link #getHostUnavailableExceptions()}), it black-lists the host for a
@@ -53,12 +53,12 @@ import java.util.concurrent.TimeUnit;
  * HostAvailabilityListener and therefore we recommend that production
  * installations of Data Movement SDK use HostAvailabilityListener as an
  * example and install their own failure-handling listeners complete with
- * retry and updates to the batcher's ForestConfiguration as appropriate.
+ * retry and updates to the batcher's ForestConfiguration as appropriate.</p>
  *
- * If you would like to change the default settings, you can change them
+ * <p>If you would like to change the default settings, you can change them
  * on the pre-registered HostAvailabilityListener which you can access via
  * {@link WriteBatcher#getBatchFailureListeners()} or {@link
- * QueryBatcher#getQueryFailureListeners()}.
+ * QueryBatcher#getQueryFailureListeners()}.</p>
  *
  */
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
@@ -317,15 +317,17 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * Returns the first HostAvailabilityListener instance registered with the
-   * Batcher.
+   * <p>Returns the first HostAvailabilityListener instance registered with the
+   * Batcher.</p>
    *
    * You can customize the HostAvailabilityListener instance registered with the
-   * Batcher like: <br>
-   * <br>
-   * HostAvailabilityListener.getInstance(Batcher)<br>
-   * .withSuspendTimeForHostUnavailable(Duration.ofMinutes(60))<br>
-   * .withMinHosts(2)
+   * Batcher like:
+   *
+   * <pre>{@code
+   *    HostAvailabilityListener.getInstance(Batcher)
+   *      .withSuspendTimeForHostUnavailable(Duration.ofMinutes(60))
+   *      .withMinHosts(2)
+   *}</pre>
    *
    * @param batcher the Batcher instance for which the registered
    *          HostAvailabilityListener is returned

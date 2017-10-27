@@ -24,18 +24,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Facilitates writing uris to a file when necessary because setting [merge
- * timestamp][] and {@link QueryBatcher#withConsistentSnapshot
- * withConsistentSnapshot} is not an option, but you need to run DeleteListener
- * or ApplyTransformListener.
+ * <p>Facilitates writing uris to a file when necessary because setting
+ * <a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>
+ * and {@link QueryBatcher#withConsistentSnapshot withConsistentSnapshot} is
+ * not an option, but you need to run DeleteListener or
+ * ApplyTransformListener.</p>
  *
  * Example writing uris to disk then running a delete:
  *
+ * <pre>{@code
  *     FileWriter writer = new FileWriter("uriCache.txt");
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
  *       .onUrisReady( new UrisToWriterListener(writer) )
- *       .onQueryFailure(exception -&gt; exception.printStackTrace());
+ *       .onQueryFailure(exception -> exception.printStackTrace());
  *     JobTicket getUrisTicket = dataMovementManager.startJob(getUris);
  *     getUris.awaitCompletion();
  *     dataMovementManager.stopJob(getUrisTicket);
@@ -46,13 +48,19 @@ import java.util.List;
  *     BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
  *     QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
  *       .onUrisReady(new DeleteListener())
- *       .onQueryFailure(exception -&gt; exception.printStackTrace());
+ *       .onQueryFailure(exception -> exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
  *     performDelete.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
- * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
- */
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/UrisToWriterListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
+ *
+  */
 public class UrisToWriterListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListener.class);
   private Writer writer;
@@ -68,6 +76,11 @@ public class UrisToWriterListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  /**
+   * This implementation of initializeListener adds this instance of
+   * UrisToWriterListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the uris request.
+   */
   @Override
   public void initializeListener(QueryBatcher queryBatcher) {
     HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);

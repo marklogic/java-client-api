@@ -30,28 +30,28 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
- * A utility class for wrapping a ForestConfiguration retrieved from {@link
+ * <p>A utility class for wrapping a ForestConfiguration retrieved from {@link
  * DataMovementManager#readForestConfig}.  This class does not modify the
  * ForestConfiguration (of course, ForestConfiguration is immutable) but
  * instead provides a modified ForestConfiguration when listForests is called.
  * Passing this (or any ForestConfiguration) to {@link
  * Batcher#withForestConfig} will reset the forests seen and used by the
  * Batcher. This class is used by HostAvailabilityListener to black-list
- * unavailable hosts (such as in the case of a failover).
+ * unavailable hosts (such as in the case of a failover).</p>
  *
- * Since this does frequent comparision of host names and they compare case
- * insensitive, this converts all host names to lower case.
+ * <p>Since this does frequent comparision of host names and they compare case
+ * insensitive, this converts all host names to lower case.</p>
  *
- * FilteredForestConfiguration isn't thread-safe, so only one thread should
+ * <p>FilteredForestConfiguration isn't thread-safe, so only one thread should
  * use one instance.  WriteBatcher.withForestConfig and
  * QueryBatcher.withForestConfig are thread-safe, however, so any thread can
- * call those any time to pass in an instance of FilteredForestConfiguration.
+ * call those any time to pass in an instance of FilteredForestConfiguration.</p>
  *
- * As with the provided listeners, this utility will not meet the needs of all
- * applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom ForestConfiguration wrapper.
- *
- * [source code]: https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/FilteredForestConfiguration.java
+ * <p>As with the provided listeners, this utility will not meet the needs of
+ * all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/FilteredForestConfiguration.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * ForestConfiguration wrapper.</p>
  */
 public class FilteredForestConfiguration implements ForestConfiguration {
   ForestConfiguration wrappedForestConfig;
