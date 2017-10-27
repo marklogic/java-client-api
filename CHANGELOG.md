@@ -1,5 +1,39 @@
 # CHANGELOG
 
+## 4.0.3
+
+#### New Functionality
+- [#639](https://github.com/marklogic/java-client-api/issues/639) - support DocumentManager.setReadTransform for DocumentManager.search calls
+- [#690](https://github.com/marklogic/java-client-api/issues/690) - Get a JobTicket by JobId
+- [#752](https://github.com/marklogic/java-client-api/issues/752) - Allow setting JobId for a JobTicket
+- [#756](https://github.com/marklogic/java-client-api/issues/756) - Add RawCtsQueryDefinition support for values queries
+- [#787](https://github.com/marklogic/java-client-api/issues/787) - Support advancing LSQT
+- [#813](https://github.com/marklogic/java-client-api/issues/813) - Add NoResponseListener for failover scenarios which throw EOFException
+- [#818](https://github.com/marklogic/java-client-api/issues/818) - Document failover support
+- [#822](https://github.com/marklogic/java-client-api/issues/822) - Add initialization step for QueryBatchListener
+- [#838](https://github.com/marklogic/java-client-api/issues/838) - Add HostAvailabilityListener.RetryListener and QueryBatcher.retryWithFailureListeners to facilitate listeners retrying during failover scenarios
+
+#### Improvements and Bug Fixes
+
+This release fixes many bugs related to failover scenarios
+
+- [#473](https://github.com/marklogic/java-client-api/issues/473) - add "ML-Agent-ID: java" header to improve request origination metrics
+- [#526](https://github.com/marklogic/java-client-api/issues/526) - Possible Race Condition during black-listing of hosts
+- [#557](https://github.com/marklogic/java-client-api/issues/557), [#570](https://github.com/marklogic/java-client-api/issues/570) - Failures during failover require new HostAvailabilityListener.RetryListener
+- [#562](https://github.com/marklogic/java-client-api/issues/562) - Cookbook recipe for bulk export to JDBC
+- [#563](https://github.com/marklogic/java-client-api/issues/563) - Cookbook recipe for incremental load from JDBC
+- [#565](https://github.com/marklogic/java-client-api/issues/565) - Cookbook recipe for bulk load from JDBC
+- [#579](https://github.com/marklogic/java-client-api/issues/579) - Job not getting stopped when number of available hosts < 'minHosts' property
+- [#641](https://github.com/marklogic/java-client-api/issues/641) - Upgrade all dependencies
+- [#725](https://github.com/marklogic/java-client-api/issues/725) - Fix ServerEvaluationCall.evalAs(Class<T>) closing underlying streams prematurely
+- [#744](https://github.com/marklogic/java-client-api/issues/744) - Fix a WriteBatcher hang in awaitCompletion after forest failover
+- [#768](https://github.com/marklogic/java-client-api/issues/768) - Document supported Java runtime
+- [#775](https://github.com/marklogic/java-client-api/issues/775) - Fix QueryManagerImpl which incorrectly hardcoded start page to 1
+- [#785](https://github.com/marklogic/java-client-api/issues/785) - Support HTTPS with OKhttp
+- [#798](https://github.com/marklogic/java-client-api/issues/798) - Fix WriteBatcher from retrying when job is stopped
+- [#802](https://github.com/marklogic/java-client-api/issues/802) - Remove a spurious warning about StringQueryDefinitionImpl
+- [#811](https://github.com/marklogic/java-client-api/issues/811) - Fix OkHttpServices which threw NPE when release() method called more than once
+
 ## 4.0.2
 
 #### New Functionality
