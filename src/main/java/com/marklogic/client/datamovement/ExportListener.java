@@ -48,11 +48,11 @@ import java.util.Set;
  *         .onUrisReady(
  *           new ExportListener()
  *               .withConsistentSnapshot()
- *               .onDocumentReady(doc -> {
+ *               .onDocumentReady(doc -&gt; {
  *                 logger.debug("Contents=[{}]", doc.getContentAs(String.class));
  *               })
  *         )
- *         .onQueryFailure(exception -> exception.printStackTrace());
+ *         .onQueryFailure(exception -&gt; exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();

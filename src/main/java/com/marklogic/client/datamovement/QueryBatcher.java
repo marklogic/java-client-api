@@ -42,7 +42,7 @@ import java.util.concurrent.TimeUnit;
  *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady( new DeleteListener() )
- *         .onQueryFailure(exception -> exception.printStackTrace());
+ *         .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(qhb);
  *     qhb.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
@@ -78,25 +78,25 @@ import java.util.concurrent.TimeUnit;
  *         .withBatchSize(1000)
  *         .withThreadCount(20)
  *         .withConsistentSnapshot()
- *         .onUrisReady(batch -> {
+ *         .onUrisReady(batch -&gt; {
  *             for ( String uri : batch.getItems() ) {
  *                 if ( uri.endsWith(".txt") ) {
  *                     client.newDocumentManager().delete(uri);
  *                 }
  *             }
  *         })
- *         .onQueryFailure(exception -> exception.printStackTrace());
+ *         .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(qhb);
  *     qhb.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
  *
  * Example of queueing uris in memory instead of using withConsistentSnapshot():
  *
- *     ArrayList<String> uris = Collections.synchronizedList(new ArrayList<>());
+ *     ArrayList&lt;String&gt; uris = Collections.synchronizedList(new ArrayList&lt;&gt;());
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
- *       .onUrisReady( batch -> uris.addAll(Arrays.asList(batch.getItems())) )
- *       .onQueryFailure(exception -> exception.printStackTrace());
+ *       .onUrisReady( batch -&gt; uris.addAll(Arrays.asList(batch.getItems())) )
+ *       .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket getUrisTicket = dataMovementManager.startJob(getUris);
  *     getUris.awaitCompletion();
  *     dataMovementManager.stopJob(getUrisTicket);
@@ -104,7 +104,7 @@ import java.util.concurrent.TimeUnit;
  *     // now we have the uris, let's step through them
  *     QueryBatcher performDelete = moveMgr.newQueryBatcher(uris.iterator())
  *       .onUrisReady(new DeleteListener())
- *       .onQueryFailure(exception -> exception.printStackTrace());
+ *       .onQueryFailure(exception -&gt; exception.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
  *     performDelete.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);

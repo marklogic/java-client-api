@@ -25,7 +25,7 @@ import com.marklogic.client.row.RowRecord;
  *
  * For example:
  *
- *     Function<QueryBatch, PlanBuilder.Plan> fn = batch -> {
+ *     Function&lt;QueryBatch, PlanBuilder.Plan&gt; fn = batch -&gt; {
  *        PlanBuilder.Plan plan = convertToOpticPlan(batch); 
  *        return plan;
  *     }
@@ -37,11 +37,11 @@ import com.marklogic.client.row.RowRecord;
  *     QueryBatcher exportOpticBatcher = moveMgr.newQueryBatcher(query)
  *         .onUrisReady(
  *           new OpticExportListener(fn, rowMgr)
- *               .onRowRecordReady(record -> {
+ *               .onRowRecordReady(record -&gt; {
  *                 logger.debug(record.toString());
  *               })
  *         )
- *         .onQueryFailure(exception -> exception.printStackTrace());
+ *         .onQueryFailure(exception -&gt; exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();

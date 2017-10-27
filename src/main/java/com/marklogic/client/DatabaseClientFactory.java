@@ -242,9 +242,9 @@ public class DatabaseClientFactory {
      * <br>
      *
      * If we init the sslContext with null TrustManager, it would use the
-     * <java-home>/lib/security/cacerts file for trusted root certificates, if
+     * &lt;java-home&gt;/lib/security/cacerts file for trusted root certificates, if
      * javax.net.ssl.trustStore system property is not set and
-     * <java-home>/lib/security/jssecacerts is not present. See <a href =
+     * &lt;java-home&gt;/lib/security/jssecacerts is not present. See <a href =
      * "http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html">JSSE
      * Reference Guide</a> for more information on SSL and TrustManagers.<br>
      * <br>

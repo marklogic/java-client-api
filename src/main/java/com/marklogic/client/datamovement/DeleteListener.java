@@ -43,7 +43,7 @@ import java.util.List;
  *     deleteBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
  *
- * With Iterator<String>, pass a DeleteListener instance to
+ * With Iterator&lt;String&gt;, pass a DeleteListener instance to
  * QueryBatcher onUrisReady like so:
  *
  *     QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)

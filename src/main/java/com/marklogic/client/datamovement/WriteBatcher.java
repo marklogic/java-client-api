@@ -40,10 +40,10 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
- *         .onBatchSuccess(batch -> {
+ *         .onBatchSuccess(batch -&gt; {
  *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
  *         })
- *         .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
+ *         .onBatchFailure((batch,throwable) -&gt; throwable.printStackTrace() );
  *     JobTicket ticket = dataMovementManager.startJob(whb);
  *     whb.add  ("doc1.txt", new StringHandle("doc1 contents"));
  *     whb.addAs("doc2.txt", "doc2 contents");
@@ -326,13 +326,13 @@ public interface WriteBatcher extends Batcher {
    * Retry in the same thread to send a batch that failed. If it fails again,
    * all the failure listeners associated with the batcher using onBatchFailure
    * method would be processed.
-   * 
+   *
    * Note : Use this method with caution as there is a possibility of infinite
    * loops. If a batch fails and one of the failure listeners calls this method
    * to retry with failure listeners and if the batch again fails, this would go
    * on as an infinite loop until the batch succeeds.
-   * 
-   * @param queryEvent the information about the batch that failed
+   *
+   * @param writeBatch the information about the batch that failed
    */
   public void retryWithFailureListeners(WriteBatch writeBatch);
 }

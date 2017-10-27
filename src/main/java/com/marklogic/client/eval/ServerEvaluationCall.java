@@ -90,7 +90,7 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * {@link #eval()} and {@link EvalResultIterator} so the response isn't closed
  * before the streaming begins.
  *
- * **NOTE: EvalResultIterator MUST BE CLOSED</b>**.  If you call {@link #eval()}
+ * **<b>NOTE: EvalResultIterator MUST BE CLOSED</b>**.  If you call {@link #eval()}
  * don't forget to call close() on the returned EvalResultIterator to free up the
  * underlying resources.
  */

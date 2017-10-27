@@ -63,7 +63,7 @@ public interface Batcher {
 
   /**
    * The number of threads to be used internally by this job to perform
-   * concurrent tasks on batches (usually > 10).  With some experimentation with your custom
+   * concurrent tasks on batches (usually &gt; 10).  With some experimentation with your custom
    * job and client environment, this value can be tuned.  Tuning this value is
    * one of the best ways to achieve optimal throughput or to throttle the
    * server resources used by this job.  Setting this to 1 does not guarantee
@@ -71,6 +71,8 @@ public interface Batcher {
    * will sometimes also process batches.
    *
    * This method cannot be called after the job has started.
+   *
+   * @param threadCount the number of threads to use in this Batcher
    *
    * @return this instance (for method chaining)
    */
@@ -92,6 +94,8 @@ public interface Batcher {
    * changes without requiring a restart of this job.  Ideally, this ForestConfiguration
    * will come from {@link DataMovementManager#readForestConfig}, perhaps wrapped by
    * something like {@link FilteredForestConfiguration}.
+   *
+   * @param forestConfig the updated list of forests with thier hosts, etc.
    *
    * @return this instance (for method chaining)
    */

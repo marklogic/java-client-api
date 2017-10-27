@@ -309,7 +309,7 @@ public interface SqlExpr {
     * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampadd" target="mlserverdoc">sql:timestampadd</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt><p>SQL_TSI_FRAC_SECOND</p></dt> <dd>nano seconds</dd> <dt><p>SQL_TSI_SECOND</p></dt> <dd>seconds</dd> <dt><p>SQL_TSI_MINUTE</p></dt> <dd>minute</dd> <dt><p>SQL_TSI_HOUR</p></dt> <dd>hour</dd> <dt><p>SQL_TSI_DAY</p></dt> <dd>day</dd> <dt><p>SQL_TSI_WEEK</p></dt> <dd>week</dd> <dt><p>SQL_TSI_MONTH</p></dt> <dd>month</dd> <dt><p>SQL_TSI_QUARTER</p></dt> <dd>quarter</dd> <dt><p>SQL_TSI_YEAR</p></dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
     * @param value  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp  The xs:dateTime timestamp to which addition has to take place.
     * @return  a ItemExpr expression
@@ -319,7 +319,7 @@ public interface SqlExpr {
     * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampadd" target="mlserverdoc">sql:timestampadd</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt><p>SQL_TSI_FRAC_SECOND</p></dt> <dd>nano seconds</dd> <dt><p>SQL_TSI_SECOND</p></dt> <dd>seconds</dd> <dt><p>SQL_TSI_MINUTE</p></dt> <dd>minute</dd> <dt><p>SQL_TSI_HOUR</p></dt> <dd>hour</dd> <dt><p>SQL_TSI_DAY</p></dt> <dd>day</dd> <dt><p>SQL_TSI_WEEK</p></dt> <dd>week</dd> <dt><p>SQL_TSI_MONTH</p></dt> <dd>month</dd> <dt><p>SQL_TSI_QUARTER</p></dt> <dd>quarter</dd> <dt><p>SQL_TSI_YEAR</p></dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
     * @param value  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp  The xs:dateTime timestamp to which addition has to take place.
     * @return  a ItemExpr expression
@@ -329,7 +329,7 @@ public interface SqlExpr {
     * Returns the difference in dateTimeType field of two given timestamps.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampdiff" target="mlserverdoc">sql:timestampdiff</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt><p>SQL_TSI_FRAC_SECOND</p></dt> <dd>nano seconds</dd> <dt><p>SQL_TSI_SECOND</p></dt> <dd>seconds</dd> <dt><p>SQL_TSI_MINUTE</p></dt> <dd>minute</dd> <dt><p>SQL_TSI_HOUR</p></dt> <dd>hour</dd> <dt><p>SQL_TSI_DAY</p></dt> <dd>day</dd> <dt><p>SQL_TSI_WEEK</p></dt> <dd>week</dd> <dt><p>SQL_TSI_MONTH</p></dt> <dd>month</dd> <dt><p>SQL_TSI_QUARTER</p></dt> <dd>quarter</dd> <dt><p>SQL_TSI_YEAR</p></dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
     * @param timestamp1  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp2  The xs:dateTime timestamp to which addition has to take place.
     * @return  a XsIntegerExpr expression

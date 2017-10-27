@@ -26,7 +26,7 @@
  *         are not limited to export, delete, and transform)
  *     * provided code can leverage the full feature set of the Java Client API
  *     * uris usually are matches to a query
- *     * for corner cases uris can be provided by an Iterator<String>
+ *     * for corner cases uris can be provided by an Iterator&lt;String&gt;
  *     * paginates through query matches for best scalability
  *     * paginates with many threads for increased throughput
  *     * directly queries each host in the cluster with forests for
@@ -67,14 +67,14 @@
  *         .withBatchSize(1000)
  *         .withThreadCount(20)
            .withConsistentSnapshot()
- *         .onUrisReady(batch -> {
+ *         .onUrisReady(batch -&gt; {
  *             for ( String uri : batch.getItems() ) {
  *                 if ( uri.endsWith(".txt") ) {
  *                     client.newDocumentManager().delete(uri);
  *                 }
  *             }
  *         })
- *         .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
+ *         .onQueryFailure(queryBatchException -&gt; queryBatchException.printStackTrace());
  *     JobTicket ticket = dataMovementManager.startJob(qhb);
  *     qhb.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
@@ -93,10 +93,10 @@
  *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
- *         .onBatchSuccess(batch -> {
+ *         .onBatchSuccess(batch -&gt; {
  *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
  *         })
- *         .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
+ *         .onBatchFailure((batch,throwable) -&gt; throwable.printStackTrace() );
  *     JobTicket ticket = dataMovementManager.startJob(whb);
  *     // the add or addAs methods could be called in separate threads on the
  *     // single whb instance
@@ -219,9 +219,9 @@
  * WriteBatcher.  Please make sure to enable your slf4j-compliant [logging
  * framework](../../../../overview-summary.html#logging).
  *
- * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
- * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
- * <br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+ * <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+ * <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
+ * <br><br><br><br><br><br><br><br><br><br><br><br><br><br>
  */
 /*
  * Copyright 2015-2017 MarkLogic Corporation

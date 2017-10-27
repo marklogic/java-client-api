@@ -1248,13 +1248,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     public abstract ModifyPlan except(ModifyPlan right);
         /**
     * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A group-by operation without a grouping key outputs a single group reflecting the entire row set. <p> The aggregates for a group by operation are specified as the second parameter instead of in a <a>op:select</a> operation (unlike SQL). 
-    * @param keys  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan groupBy(PlanExprColSeq keys);
         /**
     * This method collapses a group of rows into a single row. <p> If you want the results to include a column, specify the column either as a grouping key or as one of the aggregates. A group-by operation without a grouping key outputs a single group reflecting the entire row set. <p> The aggregates for a group by operation are specified as the second parameter instead of in a <a>op:select</a> operation (unlike SQL). 
-    * @param keys  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param aggregates  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with <a>op:as</a>. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set.
     * @return  a ModifyPlan object
     */
@@ -1287,28 +1287,28 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     public abstract ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition);
         /**
     * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). <p> As long as the values of the column are the same as document uris, the document join will work. If the document doesn't exist or the uri or fragment id is null in the row, the row is dropped from the rowset.  <p> You should minimize the number of documents retrieved by filtering or limiting rows before joining documents. 
-    * @param docCol  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param docCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param sourceCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan joinDoc(String docCol, String sourceCol);
         /**
     * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). <p> As long as the values of the column are the same as document uris, the document join will work. If the document doesn't exist or the uri or fragment id is null in the row, the row is dropped from the rowset.  <p> You should minimize the number of documents retrieved by filtering or limiting rows before joining documents. 
-    * @param docCol  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param docCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param sourceCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol);
         /**
     * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op:fragment-id-col</a> specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. <p> You should minimize the number of documents retrieved by filtering or limiting rows before joining documents. 
-    * @param uriCol  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param uriCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param fragmentIdCol  The document uri. This is the output from <a>op:col('uri')</a> that specifies a document uri column.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan joinDocUri(String uriCol, String fragmentIdCol);
         /**
     * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an <a>op:fragment-id-col</a> specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. <p> You should minimize the number of documents retrieved by filtering or limiting rows before joining documents. 
-    * @param uriCol  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param uriCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param fragmentIdCol  The document uri. This is the output from <a>op:col('uri')</a> that specifies a document uri column.
     * @return  a ModifyPlan object
     */
@@ -1375,44 +1375,44 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
         /**
     * This method sorts the row set by the specified order definition.
-    * @param keys  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan orderBy(PlanSortKeySeq keys);
         /**
     * This method prepares the specified plan for execution as an optional final step before execution.
-    * @param optimize  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param optimize  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a PreparePlan object
     */
     public abstract PreparePlan prepare(int optimize);
         /**
     * This method prepares the specified plan for execution as an optional final step before execution.
-    * @param optimize  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param optimize  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a PreparePlan object
     */
     public abstract PreparePlan prepare(XsIntVal optimize);
         /**
     * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-    * @param columns  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan select(PlanExprCol... columns);
         /**
     * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-    * @param columns  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan select(PlanExprColSeq columns);
         /**
     * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-    * @param columns  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param qualifierName  The columns to select.
     * @return  a ModifyPlan object
     */
     public abstract ModifyPlan select(PlanExprColSeq columns, String qualifierName);
         /**
     * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-    * @param columns  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param qualifierName  The columns to select.
     * @return  a ModifyPlan object
     */
@@ -1447,26 +1447,26 @@ public abstract class PlanBuilder implements PlanBuilderBase {
     public interface PreparePlan extends ExportablePlan, PlanBuilderBase.PreparePlanBase {
         /**
     * This method applies the specified function to each row returned by the plan to produce a different result row.
-    * @param func  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ExportablePlan object
     */
     public abstract ExportablePlan map(PlanFunction func);
         /**
     * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the <code>reduce()</code> method of JavaScript Array. <p> The signature of the reducer must be <code>function(previous, row, i, state)</code>, where <code>previous</code> is the seed on the first request and the return from the previous call on subsequent request; <code>row</code> is the current row; <code>i</code> is the zero-based index of the <code>row</code>, and <code>state</code> is an object with an <code>isLast</code> property (which is true on the last iteration but can be set to true on previous iterations for early termination).  <p> The implementation of a <code>op:reduce</code> function can call <a>op:map</a> functions to chain map calls with reduce calls. 
-    * @param func  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @return  a ExportablePlan object
     */
     public abstract ExportablePlan reduce(PlanFunction func);
         /**
     * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the <code>reduce()</code> method of JavaScript Array. <p> The signature of the reducer must be <code>function(previous, row, i, state)</code>, where <code>previous</code> is the seed on the first request and the return from the previous call on subsequent request; <code>row</code> is the current row; <code>i</code> is the zero-based index of the <code>row</code>, and <code>state</code> is an object with an <code>isLast</code> property (which is true on the last iteration but can be set to true on previous iterations for early termination).  <p> The implementation of a <code>op:reduce</code> function can call <a>op:map</a> functions to chain map calls with reduce calls. 
-    * @param func  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param seed  The function to be appied.
     * @return  a ExportablePlan object
     */
     public abstract ExportablePlan reduce(PlanFunction func, String seed);
         /**
     * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the <code>reduce()</code> method of JavaScript Array. <p> The signature of the reducer must be <code>function(previous, row, i, state)</code>, where <code>previous</code> is the seed on the first request and the return from the previous call on subsequent request; <code>row</code> is the current row; <code>i</code> is the zero-based index of the <code>row</code>, and <code>state</code> is an object with an <code>isLast</code> property (which is true on the last iteration but can be set to true on previous iterations for early termination).  <p> The implementation of a <code>op:reduce</code> function can call <a>op:map</a> functions to chain map calls with reduce calls. 
-    * @param func  The Optic Plan. You can either use the XQuery => chaining operator or specify the variable that captures the return value from the previous operation.
+    * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
     * @param seed  The function to be appied.
     * @return  a ExportablePlan object
     */

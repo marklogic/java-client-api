@@ -31,14 +31,14 @@ public interface WriteBatchListener extends BatchListener<WriteBatch> {
    *     WriteBatcher wb = dataMovementManager.newWriteBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
-   *         .onBatchSuccess(batch -> {
+   *         .onBatchSuccess(batch -&gt; {
    *             for ( WriteEvent doc : batch.getItems() ) {
    *                 if ( doc.getTargetUri().contains("/legal/") ) {
    *                     // do something
    *                 }
    *             }
    *         })
-   *         .onBatchFailure(throwable -> throwable.printStackTrace());
+   *         .onBatchFailure(throwable -&gt; throwable.printStackTrace());
    *
    * @param batch the batch of documents written and some metadata about the current status of the job
    */

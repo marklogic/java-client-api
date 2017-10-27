@@ -31,14 +31,14 @@ public interface QueryBatchListener extends BatchListener<QueryBatch> {
    *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
-   *         .onUrisReady(batch -> {
+   *         .onUrisReady(batch -&gt; {
    *             for ( String uri : batch.getItems() ) {
    *                 if ( uri.endsWith(".txt") ) {
    *                     batch.getClient().newDocumentManager().delete(uri);
    *                 }
    *             }
    *         })
-   *         .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace());
+   *         .onQueryFailure(queryBatchException -&gt; queryBatchException.printStackTrace());
    *     JobTicket ticket = dataMovementManager.startJob(qhb);
    *     qhb.awaitCompletion();
    *     dataMovementManager.stopJob(ticket);
@@ -50,6 +50,8 @@ public interface QueryBatchListener extends BatchListener<QueryBatch> {
   /**
    * This default method should be implemented by custom listeners that should
    * be retried in case of failover.
+   *
+   * @param queryBatcher the QueryBatcher which will call this Listener
    */
   default void initializeListener(QueryBatcher queryBatcher) {}
 }
