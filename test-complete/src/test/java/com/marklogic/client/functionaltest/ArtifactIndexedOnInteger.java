@@ -26,57 +26,57 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  * Property name been annotated with @Id.
  */
 public class ArtifactIndexedOnInteger {
-	@Id
-	public String name;
-	public long id;
-	private Company manufacturer;
+  @Id
+  public String name;
+  public long id;
+  private Company manufacturer;
 
-	@PathIndexProperty(scalarType = ScalarType.INT)
-	private Integer inventory;
-	private int inventory1;
-	
-	public int getInventory1() {
-		return inventory1;
-	}
+  @PathIndexProperty(scalarType = ScalarType.INT)
+  private Integer inventory;
+  private int inventory1;
 
-	public ArtifactIndexedOnInteger setInventory1(int inventory1) {
-		this.inventory1 = inventory1;
-		return this;
-	}
+  public int getInventory1() {
+    return inventory1;
+  }
 
-	public long getId() {
-		return id;
-	}
+  public ArtifactIndexedOnInteger setInventory1(int inventory1) {
+    this.inventory1 = inventory1;
+    return this;
+  }
 
-	public ArtifactIndexedOnInteger setId(long id) {
-		this.id = id;
-		return this;
-	}
+  public long getId() {
+    return id;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public ArtifactIndexedOnInteger setId(long id) {
+    this.id = id;
+    return this;
+  }
 
-	public ArtifactIndexedOnInteger setName(String name) {
-		this.name = name;
-		return this;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public Company getManufacturer() {
-		return manufacturer;
-	}
+  public ArtifactIndexedOnInteger setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-	public ArtifactIndexedOnInteger setManufacturer(Company manufacturer) {
-		this.manufacturer = manufacturer;
-		return this;
-	}
+  public Company getManufacturer() {
+    return manufacturer;
+  }
 
-	public Integer getInventory() {
-		return inventory;
-	}
+  public ArtifactIndexedOnInteger setManufacturer(Company manufacturer) {
+    this.manufacturer = manufacturer;
+    return this;
+  }
 
-	public ArtifactIndexedOnInteger setInventory(Integer inventory) {
-		this.inventory = inventory;
-		return this;
-	}
+  public Integer getInventory() {
+    return inventory;
+  }
+
+  public ArtifactIndexedOnInteger setInventory(Integer inventory) {
+    this.inventory = inventory;
+    return this;
+  }
 }

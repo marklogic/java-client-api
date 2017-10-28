@@ -20,9 +20,10 @@ declare function adapter:transform(
   let $transform     := map:get($params, "ml.transform")
   let $targetContext := map:entry("uri", $uri)
   let $_             := map:delete($params, "ml.transform")
-  let $docOut        := tformod:apply-transform(
+  let $mapOut        := tformod:apply-transform(
     $transform, $targetContext, $params, $docIn
   )
+  let $docOut        := head(map:get($mapOut, "result"))
   return (
     map:put($content, "value", $docOut),
     $content

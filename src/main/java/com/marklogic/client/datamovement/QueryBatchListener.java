@@ -23,11 +23,12 @@ package com.marklogic.client.datamovement;
  */
 public interface QueryBatchListener extends BatchListener<QueryBatch> {
   /**
-   * The method called by QueryBatcher or WriteBatcher to run your
-   * custom code on this batch.  You usually implement this as a lambda expression.
+   * <p>The method called by QueryBatcher or WriteBatcher to run your
+   * custom code on this batch.  You usually implement this as a lambda expression.</p>
    *
    * For example, see the lambda expression passed to onUrisReady:
    *
+   * <pre>{@code
    *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
@@ -42,8 +43,17 @@ public interface QueryBatchListener extends BatchListener<QueryBatch> {
    *     JobTicket ticket = dataMovementManager.startJob(qhb);
    *     qhb.awaitCompletion();
    *     dataMovementManager.stopJob(ticket);
+   *}</pre>
    *
    * @param batch the batch of uris and some metadata about the current status of the job
    */
   void processEvent(QueryBatch batch);
+
+  /**
+   * This default method should be implemented by custom listeners that should
+   * be retried in case of failover.
+   *
+   * @param queryBatcher the QueryBatcher which will call this Listener
+   */
+  default void initializeListener(QueryBatcher queryBatcher) {}
 }

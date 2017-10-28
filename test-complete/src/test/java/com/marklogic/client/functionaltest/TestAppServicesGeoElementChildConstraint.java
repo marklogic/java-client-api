@@ -42,245 +42,255 @@ import com.marklogic.client.query.StringQueryDefinition;
 
 public class TestAppServicesGeoElementChildConstraint extends BasicJavaClientREST {
 
-//	private String serverName = "";
-	private static String dbName = "AppServicesGeoElementChildConstraintDB";
-	private static String [] fNames = {"AppServicesGeoElementChildConstraintDB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesGeoConstraint(dbName);
-	}
-@After
-public  void testCleanUp() throws Exception
-{
-	clearDB();
-	System.out.println("Running clear script");
-}
+  // private String serverName = "";
+  private static String dbName = "AppServicesGeoElementChildConstraintDB";
+  private static String[] fNames = { "AppServicesGeoElementChildConstraintDB-1" };
 
-@Test
-	public void testPointPositiveLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testPointPositiveLangLat");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesGeoConstraint(dbName);
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"12,5\"");
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
+  @Test
+  public void testPointPositiveLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testPointPositiveLangLat");
 
-@Test
-	public void testPointNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testPointNegativeLangLat");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+    String queryOptionName = "geoConstraintOpt.xml";
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"-12,-5\"");
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
+    // write docs
+    loadGeoData();
 
-@Test
-	public void testNegativePointInvalidValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testNegativePointInvalidValue");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+    setQueryOption(client, queryOptionName);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"12,A\"");
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		
-		String result = "";
-		try
-		{
-			queryMgr.search(querydef, resultsHandle);
-			Document resultDoc = resultsHandle.get();
-			result = convertXMLDocumentToString(resultDoc).toString();
-			System.out.println("Result : "+result);
-			
-		} catch (Exception e) { e.toString(); }
-		
-		assertTrue("Expected Warning message is not thrown", result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
-		
-				
-		// release client
-		client.release();		
-	}
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"12,5\"");
 
-@Test
-	public void testCircleNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("testCircleNegativeLangLat");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"@70 -12,-5\"");
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara -11,-5 -11,-5 -11 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill -12,-4 -12,-4 -12 -4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("bill_kara -13,-5 -13,-5 -13 -5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_gale -12,-6 -12,-6 -12 -6", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara 12,5 12,5 12 5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
 
-@Test
-	public void testBoxNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("testBoxNegativeLangLat");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"[-12,-5,-11,-4]\"");
+  @Test
+  public void testPointNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testPointNegativeLangLat");
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("4", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("jack_kara -11,-5 -11,-5 -11 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_jill -12,-4 -12,-4 -12 -4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
-		assertXpathEvaluatesTo("jack_jill -11,-4 -11,-4 -11 -4", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
+    String queryOptionName = "geoConstraintOpt.xml";
 
-@Test
-	public void testBoxAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testPointAndWord");
-		
-		String queryOptionName = "geoConstraintOpt.xml";
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-				
-		// write docs
-		loadGeoData();
-		
-		setQueryOption(client, queryOptionName);
-		
-		QueryManager queryMgr = client.newQueryManager();
-		
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
-		querydef.setCriteria("geo-elem-child:\"[-12,-5,-11,-4]\" AND karl_kara");
+    // write docs
+    loadGeoData();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		queryMgr.search(querydef, resultsHandle);
-		
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("/geo-constraint/geo-constraint2.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
-		
-		// release client
-		client.release();		
-	}
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-//		super.tearDown();
-	}
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"-12,-5\"");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testNegativePointInvalidValue() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testNegativePointInvalidValue");
+
+    String queryOptionName = "geoConstraintOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    loadGeoData();
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"12,A\"");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+
+    String result = "";
+    try
+    {
+      queryMgr.search(querydef, resultsHandle);
+      Document resultDoc = resultsHandle.get();
+      result = convertXMLDocumentToString(resultDoc).toString();
+      System.out.println("Result : " + result);
+
+    } catch (Exception e) {
+      e.toString();
+    }
+
+    assertTrue("Expected Warning message is not thrown",
+        result.contains("<search:warning id=\"SEARCH-IGNOREDQTEXT\">[Invalid text, cannot parse geospatial point from '12,A'.]</search:warning>"));
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testCircleNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("testCircleNegativeLangLat");
+
+    String queryOptionName = "geoConstraintOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    loadGeoData();
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"@70 -12,-5\"");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("5", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("jack_kara -11,-5 -11,-5 -11 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_jill -12,-4 -12,-4 -12 -4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("bill_kara -13,-5 -13,-5 -13 -5", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_gale -12,-6 -12,-6 -12 -6", "string(//*[local-name()='result'][5]//*[local-name()='match'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testBoxNegativeLangLat() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("testBoxNegativeLangLat");
+
+    String queryOptionName = "geoConstraintOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    loadGeoData();
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"[-12,-5,-11,-4]\"");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("4", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("jack_kara -11,-5 -11,-5 -11 -5", "string(//*[local-name()='result'][1]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_jill -12,-4 -12,-4 -12 -4", "string(//*[local-name()='result'][2]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("karl_kara -12,-5 -12,-5 -12 -5", "string(//*[local-name()='result'][3]//*[local-name()='match'])", resultDoc);
+    assertXpathEvaluatesTo("jack_jill -11,-4 -11,-4 -11 -4", "string(//*[local-name()='result'][4]//*[local-name()='match'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testBoxAndWord() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
+      TransformerException
+  {
+    System.out.println("Running testPointAndWord");
+
+    String queryOptionName = "geoConstraintOpt.xml";
+
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // write docs
+    loadGeoData();
+
+    setQueryOption(client, queryOptionName);
+
+    QueryManager queryMgr = client.newQueryManager();
+
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition(queryOptionName);
+    querydef.setCriteria("geo-elem-child:\"[-12,-5,-11,-4]\" AND karl_kara");
+
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    queryMgr.search(querydef, resultsHandle);
+
+    // get the result
+    Document resultDoc = resultsHandle.get();
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("/geo-constraint/geo-constraint2.xml", "string(//*[local-name()='result']//@*[local-name()='uri'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+    // super.tearDown();
+  }
 }

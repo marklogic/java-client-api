@@ -84,7 +84,6 @@ public class SPARQLManagerTest {
   @BeforeClass
   public static void beforeClass() {
     Common.connect();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     gmgr = Common.client.newGraphManager();
     String nTriples = triple1 + "\n" + triple2;
     gmgr.setDefaultMimetype(RDFMimeTypes.NTRIPLES);

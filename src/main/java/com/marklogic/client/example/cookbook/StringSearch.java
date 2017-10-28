@@ -158,16 +158,17 @@ public class StringSearch {
   {
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-    InputStreamHandle contentHandle = new InputStreamHandle();
+    try ( InputStreamHandle contentHandle = new InputStreamHandle() ) {
 
-    for (String filename: filenames) {
-      InputStream docStream = Util.openStream("data"+File.separator+filename);
-      if (docStream == null)
-        throw new IOException("Could not read document example");
+      for (String filename: filenames) {
+        InputStream docStream = Util.openStream("data"+File.separator+filename);
+        if (docStream == null)
+          throw new IOException("Could not read document example");
 
-      contentHandle.set(docStream);
+        contentHandle.set(docStream);
 
-      docMgr.write("/example/"+filename, contentHandle);
+        docMgr.write("/example/"+filename, contentHandle);
+      }
     }
   }
 

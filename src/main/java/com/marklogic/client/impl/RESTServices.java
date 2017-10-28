@@ -22,6 +22,7 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.net.ssl.SSLContext;
+import javax.net.ssl.X509TrustManager;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -61,11 +62,58 @@ import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
-import com.sun.jersey.api.client.ClientResponse;
 
 public interface RESTServices {
+
+  String HEADER_ACCEPT = "Accept";
+  String HEADER_COOKIE = "Cookie";
+  String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
+  String HEADER_CONTENT_LENGTH = "Content-Length";
+  String HEADER_CONTENT_TYPE = "Content-Type";
+  String HEADER_ETAG = "ETag";
+  String HEADER_ML_EFFECTIVE_TIMESTAMP = "ML-Effective-Timestamp";
+  String HEADER_SET_COOKIE = "Set-Cookie";
+  String HEADER_VND_MARKLOGIC_DOCUMENT_FORMAT = "vnd.marklogic.document-format";
+  String HEADER_VND_MARKLOGIC_START = "vnd.marklogic.start";
+  String HEADER_VND_MARKLOGIC_PAGELENGTH = "vnd.marklogic.pageLength";
+  String HEADER_VND_MARKLOGIC_RESULT_ESTIMATE = "vnd.marklogic.result-estimate";
+  String HEADER_X_MARKLOGIC_SYSTEM_TIME = "x-marklogic-system-time";
+  String HEADER_ML_LSQT = "ML-LSQT";
+  String HEADER_X_PRIMITIVE = "X-Primitive";
+
+  String DISPOSITION_TYPE_ATTACHMENT = "attachment";
+  String DISPOSITION_TYPE_INLINE = "inline";
+  String DISPOSITION_PARAM_FILENAME = "filename";
+  String DISPOSITION_PARAM_CATEGORY = "category";
+
+  String MIMETYPE_WILDCARD = "*/*";
+  String MIMETYPE_TEXT_JSON = "text/json";
+  String MIMETYPE_TEXT_XML = "text/xml";
+  String MIMETYPE_APPLICATION_JSON = "application/json";
+  String MIMETYPE_APPLICATION_XML = "application/xml";
+  String MIMETYPE_MULTIPART_MIXED = "multipart/mixed";
+
+  int STATUS_OK = 200;
+  int STATUS_CREATED = 201;
+  int STATUS_NO_CONTENT = 204;
+  int STATUS_PARTIAL_CONTENT = 206;
+  int STATUS_SEE_OTHER = 303;
+  int STATUS_NOT_MODIFIED = 304;
+  int STATUS_UNAUTHORIZED = 401;
+  int STATUS_FORBIDDEN = 403;
+  int STATUS_NOT_FOUND = 404;
+  int STATUS_PRECONDITION_FAILED = 412;
+  int STATUS_PRECONDITION_REQUIRED = 428;
+  int STATUS_SERVICE_UNAVAILABLE = 503;
+
+  String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
+  String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
+
+  @Deprecated
   public void connect(String host, int port, String database, String user, String password, Authentication type,
                       SSLContext context, SSLHostnameVerifier verifier);
+  public void connect(String host, int port, String database, String user, String password, Authentication type,
+      SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
   public DatabaseClient getDatabaseClient();
   public void setDatabaseClient(DatabaseClient client);
   public void release();
@@ -88,7 +136,7 @@ public interface RESTServices {
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
   public DocumentPage getBulkDocuments(RequestLogger logger, long serverTimestamp, QueryDefinition querydef,
                                        long start, long pageLength, Transaction transaction, SearchReadHandle searchHandle,
-                                       QueryView view, Set<Metadata> categories, Format format, RequestParameters extraParams)
+                                       QueryView view, Set<Metadata> categories, Format format, ServerTransform responseTransform, RequestParameters extraParams)
     throws ResourceNotFoundException, ForbiddenUserException,  FailedRequestException;
 
   public void postBulkDocuments(RequestLogger logger, DocumentWriteSet writeSet,
@@ -228,51 +276,51 @@ public interface RESTServices {
   public enum ResponseStatus {
     OK() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return status == ClientResponse.Status.OK;
+      public boolean isExpected(int status) {
+        return status == STATUS_OK;
       }
     },
     CREATED() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return status == ClientResponse.Status.CREATED;
+      public boolean isExpected(int status) {
+        return status == STATUS_CREATED;
       }
     },
     NO_CONTENT() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return status == ClientResponse.Status.NO_CONTENT;
+      public boolean isExpected(int status) {
+        return status == STATUS_NO_CONTENT;
       }
     },
     OK_OR_NO_CONTENT() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return (status == ClientResponse.Status.OK ||
-          status == ClientResponse.Status.NO_CONTENT);
+      public boolean isExpected(int status) {
+        return (status == STATUS_OK ||
+          status == STATUS_NO_CONTENT);
       }
     },
     CREATED_OR_NO_CONTENT() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return (status == ClientResponse.Status.CREATED ||
-          status == ClientResponse.Status.NO_CONTENT);
+      public boolean isExpected(int status) {
+        return (status == STATUS_CREATED ||
+          status == STATUS_NO_CONTENT);
       }
     },
     OK_OR_CREATED_OR_NO_CONTENT() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return (status == ClientResponse.Status.OK ||
-          status == ClientResponse.Status.CREATED ||
-          status == ClientResponse.Status.NO_CONTENT);
+      public boolean isExpected(int status) {
+        return (status == STATUS_OK ||
+          status == STATUS_CREATED ||
+          status == STATUS_NO_CONTENT);
       }
     },
     SEE_OTHER() {
       @Override
-      public boolean isExpected(ClientResponse.Status status) {
-        return status == ClientResponse.Status.SEE_OTHER;
+      public boolean isExpected(int status) {
+        return status == STATUS_SEE_OTHER;
       }
     };
-    public boolean isExpected(ClientResponse.Status status) {
+    public boolean isExpected(int status) {
       return false;
     }
   }
@@ -338,6 +386,8 @@ public interface RESTServices {
     public Map<String,List<String>> getHeaders();
   }
 
+  public String advanceLsqt(RequestLogger reqlog, String temporalCollection, long lag);
+
   public void wipeDocument(RequestLogger requestLogger, String temporalDocumentURI, Transaction transaction,
                            RequestParameters extraParams);
 
@@ -346,6 +396,11 @@ public interface RESTServices {
   public <R extends AbstractReadHandle> R postResource(
     RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
     AbstractWriteHandle input, R output, String operation)
+    throws ResourceNotFoundException, ResourceNotResendableException,
+    ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
+  public <R extends AbstractReadHandle> R postResource(
+    RequestLogger reqlog, String path, Transaction transaction, RequestParameters params,
+    AbstractWriteHandle input, R output, String operation, Map<String,List<String>> responseHeaders)
     throws ResourceNotFoundException, ResourceNotResendableException,
     ResourceNotResendableException, ForbiddenUserException, FailedRequestException;
   void patchDocument(RequestLogger reqlog, DocumentDescriptor desc, Transaction transaction, Set<Metadata> categories, boolean isOnContent,

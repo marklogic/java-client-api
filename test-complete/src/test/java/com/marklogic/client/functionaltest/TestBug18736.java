@@ -41,80 +41,82 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+
 public class TestBug18736 extends BasicJavaClientREST {
 
-	private static String dbName = "Bug18736DB";
-	private static String [] fNames = {"Bug18736DB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "Bug18736DB";
+  private static String[] fNames = { "Bug18736DB-1" };
 
-@Test
-	public void testBug18736() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
-	{	
-		System.out.println("Running testBug18736");
-		
-		String filename = "constraint1.xml";
-		String docId = "/content/without-xml-ext";
-		//XpathEngine xpathEngine;
-		
-		/*Map<String,String> xpathNS = new HashMap<>();
-		xpathNS.put("", "http://purl.org/dc/elements/1.1/");
-		SimpleNamespaceContext xpathNsContext = new SimpleNamespaceContext(xpathNS);
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-		XMLUnit.setIgnoreAttributeOrder(true);
-		XMLUnit.setIgnoreWhitespace(true);
-		XMLUnit.setNormalize(true);
-		XMLUnit.setNormalizeWhitespace(true);
-		XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
-		
-		xpathEngine = XMLUnit.newXpathEngine();
-		xpathEngine.setNamespaceContext(xpathNsContext);*/
+  @Test
+  public void testBug18736() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, ParserConfigurationException, SAXException, IOException
+  {
+    System.out.println("Running testBug18736");
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-		
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		
-		// create write handle
-		InputStreamHandle writeHandle = new InputStreamHandle();
+    String filename = "constraint1.xml";
+    String docId = "/content/without-xml-ext";
+    // XpathEngine xpathEngine;
 
-		// get the file
-		InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
-		
-		writeHandle.set(inputStream);
-		
-		// create doc descriptor
-		DocumentDescriptor docDesc = docMgr.newDescriptor(docId); 
-		
-		docMgr.write(docDesc, writeHandle);
+    /*
+     * Map<String,String> xpathNS = new HashMap<>(); xpathNS.put("",
+     * "http://purl.org/dc/elements/1.1/"); SimpleNamespaceContext
+     * xpathNsContext = new SimpleNamespaceContext(xpathNS);
+     * 
+     * XMLUnit.setIgnoreAttributeOrder(true); XMLUnit.setIgnoreWhitespace(true);
+     * XMLUnit.setNormalize(true); XMLUnit.setNormalizeWhitespace(true);
+     * XMLUnit.setIgnoreDiffBetweenTextAndCDATA(true);
+     * 
+     * xpathEngine = XMLUnit.newXpathEngine();
+     * xpathEngine.setNamespaceContext(xpathNsContext);
+     */
 
-		docDesc.setFormat(Format.XML);
-        DOMHandle readHandle = new DOMHandle();
-        docMgr.read(docDesc, readHandle);
-        Document readDoc = readHandle.get();
-        String out = convertXMLDocumentToString(readDoc);
-        System.out.println(out);
-        
-        assertTrue("Unable to read doc", out.contains("0011"));
-        
-        // get xml document for expected result
-        //Document expectedDoc = expectedXMLDocument(filename);
-     		
-     	//assertXMLEqual("Write XML difference", expectedDoc, readDoc);
-                
-		// release client
-	    client.release();	
-	}
-@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-		
-	}
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+    // create write handle
+    InputStreamHandle writeHandle = new InputStreamHandle();
+
+    // get the file
+    InputStream inputStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+
+    writeHandle.set(inputStream);
+
+    // create doc descriptor
+    DocumentDescriptor docDesc = docMgr.newDescriptor(docId);
+
+    docMgr.write(docDesc, writeHandle);
+
+    docDesc.setFormat(Format.XML);
+    DOMHandle readHandle = new DOMHandle();
+    docMgr.read(docDesc, readHandle);
+    Document readDoc = readHandle.get();
+    String out = convertXMLDocumentToString(readDoc);
+    System.out.println(out);
+
+    assertTrue("Unable to read doc", out.contains("0011"));
+
+    // get xml document for expected result
+    // Document expectedDoc = expectedXMLDocument(filename);
+
+    // assertXMLEqual("Write XML difference", expectedDoc, readDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+
+  }
 }

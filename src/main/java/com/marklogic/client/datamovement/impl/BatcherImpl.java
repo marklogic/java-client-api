@@ -21,6 +21,7 @@ import com.marklogic.client.datamovement.ForestConfiguration;
 
 public abstract class BatcherImpl implements Batcher {
   private String jobName = "unnamed";
+  private String jobId = null;
   private int batchSize = 100;
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
@@ -33,8 +34,19 @@ public abstract class BatcherImpl implements Batcher {
   }
 
   @Override
+  public Batcher withJobId(String jobId) {
+    this.jobId = jobId;
+    return this;
+  }
+
+  @Override
   public String getJobName() {
     return jobName;
+  }
+
+  @Override
+  public String getJobId() {
+    return jobId;
   }
 
   @Override
@@ -79,4 +91,7 @@ public abstract class BatcherImpl implements Batcher {
 
   @Override
   public abstract boolean isStopped();
+
+  @Override
+  public abstract boolean isStarted();
 }

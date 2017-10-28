@@ -47,7 +47,6 @@ public class ConditionalDocumentTest {
   public static void beforeClass()
     throws FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException
   {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     serverConfig = adminClient.newServerConfigManager();
     serverConfig.readConfiguration();
     serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);

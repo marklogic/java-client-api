@@ -62,7 +62,6 @@ public class TransformTest {
     throws IOException, FailedRequestException, ForbiddenUserException, ResourceNotFoundException, ResourceNotResendableException {
     Common.connect();
     Common.connectAdmin();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     confMgr = Common.adminClient.newServerConfigManager();
 
     extensionMgr = confMgr.newTransformExtensionsManager();

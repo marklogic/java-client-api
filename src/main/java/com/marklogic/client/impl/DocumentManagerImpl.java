@@ -466,8 +466,9 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       // default of ALL
       isProcessedMetadataModified ? processedMetadata : null,
       nonDocumentFormat,
-      mergeTransformParameters((transform != null) ? transform
-        : getReadTransform(), extraParams), withContent, uris);
+      mergeTransformParameters((transform != null) ? transform : getReadTransform(), extraParams),
+      withContent,
+      uris);
   }
 
   @Override
@@ -541,7 +542,7 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       : null;
     return services.getBulkDocuments(requestLogger, serverTimestamp, querydef, start,
       getPageLength(), transaction, searchHandle, searchView, metadata,
-      nonDocumentFormat, null);
+      nonDocumentFormat, getReadTransform(), null);
   }
 
   @Override
@@ -1009,6 +1010,16 @@ abstract class DocumentManagerImpl<R extends AbstractReadHandle, W extends Abstr
       temporalCollection, null, systemTime);
 
     return services.deleteDocument(requestLogger, desc, transaction, null, extraParams);
+  }
+
+  @Override
+  public String advanceLsqt(String temporalCollection) {
+    return services.advanceLsqt(requestLogger, temporalCollection, -1);
+  }
+
+  @Override
+  public String advanceLsqt(String temporalCollection, long lag) {
+    return services.advanceLsqt(requestLogger, temporalCollection, lag);
   }
 
   @Override

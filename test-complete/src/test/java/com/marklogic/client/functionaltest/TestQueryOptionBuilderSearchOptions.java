@@ -43,157 +43,157 @@ import com.marklogic.client.query.StringQueryDefinition;
 
 public class TestQueryOptionBuilderSearchOptions extends BasicJavaClientREST {
 
-	private static String dbName = "TestQueryOptionBuilderSearchOptionsDB";
-	private static String [] fNames = {"TestQueryOptionBuilderSearchOptionsDB-1"};
-	
-	@BeforeClass	
-	public static void setUp() throws Exception {
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "TestQueryOptionBuilderSearchOptionsDB";
+  private static String[] fNames = { "TestQueryOptionBuilderSearchOptionsDB-1" };
 
-	@Test	
-	public void testSearchOptions1() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testSearchOptions1");
+  @BeforeClass
+  public static void setUp() throws Exception {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testSearchOptions1() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testSearchOptions1");
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-1/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-1/", "XML");
+    }
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-			    "<search:debug>true</search:debug>" +
-			    "<search:return-metrics>false</search:return-metrics>" +
-			    "<search:return-qtext>false</search:return-qtext>" +
-			    "<search:search-option>checked</search:search-option>" +
-			    "<search:search-option>filtered</search:search-option>" +
-			    "<search:search-option>score-simple</search:search-option>" +
-			    "<search:transform-results apply='raw'/>" +
-			"</search:options>";
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:debug>true</search:debug>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:search-option>checked</search:search-option>" +
+        "<search:search-option>filtered</search:search-option>" +
+        "<search:search-option>score-simple</search:search-option>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		List<String> listOfSearchOptions = new ArrayList<> ();
-		listOfSearchOptions.add("checked");
-		listOfSearchOptions.add("filtered");
-		listOfSearchOptions.add("score-simple");
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// write query options
-		optionsMgr.writeOptions("SearchOptions1", handle);
+    List<String> listOfSearchOptions = new ArrayList<>();
+    listOfSearchOptions.add("checked");
+    listOfSearchOptions.add("filtered");
+    listOfSearchOptions.add("score-simple");
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("SearchOptions1", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // write query options
+    optionsMgr.writeOptions("SearchOptions1", handle);
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("SearchOptions1", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchOptions1");
-		querydef.setCriteria("bush");
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchOptions1");
+    querydef.setCriteria("bush");
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"checked\",\"filtered\",\"score-simple\",cts:score-order(\"descending\")), 1))[1 to 10]";
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
+    String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"checked\",\"filtered\",\"score-simple\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
-		// release client
-		client.release();	
-	}
+    assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 
-	@Test	
-	public void testSearchOptions2() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testSearchOptions2");
+    // release client
+    client.release();
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testSearchOptions2() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testSearchOptions2");
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-2/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/search-ops-2/", "XML");
+    }
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-			    "<search:debug>true</search:debug>" +
-			    "<search:return-metrics>false</search:return-metrics>" +
-			    "<search:return-qtext>false</search:return-qtext>" +
-			    "<search:search-option>unchecked</search:search-option>" +
-			    "<search:search-option>unfiltered</search:search-option>" +
-			    "<search:search-option>score-logtfidf</search:search-option>" +
-			    "<search:transform-results apply='raw'/>" +
-			"</search:options>";
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:debug>true</search:debug>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:search-option>unchecked</search:search-option>" +
+        "<search:search-option>unfiltered</search:search-option>" +
+        "<search:search-option>score-logtfidf</search:search-option>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		List<String> listOfSearchOptions = new ArrayList<> ();
-		listOfSearchOptions.add("unchecked");
-		listOfSearchOptions.add("unfiltered");
-		listOfSearchOptions.add("score-logtfidf");
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// write query options
-		optionsMgr.writeOptions("SearchOptions2", handle);
+    List<String> listOfSearchOptions = new ArrayList<>();
+    listOfSearchOptions.add("unchecked");
+    listOfSearchOptions.add("unfiltered");
+    listOfSearchOptions.add("score-logtfidf");
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("SearchOptions2", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // write query options
+    optionsMgr.writeOptions("SearchOptions2", handle);
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("SearchOptions2", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchOptions2");
-		querydef.setCriteria("bush");
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("SearchOptions2");
+    querydef.setCriteria("bush");
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-		String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"unchecked\",\"unfiltered\",\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
+    // get the result
+    Document resultDoc = resultsHandle.get();
 
-		assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
+    String expectedSearchReport = "(cts:search(fn:collection(), cts:word-query(\"bush\", (\"lang=en\"), 1), (\"unchecked\",\"unfiltered\",\"score-logtfidf\",cts:score-order(\"descending\")), 1))[1 to 10]";
 
-		// release client
-		client.release();	
-	} 
+    assertXpathEvaluatesTo(expectedSearchReport, "string(//*[local-name()='report'])", resultDoc);
 
-	@AfterClass	
-	public static void tearDown() throws Exception {
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

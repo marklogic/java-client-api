@@ -43,8 +43,6 @@ public class GraphsTest {
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-
   }
 
   @AfterClass

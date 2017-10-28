@@ -18,6 +18,7 @@ package com.marklogic.client.functionaltest;
 
 import com.marklogic.client.pojo.annotation.PathIndexProperty;
 import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
+
 /* This class is used to test range path index creation, when the Annotation is
  * in the super class and also in sub class on the same class property with same data type.
  * 
@@ -25,14 +26,15 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  */
 
 public class ArtifactMultipleIndexedOnInt extends ArtifactIndexedOnInt {
-	@PathIndexProperty(scalarType = ScalarType.INT)
-	private int inventory;
+  @PathIndexProperty(scalarType = ScalarType.INT)
+  private int inventory;
 
-	public int getInventory() {
-		return inventory;
-	}
+  public int getInventory() {
+    return inventory;
+  }
 
-	public ArtifactMultipleIndexedOnInt setInventory(int inventory) {
-		this.inventory = inventory; return this;
-	}
+  public ArtifactMultipleIndexedOnInt setInventory(int inventory) {
+    this.inventory = inventory;
+    return this;
+  }
 }

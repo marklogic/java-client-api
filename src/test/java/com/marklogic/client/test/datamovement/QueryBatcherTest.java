@@ -34,6 +34,7 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
@@ -99,7 +100,6 @@ public class QueryBatcherTest {
   @BeforeClass
   public static void beforeClass() throws Exception {
     //((ch.qos.logback.classic.Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME)).setLevel(ch.qos.logback.classic.Level.INFO);
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     setup();
   }
 
@@ -233,6 +233,8 @@ public class QueryBatcherTest {
       int batchSize, int threadCount)
     throws Exception
   {
+    String queryBatcherJobId = "QueryBatcherJobId";
+    String queryBatcherJobName = "QueryBatcherJobName";
     int numExpected = 0;
     for ( String forest : matchesByForest.keySet() ) {
       numExpected += matchesByForest.get(forest).length;
@@ -244,7 +246,7 @@ public class QueryBatcherTest {
     final AtomicReference<String> batchDatabaseName = new AtomicReference<>();
     final AtomicReference<JobTicket> batchTicket = new AtomicReference<>();
     final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
-    final Map<String, Set<String>> results = new HashMap<>();
+    final Map<String, Set<String>> results = new ConcurrentHashMap<>();
     final StringBuffer failures = new StringBuffer();
     queryBatcher
       .withBatchSize(batchSize)
@@ -254,11 +256,8 @@ public class QueryBatcherTest {
           successfulBatchCount.incrementAndGet();
           totalResults.addAndGet(batch.getItems().length);
           String forestName = batch.getForest().getForestName();
-          Set<String> matches = results.get(forestName);
-          if ( matches == null ) {
-            matches = new HashSet<>();
-            results.put(forestName, matches);
-          }
+          // atomically gets the set unless it's missing in which case it creates it
+          Set<String> matches = results.computeIfAbsent(forestName, k->ConcurrentHashMap.<String>newKeySet());
           for ( String uri : batch.getItems() ) {
             matches.add(uri);
           }
@@ -273,15 +272,21 @@ public class QueryBatcherTest {
           throwable.printStackTrace();
           failures.append("ERROR:[" + throwable + "]\n");
         }
-      );
+      )
+        .withJobId(queryBatcherJobId)
+        .withJobName(queryBatcherJobName);
 
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
+    assertEquals(queryBatcherJobId, queryBatcher.getJobId());
     assertFalse("Job should not be stopped yet", queryBatcher.isStopped());
 
     long minTime = new Date().getTime();
-
-    JobTicket ticket = moveMgr.startJob(queryBatcher);
+    assertFalse("Job should not be started yet", queryBatcher.isStarted());
+    moveMgr.startJob(queryBatcher);
+    JobTicket ticket = moveMgr.getActiveJob(queryBatcherJobId);
+    assertTrue("Job should be started now", queryBatcher.isStarted());
+    assertEquals(queryBatcherJobName, ticket.getBatcher().getJobName());
 
     JobReport report = moveMgr.getJobReport(ticket);
     //assertFalse("Job Report has incorrect job completion information", report.isJobComplete());
@@ -292,7 +297,8 @@ public class QueryBatcherTest {
       fail("Job did not finish, it was interrupted");
     }
 
-    moveMgr.stopJob(ticket);
+    moveMgr.stopJob(ticket.getBatcher());
+
     assertTrue("Job should be stopped now", queryBatcher.isStopped());
     assertEquals("Batch JobTicket should match JobTicket from startJob", ticket, batchTicket.get());
 
@@ -329,7 +335,8 @@ public class QueryBatcherTest {
         for ( String uri : expected ) {
           if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
             for ( String resultsForest : results.keySet() ) {
-              logger.error("Results found for forest {}: {}", resultsForest, results.get(resultsForest));
+              logger.error("Results found for forest {}: {}, expected {}", resultsForest, results.get(resultsForest),
+                Arrays.asList(matchesByForest.get(resultsForest)));
             }
             fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
           }
@@ -501,6 +508,10 @@ public class QueryBatcherTest {
           public DatabaseClient getClient() {
             throw new InternalError(errorMessage);
           }
+
+          public QueryBatcher getBatcher() {
+            return moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"));
+          }
         };
         listener.processEvent(mockQueryBatch);
       }
@@ -534,9 +545,8 @@ public class QueryBatcherTest {
     uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
     uris.add(uniqueDir + "test+with+plus.txt");
     uris.add(uniqueDir + "test/with/forwardslash.txt");
-    uris.add(uniqueDir + "test\\with\\backslash.txt");
     uris.add(uniqueDir + "test.with.dot.txt");
-    uris.add(uniqueDir + "test_with-every@thing!#else$^*()[]:',~.txt");
+    uris.add(uniqueDir + "test_with-every@thing!#else$*()[]:',~.txt");
     uris.add(uniqueDir + "test_with_semicolon.txt?a=b;c=d");
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()

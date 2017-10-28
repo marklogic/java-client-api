@@ -21,18 +21,20 @@ public class ForestImpl implements Forest {
   private String host;
   private String openReplicaHost;
   private String alternateHost;
+  private String requestHost;
   private String databaseName;
   private String forestName;
   private String forestId;
   private boolean isUpdateable;
   private boolean isDeleteOnly;
 
-  public ForestImpl(String host, String openReplicaHost, String alternateHost, String databaseName,
+  public ForestImpl(String host, String openReplicaHost, String requestHost, String alternateHost, String databaseName,
     String forestName, String forestId, boolean isUpdateable, boolean isDeleteOnly)
   {
     this.host = host;
     this.openReplicaHost = openReplicaHost;
     this.alternateHost = alternateHost;
+    this.requestHost = requestHost;
     this.databaseName  = databaseName;
     this.forestName    = forestName;
     this.forestId      = forestId;
@@ -65,6 +67,15 @@ public class ForestImpl implements Forest {
 
   public void setAlternateHost(String alternateHost) {
     this.alternateHost = alternateHost;
+  }
+
+  @Override
+  public String getRequestHost() {
+    return requestHost;
+  }
+
+  public void setRequestHost(String requestHost) {
+    this.requestHost = requestHost;
   }
 
   @Override

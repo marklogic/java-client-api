@@ -35,6 +35,7 @@ public class ServerTransform extends RequestParameters {
    */
   public ServerTransform(String name) {
     super();
+    if ( name == null ) throw new IllegalArgumentException("Transform name cannot be null");
     this.name = name;
   }
 

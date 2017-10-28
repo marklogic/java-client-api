@@ -85,7 +85,6 @@ public class BulkReadWriteTest {
     DatabaseClientFactory.getHandleRegistry().register(
       JAXBHandle.newFactory(City.class)
     );
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
   @AfterClass
   public static void afterClass() {
@@ -98,7 +97,7 @@ public class BulkReadWriteTest {
     public void setNumRecords(int numWritten);
   }
 
-  private class BulkCityWriter implements CityWriter {
+  private static class BulkCityWriter implements CityWriter {
     private XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     private DocumentWriteSet writeSet = docMgr.newWriteSet();
 
@@ -126,7 +125,7 @@ public class BulkReadWriteTest {
     // load all the countries into a HashMap (this isn't the big data set)
     // we'll attach country info to each city (that's the big data set)
     Map<String, Country> countries = new HashMap<>();
-    System.out.println("Reading countries:" + BulkReadWriteTest.class.getClassLoader().getResourceAsStream(COUNTRIES_FILE));
+    System.out.println("Reading countries:" + BulkReadWriteTest.class.getResource(COUNTRIES_FILE));
     String line;
     try (BufferedReader countryReader = new BufferedReader(Common.testFileToReader(COUNTRIES_FILE, "UTF-8"))) {
       while ((line = countryReader.readLine()) != null ) {
@@ -135,28 +134,28 @@ public class BulkReadWriteTest {
     }
 
     // write batches of cities combined with their country info
-    System.out.println("Reading cities:" + BulkReadWriteTest.class.getClassLoader().getResource(CITIES_FILE));
-    BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE, "UTF-8"));
+    System.out.println("Reading cities:" + BulkReadWriteTest.class.getResource(CITIES_FILE));
     line = null;
-    int numWritten = 0;
-    while ((line = cityReader.readLine()) != null ) {
+    try (BufferedReader cityReader = new BufferedReader(Common.testFileToReader(CITIES_FILE, "UTF-8"))) {
+      int numWritten = 0;
+      while ((line = cityReader.readLine()) != null ) {
 
-      // instantiate the POJO for this city
-      City city = newCity(line, countries);
-      // let the implementation handle writing the city
-      cityWriter.addCity(city);
+        // instantiate the POJO for this city
+        City city = newCity(line, countries);
+        // let the implementation handle writing the city
+        cityWriter.addCity(city);
 
-      // when we have a full batch, write it out
-      if ( ++numWritten % BATCH_SIZE == 0 ) {
+        // when we have a full batch, write it out
+        if ( ++numWritten % BATCH_SIZE == 0 ) {
+          cityWriter.finishBatch();
+        }
+      }
+      // if there are any leftovers, let's write this last batch
+      if ( numWritten % BATCH_SIZE > 0 ) {
         cityWriter.finishBatch();
       }
+      cityWriter.setNumRecords(numWritten);
     }
-    // if there are any leftovers, let's write this last batch
-    if ( numWritten % BATCH_SIZE > 0 ) {
-      cityWriter.finishBatch();
-    }
-    cityWriter.setNumRecords(numWritten);
-    cityReader.close();
   }
 
 
@@ -386,21 +385,43 @@ public class BulkReadWriteTest {
     doc2 = docMgr.read(docId[2]).next().getContent(new DOMHandle()).get();
     assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
 
-    // searching with bulk API, the transform should work the same on the matching documents
+    // searching with bulk API and DocumentManager.setReadTransform,
+    // the transform should work the same on the matching documents
+    docMgr.setReadTransform(transform);
     QueryDefinition query = new StructuredQueryBuilder().document(docId[2]);
+    try ( DocumentPage page = docMgr.search(query, 1) ) {
+      doc2 = page.next().getContent(new DOMHandle()).get();
+      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    }
+
+    // searching with bulk API and both DocumentManager.setReadTransform
+    // and QueryDefinition.setResponseTransform,
+    // the transform should work the same on the matching documents
+    docMgr.setReadTransform(transform);
     query.setResponseTransform(transform);
-    DocumentPage page = docMgr.search(query, 1);
-    doc2 = page.next().getContent(new DOMHandle()).get();
-    assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    try ( DocumentPage page = docMgr.search(query, 1) ) {
+      doc2 = page.next().getContent(new DOMHandle()).get();
+      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    }
+
+    // searching with bulk API and DocumentManager.setReadTransform,
+    // the transform should work the same on the matching documents
+    docMgr.setReadTransform(null);
+    query.setResponseTransform(transform);
+    try ( DocumentPage page = docMgr.search(query, 1) ) {
+      doc2 = page.next().getContent(new DOMHandle()).get();
+      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    }
 
     // searching with bulk API, the transform should work the same on the matching documents
     // and the search response
     query.setResponseTransform(transform);
     DOMHandle results = new DOMHandle();
-    page = docMgr.search(query, 1, results);
-    doc2 = page.next().getContent(new DOMHandle()).get();
-    assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
-    assertEquals("true",results.get().getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    try ( DocumentPage page = docMgr.search(query, 1, results) ) {
+      doc2 = page.next().getContent(new DOMHandle()).get();
+      assertEquals("true",doc2.getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+      assertEquals("true",results.get().getDocumentElement().getAttributeNS(TEST_NS, "transformed"));
+    }
 
     docMgr.delete(docId[0]);
     docMgr.delete(docId[1]);
@@ -670,6 +691,10 @@ public class BulkReadWriteTest {
       assertEquals("Count of documents outside of the transaction",0,outOfTransactionResults.getTotalResults());
       assertEquals("Count of documents inside of the transaction", 2,   inTransactionResults.getTotalResults());
 
+      long start = 2;
+      SearchHandle page2 = queryMgr.search(directoryQuery, new SearchHandle(), start, t1);
+      assertEquals("Count of documents inside the transaction on page 2", 1, page2.getMatchResults().length);
+
     }catch(Exception e){
       System.out.println(e.getMessage());
       tstatus=true;
@@ -745,9 +770,8 @@ public class BulkReadWriteTest {
     uris.add(uniqueDir + "test_with_ampersand.txt?a=b&c=d");
     uris.add(uniqueDir + "test+with+plus.txt");
     uris.add(uniqueDir + "test/with/forwardslash.txt");
-    uris.add(uniqueDir + "test\\with\\backslash.txt");
     uris.add(uniqueDir + "test.with.dot.txt");
-    uris.add(uniqueDir + "test_with!every@thing#else$^*()-_[]:',~.txt");
+    uris.add(uniqueDir + "test_with!every@thing#else$*()-_[]:',~.txt");
     uris.add(uniqueDir + "test_with;.txt");
 
     test_issue_623_body( Common.client.newTextDocumentManager(), uris, "$0" );
@@ -792,6 +816,18 @@ public class BulkReadWriteTest {
       docMgr.delete(new String[] {uri});
       verifyDeleted(docMgr, uri);
     }
+  }
+
+  @Test
+  // https://github.com/marklogic/java-client-api/issues/759
+  public void test_issue_759() throws Exception {
+    DocumentManager docMgr = Common.client.newDocumentManager();
+    String[] uris = new String[150];
+    for ( int i=0; i < 102; i++ ) {
+      String mapDocId = "/" + Integer.toString(i);
+      uris[i] = mapDocId;
+    }
+    docMgr.read(uris);
   }
 
   private void verifyDeleted(DocumentManager docMgr, String uri) {

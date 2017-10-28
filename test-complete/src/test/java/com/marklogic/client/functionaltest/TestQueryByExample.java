@@ -47,457 +47,460 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import com.sun.jersey.api.client.ClientHandlerException;
 
 public class TestQueryByExample extends BasicJavaClientREST {
-	private static String dbName = "TestQueryByExampleDB";
-	private static String [] fNames = {"TestQueryByExampleDB-1"};
-	
-	private static int restPort=8011;
+  private static String dbName = "TestQueryByExampleDB";
+  private static String[] fNames = { "TestQueryByExampleDB-1" };
 
-	@BeforeClass
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+  private static int restPort = 8011;
 
-	@After
-	public  void testCleanUp() throws Exception
-	{
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+    addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+    addFieldExcludeRoot(dbName, "para");
+    includeElementFieldWithWeight(dbName, "para", "", "p", 5, "", "", "");
+  }
 
-	@Test
-	public void testQueryByExampleXML() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXML");
+  @After
+  public void testCleanUp() throws Exception
+  {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testQueryByExampleXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXML");
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+    }
 
-		String qbeQuery = convertFileToString(file);
-		StringHandle qbeHandle = new StringHandle(qbeQuery);
-		qbeHandle.setFormat(Format.XML);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
 
-		QueryManager queryMgr = client.newQueryManager();
+    String qbeQuery = convertFileToString(file);
+    StringHandle qbeHandle = new StringHandle(qbeQuery);
+    qbeHandle.setFormat(Format.XML);
 
-		RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
+    QueryManager queryMgr = client.newQueryManager();
 
-		Document resultDoc = queryMgr.search(qbyex, new DOMHandle()).get();
+    RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
 
-		System.out.println("XML Result"+convertXMLDocumentToString(resultDoc));
+    Document resultDoc = queryMgr.search(qbyex, new DOMHandle()).get();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    System.out.println("XML Result" + convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();		
-	}
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-	@Test	
-	public void testQueryByExampleXMLnew() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXML");
+    // release client
+    client.release();
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testQueryByExampleXMLnew() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXML");
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+    }
 
-		String qbeQuery = convertFileToString(file);
-		StringHandle qbeHandle = new StringHandle(qbeQuery);
-		qbeHandle.setFormat(Format.XML);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
 
+    String qbeQuery = convertFileToString(file);
+    StringHandle qbeHandle = new StringHandle(qbeQuery);
+    qbeHandle.setFormat(Format.XML);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
-		Document resultDoc = queryMgr.search(qbyex, new DOMHandle()).get();
+    RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
+    Document resultDoc = queryMgr.search(qbyex, new DOMHandle()).get();
 
-		System.out.println("XML Result"+convertXMLDocumentToString(resultDoc));
+    System.out.println("XML Result" + convertXMLDocumentToString(resultDoc));
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
 
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testQueryByExampleJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		System.out.println("Running testQueryByExampleJSON");
+  @Test
+  public void testQueryByExampleJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testQueryByExampleJSON");
 
-		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
+    String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
+    }
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
 
-		String qbeQuery = convertFileToString(file);
-		StringHandle qbeHandle = new StringHandle(qbeQuery);
-		qbeHandle.setFormat(Format.JSON);
+    String qbeQuery = convertFileToString(file);
+    StringHandle qbeHandle = new StringHandle(qbeQuery);
+    qbeHandle.setFormat(Format.JSON);
 
-		QueryManager queryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-		RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
+    RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
 
-		String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
+    String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
 
-		System.out.println("testQueryByExampleJSON Result : "+resultDoc);
+    System.out.println("testQueryByExampleJSON Result : " + resultDoc);
 
+    assertTrue(
+        "doc returned is not correct",
+        resultDoc
+            .contains("<search:result index=\"1\" uri=\"/qbe/constraint1.json\" path=\"fn:doc(&quot;/qbe/constraint1.json&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.6951694\" href=\"/v1/documents?uri=%2Fqbe%2Fconstraint1.json\" mimetype=\"application/json\" format=\"json\">"));
 
-		assertTrue("doc returned is not correct", resultDoc.contains("<search:result index=\"1\" uri=\"/qbe/constraint1.json\" path=\"fn:doc(&quot;/qbe/constraint1.json&quot;)\" score=\"28672\" confidence=\"0.6951694\" fitness=\"0.6951694\" href=\"/v1/documents?uri=%2Fqbe%2Fconstraint1.json\" mimetype=\"application/json\" format=\"json\">"));
+    // release client
+    client.release();
+  }
 
-		// release client
-		client.release();		
-	}
+  @Test
+  public void testBug22179() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testBug22179");
 
-	@Test	
-	public void testBug22179() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		System.out.println("Running testBug22179");
+    String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
+    }
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
-		}
+    ServerConfigurationManager confMgr = client.newServerConfigManager();
+    confMgr.setQueryValidation(true);
 
-		ServerConfigurationManager confMgr = client.newServerConfigManager();
-		confMgr.setQueryValidation(true);
+    String combinedCriteria = "{\"search\":{\"options\":{\"constraint\":[{\"name\":\"para\", \"word\":{\"term-option\":[\"case-insensitive\"], \"field\":{\"name\":\"para\"}}},{\"name\":\"id\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"id\"}}}], \"return-metrics\":false, \"debug\":true, \"return-qtext\":false, \"transform-results\":{\"apply\":\"snippet\"}}, \"query\":{\"queries\":[{\"or-query\":{\"queries\":[{\"and-query\":{\"queries\":[{\"word-constraint-query\":{\"text\":[\"Bush\"], \"constraint-name\":\"para\"}},{\"not-query\":{\"word-constraint-query\":{\"text\":[\"memex\"], \"constraint-name\":\"para\"}}}]}},{\"and-query\":{\"queries\":[{\"value-constraint-query\":{\"text\":[\"0026\"], \"constraint-name\":\"id\"}},{\"term-query\":{\"text\":[\"memex\"]}}]}}]}}]}}}";
+    QueryManager queryMgr = client.newQueryManager();
 
-		String combinedCriteria ="{\"search\":{\"options\":{\"constraint\":[{\"name\":\"para\", \"word\":{\"term-option\":[\"case-insensitive\"], \"field\":{\"name\":\"para\"}}},{\"name\":\"id\", \"value\":{\"element\":{\"ns\":\"\", \"name\":\"id\"}}}], \"return-metrics\":false, \"debug\":true, \"return-qtext\":false, \"transform-results\":{\"apply\":\"snippet\"}}, \"query\":{\"queries\":[{\"or-query\":{\"queries\":[{\"and-query\":{\"queries\":[{\"word-constraint-query\":{\"text\":[\"Bush\"], \"constraint-name\":\"para\"}},{\"not-query\":{\"word-constraint-query\":{\"text\":[\"memex\"], \"constraint-name\":\"para\"}}}]}},{\"and-query\":{\"queries\":[{\"value-constraint-query\":{\"text\":[\"0026\"], \"constraint-name\":\"id\"}},{\"term-query\":{\"text\":[\"memex\"]}}]}}]}}]}}}";
-		QueryManager queryMgr = client.newQueryManager();
+    StringHandle combinedHandle = new StringHandle(combinedCriteria).withFormat(Format.JSON);
+    RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(combinedHandle);
+    String output = queryMgr.search(querydef, new StringHandle()).get();
+    System.out.println(output);
+    assertTrue(output.contains("(cts:search(fn:collection(), cts:or-query((cts:and-query((cts:field-word-query"));
+    // release client
+    client.release();
+  }
 
-		StringHandle combinedHandle = new StringHandle(combinedCriteria).withFormat(Format.JSON);
-		RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(combinedHandle);
-		String output = queryMgr.search(querydef, new StringHandle()).get();
-		System.out.println(output);
-		assertTrue(output.contains("(cts:search(fn:collection(), cts:or-query((cts:and-query((cts:field-word-query"));
-		// release client
-		client.release();		
-	}
+  @Test
+  public void testQueryByExampleXMLPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXMLPayload");
 
-	@Test	
-	public void testQueryByExampleXMLPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXMLPayload");
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+    }
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
-		}
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
+    FileHandle fileHandle = new FileHandle(file);
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
-		FileHandle fileHandle = new FileHandle(file);
-		QueryManager queryMgr = client.newQueryManager();
+    RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
+    SearchHandle results = queryMgr.search(rw, new SearchHandle());
 
-		RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
-		SearchHandle results = queryMgr.search(rw, new SearchHandle());
+    for (MatchDocumentSummary result : results.getMatchResults())
+    {
+      System.out.println(result.getUri() + ": Uri");
+      assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+    }
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testQueryByExampleJSONPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException, Exception
+  {
+    System.out.println("Running testQueryByExampleJSONPayload");
+
+    String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-		for (MatchDocumentSummary result : results.getMatchResults()) 
-		{
-			System.out.println(result.getUri()+ ": Uri");
-			assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
-		} 
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// release client
-		client.release();		
-	}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
+    }
 
-	@Test	
-	public void testQueryByExampleJSONPayload() throws KeyManagementException, NoSuchAlgorithmException, IOException,  Exception
-	{	
-		System.out.println("Running testQueryByExampleJSONPayload");
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
+    FileHandle fileHandle = new FileHandle(file);
 
-		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
+    QueryManager queryMgr = client.newQueryManager();
+    RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.JSON));
+    String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
+    System.out.println(resultDoc);
+    assertTrue("Result is not proper", resultDoc.contains("/qbe/constraint1.json"));
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // release client
+    client.release();
+  }
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
-		}
+  @Test
+  public void testQueryByExampleXMLPermission() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXMLPermission");
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
-		FileHandle fileHandle = new FileHandle(file);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		QueryManager queryMgr = client.newQueryManager();
-		RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.JSON));
-		String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
-		System.out.println(resultDoc);
-		assertTrue("Result is not proper", resultDoc.contains("/qbe/constraint1.json"));
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+    }
 
-		// release client
-		client.release();		
-	}
+    // get the combined query
+    try {
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe2.xml");
 
-	@Test	
-	public void testQueryByExampleXMLPermission() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXMLPermission");
+      FileHandle fileHandle = new FileHandle(file);
+      QueryManager queryMgr = client.newQueryManager();
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+      RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
+      SearchHandle results = queryMgr.search(rw, new SearchHandle());
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+      for (MatchDocumentSummary result : results.getMatchResults())
+      {
+        System.out.println(result.getUri() + ": Uri");
+        assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+      }
+    } catch (Exception e) {
+      System.out.println("Negative Test Passed of executing nonreadable file");
+    }
+    // release client
+    client.release();
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
-		}
+  }
 
-		// get the combined query
-		try{
-			File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe2.xml");
+  @Test
+  public void testQueryByExampleWrongXML() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXMLPayload");
+
+    String filename = "WrongFormat.xml";
 
-			FileHandle fileHandle = new FileHandle(file);
-			QueryManager queryMgr = client.newQueryManager();
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    try {
+      // write docs
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
 
-			RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
-			SearchHandle results = queryMgr.search(rw, new SearchHandle());
+      // get the combined query
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
+      FileHandle fileHandle = new FileHandle(file);
+      QueryManager queryMgr = client.newQueryManager();
+
+      RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
+      SearchHandle results = queryMgr.search(rw, new SearchHandle());
+
+      for (MatchDocumentSummary result : results.getMatchResults())
+      {
+        System.out.println(result.getUri() + ": Uri");
+        // assertEquals("Wrong Document Searched",result.getUri() ,
+        // "/qbe/constraint1.xml");
+      }
+    } catch (FailedRequestException e) {
+      System.out.println("Negative test passed as XML with invalid structure gave FailedRequestException ");
+    }
+
+    // release client
+    client.release();
+  }
+
+  @Test
+  public void testQueryByExampleWrongJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testQueryByExampleJSON");
+
+    String filename = "WrongFormat.json";
+
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    try {
+      // write docs
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
 
-			for (MatchDocumentSummary result : results.getMatchResults()) 
-			{
-				System.out.println(result.getUri()+ ": Uri");
-				assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
-			} 
-		}catch(ClientHandlerException e){
-			System.out.println("Negative Test Passed of executing nonreadable file");			
-		}
-		// release client
-		client.release();		
+      // get the combined query
+      File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
 
-	}
+      String qbeQuery = convertFileToString(file);
+      StringHandle qbeHandle = new StringHandle(qbeQuery);
+      qbeHandle.setFormat(Format.JSON);
 
-	@Test	
-	public void testQueryByExampleWrongXML() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXMLPayload");
+      QueryManager queryMgr = client.newQueryManager();
 
-		String filename = "WrongFormat.xml";
+      RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-		try{
-			// write docs
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+      String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
 
+      System.out.println(resultDoc);
 
-			// get the combined query
-			File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
-			FileHandle fileHandle = new FileHandle(file);
-			QueryManager queryMgr = client.newQueryManager();
+      assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
+      assertTrue("doc returned is not correct",
+          resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
+    } catch (FailedRequestException e) {
+      System.out.println("Negative test passed as JSON with invalid structure gave FailedRequestException ");
+    }
 
-			RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
-			SearchHandle results = queryMgr.search(rw, new SearchHandle());
-
-			for (MatchDocumentSummary result : results.getMatchResults()) 
-			{
-				System.out.println(result.getUri()+ ": Uri");
-				//	assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
-			} 
-		}
-		catch(FailedRequestException e){
-			System.out.println("Negative test passed as XML with invalid structure gave FailedRequestException ");
-		}
+    // release client
+    client.release();
+  }
 
-		// release client
-		client.release();		
-	}
+  @Test
+  public void testQueryByExampleXMLWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, XpathException
+  {
+    System.out.println("Running testQueryByExampleXMLWrongQuery");
 
-	@Test	
-	public void testQueryByExampleWrongJSON() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		System.out.println("Running testQueryByExampleJSON");
-
-		String filename = "WrongFormat.json";
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-		try{	
-			// write docs
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-			// get the combined query
-			File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
+    }
 
-			String qbeQuery = convertFileToString(file);
-			StringHandle qbeHandle = new StringHandle(qbeQuery);
-			qbeHandle.setFormat(Format.JSON);
+    // get the combined query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
+    FileHandle fileHandle = new FileHandle(file);
+    QueryManager queryMgr = client.newQueryManager();
 
-			QueryManager queryMgr = client.newQueryManager();
+    RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
+    SearchHandle results = queryMgr.search(rw, new SearchHandle());
 
-			RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
+    for (MatchDocumentSummary result : results.getMatchResults())
+    {
+      System.out.println(result.getUri() + ": Uri");
+      assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+    }
+    try {
+      File wrongFile = new File("src/test/java/com/marklogic/client/functionaltest/qbe/WrongQbe.xml");
+      FileHandle wrongFileHandle = new FileHandle(wrongFile);
+      QueryManager newQueryMgr = client.newQueryManager();
 
-			String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
+      RawQueryByExampleDefinition newRw = newQueryMgr.newRawQueryByExampleDefinition(wrongFileHandle.withFormat(Format.XML));
+      SearchHandle newResults = queryMgr.search(newRw, new SearchHandle());
 
-			System.out.println(resultDoc);
+      for (MatchDocumentSummary result : newResults.getMatchResults())
+      {
+        System.out.println(result.getUri() + ": Uri");
+        assertEquals("Wrong Document Searched", result.getUri(), "/qbe/constraint1.xml");
+      }
+    } catch (FailedRequestException e) {
+      System.out.println("Negative test passed as Query with improper Xml format gave FailedRequestException ");
+    }
 
-			assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-			assertTrue("doc returned is not correct", resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
-		}
-		catch(FailedRequestException e){
-			System.out.println("Negative test passed as JSON with invalid structure gave FailedRequestException ");
-		}
-		
-		// release client
-		client.release();		
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testQueryByExampleXMLWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException,  TransformerException, XpathException
-	{	
-		System.out.println("Running testQueryByExampleXMLWrongQuery");
+  @Test
+  public void testQueryByExampleJSONWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testQueryByExampleJSONWrongQuery");
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
-		}
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
+    }
 
-		// get the combined query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.xml");
-		FileHandle fileHandle = new FileHandle(file);
-		QueryManager queryMgr = client.newQueryManager();
+    // get the Correct query
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
 
-		RawQueryByExampleDefinition rw = queryMgr.newRawQueryByExampleDefinition(fileHandle.withFormat(Format.XML));
-		SearchHandle results = queryMgr.search(rw, new SearchHandle());
+    String qbeQuery = convertFileToString(file);
+    StringHandle qbeHandle = new StringHandle(qbeQuery);
+    qbeHandle.setFormat(Format.JSON);
 
-		for (MatchDocumentSummary result : results.getMatchResults()) 
-		{
-			System.out.println(result.getUri()+ ": Uri");
-			assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
-		} 
-		try{
-			File wrongFile = new File("src/test/java/com/marklogic/client/functionaltest/qbe/WrongQbe.xml");
-			FileHandle wrongFileHandle = new FileHandle(wrongFile);
-			QueryManager newQueryMgr = client.newQueryManager();
+    QueryManager queryMgr = client.newQueryManager();
 
-			RawQueryByExampleDefinition newRw = newQueryMgr.newRawQueryByExampleDefinition(wrongFileHandle.withFormat(Format.XML));
-			SearchHandle newResults = queryMgr.search(newRw, new SearchHandle());
+    RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
 
-			for (MatchDocumentSummary result : newResults.getMatchResults()) 
-			{
-				System.out.println(result.getUri()+ ": Uri");
-				assertEquals("Wrong Document Searched",result.getUri() , "/qbe/constraint1.xml");
-			} 
-		}
-		catch(FailedRequestException e){
-			System.out.println("Negative test passed as Query with improper Xml format gave FailedRequestException ");	
-		}
-		
-		// release client
-		client.release();		
-	}
+    String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
 
-	@Test	
-	public void testQueryByExampleJSONWrongQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		System.out.println("Running testQueryByExampleJSONWrongQuery");
+    System.out.println("Result of Correct Query" + resultDoc);
 
-		String[] filenames = {"constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json"};
+    // assertTrue("total result is not correct",
+    // resultDoc.contains("\"total\":1"));
+    // assertTrue("doc returned is not correct",
+    // resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    // get the query with Wrong Format
 
-		// write docs
-		for(String filename : filenames)
-		{
-			writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
-		}
+    File wrongFile = new File("src/test/java/com/marklogic/client/functionaltest/qbe/WrongQbe.json");
 
-		// get the Correct query
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/qbe/qbe1.json");
+    String wrongQbeQuery = convertFileToString(wrongFile);
+    StringHandle newQbeHandle = new StringHandle(wrongQbeQuery);
+    newQbeHandle.setFormat(Format.JSON);
 
-		String qbeQuery = convertFileToString(file);
-		StringHandle qbeHandle = new StringHandle(qbeQuery);
-		qbeHandle.setFormat(Format.JSON);
+    QueryManager newQueryMgr = client.newQueryManager();
 
-		QueryManager queryMgr = client.newQueryManager();
+    RawQueryByExampleDefinition newQbyex = newQueryMgr.newRawQueryByExampleDefinition(newQbeHandle);
+    try {
+      String newResultDoc = newQueryMgr.search(newQbyex, new StringHandle()).get();
 
-		RawQueryByExampleDefinition qbyex = queryMgr.newRawQueryByExampleDefinition(qbeHandle);
+      System.out.println("Result of Wrong Query" + newResultDoc);
 
-		String resultDoc = queryMgr.search(qbyex, new StringHandle()).get();
+      assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
+      assertTrue("doc returned is not correct",
+          resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
+    } catch (FailedRequestException e) {
+      System.out.println("Negative test passed as Query with improper JSON format gave FailedRequestException ");
+    }
 
-		System.out.println("Result of Correct Query"+ resultDoc);
+    // release client
+    client.release();
+  }
 
-		//assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-		//  assertTrue("doc returned is not correct", resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
-
-		// get the query with Wrong Format
-
-		File wrongFile = new File("src/test/java/com/marklogic/client/functionaltest/qbe/WrongQbe.json");
-
-		String wrongQbeQuery = convertFileToString(wrongFile);
-		StringHandle newQbeHandle = new StringHandle(wrongQbeQuery);
-		newQbeHandle.setFormat(Format.JSON);
-
-		QueryManager newQueryMgr = client.newQueryManager();
-
-		RawQueryByExampleDefinition newQbyex = newQueryMgr.newRawQueryByExampleDefinition(newQbeHandle);
-		try{
-			String newResultDoc = newQueryMgr.search(newQbyex, new StringHandle()).get();
-
-			System.out.println("Result of Wrong Query"+newResultDoc);
-
-			assertTrue("total result is not correct", resultDoc.contains("\"total\":1"));
-			assertTrue("doc returned is not correct", resultDoc.contains("\"metadata\":[{\"title\":\"Vannevar Bush\"},{\"id\":11},{\"p\":\"Vannevar Bush wrote an article for The Atlantic Monthly\"},{\"popularity\":5}]"));
-		}
-		catch(FailedRequestException e){
-			System.out.println("Negative test passed as Query with improper JSON format gave FailedRequestException ");
-		}
-		
-		// release client
-		client.release();		
-	}
-	
-	@AfterClass	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

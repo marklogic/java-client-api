@@ -42,91 +42,91 @@ import com.marklogic.client.io.FileHandle;
 
 public class TestBug18920 extends BasicJavaClientREST {
 
-	private static String dbName = "Test18920DB";
-	private static String [] fNames = {"Test18920DB-1"};
-	private static DatabaseClient client ;
-	private static ServerConfigurationManager configMgr;
-	
-	@BeforeClass
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		// create a manager for the server configuration
-		configMgr = client.newServerConfigManager();
+  private static String dbName = "Test18920DB";
+  private static String[] fNames = { "Test18920DB-1" };
+  private static DatabaseClient client;
+  private static ServerConfigurationManager configMgr;
 
-		// read the server configuration from the database
-		configMgr.readConfiguration();
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // create a manager for the server configuration
+    configMgr = client.newServerConfigManager();
 
-		// require content versions for updates and deletes
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
-		System.out.println("set optimistic locking to required");
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
-	}
+    // require content versions for updates and deletes
+    // use Policy.OPTIONAL to allow but not require versions
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
+    System.out.println("set optimistic locking to required");
 
-	@Test
-	public void testBug18920() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testBug18920");
-		
-		String filename = "xml-original.xml";
-		String uri = "/bug18920/";
-		String docId = uri + filename;
-				
-		// create document manager
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
+  }
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
-		
-		// create document descriptor
-		DocumentDescriptor desc = docMgr.newDescriptor(docId);
-		
-		// write doc
-		docMgr.write(desc, handle);
-				
-		String docUri = desc.getUri();
-		System.out.println(docUri);
-		
-		String exception = "";
-		String statusCode = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
-		int expCode = 0;
-		// update document with no content version
-		try {
-			docMgr.write(docUri, handle);
-		} catch (FailedRequestException e) { 
-			exception = e.toString();
-			statusCode = e.getFailedRequest().getMessageCode(); 
-			expCode = e.getFailedRequest().getStatusCode();
-			}
-		System.out.println("Exception is " + exception);
-		System.out.println("Status message --- codenumber are " + statusCode + " --- " + expCode );
-		assertTrue("Status code message is incorrect", statusCode.contains("RESTAPI-CONTENTNOVERSION"));
-		assertTrue("Status code is not 428", expCode == 428);
-		assertTrue("Exception is not thrown", exception.contains(expectedException));
-	}
-	
-	@AfterClass
-	public static void tearDown() throws Exception {
-		System.out.println("In tear down");
-		
-		// set content version back to none
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+  @Test
+  public void testBug18920() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testBug18920");
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
-		
-		// release client
-		client.release();
+    String filename = "xml-original.xml";
+    String uri = "/bug18920/";
+    String docId = uri + filename;
 
-		cleanupRESTServer(dbName, fNames);
-	}
+    // create document manager
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
+
+    // create document descriptor
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
+
+    // write doc
+    docMgr.write(desc, handle);
+
+    String docUri = desc.getUri();
+    System.out.println(docUri);
+
+    String exception = "";
+    String statusCode = "";
+    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /bug18920/xml-original.xml";
+    int expCode = 0;
+    // update document with no content version
+    try {
+      docMgr.write(docUri, handle);
+    } catch (FailedRequestException e) {
+      exception = e.toString();
+      statusCode = e.getFailedRequest().getMessageCode();
+      expCode = e.getFailedRequest().getStatusCode();
+    }
+    System.out.println("Exception is " + exception);
+    System.out.println("Status message --- codenumber are " + statusCode + " --- " + expCode);
+    assertTrue("Status code message is incorrect", statusCode.contains("RESTAPI-CONTENTNOVERSION"));
+    assertTrue("Status code is not 428", expCode == 428);
+    assertTrue("Exception is not thrown", exception.contains(expectedException));
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    System.out.println("In tear down");
+
+    // set content version back to none
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
+
+    // release client
+    client.release();
+
+    cleanupRESTServer(dbName, fNames);
+  }
 }

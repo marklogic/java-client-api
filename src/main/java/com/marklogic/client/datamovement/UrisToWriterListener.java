@@ -24,13 +24,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Facilitates writing uris to a file when necessary because setting [merge
- * timestamp][] and {@link QueryBatcher#withConsistentSnapshot
- * withConsistentSnapshot} is not an option, but you need to run DeleteListener
- * or ApplyTransformListener.
+ * <p>Facilitates writing uris to a file when necessary because setting
+ * <a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>
+ * and {@link QueryBatcher#withConsistentSnapshot withConsistentSnapshot} is
+ * not an option, but you need to run DeleteListener or
+ * ApplyTransformListener.</p>
  *
  * Example writing uris to disk then running a delete:
  *
+ * <pre>{@code
  *     FileWriter writer = new FileWriter("uriCache.txt");
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
@@ -50,9 +52,15 @@ import java.util.List;
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
  *     performDelete.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
- * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
- */
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/UrisToWriterListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
+ *
+  */
 public class UrisToWriterListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListener.class);
   private Writer writer;
@@ -60,9 +68,31 @@ public class UrisToWriterListener implements QueryBatchListener {
   private String prefix;
   private List<OutputListener> outputListeners = new ArrayList<>();
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
+  private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public UrisToWriterListener(Writer writer) {
     this.writer = writer;
+    logger.debug("new UrisToWriterListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
+  }
+
+  /**
+   * This implementation of initializeListener adds this instance of
+   * UrisToWriterListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the uris request.
+   */
+  @Override
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if ( retryListener != null )  onFailure(retryListener);
+    }
+    NoResponseListener noResponseListener = NoResponseListener.getInstance(queryBatcher);
+    if ( noResponseListener != null ) {
+      BatchFailureListener<QueryBatch> noResponseRetryListener = noResponseListener.initializeRetryListener(this);
+      if ( noResponseRetryListener != null )  onFailure(noResponseRetryListener);
+    }
   }
 
   @Override
@@ -101,6 +131,13 @@ public class UrisToWriterListener implements QueryBatchListener {
           logger.error("Exception thrown by an onBatchFailure listener", t2);
         }
       }
+      for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
+        try {
+          queryBatchFailureListener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onFailure listener", t2);
+        }
+      }
     }
   }
 
@@ -126,9 +163,24 @@ public class UrisToWriterListener implements QueryBatchListener {
    * @param listener the code to run when a failure occurs
    *
    * @return this instance for method chaining
+   * @deprecated  use {@link #onFailure(BatchFailureListener)}
    */
+  @Deprecated
   public UrisToWriterListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
     failureListeners.add(listener);
+    return this;
+  }
+
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public UrisToWriterListener onFailure(BatchFailureListener<QueryBatch> listener) {
+    queryBatchFailureListeners.add(listener);
     return this;
   }
 

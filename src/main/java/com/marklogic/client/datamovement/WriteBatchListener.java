@@ -23,11 +23,12 @@ package com.marklogic.client.datamovement;
  */
 public interface WriteBatchListener extends BatchListener<WriteBatch> {
   /**
-   * The method called by WriteBatcher to run your
-   * custom code on this batch.  You usually implement this as a lambda expression.
+   * <p>The method called by WriteBatcher to run your
+   * custom code on this batch.  You usually implement this as a lambda expression.</p>
    *
    * For example, see the lambda expression passed to onBatchSuccess:
    *
+   * <pre>{@code
    *     WriteBatcher wb = dataMovementManager.newWriteBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
@@ -39,6 +40,7 @@ public interface WriteBatchListener extends BatchListener<WriteBatch> {
    *             }
    *         })
    *         .onBatchFailure(throwable -> throwable.printStackTrace());
+   *}</pre>
    *
    * @param batch the batch of documents written and some metadata about the current status of the job
    */

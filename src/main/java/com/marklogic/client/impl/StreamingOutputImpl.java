@@ -18,23 +18,33 @@ package com.marklogic.client.impl;
 import java.io.IOException;
 import java.io.OutputStream;
 
-import javax.ws.rs.core.StreamingOutput;
-
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.io.OutputStreamSender;
+import okhttp3.MediaType;
+import okhttp3.RequestBody;
+import okio.BufferedSink;
 
-class StreamingOutputImpl implements StreamingOutput {
+class StreamingOutputImpl extends RequestBody {
   private OutputStreamSender handle;
   private RequestLogger      logger;
+  private MediaType          contentType;
 
-  StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger) {
+  StreamingOutputImpl(OutputStreamSender handle, RequestLogger logger, MediaType contentType) {
     super();
     this.handle = handle;
     this.logger = logger;
+    this.contentType = contentType;
   }
 
   @Override
-  public void write(OutputStream out) throws IOException {
+  public MediaType contentType() {
+    return contentType;
+  }
+
+  @Override
+  public void writeTo(BufferedSink sink) throws IOException {
+    OutputStream out = sink.outputStream();
+
     if (logger != null) {
       OutputStream tee = logger.getPrintStream();
       long         max = logger.getContentMax();

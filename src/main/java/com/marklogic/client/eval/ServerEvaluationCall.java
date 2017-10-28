@@ -25,7 +25,7 @@ import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 
 /**
- * ServerEvaluationCall uses a fluent builder-style API to collect the parameters
+ * <p>ServerEvaluationCall uses a fluent builder-style API to collect the parameters
  * for a server-side {@link #xquery xquery} or {@link #javascript javascript} eval or
  * invoke ({@link #modulePath modulePath}) call. ServerEvaluationCall also
  * conveniently has the eval* methods which execute those calls and return the
@@ -35,57 +35,74 @@ import com.marklogic.client.util.EditableNamespaceContext;
  * source code as a String or a TextWriteHandle (in case you are streaming the
  * source code from the file system, a URL, or other source that is most easily
  * accessed via io handles). The modulePath method initializes this call for server-
- * side invoke given the path to a module previously installed on the server.
+ * side invoke given the path to a module previously installed on the server.</p>
  *
- * Here is a simple "hello world" junit example: <pre>{@code
- *String javascript = "'hello world'";
- *String response = client.newServerEval()
- *    .javascript(javascript)
- *    .evalAs(String.class);
- *assertEquals("hello world", response);
- *}</pre>
- * or in xquery: <pre>{@code
- *String xquery = "'hello world'";
- *String response = client.newServerEval()
- *    .xquery(xquery)
- *    .evalAs(String.class);
- *assertEquals("hello world", response);
+ * Here is a simple "hello world" junit example:
+ *
+ * <pre>{@code
+ *    String javascript = "'hello world'";
+ *    String response = client.newServerEval()
+ *        .javascript(javascript)
+ *        .evalAs(String.class);
+ *    assertEquals("hello world", response);
  *}</pre>
  *
- * Variables can be added with the addVariable methods.
+ * or in xquery:
+ *
+ * <pre>{@code
+ *    String xquery = "'hello world'";
+ *    String response = client.newServerEval()
+ *        .xquery(xquery)
+ *        .evalAs(String.class);
+ *    assertEquals("hello world", response);
+ *}</pre>
+ *
+ * <p>Variables can be added with the addVariable methods.
  * {@link #addVariable(String, AbstractWriteHandle) addVariable(String, AbstractWriteHandle)}
  * allows you to pass complex JSON or XML values directly from io handles.
  * {@link #addVariableAs(String, Object) addVariableAs(String, Object)}
  * follows the <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
  * shortcut pattern</a> which maps objects by type to the appropriate handle.
  * For simpler atomic values, convenience addVariable methods are provided for
- * String, Number, and Boolean types.
+ * String, Number, and Boolean types.</p>
  *
- * Here is a simple "hello solar system" example with a variable: <pre>{@code
- *String javascript = "var planet;'hello solar system from ' + planet";
- *String response = client.newServerEval()
- *    .javascript(javascript)
- *    .addVariable("planet", "Mars)
- *    .evalAs(String.class);
- *assertEquals( "hello solar system from Mars", response);
+ * Here is a simple "hello solar system" example with a variable:
+ *
+ * <pre>{@code
+ *    String javascript = "var planet;'hello solar system from ' + planet";
+ *    String response = client.newServerEval()
+ *        .javascript(javascript)
+ *        .addVariable("planet", "Mars")
+ *        .evalAs(String.class);
+ *    assertEquals( "hello solar system from Mars", response);
  *}</pre>
- * or in xquery: <pre>{@code
- *String xquery = "declare variable $planet external;'hello solar system from ' || $planet";
- *String response = client.newServerEval()
- *    .xquery(xquery)
- *    .addVariable("planet", "Mars)
- *    .evalAs(String.class);
- *assertEquals( "hello solar system from Mars", response);
+ *
+ * or in xquery:
+ *
+ * <pre>{@code
+ *    String xquery = "declare variable $planet external;'hello solar system from ' || $planet";
+ *    String response = client.newServerEval()
+ *        .xquery(xquery)
+ *        .addVariable("planet", "Mars")
+ *        .evalAs(String.class);
+ *    assertEquals( "hello solar system from Mars", response);
  * }</pre>
  *
- * Each call can be executed within a {@link #transaction transaction}, within a
+ * <p>Each call can be executed within a {@link #transaction transaction}, within a
  * {@link DatabaseClientFactory#newClient(String, int, String) particular database},
  * and with particular {@link #namespaceContext namespaces} available for expansion
- * of prefixed variable names.
+ * of prefixed variable names.</p>
  *
- * Each call can be executed with only one expected response of a particular
- * {@link #evalAs type} or {@link #eval(AbstractReadHandle) handle type}.  Or calls can be executed
- * with {@link #eval() multiple responses expected}.
+ * <p>Each call can be executed with only one expected response of a particular {@link
+ * #evalAs type} or {@link #eval(AbstractReadHandle) handle type}.  Or calls can be
+ * executed with {@link #eval() multiple responses expected}.  Calls that expect
+ * only one response but need to stream the response should still use
+ * {@link #eval()} and {@link EvalResultIterator} so the response isn't closed
+ * before the streaming begins.</p>
+ *
+ * <p><b>NOTE: EvalResultIterator MUST BE CLOSED</b>.  If you call {@link #eval()}
+ * don't forget to call close() on the returned EvalResultIterator to free up the
+ * underlying resources.</p>
  */
 public interface ServerEvaluationCall {
   /** Initialize this server-side eval with xquery-syntax source code.
@@ -187,7 +204,10 @@ public interface ServerEvaluationCall {
    * Like other <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">
    * *As convenience methods</a> throughout the API, the return value
    *  is provided by the handle registered for the provided responseType.
-   *
+   * Use only with non-streaming types.  This method will pre-emptively close the
+   * underlying response, so if you pass in a streaming (or Closeable) responseType you
+   * will get an error such as "IOException: Stream Closed" when you attempt to read from it.
+*
    * @param responseType the type desired for the response.  Must be a Class registered
    *      to a handle.
    * @param <T> the type of object that will be returned by the handle registered for it
@@ -197,7 +217,10 @@ public interface ServerEvaluationCall {
     throws ForbiddenUserException, FailedRequestException;
 
   /** Provides the single result of the server-side eval or invoke call, wrapped in an io
-   * handle.
+   * handle.  Use only with non-streaming handles.  This method will pre-emptively close the
+   * underlying response, so if you pass in a streaming (or Closeable) responseHandle you
+   * will get an error such as "IOException: Stream Closed" when you attempt to read from it.
+   *
    * @param responseHandle the type of handle appropriate for the expected single result
    * @param <H> the type of AbstractReadHandle to return
    * @return the handle which wraps the response

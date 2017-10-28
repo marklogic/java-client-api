@@ -27,6 +27,7 @@ import org.junit.Ignore;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InterruptedIOException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -71,6 +72,7 @@ import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
+import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
@@ -96,7 +98,6 @@ public class WriteBatcherTest {
 
   @BeforeClass
   public static void beforeClass() {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     docMgr = client.newDocumentManager();
     installModule();
   }
@@ -140,9 +141,11 @@ public class WriteBatcherTest {
 
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection, whbTestCollection);
-    ihb1.add("/doc/jackson", meta, new JacksonHandle(new ObjectMapper().readTree("{\"test\":true}")))
+    ihb1.add("/doc/jackson", meta, new JacksonHandle(new ObjectMapper().readTree("{\"test\":true}")));
       //.add("/doc/reader_wrongxml", new ReaderHandle)
-      .add("/doc/string", meta, new StringHandle("test"));
+    meta = new DocumentMetadataHandle()
+      .withCollections(collection, whbTestCollection);
+    ihb1.add("/doc/string", meta, new StringHandle("test"));
       /*
       .add("/doc/file", docMeta2, new FileHandle)
       .add("/doc/is", new InputStreamHandle)
@@ -191,8 +194,6 @@ public class WriteBatcherTest {
       );
     JobTicket ticket = moveMgr.startJob(batcher);
 
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
     JsonNode doc1 = new ObjectMapper().readTree("{ \"testProperty\": \"test1\" }");
     JsonNode doc2 = new ObjectMapper().readTree("{ \"testProperty2\": \"test2\" }");
     // the batch with this doc will fail to write because we say withFormat(JSON)
@@ -200,23 +201,28 @@ public class WriteBatcherTest {
     StringHandle doc3 = new StringHandle("<thisIsNotJson>test3</thisIsNotJson>")
       .withFormat(Format.JSON);
     JsonNode doc4 = new ObjectMapper().readTree("{ \"testProperty4\": \"test4\" }");
+    DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.addAs(uri1, meta, doc1);
+    meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.addAs(uri2, meta, doc2);
+    meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.add(uri3, meta, doc3);
+    meta = new DocumentMetadataHandle().withCollections(collection, whbTestCollection);
     batcher.add(uri4, meta, new JacksonHandle(doc4));
     batcher.flushAndWait();
     assertEquals("The success listener should have run", "true", successListenerWasRun.toString());
     assertEquals("The failure listener should have run", "true", failListenerWasRun.toString());
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().collection(collection);
-    DocumentPage docs = docMgr.search(query, 1);
-    // only doc1 and doc2 wrote successfully, doc3 failed
-    assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
+    try ( DocumentPage docs = docMgr.search(query, 1) ) {
+      // only doc1 and doc2 wrote successfully, doc3 failed
+      assertEquals("there should be two docs in the collection", 2, docs.getTotalSize());
 
-    for (DocumentRecord record : docs ) {
-      if ( uri1.equals(record.getUri()) ) {
-        assertEquals( "the transform should have changed testProperty to 'test1a'",
-          "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
+      for (DocumentRecord record : docs ) {
+        if ( uri1.equals(record.getUri()) ) {
+          assertEquals( "the transform should have changed testProperty to 'test1a'",
+            "test1a", record.getContentAs(JsonNode.class).get("testProperty").textValue() );
+        }
       }
     }
   }
@@ -236,13 +242,14 @@ public class WriteBatcherTest {
     assertEquals(successListener, successListeners[1]);
 
     WriteFailureListener[] failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(2, failureListeners.length);
+    assertEquals(3, failureListeners.length);
     assertEquals(HostAvailabilityListener.class, failureListeners[0].getClass());
+    assertEquals(NoResponseListener.class, failureListeners[2].getClass());
 
     batcher.onBatchFailure(failureListener);
     failureListeners = batcher.getBatchFailureListeners();
-    assertEquals(3, failureListeners.length);
-    assertEquals(failureListener, failureListeners[2]);
+    assertEquals(4, failureListeners.length);
+    assertEquals(failureListener, failureListeners[3]);
 
     batcher.setBatchSuccessListeners();
     successListeners = batcher.getBatchSuccessListeners();
@@ -397,6 +404,7 @@ public class WriteBatcherTest {
     System.out.println("Starting test " + testName + " with config=" + config);
 
     String collection = whbTestCollection + ".testWrites_" + testName;
+    String writeBatcherJobId = "WriteBatcherJobId";
     long start = System.currentTimeMillis();
 
     int docsPerExternalThread = Math.floorDiv(totalDocCount, externalThreadCount);
@@ -448,14 +456,16 @@ public class WriteBatcherTest {
             }
           }
         }
-      );
+      )
+      .withJobId(writeBatcherJobId);
     long batchMinTime = new Date().getTime();
-    JobTicket ticket = moveMgr.startJob(batcher);
+    assertFalse("Job should not be started yet", batcher.isStarted());
+    moveMgr.startJob(batcher);
+    assertTrue("Job should be started now", batcher.isStarted());
+    JobTicket ticket = moveMgr.getActiveJob(writeBatcherJobId);
     assertEquals(batchSize, batcher.getBatchSize());
+    assertEquals(writeBatcherJobId, batcher.getJobId());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
-
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(whbTestCollection, collection);
 
     class MyRunnable implements Runnable {
 
@@ -464,6 +474,8 @@ public class WriteBatcherTest {
         String threadName = Thread.currentThread().getName();
         for (int j=1; j <= docsPerExternalThread; j++) {
           String uri = "/" + collection + "/"+ threadName + "/" + j + ".txt";
+          DocumentMetadataHandle meta = new DocumentMetadataHandle()
+            .withCollections(whbTestCollection, collection);
           batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
         }
       }
@@ -483,6 +495,8 @@ public class WriteBatcherTest {
     // write any leftovers
     for (int j =0; j < leftover; j++) {
       String uri = "/" + collection + "/"+ Thread.currentThread().getName() + "/" + j + ".txt";
+      DocumentMetadataHandle meta = new DocumentMetadataHandle()
+        .withCollections(whbTestCollection, collection);
       batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
     }
     batcher.flushAndWait();
@@ -610,9 +624,6 @@ public class WriteBatcherTest {
       });
     moveMgr.startJob(batcher);
 
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
-
     class MyRunnable implements Runnable {
 
       @Override
@@ -620,6 +631,8 @@ public class WriteBatcherTest {
 
         for (int j =0 ;j < 100; j++){
           String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
+          DocumentMetadataHandle meta = new DocumentMetadataHandle()
+            .withCollections(collection, whbTestCollection);
           batcher.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
         }
         logger.debug("[testAddMultiThreadedSuccess_Issue61] added 100 docs");
@@ -666,9 +679,6 @@ public class WriteBatcherTest {
       });
     moveMgr.startJob(batcher);
 
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
-
     FileHandle fileHandle = new FileHandle(new File("src/test/resources/test.xml"));
 
     class MyRunnable implements Runnable {
@@ -678,6 +688,8 @@ public class WriteBatcherTest {
 
         for (int j =0 ;j < 100; j++){
           String uri ="/local/json-"+ j+"-"+Thread.currentThread().getId();
+          DocumentMetadataHandle meta = new DocumentMetadataHandle()
+            .withCollections(collection, whbTestCollection);
           batcher.add(uri, meta, fileHandle);
         }
         logger.debug("[testAddMultiThreadedSuccess_Issue48] added 100 docs");
@@ -778,8 +790,6 @@ public class WriteBatcherTest {
   public void testMultipleFlushAnStop_Issue109() throws Exception {
     String collection = whbTestCollection + "_testMultipleFlushAnStop_Issue109";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
     assertTrue(client.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
     WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(11);
@@ -809,6 +819,8 @@ public class WriteBatcherTest {
         for (int j =0 ;j < 100; j++){
           String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
           logger.debug("[testMultipleFlushAnStop_Issue109] add URI:"+ uri);
+          DocumentMetadataHandle meta = new DocumentMetadataHandle()
+            .withCollections(collection, whbTestCollection);
           ihbMT.add(uri, meta, new StringHandle("test"));
           if(j ==80){
             logger.debug("[testMultipleFlushAnStop_Issue109] flushAndWait");
@@ -838,8 +850,6 @@ public class WriteBatcherTest {
   public void testStopBeforeFlush_Issue595() throws Exception {
     String collection = whbTestCollection + "_testStopBeforeFlush_Issue595";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    DocumentMetadataHandle meta = new DocumentMetadataHandle()
-      .withCollections(collection, whbTestCollection);
     AtomicInteger count = new AtomicInteger(0);
     AtomicBoolean isStopped = new AtomicBoolean(false);
     WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
@@ -860,8 +870,22 @@ public class WriteBatcherTest {
         ", host: " + batch.getClient().getHost());
     })
     .onBatchFailure( (batch, throwable) -> {
+      Throwable cause = throwable;
+      while ( cause != null ) {
+        if ( cause instanceof InterruptedIOException ) {
+          logger.debug("An expected InterruptedIOException occurred because the job was stopped prematurely" +
+            ", batch: " + batch.getJobBatchNumber() +
+            ", writes so far: " + batch.getJobWritesSoFar() +
+            ", host: " + batch.getClient().getHost() +
+            ", uris: " +
+            Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList()));
+          return;
+        }
+        cause = cause.getCause();
+      }
       throwable.printStackTrace();
       logger.debug("[testStopBeforeFlush_Issue595] Failed Batch: batch: " + batch.getJobBatchNumber() +
+        ", batch: " + batch.getJobBatchNumber() +
         ", writes so far: " + batch.getJobWritesSoFar() +
         ", host: " + batch.getClient().getHost() +
         ", uris: " +
@@ -876,6 +900,8 @@ public class WriteBatcherTest {
         try {
           for (int j =0 ;j < 400; j++){
             String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
+            DocumentMetadataHandle meta = new DocumentMetadataHandle()
+              .withCollections(collection, whbTestCollection);
             ihbMT.add(uri, meta, new StringHandle("test"));
           }
           logger.debug("[testStopBeforeFlush_Issue595] Finished executing thread");
@@ -921,7 +947,6 @@ public class WriteBatcherTest {
   // TODO: uncomment this after fixing https://github.com/marklogic/java-client-api/issues/646
   @Ignore
   public void testIssue646() throws Exception {
-    DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withProperty("docMeta-1", "true");
 
     WriteBatcher ihb2 =  moveMgr.newWriteBatcher().withBatchSize(10);
 
@@ -929,9 +954,20 @@ public class WriteBatcherTest {
 
     for (int j =0 ;j < 21; j++){
       String uri ="/local/string-"+ j;
+      DocumentMetadataHandle meta6 = new DocumentMetadataHandle().withProperty("docMeta-1", "true");
       ihb2.addAs(uri , meta6,	"test");
     }
 
     ihb2.flushAndWait();
+  }
+
+  @Test
+  public void testIssue793() {
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
+
+    batcher.addAs("test.txt", "test");
+
+    moveMgr.startJob(batcher);
+    moveMgr.stopJob(batcher);
   }
 }

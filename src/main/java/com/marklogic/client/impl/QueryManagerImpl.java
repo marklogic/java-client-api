@@ -31,6 +31,7 @@ import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.TuplesHandle;
 import com.marklogic.client.io.ValuesHandle;
 import com.marklogic.client.io.marker.ContentHandle;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.QueryOptionsListReadHandle;
 import com.marklogic.client.io.marker.SearchReadHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
@@ -43,6 +44,7 @@ import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -159,7 +161,7 @@ public class QueryManagerImpl
   @Override
   @SuppressWarnings("unchecked")
   public <T extends SearchReadHandle> T search(QueryDefinition querydef, T searchHandle, long start, Transaction transaction) {
-    return search(querydef, searchHandle, 1, transaction, null);
+    return search(querydef, searchHandle, start, transaction, null);
   }
   @Override
   @SuppressWarnings("unchecked")
@@ -467,6 +469,23 @@ public class QueryManagerImpl
   }
 
   @Override
+  public RawCtsQueryDefinition newRawCtsQueryDefinitionAs(Format format, Object query) {
+    return newRawCtsQueryDefinitionAs(format, query, null);
+  }
+  @Override
+  public RawCtsQueryDefinition newRawCtsQueryDefinitionAs(Format format, Object query, String optionsName) {
+    return newRawCtsQueryDefinition(ctsQueryWrite(format, query), optionsName);
+  }
+  @Override
+  public RawCtsQueryDefinition newRawCtsQueryDefinition(CtsQueryWriteHandle handle) {
+    return new RawQueryDefinitionImpl.CtsQuery(handle);
+  }
+  @Override
+  public RawCtsQueryDefinition newRawCtsQueryDefinition(CtsQueryWriteHandle handle, String optionsName) {
+    return new RawQueryDefinitionImpl.CtsQuery(handle, optionsName);
+  }
+
+  @Override
   public RawQueryByExampleDefinition newRawQueryByExampleDefinitionAs(Format format, Object query) {
     return newRawQueryByExampleDefinitionAs(format, query, null);
   }
@@ -497,5 +516,21 @@ public class QueryManagerImpl
     Utilities.setHandleStructuredFormat(queryHandle, format);
 
     return (StructureWriteHandle) queryHandle;
+  }
+
+  private CtsQueryWriteHandle ctsQueryWrite(Format format, Object query) {
+    Class<?> as = query.getClass();
+    ContentHandle<?> queryHandle = getHandleRegistry().makeHandle(as);
+    if (!CtsQueryWriteHandle.class.isAssignableFrom(queryHandle.getClass())) {
+      throw new IllegalArgumentException(
+        "Handle "+queryHandle.getClass().getName()+
+          " does not provide a CtsQueryWriteHandle for "+as.getName()
+      );
+    }
+
+    Utilities.setHandleContent(queryHandle, query);
+    Utilities.setHandleStructuredFormat(queryHandle, format);
+
+    return (CtsQueryWriteHandle) queryHandle;
   }
 }

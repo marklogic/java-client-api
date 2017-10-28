@@ -29,8 +29,6 @@ public class GraphSPARQLExampleTest {
 
   @Test
   public void testMain() {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
-
     boolean succeeded = false;
     try {
       GraphSPARQLExample.run(Common.newClient(), Common.newAdminClient());

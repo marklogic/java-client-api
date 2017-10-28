@@ -66,7 +66,6 @@ public class JacksonDatabindTest {
     // we cannot use the singleton DatabaseClient here because this test requires
     // a DatabaseClient created after calling getHandleRegistry().register() with City.class
     client = Common.newClient();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
   @AfterClass

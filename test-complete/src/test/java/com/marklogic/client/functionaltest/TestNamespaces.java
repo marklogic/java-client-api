@@ -40,146 +40,148 @@ import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 
 public class TestNamespaces extends BasicJavaClientREST {
-	private static String dbName = "TestNamespacesDB";
-	private static String [] fNames = {"TestNamespacesDB-1"};
-	
+  private static String dbName = "TestNamespacesDB";
+  private static String[] fNames = { "TestNamespacesDB-1" };
 
-	@BeforeClass
-	public static void setUp() throws Exception 
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-	@Test
-	public void testNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{	
-		System.out.println("Running testNamespaces");
+  @Test
+  public void testNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testNamespaces");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create namespaces manager
-		NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
+    // create namespaces manager
+    NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
 
-		// create logger
-		RequestLogger logger = client.newLogger(System.out);
-		logger.setContentMax(RequestLogger.ALL_CONTENT);
+    // create logger
+    RequestLogger logger = client.newLogger(System.out);
+    logger.setContentMax(RequestLogger.ALL_CONTENT);
 
-		// start logging
-		nsMgr.startLogging(logger);
+    // start logging
+    nsMgr.startLogging(logger);
 
-		// add prefix
-		nsMgr.addPrefix("foo", "http://example.com");
+    // add prefix
+    nsMgr.addPrefix("foo", "http://example.com");
 
-		NamespaceContext nsContext = nsMgr.readAll();
+    NamespaceContext nsContext = nsMgr.readAll();
 
-		assertEquals("Prefix is not equal", "foo", nsContext.getPrefix("http://example.com"));
-		assertEquals("Namespace URI is not equal", "http://example.com", nsContext.getNamespaceURI("foo"));
+    assertEquals("Prefix is not equal", "foo", nsContext.getPrefix("http://example.com"));
+    assertEquals("Namespace URI is not equal", "http://example.com", nsContext.getNamespaceURI("foo"));
 
-		// update prefix
-		nsMgr.updatePrefix("foo", "http://exampleupdated.com");
-		nsContext = nsMgr.readAll();
-		assertEquals("Updated Namespace URI is not equal", "http://exampleupdated.com", nsContext.getNamespaceURI("foo"));
+    // update prefix
+    nsMgr.updatePrefix("foo", "http://exampleupdated.com");
+    nsContext = nsMgr.readAll();
+    assertEquals("Updated Namespace URI is not equal", "http://exampleupdated.com", nsContext.getNamespaceURI("foo"));
 
-		// stop logging
-		nsMgr.stopLogging();
+    // stop logging
+    nsMgr.stopLogging();
 
-		String expectedLogContentMax = "9223372036854775807"; 
-		assertEquals("Content log is not equal", expectedLogContentMax, Long.toString(logger.getContentMax()));
+    String expectedLogContentMax = "9223372036854775807";
+    assertEquals("Content log is not equal", expectedLogContentMax, Long.toString(logger.getContentMax()));
 
-		// delete prefix
-		nsMgr.deletePrefix("foo");
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
+    // delete prefix
+    nsMgr.deletePrefix("foo");
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
 
-		nsMgr.deleteAll();
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
+    nsMgr.deleteAll();
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("foo") == null);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testDefaultNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		System.out.println("Running testDefaultNamespaces");
+  @Test
+  public void testDefaultNamespaces() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    System.out.println("Running testDefaultNamespaces");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create namespaces manager
-		NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
+    // create namespaces manager
+    NamespacesManager nsMgr = client.newServerConfigManager().newNamespacesManager();
 
-		// add namespaces
-		nsMgr.addPrefix("ns1", "http://foo.com");
-		nsMgr.addPrefix("ns2", "http://bar.com");
-		nsMgr.addPrefix("ns3", "http://baz.com");
+    // add namespaces
+    nsMgr.addPrefix("ns1", "http://foo.com");
+    nsMgr.addPrefix("ns2", "http://bar.com");
+    nsMgr.addPrefix("ns3", "http://baz.com");
 
-		nsMgr.readAll();
+    nsMgr.readAll();
 
-		// set default namespace
-		nsMgr.updatePrefix("defaultns", "http://baz.com");
-		String defaultNsUri = nsMgr.readPrefix("defaultns");
-		assertEquals("Default NS is wrong", "http://baz.com", defaultNsUri);
+    // set default namespace
+    nsMgr.updatePrefix("defaultns", "http://baz.com");
+    String defaultNsUri = nsMgr.readPrefix("defaultns");
+    assertEquals("Default NS is wrong", "http://baz.com", defaultNsUri);
 
-		// delete namespace
-		nsMgr.deletePrefix("baz");
-		nsMgr.readAll();
+    // delete namespace
+    nsMgr.deletePrefix("baz");
+    nsMgr.readAll();
 
-		// get default namespace
-		assertEquals("Default NS is wrong", "http://baz.com", nsMgr.readPrefix("defaultns"));
+    // get default namespace
+    assertEquals("Default NS is wrong", "http://baz.com", nsMgr.readPrefix("defaultns"));
 
-		nsMgr.deleteAll();
-		nsMgr.readAll();
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns1") == null);
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns2") == null);
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns3") == null);
-		assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("defaultns") == null);
+    nsMgr.deleteAll();
+    nsMgr.readAll();
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns1") == null);
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns2") == null);
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("ns3") == null);
+    assertTrue("Namespace URI is not deleted", nsMgr.readPrefix("defaultns") == null);
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@Test	
-	public void testBug22396() throws KeyManagementException, NoSuchAlgorithmException, IOException {
+  @Test
+  public void testBug22396() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-		System.out.println("Runing testBug22396");
+    System.out.println("Runing testBug22396");
 
-		DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
 
-		// write docs
-		writeDocumentUsingInputStreamHandle(client, "constraint1.xml", "/testBug22396/", "XML");
+    // write docs
+    writeDocumentUsingInputStreamHandle(client, "constraint1.xml", "/testBug22396/", "XML");
 
-		String docId = "/testBug22396/constraint1.xml";
+    String docId = "/testBug22396/constraint1.xml";
 
-		//create document manager
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
-		DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
+    // create document manager
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    DocumentPatchBuilder patchBldr = docMgr.newPatchBuilder();
 
-		//get namespaces 
-		Collection<String> nameSpaceCollection = patchBldr.getNamespaces().getAllPrefixes();
-		assertEquals("getNamespace failed ",false, nameSpaceCollection.isEmpty());
-		for(String prefix : nameSpaceCollection){
-			System.out.println("Prefixes : "+prefix);
-			System.out.println(patchBldr.getNamespaces().getNamespaceURI(prefix));
-		}
-		//set namespace		
-		EditableNamespaceContext namespaces = new EditableNamespaceContext();
-		namespaces.put("new", "http://www.marklogic.com");
-		patchBldr.setNamespaces(namespaces);
-		System.out.println("\n Namespace Output : "+patchBldr.getNamespaces().getNamespaceURI("xmlns")+"\n Next xml : "+patchBldr.getNamespaces().getNamespaceURI("xml")+"\n Next xs : "+patchBldr.getNamespaces().getNamespaceURI("xs")+"\n Next xsi : "+patchBldr.getNamespaces().getNamespaceURI("xsi")+"\n Next rapi : "+patchBldr.getNamespaces().getNamespaceURI("rapi")+"\n Next new : "+patchBldr.getNamespaces().getNamespaceURI("new"));
-		String content = docMgr.read(docId, new StringHandle()).get();
-		assertTrue("setNamespace didn't worked", patchBldr.getNamespaces().getNamespaceURI("new").contains("www.marklogic.com"));
-		System.out.println(content);
+    // get namespaces
+    Collection<String> nameSpaceCollection = patchBldr.getNamespaces().getAllPrefixes();
+    assertEquals("getNamespace failed ", false, nameSpaceCollection.isEmpty());
+    for (String prefix : nameSpaceCollection) {
+      System.out.println("Prefixes : " + prefix);
+      System.out.println(patchBldr.getNamespaces().getNamespaceURI(prefix));
+    }
+    // set namespace
+    EditableNamespaceContext namespaces = new EditableNamespaceContext();
+    namespaces.put("new", "http://www.marklogic.com");
+    patchBldr.setNamespaces(namespaces);
+    System.out.println("\n Namespace Output : " + patchBldr.getNamespaces().getNamespaceURI("xmlns") + "\n Next xml : " + patchBldr.getNamespaces().getNamespaceURI("xml")
+        + "\n Next xs : " + patchBldr.getNamespaces().getNamespaceURI("xs") + "\n Next xsi : " + patchBldr.getNamespaces().getNamespaceURI("xsi") + "\n Next rapi : "
+        + patchBldr.getNamespaces().getNamespaceURI("rapi") + "\n Next new : " + patchBldr.getNamespaces().getNamespaceURI("new"));
+    String content = docMgr.read(docId, new StringHandle()).get();
+    assertTrue("setNamespace didn't worked", patchBldr.getNamespaces().getNamespaceURI("new").contains("www.marklogic.com"));
+    System.out.println(content);
 
-		// release client
-		client.release();
-	}
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

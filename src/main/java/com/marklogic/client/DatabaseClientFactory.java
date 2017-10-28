@@ -30,14 +30,17 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.X509TrustManager;
 
+import okhttp3.OkHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator;
 import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.HandleFactoryRegistryImpl;
-import com.marklogic.client.impl.JerseyServices;
+import com.marklogic.client.impl.OkHttpServices;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
@@ -211,7 +214,7 @@ public class DatabaseClientFactory {
   /**
    * A ClientConfigurator provides custom configuration for the communication library
    * used to sending client requests and receiving server responses.
-   * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+   * @see com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator
    * @param <T>	the configurable class for the communication library
    */
   public interface ClientConfigurator<T> {
@@ -230,12 +233,40 @@ public class DatabaseClientFactory {
     void setSSLContext(SSLContext context);
     SSLHostnameVerifier getSSLHostnameVerifier();
     void setSSLHostnameVerifier(SSLHostnameVerifier verifier);
+    @Deprecated
     SecurityContext withSSLContext(SSLContext context);
+
+    /**
+     * The SSLContext should be initialized with KeyManager and TrustManager
+     * using a KeyStore. <br>
+     * <br>
+     *
+     * If we init the sslContext with null TrustManager, it would use the
+     * &lt;java-home&gt;/lib/security/cacerts file for trusted root certificates, if
+     * javax.net.ssl.trustStore system property is not set and
+     * &lt;java-home&gt;/lib/security/jssecacerts is not present. See <a href =
+     * "http://docs.oracle.com/javase/7/docs/technotes/guides/security/jsse/JSSERefGuide.html">JSSE
+     * Reference Guide</a> for more information on SSL and TrustManagers.<br>
+     * <br>
+     *
+     * If self signed certificates, signed by CAs created internally are used,
+     * then the internal CA's root certificate should be added to the keystore.
+     * See this <a href =
+     * "https://docs.oracle.com/cd/E19226-01/821-0027/geygn/index.html">link</a>
+     * for adding a root certificate in the keystore.
+     *
+     * @param context - the SSLContext object required for the SSL connection
+     * @param trustManager - X509TrustManager with which we initialize the
+     *          SSLContext
+     * @return a context containing authentication information
+     */
+    SecurityContext withSSLContext(SSLContext context, X509TrustManager trustManager);
     SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier);
   }
 
   private static class AuthContext implements SecurityContext {
     SSLContext sslContext;
+    X509TrustManager trustManager;
     SSLHostnameVerifier sslVerifier;
 
     @Override
@@ -259,6 +290,7 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public SecurityContext withSSLContext(SSLContext context) {
       this.sslContext = context;
       return this;
@@ -267,6 +299,13 @@ public class DatabaseClientFactory {
     @Override
     public SecurityContext withSSLHostnameVerifier(SSLHostnameVerifier verifier) {
       this.sslVerifier = verifier;
+      return this;
+    }
+
+    @Override
+    public SecurityContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.trustManager = trustManager;
       return this;
     }
 
@@ -290,8 +329,16 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public BasicAuthContext withSSLContext(SSLContext context) {
       this.sslContext = context;
+      return this;
+    }
+
+    @Override
+    public BasicAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.trustManager = trustManager;
       return this;
     }
 
@@ -320,8 +367,16 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public DigestAuthContext withSSLContext(SSLContext context) {
       this.sslContext = context;
+      return this;
+    }
+
+    @Override
+    public DigestAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.trustManager = trustManager;
       return this;
     }
 
@@ -342,8 +397,16 @@ public class DatabaseClientFactory {
     }
 
     @Override
+    @Deprecated
     public KerberosAuthContext withSSLContext(SSLContext context) {
       this.sslContext = context;
+      return this;
+    }
+
+    @Override
+    public KerberosAuthContext withSSLContext(SSLContext context, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.trustManager = trustManager;
       return this;
     }
 
@@ -365,8 +428,25 @@ public class DatabaseClientFactory {
      * @param context the SSLContext with which we initialize the
      *				  CertificateAuthContext
      */
+    @Deprecated
     public CertificateAuthContext(SSLContext context) {
       this.sslContext = context;
+    }
+
+    /**
+     * Creates a CertificateAuthContext by initializing the SSLContext of the
+     * HTTPS channel with the SSLContext object passed and using the TrustManger
+     * passed. The KeyManager of the SSLContext should be initialized with the
+     * appropriate client certificate and client's private key
+     *
+     * @param context the SSLContext with which we initialize the
+     *          CertificateAuthContext
+     * @param trustManager the X509TrustManager object which is responsible for
+     *                     deciding if a credential should be trusted or not.
+     */
+    public CertificateAuthContext(SSLContext context, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.trustManager = trustManager;
     }
 
     /**
@@ -379,26 +459,51 @@ public class DatabaseClientFactory {
      *				  CertificateAuthContext
      * @param verifier a callback for checking host names
      */
+    @Deprecated
     public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier) {
       this.sslContext = context;
       this.sslVerifier = verifier;
     }
 
     /**
-     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
-     * is created from the information in the PKCS12 file. This constructor
-     * should be called when the export password of the PKCS12 file is empty.
-     * @param certFile the p12 file which contains the client's private key
-     * 					and the client's certificate chain
-     * @throws CertificateException if any of the certificates in the certFile cannot be loaded
-     * @throws UnrecoverableKeyException if the certFile has an export password
-     * @throws KeyManagementException if initializing the SSLContext with the KeyManager fails
-     * @throws IOException if there is an I/O or format problem with the keystore data,
-     *                     if a password is required but not given, or if the given password was
-     *                     incorrect or if the certFile path is invalid or if the file is not found
-     *                     If the error is due to a wrong password, the cause of the IOException
-     *                     should be an UnrecoverableKeyException.
+     * Creates a CertificateAuthContext by initializing the SSLContext of the
+     * HTTPS channel with the SSLContext object passed and assigns the
+     * SSLHostnameVerifier passed to be used for checking host names. The
+     * KeyManager of the SSLContext should be initialized with the appropriate
+     * client certificate and client's private key
+     *
+     * @param context the SSLContext with which we initialize the
+     *          CertificateAuthContext
+     * @param verifier a callback for checking host names
+     * @param trustManager the X509TrustManager object which is responsible for
+     *                     deciding if a credential should be trusted or not.
      */
+    public CertificateAuthContext(SSLContext context, SSLHostnameVerifier verifier, X509TrustManager trustManager) {
+      this.sslContext = context;
+      this.sslVerifier = verifier;
+      this.trustManager = trustManager;
+    }
+
+    /**
+     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext is
+     * created from the information in the PKCS12 file. This constructor should
+     * be called when the export password of the PKCS12 file is empty.
+     *
+     * @param certFile the p12 file which contains the client's private key and
+     *          the client's certificate chain
+     * @throws CertificateException if any of the certificates in the certFile
+     *           cannot be loaded
+     * @throws UnrecoverableKeyException if the certFile has an export password
+     * @throws KeyManagementException if initializing the SSLContext with the
+     *           KeyManager fails
+     * @throws IOException if there is an I/O or format problem with the
+     *           keystore data, if a password is required but not given, or if
+     *           the given password was incorrect or if the certFile path is
+     *           invalid or if the file is not found If the error is due to a
+     *           wrong password, the cause of the IOException should be an
+     *           UnrecoverableKeyException.
+     */
+    @Deprecated
     public CertificateAuthContext(String certFile)
       throws CertificateException, IOException,
       UnrecoverableKeyException, KeyManagementException {
@@ -406,6 +511,36 @@ public class DatabaseClientFactory {
       this.certPassword = "";
       this.sslContext = createSSLContext();
     }
+
+    /**
+     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext is
+     * created from the information in the PKCS12 file. This constructor should
+     * be called when the export password of the PKCS12 file is empty.
+     *
+     * @param certFile the p12 file which contains the client's private key and
+     *          the client's certificate chain
+     * @param trustManager the X509TrustManager object which is responsible for
+     *          deciding if a credential should be trusted or not.
+     * @throws CertificateException if any of the certificates in the certFile
+     *           cannot be loaded
+     * @throws UnrecoverableKeyException if the certFile has an export password
+     * @throws KeyManagementException if initializing the SSLContext with the
+     *           KeyManager fails
+     * @throws IOException if there is an I/O or format problem with the
+     *           keystore data, if a password is required but not given, or if
+     *           the given password was incorrect or if the certFile path is
+     *           invalid or if the file is not found If the error is due to a
+     *           wrong password, the cause of the IOException should be an
+     *           UnrecoverableKeyException.
+     */
+    public CertificateAuthContext(String certFile, X509TrustManager trustManager)
+        throws CertificateException, IOException,
+        UnrecoverableKeyException, KeyManagementException {
+        this.certFile = certFile;
+        this.trustManager = trustManager;
+        this.certPassword = "";
+        this.sslContext = createSSLContext();
+      }
 
     /**
      * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
@@ -423,6 +558,7 @@ public class DatabaseClientFactory {
      *                     If the error is due to a wrong password, the cause of the IOException
      *                     should be an UnrecoverableKeyException.
      */
+    @Deprecated
     public CertificateAuthContext(String certFile, String certPassword)
       throws CertificateException, IOException,
       UnrecoverableKeyException, KeyManagementException {
@@ -430,6 +566,32 @@ public class DatabaseClientFactory {
       this.certPassword = certPassword;
       this.sslContext = createSSLContext();
     }
+    /**
+     * Creates a CertificateAuthContext with a PKCS12 file. The SSLContext
+     * is created from the information in the PKCS12 file. This constructor
+     * should be called when the export password of the PKCS12 file is non-empty.
+     * @param certFile the p12 file which contains the client's private key
+     *          and the client's certificate chain
+     * @param trustManager the X509TrustManager object which is responsible for
+     *                     deciding if a credential should be trusted or not.
+     * @param certPassword the export password of the p12 file
+     * @throws CertificateException if any of the certificates in the certFile cannot be loaded
+     * @throws UnrecoverableKeyException if the certFile has an export password
+     * @throws KeyManagementException if initializing the SSLContext with the KeyManager fails
+     * @throws IOException if there is an I/O or format problem with the keystore data,
+     *                     if a password is required but not given, or if the given password was
+     *                     incorrect or if the certFile path is invalid or if the file is not found
+     *                     If the error is due to a wrong password, the cause of the IOException
+     *                     should be an UnrecoverableKeyException.
+     */
+    public CertificateAuthContext(String certFile, String certPassword, X509TrustManager trustManager)
+        throws CertificateException, IOException,
+        UnrecoverableKeyException, KeyManagementException {
+        this.certFile = certFile;
+        this.certPassword = certPassword;
+        this.trustManager = trustManager;
+        this.sslContext = createSSLContext();
+      }
 
     private SSLContext createSSLContext()
       throws CertificateException, IOException, UnrecoverableKeyException, KeyManagementException {
@@ -544,6 +706,7 @@ public class DatabaseClientFactory {
     Authentication type = null;
     SSLContext sslContext = null;
     SSLHostnameVerifier sslVerifier = null;
+    X509TrustManager trustManager = null;
     if (securityContext instanceof BasicAuthContext) {
       BasicAuthContext basicContext = (BasicAuthContext) securityContext;
       user = basicContext.user;
@@ -551,6 +714,7 @@ public class DatabaseClientFactory {
       type = Authentication.BASIC;
       if (basicContext.sslContext != null) {
         sslContext = basicContext.sslContext;
+        if(basicContext.trustManager != null) trustManager = basicContext.trustManager;
         if (basicContext.sslVerifier != null) {
           sslVerifier = basicContext.sslVerifier;
         } else {
@@ -564,6 +728,7 @@ public class DatabaseClientFactory {
       type = Authentication.DIGEST;
       if (digestContext.sslContext != null) {
         sslContext = digestContext.sslContext;
+        if(digestContext.trustManager != null) trustManager = digestContext.trustManager;
         if (digestContext.sslVerifier != null) {
           sslVerifier = digestContext.sslVerifier;
         } else {
@@ -576,6 +741,7 @@ public class DatabaseClientFactory {
       type = Authentication.KERBEROS;
       if (kerberosContext.sslContext != null) {
         sslContext = kerberosContext.sslContext;
+        if(kerberosContext.trustManager != null) trustManager = kerberosContext.trustManager;
         if (kerberosContext.sslVerifier != null) {
           sslVerifier = kerberosContext.sslVerifier;
         } else {
@@ -586,6 +752,7 @@ public class DatabaseClientFactory {
       CertificateAuthContext certificateContext = (CertificateAuthContext) securityContext;
       type = Authentication.CERTIFICATE;
       sslContext = certificateContext.getSSLContext();
+      if(certificateContext.trustManager != null) trustManager = certificateContext.trustManager;
       if (certificateContext.sslVerifier != null) {
         sslVerifier = certificateContext.sslVerifier;
       } else {
@@ -596,13 +763,22 @@ public class DatabaseClientFactory {
         "DigestAuthContext, KerberosAuthContext, or CertificateAuthContext");
     }
 
-    JerseyServices services = new JerseyServices();
-    services.connect(host, port, database, user, password, type, sslContext, sslVerifier);
+    OkHttpServices services = new OkHttpServices();
+    services.connect(host, port, database, user, password, type, sslContext, trustManager, sslVerifier);
 
     if (clientConfigurator != null) {
-      ((HttpClientConfigurator) clientConfigurator).configure(
-        services.getClientImplementation()
-      );
+      if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
+        OkHttpClient client = services.getClientImplementation();
+        OkHttpClient.Builder clientBuilder = client.newBuilder();
+        ((OkHttpClientConfigurator) clientConfigurator).configure(
+          clientBuilder
+        );
+        ((OkHttpServices) services).setClientImplementation(clientBuilder.build());
+      } else if ( clientConfigurator instanceof HttpClientConfigurator ) {
+        // do nothing as we not longer use HttpClient so there's nothing this can configure
+      } else {
+        throw new IllegalArgumentException("A ClientConfigurator must implement OkHttpClientConfigurator");
+      }
     }
 
     DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, database, securityContext);
@@ -754,13 +930,13 @@ public class DatabaseClientFactory {
   /**
    * Adds a listener that provides custom configuration when a communication library
    * is created.
-   * @see com.marklogic.client.extra.httpclient.HttpClientConfigurator
+   * @see com.marklogic.client.extra.okhttpclient.OkHttpClientConfigurator
    * @param configurator	the listener for configuring the communication library
    */
   static public void addConfigurator(ClientConfigurator<?> configurator) {
-    if (!HttpClientConfigurator.class.isInstance(configurator)) {
+    if (!HttpClientConfigurator.class.isInstance(configurator) && !OkHttpClientConfigurator.class.isInstance(configurator)) {
       throw new IllegalArgumentException(
-        "Configurator must implement HttpClientConfigurator"
+        "Configurator must implement OkHttpClientConfigurator"
       );
     }
 

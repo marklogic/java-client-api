@@ -39,319 +39,319 @@ import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
+
 public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
-	private static String dbName = "TestQueryOptionBuilderGrammarDB";
-	private static String [] fNames = {"TestQueryOptionBuilderGrammarDB-1"};
-	
-	
-	@BeforeClass
-	public static void setUp() throws Exception {
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "TestQueryOptionBuilderGrammarDB";
+  private static String[] fNames = { "TestQueryOptionBuilderGrammarDB-1" };
 
-	@After
-	public  void testCleanUp() throws Exception {
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-	@Test	
-	public void testGrammarOperatorQuotation() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testGrammarOperatorQuotation");
+  @After
+  public void testCleanUp() throws Exception {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testGrammarOperatorQuotation() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testGrammarOperatorQuotation");
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-op-quote/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/gramar-op-quote/", "XML");
+    }
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:grammar>" +
-				"<search:implicit>" +
-				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
-				"</search:implicit>" +
-				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
-				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
-				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
-				"<search:quotation>\"</search:quotation>" +
-				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
-				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
-				"</search:grammar>" +
-				"<search:return-metrics>false</search:return-metrics>" +
-				"<search:return-qtext>false</search:return-qtext>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>";
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:grammar>" +
+        "<search:implicit>" +
+        "<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+        "</search:implicit>" +
+        "<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+        "<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+        "<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+        "<search:quotation>\"</search:quotation>" +
+        "<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+        "<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+        "</search:grammar>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		// write query options
-		optionsMgr.writeOptions("GrammarOperatorQuotation", handle);
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("GrammarOperatorQuotation", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // write query options
+    optionsMgr.writeOptions("GrammarOperatorQuotation", handle);
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("GrammarOperatorQuotation", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarOperatorQuotation");
-		querydef.setCriteria("1945 OR \"Atlantic Monthly\"");
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarOperatorQuotation");
+    querydef.setCriteria("1945 OR \"Atlantic Monthly\"");
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0113", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
-		assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
 
-		// release client
-		client.release();	
-	} 
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0113", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("0011", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
 
-	@Test	
-	public void testGrammarTwoWordsSpace() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testGrammarTwoWordsSpace");
+    // release client
+    client.release();
+  }
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+  @Test
+  public void testGrammarTwoWordsSpace() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testGrammarTwoWordsSpace");
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
-		}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
+    }
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:grammar>" +
-				"<search:implicit>" +
-				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
-				"</search:implicit>" +
-				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
-				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
-				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
-				"<search:quotation>\"</search:quotation>" +
-				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
-				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
-				"</search:grammar>" +
-				"<search:return-metrics>false</search:return-metrics>" +
-				"<search:return-qtext>false</search:return-qtext>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>";
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
-		
-		// write query options
-		optionsMgr.writeOptions("GrammarTwoWordsSpace", handle);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:grammar>" +
+        "<search:implicit>" +
+        "<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+        "</search:implicit>" +
+        "<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+        "<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+        "<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+        "<search:quotation>\"</search:quotation>" +
+        "<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+        "<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+        "</search:grammar>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("GrammarTwoWordsSpace", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // write query options
+    optionsMgr.writeOptions("GrammarTwoWordsSpace", handle);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarTwoWordsSpace");
-		querydef.setCriteria("\"Atlantic Monthly\" \"Bush\"");
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("GrammarTwoWordsSpace", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarTwoWordsSpace");
+    querydef.setCriteria("\"Atlantic Monthly\" \"Bush\"");
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0011", "string(//*[local-name()='result']//*[local-name()='id'])", resultDoc);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-		// release client
-		client.release();	
-	} 
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
 
-	@Test	
-	public void testGrammarPrecedenceAndNegate() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testGrammarPrecedenceAndNegate");
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0011", "string(//*[local-name()='result']//*[local-name()='id'])", resultDoc);
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testGrammarPrecedenceAndNegate() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testGrammarPrecedenceAndNegate");
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
-		}
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:grammar>" +
-				"<search:implicit>" +
-				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
-				"</search:implicit>" +
-				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='10' tokenize='word'>OR</search:joiner>" +
-				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='20' tokenize='word'>AND</search:joiner>" +
-				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
-				"<search:quotation>\"</search:quotation>" +
-				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
-				"<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
-				"</search:grammar>" +
-				"<search:return-metrics>false</search:return-metrics>" +
-				"<search:return-qtext>false</search:return-qtext>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>";
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
+    }
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// write query options
-		optionsMgr.writeOptions("GrammarPrecedenceAndNegate", handle);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:grammar>" +
+        "<search:implicit>" +
+        "<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+        "</search:implicit>" +
+        "<search:joiner apply='infix' consume='0' element='cts:or-query' strength='10' tokenize='word'>OR</search:joiner>" +
+        "<search:joiner apply='infix' consume='0' element='cts:and-query' strength='20' tokenize='word'>AND</search:joiner>" +
+        "<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+        "<search:quotation>\"</search:quotation>" +
+        "<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+        "<search:starter apply='prefix' element='cts:not-query' strength='40'>-</search:starter>" +
+        "</search:grammar>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("GrammarPrecedenceAndNegate", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // write query options
+    optionsMgr.writeOptions("GrammarPrecedenceAndNegate", handle);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarPrecedenceAndNegate");
-		querydef.setCriteria("-bush AND -memex");
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("GrammarPrecedenceAndNegate", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarPrecedenceAndNegate");
+    querydef.setCriteria("-bush AND -memex");
 
-		assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0024", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
-		assertXpathEvaluatesTo("0113", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-		// release client
-		client.release();	
-	}
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
 
-	@Test	
-	public void testGrammarConstraint() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
-	{	
-		System.out.println("Running testGrammarConstraint");
+    assertXpathEvaluatesTo("2", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0024", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    assertXpathEvaluatesTo("0113", "string(//*[local-name()='result'][2]//*[local-name()='id'])", resultDoc);
 
-		String[] filenames = {"constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml"};
+    // release client
+    client.release();
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testGrammarConstraint() throws KeyManagementException, NoSuchAlgorithmException, XpathException, TransformerException, IOException
+  {
+    System.out.println("Running testGrammarConstraint");
 
-		// write docs
-		for(String filename : filenames) {
-			writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
-		}
+    String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// create query options
-		String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:grammar>" +
-				"<search:implicit>" +
-				"<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
-				"</search:implicit>" +
-				"<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
-				"<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
-				"<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
-				"<search:quotation>\"</search:quotation>" + 
-				"<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
-				"<search:starter apply='prefix' element='cts:not-query' strength='20'>-</search:starter>" +
-				"</search:grammar>" +
-				"<search:constraint name='intitle'>" +
-				"<search:word>" +
-				"<search:element name='title' ns=''/>" +
-				"</search:word>" +
-				"</search:constraint>" +
-				"<search:return-metrics>false</search:return-metrics>" +
-				"<search:return-qtext>false</search:return-qtext>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>";
+    // write docs
+    for (String filename : filenames) {
+      writeDocumentUsingInputStreamHandle(client, filename, "/gramar-two-words-space/", "XML");
+    }
 
-		// create query options handle
-		StringHandle handle = new StringHandle(opts1);
-		
-		// write query options
-		optionsMgr.writeOptions("GrammarConstraint", handle);
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
 
-		// read query option
-		StringHandle readHandle = new StringHandle();
-		readHandle.setFormat(Format.JSON);
-		optionsMgr.readOptions("GrammarConstraint", readHandle);
-		String output = readHandle.get();
-		System.out.println(output);
+    // create query options
+    String opts1 = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:grammar>" +
+        "<search:implicit>" +
+        "<cts:and-query xmlns:cts='http://marklogic.com/cts' strength='20'/>" +
+        "</search:implicit>" +
+        "<search:joiner apply='infix' consume='0' element='cts:or-query' strength='20' tokenize='word'>OR</search:joiner>" +
+        "<search:joiner apply='infix' consume='0' element='cts:and-query' strength='30' tokenize='word'>AND</search:joiner>" +
+        "<search:joiner apply='constraint' consume='0' strength='50'>:</search:joiner>" +
+        "<search:quotation>\"</search:quotation>" +
+        "<search:starter apply='grouping' delimiter=')' strength='30'>(</search:starter>" +
+        "<search:starter apply='prefix' element='cts:not-query' strength='20'>-</search:starter>" +
+        "</search:grammar>" +
+        "<search:constraint name='intitle'>" +
+        "<search:word>" +
+        "<search:element name='title' ns=''/>" +
+        "</search:word>" +
+        "</search:constraint>" +
+        "<search:return-metrics>false</search:return-metrics>" +
+        "<search:return-qtext>false</search:return-qtext>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
 
-		// create query manager
-		QueryManager queryMgr = client.newQueryManager();
+    // create query options handle
+    StringHandle handle = new StringHandle(opts1);
 
-		// create query def
-		StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarConstraint");
-		querydef.setCriteria("intitle:Vannevar AND served");
+    // write query options
+    optionsMgr.writeOptions("GrammarConstraint", handle);
 
-		// create handle
-		DOMHandle resultsHandle = new DOMHandle();
-		resultsHandle.setFormat(Format.XML);
-		queryMgr.search(querydef, resultsHandle);
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.JSON);
+    optionsMgr.readOptions("GrammarConstraint", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
 
-		// get the result
-		Document resultDoc = resultsHandle.get();
-		//System.out.println(convertXMLDocumentToString(resultDoc));
+    // create query manager
+    QueryManager queryMgr = client.newQueryManager();
 
-		assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
-		assertXpathEvaluatesTo("0024", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+    // create query def
+    StringQueryDefinition querydef = queryMgr.newStringDefinition("GrammarConstraint");
+    querydef.setCriteria("intitle:Vannevar AND served");
 
-		// release client
-		client.release();	
-	}
+    // create handle
+    DOMHandle resultsHandle = new DOMHandle();
+    resultsHandle.setFormat(Format.XML);
+    queryMgr.search(querydef, resultsHandle);
 
-	@AfterClass	
-	public static void tearDown() throws Exception {
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    // get the result
+    Document resultDoc = resultsHandle.get();
+    // System.out.println(convertXMLDocumentToString(resultDoc));
+
+    assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
+    assertXpathEvaluatesTo("0024", "string(//*[local-name()='result'][1]//*[local-name()='id'])", resultDoc);
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

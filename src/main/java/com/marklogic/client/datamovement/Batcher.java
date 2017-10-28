@@ -31,11 +31,25 @@ public interface Batcher {
   String getJobName();
 
   /**
-   * The size of each batch (usually 50-500).  With some experimentation with
-   * your custom job, this value can be tuned.  Tuning this value is one of the
-   * best ways to achieve optimal throughput.
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
    *
-   * This method cannot be called after the job has started.
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  Batcher withJobId(String jobId);
+
+  /**
+   * @return the unique job id of the job
+   */
+  String getJobId();
+
+  /**
+   * <p>The size of each batch (usually 50-500). With some experimentation with
+   * your custom job, this value can be tuned. Tuning this value is one of the
+   * best ways to achieve optimal throughput.</p>
+   *
+   * <p>This method cannot be called after the job has started.</p>
    *
    * @param batchSize the batch size -- must be 1 or greater
    * @return this instance (for method chaining)
@@ -48,15 +62,17 @@ public interface Batcher {
   int getBatchSize();
 
   /**
-   * The number of threads to be used internally by this job to perform
-   * concurrent tasks on batches (usually > 10).  With some experimentation with your custom
+   * <p>The number of threads to be used internally by this job to perform
+   * concurrent tasks on batches (usually &gt; 10).  With some experimentation with your custom
    * job and client environment, this value can be tuned.  Tuning this value is
    * one of the best ways to achieve optimal throughput or to throttle the
    * server resources used by this job.  Setting this to 1 does not guarantee
    * that batches will be processed sequentially because the calling thread
-   * will sometimes also process batches.
+   * will sometimes also process batches.</p>
    *
-   * This method cannot be called after the job has started.
+   * <p>This method cannot be called after the job has started.</p>
+   *
+   * @param threadCount the number of threads to use in this Batcher
    *
    * @return this instance (for method chaining)
    */
@@ -79,9 +95,20 @@ public interface Batcher {
    * will come from {@link DataMovementManager#readForestConfig}, perhaps wrapped by
    * something like {@link FilteredForestConfiguration}.
    *
+   * @param forestConfig the updated list of forests with thier hosts, etc.
+   *
    * @return this instance (for method chaining)
    */
   Batcher withForestConfig(ForestConfiguration forestConfig);
+
+  /**
+   * true if the job is started (e.g. {@link DataMovementManager#startJob
+   * DataMovementManager.startJob} was called), false otherwise
+   *
+   * @return true if the job is started (e.g. {@link
+   * DataMovementManager#startJob DataMovementManager.startJob} was called), false otherwise
+   */
+  boolean isStarted();
 
   /**
    * true if the job is terminated (e.g. {@link DataMovementManager#stopJob

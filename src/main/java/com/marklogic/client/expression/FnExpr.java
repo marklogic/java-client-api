@@ -732,7 +732,7 @@ public interface FnExpr {
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/fn:format-number" target="mlserverdoc">fn:format-number</a>
     * @param value  The given numeric <code>$value</code> that needs to be formatted.
     * @param picture  The desired string representation of the given number <code>$value</code>. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the format-number picture string, see <a>http://www.w3.org/TR/xslt20/#function-format-number</a>.
-    * @param decimalFormatName  Represents a named <code><xsl:decimal-format></code> instruction. It is used to assign values to the variables mentioned above based on the picture string.
+    * @param decimalFormatName  Represents a named <code>&lt;xsl:decimal-format&gt;</code> instruction. It is used to assign values to the variables mentioned above based on the picture string.
     * @return  a XsStringExpr expression
     */
     public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String decimalFormatName);
@@ -742,7 +742,7 @@ public interface FnExpr {
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/fn:format-number" target="mlserverdoc">fn:format-number</a>
     * @param value  The given numeric <code>$value</code> that needs to be formatted.
     * @param picture  The desired string representation of the given number <code>$value</code>. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the format-number picture string, see <a>http://www.w3.org/TR/xslt20/#function-format-number</a>.
-    * @param decimalFormatName  Represents a named <code><xsl:decimal-format></code> instruction. It is used to assign values to the variables mentioned above based on the picture string.
+    * @param decimalFormatName  Represents a named <code>&lt;xsl:decimal-format&gt;</code> instruction. It is used to assign values to the variables mentioned above based on the picture string.
     * @return  a XsStringExpr expression
     */
     public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr decimalFormatName);

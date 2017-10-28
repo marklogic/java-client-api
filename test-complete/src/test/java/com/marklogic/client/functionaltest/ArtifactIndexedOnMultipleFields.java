@@ -26,49 +26,48 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  * 
  */
 public class ArtifactIndexedOnMultipleFields {
-	@Id
-	@PathIndexProperty(scalarType = ScalarType.STRING)
-	public String name;
-	public long id;
-	private Company manufacturer;
+  @Id
+  @PathIndexProperty(scalarType = ScalarType.STRING)
+  public String name;
+  public long id;
+  private Company manufacturer;
 
-	@PathIndexProperty(scalarType = ScalarType.INT)
-	private int inventory;
+  @PathIndexProperty(scalarType = ScalarType.INT)
+  private int inventory;
 
-	public long getId() {
-		return id;
-	}
+  public long getId() {
+    return id;
+  }
 
-	public ArtifactIndexedOnMultipleFields setId(long id) {
-		this.id = id;
-		return this;
-	}
+  public ArtifactIndexedOnMultipleFields setId(long id) {
+    this.id = id;
+    return this;
+  }
 
-	public String getName() {
-		return name;
-	}
+  public String getName() {
+    return name;
+  }
 
-	public ArtifactIndexedOnMultipleFields setName(String name) {
-		this.name = name;
-		return this;
-	}
+  public ArtifactIndexedOnMultipleFields setName(String name) {
+    this.name = name;
+    return this;
+  }
 
-	public Company getManufacturer() {
-		return manufacturer;
-	}
+  public Company getManufacturer() {
+    return manufacturer;
+  }
 
-	public ArtifactIndexedOnMultipleFields setManufacturer(Company manufacturer) {
-		this.manufacturer = manufacturer;
-		return this;
-	}
+  public ArtifactIndexedOnMultipleFields setManufacturer(Company manufacturer) {
+    this.manufacturer = manufacturer;
+    return this;
+  }
 
-	public int getInventory() {
-		return inventory;
-	}
+  public int getInventory() {
+    return inventory;
+  }
 
-	public ArtifactIndexedOnMultipleFields setInventory(int inventory) {
-		this.inventory = inventory;
-		return this;
-	}
+  public ArtifactIndexedOnMultipleFields setInventory(int inventory) {
+    this.inventory = inventory;
+    return this;
+  }
 }
-

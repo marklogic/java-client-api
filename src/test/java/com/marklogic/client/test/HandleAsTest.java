@@ -107,14 +107,13 @@ public class HandleAsTest {
     assertEquals("byte[] difference in document read/write as", beforeText, afterText);
 
     binMgr.writeAs(binDocId, new ByteArrayInputStream(beforeBytes));
-    cnum = new InputStreamReader(
-      binMgr.readAs(binDocId, InputStream.class),
-      "UTF-8"
-    ).read(cbuf);
-    binMgr.delete(binDocId);
-    assertEquals("InputStream count difference in document read/write as", beforeText.length(), cnum);
-    afterText = new String(cbuf, 0, cnum);
-    assertEquals("InputStream difference in document read/write as", beforeText, afterText);
+    try ( Reader reader = new InputStreamReader( binMgr.readAs(binDocId, InputStream.class), "UTF-8") ) {
+      cnum = reader.read(cbuf);
+      binMgr.delete(binDocId);
+      assertEquals("InputStream count difference in document read/write as", beforeText.length(), cnum);
+      afterText = new String(cbuf, 0, cnum);
+      assertEquals("InputStream difference in document read/write as", beforeText, afterText);
+    }
 
     String textDocId = "/test/testAs1.txt";
     TextDocumentManager textMgr = Common.client.newTextDocumentManager();
@@ -125,11 +124,13 @@ public class HandleAsTest {
     assertEquals("String difference in document read/write as", beforeText, afterText);
 
     textMgr.writeAs(textDocId, new StringReader(beforeText));
-    cnum = textMgr.readAs(textDocId, Reader.class).read(cbuf);
-    textMgr.delete(textDocId);
-    assertEquals("Reader count difference in document read/write as", beforeText.length(), cnum);
-    afterText = new String(cbuf, 0, cnum);
-    assertEquals("Reader difference in document read/write as", beforeText, afterText);
+    try ( Reader reader = textMgr.readAs(textDocId, Reader.class) ) {
+      cnum = reader.read(cbuf);
+      textMgr.delete(textDocId);
+      assertEquals("Reader count difference in document read/write as", beforeText.length(), cnum);
+      afterText = new String(cbuf, 0, cnum);
+      assertEquals("Reader difference in document read/write as", beforeText, afterText);
+    }
 
     File beforeFile = File.createTempFile("testAs", "txt");
     try (FileWriter tempWriter = new FileWriter(beforeFile)) {
@@ -141,11 +142,13 @@ public class HandleAsTest {
     beforeFile.delete();
     File afterFile = textMgr.readAs(textDocId, File.class);
     textMgr.delete(textDocId);
-    cnum = new FileReader(afterFile).read(cbuf);
-    afterFile.delete();
-    assertEquals("File count difference in document read/write as", beforeText.length(), cnum);
-    afterText = new String(cbuf, 0, cnum);
-    assertEquals("File difference in document read/write as", beforeText, afterText);
+    try ( Reader reader = new FileReader(afterFile) ) {
+      cnum = reader.read(cbuf);
+      afterFile.delete();
+      assertEquals("File count difference in document read/write as", beforeText.length(), cnum);
+      afterText = new String(cbuf, 0, cnum);
+      assertEquals("File difference in document read/write as", beforeText, afterText);
+    }
 
     String xmlDocId = "/test/testAs1.xml";
     XMLDocumentManager xmlMgr = Common.client.newXMLDocumentManager();
@@ -189,21 +192,29 @@ public class HandleAsTest {
       inputFactory.createXMLEventReader(new StringReader(beforeDocStr))
     );
     XMLEventReader afterEventReader = xmlMgr.readAs(xmlDocId, XMLEventReader.class);
-    xmlMgr.delete(xmlDocId);
-    afterEventReader.nextTag();
-    afterText = afterEventReader.getElementText();
-    afterEventReader.close();
-    assertEquals("EventReader difference in document read/write as", beforeText, afterText);
+    try {
+      xmlMgr.delete(xmlDocId);
+      afterEventReader.nextTag();
+      afterText = afterEventReader.getElementText();
+      afterEventReader.close();
+      assertEquals("EventReader difference in document read/write as", beforeText, afterText);
+    } finally {
+      afterEventReader.close();
+    }
 
     xmlMgr.writeAs(xmlDocId,
       inputFactory.createXMLStreamReader(new StringReader(beforeDocStr))
     );
     XMLStreamReader afterStreamReader = xmlMgr.readAs(xmlDocId, XMLStreamReader.class);
-    xmlMgr.delete(xmlDocId);
-    afterStreamReader.nextTag();
-    afterText = afterStreamReader.getElementText();
-    afterStreamReader.close();
-    assertEquals("StreamReader difference in document read/write as", beforeText, afterText);
+    try {
+      xmlMgr.delete(xmlDocId);
+      afterStreamReader.nextTag();
+      afterText = afterStreamReader.getElementText();
+      afterStreamReader.close();
+      assertEquals("StreamReader difference in document read/write as", beforeText, afterText);
+    } finally {
+      afterStreamReader.close();
+    }
   }
 
   @Test

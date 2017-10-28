@@ -17,9 +17,12 @@ package com.marklogic.client.test;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 import javax.xml.bind.DatatypeConverter;
 
@@ -30,18 +33,22 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.BinaryDocumentManager.MetadataExtraction;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
+import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 
 public class BinaryDocumentTest {
   @BeforeClass
   public static void beforeClass() {
     Common.connect();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
   @AfterClass
   public static void afterClass() {
@@ -82,5 +89,20 @@ public class BinaryDocumentTest {
     assertXpathEvaluatesTo("image/png","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='content-type'])", metadataDocument);
     assertXpathEvaluatesTo("text HD-HTML","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='filter-capabilities'])", metadataDocument);
     assertXpathEvaluatesTo("815","string(/*[local-name()='metadata']/*[local-name()='properties']/*[local-name()='size'])", metadataDocument);
+  }
+
+  @Test
+  public void test_issue_758() throws Exception {
+   BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
+   DocumentWriteSet writeset =docMgr.newWriteSet();
+   FileHandle h1 = new FileHandle(new File(
+     "test-complete/src/test/java/com/marklogic/client/functionaltest/data/Sega-4MB.jpg"));
+   String uri = "BinaryDocumentTest_" + new Random().nextInt(10000) + "/" + "Sega-4MB.jpg";
+   writeset.add(uri, h1);
+   docMgr.write(writeset);
+   DocumentPage page = docMgr.read(uri);
+   DocumentRecord rec = page.next();
+   assertNotNull("DocumentRecord should never be null", rec);
+   assertEquals(rec.getFormat(),Format.BINARY);
   }
 }

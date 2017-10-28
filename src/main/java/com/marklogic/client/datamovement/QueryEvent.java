@@ -27,6 +27,8 @@ public interface QueryEvent {
   /** A reference to the batcher--useful for modifying the
    * {@link Batcher#withForestConfig ForestConfiguration}
    * or calling {@link DataMovementManager#stopJob(Batcher)} if needed.
+   *
+   * @return the QueryBatcher that created this event
    */
   QueryBatcher getBatcher();
 

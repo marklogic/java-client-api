@@ -16,6 +16,7 @@
 package com.marklogic.client.io;
 
 import com.marklogic.client.io.marker.BinaryWriteHandle;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.GenericWriteHandle;
 import com.marklogic.client.io.marker.JSONWriteHandle;
 import com.marklogic.client.io.marker.OperationNotSupported;
@@ -46,7 +47,7 @@ public class OutputStreamHandle
     JSONWriteHandle,
     TextWriteHandle,
     XMLWriteHandle,
-    StructureWriteHandle,
+    StructureWriteHandle, CtsQueryWriteHandle,
     TriplesWriteHandle
 {
 

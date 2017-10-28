@@ -43,8 +43,8 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.FileWriter;
 
-public class UrisToWriterListenerExamples {
-  private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamples.class);
+public class UrisToWriterListenerExamplesTest {
+  private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamplesTest.class);
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "UrisToWriterListenerExamples_" +
@@ -54,7 +54,6 @@ public class UrisToWriterListenerExamples {
 
   @BeforeClass
   public static void beforeClass() {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
   @AfterClass
@@ -86,18 +85,20 @@ public class UrisToWriterListenerExamples {
     writer.close();
 
     // start interject a test
-    BufferedReader reader1 = new BufferedReader(new FileReader("uriCache.txt"));
-    assertEquals(3, reader1.lines().count());
+    try ( BufferedReader reader1 = new BufferedReader(new FileReader("uriCache.txt")) ) {
+      assertEquals(3, reader1.lines().count());
+    }
     // end interject a test
 
     // now we have the uris, let's step through them
-    BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt"));
-    QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
-      .onUrisReady(new DeleteListener())
-      .onQueryFailure(exception-> exception.printStackTrace());
-    JobTicket ticket = dataMovementManager.startJob(performDelete);
-    performDelete.awaitCompletion();
-    dataMovementManager.stopJob(ticket);
+    try ( BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt")) ) {
+      QueryBatcher performDelete = dataMovementManager.newQueryBatcher(reader.lines().iterator())
+        .onUrisReady(new DeleteListener())
+        .onQueryFailure(exception-> exception.printStackTrace());
+      JobTicket ticket = dataMovementManager.startJob(performDelete);
+      performDelete.awaitCompletion();
+      dataMovementManager.stopJob(ticket);
+    }
     // end copy from class javadoc in src/main/java/com/marklogic/datamovement/UrisToWriterListener.java
 
     assertEquals(0, client.newQueryManager().search(collectionQuery, new SearchHandle()).getTotalResults());

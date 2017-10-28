@@ -31,94 +31,95 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
+
 public class TestMultithreading extends BasicJavaClientREST {
 
-	private static String dbName = "TestMultithreadingDB";
-	private static String [] fNames = {"TestMultithreadingDBDB-1"};
-	
-	@BeforeClass
-	public static void setUp() throws Exception {
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  private static String dbName = "TestMultithreadingDB";
+  private static String[] fNames = { "TestMultithreadingDBDB-1" };
 
-	@After
-	public  void testCleanUp() throws Exception {
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test
-	public void testMultithreading() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException, IOException
-	{
-		ThreadClass dt1 = new ThreadClass("Thread A");
-		ThreadClass dt2 = new ThreadClass("Thread B");
+  @After
+  public void testCleanUp() throws Exception {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		Thread t1 = new Thread(dt1);
-		t1.start(); // this will start thread of object 1
-		Thread t2 = new Thread(dt2);
-		t2.start(); // this will start thread of object 2
-		t2.join();
+  @Test
+  public void testMultithreading() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException, IOException
+  {
+    ThreadClass dt1 = new ThreadClass("Thread A");
+    ThreadClass dt2 = new ThreadClass("Thread B");
 
-		DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
-		TextDocumentManager docMgr = client.newTextDocumentManager();
+    Thread t1 = new Thread(dt1);
+    t1.start(); // this will start thread of object 1
+    Thread t2 = new Thread(dt2);
+    t2.start(); // this will start thread of object 2
+    t2.join();
 
-		for (int i = 1; i <= 5; i++) {
-			String expectedUri = "/multithread-content-A/filename" + i + ".txt";
-			String docUri = docMgr.exists("/multithread-content-A/filename" + i + ".txt").getUri();
-			assertEquals("URI is not found", expectedUri, docUri);
-		}
+    DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    TextDocumentManager docMgr = client.newTextDocumentManager();
 
-		for (int i = 1; i <= 5; i++) {
-			String expectedUri = "/multithread-content-B/filename" + i + ".txt";
-			String docUri = docMgr.exists("/multithread-content-B/filename" + i + ".txt").getUri();
-			assertEquals("URI is not found", expectedUri, docUri);
-		}
+    for (int i = 1; i <= 5; i++) {
+      String expectedUri = "/multithread-content-A/filename" + i + ".txt";
+      String docUri = docMgr.exists("/multithread-content-A/filename" + i + ".txt").getUri();
+      assertEquals("URI is not found", expectedUri, docUri);
+    }
 
-		// release client
-		client.release();
-	}
+    for (int i = 1; i <= 5; i++) {
+      String expectedUri = "/multithread-content-B/filename" + i + ".txt";
+      String docUri = docMgr.exists("/multithread-content-B/filename" + i + ".txt").getUri();
+      assertEquals("URI is not found", expectedUri, docUri);
+    }
 
-	@Test
-	public void testMultithreadingMultipleSearch() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
-	{
-		System.out.println("testMultithreadingMultipleSearch");
+    // release client
+    client.release();
+  }
 
-		ThreadWrite tw1 = new ThreadWrite("Write Thread");
-		Thread w1 = new Thread(tw1);
-		w1.start();
-		w1.join();
+  @Test
+  public void testMultithreadingMultipleSearch() throws KeyManagementException, NoSuchAlgorithmException, InterruptedException
+  {
+    System.out.println("testMultithreadingMultipleSearch");
 
-		ThreadSearch ts1 = new ThreadSearch("Search Thread 1");
-		ThreadSearch ts2 = new ThreadSearch("Search Thread 2");
-		ThreadSearch ts3 = new ThreadSearch("Search Thread 3");
-		ThreadSearch ts4 = new ThreadSearch("Search Thread 4");
-		ThreadSearch ts5 = new ThreadSearch("Search Thread 5");
+    ThreadWrite tw1 = new ThreadWrite("Write Thread");
+    Thread w1 = new Thread(tw1);
+    w1.start();
+    w1.join();
 
-		Thread t1 = new Thread(ts1);
-		t1.start();
-		Thread t2 = new Thread(ts2);
-		t2.start();
-		Thread t3 = new Thread(ts3);
-		t3.start();
-		Thread t4 = new Thread(ts4);
-		t4.start();
-		Thread t5 = new Thread(ts5);
-		t5.start();
+    ThreadSearch ts1 = new ThreadSearch("Search Thread 1");
+    ThreadSearch ts2 = new ThreadSearch("Search Thread 2");
+    ThreadSearch ts3 = new ThreadSearch("Search Thread 3");
+    ThreadSearch ts4 = new ThreadSearch("Search Thread 4");
+    ThreadSearch ts5 = new ThreadSearch("Search Thread 5");
 
-		t1.join();
-		t2.join();
-		t3.join();
-		t4.join();
-		t5.join();
+    Thread t1 = new Thread(ts1);
+    t1.start();
+    Thread t2 = new Thread(ts2);
+    t2.start();
+    Thread t3 = new Thread(ts3);
+    t3.start();
+    Thread t4 = new Thread(ts4);
+    t4.start();
+    Thread t5 = new Thread(ts5);
+    t5.start();
 
-		long totalAllDocumentsReturned = ts1.totalAllResults + ts2.totalAllResults + ts3.totalAllResults + ts4.totalAllResults + ts5.totalAllResults;
-		assertTrue("Documents count is incorrect", totalAllDocumentsReturned == 750);
-	}
-	
-	@AfterClass	
-	public static void tearDown() throws Exception {
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    t1.join();
+    t2.join();
+    t3.join();
+    t4.join();
+    t5.join();
+
+    long totalAllDocumentsReturned = ts1.totalAllResults + ts2.totalAllResults + ts3.totalAllResults + ts4.totalAllResults + ts5.totalAllResults;
+    assertTrue("Documents count is incorrect", totalAllDocumentsReturned == 750);
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

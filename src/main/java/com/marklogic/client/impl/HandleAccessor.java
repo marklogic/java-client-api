@@ -124,9 +124,7 @@ public class HandleAccessor {
         }
         stringContent = sb.toString();
       }
-      if ( content instanceof File ) {
-        ((FileInputStream) content).close();
-      }
+
       if ( stringContent == null ) {
         throw new UnsupportedOperationException("contentAsString only supports handles with sendContent() " +
           "of type String, OutputStreamSender, byte[], File, or InputStream");

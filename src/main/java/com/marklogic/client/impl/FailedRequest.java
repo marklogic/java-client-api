@@ -18,11 +18,11 @@ package com.marklogic.client.impl;
 import java.io.IOException;
 import java.io.InputStream;
 
-import javax.ws.rs.core.MediaType;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import okhttp3.MediaType;
 import org.w3c.dom.Document;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
@@ -44,6 +44,7 @@ import com.marklogic.client.io.JSONErrorParser;
  *
  */
 public class FailedRequest {
+  private static final String ERROR_NS = "http://marklogic.com/xdmp/error";
 
   private String messageCode;
 
@@ -67,7 +68,7 @@ public class FailedRequest {
         builder = factory.newDocumentBuilder();
         Document doc = builder.parse(is);
         String statusCode = null;
-        NodeList statusCodes = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "status-code");
+        NodeList statusCodes = doc.getElementsByTagNameNS(ERROR_NS, "status-code");
         if ( statusCodes != null && statusCodes.getLength() > 0 ) {
           statusCode = statusCodes.item(0).getTextContent();
         }
@@ -76,24 +77,24 @@ public class FailedRequest {
         } else {
           failure.setStatusCode(httpStatus);
         }
-        NodeList statuses = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "status");
+        NodeList statuses = doc.getElementsByTagNameNS(ERROR_NS, "status");
         if ( statuses != null && statuses.getLength() > 0 ) {
           failure.setStatusString( statuses.item(0).getTextContent() );
         }
-        NodeList messageCodes = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "message-code");
+        NodeList messageCodes = doc.getElementsByTagNameNS(ERROR_NS, "message-code");
         if ( messageCodes != null && messageCodes.getLength() > 0 ) {
           failure.setMessageCode( messageCodes.item(0).getTextContent() );
         }
         // the following is for eval errors
         String formatString = null;
-        NodeList formatStrings = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "format-string");
+        NodeList formatStrings = doc.getElementsByTagNameNS(ERROR_NS, "format-string");
         if ( formatStrings != null && formatStrings.getLength() > 0 ) {
           formatString = formatStrings.item(0).getTextContent();
         }
         if ( formatString != null ) {
           failure.setMessageString(formatString);
         } else {
-          NodeList messageStrings = doc.getElementsByTagNameNS(JerseyServices.ERROR_NS, "message");
+          NodeList messageStrings = doc.getElementsByTagNameNS(ERROR_NS, "message");
           if ( messageStrings != null && messageStrings.getLength() > 0 ) {
             failure.setMessageString( messageStrings.item(0).getTextContent() );
           }
@@ -110,32 +111,32 @@ public class FailedRequest {
       }
       return failure;
     }
-
+    
   }
+
   /*
    * send an InputStream to this handler in order to create an error block.
    */
-  public static FailedRequest getFailedRequest(int httpStatus, MediaType contentType, InputStream content) {
-    FailedRequest failure;
+  public static FailedRequest getFailedRequest(int httpStatus, String contentType, InputStream content) {
+    FailedRequest failure = null;
 
     // by default XML is supported
-    if (MediaType.APPLICATION_XML_TYPE.isCompatible(contentType)) {
+    if ( contentType != null ) {
+      MediaType mediaType = MediaType.parse(contentType);
+      if ( "xml".equals(mediaType.subtype()) ) {
+        FailedRequestParser xmlParser = new FailedRequestXMLParser();
 
-      FailedRequestParser xmlParser = new FailedRequestXMLParser();
-
-      failure  =  xmlParser.parseFailedRequest(httpStatus, content);
-
-    }
-    else if (MediaType.APPLICATION_JSON_TYPE.isCompatible(contentType)) {
-      failure = jsonFailedRequest(httpStatus, content);
-    }
-    else if (contentType == null && httpStatus == 404) {
+        failure = xmlParser.parseFailedRequest(httpStatus, content);
+      } else if ( "json".equals(mediaType.subtype()) ) {
+        failure = jsonFailedRequest(httpStatus, content);
+      }
+    } else if (httpStatus == 404) {
       failure = new FailedRequest();
       failure.setStatusCode(httpStatus);
       failure.setMessageString("");
       failure.setStatusString("Not Found");
     }
-    else {
+    if ( failure == null ) {
       failure = new FailedRequest();
       failure.setStatusCode(httpStatus);
       failure.setMessageCode("UNKNOWN");
@@ -149,12 +150,12 @@ public class FailedRequest {
     return failure;
 
   }
-
+  
   private static FailedRequest jsonFailedRequest(int httpStatus, InputStream content) {
     return new JSONErrorParser().parseFailedRequest(httpStatus, content);
   }
-
-
+  
+  
 
   /**
    * No argument constructor so an external class can generate FailedRequest objects.
@@ -193,6 +194,4 @@ public class FailedRequest {
   public void setStatusString(String statusString) {
     this.statusString = statusString;
   }
-
-
 }

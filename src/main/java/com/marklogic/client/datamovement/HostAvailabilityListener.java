@@ -18,7 +18,7 @@ package com.marklogic.client.datamovement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import org.apache.http.NoHttpResponseException;
+import com.marklogic.client.datamovement.Forest.HostType;
 
 import java.net.SocketException;
 import java.net.UnknownHostException;
@@ -35,7 +35,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
-/** HostAvailabilityListener is automatically registered with all QueryBatcher
+/** <p>HostAvailabilityListener is automatically registered with all QueryBatcher
  * and WriteBatcher instances to monitor for failover scenarios.  When
  * HostAvailabilityListener detects that a host is unavailable (matches one of
  * {@link #getHostUnavailableExceptions()}), it black-lists the host for a
@@ -53,12 +53,12 @@ import java.util.concurrent.TimeUnit;
  * HostAvailabilityListener and therefore we recommend that production
  * installations of Data Movement SDK use HostAvailabilityListener as an
  * example and install their own failure-handling listeners complete with
- * retry and updates to the batcher's ForestConfiguration as appropriate.
+ * retry and updates to the batcher's ForestConfiguration as appropriate.</p>
  *
- * If you would like to change the default settings, you can change them
+ * <p>If you would like to change the default settings, you can change them
  * on the pre-registered HostAvailabilityListener which you can access via
  * {@link WriteBatcher#getBatchFailureListeners()} or {@link
- * QueryBatcher#getQueryFailureListeners()}.
+ * QueryBatcher#getQueryFailureListeners()}.</p>
  *
  */
 public class HostAvailabilityListener implements QueryFailureListener, WriteFailureListener {
@@ -67,12 +67,37 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   private Duration suspendTimeForHostUnavailable = Duration.ofMinutes(10);
   private int minHosts = 1;
   private ScheduledFuture<?> future;
+  Set<QueryBatchListener> retryListenersSet = new HashSet<>();
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
   {
-    hostUnavailableExceptions.add(NoHttpResponseException.class);
     hostUnavailableExceptions.add(SocketException.class);
     hostUnavailableExceptions.add(SSLException.class);
     hostUnavailableExceptions.add(UnknownHostException.class);
+  }
+
+  // Retry listener for Query batches, for which the list of URIs have been
+  // retrieved from the server but the batch failed while applying the listener
+  class RetryListener implements BatchFailureListener<QueryBatch> {
+    QueryBatchListener queryBatchListener;
+
+    public RetryListener(QueryBatchListener queryBatchListener) {
+      this.queryBatchListener = queryBatchListener;
+    }
+
+    @Override
+    public void processFailure(QueryBatch batch, Throwable throwable) {
+      boolean isHostUnavailableException = processException(batch.getBatcher(), throwable, batch.getClient().getHost());
+      if ( isHostUnavailableException == true ) {
+        try {
+          logger.warn("Retrying failed listener batch: {}, results so far: {}, uris: {}",
+              batch.getJobBatchNumber(), batch.getJobResultsSoFar(), Arrays.toString(batch.getItems()));
+          batch.getBatcher().retryListener(batch, queryBatchListener);
+        } catch (RuntimeException e) {
+          logger.error("Exception during listener retry", e);
+          processFailure(batch, e);
+        }
+      }
+    }
   }
 
   /**
@@ -83,7 +108,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     this.moveMgr = moveMgr;
   }
 
-  /** If a host becomes unavailable (NoHttpResponseException, SocketException, SSLException,
+  /** If a host becomes unavailable (SocketException, SSLException,
    * UnknownHostException), adds it to the blacklist
    *
    * @param duration the amount of time an unavailable host will be suspended
@@ -157,7 +182,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         logger.warn("Retrying failed batch: {}, results so far: {}, uris: {}",
           batch.getJobBatchNumber(), batch.getJobWritesSoFar(),
           Stream.of(batch.getItems()).map(event->event.getTargetUri()).collect(Collectors.toList()));
-        batch.getBatcher().retry(batch);
+        batch.getBatcher().retryWithFailureListeners(batch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
         processFailure(batch, e);
@@ -177,7 +202,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
         logger.warn("Retrying failed batch: {}, results so far: {}, forest: {}, forestBatch: {}, forest results so far: {}",
           queryBatch.getJobBatchNumber(), queryBatch.getJobResultsSoFar(), queryBatch.getForest().getForestName(),
           queryBatch.getForestBatchNumber(), queryBatch.getForestResultsSoFar());
-        queryBatch.getBatcher().retry(queryBatch);
+        queryBatch.getBatcher().retryWithFailureListeners(queryBatch);
       } catch (RuntimeException e) {
         logger.error("Exception during retry", e);
         processFailure(new QueryBatchException(queryBatch, e));
@@ -192,7 +217,19 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     boolean shouldWeRetry = isHostUnavailableException;
     if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
-      String[] preferredHosts = existingForestConfig.getPreferredHosts();
+      Set<String> preferredHostsList = new HashSet<String>(Arrays.asList(existingForestConfig.getPreferredHosts()));
+      if(existingForestConfig instanceof FilteredForestConfiguration) {
+        FilteredForestConfiguration existingFilteredForestConfiguration = (FilteredForestConfiguration) existingForestConfig;
+        for( Forest forest : existingFilteredForestConfiguration.listForests()) {
+          if(forest.getPreferredHostType() == HostType.REQUEST_HOST
+              && !forest.getHost().toLowerCase().equals(forest.getRequestHost().toLowerCase())) {
+            if(preferredHostsList.contains(forest.getHost())) {
+              preferredHostsList.remove(forest.getHost());
+            }
+          }
+        }
+      }
+      String[] preferredHosts = preferredHostsList.toArray(new String[preferredHostsList.size()]);
       if ( ! Arrays.asList(preferredHosts).contains(host) ) {
         // skip all the logic below because the host in question here is already
         // missing from the list of hosts for this batcher
@@ -243,7 +280,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     return shouldWeRetry;
   }
 
-  private boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
+  protected boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
     for ( Class<?> type : hostUnavailableExceptions ) {
       if ( type.isInstance(throwable) ) {
         return true;
@@ -257,5 +294,67 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       if ( isCauseHostUnavailableException == true ) return true;
     }
     return false;
+  }
+
+  /**
+   * Initializes the RetryListener for the given QueryBatchListener.
+   *
+   * @param queryBatchListener the QueryBatchListener for which the RetryListener
+   *                           has to be initialized.
+   * @return the RetryListener if not initialized and null if already initialized.
+   */
+  public BatchFailureListener<QueryBatch> initializeRetryListener(QueryBatchListener queryBatchListener) {
+    if(! retryListenersSet.contains(queryBatchListener)) {
+      synchronized(this) {
+        if(! retryListenersSet.contains(queryBatchListener)) {
+          RetryListener retryListener = new RetryListener(queryBatchListener);
+          retryListenersSet.add(queryBatchListener);
+          return retryListener;
+        }
+      }
+    }
+    return null;
+  }
+
+  /**
+   * <p>Returns the first HostAvailabilityListener instance registered with the
+   * Batcher.</p>
+   *
+   * You can customize the HostAvailabilityListener instance registered with the
+   * Batcher like:
+   *
+   * <pre>{@code
+   *    HostAvailabilityListener.getInstance(Batcher)
+   *      .withSuspendTimeForHostUnavailable(Duration.ofMinutes(60))
+   *      .withMinHosts(2)
+   *}</pre>
+   *
+   * @param batcher the Batcher instance for which the registered
+   *          HostAvailabilityListener is returned
+   * @return the first HostAvailabilityListener instance with the batcher or
+   *         null if there is no HostAvailabilityListener registered
+   * @throws IllegalStateException if the passed Batcher is neither a
+   *           QueryBatcher nor a WriteBatcher
+   */
+  public static HostAvailabilityListener getInstance(Batcher batcher) {
+    if ( batcher instanceof WriteBatcher ) {
+      WriteFailureListener[] writeFailureListeners = ((WriteBatcher) batcher).getBatchFailureListeners();
+      for(WriteFailureListener writeFailureListener : writeFailureListeners) {
+        if ( writeFailureListener instanceof HostAvailabilityListener ) {
+          return (HostAvailabilityListener) writeFailureListener;
+        }
+      }
+    } else if ( batcher instanceof QueryBatcher ) {
+      QueryFailureListener[] queryFailureListeners = ((QueryBatcher) batcher).getQueryFailureListeners();
+      for(QueryFailureListener queryFailureListener : queryFailureListeners) {
+        if ( queryFailureListener instanceof HostAvailabilityListener ) {
+          return (HostAvailabilityListener) queryFailureListener;
+        }
+      }
+    } else {
+      throw new IllegalStateException(
+          "The Batcher should be either a QueryBatcher instance or a WriteBatcher instance");
+    }
+    return null;
   }
 }

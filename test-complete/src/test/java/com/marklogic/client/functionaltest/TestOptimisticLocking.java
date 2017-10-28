@@ -45,626 +45,657 @@ import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 
-public class TestOptimisticLocking extends BasicJavaClientREST{
-	private static String dbName = "TestOptimisticLockingDB";
-	private static String [] fNames = {"TestOptimisticLockingDB-1"};
-	
-	private static int restPort=8011;
+public class TestOptimisticLocking extends BasicJavaClientREST {
+  private static String dbName = "TestOptimisticLockingDB";
+  private static String[] fNames = { "TestOptimisticLockingDB-1" };
 
-	@BeforeClass
-	public static void setUp() throws Exception {
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  private static int restPort = 8011;
 
-	@After
-	public  void testCleanUp() throws Exception {
-		clearDB();
-		System.out.println("Running clear script");
-	}
+  @BeforeClass
+  public static void setUp() throws Exception {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test
-	public void testRequired() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testRequired");
+  @After
+  public void testCleanUp() throws Exception {
+    clearDB();
+    System.out.println("Running clear script");
+  }
 
-		String filename = "xml-original.xml";
-		String updateFilename = "xml-updated.xml";
-		String uri = "/optimistic-locking/";
-		String docId = uri + filename;
-		long badVersion = 1111;
+  @Test
+  public void testRequired() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testRequired");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    String filename = "xml-original.xml";
+    String updateFilename = "xml-updated.xml";
+    String uri = "/optimistic-locking/";
+    String docId = uri + filename;
+    long badVersion = 1111;
 
-		// create a manager for the server configuration
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// read the server configuration from the database
-		configMgr.readConfiguration();
+    // create a manager for the server configuration
+    ServerConfigurationManager configMgr = client.newServerConfigManager();
 
-		// require content versions for updates and deletes
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
+    // require content versions for updates and deletes
+    // use Policy.OPTIONAL to allow but not require versions
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
 
-		System.out.println("set optimistic locking to required");
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
 
-		// create document manager
-		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+    System.out.println("set optimistic locking to required");
 
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+    // create document manager
+    XMLDocumentManager docMgr = client.newXMLDocumentManager();
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
-		// create document descriptor
-		DocumentDescriptor desc = docMgr.newDescriptor(docId);
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
 
-		desc.setVersion(badVersion);
+    // create document descriptor
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
-		String exception = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml doesn't match if-match: 1111";
+    desc.setVersion(badVersion);
 
-		// CREATE
-		// write document with bad version
-		try 
-		{
-			docMgr.write(desc, handle);
-		} catch (FailedRequestException e) { exception = e.toString(); }
+    String exception = "";
+    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml doesn't match if-match: 1111";
 
-		boolean isExceptionThrown = exception.contains(expectedException);
-		assertTrue("Exception is not thrown", isExceptionThrown);
-		System.out.println(exception);
+    // CREATE
+    // write document with bad version
+    try
+    {
+      docMgr.write(desc, handle);
+    } catch (FailedRequestException e) {
+      exception = e.toString();
+    }
 
-		// write document with unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-		docMgr.write(desc, handle);
+    boolean isExceptionThrown = exception.contains(expectedException);
+    assertTrue("Exception is not thrown", isExceptionThrown);
+    System.out.println(exception);
 
-		StringHandle readHandle = new StringHandle();
-		docMgr.read(desc, readHandle);
-		String content = readHandle.get();
-		assertTrue("Wrong content", content.contains("<name>noodle</name>"));
+    // write document with unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    docMgr.write(desc, handle);
 
-		// get the good version
-		long goodVersion = desc.getVersion();
+    StringHandle readHandle = new StringHandle();
+    docMgr.read(desc, readHandle);
+    String content = readHandle.get();
+    assertTrue("Wrong content", content.contains("<name>noodle</name>"));
 
-		System.out.println("version before create: " + goodVersion);
+    // get the good version
+    long goodVersion = desc.getVersion();
 
-		// UPDATE
-		File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
+    System.out.println("version before create: " + goodVersion);
 
-		// create a handle on the content
-		FileHandle updateHandle = new FileHandle(updateFile);
-		updateHandle.set(updateFile);
+    // UPDATE
+    File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
 
-		// update with bad version
-		desc.setVersion(badVersion);
+    // create a handle on the content
+    FileHandle updateHandle = new FileHandle(updateFile);
+    updateHandle.set(updateFile);
 
-		String updateException = "";
-		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
+    // update with bad version
+    desc.setVersion(badVersion);
 
-		try {
-			docMgr.write(desc, updateHandle);
-		} catch (FailedRequestException e) { updateException = e.toString(); }
-		System.out.println(updateException);
-		boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-		assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    String updateException = "";
+    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
+
+    try {
+      docMgr.write(desc, updateHandle);
+    } catch (FailedRequestException e) {
+      updateException = e.toString();
+    }
+    System.out.println(updateException);
+    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
+    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+
+    // update with unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+
+    String updateUnknownException = "";
+    String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
+
+    try {
+      docMgr.write(desc, updateHandle);
+    } catch (FailedRequestException e) {
+      updateUnknownException = e.toString();
+    }
+
+    boolean isUpdateUnknownExceptionThrown = updateUnknownException.contains(expectedUpdateUnknownException);
+    System.out.println(updateUnknownException);
+    assertTrue("Exception is not thrown", isUpdateUnknownExceptionThrown);
+
+    desc = docMgr.exists(docId);
+    goodVersion = desc.getVersion();
+
+    System.out.println("version before update: " + goodVersion);
+
+    // update with good version
+    desc.setVersion(goodVersion);
+    docMgr.write(desc, updateHandle);
 
-		// update with unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    StringHandle updateReadHandle = new StringHandle();
+    docMgr.read(desc, updateReadHandle);
+    String updateContent = updateReadHandle.get();
+    assertTrue("Wrong content", updateContent.contains("<name>fried noodle</name>"));
 
-		String updateUnknownException = "";
-		String expectedUpdateUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to write document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
+    // DELETE
+    // delete using bad version
+    desc.setVersion(badVersion);
 
-		try {
-			docMgr.write(desc, updateHandle);
-		} catch (FailedRequestException e) { updateUnknownException = e.toString(); }
+    String deleteException = "";
+    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
 
-		boolean isUpdateUnknownExceptionThrown = updateUnknownException.contains(expectedUpdateUnknownException);
-		System.out.println(updateUnknownException);
-		assertTrue("Exception is not thrown", isUpdateUnknownExceptionThrown);
+    try {
+      docMgr.delete(desc);
+    } catch (FailedRequestException e) {
+      deleteException = e.toString();
+    }
 
-		desc = docMgr.exists(docId);
-		goodVersion = desc.getVersion();
+    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
+    System.out.println("Delete exception" + deleteException);
+    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
 
-		System.out.println("version before update: " + goodVersion);
+    // delete using unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 
-		// update with good version
-		desc.setVersion(goodVersion);
-		docMgr.write(desc, updateHandle);
+    String deleteUnknownException = "";
+    String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
 
-		StringHandle updateReadHandle = new StringHandle();
-		docMgr.read(desc, updateReadHandle);
-		String updateContent = updateReadHandle.get();
-		assertTrue("Wrong content", updateContent.contains("<name>fried noodle</name>"));
+    try {
+      docMgr.delete(desc);
+    } catch (FailedRequestException e) {
+      deleteUnknownException = e.toString();
+    }
 
-		// DELETE
-		// delete using bad version
-		desc.setVersion(badVersion);
+    boolean isDeleteUnknownExceptionThrown = deleteUnknownException.contains(expectedDeleteUnknownException);
+    System.out.println("Delete exception" + deleteUnknownException);
+    assertTrue("Exception is not thrown", isDeleteUnknownExceptionThrown);
 
-		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document. Server Message: RESTAPI-CONTENTWRONGVERSION: (err:FOER0000) Content version mismatch:  uri /optimistic-locking/xml-original.xml has current version";
+    // delete using good version
+    desc = docMgr.exists(docId);
+    goodVersion = desc.getVersion();
 
-		try {
-			docMgr.delete(desc);
-		} catch (FailedRequestException e) { deleteException = e.toString(); }
+    System.out.println("version before delete: " + goodVersion);
 
-		boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-		System.out.println("Delete exception" +deleteException);
-		assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    docMgr.delete(desc);
 
-		// delete using unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    String verifyDeleteException = "";
+    String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /optimistic-locking/xml-original.xml";
 
-		String deleteUnknownException = "";
-		String expectedDeleteUnknownException = "com.marklogic.client.FailedRequestException: Local message: Content version required to delete document. Server Message: RESTAPI-CONTENTNOVERSION: (err:FOER0000) No content version supplied:  uri /optimistic-locking/xml-original.xml";
+    StringHandle deleteHandle = new StringHandle();
+    try {
+      docMgr.read(desc, deleteHandle);
+    } catch (ResourceNotFoundException e) {
+      verifyDeleteException = e.toString();
+    }
 
-		try {
-			docMgr.delete(desc);
-		} catch (FailedRequestException e) { deleteUnknownException = e.toString(); }
+    boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
+    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    System.out.println("Delete exception" + verifyDeleteException);
+    // release client
+    client.release();
 
-		boolean isDeleteUnknownExceptionThrown = deleteUnknownException.contains(expectedDeleteUnknownException);
-		System.out.println("Delete exception" +deleteUnknownException);
-		assertTrue("Exception is not thrown", isDeleteUnknownExceptionThrown);
+    try {
+      Thread.sleep(30000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-		// delete using good version
-		desc = docMgr.exists(docId);
-		goodVersion = desc.getVersion();
+    System.out.println(configMgr.getUpdatePolicy().toString());
+  }
 
-		System.out.println("version before delete: " + goodVersion);
+  @Test
+  public void testOptionalWithUnknownVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testOptionalWithUnknownVersion");
 
-		docMgr.delete(desc);
+    String filename = "json-original.json";
+    String updateFilename = "json-updated.json";
+    String uri = "/optimistic-locking/";
+    String docId = uri + filename;
+    long badVersion = 1111;
 
-		String verifyDeleteException = "";
-		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document. Server Message: RESTAPI-NODOCUMENT: (err:FOER0000) Resource or document does not exist:  category: content message: /optimistic-locking/xml-original.xml";
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		StringHandle deleteHandle = new StringHandle();
-		try {
-			docMgr.read(desc, deleteHandle);
-		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
+    // create a manager for the server configuration
+    ServerConfigurationManager configMgr = client.newServerConfigManager();
 
-		boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-		assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
-		System.out.println("Delete exception" +verifyDeleteException);
-		// release client
-		client.release();
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		try {
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+    // use Policy.OPTIONAL to allow but not require versions
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
-		System.out.println(configMgr.getUpdatePolicy().toString());
-	}
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
 
-	@Test	
-	public void testOptionalWithUnknownVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testOptionalWithUnknownVersion");
+    System.out.println("set optimistic locking to optional");
 
-		String filename = "json-original.json";
-		String updateFilename = "json-updated.json";
-		String uri = "/optimistic-locking/";
-		String docId = uri + filename;
-		long badVersion = 1111;
+    // create document manager
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
-		// create a manager for the server configuration
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
 
-		// read the server configuration from the database
-		configMgr.readConfiguration();
+    // create document descriptor
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+    desc.setVersion(badVersion);
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
+    String exception = "";
+    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		System.out.println("set optimistic locking to optional");
+    // CREATE
+    // write document with bad version
+    try {
+      docMgr.write(desc, handle);
+    } catch (FailedRequestException e) {
+      exception = e.toString();
+    }
 
-		// create document manager
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    boolean isExceptionThrown = exception.contains(expectedException);
+    assertTrue("Exception is not thrown", isExceptionThrown);
 
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+    // write document with unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    docMgr.write(desc, handle);
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
+    StringHandle readHandle = new StringHandle();
+    docMgr.read(desc, readHandle);
+    String content = readHandle.get();
+    assertTrue("Wrong content", content.contains("John"));
 
-		// create document descriptor
-		DocumentDescriptor desc = docMgr.newDescriptor(docId);
+    // get the unknown version
+    long unknownVersion = desc.getVersion();
 
-		desc.setVersion(badVersion);
+    System.out.println("unknown version after create: " + unknownVersion);
 
-		String exception = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+    // UPDATE
+    File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
 
-		// CREATE
-		// write document with bad version
-		try {
-			docMgr.write(desc, handle);
-		} catch (FailedRequestException e) { exception = e.toString(); }
+    // create a handle on the content
+    FileHandle updateHandle = new FileHandle(updateFile);
+    updateHandle.set(updateFile);
 
-		boolean isExceptionThrown = exception.contains(expectedException);
-		assertTrue("Exception is not thrown", isExceptionThrown);
+    // update with bad version
+    desc.setVersion(badVersion);
 
-		// write document with unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-		docMgr.write(desc, handle);
+    String updateException = "";
+    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		StringHandle readHandle = new StringHandle();
-		docMgr.read(desc, readHandle);
-		String content = readHandle.get();
-		assertTrue("Wrong content", content.contains("John"));
+    try {
+      docMgr.write(desc, updateHandle);
+    } catch (FailedRequestException e) {
+      updateException = e.toString();
+    }
 
-		// get the unknown version
-		long unknownVersion = desc.getVersion();
+    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
+    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
 
-		System.out.println("unknown version after create: " + unknownVersion);
+    // update with unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
 
-		// UPDATE
-		File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
+    docMgr.write(desc, updateHandle);
 
-		// create a handle on the content
-		FileHandle updateHandle = new FileHandle(updateFile);
-		updateHandle.set(updateFile);
+    StringHandle updateReadHandle = new StringHandle();
+    docMgr.read(desc, updateReadHandle);
+    String updateContent = updateReadHandle.get();
+    assertTrue("Wrong content", updateContent.contains("Aries"));
 
-		// update with bad version
-		desc.setVersion(badVersion);
+    unknownVersion = desc.getVersion();
 
-		String updateException = "";
-		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+    System.out.println("unknown version after update: " + unknownVersion);
 
-		try {
-			docMgr.write(desc, updateHandle);
-		} catch (FailedRequestException e) { updateException = e.toString(); }
+    // read using matched version
+    desc.setVersion(unknownVersion);
+    StringHandle readMatchHandle = new StringHandle();
+    docMgr.read(desc, readMatchHandle);
+    String readMatchContent = readMatchHandle.get();
+    assertTrue("Document does not return null", readMatchContent == null);
 
-		boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-		assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    // DELETE
+    // delete using bad version
+    desc.setVersion(badVersion);
 
-		// update with unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    String deleteException = "";
+    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 
-		docMgr.write(desc, updateHandle);
+    try {
+      docMgr.delete(desc);
+    } catch (FailedRequestException e) {
+      deleteException = e.toString();
+    }
 
-		StringHandle updateReadHandle = new StringHandle();
-		docMgr.read(desc, updateReadHandle);
-		String updateContent = updateReadHandle.get();
-		assertTrue("Wrong content", updateContent.contains("Aries"));
+    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
+    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
 
-		unknownVersion = desc.getVersion();
+    // delete using unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    docMgr.delete(desc);
 
-		System.out.println("unknown version after update: " + unknownVersion);
+    unknownVersion = desc.getVersion();
 
-		// read using matched version
-		desc.setVersion(unknownVersion);
-		StringHandle readMatchHandle = new StringHandle();
-		docMgr.read(desc, readMatchHandle);
-		String readMatchContent = readMatchHandle.get();
-		assertTrue("Document does not return null", readMatchContent == null);
+    System.out.println("unknown version after delete: " + unknownVersion);
 
-		// DELETE
-		// delete using bad version
-		desc.setVersion(badVersion);
+    String verifyDeleteException = "";
+    String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
-		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
+    StringHandle deleteHandle = new StringHandle();
+    try {
+      docMgr.read(desc, deleteHandle);
+    } catch (ResourceNotFoundException e) {
+      verifyDeleteException = e.toString();
+    }
 
-		try {
-			docMgr.delete(desc);
-		} catch (FailedRequestException e) { deleteException = e.toString(); }
+    boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
+    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
 
-		boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-		assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    // release client
+    client.release();
 
-		// delete using unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);		
-		docMgr.delete(desc);
+    try {
+      Thread.sleep(30000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-		unknownVersion = desc.getVersion();
+    System.out.println(configMgr.getUpdatePolicy().toString());
+  }
 
-		System.out.println("unknown version after delete: " + unknownVersion);
+  @Test
+  public void testOptionalWithGoodVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testOptionalWithGoodVersion");
 
-		String verifyDeleteException = "";
-		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
+    String filename = "json-original.json";
+    String updateFilename = "json-updated.json";
+    String uri = "/optimistic-locking/";
+    String docId = uri + filename;
+    long badVersion = 1111;
 
-		StringHandle deleteHandle = new StringHandle();
-		try {
-			docMgr.read(desc, deleteHandle);
-		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-		assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    // create a manager for the server configuration
+    ServerConfigurationManager configMgr = client.newServerConfigManager();
 
-		// release client
-		client.release();
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		try {
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+    // use Policy.OPTIONAL to allow but not require versions
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
-		System.out.println(configMgr.getUpdatePolicy().toString());
-	}
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
 
-	@Test	
-	public void testOptionalWithGoodVersion() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testOptionalWithGoodVersion");
+    System.out.println("set optimistic locking to optional");
 
-		String filename = "json-original.json";
-		String updateFilename = "json-updated.json";
-		String uri = "/optimistic-locking/";
-		String docId = uri + filename;
-		long badVersion = 1111;
+    // create document manager
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
-		// create a manager for the server configuration
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
 
-		// read the server configuration from the database
-		configMgr.readConfiguration();
+    // create document descriptor
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
+    desc.setVersion(badVersion);
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
+    String exception = "";
+    String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		System.out.println("set optimistic locking to optional");
+    // CREATE
+    // write document with bad version
+    try {
+      docMgr.write(desc, handle);
+    } catch (FailedRequestException e) {
+      exception = e.toString();
+    }
 
-		// create document manager
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();		
+    boolean isExceptionThrown = exception.contains(expectedException);
+    assertTrue("Exception is not thrown", isExceptionThrown);
 
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+    // write document with unknown version
+    desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
+    docMgr.write(desc, handle);
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
+    StringHandle readHandle = new StringHandle();
+    docMgr.read(desc, readHandle);
+    String content = readHandle.get();
+    assertTrue("Wrong content", content.contains("John"));
 
-		// create document descriptor
-		DocumentDescriptor desc = docMgr.newDescriptor(docId);
+    // get the good version
+    long goodVersion = desc.getVersion();
 
-		desc.setVersion(badVersion);
+    System.out.println("good version after create: " + goodVersion);
 
-		String exception = "";
-		String expectedException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+    // UPDATE
+    File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
 
-		// CREATE
-		// write document with bad version
-		try {
-			docMgr.write(desc, handle);
-		} catch (FailedRequestException e) { exception = e.toString(); }
+    // create a handle on the content
+    FileHandle updateHandle = new FileHandle(updateFile);
+    updateHandle.set(updateFile);
 
-		boolean isExceptionThrown = exception.contains(expectedException);
-		assertTrue("Exception is not thrown", isExceptionThrown);
+    // update with bad version
+    desc.setVersion(badVersion);
 
-		// write document with unknown version
-		desc.setVersion(DocumentDescriptor.UNKNOWN_VERSION);
-		docMgr.write(desc, handle);
+    String updateException = "";
+    String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
 
-		StringHandle readHandle = new StringHandle();
-		docMgr.read(desc, readHandle);
-		String content = readHandle.get();
-		assertTrue("Wrong content", content.contains("John"));
+    try {
+      docMgr.write(desc, updateHandle);
+    } catch (FailedRequestException e) {
+      updateException = e.toString();
+    }
 
-		// get the good version
-		long goodVersion = desc.getVersion();
+    boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
+    assertTrue("Exception is not thrown", isUpdateExceptionThrown);
 
-		System.out.println("good version after create: " + goodVersion);
+    // update with good version
+    desc.setVersion(goodVersion);
 
-		// UPDATE
-		File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
+    docMgr.write(desc, updateHandle);
 
-		// create a handle on the content
-		FileHandle updateHandle = new FileHandle(updateFile);
-		updateHandle.set(updateFile);
+    StringHandle updateReadHandle = new StringHandle();
+    docMgr.read(desc, updateReadHandle);
+    String updateContent = updateReadHandle.get();
+    assertTrue("Wrong content", updateContent.contains("Aries"));
 
-		// update with bad version
-		desc.setVersion(badVersion);
+    goodVersion = desc.getVersion();
 
-		String updateException = "";
-		String expectedUpdateException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to write document. Server Message: RESTAPI-CONTENTWRONGVERSION";
+    System.out.println("good version after update: " + goodVersion);
 
-		try	{
-			docMgr.write(desc, updateHandle);
-		} catch (FailedRequestException e) { updateException = e.toString(); }
+    // read using matched version
+    desc.setVersion(goodVersion);
+    StringHandle readMatchHandle = new StringHandle();
+    docMgr.read(desc, readMatchHandle);
+    String readMatchContent = readMatchHandle.get();
+    assertTrue("Document does not return null", readMatchContent == null);
 
-		boolean isUpdateExceptionThrown = updateException.contains(expectedUpdateException);
-		assertTrue("Exception is not thrown", isUpdateExceptionThrown);
+    // DELETE
+    // delete using bad version
+    desc.setVersion(badVersion);
 
-		// update with good version
-		desc.setVersion(goodVersion);
+    String deleteException = "";
+    String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
 
-		docMgr.write(desc, updateHandle);
+    try {
+      docMgr.delete(desc);
+    } catch (FailedRequestException e) {
+      deleteException = e.toString();
+    }
 
-		StringHandle updateReadHandle = new StringHandle();
-		docMgr.read(desc, updateReadHandle);
-		String updateContent = updateReadHandle.get();
-		assertTrue("Wrong content", updateContent.contains("Aries"));
+    boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
+    assertTrue("Exception is not thrown", isDeleteExceptionThrown);
 
-		goodVersion = desc.getVersion();
+    // delete using good version
+    desc.setVersion(goodVersion);
+    docMgr.delete(desc);
 
-		System.out.println("good version after update: " + goodVersion);
+    goodVersion = desc.getVersion();
 
-		// read using matched version
-		desc.setVersion(goodVersion);
-		StringHandle readMatchHandle = new StringHandle();
-		docMgr.read(desc, readMatchHandle);
-		String readMatchContent = readMatchHandle.get();
-		assertTrue("Document does not return null", readMatchContent == null);
+    System.out.println("unknown version after delete: " + goodVersion);
 
-		// DELETE
-		// delete using bad version
-		desc.setVersion(badVersion);
+    String verifyDeleteException = "";
+    String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
-		String deleteException = "";
-		String expectedDeleteException = "com.marklogic.client.FailedRequestException: Local message: Content version must match to delete document";
+    StringHandle deleteHandle = new StringHandle();
+    try {
+      docMgr.read(desc, deleteHandle);
+    } catch (ResourceNotFoundException e) {
+      verifyDeleteException = e.toString();
+    }
 
-		try {
-			docMgr.delete(desc);
-		} catch (FailedRequestException e) { deleteException = e.toString(); }
+    boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
+    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
 
-		boolean isDeleteExceptionThrown = deleteException.contains(expectedDeleteException);
-		assertTrue("Exception is not thrown", isDeleteExceptionThrown);
+    // release client
+    client.release();
 
-		// delete using good version
-		desc.setVersion(goodVersion);		
-		docMgr.delete(desc);
+    try {
+      Thread.sleep(30000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-		goodVersion = desc.getVersion();
+    System.out.println(configMgr.getUpdatePolicy().toString());
+  }
 
-		System.out.println("unknown version after delete: " + goodVersion);
+  @Test
+  public void testNone() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+    System.out.println("Running testNone");
 
-		String verifyDeleteException = "";
-		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
+    String filename = "json-original.json";
+    String updateFilename = "json-updated.json";
+    String uri = "/optimistic-locking/";
+    String docId = uri + filename;
+    long badVersion = 1111;
 
-		StringHandle deleteHandle = new StringHandle();
-		try {
-			docMgr.read(desc, deleteHandle);
-		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-		assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    // create a manager for the server configuration
+    ServerConfigurationManager configMgr = client.newServerConfigManager();
 
-		// release client
-		client.release();
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		try {
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+    // use Policy.NONE
+    configMgr.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
 
-		System.out.println(configMgr.getUpdatePolicy().toString());
-	}
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
 
-	@Test	public void testNone() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
-	{
-		System.out.println("Running testNone");
+    System.out.println("set optimistic locking to none");
 
-		String filename = "json-original.json";
-		String updateFilename = "json-updated.json";
-		String uri = "/optimistic-locking/";
-		String docId = uri + filename;
-		long badVersion = 1111;
+    // create document manager
+    JSONDocumentManager docMgr = client.newJSONDocumentManager();
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 
-		// create a manager for the server configuration
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
+    // create a handle on the content
+    FileHandle handle = new FileHandle(file);
+    handle.set(file);
 
-		// read the server configuration from the database
-		configMgr.readConfiguration();
+    // create document descriptor
+    DocumentDescriptor desc = docMgr.newDescriptor(docId);
 
-		// use Policy.NONE
-		configMgr.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
+    desc.setVersion(badVersion);
 
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
+    // CREATE
+    // write document with bad version
 
-		System.out.println("set optimistic locking to none");
+    docMgr.write(desc, handle);
 
-		// create document manager
-		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+    StringHandle readHandle = new StringHandle();
+    docMgr.read(desc, readHandle);
+    String content = readHandle.get();
+    assertTrue("Wrong content", content.contains("John"));
 
-		File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+    // UPDATE
+    File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
 
-		// create a handle on the content
-		FileHandle handle = new FileHandle(file);
-		handle.set(file);
+    // create a handle on the content
+    FileHandle updateHandle = new FileHandle(updateFile);
+    updateHandle.set(updateFile);
 
-		// create document descriptor
-		DocumentDescriptor desc = docMgr.newDescriptor(docId);
+    // update with bad version
+    desc.setVersion(badVersion);
 
-		desc.setVersion(badVersion);
+    docMgr.write(desc, updateHandle);
 
-		// CREATE
-		// write document with bad version
+    StringHandle updateReadHandle = new StringHandle();
+    docMgr.read(desc, updateReadHandle);
+    String updateContent = updateReadHandle.get();
+    assertTrue("Wrong content", updateContent.contains("Aries"));
 
-		docMgr.write(desc, handle);
+    // DELETE
+    // delete using bad version
+    desc.setVersion(badVersion);
 
-		StringHandle readHandle = new StringHandle();
-		docMgr.read(desc, readHandle);
-		String content = readHandle.get();
-		assertTrue("Wrong content", content.contains("John"));
+    docMgr.delete(desc);
 
-		// UPDATE
-		File updateFile = new File("src/test/java/com/marklogic/client/functionaltest/data/" + updateFilename);
+    String verifyDeleteException = "";
+    String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
 
-		// create a handle on the content
-		FileHandle updateHandle = new FileHandle(updateFile);
-		updateHandle.set(updateFile);
+    StringHandle deleteHandle = new StringHandle();
+    try {
+      docMgr.read(desc, deleteHandle);
+    } catch (ResourceNotFoundException e) {
+      verifyDeleteException = e.toString();
+    }
 
-		// update with bad version
-		desc.setVersion(badVersion);
+    boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
+    assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
 
-		docMgr.write(desc, updateHandle);
+    // release client
+    client.release();
 
-		StringHandle updateReadHandle = new StringHandle();
-		docMgr.read(desc, updateReadHandle);
-		String updateContent = updateReadHandle.get();
-		assertTrue("Wrong content", updateContent.contains("Aries"));
+    try {
+      Thread.sleep(30000);
+    } catch (InterruptedException e) {
+      e.printStackTrace();
+    }
 
-		// DELETE
-		// delete using bad version
-		desc.setVersion(badVersion);
+    System.out.println(configMgr.getUpdatePolicy().toString());
+  }
 
-		docMgr.delete(desc);
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    ServerConfigurationManager configMgr = client.newServerConfigManager();
 
-		String verifyDeleteException = "";
-		String expectedVerifyDeleteException = "com.marklogic.client.ResourceNotFoundException: Local message: Could not read non-existent document";
+    // read the server configuration from the database
+    configMgr.readConfiguration();
 
-		StringHandle deleteHandle = new StringHandle();
-		try	{
-			docMgr.read(desc, deleteHandle);
-		} catch (ResourceNotFoundException e) { verifyDeleteException = e.toString(); }
+    // require content versions for updates and deletes
+    // use Policy.OPTIONAL to allow but not require versions
+    configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
 
-		boolean isVerifyDeleteExceptionThrown = verifyDeleteException.contains(expectedVerifyDeleteException);
-		assertTrue("Exception is not thrown", isVerifyDeleteExceptionThrown);
+    // write the server configuration to the database
+    configMgr.writeConfiguration();
+    client.release();
+    cleanupRESTServer(dbName, fNames);
 
-		// release client
-		client.release();
-
-		try {
-			Thread.sleep(30000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-
-		System.out.println(configMgr.getUpdatePolicy().toString());
-	}
-	
-	@AfterClass
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-		ServerConfigurationManager configMgr = client.newServerConfigManager();
-
-		// read the server configuration from the database
-		configMgr.readConfiguration();
-
-		// require content versions for updates and deletes
-		// use Policy.OPTIONAL to allow but not require versions
-		configMgr.setUpdatePolicy(UpdatePolicy.VERSION_OPTIONAL);
-
-		// write the server configuration to the database
-		configMgr.writeConfiguration();
-		client.release();
-		cleanupRESTServer(dbName, fNames);
-
-	}
+  }
 }

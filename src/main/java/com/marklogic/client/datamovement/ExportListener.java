@@ -34,39 +34,41 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Reads document contents (and optionally metadata) for each batch, then sends
+ * <p>Reads document contents (and optionally metadata) for each batch, then sends
  * each document to any listeners registered with {@link #onDocumentReady
  * onDocumentReady} for further processing or writing to any target supported
  * by Java.  Supports reading partial documents via transforms.  Supports
  * exporting all documents at a consistent point-in-time using
- * withConsistentSnapshot.
+ * withConsistentSnapshot.</p>
  *
  * For example:
  *
+ * <pre>{@code
  *     QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady(
  *           new ExportListener()
- *               .withConsistentSnapshot()
- *               .onDocumentReady(doc -> {
- *                 logger.debug("Contents=[{}]", doc.getContentAs(String.class));
- *               })
+ *             .withConsistentSnapshot()
+ *             .onDocumentReady(doc -> {
+ *               logger.debug("Contents=[{}]", doc.getContentAs(String.class));
+ *             })
  *         )
  *         .onQueryFailure(exception -> exception.printStackTrace());
  *
  *     JobTicket ticket = moveMgr.startJob(exportBatcher);
  *     exportBatcher.awaitCompletion();
  *     moveMgr.stopJob(ticket);
+ *}</pre>
  *
- * By default only document contents are retrieved.  If you would also like
+ * <p>By default only document contents are retrieved.  If you would also like
  * metadata, make sure to call {@link #withMetadataCategory withMetadataCategory}
- * to configure which categories of metadata you desire.
+ * to configure which categories of metadata you desire.</p>
  *
- * As with all the provided listeners, this listener will not meet the needs of
- * all applications but the [source code][] for it should serve as helpful sample
- * code so you can write your own custom listeners.
- *
- * [source code]: https://github.com/marklogic/java-client-api/blob/master/src/main/java/com/marklogic/client/datamovement/ExportListener.java
+ * <p>As with all the provided listeners, this listener will not meet the needs
+ * of all applications but the
+ * <a target="_blank" href="https://github.com/marklogic/java-client-api/blob/develop/src/main/java/com/marklogic/client/datamovement/ExportListener.java">source code</a>
+ * for it should serve as helpful sample code so you can write your own custom
+ * listeners.</p>
  */
 public class ExportListener implements QueryBatchListener {
   private static Logger logger = LoggerFactory.getLogger(ExportListener.class);
@@ -77,8 +79,11 @@ public class ExportListener implements QueryBatchListener {
   private List<Consumer<DocumentRecord>> exportListeners = new ArrayList<>();
   private boolean consistentSnapshot = false;
   private List<BatchFailureListener<Batch<String>>> failureListeners = new ArrayList<>();
+  private List<BatchFailureListener<QueryBatch>> queryBatchFailureListeners = new ArrayList<>();
 
   public ExportListener() {
+    logger.debug("new ExportListener - this should print once/job; " +
+      "if you see this once/batch, fix your job configuration");
   }
 
   protected DocumentPage getDocs(QueryBatch batch) {
@@ -90,6 +95,25 @@ public class ExportListener implements QueryBatchListener {
       return ((GenericDocumentImpl) docMgr).read( batch.getServerTimestamp(), transform, batch.getItems() );
     } else {
       return docMgr.read( transform, batch.getItems() );
+    }
+  }
+
+  /**
+   * This implementation of initializeListener adds this instance of
+   * ExportListener to the two RetryListener's in this QueryBatcher so they
+   * will retry any batches that fail during the read request.
+   */
+  @Override
+  public void initializeListener(QueryBatcher queryBatcher) {
+    HostAvailabilityListener hostAvailabilityListener = HostAvailabilityListener.getInstance(queryBatcher);
+    if ( hostAvailabilityListener != null ) {
+      BatchFailureListener<QueryBatch> retryListener = hostAvailabilityListener.initializeRetryListener(this);
+      if ( retryListener != null )  onFailure(retryListener);
+    }
+    NoResponseListener noResponseListener = NoResponseListener.getInstance(queryBatcher);
+    if ( noResponseListener != null ) {
+      BatchFailureListener<QueryBatch> noResponseRetryListener = noResponseListener.initializeRetryListener(this);
+      if ( noResponseRetryListener != null )  onFailure(noResponseRetryListener);
     }
   }
 
@@ -117,6 +141,13 @@ public class ExportListener implements QueryBatchListener {
           listener.processFailure(batch, t);
         } catch (Throwable t2) {
           logger.error("Exception thrown by an onBatchFailure listener", t2);
+        }
+      }
+      for ( BatchFailureListener<QueryBatch> queryBatchFailureListener : queryBatchFailureListeners ) {
+        try {
+          queryBatchFailureListener.processFailure(batch, t);
+        } catch (Throwable t2) {
+          logger.error("Exception thrown by an onFailure listener", t2);
         }
       }
     }
@@ -200,7 +231,9 @@ public class ExportListener implements QueryBatchListener {
    * file system, a REST service, or any target supported by Java.  If further
    * information is required about the document beyond what DocumentRecord can
    * provide, register a listener with {@link QueryBatcher#onUrisReady
-   * QueryBatcher.onUrisReady} instead.
+   * QueryBatcher.onUrisReady} instead.  You do not need to call close() on
+   * each DocumentRecord because the ExportListener will call close for you on
+   * the entire DocumentPage.
    *
    * @param listener the code which will process each document
    * @return this instance for method chaining
@@ -220,13 +253,33 @@ public class ExportListener implements QueryBatchListener {
    * @param listener the code to run when a failure occurs
    *
    * @return this instance for method chaining
+   * @deprecated  use {@link #onFailure(BatchFailureListener)}
    */
+  @Deprecated
   public ExportListener onBatchFailure(BatchFailureListener<Batch<String>> listener) {
     failureListeners.add(listener);
     return this;
   }
 
+  /**
+   * When a batch fails or a callback throws an Exception, run this listener
+   * code.  Multiple listeners can be registered with this method.
+   *
+   * @param listener the code to run when a failure occurs
+   *
+   * @return this instance for method chaining
+   */
+  public ExportListener onFailure(BatchFailureListener<QueryBatch> listener) {
+    queryBatchFailureListeners.add(listener);
+    return this;
+  }
+
+  @Deprecated
   protected List<BatchFailureListener<Batch<String>>> getFailureListeners() {
     return failureListeners;
+  }
+
+  protected List<BatchFailureListener<QueryBatch>> getBatchFailureListeners() {
+    return queryBatchFailureListeners;
   }
 }

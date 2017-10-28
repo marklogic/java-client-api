@@ -29,53 +29,53 @@ import org.junit.Test;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SearchHandle;
-public class TestRangeConstraintAbsoluteBucket extends BasicJavaClientREST{
-	static String filenames[] = {"bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml"};
-	static String queryOptionName = "rangeAbsoluteBucketConstraintOpt.xml"; 
-	private static String dbName = "RangeConstraintAbsBucketDB";
-	private static String [] fNames = {"RangeConstraintAbsBucketDB-1"};
-	
 
-	@BeforeClass	
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-		addRangeElementIndex(dbName, "int", "http://example.com", "scoville");
-	}
+public class TestRangeConstraintAbsoluteBucket extends BasicJavaClientREST {
+  static String filenames[] = { "bbq1.xml", "bbq2.xml", "bbq3.xml", "bbq4.xml", "bbq5.xml" };
+  static String queryOptionName = "rangeAbsoluteBucketConstraintOpt.xml";
+  private static String dbName = "RangeConstraintAbsBucketDB";
+  private static String[] fNames = { "RangeConstraintAbsBucketDB-1" };
 
-	@Test	
-	public void testRangeConstraintAbsoluteBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException
-	{
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    addRangeElementIndex(dbName, "int", "http://example.com", "scoville");
+  }
 
-		// write docs
-		for(String filename:filenames)
-		{
-			writeDocumentReaderHandle(client, filename, "/range-constraint-abs-bucket/", "XML");
-		}
+  @Test
+  public void testRangeConstraintAbsoluteBucket() throws KeyManagementException, NoSuchAlgorithmException, IOException
+  {
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		// write the query options to the database
-		setQueryOption(client, queryOptionName);
+    // write docs
+    for (String filename : filenames)
+    {
+      writeDocumentReaderHandle(client, filename, "/range-constraint-abs-bucket/", "XML");
+    }
 
-		// run the search
-		SearchHandle resultsHandle = runSearch(client, queryOptionName, "heat:moderate");
+    // write the query options to the database
+    setQueryOption(client, queryOptionName);
 
-		// search result
-		String searchResult = returnSearchResult(resultsHandle);
+    // run the search
+    SearchHandle resultsHandle = runSearch(client, queryOptionName, "heat:moderate");
 
-		String expectedSearchResult = "|Matched 1 locations in /range-constraint-abs-bucket/bbq1.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq3.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq5.xml";
-		assertEquals("Search result difference", expectedSearchResult, searchResult);
+    // search result
+    String searchResult = returnSearchResult(resultsHandle);
 
-		// release client
-		client.release();
-	}
+    String expectedSearchResult = "|Matched 1 locations in /range-constraint-abs-bucket/bbq1.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq3.xml|Matched 1 locations in /range-constraint-abs-bucket/bbq5.xml";
+    assertEquals("Search result difference", expectedSearchResult, searchResult);
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
+    // release client
+    client.release();
+  }
 
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+
+  }
 }

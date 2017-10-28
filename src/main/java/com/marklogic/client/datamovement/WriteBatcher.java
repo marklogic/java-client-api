@@ -22,7 +22,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 
 /**
- * To facilitate long-running write jobs, batches documents added by many
+ * <p>To facilitate long-running write jobs, batches documents added by many
  * external threads and coordinates internal threads to send the batches
  * round-robin to all appropriate hosts in the cluster.  Appropriate hosts are
  * those containing a forest associated with the database for the
@@ -33,15 +33,16 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * internal queue where the first available internal thread will pick it up and
  * write it to the server.  Since batches are not written until they are full,
  * you should always call {@link #flushAsync} or {@link #flushAndWait} when no
- * more documents will be written to ensure that any partial batch is written.
+ * more documents will be written to ensure that any partial batch is written.</p>
  *
  * Sample Usage:
  *
+ * <pre>{@code
  *     WriteBatcher whb = dataMovementManager.newWriteBatcher()
  *         .withBatchSize(100)
  *         .withThreadCount(20)
  *         .onBatchSuccess(batch -> {
- *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+ *             logger.debug("batch # {}, so far: {}", batch.getJobBatchNumber(), batch.getJobWritesSoFar());
  *         })
  *         .onBatchFailure((batch,throwable) -> throwable.printStackTrace() );
  *     JobTicket ticket = dataMovementManager.startJob(whb);
@@ -50,8 +51,9 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  *
  *     whb.flushAndWait(); // send the two docs even though they're not a full batch
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
- * Note: All Closeable content or metadata handles passed to {@link #add add}
+ * <p>Note: All Closeable content or metadata handles passed to {@link #add add}
  * methods will be closed as soon as possible (after the batch is written).
  * This is to avoid IO resource leakage.  This differs from the normal usage of
  * the Java Client API because WriteBatcher is asynchronous so there's no
@@ -59,15 +61,16 @@ import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
  * closed.  So to save confusion we close all handles for you.  If you have a
  * resource that must be closed after a batch is written, but is not closed by
  * your handle, override the close method of any Closeable handle and close
- * your resource there.
+ * your resource there.</p>
  */
 public interface WriteBatcher extends Batcher {
   /**
-   * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flushAsync} or {@link #flushAndWait} is called.
+   * <p>Add a document to be batched then written to the server when a batch is full
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
    *
-   * #####See Also:
-   *   [the Java Guide](http://docs.marklogic.com/guide/java/document-operations) for more on using handles
+   * <small><b>See Also:</b></small><br>
+   *   <a href="http://docs.marklogic.com/guide/java/document-operations">the Java Guide</a>
+   *   for more on using handles
    *
    * @param uri the document uri
    * @param contentHandle the document contents
@@ -76,11 +79,11 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher add(String uri, AbstractWriteHandle contentHandle);
 
   /**
-   * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flushAsync} or {@link #flushAndWait} is called.
+   * <p>Add a document to be batched then written to the server when a batch is full
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
    *
-   * #####See Also:
-   *   [IO Shortcut in MarkLogic Java Client API](http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/)
+   * <small><b>See Also:</b></small><br>
+   *   <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">IO Shortcut in MarkLogic Java Client API</a>
    *   for more on using the *As shortcut methods
    *
    * @param uri the document uri
@@ -90,11 +93,12 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher addAs(String uri, Object content);
 
   /**
-   * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flushAsync} or {@link #flushAndWait} is called.
+   * <p>Add a document to be batched then written to the server when a batch is full
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
    *
-   * #####See Also:
-   *   [the Java Guide](http://docs.marklogic.com/guide/java/document-operations) for more on using handles
+   * <small><b>See Also:</b></small><br>
+   *   <a href="http://docs.marklogic.com/guide/java/document-operations">the Java Guide</a>
+   *   for more on using handles
    *
    * @param uri the document uri
    * @param metadataHandle the metadata (collection, permissions, metdata values, properties, quality)
@@ -105,11 +109,11 @@ public interface WriteBatcher extends Batcher {
                    AbstractWriteHandle contentHandle);
 
   /**
-   * Add a document to be batched then written to the server when a batch is full
-   * or {@link #flushAsync} or {@link #flushAndWait} is called.
+   * <p>Add a document to be batched then written to the server when a batch is full
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
    *
-   * #####See Also:
-   *   [IO Shortcut in MarkLogic Java Client API](http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/)
+   * <small><b>See Also:</b></small><br>
+   *   <a href="http://www.marklogic.com/blog/io-shortcut-marklogic-java-client-api/">IO Shortcut in MarkLogic Java Client API</a>
    *   for more on using the *As shortcut methods
    *
    * @param uri the document uri
@@ -131,6 +135,7 @@ public interface WriteBatcher extends Batcher {
 
   /**
    * Add a listener to run each time a batch is successfully written.
+   *
    * @param listener the action which has to be done when the batch gets written
    *        successfully
    * @return this instance for method chaining
@@ -138,11 +143,11 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher onBatchSuccess(WriteBatchListener listener);
 
   /**
-   * Add a listener to run each time there is an exception writing a batch.
+   * <p>Add a listener to run each time there is an exception writing a batch.</p>
    *
-   * These listeners will not run when an exception is thrown by a listener
+   * <p>These listeners will not run when an exception is thrown by a listener
    * registered with onBatchSuccess.  To learn more, please see
-   * [Handling Exceptions in Listeners](package-summary.html#errs)
+   * <a href="package-summary.html#errs">Handling Exceptions in Listeners</a></p>
    *
    * @param listener the code to run when a failure occurs
    * @return this instance for method chaining
@@ -153,6 +158,7 @@ public interface WriteBatcher extends Batcher {
    * Retry in the same thread to send a batch that failed. This method will
    * throw an Exception if it fails again, so it can be wrapped in a try-catch
    * block.
+   *
    * @param queryEvent the information about the batch that failed
    */
   public void retry(WriteBatch queryEvent);
@@ -249,9 +255,18 @@ public interface WriteBatcher extends Batcher {
   WriteBatcher withJobName(String jobName);
 
   /**
-   * Sets the number of documents to send per batch.  Since documents are large
-   * relative to uris, this number should be much lower than the
-   * batch size for QueryBatcher.  The default batch size is 100.
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
+   *
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  WriteBatcher withJobId(String jobId);
+
+  /**
+   * Sets the number of documents to send per batch. Since documents are large
+   * relative to uris, this number should be much lower than the batch size for
+   * QueryBatcher. The default batch size is 100.
    *
    * @return this instance for method chaining
    */
@@ -312,4 +327,18 @@ public interface WriteBatcher extends Batcher {
    * @throws IllegalStateException if this job has not yet been started
    */
   JobTicket getJobTicket();
+
+  /**
+   * <p>Retry in the same thread to send a batch that failed. If it fails again,
+   * all the failure listeners associated with the batcher using onBatchFailure
+   * method would be processed.</p>
+   *
+   * <p>Note : Use this method with caution as there is a possibility of infinite
+   * loops. If a batch fails and one of the failure listeners calls this method
+   * to retry with failure listeners and if the batch again fails, this would go
+   * on as an infinite loop until the batch succeeds.</p>
+   *
+   * @param writeBatch the information about the batch that failed
+   */
+  public void retryWithFailureListeners(WriteBatch writeBatch);
 }

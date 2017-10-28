@@ -18,7 +18,7 @@ package com.marklogic.client.datamovement;
 import java.util.concurrent.TimeUnit;
 
 /**
- * To facilitate long-running read, update, and delete use cases, coordinates
+ * <p>To facilitate long-running read, update, and delete use cases, coordinates
  * threads to process batches of uris matching a query or coming
  * from an Iterator.  Each batch of uris matching a query will come from a
  * single forest.  The host for that forest is the target of the DatabaseClient
@@ -29,7 +29,7 @@ import java.util.concurrent.TimeUnit;
  * are made and on which processing is performed is determined by the
  * {@link DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query} or
  * {@link DataMovementManager#newQueryBatcher(Iterator) Iterator} used to
- * construct this instance.
+ * construct this instance.</p>
  *
  * While the most custom use cases will be addressed by custom listeners, the
  * common use cases are addressed by provided listeners, including
@@ -39,6 +39,7 @@ import java.util.concurrent.TimeUnit;
  * {@link com.marklogic.client.datamovement.ExportToWriterListener}.  The provided
  * listeners are used by adding an instance via onUrisReady like so:
  *
+ * <pre>{@code
  *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withConsistentSnapshot()
  *         .onUrisReady( new DeleteListener() )
@@ -46,33 +47,36 @@ import java.util.concurrent.TimeUnit;
  *     JobTicket ticket = dataMovementManager.startJob(qhb);
  *     qhb.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
- * Custom listeners will generally use the [MarkLogic Java Client API][] to
- * manipulate the documents for the uris in each batch.
+ * <p>Custom listeners will generally use the [MarkLogic Java Client API][] to
+ * manipulate the documents for the uris in each batch.</p>
  *
- * QueryBatcher is designed to be highly scalable and performant.  To
+ * <p>QueryBatcher is designed to be highly scalable and performant.  To
  * accommodate the largest result sets, QueryBatcher paginates through
  * matches rather than loading matches into memory.  To prevent queueing too
  * many tasks when running a query, QueryBatcher only adds another task
  * when one completes the query and is about to send the matching uris to the
- * onUrisReady listeners.
+ * onUrisReady listeners.</p>
  *
- * For pagination to succeed, you must not modify the result set during
- * pagination. This means you must
+ * <p>For pagination to succeed, you must not modify the result set during
+ * pagination. This means you must</p>
  *
- * 1. perform a read-only operation, or
- * 2. make sure modifications do not modify the result set by deleting matches
+ * <ol>
+ *   <li>perform a read-only operation, or
+ *   <li>make sure modifications do not modify the result set by deleting matches
  *    or modifying them to no longer match, or
- * 3. set a [merge timestamp][] and use {@link #withConsistentSnapshot}, or
- * 4. use {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}
+ *   <li>set a
+ *     <a href="https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468">merge timestamp</a>
+ *     and use {@link #withConsistentSnapshot}, or
+ *   <li>use {@link DataMovementManager#newQueryBatcher(Iterator) Iterator}
  *    instead of a {@link
  *    DataMovementManager#newQueryBatcher(StructuredQueryDefinition) query}.
+ * </ol>
  *
- * [MarkLogic Java Client API]: http://docs.marklogic.com/guide/java
- * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
+ * <p>Sample usage using withConsistentSnapshot():</p>
  *
- * Sample usage using withConsistentSnapshot():
- *
+ * <pre>{@code
  *     QueryDefinition query = new StructuredQueryBuilder().collection("myCollection");
  *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
  *         .withBatchSize(1000)
@@ -89,9 +93,11 @@ import java.util.concurrent.TimeUnit;
  *     JobTicket ticket = dataMovementManager.startJob(qhb);
  *     qhb.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
  * Example of queueing uris in memory instead of using withConsistentSnapshot():
  *
+ * <pre>{@code
  *     ArrayList<String> uris = Collections.synchronizedList(new ArrayList<>());
  *     QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
  *       .withBatchSize(5000)
@@ -108,6 +114,7 @@ import java.util.concurrent.TimeUnit;
  *     JobTicket ticket = dataMovementManager.startJob(performDelete);
  *     performDelete.awaitCompletion();
  *     dataMovementManager.stopJob(ticket);
+ *}</pre>
  *
  * To queue uris to disk (if not enough memory is available) see {@link UrisToWriterListener}.
  */
@@ -120,12 +127,12 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher onUrisReady(QueryBatchListener listener);
 
   /**
-   * Add a listener to run each time there is an exception retrieving a batch
-   * of uris.
+   * <p>Add a listener to run each time there is an exception retrieving a batch
+   * of uris.</p>
    *
-   * These listeners will not run when an exception is thrown by a listener
+   * <p>These listeners will not run when an exception is thrown by a listener
    * registered with onUrisReady.  To learn more, please see
-   * [Handling Exceptions in Listeners](package-summary.html#errs)
+   * <a href="package-summary.html#errs">Handling Exceptions in Listeners</a></p>
    *
    * @param listener the code to run when a failure occurs
    * @return this instance for method chaining
@@ -194,8 +201,6 @@ public interface QueryBatcher extends Batcher {
    * pagination through the result set would fail because pages shift as
    * documents are deleted or modfied to no longer match the query).
    *
-   * [merge timestamp]: https://docs.marklogic.com/guide/app-dev/point_in_time#id_32468
-   *
    * @return this instance for method chaining
    */
   QueryBatcher withConsistentSnapshot();
@@ -222,9 +227,18 @@ public interface QueryBatcher extends Batcher {
   public QueryBatcher withJobName(String jobName);
 
   /**
-   * Sets the number of uris to retrieve per batch.  Since uris are small
+   * Sets the unique id of the job to help with managing multiple concurrent jobs and
+   * start the job with the specified job id.
+   *
+   * @param jobId the unique id you would like to assign to this job
+   * @return this instance (for method chaining)
+   */
+  QueryBatcher withJobId(String jobId);
+
+  /**
+   * Sets the number of uris to retrieve per batch. Since uris are small
    * relative to full documents, this number should be much higher than the
-   * batch size for WriteBatcher.  The default batch size is 1000.
+   * batch size for WriteBatcher. The default batch size is 1000.
    *
    * @return this instance for method chaining
    */
@@ -291,4 +305,28 @@ public interface QueryBatcher extends Batcher {
    * @throws IllegalStateException if this job has not yet been started
    */
   JobTicket getJobTicket();
+
+  /**
+   * Retries processing the listener to the batch of URIs, when the batch has
+   * been successfully retrieved from the server but applying the listener
+   * on the batch failed.
+   *
+   * @param batch  the QueryBatch for which we need to process the listener
+   * @param queryBatchListener  the QueryBatchListener which needs to be applied
+   */
+  void retryListener(QueryBatch batch, QueryBatchListener queryBatchListener);
+
+  /**
+   * Retry in the same thread to query a batch that failed. If it fails again,
+   * all the failure listeners associated with the batcher using onQueryFailure
+   * method would be processed.
+   * 
+   * Note : Use this method with caution as there is a possibility of infinite
+   * loops. If a batch fails and one of the failure listeners calls this method
+   * to retry with failure listeners and if the batch again fails, this would go
+   * on as an infinite loop until the batch succeeds.
+   * 
+   * @param queryEvent the information about the batch that failed
+   */
+  void retryWithFailureListeners(QueryEvent queryEvent);
 }

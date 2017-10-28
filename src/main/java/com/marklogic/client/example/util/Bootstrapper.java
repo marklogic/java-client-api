@@ -61,13 +61,13 @@ public class Bootstrapper {
       if (name.startsWith("-") && name.length() > 1 && ++i < args.length) {
         name = name.substring(1);
         if ("properties".equals(name)) {
-          InputStream propsStream = Bootstrapper.class.getClassLoader().getResourceAsStream(name);
-          if (propsStream == null)
-            throw new IOException("Could not read bootstrapper properties");
-          Properties props = new Properties();
-          props.load(propsStream);
-          props.putAll(properties);
-          properties = props;
+          try ( InputStream propsStream = Bootstrapper.class.getClassLoader().getResourceAsStream(name) ) {
+            if (propsStream == null) throw new IOException("Could not read bootstrapper properties");
+            Properties props = new Properties();
+            props.load(propsStream);
+            props.putAll(properties);
+            properties = props;
+          }
         } else {
           properties.put(name, args[i]);
         }
@@ -170,7 +170,8 @@ public class Bootstrapper {
 
     if (statusCode >= 300) {
       throw new RuntimeException(
-        "Failed to create REST server: "+
+        "Failed to create REST server using host=" + host +
+        " and port=" + configPort + ": "+
         statusCode+" "+
         statusPhrase+"\n"+
         "Please check the server log for detail"

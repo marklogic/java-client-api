@@ -18,6 +18,7 @@ package com.marklogic.client.bitemporal;
 
 import java.util.Calendar;
 
+import javax.xml.bind.DatatypeConverter;
 import javax.xml.datatype.Duration;
 
 import com.marklogic.client.FailedRequestException;
@@ -71,6 +72,56 @@ public interface TemporalDocumentManager<R extends AbstractReadHandle, W extends
       return null;
     }
   }
+
+  /**
+   *  Enables Last Stable Query Time (LSQT) on the named collection and
+   *  advances the LSQT for the collection to the maximum system start time.
+   *  When LSQT is enabled on the temporal collection, you can use the
+   *  systemTime argument on many of the other TemporalDocumentManager methods.
+   *
+   *  The system time is returned in ISO 8601 format like all MarkLogic
+   *  timestamps.  It can be parsed by {@link DatatypeConverter#parseDateTime
+   *  DatatypeConverter.parseDateTime} but will lose precision since
+   *  java.util.Calendar only supports millisecond precision.
+   *
+   *  Requires a user with the "rest-admin" privilege.
+   *
+   *  For details on how to use LSQT, see [Last Stable Query Time (LSQT) and
+   *  Application-controlled System
+   *  Time](http://docs.marklogic.com/guide/temporal/managing#id_75536) in the
+   *  *Temporal Developer's Guide*.
+   *
+   *  @param temporalCollection the name of the temporal collection existing in
+   *    the database into which this document should be written
+   *  @return the temporal system time
+   */
+  public String advanceLsqt(String temporalCollection);
+
+  /**
+   *  Enables Last Stable Query Time (LSQT) on the named collection and
+   *  advances the LSQT for the collection to the maximum system start time.
+   *  When LSQT is enabled on the temporal collection, you can use the
+   *  systemTime argument on many of the other TemporalDocumentManager methods.
+   *
+   *  The system time is returned in ISO 8601 format like all MarkLogic
+   *  timestamps.  It can be parsed by {@link DatatypeConverter#parseDateTime
+   *  DatatypeConverter.parseDateTime} but will lose precision since
+   *  java.util.Calendar only supports millisecond precision.
+   *
+   *  Requires a user with the "rest-admin" privilege.
+   *
+   *  For details on how to use LSQT, see [Last Stable Query Time (LSQT) and
+   *  Application-controlled System
+   *  Time](http://docs.marklogic.com/guide/temporal/managing#id_75536) in the
+   *  *Temporal Developer's Guide*.
+   *
+   *  @param temporalCollection the name of the temporal collection existing in
+   *    the database into which this document should be written
+   *  @param lag the milliseconds behind the maximum system start time to set LSQT
+   *  @return the temporal system time
+   */
+  public String advanceLsqt(String temporalCollection, long lag);
+
   /**
    * Just like {@link DocumentManager#create(DocumentUriTemplate, DocumentMetadataWriteHandle,
    * AbstractWriteHandle, ServerTransform, Transaction) create} but create document

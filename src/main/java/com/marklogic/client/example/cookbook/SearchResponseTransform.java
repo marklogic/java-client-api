@@ -90,17 +90,16 @@ public class SearchResponseTransform {
     metadata.setVersion("0.1");
 
     // acquire the transform source code
-    InputStream transStream = Util.openStream(
-      "scripts"+File.separator+TRANSFORM_NAME+".xsl");
-    if (transStream == null)
-      throw new IOException("Could not read example transform");
+    try ( InputStream transStream = Util.openStream("scripts"+File.separator+TRANSFORM_NAME+".xsl") ) {
+      if (transStream == null) throw new IOException("Could not read example transform");
 
-    // create a handle on the transform source code
-    InputStreamHandle handle = new InputStreamHandle();
-    handle.set(transStream);
+      // create a handle on the transform source code
+      InputStreamHandle handle = new InputStreamHandle();
+      handle.set(transStream);
 
-    // write the transform extension to the database
-    transMgr.writeXSLTransform(TRANSFORM_NAME, handle, metadata);
+      // write the transform extension to the database
+      transMgr.writeXSLTransform(TRANSFORM_NAME, handle, metadata);
+    }
 
     System.out.println("Installed the "+TRANSFORM_NAME+" transform");
 
@@ -181,13 +180,14 @@ public class SearchResponseTransform {
     InputStreamHandle contentHandle = new InputStreamHandle();
 
     for (String filename: filenames) {
-      InputStream docStream = Util.openStream("data"+File.separator+filename);
-      if (docStream == null)
-        throw new IOException("Could not read document example");
+      try ( InputStream docStream = Util.openStream("data"+File.separator+filename) ) {
+        if (docStream == null)
+          throw new IOException("Could not read document example");
 
-      contentHandle.set(docStream);
+        contentHandle.set(docStream);
 
-      docMgr.write("/example/"+filename, contentHandle);
+        docMgr.write("/example/"+filename, contentHandle);
+      }
     }
 
 

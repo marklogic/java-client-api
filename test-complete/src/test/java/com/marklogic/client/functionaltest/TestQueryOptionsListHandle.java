@@ -35,37 +35,36 @@ import java.util.Map;
 
 public class TestQueryOptionsListHandle extends BasicJavaClientREST {
 
-	private static String dbName = "QueryOptionsListHandleDB";
-	private static String [] fNames = {"QueryOptionsListHandleDB-1"};
-	
+  private static String dbName = "QueryOptionsListHandleDB";
+  private static String[] fNames = { "QueryOptionsListHandleDB-1" };
 
-	@BeforeClass	
-	public static void setUp() throws Exception
-	{
-		System.out.println("In setup");
-		configureRESTServer(dbName, fNames);
-	}
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+  }
 
-	@Test	
-	public void testNPE() throws KeyManagementException, NoSuchAlgorithmException, IOException,  SAXException, ParserConfigurationException
-	{		
-		System.out.println("Running testNPE");
+  @Test
+  public void testNPE() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("Running testNPE");
 
-		// connect the client
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    // connect the client
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
 
-		QueryOptionsListHandle handle = new QueryOptionsListHandle();
+    QueryOptionsListHandle handle = new QueryOptionsListHandle();
 
-		Map map = handle.getValuesMap();
+    Map map = handle.getValuesMap();
 
-		// release client
-		client.release();
-	}
+    // release client
+    client.release();
+  }
 
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

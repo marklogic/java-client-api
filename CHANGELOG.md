@@ -1,6 +1,54 @@
 # CHANGELOG
 
-## 4.0.0
+## 4.0.3
+
+#### New Functionality
+- [#639](https://github.com/marklogic/java-client-api/issues/639) - support DocumentManager.setReadTransform for DocumentManager.search calls
+- [#690](https://github.com/marklogic/java-client-api/issues/690) - Get a JobTicket by JobId
+- [#752](https://github.com/marklogic/java-client-api/issues/752) - Allow setting JobId for a JobTicket
+- [#756](https://github.com/marklogic/java-client-api/issues/756) - Add RawCtsQueryDefinition support for values queries
+- [#787](https://github.com/marklogic/java-client-api/issues/787) - Support advancing LSQT
+- [#813](https://github.com/marklogic/java-client-api/issues/813) - Add NoResponseListener for failover scenarios which throw EOFException
+- [#818](https://github.com/marklogic/java-client-api/issues/818) - Document failover support
+- [#822](https://github.com/marklogic/java-client-api/issues/822) - Add initialization step for QueryBatchListener
+- [#838](https://github.com/marklogic/java-client-api/issues/838) - Add HostAvailabilityListener.RetryListener and QueryBatcher.retryWithFailureListeners to facilitate listeners retrying during failover scenarios
+
+#### Improvements and Bug Fixes
+
+This release fixes many bugs related to failover scenarios
+
+- [#473](https://github.com/marklogic/java-client-api/issues/473) - add "ML-Agent-ID: java" header to improve request origination metrics
+- [#526](https://github.com/marklogic/java-client-api/issues/526) - Possible Race Condition during black-listing of hosts
+- [#557](https://github.com/marklogic/java-client-api/issues/557), [#570](https://github.com/marklogic/java-client-api/issues/570) - Failures during failover require new HostAvailabilityListener.RetryListener
+- [#562](https://github.com/marklogic/java-client-api/issues/562) - Cookbook recipe for bulk export to JDBC
+- [#563](https://github.com/marklogic/java-client-api/issues/563) - Cookbook recipe for incremental load from JDBC
+- [#565](https://github.com/marklogic/java-client-api/issues/565) - Cookbook recipe for bulk load from JDBC
+- [#579](https://github.com/marklogic/java-client-api/issues/579) - Job not getting stopped when number of available hosts < 'minHosts' property
+- [#641](https://github.com/marklogic/java-client-api/issues/641) - Upgrade all dependencies
+- [#725](https://github.com/marklogic/java-client-api/issues/725) - Fix ServerEvaluationCall.evalAs(Class<T>) closing underlying streams prematurely
+- [#744](https://github.com/marklogic/java-client-api/issues/744) - Fix a WriteBatcher hang in awaitCompletion after forest failover
+- [#768](https://github.com/marklogic/java-client-api/issues/768) - Document supported Java runtime
+- [#775](https://github.com/marklogic/java-client-api/issues/775) - Fix QueryManagerImpl which incorrectly hardcoded start page to 1
+- [#785](https://github.com/marklogic/java-client-api/issues/785) - Support HTTPS with OKhttp
+- [#798](https://github.com/marklogic/java-client-api/issues/798) - Fix WriteBatcher from retrying when job is stopped
+- [#802](https://github.com/marklogic/java-client-api/issues/802) - Remove a spurious warning about StringQueryDefinitionImpl
+- [#811](https://github.com/marklogic/java-client-api/issues/811) - Fix OkHttpServices which threw NPE when release() method called more than once
+
+## 4.0.2
+
+#### New Functionality
+- [#720](https://github.com/marklogic/java-client-api/pull/720) - Add a RawCtsQueryDefinition to parallel RawCombinedQueryDefinition and RawStructuredQueryDefinition
+- [#722](https://github.com/marklogic/java-client-api/pull/722) - add support for minimum distance on near-query
+
+#### Improvements and Bug Fixes
+- [#65](https://github.com/marklogic/java-client-api/issues/65) - Replace internal HTTP library Jersey with OkHttp to improve performance, future readiness [#391](https://github.com/marklogic/java-client-api/issues/391), and overcome version conflicts [#769](https://github.com/marklogic/java-client-api/issues/769), [#282](https://github.com/marklogic/java-client-api/issues/282)
+- [#470](https://github.com/marklogic/java-client-api/issues/470) - Share http connection pool across DatabaseClient instances to allow scenarios where many DatabaseClient instances are desirable
+- [#367](https://github.com/marklogic/java-client-api/issues/367) - Upgrade version of jdom2 dependency to 2.0.6 to overcome vulnerability in dependency xalan-2.7.1
+- [#368](https://github.com/marklogic/java-client-api/issues/368) - Remove dependency on jersey-apache-client4-1.17 to overcome vulnerability in dependency HttpClient 4.1.1
+- [#711](https://github.com/marklogic/java-client-api/pull/711) - Upgrade dependencies slf4j-api to 1.7.25
+- [#715](https://github.com/marklogic/java-client-api/pull/715) - Upgrade dependencies jdom2 to 2.0.6, gson to 2.8.0, and htmlcleaner to 2.19
+
+## 4.0.1
 
 #### New Functionality
 - [#400](https://github.com/marklogic/java-client-api/issues/400) - Optic API
@@ -11,8 +59,7 @@
 - [#414](https://github.com/marklogic/java-client-api/issues/414) - Bitemporal ML9 features - version URI, Wipe, Protect, document patch
 - [#465](https://github.com/marklogic/java-client-api/issues/465) - Data Movement SDK
 - [#466](https://github.com/marklogic/java-client-api/issues/466) - add StructuredQueryBuilder.coordSystem to set Geo coordinate system
-- [#473](https://github.com/marklogic/java-client-api/issues/473) - send header "ML-Agent-ID: java" with every HTTP request so REST layer can track which calls come
-         from Java Client API
+- [#473](https://github.com/marklogic/java-client-api/issues/473) - send header "ML-Agent-ID: java" with every HTTP request so REST layer can track which calls come from Java Client API
 - [#550](https://github.com/marklogic/java-client-api/issues/550) - add Capability NODE_UPDATE
 
 #### Improvements and Bug Fixes

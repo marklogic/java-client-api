@@ -127,8 +127,12 @@ public class RuleManagerImpl
       sourceHandle = (RuleWriteHandle) handle;
     }
 
-    writeRuleAs(ruleName, sourceHandle);
+    if (sourceHandle instanceof RuleDefinition) {
+      ((RuleDefinition) sourceHandle).setName(ruleName);
+    }
+    writeRule(ruleName, sourceHandle);
   }
+  
   @Override
   public void writeRule(RuleDefinition ruleHandle) {
     String ruleName = ruleHandle.getName();

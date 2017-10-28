@@ -40,6 +40,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.io.marker.BufferableHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
+import com.marklogic.client.io.marker.CtsQueryWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
 import com.marklogic.client.io.marker.StructureWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
@@ -55,7 +56,7 @@ public class SourceHandle
   extends BaseHandle<InputStream, OutputStreamSender>
   implements OutputStreamSender, BufferableHandle, ContentHandle<Source>,
     XMLReadHandle, XMLWriteHandle,
-    StructureReadHandle, StructureWriteHandle,
+    StructureReadHandle, StructureWriteHandle, CtsQueryWriteHandle,
     Closeable
 {
   static final private Logger logger = LoggerFactory.getLogger(SourceHandle.class);

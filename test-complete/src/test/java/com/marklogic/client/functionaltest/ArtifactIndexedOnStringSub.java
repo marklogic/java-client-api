@@ -25,14 +25,15 @@ import com.marklogic.client.pojo.annotation.PathIndexProperty.ScalarType;
  * Used to test annotation in a hierarchy. 
  */
 public class ArtifactIndexedOnStringSub extends ArtifactIndexedOnString {
-	@PathIndexProperty(scalarType = ScalarType.DOUBLE)
-	public double artifactWeight;
+  @PathIndexProperty(scalarType = ScalarType.DOUBLE)
+  public double artifactWeight;
 
-	public double getArtifactWeight() {
-		return artifactWeight;
-	}
+  public double getArtifactWeight() {
+    return artifactWeight;
+  }
 
-	public ArtifactIndexedOnStringSub setArtifactWeight(double artifactWeight) {
-		this.artifactWeight = artifactWeight; return this;
-	}
+  public ArtifactIndexedOnStringSub setArtifactWeight(double artifactWeight) {
+    this.artifactWeight = artifactWeight;
+    return this;
+  }
 }

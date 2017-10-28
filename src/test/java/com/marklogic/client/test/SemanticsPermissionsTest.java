@@ -52,7 +52,6 @@ public class SemanticsPermissionsTest {
   public static void beforeClass() {
     Common.connect();
     gmgr = Common.client.newGraphManager();
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
     String triple = "<s> <p> <o>.";
     GraphPermissions perms = gmgr.permission("read-privileged", Capability.READ)
       .permission("write-privileged", Capability.UPDATE);

@@ -37,55 +37,57 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
+
 public class TestBug19140 extends BasicJavaClientREST {
 
-	private static String dbName = "Bug19140DB";
-	private static String [] fNames = {"Bug19140DB-1"};
-	
-@BeforeClass
-	public static void setUp() throws Exception 
-	{
-	  System.out.println("In setup");
-	  configureRESTServer(dbName, fNames);
-	  setupAppServicesConstraint(dbName);
-	}
+  private static String dbName = "Bug19140DB";
+  private static String[] fNames = { "Bug19140DB-1" };
 
-@Test
-	public void testBug19140() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
-	{	
-		System.out.println("Running testBug19140");
+  @BeforeClass
+  public static void setUp() throws Exception
+  {
+    System.out.println("In setup");
+    configureRESTServer(dbName, fNames);
+    setupAppServicesConstraint(dbName);
+  }
 
-		DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+  @Test
+  public void testBug19140() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException, TransformerException
+  {
+    System.out.println("Running testBug19140");
 
-		// create query options manager
-		QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
-		
-		// create query options handle
-		String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
-				"<search:transform-results apply='raw'/>" +
-				"</search:options>";
-        StringHandle handle = new StringHandle(xmlOptions);
-        
-        // write query options
-        optionsMgr.writeOptions("RawResultsOpt", handle);
-        
-        // read query option
-     	StringHandle readHandle = new StringHandle();
-     	readHandle.setFormat(Format.XML);
-     	optionsMgr.readOptions("RawResultsOpt", readHandle);
-     	String output = readHandle.get();
-     	System.out.println(output);
-     	
-     	assertTrue("transform-results is incorrect", output.contains("transform-results apply=\"raw\"/"));
-     	assertFalse("preferred-elements is exist", output.contains("preferred-elements/"));
-     	
-		// release client
-		client.release();		
-	}
-	@AfterClass	
-	public static void tearDown() throws Exception
-	{
-		System.out.println("In tear down");
-		cleanupRESTServer(dbName, fNames);
-	}
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+    // create query options manager
+    QueryOptionsManager optionsMgr = client.newServerConfigManager().newQueryOptionsManager();
+
+    // create query options handle
+    String xmlOptions = "<search:options xmlns:search='http://marklogic.com/appservices/search'>" +
+        "<search:transform-results apply='raw'/>" +
+        "</search:options>";
+    StringHandle handle = new StringHandle(xmlOptions);
+
+    // write query options
+    optionsMgr.writeOptions("RawResultsOpt", handle);
+
+    // read query option
+    StringHandle readHandle = new StringHandle();
+    readHandle.setFormat(Format.XML);
+    optionsMgr.readOptions("RawResultsOpt", readHandle);
+    String output = readHandle.get();
+    System.out.println(output);
+
+    assertTrue("transform-results is incorrect", output.contains("transform-results apply=\"raw\"/"));
+    assertFalse("preferred-elements is exist", output.contains("preferred-elements/"));
+
+    // release client
+    client.release();
+  }
+
+  @AfterClass
+  public static void tearDown() throws Exception
+  {
+    System.out.println("In tear down");
+    cleanupRESTServer(dbName, fNames);
+  }
 }

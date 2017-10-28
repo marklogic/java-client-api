@@ -41,8 +41,8 @@ import org.junit.Test;
 
 import java.util.Random;
 
-public class PackageExamples {
-  private static Logger logger = LoggerFactory.getLogger(PackageExamples.class);
+public class PackageExamplesTest {
+  private static Logger logger = LoggerFactory.getLogger(PackageExamplesTest.class);
   private static DatabaseClient client = Common.connect();
   private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "PackageExamples_" +
@@ -52,7 +52,6 @@ public class PackageExamples {
 
   @BeforeClass
   public static void beforeClass() {
-    //System.setProperty("org.apache.commons.logging.simplelog.log.org.apache.http.wire", "debug");
   }
 
   @AfterClass
