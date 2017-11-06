@@ -16,6 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
@@ -29,6 +30,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
@@ -44,6 +46,7 @@ import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.DocumentUriTemplate;
+import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -51,8 +54,15 @@ import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
+import com.marklogic.client.query.ExtractedItem;
+import com.marklogic.client.query.ExtractedResult;
+import com.marklogic.client.query.MatchDocumentSummary;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 
 public class TestPartialUpdate extends BasicJavaClientREST {
   private static String dbName = "TestPartialUpdateDB";
@@ -1180,6 +1190,89 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     // release client
     client.release();
+  }
+  
+  // Sanity test to make sure that restricted Xpath predicate functions can be used to patch documents. 
+  @Test
+  public void testRestrictedXPath() throws IOException, JSONException {
+      System.out.println("Running testRestrictedXPaths");
+      final String DIRECTORY = "/RXath/";
+      final int BATCH_SIZE = 10;
+      StringBuilder content1 = new StringBuilder();
+      content1.append("{\"World\":[{\"CountyId\": \"0001\",");
+      content1.append("\"Govt\": \"Presidential\",");
+      content1.append("\"name\": \"USA\",");
+      content1.append("\"Pop\": 328,");
+      content1.append("\"Regions\":{\"Contiental\":[");
+      content1.append("{ \"RegionId\": \"1001\", \"Direction\": \"NE\" },");
+      content1.append("{ \"RegionId\": \"1002\", \"Direction\": \"SE\" },");
+      content1.append("{ \"RegionId\": \"1003\", \"Direction\": \"NW\" },");
+      content1.append("{ \"RegionId\": \"1004\", \"Direction\": \"SW\" }");
+      content1.append("]}}]}");
+
+      DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+      int count = 1;
+      XMLDocumentManager docMgr = client.newXMLDocumentManager();
+      // Write docs
+      String docStr = content1.toString();
+      DocumentWriteSet writeset1 = docMgr.newWriteSet();
+      for (int i = 0; i < 11; i++) {
+          writeset1.add(DIRECTORY + "World-01-" + i + ".json", new StringHandle(docStr));
+
+          if (count % BATCH_SIZE == 0) {
+              docMgr.write(writeset1);
+              writeset1 = docMgr.newWriteSet();
+          }
+          count++;
+      }
+      if (count % BATCH_SIZE > 0) {
+          docMgr.write(writeset1);
+      }
+      QueryManager queryMgr = client.newQueryManager();
+      
+      String head = "<search:search xmlns:search=\"http://marklogic.com/appservices/search\">";
+      String tail = "</search:search>";
+      // object-node - Number Node
+      String qtext1 = "<search:qtext>1001</search:qtext>";
+      String options1 ="<search:options>" +
+                      "<search:extract-document-data selected=\"include\">" +
+                      "<search:extract-path>/World//number-node()</search:extract-path>" +
+                      "</search:extract-document-data>" +
+                      "</search:options>";
+
+      String combinedSearch = head + qtext1 + options1 + tail;
+      RawCombinedQueryDefinition rawCombinedQueryDefinition =
+              queryMgr.newRawCombinedQueryDefinition(new StringHandle(combinedSearch).withMimetype("application/xml"));
+
+      // create handle
+      SearchHandle resSearchHandle = queryMgr.search(rawCombinedQueryDefinition, new SearchHandle());
+      MatchDocumentSummary[] summaries = resSearchHandle.getMatchResults();
+      for (MatchDocumentSummary summary : summaries) {
+          ExtractedResult extracted = summary.getExtracted();
+          if ( Format.JSON == summary.getFormat() ) {
+              for (ExtractedItem item : extracted) {
+                  String extractItem = item.getAs(String.class);
+                  System.out.println("Extracted item from Number node element search " + extractItem);
+                  assertTrue("Extracted Number node items incorrect", extractItem.matches("\\{\"Pop\":328\\}"));
+              }
+          }
+      }
+
+      String docId = "/RXath/World-01-2.json";
+      JSONDocumentManager JdocMgr = client.newJSONDocumentManager();
+      DocumentPatchBuilder patchBldr = JdocMgr.newPatchBuilder();
+      
+      // Replace 328 in the population to be 500.
+      patchBldr.pathLanguage(PathLanguage.XPATH);
+      patchBldr.replaceValue("/World//number-node()", 500);
+
+      DocumentPatchHandle patchHandle = patchBldr.build();
+      docMgr.patch(docId, patchHandle);
+      
+      // Verify the results again. Poppulation should be 500 for second document
+      String content = docMgr.read(docId, new StringHandle()).get();
+      System.out.println("Patched Number node element is " + content);
+      assertTrue("Patched Number node element incorrect", content.contains("\"Pop\":500"));
   }
 
   /*
