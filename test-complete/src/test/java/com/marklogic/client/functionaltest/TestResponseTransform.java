@@ -199,7 +199,7 @@ public class TestResponseTransform extends BasicJavaClientREST {
       System.out.println(exception);
     }
 
-    String expectedException = "Local message: search failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000) Invalid request:  reason: Extension foo does not exist";
+    String expectedException = "Local message: search failed: Bad Request. Server Message: RESTAPI-INVALIDREQ: (err:FOER0000)";
     assertTrue("exception is not thrown", exception.contains(expectedException));
     // bug 22356
     assertTrue("Value should be null", resultsHandle.get() == null);
