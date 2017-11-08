@@ -787,7 +787,7 @@ public class WriteBatcherTest {
 
   // from https://github.com/marklogic/data-movement/issues/109
   @Test
-  public void testMultipleFlushAnStop_Issue109() throws Exception {
+  public void testMultipleFlushAnStop_Issue109() throws Throwable {
     String collection = whbTestCollection + "_testMultipleFlushAnStop_Issue109";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
     assertTrue(client.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
@@ -803,32 +803,44 @@ public class WriteBatcherTest {
       })
     .onBatchFailure(
         (batch, throwable) -> {
-          throwable.printStackTrace();
+          //throwable.printStackTrace();
           for(WriteEvent w:batch.getItems()){
-            System.out.println("Failure "+w.getTargetUri());
+            //System.out.println("Failure "+w.getTargetUri());
           }
         });
     JobTicket writeTicket = moveMgr.startJob(ihbMT);
 
 
+    AtomicReference<Throwable> unexpectedError = new AtomicReference<>();
     class MyRunnable implements Runnable {
 
       @Override
       public void run() {
+        try {
 
-        for (int j =0 ;j < 100; j++){
-          String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
-          logger.debug("[testMultipleFlushAnStop_Issue109] add URI:"+ uri);
-          DocumentMetadataHandle meta = new DocumentMetadataHandle()
-            .withCollections(collection, whbTestCollection);
-          ihbMT.add(uri, meta, new StringHandle("test"));
-          if(j ==80){
-            logger.debug("[testMultipleFlushAnStop_Issue109] flushAndWait");
-            ihbMT.flushAndWait();
-            logger.debug("[testMultipleFlushAnStop_Issue109] stopJob");
-            moveMgr.stopJob(writeTicket);
+          for (int j =0 ;j < 100; j++){
+            String uri ="/local/multi-"+ j+"-"+Thread.currentThread().getId();
+            logger.debug("[testMultipleFlushAnStop_Issue109] add URI:"+ uri);
+            DocumentMetadataHandle meta = new DocumentMetadataHandle()
+              .withCollections(collection, whbTestCollection);
+            ihbMT.add(uri, meta, new StringHandle("test"));
+            if(j ==80){
+              logger.debug("[testMultipleFlushAnStop_Issue109] flushAndWait");
+              ihbMT.flushAndWait();
+              logger.debug("[testMultipleFlushAnStop_Issue109] stopJob");
+              moveMgr.stopJob(writeTicket);
+            }
+
           }
-
+        } catch (IllegalStateException e) {
+          if ( "This instance has been stopped".equals(e.getMessage()) ) {
+            // this is expected behavior if we stop a job before calling flushAndWait
+            logger.debug("[testMultipleFlushAnStop_Issue109] flushAndWait threw expected exception since stopJob was called first: " + e);
+          } else {
+            unexpectedError.set(e);
+          }
+        } catch (Throwable e) {
+          unexpectedError.set(e);
         }
       }
     }
@@ -841,8 +853,13 @@ public class WriteBatcherTest {
 
     t1.join();
     t2.join();
+    if ( unexpectedError.get() != null ) {
+      throw unexpectedError.get();
+    }
 
     System.out.println("Size is "+client.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+    // we cannot test the ending size because it's inconsistent based on when the job is stopped
+    // but if we made it through with no hang, then this test passes
   }
 
   // from https://github.com/marklogic/java-client-api/issues/595
@@ -852,6 +869,7 @@ public class WriteBatcherTest {
     String query1 = "fn:count(fn:collection('" + collection + "'))";
     AtomicInteger count = new AtomicInteger(0);
     AtomicBoolean isStopped = new AtomicBoolean(false);
+    AtomicReference<Throwable> unexpectedError = new AtomicReference<>();
     WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(7).withThreadCount(60);
 
@@ -883,7 +901,7 @@ public class WriteBatcherTest {
         }
         cause = cause.getCause();
       }
-      throwable.printStackTrace();
+      //throwable.printStackTrace();
       logger.debug("[testStopBeforeFlush_Issue595] Failed Batch: batch: " + batch.getJobBatchNumber() +
         ", batch: " + batch.getJobBatchNumber() +
         ", writes so far: " + batch.getJobWritesSoFar() +
@@ -906,7 +924,7 @@ public class WriteBatcherTest {
           }
           logger.debug("[testStopBeforeFlush_Issue595] Finished executing thread");
         } catch (Throwable t) {
-          logger.error("", t);
+          //logger.error("", t);
         }
       }
 
