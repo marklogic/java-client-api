@@ -33,6 +33,7 @@ import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.impl.CombinedQueryBuilderImpl;
 import com.marklogic.client.impl.CombinedQueryDefinition;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.QueryOptionsWriteHandle;
@@ -124,8 +125,7 @@ public class CombinedQueryBuilderTest {
     }
 
     public XMLStreamWriter makeXMLStreamWriter(OutputStream out) throws XMLStreamException {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+        XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
         XMLStreamWriter writer = factory.createXMLStreamWriter(out, "UTF-8");
         writer.setDefaultNamespace("http://marklogic.com/appservices/search");

@@ -41,6 +41,7 @@ import javax.xml.transform.stream.StreamSource;
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
 import com.marklogic.client.impl.RawQueryDefinitionImpl;
+import com.marklogic.client.impl.XmlFactories;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.OutputStreamSender;
@@ -2443,8 +2444,7 @@ public class StructuredQueryBuilder {
     }
 
     static private XMLStreamWriter makeSerializer(OutputStream out) {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        factory.setProperty(XMLOutputFactory.IS_REPAIRING_NAMESPACES, true);
+        XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
         try {
             XMLStreamWriter serializer = factory.createXMLStreamWriter(out, "UTF-8");

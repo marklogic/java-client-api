@@ -334,8 +334,7 @@ public final class Utilities {
 		}
 
 		try {
-			XMLOutputFactory factory = XMLOutputFactory.newInstance();
-			factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
+			XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
 			XMLEventWriter eventWriter = factory.createXMLEventWriter(out, "UTF-8");
 
