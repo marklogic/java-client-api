@@ -1222,8 +1222,7 @@ class DocumentMetadataPatchBuilderImpl
     } else {
       handle.setFormat(Format.XML);
       try {
-        XMLOutputFactory factory = XMLOutputFactory.newInstance();
-        factory.setProperty("javax.xml.stream.isRepairingNamespaces", true);
+        XMLOutputFactory factory = XmlFactories.getOutputFactory();
 
         StringWriter    writer     = new StringWriter();
         XMLStreamWriter serializer = factory.createXMLStreamWriter(writer);
