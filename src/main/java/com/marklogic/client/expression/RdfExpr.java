@@ -28,7 +28,7 @@ import com.marklogic.client.type.RdfLangStringSeqExpr;
  */
 public interface RdfExpr extends RdfValue {
     /**
-    * Returns an <code>rdf:langString</code> value with the given value and language tag. The <code>rdf:langString</code> type extends <code>xs:string</code>, and represents a language tagged string in RDF. <p>This function is a built-in.
+    * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a>
     * @param string  The lexical value.
@@ -37,7 +37,7 @@ public interface RdfExpr extends RdfValue {
     */
     public RdfLangStringExpr langString(XsStringExpr string, String lang);
     /**
-    * Returns an <code>rdf:langString</code> value with the given value and language tag. The <code>rdf:langString</code> type extends <code>xs:string</code>, and represents a language tagged string in RDF. <p>This function is a built-in.
+    * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a>
     * @param string  The lexical value.
@@ -46,7 +46,7 @@ public interface RdfExpr extends RdfValue {
     */
     public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
     /**
-    * Returns the language of an <code>rdf:langString</code> value. <p>This function is a built-in.
+    * Returns the language of an rdf:langString value. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString-language" target="mlserverdoc">rdf:langString-language</a>
     * @param val  The rdf:langString value.

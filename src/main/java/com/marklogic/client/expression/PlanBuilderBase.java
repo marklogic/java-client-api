@@ -18,21 +18,8 @@ package com.marklogic.client.expression;
 import java.util.Map;
 
 import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.type.AttributeNodeSeqExpr;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.PlanCase;
-import com.marklogic.client.type.PlanFunction;
-import com.marklogic.client.type.PlanGroupConcatOptionSeq;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanValueOption;
-import com.marklogic.client.type.SemStoreExpr;
-import com.marklogic.client.type.XmlContentNodeSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsLongVal;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsQNameVal;
+
+import com.marklogic.client.type.*;
 
 interface PlanBuilderBase {
     /**
@@ -41,33 +28,95 @@ interface PlanBuilderBase {
     * @return  a AccessPlan object
     */
     public PlanBuilder.AccessPlan fromLiterals(@SuppressWarnings("unchecked") Map<String,Object>... rows);
+    /**
+     * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. When specifying rows with arrays, values are mapped to column names by position.
+     * @param rows  This parameter is either an array of object literals or sem:binding objects in which the key is a column name string identifying the column and the value is a literal with the value of the column, or this parameter is an object with a columnNames key having a value of an array of column names and a rowValues key having a value of an array of arrays with literal values.
+     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+     * @return  a AccessPlan object
+     */
+    public PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, String qualifierName);
+    /**
+     * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. When specifying rows with arrays, values are mapped to column names by position.
+     * @param rows  This parameter is either an array of object literals or sem:binding objects in which the key is a column name string identifying the column and the value is a literal with the value of the column, or this parameter is an object with a columnNames key having a value of an array of column names and a rowValues key having a value of an array of arrays with literal values.
+     * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
+     * @return  a AccessPlan object
+     */
+    public PlanBuilder.AccessPlan fromLiterals(Map<String,Object>[] rows, XsStringVal qualifierName);
 
+    /**
+     * This function constructs a JSON object with the specified properties. The object can be used as the value of a column in a row or passed to a builtin function.
+     * <p>
+     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-object" target="mlserverdoc">op:json-object</a>
+     * @param property  The properties to be used to contruct the object. This is constructed by the <a>op:prop</a> function.
+     * @return  a ObjectNodeExpr expression
+     */
+    public abstract ObjectNodeExpr jsonObject(PlanJsonProperty... property);
+    /**
+     * This function constructs a JSON array during row processing. The array can be used as the value of a column in a row or passed to a builtin expression function. The node is constructed during processing of the plan, rather than when building the plan.
+     * <p>
+     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-array" target="mlserverdoc">op:json-array</a>
+     * @param property  The JSON nodes for the array.
+     * @return  a ArrayNodeExpr expression
+     */
+    public abstract ArrayNodeExpr jsonArray(JsonContentNodeExpr... property);
     /**
     * This function constructs an XML element with the name (which can be a string or QName), a sequence of zero or more attributes, and child content. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
     * @param name  The string or QName for the constructed element.
-    * @param attributes  Any element attributes returned from <a>op:xml-attribute</a>, or <code>null</code> if no attributes.
-    * @param content  A sequence or array of atomic values or an element, a comment from <a>op:xml-comment</a>, or processing instruction nodes from <a>op:xml-pi</a>.
+    * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
+    * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.
     * @return  a ElementNodeExpr expression
     */
     public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeSeqExpr content);
+
     /**
-    * This function returns the specified <code>value</code> if the specified <code>condition</code> is <code>true</code>. Otherwise, it returns null.
+     * This function returns the specified value expression if the specified value expression is true. Otherwise, it returns null.
+     * <p>
+     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:case" target="mlserverdoc">op:case</a>
+     * @param cases  One or more when or else expressions.
+     * @return  a ItemSeqExpr expression sequence
+     */
+    public ItemSeqExpr caseExpr(PlanCase... cases);
+    /**
+    * This function returns the specified value if the specified condition is true. Otherwise, it returns null.
     * @param condition  A boolean expression.
-    * @param value  The value expression to return if the boolean expression is <code>true</code>.
+    * @param value  The value expression to return if the boolean expression is true.
     * @return  a PlanCase object
     */
     public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value);
+    public PlanCase elseExpr(ItemExpr value);
 
     /**
-     * Specifies a JavaScript or XQuery function installed on the server for use
-     * in post-processing in a map() or reduce() operation.
-     * @param functionName  the name of the function installed on the server
-     * @param modulePath  the path on the server for the library module providing the function
-     * @return  a PlanFunction object
+     * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
+     * @param name  The name to be used for column with the concatenated values.
+     * @param column  The name of the column with the values to be concatenated for the group.
+     * @return  a PlanAggregateCol object
      */
-    public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath);
+    public PlanAggregateCol groupConcat(String name, String column);
+    /**
+     * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
+     * @param name  The name to be used for column with the concatenated values.
+     * @param column  The name of the column with the values to be concatenated for the group.
+     * @return  a PlanAggregateCol object
+     */
+    public PlanAggregateCol groupConcat(PlanColumn name, PlanExprCol column);
+    /**
+     * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
+     * @param name  The name to be used for column with the concatenated values.
+     * @param column  The name of the column with the values to be concatenated for the group.
+     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter.
+     * @return  a PlanAggregateCol object
+     */
+    public PlanAggregateCol groupConcat(String name, String column, PlanGroupConcatOptionSeq options);
+    /**
+     * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
+     * @param name  The name to be used for column with the concatenated values.
+     * @param column  The name of the column with the values to be concatenated for the group.
+     * @param options  The options can take a values key with a distinct value to average the distinct values of the column. In addition to the values key, the options can take a separator key specifying a separator character. The value can be a string or placeholder parameter.
+     * @return  a PlanAggregateCol object
+     */
+    public PlanAggregateCol groupConcat(PlanColumn name, PlanExprCol column, PlanGroupConcatOptionSeq options);
 
     /**
      * Specifies options for aggregating the values of a column for the rows
@@ -83,7 +132,6 @@ interface PlanBuilderBase {
      * @return  a PlanGroupConcatOptionSeq object
      */
     public PlanGroupConcatOptionSeq groupConcatOptions(PlanValueOption option);
-    // not a sequence constructor
     /**
      * Specifies options for aggregating the values of a column for the rows
      * belonging to each group by concatenating the values into a single string value.
@@ -92,6 +140,15 @@ interface PlanBuilderBase {
      * @return  a PlanGroupConcatOptionSeq object
      */
     public PlanGroupConcatOptionSeq groupConcatOptions(String separator, PlanValueOption option);
+
+    /**
+     * Specifies a JavaScript or XQuery function installed on the server for use
+     * in post-processing in a map() or reduce() operation.
+     * @param functionName  the name of the function installed on the server
+     * @param modulePath  the path on the server for the library module providing the function
+     * @return  a PlanFunction object
+     */
+    public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath);
 
     interface PlanBase {
         /**

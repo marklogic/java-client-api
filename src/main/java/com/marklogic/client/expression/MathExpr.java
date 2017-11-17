@@ -119,7 +119,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr cot(XsDoubleExpr x);
     /**
-    *  Returns the sample covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is less than 2, the function returns the empty sequence.  <p>For the version of this that uses range indexes, see <a>cts:covariance</a>. 
+    * Returns the sample covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is less than 2, the function returns the empty sequence.  
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:covariance" target="mlserverdoc">math:covariance</a>
     * @param arg  The input data set. Each array should contain a pair of values.
@@ -127,7 +127,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr covariance(JsonArraySeqExpr arg);
     /**
-    *  Returns the population covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is 0, the function returns the empty sequence.  <p>For the version of this that uses range indexes, see <a>cts:covariance-p</a>. 
+    * Returns the population covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is 0, the function returns the empty sequence.  
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:covariance-p" target="mlserverdoc">math:covariance-p</a>
     * @param arg  The input data set. Each array should contain a pair of values.
@@ -211,7 +211,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr ldexp(XsDoubleExpr y, XsIntegerExpr i);
     /**
-    * Returns a linear model that fits the given data set. The size of the input array should be 2, as currently only simple linear regression model is supported. The first element of the array should be the value of the dependent variable while the other element should be the value of the independent variable. <p>The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is less than 2, the function returns the empty sequence. After the elimination, if the standard deviation of the independent variable is 0, the function returns a linear model with intercept = the mean of the dependent variable, coefficients = NaN and r-squared = NaN. After the elimination, if the standard deviation of the dependent variable is 0, the function returns a linear model with r-squared = NaN. <p>For the version of this function that uses Range Indexes, see <a>cts:linear-model</a>.
+    * Returns a linear model that fits the given data set. The size of the input array should be 2, as currently only simple linear regression model is supported. The first element of the array should be the value of the dependent variable while the other element should be the value of the independent variable. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:linear-model" target="mlserverdoc">math:linear-model</a>
     * @param arg  The input data set. Each array should contain a pair of values.
@@ -267,7 +267,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr median(XsDoubleSeqExpr arg);
     /**
-    *  Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. <p> Note that a data set can have multiple “modes”. The order of multiple modes in the returned sequence is undefined. <p> Also note that values from a lexicon lookup are repeated <code>cts:frequency</code> times before calculating the mode. <p> The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>. 
+    * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
     * @param arg  The sequence of values.
@@ -275,20 +275,20 @@ public interface MathExpr {
     */
     public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg);
     /**
-    *  Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. <p> Note that a data set can have multiple “modes”. The order of multiple modes in the returned sequence is undefined. <p> Also note that values from a lexicon lookup are repeated <code>cts:frequency</code> times before calculating the mode. <p> The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>. 
+    * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
     * @param arg  The sequence of values.
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsAnyAtomicTypeSeqExpr expression sequence
     */
     public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, String options);
     /**
-    *  Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. <p> Note that a data set can have multiple “modes”. The order of multiple modes in the returned sequence is undefined. <p> Also note that values from a lexicon lookup are repeated <code>cts:frequency</code> times before calculating the mode. <p> The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>. 
+    * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
     * @param arg  The sequence of values.
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsAnyAtomicTypeSeqExpr expression sequence
     */
     public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, XsStringSeqExpr options);
@@ -301,7 +301,7 @@ public interface MathExpr {
     */
     public XsDoubleSeqExpr modf(XsDoubleExpr x);
     /**
-    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See <code>math:rank</code>.
+    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
     * @param arg  The sequence of values.
@@ -310,7 +310,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value);
     /**
-    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See <code>math:rank</code>.
+    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
     * @param arg  The sequence of values.
@@ -319,27 +319,27 @@ public interface MathExpr {
     */
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value);
     /**
-    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See <code>math:rank</code>.
+    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
     * @param arg  The sequence of values.
     * @param value  The value to be "ranked".
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"ascending"(default)</dt> <dd>Rank the value as if the sequence was sorted in ascending order. </dd> <dt>"descending"</dt> <dd>Rank the value as if the sequence was sorted in descending order. </dd> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsDoubleExpr expression
     */
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value, String options);
     /**
-    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See <code>math:rank</code>.
+    * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
     * @param arg  The sequence of values.
     * @param value  The value to be "ranked".
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"ascending"(default)</dt> <dd>Rank the value as if the sequence was sorted in ascending order. </dd> <dt>"descending"</dt> <dd>Rank the value as if the sequence was sorted in descending order. </dd> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsDoubleExpr expression
     */
     public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value, XsStringSeqExpr options);
     /**
-    * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either <code>arg</code> or <code>p</code> is the empty sequence.
+    * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either arg or p is the empty sequence.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a>
     * @param arg  The sequence of values to calculate the percentile(s) on.
@@ -348,7 +348,7 @@ public interface MathExpr {
     */
     public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, double p);
     /**
-    * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either <code>arg</code> or <code>p</code> is the empty sequence.
+    * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either arg or p is the empty sequence.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a>
     * @param arg  The sequence of values to calculate the percentile(s) on.
@@ -390,7 +390,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr radians(XsDoubleExpr x);
     /**
-    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>.
+    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
     * @param arg1  The sequence of values.
@@ -399,7 +399,7 @@ public interface MathExpr {
     */
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2);
     /**
-    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>.
+    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
     * @param arg1  The sequence of values.
@@ -408,22 +408,22 @@ public interface MathExpr {
     */
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2);
     /**
-    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>.
+    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
     * @param arg1  The sequence of values.
     * @param arg2  The value to be "ranked".
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"ascending"(default)</dt> <dd>Rank the value as if the sequence was sorted in ascending order. </dd> <dt>"descending"</dt> <dd>Rank the value as if the sequence was sorted in descending order. </dd> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2, String options);
     /**
-    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, <code>xs:yearMonthDuration</code>, <code>xs:dayTimeDuration</code>, <code>xs:string</code>, <code>xs:anyURI</code>, <code>xs:date</code>, <code>xs:dateTime</code>, <code>xs:time</code>, and <code>cts:point</code>.
+    * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
     * @param arg1  The sequence of values.
     * @param arg2  The value to be "ranked".
-    * @param options  Options. The default is (). <p> Options include:</p> <blockquote><dl> <dt>"ascending"(default)</dt> <dd>Rank the value as if the sequence was sorted in ascending order. </dd> <dt>"descending"</dt> <dd>Rank the value as if the sequence was sorted in descending order. </dd> <dt>"collation=<em>URI</em>"</dt> <dd>Applies only when $arg is of the xs:string type. If no specified, the default collation is used.</dd> <dt>"coordinate-system=<em>name</em>"</dt> <dd>Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.</dd> </dl></blockquote>
+    * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2, XsStringSeqExpr options);
@@ -484,7 +484,7 @@ public interface MathExpr {
     */
     public XsDoubleExpr tanh(XsDoubleExpr x);
     /**
-    *  Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. <p> For xs:float and xs:double arguments, if the argument is positive infinity, then positive infinity is returned. If the argument is negative infinity, then negative infinity is returned. If the argument is positive zero, then positive zero is returned. If the argument is negative zero, then negative zero is returned. 
+    * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
     * @param arg  A numeric value to truncate.
@@ -492,7 +492,7 @@ public interface MathExpr {
     */
     public XsNumericExpr trunc(XsNumericExpr arg);
     /**
-    *  Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. <p> For xs:float and xs:double arguments, if the argument is positive infinity, then positive infinity is returned. If the argument is negative infinity, then negative infinity is returned. If the argument is positive zero, then positive zero is returned. If the argument is negative zero, then negative zero is returned. 
+    * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
     * @param arg  A numeric value to truncate.
@@ -501,7 +501,7 @@ public interface MathExpr {
     */
     public XsNumericExpr trunc(XsNumericExpr arg, long n);
     /**
-    *  Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. <p> For xs:float and xs:double arguments, if the argument is positive infinity, then positive infinity is returned. If the argument is negative infinity, then negative infinity is returned. If the argument is positive zero, then positive zero is returned. If the argument is negative zero, then negative zero is returned. 
+    * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
     * @param arg  A numeric value to truncate.

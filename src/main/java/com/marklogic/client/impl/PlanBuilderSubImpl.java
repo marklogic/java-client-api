@@ -224,6 +224,20 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   }
 
   @Override
+  public PlanAggregateCol groupConcat(String name, String column) {
+    return groupConcat((name == null) ? (PlanColumn) null : col(name), (column == null) ? (PlanExprCol) null : exprCol(column));
+  }
+  @Override
+  public PlanAggregateCol groupConcat(PlanColumn name, PlanExprCol column) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for groupConcat() cannot be null");
+    }
+    if (column == null) {
+      throw new IllegalArgumentException("column parameter for groupConcat() cannot be null");
+    }
+    return new AggregateColCallImpl("op", "group-concat", new Object[]{ name, column });
+  }
+  @Override
   public PlanAggregateCol groupConcat(String name, String column, PlanGroupConcatOptionSeq options) {
     return groupConcat((name == null) ? (PlanColumn) null : col(name), (column == null) ? (PlanExprCol) null : exprCol(column), options);
   }
@@ -383,6 +397,19 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
   @Override
   public PlanParamExpr param(String name) {
     return new PlanParamBase(name);
+  }
+  @Override
+  public PlanParamExpr param(XsStringVal name) {
+    if (name == null) {
+      throw new IllegalArgumentException("name parameter for param() cannot be null");
+    }
+    return new ParamCallImpl("op", "param", new Object[]{ name });
+  }
+
+  static class ParamCallImpl extends PlanCallImpl implements PlanParamExpr {
+    ParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, fnArgs);
+    }
   }
 
   static Map<String,String> makeMap(PlanValueOption option) {
@@ -584,6 +611,9 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
   static class ModifyPlanSubImpl
     extends PlanBuilderImpl.ModifyPlanImpl {
+    ModifyPlanSubImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      this(null, fnPrefix, fnName, fnArgs);
+    }
     ModifyPlanSubImpl(PlanBuilderBaseImpl.PlanBaseImpl prior, String fnPrefix, String fnName, Object[] fnArgs) {
       super(prior, fnPrefix, fnName, fnArgs);
     }

@@ -15,14 +15,23 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.type.CtsQueryExpr;
 import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
+import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.type.XsBooleanExpr;
+import com.marklogic.client.type.XsBooleanVal;
 import com.marklogic.client.type.XsDateTimeExpr;
+import com.marklogic.client.type.XsDateTimeVal;
 import com.marklogic.client.type.XsDoubleExpr;
+import com.marklogic.client.type.XsDoubleVal;
 import com.marklogic.client.type.XsQNameExpr;
+import com.marklogic.client.type.XsQNameVal;
 import com.marklogic.client.type.XsStringExpr;
+import com.marklogic.client.type.XsStringSeqExpr;
+import com.marklogic.client.type.XsStringSeqVal;
+import com.marklogic.client.type.XsStringVal;
 
 import com.marklogic.client.type.SemBlankExpr;
 import com.marklogic.client.type.SemBlankSeqExpr;
@@ -30,6 +39,8 @@ import com.marklogic.client.type.SemInvalidExpr;
 import com.marklogic.client.type.SemInvalidSeqExpr;
 import com.marklogic.client.type.SemIriExpr;
 import com.marklogic.client.type.SemIriSeqExpr;
+import com.marklogic.client.type.SemStoreExpr;
+import com.marklogic.client.type.SemStoreSeqExpr;
 import com.marklogic.client.type.SemUnknownExpr;
 import com.marklogic.client.type.SemUnknownSeqExpr;
 
@@ -207,6 +218,42 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
     
     @Override
+    public SemStoreExpr rulesetStore(String locations) {
+        return rulesetStore((locations == null) ? (XsStringVal) null : xs.string(locations));
+    }
+
+    
+    @Override
+    public SemStoreExpr rulesetStore(XsStringSeqVal locations) {
+        return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations });
+    }
+
+    
+    @Override
+    public SemStoreExpr rulesetStore(String locations, SemStoreExpr... store) {
+        return rulesetStore((locations == null) ? (XsStringVal) null : xs.string(locations), new StoreSeqListImpl(store));
+    }
+
+    
+    @Override
+    public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store) {
+        return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations, store });
+    }
+
+    
+    @Override
+    public SemStoreExpr rulesetStore(String locations, SemStoreSeqExpr store, String options) {
+        return rulesetStore((locations == null) ? (XsStringVal) null : xs.string(locations), store, (options == null) ? (XsStringVal) null : xs.string(options));
+    }
+
+    
+    @Override
+    public SemStoreExpr rulesetStore(XsStringSeqVal locations, SemStoreSeqExpr store, XsStringSeqVal options) {
+        return new StoreCallImpl("sem", "ruleset-store", new Object[]{ locations, store, options });
+    }
+
+    
+    @Override
     public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, String b) {
         return sameTerm(a, (b == null) ? (XsAnyAtomicTypeExpr) null : xs.string(b));
     }
@@ -221,6 +268,36 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
             throw new IllegalArgumentException("b parameter for sameTerm() cannot be null");
         }
         return new XsExprImpl.BooleanCallImpl("sem", "sameTerm", new Object[]{ a, b });
+    }
+
+    
+    @Override
+    public SemStoreExpr store() {
+        return new StoreCallImpl("sem", "store", new Object[]{  });
+    }
+
+    
+    @Override
+    public SemStoreExpr store(String options) {
+        return store((options == null) ? (XsStringVal) null : xs.string(options));
+    }
+
+    
+    @Override
+    public SemStoreExpr store(XsStringSeqVal options) {
+        return new StoreCallImpl("sem", "store", new Object[]{ options });
+    }
+
+    
+    @Override
+    public SemStoreExpr store(String options, CtsQueryExpr query) {
+        return store((options == null) ? (XsStringVal) null : xs.string(options), query);
+    }
+
+    
+    @Override
+    public SemStoreExpr store(XsStringSeqVal options, CtsQueryExpr query) {
+        return new StoreCallImpl("sem", "store", new Object[]{ options, query });
     }
 
     
@@ -345,6 +422,26 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
     }
     static class IriCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemIriExpr {
         IriCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+ 
+    @Override
+    public SemStoreSeqExpr storeSeq(SemStoreExpr... items) {
+        return new StoreSeqListImpl(items);
+    }
+    static class StoreSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreSeqExpr {
+        StoreSeqListImpl(Object[] items) {
+            super(BaseTypeImpl.convertList(items));
+        }
+    }
+    static class StoreSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreSeqExpr {
+        StoreSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+        }
+    }
+    static class StoreCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreExpr {
+        StoreCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
         }
     }

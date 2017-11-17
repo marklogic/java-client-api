@@ -43,7 +43,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr bitLength(XsStringExpr str);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
+    * Returns an rdf:collatedString value with the given value and collation tag. The rdf:collatedString type extends xs:string , and represents a collation tagged string in RDF. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
@@ -52,7 +52,7 @@ public interface SqlExpr {
     */
     public XsStringExpr collatedString(XsStringExpr string, String collationURI);
     /**
-    * Returns an <code>rdf:collatedString</code> value with the given value and collation tag. The <code>rdf:collatedString</code> type extends <code>xs:string</code> , and represents a collation tagged string in RDF. <p>This function is a built-in.
+    * Returns an rdf:collatedString value with the given value and collation tag. The rdf:collatedString type extends xs:string , and represents a collation tagged string in RDF. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:collated-string" target="mlserverdoc">sql:collated-string</a>
     * @param string  The lexical value.
@@ -64,7 +64,7 @@ public interface SqlExpr {
     * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:dateadd" target="mlserverdoc">sql:dateadd</a>
-    * @param datepart  Is the part of date where the number will be added. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. The return data type is the data type of the date argument. <p>Options:</p><p> <code>datepart</code> parameter abbreviation includes:</p> <blockquote><dl> <dt>"year","yyyy","yy"</dt> <dd>The year part of the <code>date</code></dd> <dt>"quarter","qq","q"</dt> <dd>The quarter part of the <code>date</code></dd> <dt>"month","mm","m"</dt> <dd>The month part of the <code>date</code></dd> <dt>"dayofyear","dy","y"</dt> <dd>The day of the year from the <code>date</code></dd> <dt>"day","dd","d"</dt> <dd>The day of the month from the <code>date</code></dd> <dt>"week","wk","ww"</dt> <dd>The week of the year from the <code>date</code></dd> <dt>"weekday","dw"</dt> <dd>The day of the week from the <code>date</code></dd> <dt>"hour","hh"</dt> <dd>The hour of the day from the <code>date</code></dd> <dt>"minute","mi","n"</dt> <dd>The minute of the hour from the <code>date</code></dd> <dt>"second","ss","s"</dt> <dd>The second of the minute from the <code>date</code></dd> <dt>"millisecond","ms"</dt> <dd>The millisecond of the minute from the <code>date</code></dd> <dt>"microsecond","msc"</dt> <dd>The microsecond of the minute from the <code>date</code></dd> <dt>"nanosecond","ns"</dt> <dd>The nanosecond of the minute from the <code>date</code></dd> </dl></blockquote>
+    * @param datepart  Is the part of date where the number will be added. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. The return data type is the data type of the date argument. Options: datepart parameter abbreviation includes:  "year","yyyy","yy" The year part of the date "quarter","qq","q" The quarter part of the date "month","mm","m" The month part of the date "dayofyear","dy","y" The day of the year from the date "day","dd","d" The day of the month from the date "week","wk","ww" The week of the year from the date "weekday","dw" The day of the week from the date "hour","hh" The hour of the day from the date "minute","mi","n" The minute of the hour from the date "second","ss","s" The second of the minute from the date "millisecond","ms" The millisecond of the minute from the date "microsecond","msc" The microsecond of the minute from the date "nanosecond","ns" The nanosecond of the minute from the date 
     * @param number  This number will be added to the datepart of the given date.
     * @param date  Is an expression that can be resolved to a time, date or datetime, value. date can be an expression, column expression, user-defined variable or string literal. startdate is subtracted from enddate.
     * @return  a ItemExpr expression
@@ -74,7 +74,7 @@ public interface SqlExpr {
     * Returns a specified date with the specified number interval (signed integer) added to a specified datepart of that date 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:dateadd" target="mlserverdoc">sql:dateadd</a>
-    * @param datepart  Is the part of date where the number will be added. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. The return data type is the data type of the date argument. <p>Options:</p><p> <code>datepart</code> parameter abbreviation includes:</p> <blockquote><dl> <dt>"year","yyyy","yy"</dt> <dd>The year part of the <code>date</code></dd> <dt>"quarter","qq","q"</dt> <dd>The quarter part of the <code>date</code></dd> <dt>"month","mm","m"</dt> <dd>The month part of the <code>date</code></dd> <dt>"dayofyear","dy","y"</dt> <dd>The day of the year from the <code>date</code></dd> <dt>"day","dd","d"</dt> <dd>The day of the month from the <code>date</code></dd> <dt>"week","wk","ww"</dt> <dd>The week of the year from the <code>date</code></dd> <dt>"weekday","dw"</dt> <dd>The day of the week from the <code>date</code></dd> <dt>"hour","hh"</dt> <dd>The hour of the day from the <code>date</code></dd> <dt>"minute","mi","n"</dt> <dd>The minute of the hour from the <code>date</code></dd> <dt>"second","ss","s"</dt> <dd>The second of the minute from the <code>date</code></dd> <dt>"millisecond","ms"</dt> <dd>The millisecond of the minute from the <code>date</code></dd> <dt>"microsecond","msc"</dt> <dd>The microsecond of the minute from the <code>date</code></dd> <dt>"nanosecond","ns"</dt> <dd>The nanosecond of the minute from the <code>date</code></dd> </dl></blockquote>
+    * @param datepart  Is the part of date where the number will be added. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. The return data type is the data type of the date argument. Options: datepart parameter abbreviation includes:  "year","yyyy","yy" The year part of the date "quarter","qq","q" The quarter part of the date "month","mm","m" The month part of the date "dayofyear","dy","y" The day of the year from the date "day","dd","d" The day of the month from the date "week","wk","ww" The week of the year from the date "weekday","dw" The day of the week from the date "hour","hh" The hour of the day from the date "minute","mi","n" The minute of the hour from the date "second","ss","s" The second of the minute from the date "millisecond","ms" The millisecond of the minute from the date "microsecond","msc" The microsecond of the minute from the date "nanosecond","ns" The nanosecond of the minute from the date 
     * @param number  This number will be added to the datepart of the given date.
     * @param date  Is an expression that can be resolved to a time, date or datetime, value. date can be an expression, column expression, user-defined variable or string literal. startdate is subtracted from enddate.
     * @return  a ItemExpr expression
@@ -84,23 +84,23 @@ public interface SqlExpr {
     * Returns the count (signed integer) of the specified datepart boundaries crossed between the specified startdate and enddate. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:datediff" target="mlserverdoc">sql:datediff</a>
-    * @param datepart  Is the part of startdate and enddate that specifies the type of boundary crossed. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. <p>Options:</p><p> <code>datepart</code> parameter abbreviation includes:</p> <blockquote><dl> <dt>"year","yyyy","yy"</dt> <dd>The year part of the <code>date</code></dd> <dt>"quarter","qq","q"</dt> <dd>The quarter part of the <code>date</code></dd> <dt>"month","mm","m"</dt> <dd>The month part of the <code>date</code></dd> <dt>"dayofyear","dy","y"</dt> <dd>The day of the year from the <code>date</code></dd> <dt>"day","dd","d"</dt> <dd>The day of the month from the <code>date</code></dd> <dt>"week","wk","ww"</dt> <dd>The week of the year from the <code>date</code></dd> <dt>"weekday","dw"</dt> <dd>The day of the week from the <code>date</code></dd> <dt>"hour","hh"</dt> <dd>The hour of the day from the <code>date</code></dd> <dt>"minute","mi","n"</dt> <dd>The minute of the hour from the <code>date</code></dd> <dt>"second","ss","s"</dt> <dd>The second of the minute from the <code>date</code></dd> <dt>"millisecond","ms"</dt> <dd>The millisecond of the minute from the <code>date</code></dd> <dt>"microsecond","msc"</dt> <dd>The microsecond of the minute from the <code>date</code></dd> <dt>"nanosecond","ns"</dt> <dd>The nanosecond of the minute from the <code>date</code></dd> </dl></blockquote>
-    * @param startdate  Is an expression that can be resolved to a time, date, datetime or value. date can be an expression, column expression, user-defined variable or string literal. <code>startdate</code> is subtracted from <code>enddate</code>.
-    * @param enddate  Same as <code>startdate</code>.
+    * @param datepart  Is the part of startdate and enddate that specifies the type of boundary crossed. The following table lists all valid datepart arguments. User-defined variable equivalents are not valid. Options: datepart parameter abbreviation includes:  "year","yyyy","yy" The year part of the date "quarter","qq","q" The quarter part of the date "month","mm","m" The month part of the date "dayofyear","dy","y" The day of the year from the date "day","dd","d" The day of the month from the date "week","wk","ww" The week of the year from the date "weekday","dw" The day of the week from the date "hour","hh" The hour of the day from the date "minute","mi","n" The minute of the hour from the date "second","ss","s" The second of the minute from the date "millisecond","ms" The millisecond of the minute from the date "microsecond","msc" The microsecond of the minute from the date "nanosecond","ns" The nanosecond of the minute from the date 
+    * @param startdate  Is an expression that can be resolved to a time, date, datetime or value. date can be an expression, column expression, user-defined variable or string literal. startdate is subtracted from enddate.
+    * @param enddate  Same as startdate.
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr datediff(XsStringExpr datepart, ItemExpr startdate, ItemExpr enddate);
     /**
-    * Returns an integer that represents the specified <code>datepart</code> of the specified <code>date</code>. <p> If <code>datepart</code> or <code>date</code> is the empty sequence, the function returns the empty sequence. 
+    * Returns an integer that represents the specified datepart of the specified date. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:datepart" target="mlserverdoc">sql:datepart</a>
-    * @param datepart  The part of date that to be returned. <p>Options:</p><p> <code>datepart</code> parameter abbreviation includes:</p> <blockquote><dl> <dt>"year","yyyy","yy"</dt> <dd>The year part of the <code>date</code></dd> <dt>"quarter","qq","q"</dt> <dd>The quarter part of the <code>date</code></dd> <dt>"month","mm","m"</dt> <dd>The month part of the <code>date</code></dd> <dt>"dayofyear","dy","y"</dt> <dd>The day of the year from the <code>date</code></dd> <dt>"day","dd","d"</dt> <dd>The day of the month from the <code>date</code></dd> <dt>"week","wk","ww"</dt> <dd>The week of the year from the <code>date</code></dd> <dt>"weekday","dw"</dt> <dd>The day of the week from the <code>date</code></dd> <dt>"hour","hh"</dt> <dd>The hour of the day from the <code>date</code></dd> <dt>"minute","mi","n"</dt> <dd>The minute of the hour from the <code>date</code></dd> <dt>"second","ss","s"</dt> <dd>The second of the minute from the <code>date</code></dd> <dt>"millisecond","ms"</dt> <dd>The millisecond of the minute from the <code>date</code></dd> <dt>"microsecond","msc"</dt> <dd>The microsecond of the minute from the <code>date</code></dd> <dt>"nanosecond","ns"</dt> <dd>The nanosecond of the minute from the <code>date</code></dd> <dt>"TZoffset","tz"</dt> <dd>The timezone offset from the <code>date</code></dd> </dl></blockquote>
-    * @param date  Is an expression that can be resolved to a xs:date, xs:time, xs:dateTime. <code>date</code> can be an expression, column expression,user-defined variable, or string literal.
+    * @param datepart  The part of date that to be returned. Options: datepart parameter abbreviation includes:  "year","yyyy","yy" The year part of the date "quarter","qq","q" The quarter part of the date "month","mm","m" The month part of the date "dayofyear","dy","y" The day of the year from the date "day","dd","d" The day of the month from the date "week","wk","ww" The week of the year from the date "weekday","dw" The day of the week from the date "hour","hh" The hour of the day from the date "minute","mi","n" The minute of the hour from the date "second","ss","s" The second of the minute from the date "millisecond","ms" The millisecond of the minute from the date "microsecond","msc" The microsecond of the minute from the date "nanosecond","ns" The nanosecond of the minute from the date "TZoffset","tz" The timezone offset from the date 
+    * @param date  Is an expression that can be resolved to a xs:date, xs:time, xs:dateTime. date can be an expression, column expression,user-defined variable, or string literal.
     * @return  a XsIntegerExpr expression
     */
     public XsIntegerExpr datepart(XsStringExpr datepart, ItemExpr date);
     /**
-    *  Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 1 and 31, both inclusive, representing the day component in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:day" target="mlserverdoc">sql:day</a>
     * @param arg  The xs:genericDateTimeArg whose day component will be returned.
@@ -108,7 +108,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr day(ItemExpr arg);
     /**
-    * Returns an xs:string representing the dayname value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:string representing the dayname value in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:dayname" target="mlserverdoc">sql:dayname</a>
     * @param arg  The date whose dayname value will be returned.
@@ -116,7 +116,7 @@ public interface SqlExpr {
     */
     public XsStringExpr dayname(ItemExpr arg);
     /**
-    *  Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 0 and 23, both inclusive, representing the value of the hours component in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:hours" target="mlserverdoc">sql:hours</a>
     * @param arg  The genericDateTime whose hours component will be returned.
@@ -124,7 +124,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr hours(ItemExpr arg);
     /**
-    * Returns a string that that is the first argument with <var>length</var> characters removed starting at <var>start</var> and the second string has been inserted beginning at <var>start</var>.
+    * Returns a string that that is the first argument with length characters removed starting at start and the second string has been inserted beginning at start.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:insert" target="mlserverdoc">sql:insert</a>
     * @param str  The string to manipulate.
@@ -135,7 +135,7 @@ public interface SqlExpr {
     */
     public XsStringExpr insert(XsStringExpr str, double start, double length, String str2);
     /**
-    * Returns a string that that is the first argument with <var>length</var> characters removed starting at <var>start</var> and the second string has been inserted beginning at <var>start</var>.
+    * Returns a string that that is the first argument with length characters removed starting at start and the second string has been inserted beginning at start.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:insert" target="mlserverdoc">sql:insert</a>
     * @param str  The string to manipulate.
@@ -190,7 +190,7 @@ public interface SqlExpr {
     */
     public XsStringExpr ltrim(XsStringExpr str);
     /**
-    *  Returns an xs:integer value between 0 to 59, both inclusive, representing the value of the minutes component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer value between 0 to 59, both inclusive, representing the value of the minutes component in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:minutes" target="mlserverdoc">sql:minutes</a>
     * @param arg  The genericDateTime whose minutes component will be returned.
@@ -198,7 +198,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr minutes(ItemExpr arg);
     /**
-    *  Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 1 and 12, both inclusive, representing the month component in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:month" target="mlserverdoc">sql:month</a>
     * @param arg  The genericDateTime whose month component will be returned.
@@ -206,7 +206,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr month(ItemExpr arg);
     /**
-    *  Returns month name, calculated from the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns month name, calculated from the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:monthname" target="mlserverdoc">sql:monthname</a>
     * @param arg  The date whose month-name will be returned.
@@ -222,7 +222,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr octetLength(XsStringExpr x);
     /**
-    *  Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:quarter" target="mlserverdoc">sql:quarter</a>
     * @param arg  The genericDateTime whose quarter component will be returned.
@@ -282,7 +282,7 @@ public interface SqlExpr {
     */
     public XsStringExpr rtrim(XsStringExpr str);
     /**
-    *  Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:decimal value between 0 and 60.999..., both inclusive, representing the seconds and fractional seconds in the localized value of arg. Note that the value can be greater than 60 seconds to accommodate occasional leap seconds used to keep human time synchronized with the rotation of the planet. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:seconds" target="mlserverdoc">sql:seconds</a>
     * @param arg  The time whose seconds component will be returned.
@@ -309,7 +309,7 @@ public interface SqlExpr {
     * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampadd" target="mlserverdoc">sql:timestampadd</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are:  SQL_TSI_FRAC_SECOND nano seconds SQL_TSI_SECOND seconds SQL_TSI_MINUTE minute SQL_TSI_HOUR hour SQL_TSI_DAY day SQL_TSI_WEEK week SQL_TSI_MONTH month SQL_TSI_QUARTER quarter SQL_TSI_YEAR year 
     * @param value  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp  The xs:dateTime timestamp to which addition has to take place.
     * @return  a ItemExpr expression
@@ -319,7 +319,7 @@ public interface SqlExpr {
     * Returns a xs:string? timestamp created by adding a number to the given dateTimeType field of a given timestamp.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampadd" target="mlserverdoc">sql:timestampadd</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are:  SQL_TSI_FRAC_SECOND nano seconds SQL_TSI_SECOND seconds SQL_TSI_MINUTE minute SQL_TSI_HOUR hour SQL_TSI_DAY day SQL_TSI_WEEK week SQL_TSI_MONTH month SQL_TSI_QUARTER quarter SQL_TSI_YEAR year 
     * @param value  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp  The xs:dateTime timestamp to which addition has to take place.
     * @return  a ItemExpr expression
@@ -329,7 +329,7 @@ public interface SqlExpr {
     * Returns the difference in dateTimeType field of two given timestamps.
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:timestampdiff" target="mlserverdoc">sql:timestampdiff</a>
-    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are: <dl> <dt>SQL_TSI_FRAC_SECOND</dt> <dd>nano seconds</dd> <dt>SQL_TSI_SECOND</dt> <dd>seconds</dd> <dt>SQL_TSI_MINUTE</dt> <dd>minute</dd> <dt>SQL_TSI_HOUR</dt> <dd>hour</dd> <dt>SQL_TSI_DAY</dt> <dd>day</dd> <dt>SQL_TSI_WEEK</dt> <dd>week</dd> <dt>SQL_TSI_MONTH</dt> <dd>month</dd> <dt>SQL_TSI_QUARTER</dt> <dd>quarter</dd> <dt>SQL_TSI_YEAR</dt> <dd>year</dd> </dl>
+    * @param dateTimeType  The dateTimeType of the timestamp where addition should take place. Available types are:  SQL_TSI_FRAC_SECOND nano seconds SQL_TSI_SECOND seconds SQL_TSI_MINUTE minute SQL_TSI_HOUR hour SQL_TSI_DAY day SQL_TSI_WEEK week SQL_TSI_MONTH month SQL_TSI_QUARTER quarter SQL_TSI_YEAR year 
     * @param timestamp1  The integer to add to the given dateTimeType field of the third parameter.
     * @param timestamp2  The xs:dateTime timestamp to which addition has to take place.
     * @return  a XsIntegerExpr expression
@@ -344,7 +344,7 @@ public interface SqlExpr {
     */
     public XsStringExpr trim(XsStringExpr str);
     /**
-    *  Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:week" target="mlserverdoc">sql:week</a>
     * @param arg  The dateTime/date/string whose day component will be returned.
@@ -353,7 +353,7 @@ public interface SqlExpr {
     public XsIntegerExpr week(ItemExpr arg);
     public XsIntegerExpr weekday(ItemExpr arg1);
     /**
-    *  Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer representing the year component in the localized value of arg. The result may be negative. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:year" target="mlserverdoc">sql:year</a>
     * @param arg  The dateTime/date/string whose day component will be returned.
@@ -361,7 +361,7 @@ public interface SqlExpr {
     */
     public XsIntegerExpr year(ItemExpr arg);
     /**
-    * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. <p> If arg is the empty sequence, returns the empty sequence. 
+    * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
     * <p>
     * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/sql:yearday" target="mlserverdoc">sql:yearday</a>
     * @param arg  The xs:genericDateTimeArg whose days of the year will be returned.

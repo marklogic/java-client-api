@@ -60,6 +60,8 @@ import com.marklogic.client.type.PlanCase;
 import com.marklogic.client.type.PlanCaseSeq;
 import com.marklogic.client.type.PlanColumn;
 import com.marklogic.client.type.PlanColumnSeq;
+import com.marklogic.client.type.PlanCondition;
+import com.marklogic.client.type.PlanConditionSeq;
 import com.marklogic.client.type.PlanExprCol;
 import com.marklogic.client.type.PlanExprColSeq;
 import com.marklogic.client.type.PlanFunction;
@@ -70,8 +72,6 @@ import com.marklogic.client.type.PlanJsonProperty;
 import com.marklogic.client.type.PlanJsonPropertySeq;
 import com.marklogic.client.type.PlanParamBindingSeqVal;
 import com.marklogic.client.type.PlanParamBindingVal;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanParamSeqExpr;
 import com.marklogic.client.type.PlanSortKey;
 import com.marklogic.client.type.PlanSortKeySeq;
 import com.marklogic.client.type.PlanSystemColumn;
@@ -203,15 +203,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public ItemSeqExpr caseExpr(PlanCase... cases) {
-        if (cases == null) {
-            throw new IllegalArgumentException("cases parameter for caseExpr() cannot be null");
-        }
-        return new BaseTypeImpl.ItemSeqCallImpl("op", "case", cases);
-    }
-
-    
-    @Override
     public PlanColumn col(String column) {
         return col((column == null) ? (XsStringVal) null : xs.string(column));
     }
@@ -303,15 +294,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanCase elseExpr(ItemExpr value) {
-        if (value == null) {
-            throw new IllegalArgumentException("value parameter for elseExpr() cannot be null");
-        }
-        return new CaseCallImpl("op", "else", new Object[]{ value });
-    }
-
-    
-    @Override
     public XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
         if (left == null) {
             throw new IllegalArgumentException("left parameter for eq() cannot be null");
@@ -335,6 +317,66 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
             throw new IllegalArgumentException("column parameter for fragmentIdCol() cannot be null");
         }
         return new SystemColumnCallImpl("op", "fragment-id-col", new Object[]{ column });
+    }
+
+    
+    @Override
+    public ModifyPlan fromSparql(String select) {
+        return fromSparql((select == null) ? (XsStringVal) null : xs.string(select));
+    }
+
+    
+    @Override
+    public ModifyPlan fromSparql(XsStringVal select) {
+        if (select == null) {
+            throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select });
+    }
+
+    
+    @Override
+    public ModifyPlan fromSparql(String select, String qualifierName) {
+        return fromSparql((select == null) ? (XsStringVal) null : xs.string(select), (qualifierName == null) ? (XsStringVal) null : xs.string(qualifierName));
+    }
+
+    
+    @Override
+    public ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName) {
+        if (select == null) {
+            throw new IllegalArgumentException("select parameter for fromSparql() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sparql", new Object[]{ select, qualifierName });
+    }
+
+    
+    @Override
+    public ModifyPlan fromSql(String select) {
+        return fromSql((select == null) ? (XsStringVal) null : xs.string(select));
+    }
+
+    
+    @Override
+    public ModifyPlan fromSql(XsStringVal select) {
+        if (select == null) {
+            throw new IllegalArgumentException("select parameter for fromSql() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sql", new Object[]{ select });
+    }
+
+    
+    @Override
+    public ModifyPlan fromSql(String select, String qualifierName) {
+        return fromSql((select == null) ? (XsStringVal) null : xs.string(select), (qualifierName == null) ? (XsStringVal) null : xs.string(qualifierName));
+    }
+
+    
+    @Override
+    public ModifyPlan fromSql(XsStringVal select, XsStringVal qualifierName) {
+        if (select == null) {
+            throw new IllegalArgumentException("select parameter for fromSql() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl("op", "from-sql", new Object[]{ select, qualifierName });
     }
 
     
@@ -456,24 +498,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanAggregateCol groupConcat(String name, String column) {
-        return groupConcat((name == null) ? (PlanColumn) null : col(name), (column == null) ? (PlanExprCol) null : exprCol(column));
-    }
-
-    
-    @Override
-    public PlanAggregateCol groupConcat(PlanColumn name, PlanExprCol column) {
-        if (name == null) {
-            throw new IllegalArgumentException("name parameter for groupConcat() cannot be null");
-        }
-        if (column == null) {
-            throw new IllegalArgumentException("column parameter for groupConcat() cannot be null");
-        }
-        return new AggregateColCallImpl("op", "group-concat", new Object[]{ name, column });
-    }
-
-    
-    @Override
     public XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
         if (left == null) {
             throw new IllegalArgumentException("left parameter for gt() cannot be null");
@@ -500,15 +524,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
             throw new IllegalArgumentException("key parameter for joinKeySeq() cannot be null");
         }
         return new JoinKeySeqListImpl(key);
-    }
-
-    
-    @Override
-    public ArrayNodeExpr jsonArray(JsonContentNodeExpr... property) {
-        if (property == null) {
-            throw new IllegalArgumentException("property parameter for jsonArray() cannot be null");
-        }
-        return new BaseTypeImpl.ArrayNodeCallImpl("op", "json-array", property);
     }
 
     
@@ -554,15 +569,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
             throw new IllegalArgumentException("value parameter for jsonNumber() cannot be null");
         }
         return new BaseTypeImpl.NumberNodeCallImpl("op", "json-number", new Object[]{ value });
-    }
-
-    
-    @Override
-    public ObjectNodeExpr jsonObject(PlanJsonProperty... property) {
-        if (property == null) {
-            throw new IllegalArgumentException("property parameter for jsonObject() cannot be null");
-        }
-        return new BaseTypeImpl.ObjectNodeCallImpl("op", "json-object", property);
     }
 
     
@@ -726,21 +732,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
     @Override
-    public PlanParamExpr param(String name) {
-        return param((name == null) ? (XsStringVal) null : xs.string(name));
-    }
-
-    
-    @Override
-    public PlanParamExpr param(XsStringVal name) {
-        if (name == null) {
-            throw new IllegalArgumentException("name parameter for param() cannot be null");
-        }
-        return new ParamCallImpl("op", "param", new Object[]{ name });
-    }
-
-    
-    @Override
     public PlanTriplePattern pattern(PlanTriplePositionSeq subjects, PlanTriplePositionSeq predicates, PlanTriplePositionSeq objects) {
         return new TriplePatternCallImpl("op", "pattern", new Object[]{ subjects, predicates, objects });
     }
@@ -869,6 +860,21 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
             throw new IllegalArgumentException("key parameter for sortKeySeq() cannot be null");
         }
         return new SortKeySeqListImpl(key);
+    }
+
+    
+    @Override
+    public PlanCondition sqlCondition(String expression) {
+        return sqlCondition((expression == null) ? (XsStringVal) null : xs.string(expression));
+    }
+
+    
+    @Override
+    public PlanCondition sqlCondition(XsStringVal expression) {
+        if (expression == null) {
+            throw new IllegalArgumentException("expression parameter for sqlCondition() cannot be null");
+        }
+        return new ConditionCallImpl("op", "sql-condition", new Object[]{ expression });
     }
 
     
@@ -1204,6 +1210,27 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     }
 
     
+    static class ConditionSeqListImpl extends PlanSeqListImpl implements PlanConditionSeq {
+        ConditionSeqListImpl(Object[] items) {
+            super(items);
+        }
+    }
+
+    
+    static class ConditionSeqCallImpl extends PlanCallImpl implements PlanConditionSeq {
+        ConditionSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+
+    
+    static class ConditionCallImpl extends PlanCallImpl implements PlanCondition {
+        ConditionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+            super(fnPrefix, fnName, fnArgs);
+        }
+    }
+
+    
     static class ExprColSeqListImpl extends PlanSeqListImpl implements PlanExprColSeq {
         ExprColSeqListImpl(Object[] items) {
             super(items);
@@ -1283,27 +1310,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
     
     static class JsonPropertyCallImpl extends PlanCallImpl implements PlanJsonProperty {
         JsonPropertyCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
-        }
-    }
-
-    
-    static class ParamSeqListImpl extends PlanSeqListImpl implements PlanParamSeqExpr {
-        ParamSeqListImpl(Object[] items) {
-            super(items);
-        }
-    }
-
-    
-    static class ParamSeqCallImpl extends PlanCallImpl implements PlanParamSeqExpr {
-        ParamSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-            super(fnPrefix, fnName, fnArgs);
-        }
-    }
-
-    
-    static class ParamCallImpl extends PlanCallImpl implements PlanParamExpr {
-        ParamCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
             super(fnPrefix, fnName, fnArgs);
         }
     }
@@ -1545,6 +1551,15 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
         
     @Override
+    public ModifyPlan joinInner(ModifyPlan right) {
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for joinInner() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-inner", new Object[]{ right });
+    }
+
+        
+    @Override
     public ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys) {
         return joinInner(right, new JoinKeySeqListImpl(keys));
     }
@@ -1571,6 +1586,15 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
             throw new IllegalArgumentException("right parameter for joinInner() cannot be null");
         }
         return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-inner", new Object[]{ right, keys, condition });
+    }
+
+        
+    @Override
+    public ModifyPlan joinLeftOuter(ModifyPlan right) {
+        if (right == null) {
+            throw new IllegalArgumentException("right parameter for joinLeftOuter() cannot be null");
+        }
+        return new PlanBuilderSubImpl.ModifyPlanSubImpl(this, "op", "join-left-outer", new Object[]{ right });
     }
 
         
@@ -1675,17 +1699,6 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
         }
 
         
-    @Override
-    public Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal) {
-        if (param == null) {
-            throw new IllegalArgumentException("param parameter for bindParam() cannot be null");
-        }
-        if (literal == null) {
-            throw new IllegalArgumentException("literal parameter for bindParam() cannot be null");
-        }
-        return new PlanBuilderSubImpl.PlanSubImpl(this, "op", "bind-param", new Object[]{ param, literal });
-    }
-
     }
 
     
