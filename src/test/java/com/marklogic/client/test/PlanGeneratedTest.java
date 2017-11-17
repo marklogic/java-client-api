@@ -155,17 +155,17 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testFnCurrentDate0Exec() {
-        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2017-11-16-05:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentDate0", p.fn.currentDate(), true, "xs:date", null, null, "2017-11-17-05:00", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnCurrentDateTime0Exec() {
-        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2017-11-16T20:57:51.12009-05:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentDateTime0", p.fn.currentDateTime(), true, "xs:dateTime", null, null, "2017-11-17T15:58:33.089337-05:00", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testFnCurrentTime0Exec() {
-        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "20:57:51-05:00", new ItemSeqExpr[]{  });
+        executeTester("testFnCurrentTime0", p.fn.currentTime(), true, "xs:time", null, null, "15:58:33-05:00", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -845,7 +845,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemBnode0Exec() {
-        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode6511591465596070822", new ItemSeqExpr[]{  });
+        executeTester("testSemBnode0", p.sem.bnode(), true, "sem:blank", null, null, "_:bnode4218289467607899967", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -920,7 +920,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemRandom0Exec() {
-        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.475098538504233", new ItemSeqExpr[]{  });
+        executeTester("testSemRandom0", p.sem.random(), true, null, null, null, "0.865772430222318", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -945,12 +945,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSemUuid0Exec() {
-        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:563760a7-5347-4283-9f1c-8c3f98868164", new ItemSeqExpr[]{  });
+        executeTester("testSemUuid0", p.sem.uuid(), true, "sem:iri", null, null, "urn:uuid:cbd9801d-4be2-4526-a5cd-f246c63e043a", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testSemUuidString0Exec() {
-        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "8557cb2b-c587-4d9e-8e9d-2bab6128e344", new ItemSeqExpr[]{  });
+        executeTester("testSemUuidString0", p.sem.uuidString(), true, null, null, null, "9ecfb995-b213-4e41-a6bc-3faa56bfc121", new ItemSeqExpr[]{  });
     }
 
     @Test
@@ -1055,7 +1055,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testSqlRand1Exec() {
-        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "3607645521648844574", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
+        executeTester("testSqlRand1", p.sql.rand(p.col("1")), true, "xs:unsignedLong", null, null, "13455103579893950862", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
@@ -1145,7 +1145,7 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpCrypt21Exec() {
-        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$.EBAWYbpieePCG8Viyqak/$256$3SKt3DIveaLbbLId", new ItemSeqExpr[]{ p.xs.string("abc") });
+        executeTester("testXdmpCrypt21", p.xdmp.crypt2(p.col("1")), true, null, null, null, "$256$vDWGj.V03d1Xckuqc6r7G1$256$o7KV8cz34cwzMjs3", new ItemSeqExpr[]{ p.xs.string("abc") });
     }
 
     @Test
@@ -1375,12 +1375,12 @@ public class PlanGeneratedTest extends PlanGeneratedBase {
 
     @Test
     public void testXdmpRandom0Exec() {
-        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "18237870512143978037", new ItemSeqExpr[]{  });
+        executeTester("testXdmpRandom0", p.xdmp.random(), true, "xs:unsignedLong", null, null, "12367239474119417083", new ItemSeqExpr[]{  });
     }
 
     @Test
     public void testXdmpRandom1Exec() {
-        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "0", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
+        executeTester("testXdmpRandom1", p.xdmp.random(p.col("1")), true, null, null, null, "1", new ItemSeqExpr[]{ p.xs.unsignedLong(1) });
     }
 
     @Test
