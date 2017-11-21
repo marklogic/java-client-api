@@ -1180,6 +1180,16 @@ public class WriteBatcherImpl
       ConcurrentLinkedQueue<Runnable> snapshot = new ConcurrentLinkedQueue<>();
       activeSnapshots.put( Thread.currentThread(), snapshot );
       snapshot.addAll(queuedAndExecutingTasks);
+      // There is inconsistency between queuedAndExecutingTasks and snapshot
+      // taken here. If there are a large number of tasks, by the time we
+      // iterate queuedAndExecutingTasks and get all the tasks into the snapshot
+      // queue, some tasks complete and are removed from
+      // queuedAndExecutingTasks. So, iterate over the snapshot again and remove
+      // those completed tasks so that they both are consistent.
+      for (Runnable task : snapshot) {
+        if ( !(queuedAndExecutingTasks.contains(task)) )
+          snapshot.remove(task);
+      }
       return snapshot;
     }
 
