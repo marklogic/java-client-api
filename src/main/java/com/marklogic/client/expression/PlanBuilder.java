@@ -349,11 +349,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanColumn viewCol(XsStringVal view, XsStringVal column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
+  * @param column  the column  value
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(String column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
+  * @param column  the column  value
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(XsStringVal column);
@@ -1183,196 +1185,196 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public interface ModifyPlan extends PreparePlan, PlanBuilderBase.ModifyPlanBase {
 /**
   * This method restricts the left row set to rows where a row with the same columns and values doesn't exist in the right row set.
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan except(ModifyPlan right);
 /**
   * This method collapses a group of rows into a single row. 
-  * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan groupBy(PlanExprColSeq keys);
 /**
   * This method collapses a group of rows into a single row. 
-  * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param aggregates  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set.
+  * @param keys  This parameter specifies the columns used to determine the groups. Rows with the same values in these columns are consolidated into a single group. The columns can be existing columns or new columns created by an expression specified with op:as. The rows produced by the group by operation include the key columns. Specify an empty sequence to create a single group for all of the rows in the row set.
+  * @param aggregates  This parameter specifies either new columns for aggregate functions over the rows in the group or columndefs that are constant for the group. The aggregate library functions are listed below.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan groupBy(PlanExprColSeq keys, PlanAggregateColSeq aggregates);
 /**
   * This method restricts the left row set to rows where a row with the same columns and values exists in the right row set.
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan intersect(ModifyPlan right);
 /**
   * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right);
 /**
   * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
-  * @param right  The row set from the left view.
-  * @param condition  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right, boolean condition);
 /**
   * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
-  * @param right  The row set from the left view.
-  * @param condition  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition);
 /**
   * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). 
-  * @param docCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param sourceCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
+  * @param docCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
+  * @param sourceCol  The document uri or fragment id value. This is either the output from op:fragment-id-col specifying a fragment id column or a document uri column. Joining on a fragment id is more efficient than joining on a uri column.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDoc(String docCol, String sourceCol);
 /**
   * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). 
-  * @param docCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param sourceCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
+  * @param docCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
+  * @param sourceCol  The document uri or fragment id value. This is either the output from op:fragment-id-col specifying a fragment id column or a document uri column. Joining on a fragment id is more efficient than joining on a uri column.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDoc(PlanColumn docCol, PlanColumn sourceCol);
 /**
   * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. 
-  * @param uriCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param fragmentIdCol  The document uri. This is the output from op:col('uri') that specifies a document uri column.
+  * @param uriCol  The document uri. This is the output from op:col('uri') that specifies a document uri column.
+  * @param fragmentIdCol  The document fragment id value. This is the output from op:fragment-id-col specifying a fragment id column.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocUri(String uriCol, String fragmentIdCol);
 /**
   * This method adds a uri column to rows based on an existing fragment id column to identify the source document for each row. The fragmentIdCol must be an op:fragment-id-col specifying a fragment id column. If the fragment id column is null in the row, the row is dropped from the rowset. 
-  * @param uriCol  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param fragmentIdCol  The document uri. This is the output from op:col('uri') that specifies a document uri column.
+  * @param uriCol  The document uri. This is the output from op:col('uri') that specifies a document uri column.
+  * @param fragmentIdCol  The document fragment id value. This is the output from op:fragment-id-col specifying a fragment id column.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinDocUri(PlanColumn uriCol, PlanColumn fragmentIdCol);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
-  * @param condition  The equijoin from one or more calls to the op:on function.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
-  * @param condition  The equijoin from one or more calls to the op:on function.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKey... keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
-  * @param condition  The equijoin from one or more calls to the op:on function.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
-  * @param right  The row set from the left view.
-  * @param keys  The row set from the right view.
-  * @param condition  The equijoin from one or more calls to the op:on function.
+  * @param right  The row set from the right view.
+  * @param keys  The equijoin from one or more calls to the op:on function.
+  * @param condition  A boolean expression that filters the join output rows.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
 /**
   * This method sorts the row set by the specified order definition.
-  * @param keys  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param keys  The specified column or sortdef output from the op:asc or op:desc function.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan orderBy(PlanSortKeySeq keys);
 /**
   * This method prepares the specified plan for execution as an optional final step before execution.
-  * @param optimize  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param optimize  The optimization level, which can be 0, 1, or 2 (with 1 as the default).
   * @return  a PreparePlan object
   */
   public abstract PreparePlan prepare(int optimize);
 /**
   * This method prepares the specified plan for execution as an optional final step before execution.
-  * @param optimize  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param optimize  The optimization level, which can be 0, 1, or 2 (with 1 as the default).
   * @return  a PreparePlan object
   */
   public abstract PreparePlan prepare(XsIntVal optimize);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param columns  The columns to select.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprCol... columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param columns  The columns to select.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param qualifierName  The columns to select.
+  * @param columns  The columns to select.
+  * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns, String qualifierName);
 /**
   * This call projects the specified columns from the current row set and / or applies a qualifier to the columns in the row set. Unlike SQL, a select call is not required in an Optic query.
-  * @param columns  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param qualifierName  The columns to select.
+  * @param columns  The columns to select.
+  * @param qualifierName  Specifies a name for qualifying the column names in place of the combination of the schema and view names. Use cases for the qualifier include self joins. Using an empty string removes all qualification from the column names.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan select(PlanExprColSeq columns, XsStringVal qualifierName);
 /**
   * This method yields all of the rows from the input row sets. Columns that are present only in some input row sets effectively have a null value in the rows from the other row sets. 
-  * @param right  The row set from the left view.
+  * @param right  The row set from the right view.
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan union(ModifyPlan right);
@@ -1400,27 +1402,27 @@ public abstract Plan bindParam(PlanParamExpr param, PlanParamBindingVal literal)
   public interface PreparePlan extends ExportablePlan, PlanBuilderBase.PreparePlanBase {
 /**
   * This method applies the specified function to each row returned by the plan to produce a different result row.
-  * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param func  The function to be appied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan map(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
+  * @param func  The function to be appied.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param seed  The function to be appied.
+  * @param func  The function to be appied.
+  * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func, String seed);
 /**
   * This method applies a function or the builtin reducer to each row returned by the plan to produce a single result as with the reduce() method of JavaScript Array. 
-  * @param func  The Optic Plan. You can either use the XQuery =&gt; chaining operator or specify the variable that captures the return value from the previous operation.
-  * @param seed  The function to be appied.
+  * @param func  The function to be appied.
+  * @param seed  The value returned by the previous request.
   * @return  a ExportablePlan object
   */
   public abstract ExportablePlan reduce(PlanFunction func, XsAnyAtomicTypeVal seed);
