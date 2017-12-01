@@ -21,7 +21,11 @@ import com.marklogic.client.io.marker.JSONReadHandle;
 
 import com.marklogic.client.type.*;
 
-interface PlanBuilderBase {
+/**
+ * Defines base methods for PlanBuilder. This interface is an implementation detail.
+ * Use PlanBuilder as the type for instances of PlanBuilder.
+ */
+public interface PlanBuilderBase {
     /**
     * Constructs a literal row set as in the SQL VALUES or SPARQL VALUES statements. 
     * @param rows  This parameter provides any number of objects in which the key is a column name string identifying the column and the value is a literal with the value of the column.
@@ -85,6 +89,12 @@ interface PlanBuilderBase {
     * @return  a PlanCase object
     */
     public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value);
+
+    /**
+     * This function returns the specified value if none of the preceeding when() conditions are true.
+     * @param value  The value expression to return
+     * @return  a PlanCase object
+     */
     public PlanCase elseExpr(ItemExpr value);
 
     /**
@@ -150,6 +160,10 @@ interface PlanBuilderBase {
      */
     public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath);
 
+    /**
+     * Defines base methods for Plan. This interface is an implementation detail.
+     * Use Plan as the type for instances of Plan.
+     */
     interface PlanBase {
         /**
          * Specifies a boolean primitive value to replace a placeholder parameter during this
@@ -216,8 +230,16 @@ interface PlanBuilderBase {
          */
         public PlanBuilder.Plan bindParam(PlanParamExpr param, String  literal);
     }
+    /**
+     * Defines base methods for AccessPlan. This interface is an implementation detail.
+     * Use AccessPlan as the type for instances of AccessPlan.
+     */
     interface AccessPlanBase {
     }
+    /**
+     * Defines base methods for ExportablePlan. This interface is an implementation detail.
+     * Use ExportablePlan as the type for instances of ExportablePlan.
+     */
     interface ExportablePlanBase {
         /**
          * This method exports the plan to an AST (Abstract Sytax Tree) 
@@ -242,6 +264,10 @@ interface PlanBuilderBase {
          */
         public <T> T exportAs(Class<T> as);
     }
+    /**
+     * Defines base methods for ModifyPlan. This interface is an implementation detail.
+     * Use ModifyPlan as the type for instances of ModifyPlan.
+     */
     interface ModifyPlanBase {
         /**
          * This method returns a subset of the rows in the result set by returning the specified number of rows.
@@ -314,6 +340,10 @@ interface PlanBuilderBase {
          */
         public PlanBuilder.ModifyPlan where(SemStoreExpr condition);
     }
+    /**
+     * Defines base methods for PreparePlan. This interface is an implementation detail.
+     * Use PreparePlan as the type for instances of PreparePlan.
+     */
     interface PreparePlanBase {
     }
 }
