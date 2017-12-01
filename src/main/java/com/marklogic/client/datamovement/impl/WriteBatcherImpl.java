@@ -801,6 +801,12 @@ public class WriteBatcherImpl
     this.hostInfos = newHostInfos;
 
     if ( removedHostInfos.size() > 0 ) {
+      DataMovementManagerImpl moveMgrImpl = (DataMovementManagerImpl) moveMgr;
+      String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
+      if ( removedHostInfos.containsKey(primaryHost) ) {
+        int randomPos = Math.abs(primaryHost.hashCode()) % newHostInfos.length;
+        moveMgrImpl.setPrimaryClient(newHostInfos[randomPos].client);
+      }
       // since some hosts have been removed, let's remove from the queue any jobs that were targeting that host
       List<Runnable> tasks = new ArrayList<>();
       if ( threadPool != null ) threadPool.getQueue().drainTo(tasks);

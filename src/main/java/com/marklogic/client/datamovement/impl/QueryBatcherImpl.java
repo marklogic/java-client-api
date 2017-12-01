@@ -419,6 +419,14 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // this forest is not black-listed
       blackListedForests.remove(forest);
     }
+    if ( blackListedForests.size() > 0 ) {
+      DataMovementManagerImpl moveMgrImpl = (DataMovementManagerImpl) moveMgr;
+      String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
+      if ( getHostNames(blackListedForests).contains(primaryHost) ) {
+        int randomPos = Math.abs(primaryHost.hashCode()) % clientList.get().size();
+        moveMgrImpl.setPrimaryClient(clientList.get().get(randomPos));
+      }
+    }
     cleanupExistingTasks(addedForests, restartedForests, blackListedForests);
   }
 

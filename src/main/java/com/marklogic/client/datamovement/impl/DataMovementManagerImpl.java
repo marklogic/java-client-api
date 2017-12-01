@@ -58,9 +58,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
   public DataMovementManagerImpl(DatabaseClient client) {
-    this.primaryClient = client;
+    setPrimaryClient(client);
     clientMap.put(primaryClient.getHost(), primaryClient);
-    service.setClient(primaryClient);
   }
 
   @Override
@@ -210,5 +209,14 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public void setDataMovementServices(DataMovementServices service) {
     this.service = service;
+  }
+
+  public void setPrimaryClient(DatabaseClient client) {
+    this.primaryClient = client;
+    service.setClient(primaryClient);
+  }
+
+  public DatabaseClient getPrimaryClient() {
+    return primaryClient;
   }
 }
