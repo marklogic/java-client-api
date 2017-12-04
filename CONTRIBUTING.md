@@ -134,9 +134,10 @@ Be sure to run the tests before submitting your pull request. PRs with failing
 tests won't be accepted.
 
 First verify that you have valid server and admin auth info in
-src/test/java/com/marklogic/client/test/util/TestServerBootstrapper.java.
+`SERVER_ADMIN_USER` and `SERVER_ADMIN_PASS` fields in
+src/test/java/com/marklogic/client/test/Common.java
 
-    $ mvn test-compile
+    $ mvn clean test-compile
     $ mvn exec:java@test-server-init
     $ mvn test
 
@@ -147,6 +148,17 @@ If your Maven installation is older than 3.3.1 you will get an error from the
     $ ...
     $ mvn exec:java -DexecutionId=test-server-init
     $ ...
+
+#### If your server is not on localhost
+
+You can either create SSH tunnels to your server on ports 8000, 8002, and 8012
+by a command like:
+
+    ssh -L 8000:localhost:8000 -L 8002:localhost:8002 -L 8012:localhost:8012 user@hostname
+
+Or you can update the static `HOST` field in
+src/test/java/com/marklogic/client/test/Common.java
+and the `example.host` property in src/main/resources/Example.properties.
 
 #### Push your changes
 
