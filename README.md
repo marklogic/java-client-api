@@ -124,7 +124,7 @@ You might want to skip the tests until you have configured a test database and R
 
     $ mvn package -Dmaven.test.skip=true
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for more on contributing to this github project.
+See [CONTRIBUTING.md](.github/CONTRIBUTING.md) for more on contributing to this github project.
 
 ### Running JUnit Tests
 
