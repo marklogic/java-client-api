@@ -149,12 +149,24 @@ public interface QueryBatcher extends Batcher {
 
   /**
    * Get the array of QueryBatchListener instances registered via
-   * onBatchSuccess.
+   * onUrisReady.
+   *
+   * @return the QueryBatchListener instances this batcher
+   *   is using
+   *
+   * @deprecated (as of 4.0.4) this should have been called getUrisReadyListeners
+   */
+  @Deprecated
+  QueryBatchListener[] getQuerySuccessListeners();
+
+  /**
+   * Get the array of QueryBatchListener instances registered via
+   * onUrisReady.
    *
    * @return the QueryBatchListener instances this batcher
    *   is using
    */
-  QueryBatchListener[] getQuerySuccessListeners();
+  QueryBatchListener[] getUrisReadyListeners();
 
   /**
    * Get the array of QueryFailureListener instances
@@ -168,7 +180,7 @@ public interface QueryBatcher extends Batcher {
 
   /**
    * Remove any existing QueryBatchListener instances registered
-   * via onBatchSuccess and replace them with the provided listeners.
+   * via onUrisReady and replace them with the provided listeners.
    *
    * @param listeners the QueryBatchListener instances this
    *   batcher should use
