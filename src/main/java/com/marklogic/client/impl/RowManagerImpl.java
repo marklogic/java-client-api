@@ -50,6 +50,7 @@ import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -1142,6 +1143,9 @@ public class RowManagerImpl
     private String asString(Object value) {
       if (value == null || value instanceof String) {
         return (String) value;
+      }
+      if (value instanceof RESTServiceResult) {
+        return ((RESTServiceResult) value).getContent(new StringHandle()).get();
       }
       return value.toString();
     }
