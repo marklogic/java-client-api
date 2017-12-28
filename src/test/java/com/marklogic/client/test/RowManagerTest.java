@@ -455,7 +455,7 @@ public class RowManagerTest {
       assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
       assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
 
-      String instruments = row.getContent("instruments", new StringHandle()).get();
+      String instruments = row.getString("instruments");
       assertNotNull("null instrucments value in row record "+rowNum,    instruments);
       assertTrue("unexpected instrucments value in row record "+rowNum, instruments.contains("trumpet"));
       rowNum++;
