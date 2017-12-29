@@ -107,11 +107,7 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
    */
   @Test
   public void testRuntimeDBclientWithNoPrivUser() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    int restPort = getRestServerPort();
-    if (IsSecurityEnabled())
-      throw new FailedRequestException("Illegal");
-    else
-      client = DatabaseClientFactory.newClient(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
     String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
     try {
       client.newServerEval().xquery(insertJSON).eval();
@@ -120,7 +116,6 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
       e.printStackTrace();
       Assert.assertTrue(e instanceof com.marklogic.client.FailedRequestException);
       Assert.assertTrue(e.getMessage().contains("SEC-PRIV"));
-
     }
     client.release();
   }

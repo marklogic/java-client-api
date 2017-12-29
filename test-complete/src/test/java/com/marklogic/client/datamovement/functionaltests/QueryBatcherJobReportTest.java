@@ -88,8 +88,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		server = getRestAppServerName();
+	    port = getRestAppServerPort();
+	    
 		host = getRestAppServerHostName();
-		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 		hostNames = getHosts();
 		createDB(dbName);
@@ -101,10 +105,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			Thread.currentThread().sleep(500L);
 		}
 
-		associateRESTServerWithDB(server, dbName);
+		assocRESTServer(server, dbName, port);
 
-		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
-				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
+		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
+	            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// FileHandle
 		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));

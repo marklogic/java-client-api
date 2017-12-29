@@ -23,7 +23,6 @@ import static org.junit.Assert.fail;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -32,17 +31,12 @@ import java.util.Calendar;
 import java.util.List;
 import java.util.TreeMap;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Handler;
-import java.util.logging.Level;
-import java.util.logging.LogRecord;
-import java.util.logging.Logger;
 
 import javax.xml.namespace.QName;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 import javax.xml.xpath.XPathExpressionException;
 
-import org.apache.logging.log4j.core.jmx.AppenderAdmin;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -54,10 +48,8 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -66,16 +58,14 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.ServerTransform;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -96,11 +86,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   private static String dbName = "StringQueryHostBatcherDB";
   private static String[] fNames = { "StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3" };
   private static DataMovementManager dmManager = null;
-  private static DataMovementManager moveMgr = null;
-  private static String restServerHost = null;
   private static String restServerName = null;
   private static int restServerPort = 0;
-  private static DatabaseClient clientQHB = null;
   private static DatabaseClient client = null;
   private static String dataConfigDirPath = null;
 
@@ -111,7 +98,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   public static void setUpBeforeClass() throws Exception {
     loadGradleProperties();
     restServerPort = getRestAppServerPort();
-    restServerHost = getRestAppServerHostName();
 
     restServerName = getRestAppServerName();
     // Points to top level of all QA data folder
@@ -124,12 +110,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with Java/REST Client API
-    client = DatabaseClientFactory.newClient(restServerHost, restServerPort, "admin", "admin", Authentication.DIGEST);
+    client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
     dmManager = client.newDataMovementManager();
-    // For use with QueryHostBatcher
-    clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
-    moveMgr = clientQHB.newDataMovementManager();
-
   }
 
   /**
@@ -140,7 +122,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     System.out.println("In tearDownAfterClass");
     // Release clients
     client.release();
-    clientQHB.release();
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
     detachForest(dbName, fNames[0]);
@@ -154,7 +135,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    */
   @Before
   public void setUp() throws Exception {
-    System.out.println("In setup");
   }
 
   /**
@@ -179,14 +159,14 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * @throws XpathException
    */
   @Test
-  public void testAndWordQuery() throws IOException, ParserConfigurationException, SAXException, InterruptedException
+  public void testAndWordQuery() throws Exception
   {
     System.out.println("Running testAndWordQuery");
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
+    addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
     try {
-
       // write docs using Java Client API
       for (String filename : filenames) {
         writeDocumentUsingInputStreamHandle(client, filename, "/abs-range-constraint/", "XML");
@@ -281,8 +261,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
         String[] res = batchResults.toString().split("\\|");
 
         assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints4.xml"));
-        // Verify Fores Name.
-        assertTrue("Forest name not correct", res[2].contains(fNames[0]));
+        // Verify Forest Name.
+        assertTrue("Forest name not correct", res[1].contains(fNames[0]));
       }
     } catch (Exception e) {
       System.out.print(e.getMessage());
@@ -318,7 +298,9 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      //clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       setQueryOption(clientTmp, queryOptionName);
@@ -521,7 +503,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "curbappeal.xml", "flipper.xml", "justintime.xml" };
 
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -664,7 +646,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String queryName = "combinedQueryNoOption.xml";
 
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -795,7 +777,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String combinedQueryFileName = "combinedQueryOptionJSON.json";
 
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -925,7 +907,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
 
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -1944,11 +1926,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       associateRESTServerWithDB(restServerName, testMultipleDB);
 
       setupAppServicesConstraint(testMultipleDB);
+      addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
       Thread.sleep(10000);
 
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       setQueryOption(clientTmp, queryOptionName);
@@ -2111,7 +2094,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       srvMgr.setQueryOptionValidation(true);
       srvMgr.writeConfiguration();
 
-      clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();

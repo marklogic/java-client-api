@@ -2916,4 +2916,38 @@ public abstract class ConnectedRESTQA {
 	      }
 	      client.getConnectionManager().shutdown();
 	  }
+	  
+	  public static int getDocumentCount(String dbName) throws IOException {
+	      InputStream jsonstream = null;
+	      DefaultHttpClient client = null;
+	      int nCount = 0;
+	      try {
+	          client = new DefaultHttpClient();
+	          client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
+	                  new UsernamePasswordCredentials("admin", "admin"));
+	          HttpGet getrequest = new HttpGet("http://" + host_name + ":" + admin_port + "/manage/v2/databases/" + dbName
+	                  + "?view=counts&format=json");
+	          HttpResponse response1 = client.execute(getrequest);
+	          jsonstream = response1.getEntity().getContent();
+	          JsonNode jnode = new ObjectMapper().readTree(jsonstream);
+
+
+	          if (!jnode.isNull()) {
+	              nCount = jnode.path("database-counts").path("count-properties").path("documents").get("value").asInt();
+	              System.out.println(jnode);
+	          } else {
+	              System.out.println("REST call for database properties returned NULL ");
+	          }
+	      } catch (Exception e) {
+	          // writing error to Log
+	          e.printStackTrace();
+	      } finally {
+	          if (jsonstream == null) {
+	          } else {
+	              jsonstream.close();
+	          }
+	          client.getConnectionManager().shutdown();
+	      }
+	      return nCount;
+	  }
 }

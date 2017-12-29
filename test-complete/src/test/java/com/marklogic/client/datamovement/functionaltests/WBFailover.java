@@ -74,6 +74,9 @@ public class WBFailover extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		server = getRestAppServerName();
+        port = getRestAppServerPort();
+        
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		// Add all possible hostnames and pick a random one to create a client
@@ -92,8 +95,8 @@ public class WBFailover extends BasicJavaClientREST {
 		// Assuming the tests are run on 3 node cluster
 		Assert.assertEquals(hostLists.size(), 7);
 		int index = new Random().nextInt(hostLists.size());
-		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
-		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
+		evalClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
 		Map<String, String> props = new HashMap<>();

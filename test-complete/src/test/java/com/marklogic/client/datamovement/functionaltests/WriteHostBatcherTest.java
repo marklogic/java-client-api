@@ -143,7 +143,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
-		host = getRestAppServerHostName();
+		
+		server = getRestAppServerName();
+		port = getRestAppServerPort();
+		
+        host = getRestAppServerHostName();
 		hostNames = getHosts();
 
 		createDB(dbName);
@@ -154,13 +158,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			count++;
 			Thread.currentThread().sleep(500L);
 		}
+		assocRESTServer(server, dbName, port);
 
-		associateRESTServerWithDB(server, dbName);
-
-		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
-		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
+		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
 				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// JacksonHandle
@@ -210,7 +214,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Before
 	public void setUp() throws Exception {
-		if (dbClient.newServerEval().xquery("fn:count(fn:doc())").eval().next().getNumber().intValue() != 0) {
+		if (getDocumentCount(dbName) != 0) {
 			clearDB(port);
 		}
 	}

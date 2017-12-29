@@ -78,6 +78,9 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		server = getRestAppServerName();
+	    port = getRestAppServerPort();
+	    
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		createDB(dbName);
@@ -91,10 +94,11 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 
 		associateRESTServerWithDB(server, dbName);
 
-		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
-		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
+		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
 				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// JacksonHandle

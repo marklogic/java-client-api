@@ -97,10 +97,10 @@ public class UrisToWriterListenerFuncTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with QueryHostBatcher
-    clientQHB = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+    clientQHB =getDatabaseClient("eval-user", "x", Authentication.DIGEST);
     dmManager = clientQHB.newDataMovementManager();
 
-    clientQHBTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
+    clientQHBTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
     dmManagerTmp = clientQHBTmp.newDataMovementManager();
   }
 

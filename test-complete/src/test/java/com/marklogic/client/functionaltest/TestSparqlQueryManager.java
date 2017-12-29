@@ -2353,7 +2353,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 
     createUserRolesWithPrevilages("sem-query-role");
     createRESTUser("sem-query-user", "x", "sem-query-role", "rest-writer");
-    DatabaseClient semQueryclient = DatabaseClientFactory.newClient(appServerHostname, restPort, "sem-query-user", "x", Authentication.DIGEST);
+    DatabaseClient semQueryclient = getDatabaseClient("sem-query-user", "x", Authentication.DIGEST);
 
     GraphManager graphManagerPerm = semQueryclient.newGraphManager();
     GraphPermissions graphPermissions = graphManagerPerm.permission("sem-query-role", Capability.UPDATE, Capability.EXECUTE);

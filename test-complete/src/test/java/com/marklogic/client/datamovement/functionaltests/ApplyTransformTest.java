@@ -110,6 +110,9 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		server = getRestAppServerName();
+        port = getRestAppServerPort();
+
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		createDB(dbName);
@@ -120,13 +123,13 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 			count++;
 			Thread.currentThread().sleep(500L);
 		}
+		assocRESTServer(server, dbName, port);
 
-		associateRESTServerWithDB(server, dbName);
-
-		dbClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+        DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
-		clusterInfo = ((DatabaseClientImpl) dbClient).getServices()
+		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
 				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// FileHandle
@@ -155,7 +158,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		meta5 = new DocumentMetadataHandle().withCollections("Replace Snapshot");
 		meta6 = new DocumentMetadataHandle().withCollections("Skipped");
 
-		// Xquery transformation
+		// XQuery transformation
 		TransformExtensionsManager transMgr = dbClient.newServerConfigManager().newTransformExtensionsManager();
 		ExtensionMetadata metadata = new ExtensionMetadata();
 		metadata.setTitle("Adding attribute xquery Transform");

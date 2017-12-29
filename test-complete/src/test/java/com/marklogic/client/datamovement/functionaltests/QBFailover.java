@@ -94,6 +94,9 @@ public class QBFailover extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		server = getRestAppServerName();
+	    port = getRestAppServerPort();
+	    
 		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		// Add all possible hostnames and pick a random one to create a client
@@ -115,8 +118,8 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		hostLists.add("localhost");
 		int index = new Random().nextInt(hostLists.size());
-		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
-		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
+		evalClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		System.out.println("Connected to: " + dbClient.getHost());
 		dmManager = dbClient.newDataMovementManager();
 		tempMgr = evalClient.newDataMovementManager();
