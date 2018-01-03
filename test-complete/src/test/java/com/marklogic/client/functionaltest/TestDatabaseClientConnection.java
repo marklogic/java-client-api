@@ -168,7 +168,7 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
     String expectedException = null;
     String exception = "";
     if (IsSecurityEnabled())
-      expectedException = "Connection refused";
+      expectedException = "Failed to connect";
     else
       expectedException = "com.marklogic.client.MarkLogicIOException";
 
