@@ -1220,7 +1220,7 @@ public interface FnExpr {
   * @param arg  The value to be returned as an xs:double value.
   * @return  a XsDoubleExpr expression
   */
-  public XsDoubleExpr number(XsAnyAtomicTypeExpr arg);
+  public XsDoubleExpr number(ItemSeqExpr arg);
 /**
   * Returns an xs:NCName representing the prefix of arg. The empty sequence is returned if arg is the empty sequence or if the value of arg contains no prefix.
   * <p>
@@ -1453,7 +1453,7 @@ public interface FnExpr {
   * @param arg  The item to be rendered as a string.
   * @return  a XsStringExpr expression
   */
-  public XsStringExpr string(ItemExpr arg);
+  public XsStringExpr string(ItemSeqExpr arg);
 /**
   * Returns an xs:string created by concatenating the members of the parameter1 sequence using parameter2 as a separator. If the value of $arg2 is the zero-length string, then the members of parameter1 are concatenated without a separator. 
   * <p>

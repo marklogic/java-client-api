@@ -941,7 +941,7 @@ class FnExprImpl implements FnExpr {
 
   
   @Override
-  public XsDoubleExpr number(XsAnyAtomicTypeExpr arg) {
+  public XsDoubleExpr number(ItemSeqExpr arg) {
     return new XsExprImpl.DoubleCallImpl("fn", "number", new Object[]{ arg });
   }
 
@@ -1130,7 +1130,7 @@ class FnExprImpl implements FnExpr {
 
   
   @Override
-  public XsStringExpr string(ItemExpr arg) {
+  public XsStringExpr string(ItemSeqExpr arg) {
     return new XsExprImpl.StringCallImpl("fn", "string", new Object[]{ arg });
   }
 

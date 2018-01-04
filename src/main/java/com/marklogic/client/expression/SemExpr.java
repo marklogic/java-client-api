@@ -125,7 +125,7 @@ public interface SemExpr extends SemValue {
   * @param stringIri  The string with which to construct the sem:iri.
   * @return  a SemIriExpr expression
   */
-  public SemIriExpr iri(XsAnyAtomicTypeExpr stringIri);
+  public SemIriExpr iri(ItemSeqExpr stringIri);
 public XsQNameExpr iriToQName(XsStringExpr arg1);
 /**
   * Returns true if the argument is an RDF blank node - that is, derived from type sem:blank. This XQuery function backs up the SPARQL isBlank() function. 

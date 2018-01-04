@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-
+import com.marklogic.client.type.ItemSeqExpr;
 
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
@@ -113,241 +113,241 @@ class XsExprImpl extends XsValueImpl implements XsExpr {
 
     
   @Override
-  public XsAnyURIExpr anyURI(XsAnyAtomicTypeExpr arg1) {
+  public XsAnyURIExpr anyURI(ItemSeqExpr arg1) {
     return new AnyURICallImpl("xs", "anyURI", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsBase64BinaryExpr base64Binary(XsAnyAtomicTypeExpr arg1) {
+  public XsBase64BinaryExpr base64Binary(ItemSeqExpr arg1) {
     return new Base64BinaryCallImpl("xs", "base64Binary", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsBooleanExpr booleanExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsBooleanExpr booleanExpr(ItemSeqExpr arg1) {
     return new BooleanCallImpl("xs", "boolean", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsByteExpr byteExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsByteExpr byteExpr(ItemSeqExpr arg1) {
     return new ByteCallImpl("xs", "byte", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsDateExpr date(XsAnyAtomicTypeExpr arg1) {
+  public XsDateExpr date(ItemSeqExpr arg1) {
     return new DateCallImpl("xs", "date", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsDateTimeExpr dateTime(XsAnyAtomicTypeExpr arg1) {
+  public XsDateTimeExpr dateTime(ItemSeqExpr arg1) {
     return new DateTimeCallImpl("xs", "dateTime", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsDayTimeDurationExpr dayTimeDuration(XsAnyAtomicTypeExpr arg1) {
+  public XsDayTimeDurationExpr dayTimeDuration(ItemSeqExpr arg1) {
     return new DayTimeDurationCallImpl("xs", "dayTimeDuration", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsDecimalExpr decimal(XsAnyAtomicTypeExpr arg1) {
+  public XsDecimalExpr decimal(ItemSeqExpr arg1) {
     return new DecimalCallImpl("xs", "decimal", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsDoubleExpr doubleExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsDoubleExpr doubleExpr(ItemSeqExpr arg1) {
     return new DoubleCallImpl("xs", "double", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsFloatExpr floatExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsFloatExpr floatExpr(ItemSeqExpr arg1) {
     return new FloatCallImpl("xs", "float", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsGDayExpr gDay(XsAnyAtomicTypeExpr arg1) {
+  public XsGDayExpr gDay(ItemSeqExpr arg1) {
     return new GDayCallImpl("xs", "gDay", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsGMonthExpr gMonth(XsAnyAtomicTypeExpr arg1) {
+  public XsGMonthExpr gMonth(ItemSeqExpr arg1) {
     return new GMonthCallImpl("xs", "gMonth", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsGMonthDayExpr gMonthDay(XsAnyAtomicTypeExpr arg1) {
+  public XsGMonthDayExpr gMonthDay(ItemSeqExpr arg1) {
     return new GMonthDayCallImpl("xs", "gMonthDay", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsGYearExpr gYear(XsAnyAtomicTypeExpr arg1) {
+  public XsGYearExpr gYear(ItemSeqExpr arg1) {
     return new GYearCallImpl("xs", "gYear", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsGYearMonthExpr gYearMonth(XsAnyAtomicTypeExpr arg1) {
+  public XsGYearMonthExpr gYearMonth(ItemSeqExpr arg1) {
     return new GYearMonthCallImpl("xs", "gYearMonth", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsHexBinaryExpr hexBinary(XsAnyAtomicTypeExpr arg1) {
+  public XsHexBinaryExpr hexBinary(ItemSeqExpr arg1) {
     return new HexBinaryCallImpl("xs", "hexBinary", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsIntExpr intExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsIntExpr intExpr(ItemSeqExpr arg1) {
     return new IntCallImpl("xs", "int", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsIntegerExpr integer(XsAnyAtomicTypeExpr arg1) {
+  public XsIntegerExpr integer(ItemSeqExpr arg1) {
     return new IntegerCallImpl("xs", "integer", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsLanguageExpr language(XsAnyAtomicTypeExpr arg1) {
+  public XsLanguageExpr language(ItemSeqExpr arg1) {
     return new LanguageCallImpl("xs", "language", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsLongExpr longExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsLongExpr longExpr(ItemSeqExpr arg1) {
     return new LongCallImpl("xs", "long", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNameExpr Name(XsAnyAtomicTypeExpr arg1) {
+  public XsNameExpr Name(ItemSeqExpr arg1) {
     return new NameCallImpl("xs", "Name", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNCNameExpr NCName(XsAnyAtomicTypeExpr arg1) {
+  public XsNCNameExpr NCName(ItemSeqExpr arg1) {
     return new NCNameCallImpl("xs", "NCName", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNegativeIntegerExpr negativeInteger(XsAnyAtomicTypeExpr arg1) {
+  public XsNegativeIntegerExpr negativeInteger(ItemSeqExpr arg1) {
     return new NegativeIntegerCallImpl("xs", "negativeInteger", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNMTOKENExpr NMTOKEN(XsAnyAtomicTypeExpr arg1) {
+  public XsNMTOKENExpr NMTOKEN(ItemSeqExpr arg1) {
     return new NMTOKENCallImpl("xs", "NMTOKEN", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNonNegativeIntegerExpr nonNegativeInteger(XsAnyAtomicTypeExpr arg1) {
+  public XsNonNegativeIntegerExpr nonNegativeInteger(ItemSeqExpr arg1) {
     return new NonNegativeIntegerCallImpl("xs", "nonNegativeInteger", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNonPositiveIntegerExpr nonPositiveInteger(XsAnyAtomicTypeExpr arg1) {
+  public XsNonPositiveIntegerExpr nonPositiveInteger(ItemSeqExpr arg1) {
     return new NonPositiveIntegerCallImpl("xs", "nonPositiveInteger", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNormalizedStringExpr normalizedString(XsAnyAtomicTypeExpr arg1) {
+  public XsNormalizedStringExpr normalizedString(ItemSeqExpr arg1) {
     return new NormalizedStringCallImpl("xs", "normalizedString", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsNumericExpr numeric(XsAnyAtomicTypeExpr arg1) {
+  public XsNumericExpr numeric(ItemSeqExpr arg1) {
     return new NumericCallImpl("xs", "numeric", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsPositiveIntegerExpr positiveInteger(XsAnyAtomicTypeExpr arg1) {
+  public XsPositiveIntegerExpr positiveInteger(ItemSeqExpr arg1) {
     return new PositiveIntegerCallImpl("xs", "positiveInteger", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsQNameExpr QName(XsAnyAtomicTypeExpr arg1) {
+  public XsQNameExpr QName(ItemSeqExpr arg1) {
     return new QNameCallImpl("xs", "QName", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsShortExpr shortExpr(XsAnyAtomicTypeExpr arg1) {
+  public XsShortExpr shortExpr(ItemSeqExpr arg1) {
     return new ShortCallImpl("xs", "short", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsStringExpr string(XsAnyAtomicTypeExpr arg1) {
+  public XsStringExpr string(ItemSeqExpr arg1) {
     return new StringCallImpl("xs", "string", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsTimeExpr time(XsAnyAtomicTypeExpr arg1) {
+  public XsTimeExpr time(ItemSeqExpr arg1) {
     return new TimeCallImpl("xs", "time", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsTokenExpr token(XsAnyAtomicTypeExpr arg1) {
+  public XsTokenExpr token(ItemSeqExpr arg1) {
     return new TokenCallImpl("xs", "token", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsUnsignedByteExpr unsignedByte(XsAnyAtomicTypeExpr arg1) {
+  public XsUnsignedByteExpr unsignedByte(ItemSeqExpr arg1) {
     return new UnsignedByteCallImpl("xs", "unsignedByte", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsUnsignedIntExpr unsignedInt(XsAnyAtomicTypeExpr arg1) {
+  public XsUnsignedIntExpr unsignedInt(ItemSeqExpr arg1) {
     return new UnsignedIntCallImpl("xs", "unsignedInt", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsUnsignedLongExpr unsignedLong(XsAnyAtomicTypeExpr arg1) {
+  public XsUnsignedLongExpr unsignedLong(ItemSeqExpr arg1) {
     return new UnsignedLongCallImpl("xs", "unsignedLong", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsUnsignedShortExpr unsignedShort(XsAnyAtomicTypeExpr arg1) {
+  public XsUnsignedShortExpr unsignedShort(ItemSeqExpr arg1) {
     return new UnsignedShortCallImpl("xs", "unsignedShort", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsUntypedAtomicExpr untypedAtomic(XsAnyAtomicTypeExpr arg1) {
+  public XsUntypedAtomicExpr untypedAtomic(ItemSeqExpr arg1) {
     return new UntypedAtomicCallImpl("xs", "untypedAtomic", new Object[]{ arg1 });
   }
 
   
   @Override
-  public XsYearMonthDurationExpr yearMonthDuration(XsAnyAtomicTypeExpr arg1) {
+  public XsYearMonthDurationExpr yearMonthDuration(ItemSeqExpr arg1) {
     return new YearMonthDurationCallImpl("xs", "yearMonthDuration", new Object[]{ arg1 });
   }
 
