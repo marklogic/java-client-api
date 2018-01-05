@@ -50,6 +50,7 @@ import com.marklogic.client.impl.RESTServices.RESTServiceResultIterator;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -1094,7 +1095,11 @@ public class RowManagerImpl
     }
     @Override
     public String getString(String columnName) {
-      return asString(get(columnName));
+      try {
+        return asString(get(columnName));
+      } catch(NodeNotAStringException e) {
+        throw new IllegalArgumentException("value for column \""+columnName+"\" not a string");
+      }
     }
 
     private boolean asBoolean(String columnName, Object value) {
@@ -1139,9 +1144,21 @@ public class RowManagerImpl
       }
       throw new IllegalStateException("column "+columnName+" does not have a short value");
     }
-    private String asString(Object value) {
+    /**
+     * @throws NodeNotAStringException when the value is a node but not a single text node
+     *   (with content-type "text/plain")
+     */
+    private String asString(Object value) throws NodeNotAStringException {
       if (value == null || value instanceof String) {
         return (String) value;
+      }
+      if (value instanceof RESTServiceResult) {
+        RESTServiceResult result = (RESTServiceResult) value;
+        if ( result.getMimetype() != null && result.getMimetype().startsWith("text/plain") ) {
+          return result.getContent(new StringHandle()).get();
+        } else {
+          throw new NodeNotAStringException();
+        }
       }
       return value.toString();
     }
@@ -1176,27 +1193,27 @@ public class RowManagerImpl
 			}
 			*/
 
-      String valueStr = asString(value);
-
-      Function<String,? extends XsAnyAtomicTypeVal> factory = getFactory(as);
-      if (factory != null) {
-        return as.cast(factory.apply(valueStr));
-      }
-
-      // fallback
-      @SuppressWarnings("unchecked")
-      Constructor<T> constructor = (Constructor<T>) constructors.get(as);
-      if (constructor == null) {
-        try {
-          constructor = as.getConstructor(String.class);
-        } catch(NoSuchMethodException e) {
-          throw new IllegalArgumentException("cannot construct "+columnName+" value as class: "+as.getName());
-        }
-        constructors.put(as, constructor);
-      }
-
       try {
+        String valueStr = asString(value);
+
+        Function<String,? extends XsAnyAtomicTypeVal> factory = getFactory(as);
+        if (factory != null) {
+          return as.cast(factory.apply(valueStr));
+        }
+
+        // fallback
+        @SuppressWarnings("unchecked")
+        Constructor<T> constructor = (Constructor<T>) constructors.get(as);
+        if (constructor == null) {
+          constructor = as.getConstructor(String.class);
+          constructors.put(as, constructor);
+        }
+
         return constructor.newInstance(valueStr);
+      } catch(NodeNotAStringException e) {
+        throw new IllegalArgumentException("column \""+columnName+"\" is a node, not an atomic");
+      } catch(NoSuchMethodException e) {
+        throw new IllegalArgumentException("cannot construct "+columnName+" value as class: "+as.getName());
       } catch (InstantiationException e) {
         throw new MarkLogicBindingException("could not construct value as class: "+as.getName(), e);
       } catch (IllegalAccessException e) {
@@ -1531,5 +1548,8 @@ public class RowManagerImpl
       setHandle(handle);
       return this;
     }
+  }
+
+  private static class NodeNotAStringException extends Exception {
   }
 }

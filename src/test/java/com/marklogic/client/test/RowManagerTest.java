@@ -21,6 +21,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.IOException;
 import java.io.LineNumberReader;
@@ -451,14 +452,24 @@ public class RowManagerTest {
     String[] firstName = {"Louis",      "Miles"};
 
     int rowNum = 0;
+    boolean didARowFail = false;
     for (RowRecord row: rowMgr.resultRows(builtPlan)) {
       assertEquals("unexpected lastName value in row record "+rowNum,  lastName[rowNum],  row.getString("lastName"));
       assertEquals("unexpected firstName value in row record "+rowNum, firstName[rowNum], row.getString("firstName"));
 
-      String instruments = row.getContent("instruments", new StringHandle()).get();
+      String instruments;
+      try {
+        instruments = row.getString("instruments");
+      } catch (IllegalArgumentException e ) {
+        didARowFail = true;
+        instruments = row.getContentAs("instruments", String.class);
+      }
       assertNotNull("null instrucments value in row record "+rowNum,    instruments);
       assertTrue("unexpected instrucments value in row record "+rowNum, instruments.contains("trumpet"));
       rowNum++;
+    }
+    if ( didARowFail == false ) {
+      fail("getString(\"instruments\") should throw an exception since some rows return an array");
     }
     assertEquals("unexpected count of result records", 2, rowNum);
   }
