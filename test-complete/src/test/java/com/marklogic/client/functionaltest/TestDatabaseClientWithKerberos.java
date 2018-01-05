@@ -162,8 +162,8 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     if (IsSecurityEnabled()) {
       sslcontext = getSslContext();
       client = DatabaseClientFactory.newClient(
-          getRestServerHostName(), getRestServerPort(),
-          new KerberosAuthContext().withSSLContext(sslcontext));
+              appServerHostName, appServerHostPort,
+          new KerberosAuthContext(kdcPrincipalUser).withSSLContext(sslcontext));
     } else
       client = DatabaseClientFactory.newClient(appServerHostName,
           appServerHostPort, new KerberosAuthContext(kdcPrincipalUser));
@@ -1066,7 +1066,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     // create new connection for each test below
 
     try {
-      clientDigest = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new BasicAuthContext("rest-admin", "x"));
+      clientDigest = DatabaseClientFactory.newClient(getRestServerHostName(), appServerHostPort, new BasicAuthContext("rest-admin", "x"));
 
       TextDocumentManager docMgr = clientDigest.newTextDocumentManager();
       DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -1091,7 +1091,11 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
       System.out.println("Exception in Running testWriteWithDigest method");
       System.out.println("Exception is" + exception);
     }
-    String expectedException = "com.marklogic.client.FailedRequestException: Local message: failed to apply resource at documents: Unauthorized. Server Message: Unauthorized";
+    String expectedException = null;
+    if (IsSecurityEnabled()) 
+        expectedException = "java.net.ProtocolException";
+    else
+     expectedException = "com.marklogic.client.FailedRequestException: Local message: failed to apply resource at documents: Unauthorized. Server Message: Unauthorized";
     boolean exceptionIsThrown = exception.contains(expectedException);
     assertTrue("Exception is not thrown", exceptionIsThrown);
 
