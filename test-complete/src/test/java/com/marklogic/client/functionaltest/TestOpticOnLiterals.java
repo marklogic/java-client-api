@@ -824,7 +824,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
             p.col("id"),
             p.col("val"),
             p.col("uri"),
-            p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/number()")))
+            p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/(lat|long)/text()")))
         .where(p.isDefined(p.col("nodes")))
         .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle18 = new JacksonHandle();
@@ -838,8 +838,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 1 id value incorrect", "4", node18.path("id").path("value").asText());
     assertEquals("Row 1 val value incorrect", "8", node18.path("val").path("value").asText());
     assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node18.path("uri").path("value").asText());
-    assertEquals("Row 1 nodes value incorrect", "39.9", node18.path("nodes").path("value").get(0).asText());
-    assertEquals("Row 1 nodes value incorrect", "116.4", node18.path("nodes").path("value").get(1).asText());
+    assertEquals("Row 1 nodes value incorrect", "39.90", node18.path("nodes").path("value").get(0).asText());
+    assertEquals("Row 1 nodes value incorrect", "116.40", node18.path("nodes").path("value").get(1).asText());
 
     // Verify TEST 19 - join inner doc with traversing up xpath on json
     ModifyPlan output19 = p.fromLiterals(literals3)
@@ -848,7 +848,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
             p.col("id"),
             p.col("val"),
             p.col("uri"),
-            p.as("nodes", p.xpath("doc", "/location/latLonPair/../../city")))
+            p.as("nodes", p.fn.string(p.xpath("doc", "//city"))))
         .where(p.isDefined(p.col("nodes")))
         .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle19 = new JacksonHandle();
@@ -856,8 +856,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     rowMgr.resultDoc(output19, jacksonHandle19);
     JsonNode jsonBindingsNodes19 = jacksonHandle19.get().path("rows");
 
-    // Should have 2 nodes returned.
-    assertEquals("Two nodes not returned from testJoinInnerDocOnJson method", 2, jsonBindingsNodes19.size());
+    // Should have 3 nodes returned.
+    assertEquals("Three nodes not returned from testJoinInnerDocOnJson method", 3, jsonBindingsNodes19.size());
     JsonNode node19 = jsonBindingsNodes19.path(0);
     assertEquals("Row 1 id value incorrect", "1", node19.path("id").path("value").asText());
     assertEquals("Row 1 val value incorrect", "2", node19.path("val").path("value").asText());
@@ -869,25 +869,31 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 2 val value incorrect", "6", node19.path("val").path("value").asText());
     assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc3.json", node19.path("uri").path("value").asText());
     assertEquals("Row 2 nodes value incorrect", "new jersey", node19.path("nodes").path("value").asText());
+    
+    node19 = jsonBindingsNodes19.path(2);
+    assertEquals("Row 2 id value incorrect", "4", node19.path("id").path("value").asText());
+    assertEquals("Row 2 val value incorrect", "8", node19.path("val").path("value").asText());
+    assertEquals("Row 2 uri value incorrect", "/optic/lexicon/test/doc4.xml", node19.path("uri").path("value").asText());
+    assertEquals("Row 2 nodes value incorrect", "beijing", node19.path("nodes").path("value").asText());
 
-    // Verify TEST 20 - join inner doc with traversing up xpath on xml
-    ModifyPlan output20 = p.fromLiterals(literals3)
+    // Verify TEST 15 - join inner doc with xpath accessing attribute on xml
+    ModifyPlan output15 = p.fromLiterals(literals3)
         .joinDoc(p.col("doc"), p.col("uri"))
         .select(
             p.col("id"),
             p.col("val"),
             p.col("uri"),
-            p.as("nodes", p.xpath("doc", "/doc/location/latLonPair/../../city")))
+            p.as("nodes", p.xpath("doc", "/doc/city")))
         .where(p.isDefined(p.col("nodes")))
         .orderBy(p.asc("id"));
-    JacksonHandle jacksonHandle20 = new JacksonHandle();
-    jacksonHandle20.setMimetype("application/json");
-    rowMgr.resultDoc(output20, jacksonHandle20);
-    JsonNode jsonBindingsNodes20 = jacksonHandle20.get().path("rows");
+    JacksonHandle jacksonHandle15 = new JacksonHandle();
+    jacksonHandle15.setMimetype("application/json");
+    rowMgr.resultDoc(output15, jacksonHandle15);
+    JsonNode jsonBindingsNodes15 = jacksonHandle15.get().path("rows");
 
     // Should have 1 node returned.
-    assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes20.size());
-    JsonNode node20 = jsonBindingsNodes20.path(0);
+    assertEquals("One node not returned from testJoinInnerDocOnJson method", 1, jsonBindingsNodes15.size());
+    JsonNode node20 = jsonBindingsNodes15.path(0);
     assertEquals("Row 1 id value incorrect", "4", node20.path("id").path("value").asText());
     assertEquals("Row 1 val value incorrect", "8", node20.path("val").path("value").asText());
     assertEquals("Row 1 uri value incorrect", "/optic/lexicon/test/doc4.xml", node20.path("uri").path("value").asText());
@@ -901,7 +907,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
             p.col("id"),
             p.col("val"),
             p.col("uri"),
-            p.as("nodes", p.xpath("doc", "//lat/number()")))
+            p.as("nodes", p.fn.number(p.xpath("doc", "//lat"))))
         .where(p.isDefined(p.col("nodes")))
         .orderBy(p.asc("id"));
     JacksonHandle jacksonHandle21 = new JacksonHandle();

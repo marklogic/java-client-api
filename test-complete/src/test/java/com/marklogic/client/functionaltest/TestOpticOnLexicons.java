@@ -571,7 +571,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
         p.ne(p.col("popularity"), p.xs.intVal(3))
         )
         .joinDoc(p.col("doc"), p.col("uri1"))
-        .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "//latLonPair/lat/number()")), uriCol2, cityNameCol, cityTeamCol)
+        .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.fn.number(p.xpath("doc", "//latLonPair/lat"))), uriCol2, cityNameCol, cityTeamCol)
         .where(p.isDefined(p.col("nodes")))
         .orderBy(p.desc(p.col("distance")));
 
@@ -1238,6 +1238,194 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Should have SQL-NOCOLUMN exceptions.
     assertTrue("Exceptions not found", str.toString().contains("SQL-NOCOLUMN"));
     assertTrue("Exceptions not found", str.toString().contains("Column not found: {foo: bar}"));
+  }
+  
+  /*
+   * Test Restricted xpath with unanamed nodes
+   * SJS TEST 34
+   */
+  @Test
+  public void testRestrictedXPathUnanamedNodes() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("In testRestrictedXPathUnanamedNodes method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
+    index1.put("uri1", p.cts.uriReference());
+    index1.put("city", p.cts.jsonPropertyReference("city"));
+    index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
+    index1.put("date", p.cts.jsonPropertyReference("date"));
+    index1.put("distance", p.cts.jsonPropertyReference("distance"));
+    index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+
+    Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
+    index2.put("uri2", p.cts.uriReference());
+    index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+    index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+
+    // plan1
+    ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
+    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
+    
+    PlanColumn uriCol1 = p.col("uri1");
+    PlanColumn cityCol = p.col("city");
+    PlanColumn popCol = p.col("popularity");
+    PlanColumn dateCol = p.col("date");
+    PlanColumn distCol = p.col("distance");
+    PlanColumn pointCol = p.col("point");
+    PlanColumn uriCol2 = p.col("uri2");
+
+    PlanColumn cityNameCol = p.col("cityName");
+    PlanColumn cityTeamCol = p.col("cityTeam");
+    
+    ModifyPlan UnnamedNodes = plan1.joinInner(plan2, 
+              p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
+              p.ne(p.col("popularity"), p.xs.intVal(3)))
+            .joinDoc(p.col("doc"), p.col("uri1"))            
+            .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.fn.number(p.xpath("doc", "/node('location')/object-node('latLonPair')/number-node()[1]"))), uriCol2, cityNameCol, cityTeamCol)
+            .where(p.ge(p.col("nodes"), p.xs.intVal(0)))
+            .orderBy(p.desc(p.col("distance")));
+    
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(UnnamedNodes, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");
+    // Should have 3 nodes returned.
+    assertEquals("Three nodes not returned from testJoinInnerKeymatchDateSort method ", 3, jsonBindingsNodes.size());
+    JsonNode first = jsonBindingsNodes.path(0);
+    assertEquals("Row 1 myCity.city value incorrect", "london", first.path("myCity.city").path("value").asText());
+    assertEquals("Row 1 Unnamed Node value incorrect", "51.5", first.path("nodes").path("value").asText());
+    JsonNode third = jsonBindingsNodes.path(2);
+    assertEquals("Row 3 myCity.city value incorrect", "new jersey", third.path("myCity.city").path("value").asText());
+    assertEquals("Row 3 Unnamed Node value incorrect", "40.72", third.path("nodes").path("value").asText());
+  }
+  
+  /*
+   * Test Restricted xpath with predicate
+   * SJS TEST 35
+   */
+  @Test
+  public void testRestrictedXPathPredicate() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("In testRestrictedXPathPredicate method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
+    index1.put("uri1", p.cts.uriReference());
+    index1.put("city", p.cts.jsonPropertyReference("city"));
+    index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
+    index1.put("date", p.cts.jsonPropertyReference("date"));
+    index1.put("distance", p.cts.jsonPropertyReference("distance"));
+    index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+
+    Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
+    index2.put("uri2", p.cts.uriReference());
+    index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+    index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+
+    // plan1
+    ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
+    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
+    
+    PlanColumn uriCol1 = p.col("uri1");
+    PlanColumn cityCol = p.col("city");
+    PlanColumn popCol = p.col("popularity");
+    PlanColumn dateCol = p.col("date");
+    PlanColumn distCol = p.col("distance");
+    PlanColumn pointCol = p.col("point");
+    PlanColumn uriCol2 = p.col("uri2");
+
+    PlanColumn cityNameCol = p.col("cityName");
+    PlanColumn cityTeamCol = p.col("cityTeam");
+    
+    ModifyPlan UnnamedNodes = plan1.joinInner(plan2, 
+              p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
+              p.ne(p.col("popularity"), p.xs.intVal(3)))
+            .joinDoc(p.col("doc"), p.col("uri1"))            
+            .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "/description[fn:matches(., 'disc*')]")), uriCol2, cityNameCol, cityTeamCol)
+            .where(p.isDefined(p.col("nodes")))
+            .orderBy(p.desc(p.col("distance")));
+    
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(UnnamedNodes, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");    
+    // Should have 1 node returned.
+    assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
+    JsonNode first = jsonBindingsNodes.path(0);
+    assertEquals("Row 1 myCity.city value incorrect", "london", first.path("myCity.city").path("value").asText());
+    assertEquals("Row 1 Unnamed Node value incorrect", "Two recent discoveries indicate probable very early settlements near the Thames", first.path("nodes").path("value").asText());
+  }
+  
+  /*
+   * Test Restricted xpath with predicate math:pow
+   * SJS TEST 40
+   */
+  @Test
+  public void testRestrictedXPathPredicateMath() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
+  {
+    System.out.println("In testRestrictedXPathPredicateMath method");
+
+    // Create a new Plan.
+    RowManager rowMgr = client.newRowManager();
+    PlanBuilder p = rowMgr.newPlanBuilder();
+
+    Map<String, CtsReferenceExpr> index1 = new HashMap<String, CtsReferenceExpr>();
+    index1.put("uri1", p.cts.uriReference());
+    index1.put("city", p.cts.jsonPropertyReference("city"));
+    index1.put("popularity", p.cts.jsonPropertyReference("popularity"));
+    index1.put("date", p.cts.jsonPropertyReference("date"));
+    index1.put("distance", p.cts.jsonPropertyReference("distance"));
+    index1.put("point", p.cts.jsonPropertyReference("latLonPoint"));
+
+    Map<String, CtsReferenceExpr> index2 = new HashMap<String, CtsReferenceExpr>();
+    index2.put("uri2", p.cts.uriReference());
+    index2.put("cityName", p.cts.jsonPropertyReference("cityName"));
+    index2.put("cityTeam", p.cts.jsonPropertyReference("cityTeam"));
+
+    // plan1
+    ModifyPlan plan1 = p.fromLexicons(index1, "myCity");
+    ModifyPlan plan2 = p.fromLexicons(index2, "myTeam");
+    
+    PlanColumn uriCol1 = p.col("uri1");
+    PlanColumn cityCol = p.col("city");
+    PlanColumn popCol = p.col("popularity");
+    PlanColumn dateCol = p.col("date");
+    PlanColumn distCol = p.col("distance");
+    PlanColumn pointCol = p.col("point");
+    PlanColumn uriCol2 = p.col("uri2");
+
+    PlanColumn cityNameCol = p.col("cityName");
+    PlanColumn cityTeamCol = p.col("cityTeam");
+    
+    ModifyPlan UnnamedNodes = plan1.joinInner(plan2, 
+              p.on(p.viewCol("myCity", "city"), p.viewCol("myTeam", "cityName")),
+              p.ne(p.col("popularity"), p.xs.intVal(3)))
+            .joinDoc(p.col("doc"), p.col("uri1"))            
+            .select(uriCol1, cityCol, popCol, dateCol, distCol, pointCol, p.as("nodes", p.xpath("doc", "popularity[math:pow(., 2) eq 4]")), uriCol2, cityNameCol, cityTeamCol)
+            .where(p.isDefined(p.col("nodes")))
+            .orderBy(p.desc(p.col("distance")));
+    
+    JacksonHandle jacksonHandle = new JacksonHandle();
+    jacksonHandle.setMimetype("application/json");
+
+    rowMgr.resultDoc(UnnamedNodes, jacksonHandle);
+    JsonNode jsonResults = jacksonHandle.get();
+    JsonNode jsonBindingsNodes = jsonResults.path("rows");    
+    // Should have 1 node returned.
+    assertEquals("One node not returned from testJoinInnerKeymatchDateSort method ", 1, jsonBindingsNodes.size());
+    JsonNode first = jsonBindingsNodes.path(0);
+    assertEquals("Row 1 myCity.city value incorrect", "new jersey", first.path("myCity.city").path("value").asText());
   }
 
   @AfterClass
