@@ -115,13 +115,9 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
     } catch (Exception e) {
       e.printStackTrace();
       Assert.assertTrue(e instanceof com.marklogic.client.FailedRequestException);
-      if (IsSecurityEnabled()) {
-          Assert.assertTrue(e.getMessage().contains("SEC-PRIV"));
-      }
-      else {
-          Assert.assertTrue(e.getMessage().contains("SEC-URIPRIV"));
-      }
     }
-    client.release();
+      finally {
+          client.release();
+      }
   }
 }
