@@ -12,3 +12,4 @@ test-complete/build/
 .classpath
 .project
 .settings/
+.idea
