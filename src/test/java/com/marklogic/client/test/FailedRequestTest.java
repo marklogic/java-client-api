@@ -113,7 +113,7 @@ public class FailedRequestTest {
 
 
       assertEquals(
-        "Local message: config/properties read failed: Not Found. Server Message: Server (not a REST instance?) did not respond with an expected REST Error message.",
+        "Local message: config/properties read failed: Internal Server Error. Server Message: SEC-NOADMIN: (err:FOER0000) User does not have admin role.",
         e.getMessage());
       assertEquals(404, e.getFailedRequest().getStatusCode());
       assertEquals("UNKNOWN", e.getFailedRequest().getStatus());
