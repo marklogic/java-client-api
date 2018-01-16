@@ -27,6 +27,7 @@ import java.math.BigInteger;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.TimeZone;
 
 import javax.xml.bind.DatatypeConverter;
@@ -66,7 +67,8 @@ import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
-import java.util.Map;
+
+import static org.junit.Assert.*;
 
 
 public class EvalTest {
@@ -169,8 +171,8 @@ public class EvalTest {
         DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString())
       // we can pass a null node
       .addVariable("myNull", (String) null);
-    EvalResultIterator results = call.eval();
-    try {
+
+    try (EvalResultIterator results = call.eval()) {
       assertEquals("myString looks wrong", "Mars", results.next().getAs(String.class));
       assertEquals("myArray looks wrong",
         new ObjectMapper().readTree("[\"item1\",\"item2\"]"),
@@ -187,7 +189,7 @@ public class EvalTest {
       assertEquals("myDate looks wrong", "2014-09-01T00:00:00.000+02:00",
         results.next().getString());
       assertEquals("myNull looks wrong", null, results.next().getString());
-    } finally { results.close(); }
+    }
 
   }
 
@@ -196,28 +198,29 @@ public class EvalTest {
     String javascript = "var myNull; myNull";
     ServerEvaluationCall call = Common.evalClient.newServerEval().javascript(javascript)
       .addVariable("myNull", (String) null);
-    EvalResultIterator results = call.eval();
-    try { assertEquals("myNull looks wrong", null, results.next().getString());
-    } finally { results.close(); }
 
-    results = call.eval();
-    try { assertEquals("myNull looks wrong", null, results.next().get(new StringHandle()).get());
-    } finally { results.close(); }
+    try (EvalResultIterator results = call.eval()) {
+       assertEquals("myNull looks wrong", null, results.next().getString());
+    }
 
-    results = call.eval();
-    try { assertEquals("myNull looks wrong", null, results.next().get(new BytesHandle()).get());
-    } finally { results.close(); }
+    try (EvalResultIterator results = call.eval()) {
+      assertEquals("myNull looks wrong", null, results.next().get(new StringHandle()).get());
+    }
 
-    results = call.eval();
-    NullNode jsonNullNode = new ObjectMapper().createObjectNode().nullNode();
-    try { assertEquals("myNull looks wrong", jsonNullNode, results.next().get(new JacksonHandle()).get());
-    } finally { results.close(); }
+    try (EvalResultIterator results = call.eval()) {
+      assertEquals("myNull looks wrong", null, results.next().get(new BytesHandle()).get());
+    }
 
-    results = call.eval();
-    ReaderHandle valueReader = results.next().get(new ReaderHandle());
-    String value = HandleAccessor.contentAsString(valueReader);
-    try { assertEquals("myNull looks wrong", "null", value);
-    } finally { results.close(); }
+    try (EvalResultIterator results = call.eval()) {
+      NullNode jsonNullNode = new ObjectMapper().createObjectNode().nullNode();
+      assertEquals("myNull looks wrong", jsonNullNode, results.next().get(new JacksonHandle()).get());
+    }
+
+    try (EvalResultIterator results = call.eval()) {
+      ReaderHandle valueReader = results.next().get(new ReaderHandle());
+      String value = HandleAccessor.contentAsString(valueReader);
+      assertEquals("myNull looks wrong", "null", value);
+    }
   }
 
   private void runAndTestXQuery(ServerEvaluationCall call)
@@ -259,8 +262,8 @@ public class EvalTest {
       .addVariable("myDateTime",
         DatatypeFactory.newInstance().newXMLGregorianCalendar(septFirst).toString())
       .addVariable("myTime", "00:01:01");
-    EvalResultIterator results = call.eval();
-    try {
+
+    try (EvalResultIterator results = call.eval()) {
       EvalResult result = results.next();
       assertEquals("myString should = 'Mars'", "Mars", result.getAs(String.class));
       assertEquals("myString should be Type.STRING", EvalResult.Type.STRING, result.getType());
@@ -400,53 +403,55 @@ public class EvalTest {
       result = results.next();
       assertEquals("myFunction should be Type.OTHER", EvalResult.Type.OTHER, result.getType());
       assertEquals("myFunction should be Format.TEXT", Format.TEXT, result.getFormat());
-    } finally { results.close(); }
+    }
   }
+
   @Test
-  public void test_171() throws Exception{
+  public void test_171() throws Exception {
     DatabaseClient client = Common.newEvalClient("Documents");
     int count=1;
     boolean tstatus =true;
     String directory = "/test_eval_171/";
     Transaction t1 = client.openTransaction();
-    try{
+    try {
       QueryManager queryMgr = client.newQueryManager();
       DeleteQueryDefinition deleteQuery = queryMgr.newDeleteDefinition();
       deleteQuery.setDirectory(directory);
       queryMgr.delete(deleteQuery);
 
       XMLDocumentManager docMgr = client.newXMLDocumentManager();
-      Map<String,String> map= new HashMap<>();
+      java.util.Map<String,String> map= new HashMap<>();
       DocumentWriteSet writeset =docMgr.newWriteSet();
-      for(int i =0;i<2;i++) {
+      for (int i =0;i<2;i++) {
         String contents = "<xml>test" + i + "</xml>";
         String docId = directory + "sec"+i+".xml";
         writeset.add(docId, new StringHandle(contents).withFormat(Format.XML));
         map.put(docId, contents);
-        if(count%100 == 0){
+        if (count%100 == 0) {
           docMgr.write(writeset,t1);
           writeset = docMgr.newWriteSet();
         }
         count++;
       }
-      if(count%100 > 0){
+      if (count%100 > 0) {
         docMgr.write(writeset,t1);
       }
 
       String query = "(fn:count(xdmp:directory('" + directory + "')))";
       ServerEvaluationCall evl= client.newServerEval().xquery(query);
-      EvalResultIterator evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction",0,evr.next().getNumber().intValue());
-      evl= client.newServerEval().xquery(query).transaction(t1);
-      evr = evl.eval();
-      assertEquals("Count of documents outside of the transaction",2,evr.next().getNumber().intValue());
-
-    }catch(Exception e){
+      try (EvalResultIterator evr = evl.eval()) {
+        assertEquals("Count of documents outside of the transaction", 0, evr.next().getNumber().intValue());
+      }
+      evl = client.newServerEval().xquery(query).transaction(t1);
+      try (EvalResultIterator evr = evl.eval()) {
+        assertEquals("Count of documents outside of the transaction", 2, evr.next().getNumber().intValue());
+      }
+    } catch(Exception e) {
       System.out.println(e.getMessage());
       tstatus=true;
       throw e;
-    }finally{
-      if(tstatus){
+    } finally {
+      if (tstatus) {
         t1.rollback();
       }
     }
@@ -485,4 +490,35 @@ public class EvalTest {
     }
     assertEquals(expectedOutput.toString(), strVal);
   }
+
+  @Test(expected = RuntimeException.class)
+  public void test_issue874() {
+    try (EvalResultIterator iterator =
+             new EvalResultIterator() {
+
+              @Override
+              public void close() throws RuntimeException {
+                throw new RuntimeException("test close() from try-with-resources");
+              }
+
+              public java.util.Iterator<com.marklogic.client.eval.EvalResult> iterator() {
+                return this;
+              }
+
+              @Override
+              public boolean hasNext() {
+                return false;
+              }
+
+              @Override
+              public EvalResult next() {
+                throw new UnsupportedOperationException();
+              }
+            }
+    ) {
+      assertFalse(iterator.hasNext());
+    }
+    fail("Should not get here. Close method should have been invoked, throwing an exception");
+  }
+
 }
