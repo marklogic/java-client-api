@@ -793,7 +793,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
     QueryThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
       super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(threadCount * 5), new ThreadPoolExecutor.CallerRunsPolicy());
+        new LinkedBlockingQueue<Runnable>(threadCount * 50), new ThreadPoolExecutor.CallerRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
