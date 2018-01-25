@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 4.0.3.1 (hotfix release)
+
+#### Bug Fix
+- [#879](https://github.com/marklogic/java-client-api/issues/879) - increase queue size (will use more memory) for QueryBatcher so iterator thread won't be distracted running batches as often and can be more focused on feeding the queue
+
 ## 4.0.3
 
 #### New Functionality
