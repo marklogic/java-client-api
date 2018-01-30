@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import java.util.concurrent.TimeUnit;
+import com.marklogic.client.DatabaseClient;
 
 /**
  * <p>To facilitate long-running read, update, and delete use cases, coordinates
@@ -341,4 +342,6 @@ public interface QueryBatcher extends Batcher {
    * @param queryEvent the information about the batch that failed
    */
   void retryWithFailureListeners(QueryEvent queryEvent);
+
+  DatabaseClient getPrimaryClient();
 }
