@@ -190,6 +190,8 @@ public class ApplyTransformListener implements QueryBatchListener {
           logger.error("Exception thrown by an onFailure listener", t2);
         }
       }
+      logger.warn("Error: {} in batch with urs ({})", t.toString(),
+        Arrays.asList(batch.getItems()));
     }
   }
 
