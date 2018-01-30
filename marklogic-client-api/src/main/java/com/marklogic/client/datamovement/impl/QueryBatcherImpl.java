@@ -848,4 +848,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
     }
   }
+
+  public DatabaseClient getPrimaryClient() {
+    return ((DataMovementManagerImpl) moveMgr).getPrimaryClient();
+  }
 }
