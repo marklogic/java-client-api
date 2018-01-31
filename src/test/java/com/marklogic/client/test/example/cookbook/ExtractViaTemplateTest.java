@@ -27,4 +27,3 @@ public class ExtractViaTemplateTest {
     ExtractViaTemplate.main(new String[0]);
   }
 }
-
