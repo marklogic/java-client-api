@@ -115,7 +115,7 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
           logger.error("Exception thrown by an onFailure listener", t2);
         }
       }
-      logger.warn("Error: [{}] in batch with urs ({})", t.toString(),
+      logger.warn("Error: [{}] in batch with uris ({})", t.toString(),
         Arrays.asList(batch.getItems()));
     }
   }
