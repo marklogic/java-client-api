@@ -48,7 +48,7 @@ import com.marklogic.client.util.RequestParameters;
 public class ExtractViaTemplateListener implements QueryBatchListener {
   private static Logger logger =
     LoggerFactory.getLogger(ExtractViaTemplateListener.class);
-  private List<String> templates = new ArrayList<>();
+  private List<String> templateUris = new ArrayList<>();
   private String templateDb;
   private List<Consumer<TypedRow>> rowListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> failureListeners = new ArrayList<>();
@@ -59,8 +59,8 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
-  public ExtractViaTemplateListener withTemplate(String template) {
-    this.templates.add(template);
+  public ExtractViaTemplateListener withTemplate(String templateUri) {
+    this.templateUris.add(templateUri);
     return this;
   }
 
@@ -125,7 +125,7 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
       .withMimetype("text/uri-list");
     RESTServices services = ((DatabaseClientImpl) batch.getClient()).getServices();
     RequestParameters params = new RequestParameters();
-    for ( String template : templates ) params.add("template", template);
+    for ( String templateUri : templateUris ) params.add("template", templateUri);
     if ( templateDb != null ) params.add("template-database", templateDb);
     JacksonParserHandle handle = services.postResource(null, "internal/extract-via-template", null, params, uris, new JacksonParserHandle());
     JsonParser jp = handle.get();
