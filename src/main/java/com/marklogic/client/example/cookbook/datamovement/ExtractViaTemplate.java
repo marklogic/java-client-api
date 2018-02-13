@@ -32,10 +32,21 @@ import com.marklogic.client.example.cookbook.datamovement.Employee.Salary;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
+/**
+ * This cook book example queries the Marklogic database for documents in the
+ * employees directory and applies a template to the documents retrieved and
+ * extract the name and salary of the employees. This cookbook example prints
+ * out the row to standard output but it can be combined with
+ * WriteRowToTableauConsumer from ml-javaclient-util respository
+ * (https://github.com/marklogic-community/ml-javaclient-util) to write the row
+ * to a Tableau TDE (Tableau Data Extract) file.
+ *
+ */
 public class ExtractViaTemplate {
   private static int threadCount = 3;
   private static int batchSize   = 3;
   private String templateName = "employees.tde";
+
 
   public static final JSONDocumentManager docMgr =
     DatabaseClientSingleton.get().newJSONDocumentManager();
@@ -53,15 +64,38 @@ public class ExtractViaTemplate {
     StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
     QueryBatcher qb = moveMgr.newQueryBatcher(query)
       .onUrisReady(
+        // This object will be closed by the QueryBatcher when stopJob is
+        // called and hence there won't be a resource leak.
         new ExtractViaTemplateListener()
           .withTemplate(templateName)
           .onTypedRowReady( row -> {
             System.out.println("row:" + row);
-          })
-      );
+          }))
+      .withBatchSize(batchSize)
+      .withThreadCount(threadCount);
     moveMgr.startJob(qb);
     qb.awaitCompletion();
     moveMgr.stopJob(qb);
+
+    /*
+     * Use this sample code when connecting with the WriteRowToTableauConsumer from
+     * ml-javaclient-util github repository (https://github.com/marklogic-community/ml-javaclient-util)
+     *
+     * WriteRowToTableauConsumer tableauWriter = new WriteRowToTableauConsumer("output.tde")
+     *  .withColumn("firstName", Type.UNICODE_STRING)
+     *  .withColumn("salary", Type.INTEGER);
+     *
+     * QueryBatcher qbConsumer = moveMgr.newQueryBatcher(query)
+     *  .onUrisReady(
+     *    new ExtractViaTemplateListener()
+     *      .withTemplate(templateName)
+     *      .onTypedRowReady(tableauWriter)
+     *  );
+     * moveMgr.startJob(qbConsumer);
+     * qbConsumer.awaitCompletion();
+     * moveMgr.stopJob(qbConsumer);
+     * tableauWriter.close();
+     */
   }
 
   public void setup() throws ParseException, IOException {
@@ -74,7 +108,7 @@ public class ExtractViaTemplate {
       "    'rows':[ { 'schemaName':'employee', 'viewName':'employee'," +
       "      'columns':[ { 'name':'firstName', 'scalarType':'string', 'val':'.' }," +
       "                  { 'name':'salary', 'scalarType':'int', 'nullable':true," +
-      "                    'val':'head(../salaries/salary)'}" +
+      "                    'val':'max(../salaries/salary)'}" +
       " ] } ] } }"));
 
     // insert some sample documents

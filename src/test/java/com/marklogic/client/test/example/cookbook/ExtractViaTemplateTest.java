@@ -15,8 +15,6 @@
  */
 package com.marklogic.client.test.example.cookbook;
 
-import static org.junit.Assert.assertTrue;
-
 import org.junit.Test;
 
 import com.marklogic.client.example.cookbook.datamovement.ExtractViaTemplate;
