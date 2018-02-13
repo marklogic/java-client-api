@@ -20,7 +20,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
-import java.util.LinkedHashMap;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -34,18 +33,59 @@ import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.QueryBatch;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.expression.PlanBuilder;
-import com.marklogic.client.extensions.ResourceServices.ServiceResult;
-import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.StringHandle;
+
 import com.marklogic.client.impl.RESTServices;
 import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.type.XsAnyAtomicTypeVal;
 import com.marklogic.client.util.RequestParameters;
 
-public class ExtractViaTemplateListener implements QueryBatchListener {
+/**
+ * This QueryBatchListener takes in one or more uris for templates as defined by
+ * Marklogic TDE (Template Driven Extraction) and applies them to each batch of
+ * documents. It extracts the rows from the documents as specified in the
+ * template and it applies the listeners registered with onTypedRowReady method
+ * to each row.
+ *
+ * <br>
+ * For example:
+ *
+ * <pre>
+ * StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
+ * QueryBatcher qb = moveMgr.newQueryBatcher(query)
+ *     .onUrisReady(new ExtractViaTemplateListener().withTemplate(templateUri).onTypedRowReady(row -> {
+ *       System.out.println("row:" + row);
+ *     }));
+ * moveMgr.startJob(qb);
+ * qb.awaitCompletion();
+ * moveMgr.stopJob(qb);
+ * </pre>
+ *
+ * If any of the consumers registered with this listener implements the
+ * AutoCloseable interface and has a resource that needs to be closed, we have
+ * to make sure that this listener also override the close() method and make
+ * sure we call the close method of all the consumers registered with it. This
+ * close method of the listener will be called internally by the QueryBatcher
+ * when stopJob is called on the batcher. It is the responsibility of the
+ * listeners to call the close method if any of its consumers have the close
+ * method implemented to close any resources used.
+ *
+ * <br>
+ * <br>
+ * Here we call the close method because the WriteRowToTableauConsumer which
+ * would be registered with this listener needs to close the Tableau Extract
+ * instance after the extract to Tableau is complete.
+ *
+ * <br>
+ * <br>
+ * Important Note: You have to pass in templates which should map rows to a
+ * single view. If we have two templates, we should make sure that the
+ * WriteRowToTableauConsumer has all the columns to accommodate the columns
+ * emitted by the rows. Also, the templates should emit only rows and not
+ * triples.
+ */
+public class ExtractViaTemplateListener implements QueryBatchListener, AutoCloseable {
   private static Logger logger =
     LoggerFactory.getLogger(ExtractViaTemplateListener.class);
   private List<String> templateUris = new ArrayList<>();
@@ -59,16 +99,30 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
       "if you see this once/batch, fix your job configuration");
   }
 
+  /**
+   * Register one or more template uris which needs to be applied to each batch
+   * to extract the rows
+   *
+   * @param templateUri the uri of the template to be applied to each batch.
+   * @return the instance for chaining
+   */
   public ExtractViaTemplateListener withTemplate(String templateUri) {
     this.templateUris.add(templateUri);
     return this;
   }
 
-  public ExtractViaTemplateListener withTemplateDatabase(String templateDatabase) {
+  private ExtractViaTemplateListener withTemplateDatabase(String templateDatabase) {
     this.templateDb = templateDatabase;
     return this;
   }
 
+  /**
+   * Register one or more listeners which needs to be applied to each row got by
+   * applying the templates to the batch of documents.
+   *
+   * @param listener the listener which needs to be applied to each row
+   * @return the instance for chaining
+   */
   public ExtractViaTemplateListener onTypedRowReady(Consumer<TypedRow> listener) {
     rowListeners.add(listener);
     return this;
@@ -92,6 +146,13 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
     pb = queryBatcher.getPrimaryClient().newRowManager().newPlanBuilder();
   }
 
+  /**
+   * This is the method QueryBatcher calls for ExtractViaTemplateListener to do
+   * its thing. You should not need to call it.
+   *
+   * @param batch the batch of uris and some metadata about the current status
+   *          of the job
+   */
   @Override
   public void processEvent(QueryBatch batch) {
     if ( ! (batch.getClient() instanceof DatabaseClientImpl) ) {
@@ -120,6 +181,13 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
     }
   }
 
+  /*
+   * Makes a call to an internal REST end point "internal/extract-via-template"
+   * and passes in the list of URIs from the batch and the template URIs that
+   * needs to be applied to each batch. The REST end point applies the templates
+   * to the documents and returns a JSON string containing all the rows. We
+   * create an iterator out of it.
+   */
   private Iterable<TypedRow> getTypedRows(QueryBatch batch) throws IOException {
     StringHandle uris = new StringHandle(String.join("\n", batch.getItems()))
       .withMimetype("text/uri-list");
@@ -134,12 +202,14 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
     }
     jp.nextToken();
     if ( jp.currentToken() == JsonToken.END_OBJECT) {
-      logger.warn("No documents found for this batch--are the uris correct?");
+      logger.warn("No documents found for this batch");
       return new ArrayList<TypedRow>();
     } else {
       return new Iterable<TypedRow>() {
         public Iterator<TypedRow> iterator() {
-          return new Iterator() {
+          return new Iterator<TypedRow>() {
+            private String uri = null;
+
             public TypedRow next() {
               return getOneTypedRow(jp);
             }
@@ -147,86 +217,104 @@ public class ExtractViaTemplateListener implements QueryBatchListener {
             public boolean hasNext() {
               return jp.currentToken() != JsonToken.END_OBJECT;
             }
+
+            /*
+             * This is a helper method for the iterator which returns one row
+             * (the next row) when next() is called for the iterator.
+             */
+            private TypedRow getOneTypedRow(JsonParser jp) {
+              try {
+                // Process the initial URI part
+                if ( uri == null ) {
+                  if ( jp.currentToken() != JsonToken.FIELD_NAME ) {
+                    throw new MarkLogicIOException("Expected a uri for next template result");
+                  }
+                  uri = jp.getCurrentName();
+                  if ( jp.nextToken() != JsonToken.START_ARRAY ) {
+                    throw new MarkLogicIOException("Expected an array of rows");
+                  }
+                  jp.nextToken();
+                }
+                  // Process subsequent rows for the same URI if there are
+                  // multiple templates involved.
+                if ( jp.currentToken() != JsonToken.START_OBJECT ) {
+                  throw new MarkLogicIOException("Expected a JSON object containing a row");
+                }
+                if ( "triple".equals(jp.nextFieldName()) ) {
+                  throw new MarkLogicIOException("Expected a row but we got a triple. We don't support triples");
+                }
+                if ( !"row".equals(jp.getCurrentName())
+                    || jp.nextToken() != JsonToken.START_OBJECT ) {
+                  throw new MarkLogicIOException("Expected row to start");
+                }
+                while ( ! "data".equals(jp.nextFieldName()) ) {}
+                if ( jp.nextToken() != JsonToken.START_OBJECT ||
+                    ! "rownum".equals(jp.nextFieldName()) ) {
+                  throw new MarkLogicIOException("Expected a row of values");
+                }
+                String rowNum = jp.nextTextValue();
+                TypedRow row = new TypedRow(uri, rowNum);
+                while ( jp.nextToken() == JsonToken.FIELD_NAME ) {
+                  JsonToken valueType = jp.nextToken();
+                  if ( valueType == JsonToken.VALUE_STRING ) {
+                    row.put(jp.getCurrentName(),
+                        pb.xs.string(jp.getText()));
+                  } else if ( valueType == JsonToken.VALUE_NUMBER_INT ) {
+                    row.put(jp.getCurrentName(),
+                        pb.xs.integer(jp.getIntValue()));
+                  } else if ( valueType == JsonToken.VALUE_NUMBER_FLOAT ) {
+                    row.put(jp.getCurrentName(),
+                        pb.xs.floatVal(jp.getFloatValue()));
+                  } else if ( valueType == JsonToken.VALUE_TRUE ||
+                      valueType == JsonToken.VALUE_FALSE ) {
+                    row.put(jp.getCurrentName(),
+                        pb.xs.booleanVal(jp.getBooleanValue()));
+                  } else if ( valueType == JsonToken.VALUE_NULL ) {
+                    row.put(jp.getCurrentName(), null);
+                  } else {
+                    throw new MarkLogicIOException("Unexpected value type for column \"" +
+                        jp.getCurrentName() + "\"");
+                  }
+                }
+                if ( jp.currentToken() != JsonToken.END_OBJECT ||
+                     jp.nextToken()    != JsonToken.END_OBJECT ||
+                     jp.nextToken() != JsonToken.END_OBJECT ) {
+                  throw new MarkLogicIOException("Expected row to end");
+                }
+                if ( jp.nextToken() == JsonToken.END_ARRAY ) {
+                  uri = null;
+                  jp.nextToken();
+                }
+                return row;
+              } catch (IOException e) {
+                throw new MarkLogicIOException(e);
+              }
+            }
           };
         }
       };
     }
   }
 
-  private TypedRow getOneTypedRow(JsonParser jp) {
-    try {
-      if ( jp.currentToken() != JsonToken.FIELD_NAME ) {
-        throw new MarkLogicIOException("Expected a uri for next template result");
-      }
-      String uri = jp.getCurrentName();
-      if ( jp.nextToken() != JsonToken.START_ARRAY ||
-          jp.nextToken() != JsonToken.START_OBJECT ||
-          ! "row".equals(jp.nextFieldName()) ||
-          jp.nextToken() != JsonToken.START_OBJECT ) {
-        throw new MarkLogicIOException("Expected an array of rows");
-      }
-      while ( ! "data".equals(jp.nextFieldName()) ) {}
-      if ( jp.nextToken() != JsonToken.START_OBJECT ||
-          ! "rownum".equals(jp.nextFieldName()) ) {
-        throw new MarkLogicIOException("Expected a row of values");
-      }
-      String rowNum = jp.nextTextValue();
-      MyTypedRow row = new MyTypedRow(uri, rowNum);
-      while ( jp.nextToken() == JsonToken.FIELD_NAME ) {
-        JsonToken valueType = jp.nextToken();
-        if ( valueType == JsonToken.VALUE_STRING ) {
-          row.put(jp.getCurrentName(),
-              pb.xs.string(jp.getText()));
-        } else if ( valueType == JsonToken.VALUE_NUMBER_INT ) {
-          row.put(jp.getCurrentName(),
-              pb.xs.integer(jp.getIntValue()));
-        } else if ( valueType == JsonToken.VALUE_NUMBER_FLOAT ) {
-          row.put(jp.getCurrentName(),
-              pb.xs.floatVal(jp.getFloatValue()));
-        } else if ( valueType == JsonToken.VALUE_TRUE ||
-            valueType == JsonToken.VALUE_FALSE ) {
-          row.put(jp.getCurrentName(),
-              pb.xs.booleanVal(jp.getBooleanValue()));
-        } else if ( valueType == JsonToken.VALUE_NULL ) {
-          row.put(jp.getCurrentName(), null);
-        } else {
-          throw new MarkLogicIOException("Unexpected value type for column \"" +
-              jp.getCurrentName() + "\"");
+  @Override
+  public void close() throws Exception {
+    for ( Consumer<TypedRow> listener : rowListeners ) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onTypedRowReady listener cannot be closed", e);
         }
       }
-      if ( jp.currentToken() != JsonToken.END_OBJECT ||
-           jp.nextToken()    != JsonToken.END_OBJECT ||
-           jp.nextToken()    != JsonToken.END_OBJECT ||
-           jp.nextToken()    != JsonToken.END_ARRAY )
-      {
-        throw new MarkLogicIOException("Expected row to end");
+    }
+    for ( BatchFailureListener<QueryBatch> listener : failureListeners ) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onFailure listener cannot be closed", e);
+        }
       }
-      jp.nextToken();
-      return row;
-    } catch (IOException e) {
-      throw new MarkLogicIOException(e);
     }
   }
-
-  private class MyTypedRow
-    extends LinkedHashMap<String,XsAnyAtomicTypeVal>
-    implements TypedRow
-  {
-    String uri;
-    String rowNum;
-
-    private MyTypedRow(String uri, String rowNum) {
-      this.uri = uri;
-      this.rowNum = rowNum;
-    }
-    public String getUri() {
-      return uri;
-    }
-    public long getRowNum() {
-      return new Long(rowNum).longValue();
-    }
-    public XsAnyAtomicTypeVal put(String name, XsAnyAtomicTypeVal val) {
-      return super.put(name, val);
-    }
-  };
 }

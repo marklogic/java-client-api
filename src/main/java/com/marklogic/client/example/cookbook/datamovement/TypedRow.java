@@ -15,11 +15,27 @@
  */
 package com.marklogic.client.example.cookbook.datamovement;
 
-import java.util.Map;
-
+import java.util.LinkedHashMap;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
 
-public interface TypedRow extends Map<String,XsAnyAtomicTypeVal> {
-  String getUri();
-  long getRowNum();
+public class TypedRow extends LinkedHashMap<String, XsAnyAtomicTypeVal> {
+  String uri;
+  String rowNum;
+
+  public TypedRow(String uri, String rowNum) {
+    this.uri = uri;
+    this.rowNum = rowNum;
+  }
+
+  public String getUri() {
+    return uri;
+  }
+
+  public long getRowNum() {
+    return new Long(rowNum).longValue();
+  }
+
+  public XsAnyAtomicTypeVal put(String name, XsAnyAtomicTypeVal val) {
+    return super.put(name, val);
+  }
 }
