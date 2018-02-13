@@ -44,12 +44,14 @@ import java.util.function.Consumer;
  *
  * where output.tde file is the output Tableau Data Extract format file 
  * which contains the extracted rows. We should have the necessary columns 
- * defined with withColumn method. Then it can be passed directly to the 
+ * defined with withColumn() method. The column names defined in the Template
+ * Driven Extraction templates should match the ones specified in the
+ * withColumn() method. Then it can be passed directly to the
  * onTypedRowReady method of ExtractViaTemplateListener method as follows:
  *
  * <pre>
  * ExtractViaTemplateListener listner = new ExtractViaTemplateListener()
- *      .withTemplate(templateName)
+ *      .withTemplate(templateUri)
  *      .onTypedRowReady(tableauWriter)
  * </pre>
  *
@@ -97,8 +99,7 @@ public class WriteRowToTableauConsumer
                 row.setBoolean(index, ((XsBooleanVal)value).getBoolean());
                 continue;
               }
-            } else if ( column.type == Type.UNICODE_STRING ||
-                        column.type == Type.CHAR_STRING )
+            } else if ( column.type == Type.UNICODE_STRING )
             {
               if ( value instanceof XsStringVal ) {
                 row.setString(index, ((XsStringVal)value).getString());
@@ -194,12 +195,30 @@ public class WriteRowToTableauConsumer
     }
   }
 
+  /**
+   * Add a column to the Consumer to add it in the Tableau Data Extract file
+   *
+   * @param columnName the column name specified in the Template Driven
+   *          Extraction template (the column names are case sensitive)
+   * @param type the Tableau Data Type
+   * @return the Consumer for chaining
+   */
   public WriteRowToTableauConsumer withColumn(String columnName, Type type) {
     checkSupportedTypes(type);
     columns.put(columnName, new Column(columnName, type));
     return this;
   }
 
+  /**
+   * Add a column with tableau collation to the Consumer to add it in the
+   * Tableau Data Extract file
+   *
+   * @param columnName the column name specified in the Template Driven
+   *          Extraction template (the column names are case sensitive)
+   * @param type the Tableau Data Type
+   * @param collation the Tableau Data Collation
+   * @return the Consumer for chaining
+   */
   public WriteRowToTableauConsumer withColumn(String columnName, Type type, Collation collation) {
     checkSupportedTypes(type);
     columns.put(columnName, new Column(columnName, type, collation));
@@ -214,7 +233,6 @@ public class WriteRowToTableauConsumer
 
   private void checkSupportedTypes(Type type) {
       if ( type != Type.BOOLEAN &&
-           type != Type.CHAR_STRING &&
            type != Type.DOUBLE &&
            type != Type.INTEGER &&
            type != Type.UNICODE_STRING )
