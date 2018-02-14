@@ -654,6 +654,28 @@ public class WriteBatcherImpl
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
+    closeAllListeners();
+  }
+
+  private void closeAllListeners() {
+    for (WriteBatchListener listener : getBatchSuccessListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onBatchSuccess listener cannot be closed", e);
+        }
+      }
+    }
+    for (WriteFailureListener listener : getBatchFailureListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onBatchFailure listener cannot be closed", e);
+        }
+      }
+    }
   }
 
   @Override

@@ -123,7 +123,7 @@ public class MoveDataBetweenMarklogicDBs {
   }
 
   private void setup() {
-    sourceClient = DatabaseClientSingleton.getAdmin();
+    sourceClient = DatabaseClientSingleton.getAdmin("Documents");
     sourceMoveMgr = sourceClient.newDataMovementManager();
     destMoveMgr = DatabaseClientFactory.newClient(destHost, destPort, new DigestAuthContext(destUser, destPassword))
         .newDataMovementManager();
