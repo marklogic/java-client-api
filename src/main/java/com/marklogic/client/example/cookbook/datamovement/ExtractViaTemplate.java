@@ -45,7 +45,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 public class ExtractViaTemplate {
   private static int threadCount = 3;
   private static int batchSize   = 3;
-  private String templateName = "employees.tde";
+  private String templateUri = "employees.tde";
 
 
   public static final JSONDocumentManager docMgr =
@@ -67,7 +67,7 @@ public class ExtractViaTemplate {
         // This object will be closed by the QueryBatcher when stopJob is
         // called and hence there won't be a resource leak.
         new ExtractViaTemplateListener()
-          .withTemplate(templateName)
+          .withTemplate(templateUri)
           .onTypedRowReady( row -> {
             System.out.println("row:" + row);
           }))
@@ -103,7 +103,7 @@ public class ExtractViaTemplate {
     // sample data below
     ObjectMapper mapper = new ObjectMapper()
       .configure(Feature.ALLOW_SINGLE_QUOTES, true);
-    docMgr.writeAs(templateName, mapper.readTree(
+    docMgr.writeAs(templateUri, mapper.readTree(
       "{ 'template':{ 'description':'test template', 'context':'/firstName', " +
       "    'rows':[ { 'schemaName':'employee', 'viewName':'employee'," +
       "      'columns':[ { 'name':'firstName', 'scalarType':'string', 'val':'.' }," +
