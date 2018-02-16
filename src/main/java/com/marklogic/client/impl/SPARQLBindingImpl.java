@@ -23,7 +23,8 @@ import com.marklogic.client.semantics.SPARQLBinding;
 /**
  * Represents binding names and values to go with a SPARQL Query.
  * For details about semantics in MarkLogic see
- * {@link https://docs.marklogic.com/guide/semantics Semantics Developer's Guide}
+ * <a href="https://docs.marklogic.com/guide/semantics">
+ *   Semantics Developer's Guide</a>
  */
 public class SPARQLBindingImpl implements SPARQLBinding {
   private String name;

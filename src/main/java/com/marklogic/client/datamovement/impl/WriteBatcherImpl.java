@@ -90,7 +90,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *     - using a thread from threadPool
  *     - no synchronization or unnecessary delays while emptying queue
  *     - and calls each successListener (if not using transactions)
- *   - if usingTransactions (transactionSize > 1)
+ *   - if usingTransactions (transactionSize &gt; 1)
  *     - opens transactions as needed
  *       - using a thread from threadPool
  *       - but not before, lest we increase likelihood of transaction timeout
