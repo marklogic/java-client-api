@@ -1,0 +1,3 @@
+rootProject.name = 'marklogic-client-api-parent'
+include ':java-client-api'
+include ':java-client-api-functionaltests'

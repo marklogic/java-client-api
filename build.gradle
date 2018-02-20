@@ -1,0 +1,149 @@
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'eclipse'
+apply plugin: 'maven-publish'
+
+group = 'com.marklogic'
+version = '4.0.3'
+
+description = "The official MarkLogic Java client API."
+
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
+
+
+sourceSets {
+    test.compileClasspath += configurations.compileOnly
+    test.runtimeClasspath += configurations.compileOnly
+}
+
+repositories {
+     maven { url "http://jcenter.bintray.com" }
+     maven { url "http://repo.maven.apache.org/maven2" }
+}
+
+dependencies {
+    compile group: 'com.squareup.okhttp3', name: 'okhttp', version:'3.9.0'
+    compile group: 'com.squareup.okhttp3', name: 'logging-interceptor', version:'3.9.0'
+    compile group: 'com.burgstaller', name: 'okhttp-digest', version:'1.15'
+    compile group: 'com.sun.mail', name: 'javax.mail', version:'1.6.0'
+    compile group: 'javax.ws.rs', name: 'javax.ws.rs-api', version:'2.1'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-core', version:'2.9.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-annotations', version:'2.9.1'
+    compile group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version:'2.9.1'
+    testCompile group: 'junit', name: 'junit', version:'4.12'
+    testCompile group: 'org.mockito', name: 'mockito-all', version:'1.10.19'
+    testCompile group: 'xmlunit', name: 'xmlunit', version:'1.6'
+    testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-xml', version:'2.9.1'
+    testCompile group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-csv', version:'2.9.1'
+    testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
+    testCompile group: 'org.hsqldb', name: 'hsqldb', version:'2.4.0'
+    compileOnly group: 'org.jdom', name: 'jdom2', version:'2.0.6'
+    compileOnly group: 'xom', name: 'xom', version:'1.2.5'
+    compileOnly group: 'dom4j', name: 'dom4j', version:'1.6.1'
+    compileOnly group: 'com.google.code.gson', name: 'gson', version:'2.8.1'
+    compileOnly group: 'net.sourceforge.htmlcleaner', name: 'htmlcleaner', version:'2.21'
+    compileOnly group: 'net.sf.opencsv', name: 'opencsv', version:'2.4'
+    compileOnly group: 'org.geonames', name: 'geonames', version:'1.0'
+    compileOnly group: 'org.springframework', name: 'spring-jdbc', version:'4.3.10.RELEASE'
+    compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.6'
+    compileOnly group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.3'
+}
+
+task sourcesJar(type: Jar) {
+    classifier = 'sources'
+    exclude ('data/**', 'Example.properties', 'example/**', 'scripts/**',
+             'property', '*.xsd', '*.xjb')
+    from sourceSets.main.allSource
+}
+
+javadoc {
+    options.overview = "src/main/javadoc/overview.html"
+    options.windowTitle = 'Marklogic Java Client API Documentation'
+    options.docTitle = "MarkLogic Java Client API $project.version"
+    options.bottom = "Copyright &copy; 2013-2017 MarkLogic Corporation."
+    options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
+    options.use = true
+    exclude(['**/impl/**', '**/jaxb/**', '**/test/**'])
+}
+
+task javadocJar (type: Jar, dependsOn: javadoc) {
+    classifier = 'javadoc'
+    from javadoc.destinationDir
+}
+
+task wrapper(type: Wrapper) {
+    gradleVersion = '4.5.1'
+}
+
+Node pomCustomizations = new NodeBuilder(). project {
+    name 'Marklogic Java Client API'
+    packaging 'jar'
+    textdescription 'The official MarkLogic Java client API'
+    url 'https://github.com/marklogic/java-client-api'
+
+    scm {
+        url 'git@github.com:marklogic/java-client-api.git'
+        connection 'scm:git:git@github.com:marklogic/java-client-api.git'
+        developerConnection 'scm:git:git@github.com:marklogic/java-client-api.git'
+    }
+
+    licenses {
+        license {
+            name 'The Apache License, Version 2.0'
+            url 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+        }
+    }
+
+    developers {
+        developer {
+            name 'MarkLogic'
+            email 'java-sig@marklogic.com'
+            organization 'MarkLogic'
+            organizationUrl 'https://www.marklogic.com'
+        }
+        developer {
+            name 'MarkLogic Github Contributors'
+            email 'general@developer.marklogic.com'
+            organization 'Github Contributors'
+            organizationUrl 'https://github.com/marklogic/java-client-api/graphs/contributors'
+        }
+    }
+}
+
+publishing {
+    publications {
+        mainJava(MavenPublication) {
+            from components.java
+
+            pom.withXml {
+                asNode().append(pomCustomizations.developers)
+                asNode().append(pomCustomizations.name)
+                asNode().append(pomCustomizations.packaging)
+                asNode().append(pomCustomizations.url)
+                asNode().append(pomCustomizations.scm)
+                asNode().append(pomCustomizations.licenses)
+                asNode().appendNode("description", pomCustomizations.textdescription.text())
+            }
+            artifact sourcesJar
+            artifact javadocJar
+        }
+    }
+    repositories {
+        maven {
+            url publishUrl
+        }
+    }
+}
+
+task testServerInit(type: JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
+}
+
+task testServerTeardown(type: JavaExec) {
+    classpath = sourceSets.test.runtimeClasspath
+    main = 'com.marklogic.client.test.util.TestServerBootstrapper'
+    args = ["teardown"]
+}

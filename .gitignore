@@ -3,13 +3,25 @@ target/
 *.class
 test-complete/build/
 .metadata
+
 # Package Files #
 *.jar
 *.war
 *.ear
+
+# allow gradle-wrapper into repo
+!/gradle/wrapper/gradle-wrapper.jar
+
+# exclude .gradle working directory and build
+.gradle
+build
+buildSrc/build
+
 .classpath
 .gitignore
 .classpath
 .project
 .settings/
 .idea
+
+*/gradle/wrapper/gradle-wrapper.properties
