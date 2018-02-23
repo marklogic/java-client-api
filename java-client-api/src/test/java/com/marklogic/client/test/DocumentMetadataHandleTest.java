@@ -198,7 +198,9 @@ public class DocumentMetadataHandleTest {
     Transaction transaction = Common.client.openTransaction();
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     documentManager.writeAs("all_well.xml", new FileHandle(
-          new File("test-complete/src/test/java/com/marklogic/client/functionaltest/data/all_well.xml")));
+          new File("../java-client-api-functionaltests/src/test/java/com" +
+            "/marklogic" +
+            "/client/functionaltest/data/all_well.xml")));
     InputStreamHandle handle = documentManager.read("all_well.xml", metadataHandle, new InputStreamHandle(), transaction);
     try {
       InputStream stream = handle.get();
