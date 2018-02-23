@@ -33,7 +33,7 @@ public abstract class HandleImplementation<R,W>
    * As part of the contract between a read handle and the API,
    * declares the class of the content received from the database.
    * You should rarely if ever need to call this method directly when using the handle.
-   * @return
+   *
    */
   protected Class<R> receiveAs() {
     throw new UnsupportedOperationException(this.getClass().getName()+" cannot receive content");
@@ -42,7 +42,7 @@ public abstract class HandleImplementation<R,W>
    * As part of the contract between a read handle and the API,
    * receives content from the database.  You should rarely
    * if ever need to call this method directly when using the handle.
-   * @return
+   *
    */
   protected void receiveContent(R content) {
     throw new UnsupportedOperationException(this.getClass().getName()+" cannot receive content");
@@ -52,7 +52,7 @@ public abstract class HandleImplementation<R,W>
    * As part of the contract between a write handle and the API,
    * sends content to the database.  You should rarely
    * if ever need to call this method directly when using the handle.
-   * @return
+   *
    */
   protected W sendContent() {
     throw new UnsupportedOperationException(this.getClass().getName()+" cannot send content");
@@ -109,7 +109,7 @@ public abstract class HandleImplementation<R,W>
    * Only tracks the server timestamp set by applications.  This method is the
    * one called by BaseHandle.setServerTimestamp(String) (which is the method
    * called by applications).
-   * @param the server timestamp at which the request should run
+   * @param serverTimestamp the server timestamp at which the request should run
    */
   public void setPointInTimeQueryTimestamp(long serverTimestamp) {
     this.serverTimestamp = serverTimestamp;

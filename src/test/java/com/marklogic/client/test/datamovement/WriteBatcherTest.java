@@ -74,6 +74,7 @@ import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.WriteBatch;
 import com.marklogic.client.datamovement.WriteBatchListener;
 import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.WriteFailureListener;
@@ -372,6 +373,49 @@ public class WriteBatcherTest {
         .withThreadCount(0);
       fail("should have thrown IllegalArgumentException because threadCount must be > 1");
     } catch(IllegalArgumentException e) {}
+  }
+
+  @Test
+  public void testCloseListeners() {
+
+    AtomicBoolean calledBatchListener = new AtomicBoolean(false);
+    AtomicBoolean calledFailureListener = new AtomicBoolean(false);
+
+    class CloseBatchListener implements WriteBatchListener, AutoCloseable {
+      @Override
+      public void close() throws Exception {
+        logger.debug("Called the close method");
+        calledBatchListener.set(true);
+      }
+
+      @Override
+      public void processEvent(WriteBatch batch) {
+        logger.debug("Processed the listener");
+      }
+    }
+
+    class CloseFailureListener implements WriteFailureListener, AutoCloseable {
+      @Override
+      public void close() throws Exception {
+        logger.debug("Called the close method");
+        calledFailureListener.set(true);
+      }
+
+      @Override
+      public void processFailure(WriteBatch batch, Throwable failure) {
+        logger.debug("Processed the failure listener");
+      }
+    }
+
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
+        .withBatchSize(1)
+        .onBatchSuccess(new CloseBatchListener())
+        .onBatchFailure(new CloseFailureListener());
+
+    moveMgr.startJob(writeBatcher);
+    moveMgr.stopJob(writeBatcher);
+    assertTrue("Close method is not called on WriteBatchListener", calledBatchListener.get());
+    assertTrue("Close method is not called on WriteFailureListener", calledFailureListener.get());
   }
 
   @Test

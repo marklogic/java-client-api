@@ -792,6 +792,28 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           getJobName());
       }
     }
+    closeAllListeners();
+  }
+
+  private void closeAllListeners() {
+    for (QueryBatchListener listener : getUrisReadyListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onUrisReady listener cannot be closed", e);
+        }
+      }
+    }
+    for (QueryFailureListener listener : getQueryFailureListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onQueryFailure listener cannot be closed", e);
+        }
+      }
+    }
   }
 
   protected void finalize() {

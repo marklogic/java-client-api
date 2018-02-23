@@ -32,6 +32,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.ConcurrentHashMap;
@@ -70,7 +71,9 @@ import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.JobReport;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatch;
+import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.GenericDocumentImpl;
@@ -452,6 +455,51 @@ public class QueryBatcherTest {
     // there should be one failure sent to the ApplyTransformListener
     // onBatchFailure listener since the transform is invalid
     assertEquals(1, failureBatchCount.get());
+  }
+
+  @Test
+  public void testCloseListeners() {
+
+    AtomicBoolean calledBatchListener = new AtomicBoolean(false);
+    AtomicBoolean calledFailureListener = new AtomicBoolean(false);
+
+    class CloseBatchListener implements QueryBatchListener, AutoCloseable {
+      @Override
+      public void close() throws Exception {
+        logger.debug("Called the close method");
+        calledBatchListener.set(true);
+      }
+
+      @Override
+      public void processEvent(QueryBatch batch) {
+        logger.debug("Processed the listener");
+      }
+    }
+
+    class CloseFailureListener implements QueryFailureListener, AutoCloseable {
+      @Override
+      public void close() throws Exception {
+        logger.debug("Called the close method");
+        calledFailureListener.set(true);
+      }
+
+      @Override
+      public void processFailure(QueryBatchException failure) {
+        logger.debug("Processed the failure listener");
+      }
+    }
+
+    StructuredQueryDefinition query = new StructuredQueryBuilder().and();
+    query.setCollections(qhbTestCollection);
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+        .onUrisReady(new CloseBatchListener())
+        .onQueryFailure(new CloseFailureListener());
+
+    moveMgr.startJob(queryBatcher);
+    queryBatcher.awaitCompletion();
+    moveMgr.stopJob(queryBatcher);
+    assertTrue("Close method is not called on WriteBatchListener", calledBatchListener.get());
+    assertTrue("Close method is not called on WriteFailureListener", calledFailureListener.get());
   }
 
   @Test

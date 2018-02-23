@@ -90,7 +90,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *     - using a thread from threadPool
  *     - no synchronization or unnecessary delays while emptying queue
  *     - and calls each successListener (if not using transactions)
- *   - if usingTransactions (transactionSize > 1)
+ *   - if usingTransactions (transactionSize &gt; 1)
  *     - opens transactions as needed
  *       - using a thread from threadPool
  *       - but not before, lest we increase likelihood of transaction timeout
@@ -654,6 +654,28 @@ public class WriteBatcherImpl
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
+    closeAllListeners();
+  }
+
+  private void closeAllListeners() {
+    for (WriteBatchListener listener : getBatchSuccessListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onBatchSuccess listener cannot be closed", e);
+        }
+      }
+    }
+    for (WriteFailureListener listener : getBatchFailureListeners()) {
+      if ( listener instanceof AutoCloseable ) {
+        try {
+          ((AutoCloseable) listener).close();
+        } catch (Exception e) {
+          logger.error("onBatchFailure listener cannot be closed", e);
+        }
+      }
+    }
   }
 
   @Override
