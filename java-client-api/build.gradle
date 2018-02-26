@@ -33,6 +33,12 @@ dependencies {
     
 }
 
+jar {
+    exclude ('search.xsd','search-bindings.xjb','query-options-template.xml',
+            'com/marklogic/client/example/**', 'data/**', 'Example' +
+            '.properties', 'example/**', 'scripts/**', '*.txt', 'property' +
+            '.xsd', 'restapi-bindings.xjb', 'security.xsd')
+}
 task sourcesJar(type: Jar) {
     classifier = 'sources'
     exclude ('data/**', 'Example.properties', 'example/**', 'scripts/**',
@@ -152,8 +158,12 @@ distributions {
     }
 }
 
-distZip (dependsOn: javadoc) {
+task printClassPath() {
+    doLast {
+        println sourceSets.main.runtimeClasspath.asPath+':'+sourceSets.test.runtimeClasspath.asPath
+    }
 }
+
 task testServerInit(type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
     main = 'com.marklogic.client.test.util.TestServerBootstrapper'

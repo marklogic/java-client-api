@@ -137,17 +137,10 @@ First verify that you have valid server and admin auth info in
 `SERVER_ADMIN_USER` and `SERVER_ADMIN_PASS` fields in
 src/test/java/com/marklogic/client/test/Common.java
 
-    $ mvn clean test-compile
-    $ mvn exec:java@test-server-init
-    $ mvn test
+    $ ./gradlew clean
+    $ ./gradlew testServerInit
+    $ ./gradlew test
 
-If your Maven installation is older than 3.3.1 you will get an error from the
-`mvn exec:java@...` command as this syntax variant was introduced with Maven
-3.3.1. Simply replace the original command with
-
-    $ ...
-    $ mvn exec:java -DexecutionId=test-server-init
-    $ ...
 
 #### If your server is not on localhost
 

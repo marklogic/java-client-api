@@ -13,20 +13,20 @@ like so:
     java -cp $CLASSPATH com.marklogic.client.example.cookbook.DocumentWrite
 
 This, of course, requires that you have all necessary dependencies in the env
-variable $CLASSPATH.  You can get the classpath for your machine using the
-[maven dependency plugin](http://maven.apache.org/plugins/maven-dependency-plugin/usage.html)
-command:
+variable $CLASSPATH.  You can get the classpath for your machine by executing the the following gradle task
 
-    mvn dependency:build-classpath
+    ./gradlew printClasspath
 
 # Testing Cookbook Examples
 
 Most cookbook examples pass their unit test if they run without error.  First
 edit the [Example.properties](../../../../../../resources/Example.properties) file
 in the distribution to specify the connection parameters for your server. Then
-run `mvn test` while specifying the unit test you want to run, for example:
+run `./gradlew test` while specifying the unit test you want to run, for example:
 
-    mvn test -Dtest=DocumentWriteTest
+    ./gradlew java-client-api:test -Dtest.single=DocumentWriteTest
+
+The above command runs the DocumentWriteTest unit test in java-client-api sub project.
 
 # Creating a Cookbook Example
 
