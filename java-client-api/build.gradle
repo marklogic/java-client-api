@@ -104,13 +104,13 @@ publishing {
             from components.java
 
             pom.withXml {
-                asNode().append(pomCustomizations.developers)
-                asNode().append(pomCustomizations.name)
                 asNode().append(pomCustomizations.packaging)
-                asNode().append(pomCustomizations.url)
-                asNode().append(pomCustomizations.scm)
-                asNode().append(pomCustomizations.licenses)
+                asNode().append(pomCustomizations.name)
                 asNode().appendNode("description", pomCustomizations.textdescription.text())
+                asNode().append(pomCustomizations.url)
+                asNode().append(pomCustomizations.licenses)
+                asNode().append(pomCustomizations.developers)
+                asNode().append(pomCustomizations.scm)
             }
             artifact sourcesJar
             artifact javadocJar

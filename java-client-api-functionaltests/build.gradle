@@ -32,7 +32,7 @@ jacocoTestReport {
 }
 
 dependencies {  
-  compile project (':java-client-api')
+  compile project (':marklogic-client-api')
   compile group: 'com.marklogic', name: 'marklogic-xcc', version: '8.0.6'
   compile group: 'org.skyscreamer', name: 'jsonassert', version: '1.2.3'
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.1'
