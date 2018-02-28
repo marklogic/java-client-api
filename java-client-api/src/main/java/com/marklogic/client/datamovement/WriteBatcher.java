@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement;
 
 import java.util.concurrent.TimeUnit;
 
+import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
@@ -133,6 +134,17 @@ public interface WriteBatcher extends Batcher {
    */
   WriteBatcher add(WriteEvent... docs);
 
+  /**
+   * <p>Add a document, by passing in a 
+   * {@link com.marklogic.client.document.DocumentWriteOperation DocumentWriteOperation},
+   * to be batched and then written to the server when a batch is full
+   * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
+   * 
+   * @param DocumentWriteOperation the DocumentWriteOperation object containing 
+   *          the document's details to be written to the server
+   * @return WriteBatcher the batcher containing the documents added
+   */
+  WriteBatcher add(DocumentWriteOperation writeOperation);
   /**
    * Add a listener to run each time a batch is successfully written.
    *

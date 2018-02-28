@@ -56,7 +56,9 @@ import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
+import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.impl.Utilities;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
@@ -142,7 +144,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - use non-blocking queues where possible
  *       - we use a blocking queue for the thread pool since that's required and it makes sense
  *         for threads to block while awaiting more tasks
- *       - we use a blocking queue for the DocumentToWrite main queue just so we can have
+ *       - we use a blocking queue for the DocumentWriteOperation main queue just so we can have
  *         the atomic drainTo method used by flush.  But LinkedBlockingQueue is unbounded so
  *         nothing should block on put() and we use poll() to get things so we don't block there either.
  *       - we only use one synchronized block inside initialize() to ensure it only runs once
@@ -162,7 +164,7 @@ import com.marklogic.client.datamovement.WriteBatcher;
  *       - for more on the design of awaitCompletion, see comments above CompletableThreadPoolExecutor
  *         and CompletableRejectedExecutionHandler
  *   - track
- *     - one queue of DocumentToWrite
+ *     - one queue of DocumentWriteOperation
  *     - batchCounter to decide if it's time to write a batch
  *       - flush resets this so after flush batch sizes will be normal
  *     - batchNumber to decide which host to use next (round-robin)
@@ -214,7 +216,7 @@ public class WriteBatcherImpl
   private String temporalCollection;
   private ServerTransform transform;
   private ForestConfiguration forestConfig;
-  private LinkedBlockingQueue<DocumentToWrite> queue = new LinkedBlockingQueue<>();
+  private LinkedBlockingQueue<DocumentWriteOperation> queue = new LinkedBlockingQueue<>();
   private List<WriteBatchListener> successListeners = new ArrayList<>();
   private List<WriteFailureListener> failureListeners = new ArrayList<>();
   private AtomicLong batchNumber = new AtomicLong(0);
@@ -277,15 +279,13 @@ public class WriteBatcherImpl
   }
 
   @Override
-  public WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle,
-                          AbstractWriteHandle contentHandle)
-  {
-    if ( uri == null ) throw new IllegalArgumentException("uri must not be null");
-    if ( contentHandle == null ) throw new IllegalArgumentException("contentHandle must not be null");
+  public WriteBatcher add(DocumentWriteOperation writeOperation) {
+    if ( writeOperation.getUri() == null ) throw new IllegalArgumentException("uri must not be null");
+    if ( writeOperation.getContent() == null ) throw new IllegalArgumentException("contentHandle must not be null");
     initialize();
     requireNotStopped();
-    queue.add( new DocumentToWrite(uri, metadataHandle, contentHandle) );
-    logger.trace("add uri={}", uri);
+    queue.add(writeOperation);
+    logger.trace("add uri={}", writeOperation.getUri());
     // if we have queued batchSize, it's time to flush a batch
     long recordNum = batchCounter.incrementAndGet();
     boolean timeToWriteBatch = (recordNum % getBatchSize()) == 0;
@@ -293,9 +293,9 @@ public class WriteBatcherImpl
       BatchWriteSet writeSet = newBatchWriteSet(false);
       int i=0;
       for ( ; i < getBatchSize(); i++ ) {
-        DocumentToWrite doc = queue.poll();
+        DocumentWriteOperation doc = queue.poll();
         if ( doc != null ) {
-          writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
+          writeSet.getWriteSet().add(doc);
         } else {
           // strange, there should have been a full batch of docs in the queue...
           break;
@@ -305,6 +305,12 @@ public class WriteBatcherImpl
         threadPool.submit( new BatchWriter(writeSet) );
       }
     }
+    return this;
+  }
+
+  @Override
+  public WriteBatcher add(String uri, DocumentMetadataWriteHandle metadataHandle, AbstractWriteHandle contentHandle) {
+    add(new DocumentWriteOperationImpl(OperationType.DOCUMENT_WRITE, uri, metadataHandle, contentHandle));
     return this;
   }
 
@@ -539,11 +545,11 @@ public class WriteBatcherImpl
     requireInitialized();
     requireNotStopped();
     // drain any docs left in the queue
-    List<DocumentToWrite> docs = new ArrayList<>();
+    List<DocumentWriteOperation> docs = new ArrayList<>();
     long recordInBatch = batchCounter.getAndSet(0);
     queue.drainTo(docs);
     logger.info("flushing {} queued docs", docs.size());
-    Iterator<DocumentToWrite> iter = docs.iterator();
+    Iterator<DocumentWriteOperation> iter = docs.iterator();
     boolean forceNewTransaction = true;
     for ( int i=0; iter.hasNext(); i++ ) {
       if ( isStopped() == true ) {
@@ -554,8 +560,8 @@ public class WriteBatcherImpl
       BatchWriteSet writeSet = newBatchWriteSet(forceNewTransaction);
       int j=0;
       for ( ; j < getBatchSize() && iter.hasNext(); j++ ) {
-        DocumentToWrite doc = iter.next();
-        writeSet.getWriteSet().add(doc.uri, doc.metadataHandle, doc.contentHandle);
+        DocumentWriteOperation doc = iter.next();
+        writeSet.getWriteSet().add(doc);
       }
       threadPool.submit( new BatchWriter(writeSet) );
     }
@@ -868,18 +874,6 @@ public class WriteBatcherImpl
   @Override
   public ForestConfiguration getForestConfig() {
     return forestConfig;
-  }
-
-  public static class DocumentToWrite {
-    public String uri;
-    public DocumentMetadataWriteHandle metadataHandle;
-    public AbstractWriteHandle contentHandle;
-
-    public DocumentToWrite(String uri, DocumentMetadataWriteHandle metadata, AbstractWriteHandle content) {
-      this.uri = uri;
-      this.metadataHandle = metadata;
-      this.contentHandle = content;
-    }
   }
 
   public static class HostInfo {

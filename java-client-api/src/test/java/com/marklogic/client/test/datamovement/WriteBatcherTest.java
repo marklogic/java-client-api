@@ -511,6 +511,23 @@ public class WriteBatcherTest {
     assertEquals(writeBatcherJobId, batcher.getJobId());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
 
+    class WriteOperationRunnable implements Runnable {
+
+      @Override
+      public void run() {
+        String threadName = Thread.currentThread().getName();
+        DocumentWriteSet writeSet = client.newDocumentManager().newWriteSet();
+        for (int j = 1; j <= docsPerExternalThread; j++) {
+          String uri = "/" + collection + "/" + threadName + "/" + j + ".txt";
+          DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(whbTestCollection, collection);
+          writeSet.add(uri, meta, new StringHandle("test").withFormat(Format.TEXT));
+        }
+        for (DocumentWriteOperation doc : writeSet) {
+          batcher.add(doc);
+        }
+      }
+    }
+
     class MyRunnable implements Runnable {
 
       @Override
@@ -526,10 +543,13 @@ public class WriteBatcherTest {
     }
 
     Thread[] externalThreads = new Thread[externalThreadCount];
-    for ( int i=0; i < externalThreads.length; i++ ) {
+    for (int i = 0; i < externalThreadCount - 1; i++) {
       externalThreads[i] = new Thread(new MyRunnable(), testName + i);
       externalThreads[i].start();
     }
+    externalThreads[externalThreadCount - 1] = new Thread(new WriteOperationRunnable(),
+        testName + (externalThreadCount - 1));
+    externalThreads[externalThreadCount - 1].start();
 
     for ( Thread thread : externalThreads ) {
       try { thread.join(); } catch (Exception e) {}
