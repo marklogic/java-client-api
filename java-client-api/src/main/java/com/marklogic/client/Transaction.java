@@ -15,8 +15,9 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.io.marker.StructureReadHandle;
-import javax.ws.rs.core.NewCookie;
+
 import java.util.List;
 
 /**
@@ -49,7 +50,7 @@ public interface Transaction {
    * originated.
    * @return	the cookies sent in the response to open the transaction
    */
-  List<NewCookie> getCookies();
+  List<ClientCookie> getCookies();
 
   /**
    * Reads the status for the transaction including whether the transaction

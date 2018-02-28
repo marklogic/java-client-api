@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -85,7 +86,6 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import okhttp3.ConnectionPool;
-import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.Headers;
 import okhttp3.HttpUrl;
@@ -125,7 +125,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
 import javax.net.ssl.SSLSession;
 import javax.net.ssl.X509TrustManager;
-import javax.ws.rs.core.NewCookie;
 import javax.xml.bind.DatatypeConverter;
 import java.io.ByteArrayInputStream;
 import java.io.Closeable;
@@ -1673,12 +1672,12 @@ public class OkHttpServices implements RESTServices {
 
     String location = response.headers().get("Location");
     String hostId = null;
-    List<NewCookie> cookies = new ArrayList<NewCookie>();
+    List<ClientCookie> cookies = new ArrayList<>();
     for ( String setCookie : response.headers(HEADER_SET_COOKIE) ) {
-      NewCookie newCookie = makeJaxRsCookie(requestBldr.build().url(), setCookie);
-      cookies.add(newCookie);
-      if ( "HostId".equalsIgnoreCase(newCookie.getName()) ) {
-        hostId =  newCookie.getValue();
+      ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+      cookies.add(cookie);
+      if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
+        hostId = cookie.getValue();
       }
     }
     response.close();
@@ -4089,7 +4088,7 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
       HttpUrl uri = requestBldr.build().url();
-      for ( NewCookie cookie : transaction.getCookies() ) {
+      for (ClientCookie cookie : transaction.getCookies()) {
         // don't forward the cookie if it requires https and we're not using https
         if ( cookie.isSecure() && ! uri.isHttps() ) {
           continue;
@@ -4121,33 +4120,10 @@ public class OkHttpServices implements RESTServices {
             continue;
           }
         }
-        requestBldr = requestBldr.addHeader(HEADER_COOKIE, makeCookie(uri, cookie).toString());
+        requestBldr = requestBldr.addHeader(HEADER_COOKIE, cookie.toString());
       }
     }
     return requestBldr;
-  }
-
-  private NewCookie makeJaxRsCookie(HttpUrl url, String setCookie) {
-    Cookie cookie = Cookie.parse(url, setCookie);
-    int maxAge = (int) TimeUnit.MILLISECONDS.toSeconds(cookie.expiresAt() - System.currentTimeMillis());
-    return new NewCookie(cookie.name(), cookie.value(), cookie.path(), cookie.domain(),
-      null, maxAge, cookie.secure(), cookie.httpOnly());
-  }
-
-  private Cookie makeCookie(HttpUrl url, NewCookie cookie) {
-    if ( cookie == null ) throw new IllegalArgumentException(("cookie cannot be null"));
-    /*
-    return Cookie.parse(url, cookie.toString());
-    */
-    Cookie.Builder cookieBldr = new Cookie.Builder()
-      .domain(cookie.getDomain())
-      .path(cookie.getPath())
-      .name(cookie.getName())
-      .value(cookie.getValue());
-    if ( cookie.getExpiry() != null )  cookieBldr.expiresAt(cookie.getExpiry().getDate());
-    if ( cookie.isSecure() == true ) cookieBldr = cookieBldr.secure();
-    if ( cookie.isHttpOnly() == true ) cookieBldr = cookieBldr.httpOnly();
-    return cookieBldr.build();
   }
 
   private Request.Builder addTelemetryAgentId(Request.Builder requestBldr) {

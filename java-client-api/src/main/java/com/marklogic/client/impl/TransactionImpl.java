@@ -15,12 +15,12 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.marker.StructureReadHandle;
 
-import javax.ws.rs.core.NewCookie;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -33,19 +33,19 @@ class TransactionImpl implements Transaction {
   private String          hostId;
   // we keep cookies scoped with each tranasaction to work with load balancers
   // that need to keep requests for one transaction on a specific MarkLogic Server host
-  private List<NewCookie> cookies = new ArrayList<>();
+  private List<ClientCookie> cookies = new ArrayList<>();
   private Calendar        created = Calendar.getInstance();
 
-  TransactionImpl(RESTServices services, String transactionId, List<NewCookie> cookies) {
+  TransactionImpl(RESTServices services, String transactionId, List<ClientCookie> cookies) {
     this.services      = services;
     this.transactionId = transactionId;
     if ( cookies != null ) {
-      for ( NewCookie cookie : cookies ) {
+      for (ClientCookie cookie : cookies) {
         // make a clone to ensure we're not holding on to any resources
         // related to an HTTP connection that need to be released
-        this.cookies.add(new NewCookie(cookie));
+        this.cookies.add(new ClientCookie(cookie));
         if ( "HostId".equalsIgnoreCase(cookie.getName()) ) {
-          hostId =  cookie.getValue();
+          hostId = cookie.getValue();
         }
       }
     }
@@ -60,7 +60,7 @@ class TransactionImpl implements Transaction {
   }
 
   @Override
-  public List<NewCookie> getCookies() {
+  public List<ClientCookie> getCookies() {
     return cookies;
   }
 

@@ -50,6 +50,7 @@ import java.util.function.Consumer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.marklogic.client.impl.ClientCookie;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.Transaction;
@@ -64,6 +65,7 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.DocumentMetadataWriteHandle;
 import com.marklogic.client.io.marker.StructureReadHandle;
+
 import com.marklogic.client.datamovement.DataMovementException;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
@@ -1000,7 +1002,9 @@ public class WriteBatcherImpl
         }
       }
       @Override
-      public List<javax.ws.rs.core.NewCookie> getCookies() { return realTransaction.getCookies(); }
+      public List<ClientCookie> getCookies() {
+        return realTransaction.getCookies();
+      }
       @Override
       public String getHostId() { return realTransaction.getHostId(); }
       @Override
