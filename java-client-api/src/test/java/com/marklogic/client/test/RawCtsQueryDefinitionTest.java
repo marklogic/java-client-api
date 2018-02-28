@@ -209,9 +209,9 @@ public class RawCtsQueryDefinitionTest {
     Common.client.newDocumentManager().write("testRawCtsQueryFromFileHandle.xml",
       new FileHandle(new File("src/test/resources/constraint5.xml")).withFormat(Format.XML));
 
-    String ctsQueryFilePath = "src/test/resources/ctsQuery1.xml";
+    String ctsQueryFilePath = "ctsQuery1.xml";
     String ctsQueryAsString = Common.testFileToString(ctsQueryFilePath);
-    File ctsQueryFile = new File(ctsQueryFilePath);
+    File ctsQueryFile = new File(Common.getResourceUri(ctsQueryFilePath));
     FileHandle ctsHandle = new FileHandle(ctsQueryFile);
 
     QueryDefinition[] queries = new QueryDefinition[] {

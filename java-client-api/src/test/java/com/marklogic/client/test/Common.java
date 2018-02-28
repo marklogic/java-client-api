@@ -23,6 +23,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -144,6 +147,9 @@ public class Common {
   }
   public static Reader testFileToReader(String filename) {
     return testFileToReader(filename, null);
+  }
+  public static URI getResourceUri(String filename) throws URISyntaxException {
+      return Common.class.getClassLoader().getResource(filename).toURI();
   }
   public static Reader testFileToReader(String filename, String encoding) {
     try {
