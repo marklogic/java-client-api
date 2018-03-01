@@ -1,0 +1,575 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#49 	Austin Adams 	R-R 	5'11" 	190 	Aug 19, 1986
+bb:1301	bb:playerid	"1301"^^xs:integer .
+bb:1301	bb:number	"49"^^xs:integer .
+bb:1301	bb:lastname	"Adams" .
+bb:1301	bb:firstname	"Austin" .
+bb:1301	bb:position	"pitcher" .
+bb:1301	bb:team	bbr:Indians .
+bb:1301	bb:bats	"right" .
+bb:1301	bb:throws	"right" .
+bb:1301	bb:weight	"190"^^xs:integer .
+bb:1301	bb:date-of-birth	"1986-08-19"^^xs:date .
+bb:1301	rdf:type		bbr:pitcher .
+bb:1301	rdf:type		bbr:setup .
+
+#37 	Cody Allen 	R-R 	6'1" 	210 	Nov 20, 1988
+bb:1302	bb:playerid	"1302"^^xs:integer .
+bb:1302	bb:number	"37"^^xs:integer .
+bb:1302	bb:lastname	"Allen" .
+bb:1302	bb:firstname	"Cody" .
+bb:1302	bb:position	"pitcher" .
+bb:1302	bb:team	bbr:Indians .
+bb:1302	bb:bats	"right" .
+bb:1302	bb:throws	"right" .
+bb:1302	bb:weight	"210"^^xs:integer .
+bb:1302	bb:date-of-birth	"1988-11-20"^^xs:date .
+bb:1302	rdf:type		bbr:pitcher .
+bb:1302	rdf:type		bbr:setup .
+
+#48 	Scott Atchison 	R-R 	6'2" 	200 	Mar 29, 1976
+bb:1303	bb:playerid	"1303"^^xs:integer .
+bb:1303	bb:number	"48"^^xs:integer .
+bb:1303	bb:lastname	"Atchison" .
+bb:1303	bb:firstname	"Scott" .
+bb:1303	bb:position	"pitcher" .
+bb:1303	bb:team	bbr:Indians .
+bb:1303	bb:bats	"right" .
+bb:1303	bb:throws	"right" .
+bb:1303	bb:weight	"200"^^xs:integer .
+bb:1303	bb:date-of-birth	"1976-03-29"^^xs:date .
+bb:1303	rdf:type		bbr:pitcher .
+bb:1303	rdf:type		bbr:setup .
+
+#51 	Scott Barnes 	L-L 	6'4" 	200 	Sep 5, 1987
+bb:1304	bb:playerid	"1304"^^xs:integer .
+bb:1304	bb:number	"51"^^xs:integer .
+bb:1304	bb:lastname	"Barnes" .
+bb:1304	bb:firstname	"Scott" .
+bb:1304	bb:position	"pitcher" .
+bb:1304	bb:team	bbr:Indians .
+bb:1304	bb:bats	"left" .
+bb:1304	bb:throws	"left" .
+bb:1304	bb:weight	"200"^^xs:integer .
+bb:1304	bb:date-of-birth	"1987-09-05"^^xs:date .
+bb:1304	rdf:type		bbr:pitcher .
+bb:1304	rdf:type		bbr:setup .
+
+#47 	Trevor Bauer 	R-R 	6'1" 	190 	Jan 17, 1991
+bb:1305	bb:playerid	"1305"^^xs:integer .
+bb:1305	bb:number	"47"^^xs:integer .
+bb:1305	bb:lastname	"Bauer" .
+bb:1305	bb:firstname	"Trevor" .
+bb:1305	bb:position	"pitcher" .
+bb:1305	bb:team	bbr:Indians .
+bb:1305	bb:bats	"right" .
+bb:1305	bb:throws	"right" .
+bb:1305	bb:weight	"190"^^xs:integer .
+bb:1305	bb:date-of-birth	"1991-01-17"^^xs:date .
+bb:1305	rdf:type		bbr:pitcher .
+bb:1305	rdf:type		bbr:setup .
+
+#59 	Carlos Carrasco 	R-R 	6'3" 	210 	Mar 21, 1987
+bb:1306	bb:playerid	"1306"^^xs:integer .
+bb:1306	bb:number	"59"^^xs:integer .
+bb:1306	bb:lastname	"Carrasco" .
+bb:1306	bb:firstname	"Carlos" .
+bb:1306	bb:position	"pitcher" .
+bb:1306	bb:team	bbr:Indians .
+bb:1306	bb:bats	"right" .
+bb:1306	bb:throws	"right" .
+bb:1306	bb:weight	"210"^^xs:integer .
+bb:1306	bb:date-of-birth	"1987-03-21"^^xs:date .
+bb:1306	rdf:type		bbr:pitcher .
+bb:1306	rdf:type		bbr:setup .
+
+#57 	Kyle Crockett 	L-L 	6'2" 	170 	Dec 15, 1991
+bb:1307	bb:playerid	"1307"^^xs:integer .
+bb:1307	bb:number	"57"^^xs:integer .
+bb:1307	bb:lastname	"Crockett" .
+bb:1307	bb:firstname	"Kyle" .
+bb:1307	bb:position	"pitcher" .
+bb:1307	bb:team	bbr:Indians .
+bb:1307	bb:bats	"left" .
+bb:1307	bb:throws	"left" .
+bb:1307	bb:weight	"170"^^xs:integer .
+bb:1307	bb:date-of-birth	"1991-12-15"^^xs:date .
+bb:1307	rdf:type		bbr:pitcher .
+bb:1307	rdf:type		bbr:setup .
+
+#50 	Nick Hagadone 	L-L 	6'5" 	230 	Jan 1, 1986
+bb:1308	bb:playerid	"1308"^^xs:integer .
+bb:1308	bb:number	"50"^^xs:integer .
+bb:1308	bb:lastname	"Hagadone" .
+bb:1308	bb:firstname	"Nick" .
+bb:1308	bb:position	"pitcher" .
+bb:1308	bb:team	bbr:Indians .
+bb:1308	bb:bats	"left" .
+bb:1308	bb:throws	"left" .
+bb:1308	bb:weight	"230"^^xs:integer .
+bb:1308	bb:date-of-birth	"1986-01-01"^^xs:date .
+bb:1308	rdf:type		bbr:pitcher .
+bb:1308	rdf:type		bbr:setup .
+
+#58 	T.J. House 	R-L 	6'1" 	205 	Sep 29, 1989
+bb:1309	bb:playerid	"1309"^^xs:integer .
+bb:1309	bb:number	"58"^^xs:integer .
+bb:1309	bb:lastname	"House" .
+bb:1309	bb:firstname	"T.J." .
+bb:1309	bb:position	"pitcher" .
+bb:1309	bb:team	bbr:Indians .
+bb:1309	bb:bats	"right" .
+bb:1309	bb:throws	"left" .
+bb:1309	bb:weight	"205"^^xs:integer .
+bb:1309	bb:date-of-birth	"1989-09-29"^^xs:date .
+bb:1309	rdf:type		bbr:pitcher .
+bb:1309	rdf:type		bbr:setup .
+
+#28 	Corey Kluber 	R-R 	6'4" 	215 	Apr 10, 1986
+bb:1310	bb:playerid	"1310"^^xs:integer .
+bb:1310	bb:number	"28"^^xs:integer .
+bb:1310	bb:lastname	"Kluber" .
+bb:1310	bb:firstname	"Corey" .
+bb:1310	bb:position	"pitcher" .
+bb:1310	bb:team	bbr:Indians .
+bb:1310	bb:bats	"right" .
+bb:1310	bb:throws	"right" .
+bb:1310	bb:weight	"215"^^xs:integer .
+bb:1310	bb:date-of-birth	"1986-04-10"^^xs:date .
+bb:1310	rdf:type		bbr:pitcher .
+bb:1310	rdf:type		bbr:setup .
+
+#20 	C.C. Lee 	R-R 	5'11" 	190 	Oct 21, 1986
+bb:1311	bb:playerid	"1311"^^xs:integer .
+bb:1311	bb:number	"20"^^xs:integer .
+bb:1311	bb:lastname	"Lee" .
+bb:1311	bb:firstname	"C.C." .
+bb:1311	bb:position	"pitcher" .
+bb:1311	bb:team	bbr:Indians .
+bb:1311	bb:bats	"right" .
+bb:1311	bb:throws	"right" .
+bb:1311	bb:weight	"190"^^xs:integer .
+bb:1311	bb:date-of-birth	"1986-10-21"^^xs:date .
+bb:1311	rdf:type		bbr:pitcher .
+bb:1311	rdf:type		bbr:setup .
+
+#	Nick Maronde 	S-L 	6'3" 	205 	Sep 5, 1989
+bb:1312	bb:playerid	"1312"^^xs:integer .
+bb:1312	bb:lastname	"Maronde" .
+bb:1312	bb:firstname	"Nick" .
+bb:1312	bb:position	"pitcher" .
+bb:1312	bb:team	bbr:Indians .
+bb:1312	bb:bats	"switch" .
+bb:1312	bb:throws	"left" .
+bb:1312	bb:weight	"205"^^xs:integer .
+bb:1312	bb:date-of-birth	"1989-09-05"^^xs:date .
+bb:1312	rdf:type		bbr:pitcher .
+bb:1312	rdf:type		bbr:setup .
+
+#34 	Zach McAllister 	R-R 	6'6" 	240 	Dec 8, 1987
+bb:1313	bb:playerid	"1313"^^xs:integer .
+bb:1313	bb:number	"34"^^xs:integer .
+bb:1313	bb:lastname	"McAllister" .
+bb:1313	bb:firstname	"Zach" .
+bb:1313	bb:position	"pitcher" .
+bb:1313	bb:team	bbr:Indians .
+bb:1313	bb:bats	"right" .
+bb:1313	bb:throws	"right" .
+bb:1313	bb:weight	"240"^^xs:integer .
+bb:1313	bb:date-of-birth	"1987-12-08"^^xs:date .
+bb:1313	rdf:type		bbr:pitcher .
+bb:1313	rdf:type		bbr:setup .
+
+#56 	Bryan Price 	R-R 	6'4" 	215 	Nov 13, 1986
+bb:1314	bb:playerid	"1314"^^xs:integer .
+bb:1314	bb:number	"56"^^xs:integer .
+bb:1314	bb:lastname	"Price" .
+bb:1314	bb:firstname	"Bryan" .
+bb:1314	bb:position	"pitcher" .
+bb:1314	bb:team	bbr:Indians .
+bb:1314	bb:bats	"right" .
+bb:1314	bb:throws	"right" .
+bb:1314	bb:weight	"215"^^xs:integer .
+bb:1314	bb:date-of-birth	"1986-11-13"^^xs:date .
+bb:1314	rdf:type		bbr:pitcher .
+bb:1314	rdf:type		bbr:setup .
+
+#35 	Marc Rzepczynski 	L-L 	6'2" 	220 	Aug 29, 1985
+bb:1315	bb:playerid	"1315"^^xs:integer .
+bb:1315	bb:number	"35"^^xs:integer .
+bb:1315	bb:lastname	"Rzepczynski" .
+bb:1315	bb:firstname	"Marc" .
+bb:1315	bb:position	"pitcher" .
+bb:1315	bb:team	bbr:Indians .
+bb:1315	bb:bats	"left" .
+bb:1315	bb:throws	"left" .
+bb:1315	bb:weight	"220"^^xs:integer .
+bb:1315	bb:date-of-birth	"1985-08-29"^^xs:date .
+bb:1315	rdf:type		bbr:pitcher .
+bb:1315	rdf:type		bbr:setup .
+
+#31 	Danny Salazar 	L-R 	6'0" 	190 	Jan 11, 1990
+bb:1316	bb:playerid	"1316"^^xs:integer .
+bb:1316	bb:number	"31"^^xs:integer .
+bb:1316	bb:lastname	"Salazar" .
+bb:1316	bb:firstname	"Danny" .
+bb:1316	bb:position	"pitcher" .
+bb:1316	bb:team	bbr:Indians .
+bb:1316	bb:bats	"left" .
+bb:1316	bb:throws	"right" .
+bb:1316	bb:weight	"190"^^xs:integer .
+bb:1316	bb:date-of-birth	"1990-01-11"^^xs:date .
+bb:1316	rdf:type		bbr:pitcher .
+bb:1316	rdf:type		bbr:setup .
+
+#27 	Bryan Shaw 	S-R 	6'1" 	210 	Nov 8, 1987
+bb:1317	bb:playerid	"1317"^^xs:integer .
+bb:1317	bb:number	"27"^^xs:integer .
+bb:1317	bb:lastname	"Shaw" .
+bb:1317	bb:firstname	"Bryan" .
+bb:1317	bb:position	"pitcher" .
+bb:1317	bb:team	bbr:Indians .
+bb:1317	bb:bats	"switch" .
+bb:1317	bb:throws	"right" .
+bb:1317	bb:weight	"210"^^xs:integer .
+bb:1317	bb:date-of-birth	"1987-11-08"^^xs:date .
+bb:1317	rdf:type		bbr:pitcher .
+bb:1317	rdf:type		bbr:setup .
+
+#43 	Josh Tomlin 	R-R 	6'1" 	190 	Oct 19, 1984
+bb:1318	bb:playerid	"1318"^^xs:integer .
+bb:1318	bb:number	"43"^^xs:integer .
+bb:1318	bb:lastname	"Tomlin" .
+bb:1318	bb:firstname	"Josh" .
+bb:1318	bb:position	"pitcher" .
+bb:1318	bb:team	bbr:Indians .
+bb:1318	bb:bats	"right" .
+bb:1318	bb:throws	"right" .
+bb:1318	bb:weight	"190"^^xs:integer .
+bb:1318	bb:date-of-birth	"1984-10-19"^^xs:date .
+bb:1318	rdf:type		bbr:pitcher .
+bb:1318	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#10 	Yan Gomes 	R-R 	6'2" 	215 	Jul 19, 1987
+bb:1319	bb:playerid	"1319"^^xs:integer .
+bb:1319	bb:number	"10"^^xs:integer .
+bb:1319	bb:lastname	"Gomes" .
+bb:1319	bb:firstname	"Yan" .
+bb:1319	bb:position	"catcher" .
+bb:1319	bb:team	bbr:Indians .
+bb:1319	bb:bats	"right" .
+bb:1319	bb:throws	"right" .
+bb:1319	bb:weight	"215"^^xs:integer .
+bb:1319	bb:date-of-birth	"1987-07-19"^^xs:date .
+bb:1319	rdf:type		bbr:catcher .
+
+#55 	Roberto Perez 	R-R 	5'11" 	225 	Dec 23, 1988
+bb:1320	bb:playerid	"1320"^^xs:integer .
+bb:1320	bb:number	"55"^^xs:integer .
+bb:1320	bb:lastname	"Perez" .
+bb:1320	bb:firstname	"Roberto" .
+bb:1320	bb:position	"catcher" .
+bb:1320	bb:team	bbr:Indians .
+bb:1320	bb:bats	"right" .
+bb:1320	bb:throws	"right" .
+bb:1320	bb:weight	"225"^^xs:integer .
+bb:1320	bb:date-of-birth	"1988-12-23"^^xs:date .
+bb:1320	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#36 	Jesus Aguilar 	R-R 	6'3" 	250 	Jun 30, 1990
+bb:1321	bb:playerid	"1321"^^xs:integer .
+bb:1321	bb:number	"36"^^xs:integer .
+bb:1321	bb:lastname	"Aguilar" .
+bb:1321	bb:firstname	"Jesus" .
+bb:1321	bb:position	"infielder" .
+bb:1321	bb:team	bbr:Indians .
+bb:1321	bb:bats	"right" .
+bb:1321	bb:throws	"right" .
+bb:1321	bb:weight	"250"^^xs:integer .
+bb:1321	bb:date-of-birth	"1990-06-30"^^xs:date .
+bb:1321	rdf:type		bbr:infielder .
+
+#4 	Mike Aviles 	R-R 	5'10" 	205 	Mar 13, 1981
+bb:1322	bb:playerid	"1322"^^xs:integer .
+bb:1322	bb:number	"4"^^xs:integer .
+bb:1322	bb:lastname	"Aviles" .
+bb:1322	bb:firstname	"Mike" .
+bb:1322	bb:position	"infielder" .
+bb:1322	bb:team	bbr:Indians .
+bb:1322	bb:bats	"right" .
+bb:1322	bb:throws	"right" .
+bb:1322	bb:weight	"205"^^xs:integer .
+bb:1322	bb:date-of-birth	"1981-03-13"^^xs:date .
+bb:1322	rdf:type		bbr:infielder .
+
+#8 	Lonnie Chisenhall 	L-R 	6'2" 	190 	Oct 4, 1988
+bb:1323	bb:playerid	"1323"^^xs:integer .
+bb:1323	bb:number	"8"^^xs:integer .
+bb:1323	bb:lastname	"Chisenhall" .
+bb:1323	bb:firstname	"Lonnie" .
+bb:1323	bb:position	"infielder" .
+bb:1323	bb:team	bbr:Indians .
+bb:1323	bb:bats	"left" .
+bb:1323	bb:throws	"right" .
+bb:1323	bb:weight	"190"^^xs:integer .
+bb:1323	bb:date-of-birth	"1988-10-04"^^xs:date .
+bb:1323	rdf:type		bbr:infielder .
+
+#78 	Erik Gonzalez 	R-R 	6'0" 	175 	Aug 31, 1991
+bb:1324	bb:playerid	"1324"^^xs:integer .
+bb:1324	bb:number	"78"^^xs:integer .
+bb:1324	bb:lastname	"Gonzalez" .
+bb:1324	bb:firstname	"Erik" .
+bb:1324	bb:position	"infielder" .
+bb:1324	bb:team	bbr:Indians .
+bb:1324	bb:bats	"right" .
+bb:1324	bb:throws	"right" .
+bb:1324	bb:weight	"175"^^xs:integer .
+bb:1324	bb:date-of-birth	"1991-08-31"^^xs:date .
+bb:1324	rdf:type		bbr:infielder .
+
+#22 	Jason Kipnis 	L-R 	5'11" 	190 	Apr 3, 1987
+bb:1325	bb:playerid	"1325"^^xs:integer .
+bb:1325	bb:number	"22"^^xs:integer .
+bb:1325	bb:lastname	"Kipnis" .
+bb:1325	bb:firstname	"Jason" .
+bb:1325	bb:position	"infielder" .
+bb:1325	bb:team	bbr:Indians .
+bb:1325	bb:bats	"left" .
+bb:1325	bb:throws	"right" .
+bb:1325	bb:weight	"190"^^xs:integer .
+bb:1325	bb:date-of-birth	"1987-04-03"^^xs:date .
+bb:1325	rdf:type		bbr:infielder .
+
+#11 	Jose Ramirez 	S-R 	5'9" 	165 	Sep 17, 1992
+bb:1326	bb:playerid	"1326"^^xs:integer .
+bb:1326	bb:number	"11"^^xs:integer .
+bb:1326	bb:lastname	"Ramirez" .
+bb:1326	bb:firstname	"Jose" .
+bb:1326	bb:position	"infielder" .
+bb:1326	bb:team	bbr:Indians .
+bb:1326	bb:bats	"switch" .
+bb:1326	bb:throws	"right" .
+bb:1326	bb:weight	"165"^^xs:integer .
+bb:1326	bb:date-of-birth	"1992-09-17"^^xs:date .
+bb:1326	rdf:type		bbr:infielder .
+
+#41 	Carlos Santana 	S-R 	5'11" 	210 	Apr 8, 1986
+bb:1327	bb:playerid	"1327"^^xs:integer .
+bb:1327	bb:number	"41"^^xs:integer .
+bb:1327	bb:lastname	"Santana" .
+bb:1327	bb:firstname	"Carlos" .
+bb:1327	bb:position	"infielder" .
+bb:1327	bb:team	bbr:Indians .
+bb:1327	bb:bats	"switch" .
+bb:1327	bb:throws	"right" .
+bb:1327	bb:weight	"210"^^xs:integer .
+bb:1327	bb:date-of-birth	"1986-04-08"^^xs:date .
+bb:1327	rdf:type		bbr:infielder .
+
+#33 	Nick Swisher 	S-L 	6'0" 	200 	Nov 25, 1980
+bb:1328	bb:playerid	"1328"^^xs:integer .
+bb:1328	bb:number	"33"^^xs:integer .
+bb:1328	bb:lastname	"Swisher" .
+bb:1328	bb:firstname	"Nick" .
+bb:1328	bb:position	"infielder" .
+bb:1328	bb:team	bbr:Indians .
+bb:1328	bb:bats	"switch" .
+bb:1328	bb:throws	"left" .
+bb:1328	bb:weight	"200"^^xs:integer .
+bb:1328	bb:date-of-birth	"1980-11-25"^^xs:date .
+bb:1328	rdf:type		bbr:infielder .
+
+#6 	Zach Walters 	S-R 	6'2" 	210 	Sep 5, 1989
+bb:1329	bb:playerid	"1329"^^xs:integer .
+bb:1329	bb:number	"6"^^xs:integer .
+bb:1329	bb:lastname	"Walters" .
+bb:1329	bb:firstname	"Zach" .
+bb:1329	bb:position	"infielder" .
+bb:1329	bb:team	bbr:Indians .
+bb:1329	bb:bats	"switch" .
+bb:1329	bb:throws	"right" .
+bb:1329	bb:weight	"210"^^xs:integer .
+bb:1329	bb:date-of-birth	"1989-09-05"^^xs:date .
+bb:1329	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#24 	Michael Bourn 	L-R 	5'10" 	180 	Dec 27, 1982
+bb:1330	bb:playerid	"1330"^^xs:integer .
+bb:1330	bb:number	"24"^^xs:integer .
+bb:1330	bb:lastname	"Bourn" .
+bb:1330	bb:firstname	"Michael" .
+bb:1330	bb:position	"outfielder" .
+bb:1330	bb:team	bbr:Indians .
+bb:1330	bb:bats	"left" .
+bb:1330	bb:throws	"right" .
+bb:1330	bb:weight	"180"^^xs:integer .
+bb:1330	bb:date-of-birth	"1982-12-27"^^xs:date .
+bb:1330	rdf:type		bbr:outfielder .
+
+#23 	Michael Brantley 	L-L 	6'2" 	200 	May 15, 1987
+bb:1331	bb:playerid	"1331"^^xs:integer .
+bb:1331	bb:number	"23"^^xs:integer .
+bb:1331	bb:lastname	"Brantley" .
+bb:1331	bb:firstname	"Michael" .
+bb:1331	bb:position	"outfielder" .
+bb:1331	bb:team	bbr:Indians .
+bb:1331	bb:bats	"left" .
+bb:1331	bb:throws	"left" .
+bb:1331	bb:weight	"200"^^xs:integer .
+bb:1331	bb:date-of-birth	"1987-05-15"^^xs:date .
+bb:1331	rdf:type		bbr:outfielder .
+
+#62 	Tyler Holt 	R-R 	5'10" 	190 	Mar 10, 1989
+bb:1332	bb:playerid	"1332"^^xs:integer .
+bb:1332	bb:number	"62"^^xs:integer .
+bb:1332	bb:lastname	"Holt" .
+bb:1332	bb:firstname	"Tyler" .
+bb:1332	bb:position	"outfielder" .
+bb:1332	bb:team	bbr:Indians .
+bb:1332	bb:bats	"right" .
+bb:1332	bb:throws	"right" .
+bb:1332	bb:weight	"190"^^xs:integer .
+bb:1332	bb:date-of-birth	"1989-03-10"^^xs:date .
+bb:1332	rdf:type		bbr:outfielder .
+
+#75 	Carlos Moncrief 	L-R 	6'0" 	220 	Nov 3, 1988
+bb:1333	bb:playerid	"1333"^^xs:integer .
+bb:1333	bb:number	"75"^^xs:integer .
+bb:1333	bb:lastname	"Moncrief" .
+bb:1333	bb:firstname	"Carlos" .
+bb:1333	bb:position	"outfielder" .
+bb:1333	bb:team	bbr:Indians .
+bb:1333	bb:bats	"left" .
+bb:1333	bb:throws	"right" .
+bb:1333	bb:weight	"220"^^xs:integer .
+bb:1333	bb:date-of-birth	"1988-11-03"^^xs:date .
+bb:1333	rdf:type		bbr:outfielder .
+
+#7 	David Murphy 	L-L 	6'3" 	210 	Oct 18, 1981
+bb:1334	bb:playerid	"1334"^^xs:integer .
+bb:1334	bb:number	"7"^^xs:integer .
+bb:1334	bb:lastname	"Murphy" .
+bb:1334	bb:firstname	"David" .
+bb:1334	bb:position	"outfielder" .
+bb:1334	bb:team	bbr:Indians .
+bb:1334	bb:bats	"left" .
+bb:1334	bb:throws	"left" .
+bb:1334	bb:weight	"210"^^xs:integer .
+bb:1334	bb:date-of-birth	"1981-10-18"^^xs:date .
+bb:1334	rdf:type		bbr:outfielder .
+
+#9 	Ryan Raburn 	R-R 	6'0" 	185 	Apr 17, 1981
+bb:1335	bb:playerid	"1335"^^xs:integer .
+bb:1335	bb:number	"9"^^xs:integer .
+bb:1335	bb:lastname	"Raburn" .
+bb:1335	bb:firstname	"Ryan" .
+bb:1335	bb:position	"outfielder" .
+bb:1335	bb:team	bbr:Indians .
+bb:1335	bb:bats	"right" .
+bb:1335	bb:throws	"right" .
+bb:1335	bb:weight	"185"^^xs:integer .
+bb:1335	bb:date-of-birth	"1981-04-17"^^xs:date .
+bb:1335	rdf:type		bbr:outfielder .
+
+#	Manager	Terry Francona
+bb:1356	bb:lastname	"Francona" .
+bb:1356	bb:firstname	"Terry" .
+bb:1356	bb:position	"manager" .
+bb:1356	bb:team	bbr:Indians .
+bb:1356	bb:number	"17"^^xs:integer .
+bb:1356	bbr:coachingRole		bbr:manager .
+
+#	Coach	Brad Mills
+bb:1357	bb:lastname	"Mills" .
+bb:1357	bb:firstname	"Brad" .
+bb:1357	bb:position	"coach" .
+bb:1357	bb:number	"2"^^xs:integer .
+bb:1357	bb:team	bbr:Indians .
+bb:1357	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Ty Van Burkleo
+bb:1358	bb:lastname	"Van Burkleo" .
+bb:1358	bb:firstname	"Ty" .
+bb:1358	bb:position	"coach" .
+bb:1358	bb:number	"29"^^xs:integer .
+bb:1358	bb:team	bbr:Indians .
+bb:1358	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Matt Quatraro
+bb:1359	bb:lastname	"Quatraro" .
+bb:1359	bb:firstname	"Matt" .
+bb:1359	bb:position	"coach" .
+bb:1359	bb:number	"60"^^xs:integer .
+bb:1359	bb:team	bbr:Indians .
+bb:1359	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Sandy Alomar Jr
+bb:1360	bb:lastname	"Alomar Jr" .
+bb:1360	bb:firstname	"Sandy" .
+bb:1360	bb:position	"coach" .
+bb:1360	bb:number	"15"^^xs:integer .
+bb:1360	bb:team	bbr:Indians .
+bb:1360	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Mike Sarbaugh
+bb:1361	bb:lastname	"Sarbaugh" .
+bb:1361	bb:firstname	"Mike" .
+bb:1361	bb:position	"coach" .
+bb:1361	bb:number	"16"^^xs:integer .
+bb:1361	bb:team	bbr:Indians .
+bb:1361	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Mickey Callaway
+bb:1362	bb:lastname	"Callaway" .
+bb:1362	bb:firstname	"Mickey" .
+bb:1362	bb:position	"coach" .
+bb:1362	bb:number	"32"^^xs:integer .
+bb:1362	bb:team	bbr:Indians .
+bb:1362	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Kevin Cash
+bb:1363	bb:lastname	"Cash" .
+bb:1363	bb:firstname	"Kevin" .
+bb:1363	bb:position	"coach" .
+bb:1363	bb:number	"45"^^xs:integer .
+bb:1363	bb:team	bbr:Indians .
+bb:1363	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Armando Camacaro
+bb:1364	bb:lastname	"Camacaro" .
+bb:1364	bb:firstname	"Armando" .
+bb:1364	bb:position	"coach" .
+bb:1364	bb:number	"64"^^xs:integer .
+bb:1364	bb:team	bbr:Indians .
+bb:1364	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

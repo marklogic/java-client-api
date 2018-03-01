@@ -1,0 +1,69 @@
+<bindings version="1.0" xmlns="http://java.sun.com/xml/ns/jaxb"
+	xmlns:xs="http://www.w3.org/2001/XMLSchema">
+	<bindings schemaLocation="search.xsd" node="/xs:schema">
+		<globalBindings fixedAttributeAsConstantProperty="false"
+			collectionType="java.util.Vector" typesafeEnumBase="xs:NCName"
+			choiceContentProperty="false" typesafeEnumMemberName="generateError"
+			enableFailFastCheck="false" generateIsSetMethod="true"
+			underscoreBinding="asCharInWord" />
+		<schemaBindings>
+			<package name="com.marklogic.client.config.search.jaxb">
+				<javadoc><![CDATA[<body>Search options package</body>]]>
+				</javadoc>
+			</package>
+		</schemaBindings>
+
+		<bindings node="//xs:complexType[@name='OptionsType']">
+			<class name="Options">
+
+				<javadoc>A &lt;b>Options&lt;/b> consists of a list of options
+					configurations elements.
+				</javadoc>
+			</class>
+			<bindings node="./xs:choice">
+				<property name="searchOptions">
+				</property>
+			</bindings>
+		</bindings>
+
+		<bindings node="//xs:element[@name='constraint']">
+			<class name="Constraint">
+				<javadoc>A &lt;b>Constraint&lt;/b> has a name and a
+					specification
+					tied to an index or lexicon.
+				</javadoc>
+			</class>
+			<bindings node=".//xs:choice">
+				<property name="constraint">
+				</property>
+			</bindings>
+		</bindings>
+        <bindings node='//xs:element[@name="additional-query"]'> 
+			<class name="AdditionalQuery">
+            </class> 
+        </bindings>
+
+		<!-- <bindings node='//xs:element[@name="searchable-expression"]'> <class 
+			name="SearchableExpression"></class> </bindings> <bindings node='//xs:element[@name="search-option"]'> 
+			<class name="SearchOption"></class> </bindings> <bindings node='//xs:element[@name="forest"]'> 
+			<class name="Forest"></class> </bindings>  <bindings node='//xs:element[@name="fragment-scope"]'> 
+			<class name="FragmentScope"></class> </bindings> <bindings node='//xs:element[@name="concurrency-level"]'> 
+			<class name="ConcurrencyLevel"></class> </bindings> <bindings node='//xs:element[@name="quality-weight"]'> 
+			<class name="QualityWeight"></class> </bindings> <bindings node='//xs:element[@name="debug"]'> 
+			<class name="Debug"></class> </bindings> <bindings node='//xs:element[@name="page-length"]'> 
+			<class name="PageLength"></class> </bindings> <bindings node='//xs:element[@name="return-constraints"]'> 
+			<class name="ReturnConstraints"></class> </bindings> <bindings node='//xs:element[@name="return-facets"]'> 
+			<class name="ReturnFacets"></class> </bindings> <bindings node='//xs:element[@name="return-metrics"]'> 
+			<class name="ReturnMetrics"></class> </bindings> <bindings node='//xs:element[@name="return-plan"]'> 
+			<class name="ReturnPlan"></class> </bindings> <bindings node='//xs:element[@name="return-qtext"]'> 
+			<class name="ReturnQText"></class> </bindings> <bindings node='//xs:element[@name="return-query"]'> 
+			<class name="ReturnQuery"></class> </bindings> <bindings node='//xs:element[@name="return-results"]'> 
+			<class name="ReturnResults"></class> </bindings> <bindings node='//xs:element[@name="return-similar"]'> 
+			<class name="ReturnSimilar"></class> </bindings> <bindings node="//xs:element[@name='annotation']"> 
+			<class name="Annotation"> <javadoc>An &lt;b>Annotation&lt;/b> contains client-managed 
+			metadata to be persisted with the search configuration. </javadoc> </class> 
+			</bindings> -->
+
+	</bindings> <!-- schemaLocation="search.xsd" node="/xs:schema" -->
+
+</bindings>

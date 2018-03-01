@@ -1,0 +1,89 @@
+   =========================================================================
+   ==  NOTICE file corresponding to the section 4 d of                    ==
+   ==  the Apache License, Version 2.0,                                   ==
+   ==  in this case for the MarkLogic Java API distribution.              ==
+   =========================================================================
+
+MarkLogic Java API
+Copyright 2012-2017 MarkLogic Corporation
+This product licensed under Apache License, Version 2.0
+See ASL-v2_0.txt
+
+MarkLogic Java API makes use of the following software libraries.
+
+Apache Commons Codec Version 1.2
+Copyright (c) 2001-2003, The Apache Software Foundation.  All rights reserved.
+This product includes software developed by the Apache Software Foundation
+    (http://www.apache.org/).
+See ASL-v2_0.txt
+
+Apache Jakarta Commons HttpClient Version 3.0.1
+Copyright 2004, The Apache Software Foundation
+This product includes software developed at The Apache Software Foundation
+    (http://www.apache.org/).
+See ASL-v2_0.txt
+
+Apache Commons Logging Package Version 1.0.4
+Copyright 2001-2004, The Apache Software Foundation.
+This product includes software developed at The Apache Software Foundation
+    (http://www.apache.org/).
+See ASL-v2_0.txt
+
+Jersey Client Version 1.12, available at http://jersey.java.net/
+Copyright 1997-2007, Sun Microsystems, Inc. All right reserved.
+This product licensed under Common Development and Distribution License 1.1
+See CDDL-v1_1.txt
+
+Jersey Apache Client Version 1.1.2 available at
+    http://download.java.net/maven/2/com/sun/jersey/contribs/jersey-apache-client/
+Copyright 1997-2007, Sun Microsystems, Inc. All right reserved.
+This product licensed under Common Development and Distribution License 1.1
+See CDDL-v1_1.txt
+
+Jersey Core Version 1.12 available at
+    http://jersey.java.net/nonav/documentation/latest/user-guide.html#core_client
+Copyright 2010-2011, Oracle. All right reserved.
+This product licensed under Common Development and Distribution License 1.1
+See CDDL-v1_1.txt
+
+Jersey Multipart Version 1.12 available at
+    http://jersey.java.net/nonav/documentation/latest/user-guide.html#chapter_deps
+Copyright 2010-2011, Oracle. All right reserved.
+This product licensed under Common Development and Distribution License 1.1
+See CDDL-v1_1.txt
+
+Logback Classic Version 1.0.0 and Logback Core Version 1.0.0
+Copyright 1999-2009, QOS.ch . All right reserved.
+The above components are licensed under Eclipse Public License 1.0.
+See EPL-v1_0.txt
+PLEASE NOTE THAT THE FOREGOING PROGRAMS ARE PROVIDED ON AN "AS IS" BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, EITHER EXPRESS OR IMPLIED
+INCLUDING, WITHOUT LIMITATION, ANY WARRANTIES OR CONDITIONS OF TITLE,
+NON-INFRINGEMENT, MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE.  NO
+CONTRIBUTOR OF THE FOREGOING SHALL HAVE ANY LIABILITY TO CUSTOMER FOR ANY
+DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING WITHOUT LIMITATION LOST PROFITS), HOWEVER CAUSED AND ON ANY THEORY
+OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING
+NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OR DISTRIBUTION
+OF THE PROGRAM OR THE EXERCISE OF ANY RIGHTS GRANTED HEREUNDER, EVEN IF
+ADVISED OF THE POSSIBILITY OF SUCH DAMAGES.  IF any provisions IN THE
+MARKLOGIC LICENSE AGREEMENT ARE HELD TO APPLY TO THIS COMPONENT, ANY SUCH
+TERMS which differ from THE ECLIPSE PUBLIC LICENSE are offered by MARKLOGIC
+alone and not by any other party.
+
+Logback Core Version 1.0.0
+Copyright 1999-2009, QOS.ch . All right reserved.
+This product licensed under Eclipse Public License 1.0
+See EPL-v1_0.txt
+
+Mimepull Version 1.6 made available at
+    http://grepcode.com/snapshot/repo1.maven.org/maven2/org.jvnet/mimepull/1.6
+Copyright 2011, Oracle. All right reserved.
+This product licensed under Common Development and Distribution License 1.0
+See CDDL-v1_1.txt
+
+SLF4J-API Version 1.6.4 made available at
+    http://www.slf4j.org/index.html
+Copyright (c) 2004-2011 QOS.ch All rights reserved. 
+This product licensed under the MIT license.
+See MIT-X11.txt

@@ -1,0 +1,3 @@
+<http://example.org/about> <http://purl.org/dc/elements/1.1/title1> "Anna \nHomepage" .
+<http://example.org/about> <http://purl.org/dc/elements/1.1/title2> "Hello\"Hello\"Hello" .
+<http://example.org/about> <http://purl.org/dc/elements/1.1/title3> 'Anna\'s Homepage' .

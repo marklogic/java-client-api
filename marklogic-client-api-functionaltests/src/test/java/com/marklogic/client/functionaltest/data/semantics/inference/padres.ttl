@@ -1,0 +1,643 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#61 	R.J. Alvarez 	R-R 	6'1" 	200 	Jun 8, 1991
+bb:401	bb:playerid	"401"^^xs:integer .
+bb:401	bb:number	"61"^^xs:integer .
+bb:401	bb:lastname	"Alvarez" .
+bb:401	bb:firstname	"R.J." .
+bb:401	bb:position	"pitcher" .
+bb:401	bb:team	bbr:Padres .
+bb:401	bb:bats	"right" .
+bb:401	bb:throws	"right" .
+bb:401	bb:weight	"200"^^xs:integer .
+bb:401	bb:date-of-birth	"1991-06-08"^^xs:date .
+bb:401	rdf:type		bbr:pitcher .
+bb:401	rdf:type		bbr:setup .
+
+#56 	Joaquin Benoit 	R-R 	6'3" 	220 	Jul 26, 1977
+bb:402	bb:playerid	"402"^^xs:integer .
+bb:402	bb:number	"56"^^xs:integer .
+bb:402	bb:lastname	"Benoit" .
+bb:402	bb:firstname	"Joaquin" .
+bb:402	bb:position	"pitcher" .
+bb:402	bb:team	bbr:Padres .
+bb:402	bb:bats	"right" .
+bb:402	bb:throws	"right" .
+bb:402	bb:weight	"220"^^xs:integer .
+bb:402	bb:date-of-birth	"1977-07-26"^^xs:date .
+bb:402	rdf:type		bbr:pitcher .
+bb:402	rdf:type		bbr:setup .
+
+#58 	Blaine Boyer 	R-R 	6'3" 	225 	Jul 11, 1981
+bb:403	bb:playerid	"403"^^xs:integer .
+bb:403	bb:number	"58"^^xs:integer .
+bb:403	bb:lastname	"Boyer" .
+bb:403	bb:firstname	"Blaine" .
+bb:403	bb:position	"pitcher" .
+bb:403	bb:team	bbr:Padres .
+bb:403	bb:bats	"right" .
+bb:403	bb:throws	"right" .
+bb:403	bb:weight	"225"^^xs:integer .
+bb:403	bb:date-of-birth	"1981-07-11"^^xs:date .
+bb:403	rdf:type		bbr:pitcher .
+bb:403	rdf:type		bbr:setup .
+
+#57 	Leonel Campos 	R-R 	6'3" 	185 	Jul 17, 1987
+bb:404	bb:playerid	"404"^^xs:integer .
+bb:404	bb:number	"57"^^xs:integer .
+bb:404	bb:lastname	"Campos" .
+bb:404	bb:firstname	"Leonel" .
+bb:404	bb:position	"pitcher" .
+bb:404	bb:team	bbr:Padres .
+bb:404	bb:bats	"right" .
+bb:404	bb:throws	"right" .
+bb:404	bb:weight	"185"^^xs:integer .
+bb:404	bb:date-of-birth	"1987-07-17"^^xs:date .
+bb:404	rdf:type		bbr:pitcher .
+bb:404	rdf:type		bbr:setup .
+
+#34 	Andrew Cashner 	R-R 	6'6" 	220 	Sep 11, 1986
+bb:405	bb:playerid	"405"^^xs:integer .
+bb:405	bb:number	"34"^^xs:integer .
+bb:405	bb:lastname	"Cashner" .
+bb:405	bb:firstname	"Andrew" .
+bb:405	bb:position	"pitcher" .
+bb:405	bb:team	bbr:Padres .
+bb:405	bb:bats	"right" .
+bb:405	bb:throws	"right" .
+bb:405	bb:weight	"220"^^xs:integer .
+bb:405	bb:date-of-birth	"1986-09-11"^^xs:date .
+bb:405	rdf:type		bbr:pitcher .
+bb:405	rdf:type		bbr:setup .
+
+#40 	Odrisamer Despaigne 	R-R 	6'0" 	195 	Apr 4, 1987
+bb:406	bb:playerid	"406"^^xs:integer .
+bb:406	bb:number	"40"^^xs:integer .
+bb:406	bb:lastname	"Despaigne" .
+bb:406	bb:firstname	"Odrisamer" .
+bb:406	bb:position	"pitcher" .
+bb:406	bb:team	bbr:Padres .
+bb:406	bb:bats	"right" .
+bb:406	bb:throws	"right" .
+bb:406	bb:weight	"195"^^xs:integer .
+bb:406	bb:date-of-birth	"1987-04-04"^^xs:date .
+bb:406	rdf:type		bbr:pitcher .
+bb:406	rdf:type		bbr:setup .
+
+#41 	Robbie Erlin 	R-L 	6'0" 	190 	Oct 8, 1990
+bb:407	bb:playerid	"407"^^xs:integer .
+bb:407	bb:number	"41"^^xs:integer .
+bb:407	bb:lastname	"Erlin" .
+bb:407	bb:firstname	"Robbie" .
+bb:407	bb:position	"pitcher" .
+bb:407	bb:team	bbr:Padres .
+bb:407	bb:bats	"right" .
+bb:407	bb:throws	"left" .
+bb:407	bb:weight	"190"^^xs:integer .
+bb:407	bb:date-of-birth	"1990-10-08"^^xs:date .
+bb:407	rdf:type		bbr:pitcher .
+bb:407	rdf:type		bbr:setup .
+
+#60 	Frank Garces 	L-L 	5'11" 	175 	Jan 17, 1990
+bb:408	bb:playerid	"408"^^xs:integer .
+bb:408	bb:number	"60"^^xs:integer .
+bb:408	bb:lastname	"Garces" .
+bb:408	bb:firstname	"Frank" .
+bb:408	bb:position	"pitcher" .
+bb:408	bb:team	bbr:Padres .
+bb:408	bb:bats	"left" .
+bb:408	bb:throws	"left" .
+bb:408	bb:weight	"175"^^xs:integer .
+bb:408	bb:date-of-birth	"1990-01-17"^^xs:date .
+bb:408	rdf:type		bbr:pitcher .
+bb:408	rdf:type		bbr:setup .
+
+#45 	Jesse Hahn 	R-R 	6'5" 	190 	Jul 30, 1989
+bb:409	bb:playerid	"409"^^xs:integer .
+bb:409	bb:number	"45"^^xs:integer .
+bb:409	bb:lastname	"Hahn" .
+bb:409	bb:firstname	"Jesse" .
+bb:409	bb:position	"pitcher" .
+bb:409	bb:team	bbr:Padres .
+bb:409	bb:bats	"right" .
+bb:409	bb:throws	"right" .
+bb:409	bb:weight	"190"^^xs:integer .
+bb:409	bb:date-of-birth	"1989-07-30"^^xs:date .
+bb:409	rdf:type		bbr:pitcher .
+bb:409	rdf:type		bbr:setup .
+
+#49 	Casey Kelly 	R-R 	6'3" 	210 	Oct 4, 1989
+bb:410	bb:playerid	"410"^^xs:integer .
+bb:410	bb:number	"49"^^xs:integer .
+bb:410	bb:lastname	"Kelly" .
+bb:410	bb:firstname	"Casey" .
+bb:410	bb:position	"pitcher" .
+bb:410	bb:team	bbr:Padres .
+bb:410	bb:bats	"right" .
+bb:410	bb:throws	"right" .
+bb:410	bb:weight	"210"^^xs:integer .
+bb:410	bb:date-of-birth	"1989-10-04"^^xs:date .
+bb:410	rdf:type		bbr:pitcher .
+bb:410	rdf:type		bbr:setup .
+
+#22 	Ian Kennedy 	R-R 	6'0" 	190 	Dec 19, 1984
+bb:411	bb:playerid	"411"^^xs:integer .
+bb:411	bb:number	"22"^^xs:integer .
+bb:411	bb:lastname	"Kennedy" .
+bb:411	bb:firstname	"Ian" .
+bb:411	bb:position	"pitcher" .
+bb:411	bb:team	bbr:Padres .
+bb:411	bb:bats	"right" .
+bb:411	bb:throws	"right" .
+bb:411	bb:weight	"190"^^xs:integer .
+bb:411	bb:date-of-birth	"1984-12-19"^^xs:date .
+bb:411	rdf:type		bbr:pitcher .
+bb:411	rdf:type		bbr:setup .
+
+#52 	Cory Luebke 	R-L 	6'4" 	205 	Mar 4, 1985
+bb:412	bb:playerid	"412"^^xs:integer .
+bb:412	bb:number	"52"^^xs:integer .
+bb:412	bb:lastname	"Luebke" .
+bb:412	bb:firstname	"Cory" .
+bb:412	bb:position	"pitcher" .
+bb:412	bb:team	bbr:Padres .
+bb:412	bb:bats	"right" .
+bb:412	bb:throws	"left" .
+bb:412	bb:weight	"205"^^xs:integer .
+bb:412	bb:date-of-birth	"1985-03-04"^^xs:date .
+bb:412	rdf:type		bbr:pitcher .
+bb:412	rdf:type		bbr:setup .
+
+#60 	Juan Pablo Oramas 	L-L 	5'10" 	220 	May 11, 1990
+bb:413	bb:playerid	"413"^^xs:integer .
+bb:413	bb:number	"60"^^xs:integer .
+bb:413	bb:lastname	"Pablo Oramas" .
+bb:413	bb:firstname	"Juan" .
+bb:413	bb:position	"pitcher" .
+bb:413	bb:team	bbr:Padres .
+bb:413	bb:bats	"left" .
+bb:413	bb:throws	"left" .
+bb:413	bb:weight	"220"^^xs:integer .
+bb:413	bb:date-of-birth	"1990-05-11"^^xs:date .
+bb:413	rdf:type		bbr:pitcher .
+bb:413	rdf:type		bbr:setup .
+
+#59 	Kevin Quackenbush 	R-R 	6'4" 	220 	Nov 28, 1988
+bb:414	bb:playerid	"414"^^xs:integer .
+bb:414	bb:number	"59"^^xs:integer .
+bb:414	bb:lastname	"Quackenbush" .
+bb:414	bb:firstname	"Kevin" .
+bb:414	bb:position	"pitcher" .
+bb:414	bb:team	bbr:Padres .
+bb:414	bb:bats	"right" .
+bb:414	bb:throws	"right" .
+bb:414	bb:weight	"220"^^xs:integer .
+bb:414	bb:date-of-birth	"1988-11-28"^^xs:date .
+bb:414	rdf:type		bbr:pitcher .
+bb:414	rdf:type		bbr:setup .
+
+#38 	Tyson Ross 	R-R 	6'5" 	225 	Apr 22, 1987
+bb:415	bb:playerid	"415"^^xs:integer .
+bb:415	bb:number	"38"^^xs:integer .
+bb:415	bb:lastname	"Ross" .
+bb:415	bb:firstname	"Tyson" .
+bb:415	bb:position	"pitcher" .
+bb:415	bb:team	bbr:Padres .
+bb:415	bb:bats	"right" .
+bb:415	bb:throws	"right" .
+bb:415	bb:weight	"225"^^xs:integer .
+bb:415	bb:date-of-birth	"1987-04-22"^^xs:date .
+bb:415	rdf:type		bbr:pitcher .
+bb:415	rdf:type		bbr:setup .
+
+#62 	Keyvius Sampson 	R-R 	6'0" 	225 	Jan 6, 1991
+bb:416	bb:playerid	"416"^^xs:integer .
+bb:416	bb:number	"62"^^xs:integer .
+bb:416	bb:lastname	"Sampson" .
+bb:416	bb:firstname	"Keyvius" .
+bb:416	bb:position	"pitcher" .
+bb:416	bb:team	bbr:Padres .
+bb:416	bb:bats	"right" .
+bb:416	bb:throws	"right" .
+bb:416	bb:weight	"225"^^xs:integer .
+bb:416	bb:date-of-birth	"1991-01-06"^^xs:date .
+bb:416	rdf:type		bbr:pitcher .
+bb:416	rdf:type		bbr:setup .
+
+#	Burch Smith 	R-R 	6'4" 	215 	Apr 12, 1990
+bb:417	bb:playerid	"417"^^xs:integer .
+bb:417	bb:lastname	"Smith" .
+bb:417	bb:firstname	"Burch" .
+bb:417	bb:position	"pitcher" .
+bb:417	bb:team	bbr:Padres .
+bb:417	bb:bats	"right" .
+bb:417	bb:throws	"right" .
+bb:417	bb:weight	"215"^^xs:integer .
+bb:417	bb:date-of-birth	"1990-04-12"^^xs:date .
+bb:417	rdf:type		bbr:pitcher .
+bb:417	rdf:type		bbr:setup .
+
+#33 	Dale Thayer 	R-R 	6'0" 	210 	Dec 17, 1980
+bb:418	bb:playerid	"418"^^xs:integer .
+bb:418	bb:number	"33"^^xs:integer .
+bb:418	bb:lastname	"Thayer" .
+bb:418	bb:firstname	"Dale" .
+bb:418	bb:position	"pitcher" .
+bb:418	bb:team	bbr:Padres .
+bb:418	bb:bats	"right" .
+bb:418	bb:throws	"right" .
+bb:418	bb:weight	"210"^^xs:integer .
+bb:418	bb:date-of-birth	"1980-12-17"^^xs:date .
+bb:418	rdf:type		bbr:pitcher .
+bb:418	rdf:type		bbr:setup .
+
+#54 	Alex Torres 	L-L 	5'10" 	175 	Dec 8, 1987
+bb:419	bb:playerid	"419"^^xs:integer .
+bb:419	bb:number	"54"^^xs:integer .
+bb:419	bb:lastname	"Torres" .
+bb:419	bb:firstname	"Alex" .
+bb:419	bb:position	"pitcher" .
+bb:419	bb:team	bbr:Padres .
+bb:419	bb:bats	"left" .
+bb:419	bb:throws	"left" .
+bb:419	bb:weight	"175"^^xs:integer .
+bb:419	bb:date-of-birth	"1987-12-08"^^xs:date .
+bb:419	rdf:type		bbr:pitcher .
+bb:419	rdf:type		bbr:setup .
+
+#50 	Nick Vincent 	R-R 	5'11" 	180 	Jul 12, 1986
+bb:420	bb:playerid	"420"^^xs:integer .
+bb:420	bb:number	"50"^^xs:integer .
+bb:420	bb:lastname	"Vincent" .
+bb:420	bb:firstname	"Nick" .
+bb:420	bb:position	"pitcher" .
+bb:420	bb:team	bbr:Padres .
+bb:420	bb:bats	"right" .
+bb:420	bb:throws	"right" .
+bb:420	bb:weight	"180"^^xs:integer .
+bb:420	bb:date-of-birth	"1986-07-12"^^xs:date .
+bb:420	rdf:type		bbr:pitcher .
+bb:420	rdf:type		bbr:setup .
+
+#43 	Joe Wieland 	R-R 	6'3" 	210 	Jan 21, 1990
+bb:421	bb:playerid	"421"^^xs:integer .
+bb:421	bb:number	"43"^^xs:integer .
+bb:421	bb:lastname	"Wieland" .
+bb:421	bb:firstname	"Joe" .
+bb:421	bb:position	"pitcher" .
+bb:421	bb:team	bbr:Padres .
+bb:421	bb:bats	"right" .
+bb:421	bb:throws	"right" .
+bb:421	bb:weight	"210"^^xs:integer .
+bb:421	bb:date-of-birth	"1990-01-21"^^xs:date .
+bb:421	rdf:type		bbr:pitcher .
+bb:421	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#8 	Yasmani Grandal 	S-R 	6'2" 	225 	Nov 8, 1988
+bb:422	bb:playerid	"422"^^xs:integer .
+bb:422	bb:number	"8"^^xs:integer .
+bb:422	bb:lastname	"Grandal" .
+bb:422	bb:firstname	"Yasmani" .
+bb:422	bb:position	"catcher" .
+bb:422	bb:team	bbr:Padres .
+bb:422	bb:bats	"switch" .
+bb:422	bb:throws	"right" .
+bb:422	bb:weight	"225"^^xs:integer .
+bb:422	bb:date-of-birth	"1988-11-08"^^xs:date .
+bb:422	rdf:type		bbr:catcher .
+
+#44 	Rene Rivera 	R-R 	5'10" 	215 	Jul 31, 1983
+bb:423	bb:playerid	"423"^^xs:integer .
+bb:423	bb:number	"44"^^xs:integer .
+bb:423	bb:lastname	"Rivera" .
+bb:423	bb:firstname	"Rene" .
+bb:423	bb:position	"catcher" .
+bb:423	bb:team	bbr:Padres .
+bb:423	bb:bats	"right" .
+bb:423	bb:throws	"right" .
+bb:423	bb:weight	"215"^^xs:integer .
+bb:423	bb:date-of-birth	"1983-07-31"^^xs:date .
+bb:423	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#23 	Yonder Alonso 	L-R 	6'1" 	230 	Apr 8, 1987
+bb:424	bb:playerid	"424"^^xs:integer .
+bb:424	bb:number	"23"^^xs:integer .
+bb:424	bb:lastname	"Alonso" .
+bb:424	bb:firstname	"Yonder" .
+bb:424	bb:position	"infielder" .
+bb:424	bb:team	bbr:Padres .
+bb:424	bb:bats	"left" .
+bb:424	bb:throws	"right" .
+bb:424	bb:weight	"230"^^xs:integer .
+bb:424	bb:date-of-birth	"1987-04-08"^^xs:date .
+bb:424	rdf:type		bbr:infielder .
+
+#5 	Alexi Amarista 	L-R 	5'6" 	150 	Apr 6, 1989
+bb:425	bb:playerid	"425"^^xs:integer .
+bb:425	bb:number	"5"^^xs:integer .
+bb:425	bb:lastname	"Amarista" .
+bb:425	bb:firstname	"Alexi" .
+bb:425	bb:position	"infielder" .
+bb:425	bb:team	bbr:Padres .
+bb:425	bb:bats	"left" .
+bb:425	bb:throws	"right" .
+bb:425	bb:weight	"150"^^xs:integer .
+bb:425	bb:date-of-birth	"1989-04-06"^^xs:date .
+bb:425	rdf:type		bbr:infielder .
+
+#2 	Everth Cabrera 	S-R 	5'10" 	190 	Nov 17, 1986
+bb:426	bb:playerid	"426"^^xs:integer .
+bb:426	bb:number	"2"^^xs:integer .
+bb:426	bb:lastname	"Cabrera" .
+bb:426	bb:firstname	"Everth" .
+bb:426	bb:position	"infielder" .
+bb:426	bb:team	bbr:Padres .
+bb:426	bb:bats	"switch" .
+bb:426	bb:throws	"right" .
+bb:426	bb:weight	"190"^^xs:integer .
+bb:426	bb:date-of-birth	"1986-11-17"^^xs:date .
+bb:426	rdf:type		bbr:infielder .
+
+#9 	Jedd Gyorko 	R-R 	5'10" 	210 	Sep 23, 1988
+bb:427	bb:playerid	"427"^^xs:integer .
+bb:427	bb:number	"9"^^xs:integer .
+bb:427	bb:lastname	"Gyorko" .
+bb:427	bb:firstname	"Jedd" .
+bb:427	bb:position	"infielder" .
+bb:427	bb:team	bbr:Padres .
+bb:427	bb:bats	"right" .
+bb:427	bb:throws	"right" .
+bb:427	bb:weight	"210"^^xs:integer .
+bb:427	bb:date-of-birth	"1988-09-23"^^xs:date .
+bb:427	rdf:type		bbr:infielder .
+
+#14 	Tommy Medica 	R-R 	6'3" 	205 	Apr 9, 1988
+bb:428	bb:playerid	"428"^^xs:integer .
+bb:428	bb:number	"14"^^xs:integer .
+bb:428	bb:lastname	"Medica" .
+bb:428	bb:firstname	"Tommy" .
+bb:428	bb:position	"infielder" .
+bb:428	bb:team	bbr:Padres .
+bb:428	bb:bats	"right" .
+bb:428	bb:throws	"right" .
+bb:428	bb:weight	"205"^^xs:integer .
+bb:428	bb:date-of-birth	"1988-04-09"^^xs:date .
+bb:428	rdf:type		bbr:infielder .
+
+#3 	Jace Peterson 	L-R 	6'0" 	210 	May 9, 1990
+bb:429	bb:playerid	"429"^^xs:integer .
+bb:429	bb:number	"3"^^xs:integer .
+bb:429	bb:lastname	"Peterson" .
+bb:429	bb:firstname	"Jace" .
+bb:429	bb:position	"infielder" .
+bb:429	bb:team	bbr:Padres .
+bb:429	bb:bats	"left" .
+bb:429	bb:throws	"right" .
+bb:429	bb:weight	"210"^^xs:integer .
+bb:429	bb:date-of-birth	"1990-05-09"^^xs:date .
+bb:429	rdf:type		bbr:infielder .
+
+#27 	Yangervis Solarte 	S-R 	5'11" 	195 	Jul 7, 1987
+bb:430	bb:playerid	"430"^^xs:integer .
+bb:430	bb:number	"27"^^xs:integer .
+bb:430	bb:lastname	"Solarte" .
+bb:430	bb:firstname	"Yangervis" .
+bb:430	bb:position	"infielder" .
+bb:430	bb:team	bbr:Padres .
+bb:430	bb:bats	"switch" .
+bb:430	bb:throws	"right" .
+bb:430	bb:weight	"195"^^xs:integer .
+bb:430	bb:date-of-birth	"1987-07-07"^^xs:date .
+bb:430	rdf:type		bbr:infielder .
+
+#15 	Cory Spangenberg 	L-R 	6'0" 	195 	Mar 16, 1991
+bb:431	bb:playerid	"431"^^xs:integer .
+bb:431	bb:number	"15"^^xs:integer .
+bb:431	bb:lastname	"Spangenberg" .
+bb:431	bb:firstname	"Cory" .
+bb:431	bb:position	"infielder" .
+bb:431	bb:team	bbr:Padres .
+bb:431	bb:bats	"left" .
+bb:431	bb:throws	"right" .
+bb:431	bb:weight	"195"^^xs:integer .
+bb:431	bb:date-of-birth	"1991-03-16"^^xs:date .
+bb:431	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#16 	Abraham Almonte 	S-R 	5'9" 	205 	Jun 27, 1989
+bb:432	bb:playerid	"432"^^xs:integer .
+bb:432	bb:number	"16"^^xs:integer .
+bb:432	bb:lastname	"Almonte" .
+bb:432	bb:firstname	"Abraham" .
+bb:432	bb:position	"outfielder" .
+bb:432	bb:team	bbr:Padres .
+bb:432	bb:bats	"switch" .
+bb:432	bb:throws	"right" .
+bb:432	bb:weight	"205"^^xs:integer .
+bb:432	bb:date-of-birth	"1989-06-27"^^xs:date .
+bb:432	rdf:type		bbr:outfielder .
+
+#63 	Yeison Asencio 	R-R 	6'1" 	225 	Nov 14, 1989
+bb:433	bb:playerid	"433"^^xs:integer .
+bb:433	bb:number	"63"^^xs:integer .
+bb:433	bb:lastname	"Asencio" .
+bb:433	bb:firstname	"Yeison" .
+bb:433	bb:position	"outfielder" .
+bb:433	bb:team	bbr:Padres .
+bb:433	bb:bats	"right" .
+bb:433	bb:throws	"right" .
+bb:433	bb:weight	"225"^^xs:integer .
+bb:433	bb:date-of-birth	"1989-11-14"^^xs:date .
+bb:433	rdf:type		bbr:outfielder .
+
+#27 	Reymond Fuentes 	L-L 	6'0" 	160 	Feb 12, 1991
+bb:434	bb:playerid	"434"^^xs:integer .
+bb:434	bb:number	"27"^^xs:integer .
+bb:434	bb:lastname	"Fuentes" .
+bb:434	bb:firstname	"Reymond" .
+bb:434	bb:position	"outfielder" .
+bb:434	bb:team	bbr:Padres .
+bb:434	bb:bats	"left" .
+bb:434	bb:throws	"left" .
+bb:434	bb:weight	"160"^^xs:integer .
+bb:434	bb:date-of-birth	"1991-02-12"^^xs:date .
+bb:434	rdf:type		bbr:outfielder .
+
+#4 	Jake Goebbert 	L-L 	6'0" 	205 	Sep 24, 1987
+bb:435	bb:playerid	"435"^^xs:integer .
+bb:435	bb:number	"4"^^xs:integer .
+bb:435	bb:lastname	"Goebbert" .
+bb:435	bb:firstname	"Jake" .
+bb:435	bb:position	"outfielder" .
+bb:435	bb:team	bbr:Padres .
+bb:435	bb:bats	"left" .
+bb:435	bb:throws	"left" .
+bb:435	bb:weight	"205"^^xs:integer .
+bb:435	bb:date-of-birth	"1987-09-24"^^xs:date .
+bb:435	rdf:type		bbr:outfielder .
+
+#7 	Rymer Liriano 	R-R 	6'0" 	230 	Jun 20, 1991
+bb:436	bb:playerid	"436"^^xs:integer .
+bb:436	bb:number	"7"^^xs:integer .
+bb:436	bb:lastname	"Liriano" .
+bb:436	bb:firstname	"Rymer" .
+bb:436	bb:position	"outfielder" .
+bb:436	bb:team	bbr:Padres .
+bb:436	bb:bats	"right" .
+bb:436	bb:throws	"right" .
+bb:436	bb:weight	"230"^^xs:integer .
+bb:436	bb:date-of-birth	"1991-06-20"^^xs:date .
+bb:436	rdf:type		bbr:outfielder .
+
+#24 	Cameron Maybin 	R-R 	6'3" 	205 	Apr 4, 1987
+bb:437	bb:playerid	"437"^^xs:integer .
+bb:437	bb:number	"24"^^xs:integer .
+bb:437	bb:lastname	"Maybin" .
+bb:437	bb:firstname	"Cameron" .
+bb:437	bb:position	"outfielder" .
+bb:437	bb:team	bbr:Padres .
+bb:437	bb:bats	"right" .
+bb:437	bb:throws	"right" .
+bb:437	bb:weight	"205"^^xs:integer .
+bb:437	bb:date-of-birth	"1987-04-04"^^xs:date .
+bb:437	rdf:type		bbr:outfielder .
+
+#18 	Carlos Quentin 	R-R 	6'1" 	235 	Aug 28, 1982
+bb:438	bb:playerid	"438"^^xs:integer .
+bb:438	bb:number	"18"^^xs:integer .
+bb:438	bb:lastname	"Quentin" .
+bb:438	bb:firstname	"Carlos" .
+bb:438	bb:position	"outfielder" .
+bb:438	bb:team	bbr:Padres .
+bb:438	bb:bats	"right" .
+bb:438	bb:throws	"right" .
+bb:438	bb:weight	"235"^^xs:integer .
+bb:438	bb:date-of-birth	"1982-08-28"^^xs:date .
+bb:438	rdf:type		bbr:outfielder .
+
+#12 	Seth Smith 	L-L 	6'3" 	210 	Sep 30, 1982
+bb:439	bb:playerid	"439"^^xs:integer .
+bb:439	bb:number	"12"^^xs:integer .
+bb:439	bb:lastname	"Smith" .
+bb:439	bb:firstname	"Seth" .
+bb:439	bb:position	"outfielder" .
+bb:439	bb:team	bbr:Padres .
+bb:439	bb:bats	"left" .
+bb:439	bb:throws	"left" .
+bb:439	bb:weight	"210"^^xs:integer .
+bb:439	bb:date-of-birth	"1982-09-30"^^xs:date .
+bb:439	rdf:type		bbr:outfielder .
+
+#25 	Will Venable 	L-L 	6'3" 	205 	Oct 29, 1982
+bb:440	bb:playerid	"440"^^xs:integer .
+bb:440	bb:number	"25"^^xs:integer .
+bb:440	bb:lastname	"Venable" .
+bb:440	bb:firstname	"Will" .
+bb:440	bb:position	"outfielder" .
+bb:440	bb:team	bbr:Padres .
+bb:440	bb:bats	"left" .
+bb:440	bb:throws	"left" .
+bb:440	bb:weight	"205"^^xs:integer .
+bb:440	bb:date-of-birth	"1982-10-29"^^xs:date .
+bb:440	rdf:type		bbr:outfielder .
+
+#	Manager	Bud Black
+bb:461	bb:lastname	"Black" .
+bb:461	bb:firstname	"Bud" .
+bb:461	bb:position	"manager" .
+bb:461	bb:team	bbr:Padres .
+bb:461	bb:number	"20"^^xs:integer .
+bb:461	bbr:coachingRole		bbr:manager .
+
+#	Coach	Dave Roberts
+bb:462	bb:lastname	"Roberts" .
+bb:462	bb:firstname	"Dave" .
+bb:462	bb:position	"coach" .
+bb:462	bb:number	"10"^^xs:integer .
+bb:462	bb:team	bbr:Padres .
+bb:462	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Alonzo Powell
+bb:463	bb:lastname	"Powell" .
+bb:463	bb:firstname	"Alonzo" .
+bb:463	bb:position	"coach" .
+bb:463	bb:number	"32"^^xs:integer .
+bb:463	bb:team	bbr:Padres .
+bb:463	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:464	bb:lastname	"LASTNAME" .
+bb:464	bb:firstname	"FIRSTNAME" .
+bb:464	bb:position	"coach" .
+bb:464	bb:number	"100"^^xs:integer .
+bb:464	bb:team	bbr:Padres .
+bb:464	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Jose Valentin
+bb:465	bb:lastname	"Valentin" .
+bb:465	bb:firstname	"Jose" .
+bb:465	bb:position	"coach" .
+bb:465	bb:number	"17"^^xs:integer .
+bb:465	bb:team	bbr:Padres .
+bb:465	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Glenn Hoffman
+bb:466	bb:lastname	"Hoffman" .
+bb:466	bb:firstname	"Glenn" .
+bb:466	bb:position	"coach" .
+bb:466	bb:number	"30"^^xs:integer .
+bb:466	bb:team	bbr:Padres .
+bb:466	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Darren Balsley
+bb:467	bb:lastname	"Balsley" .
+bb:467	bb:firstname	"Darren" .
+bb:467	bb:position	"coach" .
+bb:467	bb:number	"36"^^xs:integer .
+bb:467	bb:team	bbr:Padres .
+bb:467	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Willie Blair
+bb:468	bb:lastname	"Blair" .
+bb:468	bb:firstname	"Willie" .
+bb:468	bb:position	"coach" .
+bb:468	bb:number	"47"^^xs:integer .
+bb:468	bb:team	bbr:Padres .
+bb:468	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Justin Hatcher
+bb:469	bb:lastname	"Hatcher" .
+bb:469	bb:firstname	"Justin" .
+bb:469	bb:position	"coach" .
+bb:469	bb:number	"80"^^xs:integer .
+bb:469	bb:team	bbr:Padres .
+bb:469	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

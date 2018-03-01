@@ -1,0 +1,9 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <constraint name="coll">
+    <collection prefix="http://test.com/"/>
+  </constraint>
+</options>

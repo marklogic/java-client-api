@@ -1,0 +1,26 @@
+<rapi:metadata xmlns:rapi="http://marklogic.com/rest-api">
+  <rapi:collections>
+    <rapi:collection>coll1</rapi:collection>
+    <rapi:collection>coll3</rapi:collection>
+  </rapi:collections>
+  <rapi:permissions>
+    <rapi:permission>
+      <rapi:role-name>infostudio-user</rapi:role-name>
+      <rapi:capability>update</rapi:capability>
+      <rapi:capability>read</rapi:capability>
+    </rapi:permission>
+    <rapi:permission>
+      <rapi:role-name>app-user</rapi:role-name>
+      <rapi:capability>read</rapi:capability>
+    </rapi:permission>
+  </rapi:permissions>
+  <prop:properties xmlns:prop="http://marklogic.com/xdmp/property">
+    <content-type>application/msword</content-type>
+    <filter-capabilities>text subfiles HD-HTML</filter-capabilities>
+    <AppName>Microsoft Office Word</AppName>
+    <Author>Aries</Author>
+    <Company>QA</Company>
+    <Version>2</Version>
+  </prop:properties>
+  <rapi:quality>23</rapi:quality>  
+</rapi:metadata>

@@ -1,0 +1,584 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#54 	Michael Blazek 	R-R 	6'0" 	200 	Mar 16, 1989
+bb:901	bb:playerid	"901"^^xs:integer .
+bb:901	bb:number	"54"^^xs:integer .
+bb:901	bb:lastname	"Blazek" .
+bb:901	bb:firstname	"Michael" .
+bb:901	bb:position	"pitcher" .
+bb:901	bb:team	bbr:Brewers .
+bb:901	bb:bats	"right" .
+bb:901	bb:throws	"right" .
+bb:901	bb:weight	"200"^^xs:integer .
+bb:901	bb:date-of-birth	"1989-03-16"^^xs:date .
+bb:901	rdf:type		bbr:pitcher .
+bb:901	rdf:type		bbr:setup .
+
+#51 	Jonathan Broxton 	R-R 	6'4" 	295 	Jun 16, 1984
+bb:902	bb:playerid	"902"^^xs:integer .
+bb:902	bb:number	"51"^^xs:integer .
+bb:902	bb:lastname	"Broxton" .
+bb:902	bb:firstname	"Jonathan" .
+bb:902	bb:position	"pitcher" .
+bb:902	bb:team	bbr:Brewers .
+bb:902	bb:bats	"right" .
+bb:902	bb:throws	"right" .
+bb:902	bb:weight	"295"^^xs:integer .
+bb:902	bb:date-of-birth	"1984-06-16"^^xs:date .
+bb:902	rdf:type		bbr:pitcher .
+bb:902	rdf:type		bbr:setup .
+
+#50 	Mike Fiers 	R-R 	6'2" 	190 	Jun 15, 1985
+bb:903	bb:playerid	"903"^^xs:integer .
+bb:903	bb:number	"50"^^xs:integer .
+bb:903	bb:lastname	"Fiers" .
+bb:903	bb:firstname	"Mike" .
+bb:903	bb:position	"pitcher" .
+bb:903	bb:team	bbr:Brewers .
+bb:903	bb:bats	"right" .
+bb:903	bb:throws	"right" .
+bb:903	bb:weight	"190"^^xs:integer .
+bb:903	bb:date-of-birth	"1985-06-15"^^xs:date .
+bb:903	rdf:type		bbr:pitcher .
+bb:903	rdf:type		bbr:setup .
+
+#49 	Yovani Gallardo 	R-R 	6'2" 	210 	Feb 27, 1986
+bb:904	bb:playerid	"904"^^xs:integer .
+bb:904	bb:number	"49"^^xs:integer .
+bb:904	bb:lastname	"Gallardo" .
+bb:904	bb:firstname	"Yovani" .
+bb:904	bb:position	"pitcher" .
+bb:904	bb:team	bbr:Brewers .
+bb:904	bb:bats	"right" .
+bb:904	bb:throws	"right" .
+bb:904	bb:weight	"210"^^xs:integer .
+bb:904	bb:date-of-birth	"1986-02-27"^^xs:date .
+bb:904	rdf:type		bbr:pitcher .
+bb:904	rdf:type		bbr:setup .
+
+#22 	Matt Garza 	R-R 	6'4" 	215 	Nov 26, 1983
+bb:905	bb:playerid	"905"^^xs:integer .
+bb:905	bb:number	"22"^^xs:integer .
+bb:905	bb:lastname	"Garza" .
+bb:905	bb:firstname	"Matt" .
+bb:905	bb:position	"pitcher" .
+bb:905	bb:team	bbr:Brewers .
+bb:905	bb:bats	"right" .
+bb:905	bb:throws	"right" .
+bb:905	bb:weight	"215"^^xs:integer .
+bb:905	bb:date-of-birth	"1983-11-26"^^xs:date .
+bb:905	rdf:type		bbr:pitcher .
+bb:905	rdf:type		bbr:setup .
+
+#	Brooks Hall 	R-R 	6'5" 	230 	Jun 26, 1990
+bb:906	bb:playerid	"906"^^xs:integer .
+bb:906	bb:lastname	"Hall" .
+bb:906	bb:firstname	"Brooks" .
+bb:906	bb:position	"pitcher" .
+bb:906	bb:team	bbr:Brewers .
+bb:906	bb:bats	"right" .
+bb:906	bb:throws	"right" .
+bb:906	bb:weight	"230"^^xs:integer .
+bb:906	bb:date-of-birth	"1990-06-26"^^xs:date .
+bb:906	rdf:type		bbr:pitcher .
+bb:906	rdf:type		bbr:setup .
+
+#40 	Johnny Hellweg 	R-R 	6'9" 	210 	Oct 29, 1988
+bb:907	bb:playerid	"907"^^xs:integer .
+bb:907	bb:number	"40"^^xs:integer .
+bb:907	bb:lastname	"Hellweg" .
+bb:907	bb:firstname	"Johnny" .
+bb:907	bb:position	"pitcher" .
+bb:907	bb:team	bbr:Brewers .
+bb:907	bb:bats	"right" .
+bb:907	bb:throws	"right" .
+bb:907	bb:weight	"210"^^xs:integer .
+bb:907	bb:date-of-birth	"1988-10-29"^^xs:date .
+bb:907	rdf:type		bbr:pitcher .
+bb:907	rdf:type		bbr:setup .
+
+#29 	Jim Henderson 	L-R 	6'5" 	220 	Oct 21, 1982
+bb:908	bb:playerid	"908"^^xs:integer .
+bb:908	bb:number	"29"^^xs:integer .
+bb:908	bb:lastname	"Henderson" .
+bb:908	bb:firstname	"Jim" .
+bb:908	bb:position	"pitcher" .
+bb:908	bb:team	bbr:Brewers .
+bb:908	bb:bats	"left" .
+bb:908	bb:throws	"right" .
+bb:908	bb:weight	"220"^^xs:integer .
+bb:908	bb:date-of-birth	"1982-10-21"^^xs:date .
+bb:908	rdf:type		bbr:pitcher .
+bb:908	rdf:type		bbr:setup .
+
+#21 	Jeremy Jeffress 	R-R 	6'1" 	205 	Sep 21, 1987
+bb:909	bb:playerid	"909"^^xs:integer .
+bb:909	bb:number	"21"^^xs:integer .
+bb:909	bb:lastname	"Jeffress" .
+bb:909	bb:firstname	"Jeremy" .
+bb:909	bb:position	"pitcher" .
+bb:909	bb:team	bbr:Brewers .
+bb:909	bb:bats	"right" .
+bb:909	bb:throws	"right" .
+bb:909	bb:weight	"205"^^xs:integer .
+bb:909	bb:date-of-birth	"1987-09-21"^^xs:date .
+bb:909	rdf:type		bbr:pitcher .
+bb:909	rdf:type		bbr:setup .
+
+#53 	Brandon Kintzler 	R-R 	5'10" 	190 	Aug 1, 1984
+bb:910	bb:playerid	"910"^^xs:integer .
+bb:910	bb:number	"53"^^xs:integer .
+bb:910	bb:lastname	"Kintzler" .
+bb:910	bb:firstname	"Brandon" .
+bb:910	bb:position	"pitcher" .
+bb:910	bb:team	bbr:Brewers .
+bb:910	bb:bats	"right" .
+bb:910	bb:throws	"right" .
+bb:910	bb:weight	"190"^^xs:integer .
+bb:910	bb:date-of-birth	"1984-08-01"^^xs:date .
+bb:910	rdf:type		bbr:pitcher .
+bb:910	rdf:type		bbr:setup .
+
+#26 	Kyle Lohse 	R-R 	6'2" 	210 	Oct 4, 1978
+bb:911	bb:playerid	"911"^^xs:integer .
+bb:911	bb:number	"26"^^xs:integer .
+bb:911	bb:lastname	"Lohse" .
+bb:911	bb:firstname	"Kyle" .
+bb:911	bb:position	"pitcher" .
+bb:911	bb:team	bbr:Brewers .
+bb:911	bb:bats	"right" .
+bb:911	bb:throws	"right" .
+bb:911	bb:weight	"210"^^xs:integer .
+bb:911	bb:date-of-birth	"1978-10-04"^^xs:date .
+bb:911	rdf:type		bbr:pitcher .
+bb:911	rdf:type		bbr:setup .
+
+#52 	Jimmy Nelson 	R-R 	6'6" 	245 	Jun 5, 1989
+bb:912	bb:playerid	"912"^^xs:integer .
+bb:912	bb:number	"52"^^xs:integer .
+bb:912	bb:lastname	"Nelson" .
+bb:912	bb:firstname	"Jimmy" .
+bb:912	bb:position	"pitcher" .
+bb:912	bb:team	bbr:Brewers .
+bb:912	bb:bats	"right" .
+bb:912	bb:throws	"right" .
+bb:912	bb:weight	"245"^^xs:integer .
+bb:912	bb:date-of-birth	"1989-06-05"^^xs:date .
+bb:912	rdf:type		bbr:pitcher .
+bb:912	rdf:type		bbr:setup .
+
+#58 	Ariel Pena 	R-R 	6'3" 	240 	May 20, 1989
+bb:913	bb:playerid	"913"^^xs:integer .
+bb:913	bb:number	"58"^^xs:integer .
+bb:913	bb:lastname	"Pena" .
+bb:913	bb:firstname	"Ariel" .
+bb:913	bb:position	"pitcher" .
+bb:913	bb:team	bbr:Brewers .
+bb:913	bb:bats	"right" .
+bb:913	bb:throws	"right" .
+bb:913	bb:weight	"240"^^xs:integer .
+bb:913	bb:date-of-birth	"1989-05-20"^^xs:date .
+bb:913	rdf:type		bbr:pitcher .
+bb:913	rdf:type		bbr:setup .
+
+#38 	Wily Peralta 	R-R 	6'1" 	245 	May 8, 1989
+bb:914	bb:playerid	"914"^^xs:integer .
+bb:914	bb:number	"38"^^xs:integer .
+bb:914	bb:lastname	"Peralta" .
+bb:914	bb:firstname	"Wily" .
+bb:914	bb:position	"pitcher" .
+bb:914	bb:team	bbr:Brewers .
+bb:914	bb:bats	"right" .
+bb:914	bb:throws	"right" .
+bb:914	bb:weight	"245"^^xs:integer .
+bb:914	bb:date-of-birth	"1989-05-08"^^xs:date .
+bb:914	rdf:type		bbr:pitcher .
+bb:914	rdf:type		bbr:setup .
+
+#13 	Will Smith 	R-L 	6'5" 	250 	Jul 10, 1989
+bb:915	bb:playerid	"915"^^xs:integer .
+bb:915	bb:number	"13"^^xs:integer .
+bb:915	bb:lastname	"Smith" .
+bb:915	bb:firstname	"Will" .
+bb:915	bb:position	"pitcher" .
+bb:915	bb:team	bbr:Brewers .
+bb:915	bb:bats	"right" .
+bb:915	bb:throws	"left" .
+bb:915	bb:weight	"250"^^xs:integer .
+bb:915	bb:date-of-birth	"1989-07-10"^^xs:date .
+bb:915	rdf:type		bbr:pitcher .
+bb:915	rdf:type		bbr:setup .
+
+#30 	Tyler Thornburg 	R-R 	5'11" 	190 	Sep 29, 1988
+bb:916	bb:playerid	"916"^^xs:integer .
+bb:916	bb:number	"30"^^xs:integer .
+bb:916	bb:lastname	"Thornburg" .
+bb:916	bb:firstname	"Tyler" .
+bb:916	bb:position	"pitcher" .
+bb:916	bb:team	bbr:Brewers .
+bb:916	bb:bats	"right" .
+bb:916	bb:throws	"right" .
+bb:916	bb:weight	"190"^^xs:integer .
+bb:916	bb:date-of-birth	"1988-09-29"^^xs:date .
+bb:916	rdf:type		bbr:pitcher .
+bb:916	rdf:type		bbr:setup .
+
+#58 	Wei-Chung Wang 	L-L 	6'1" 	180 	Apr 25, 1992
+bb:917	bb:playerid	"917"^^xs:integer .
+bb:917	bb:number	"58"^^xs:integer .
+bb:917	bb:lastname	"Wang" .
+bb:917	bb:firstname	"Wei-Chung" .
+bb:917	bb:position	"pitcher" .
+bb:917	bb:team	bbr:Brewers .
+bb:917	bb:bats	"left" .
+bb:917	bb:throws	"left" .
+bb:917	bb:weight	"180"^^xs:integer .
+bb:917	bb:date-of-birth	"1992-04-25"^^xs:date .
+bb:917	rdf:type		bbr:pitcher .
+bb:917	rdf:type		bbr:setup .
+
+#47 	Rob Wooten 	R-R 	6'1" 	195 	Jul 21, 1985
+bb:918	bb:playerid	"918"^^xs:integer .
+bb:918	bb:number	"47"^^xs:integer .
+bb:918	bb:lastname	"Wooten" .
+bb:918	bb:firstname	"Rob" .
+bb:918	bb:position	"pitcher" .
+bb:918	bb:team	bbr:Brewers .
+bb:918	bb:bats	"right" .
+bb:918	bb:throws	"right" .
+bb:918	bb:weight	"195"^^xs:integer .
+bb:918	bb:date-of-birth	"1985-07-21"^^xs:date .
+bb:918	rdf:type		bbr:pitcher .
+bb:918	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#	Juan Centeno 	L-R 	5'9" 	195 	Nov 16, 1989
+bb:919	bb:playerid	"919"^^xs:integer .
+bb:919	bb:lastname	"Centeno" .
+bb:919	bb:firstname	"Juan" .
+bb:919	bb:position	"catcher" .
+bb:919	bb:team	bbr:Brewers .
+bb:919	bb:bats	"left" .
+bb:919	bb:throws	"right" .
+bb:919	bb:weight	"195"^^xs:integer .
+bb:919	bb:date-of-birth	"1989-11-16"^^xs:date .
+bb:919	rdf:type		bbr:catcher .
+
+#20 	Jonathan Lucroy 	R-R 	6'0" 	195 	Jun 13, 1986
+bb:920	bb:playerid	"920"^^xs:integer .
+bb:920	bb:number	"20"^^xs:integer .
+bb:920	bb:lastname	"Lucroy" .
+bb:920	bb:firstname	"Jonathan" .
+bb:920	bb:position	"catcher" .
+bb:920	bb:team	bbr:Brewers .
+bb:920	bb:bats	"right" .
+bb:920	bb:throws	"right" .
+bb:920	bb:weight	"195"^^xs:integer .
+bb:920	bb:date-of-birth	"1986-06-13"^^xs:date .
+bb:920	rdf:type		bbr:catcher .
+
+#12 	Martin Maldonado 	R-R 	6'0" 	230 	Aug 16, 1986
+bb:921	bb:playerid	"921"^^xs:integer .
+bb:921	bb:number	"12"^^xs:integer .
+bb:921	bb:lastname	"Maldonado" .
+bb:921	bb:firstname	"Martin" .
+bb:921	bb:position	"catcher" .
+bb:921	bb:team	bbr:Brewers .
+bb:921	bb:bats	"right" .
+bb:921	bb:throws	"right" .
+bb:921	bb:weight	"230"^^xs:integer .
+bb:921	bb:date-of-birth	"1986-08-16"^^xs:date .
+bb:921	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#60 	Matt Clark 	L-R 	6'5" 	230 	Dec 10, 1986
+bb:922	bb:playerid	"922"^^xs:integer .
+bb:922	bb:number	"60"^^xs:integer .
+bb:922	bb:lastname	"Clark" .
+bb:922	bb:firstname	"Matt" .
+bb:922	bb:position	"infielder" .
+bb:922	bb:team	bbr:Brewers .
+bb:922	bb:bats	"left" .
+bb:922	bb:throws	"right" .
+bb:922	bb:weight	"230"^^xs:integer .
+bb:922	bb:date-of-birth	"1986-12-10"^^xs:date .
+bb:922	rdf:type		bbr:infielder .
+
+#2 	Scooter Gennett 	L-R 	5'10" 	170 	May 1, 1990
+bb:923	bb:playerid	"923"^^xs:integer .
+bb:923	bb:number	"2"^^xs:integer .
+bb:923	bb:lastname	"Gennett" .
+bb:923	bb:firstname	"Scooter" .
+bb:923	bb:position	"infielder" .
+bb:923	bb:team	bbr:Brewers .
+bb:923	bb:bats	"left" .
+bb:923	bb:throws	"right" .
+bb:923	bb:weight	"170"^^xs:integer .
+bb:923	bb:date-of-birth	"1990-05-01"^^xs:date .
+bb:923	rdf:type		bbr:infielder .
+
+#5 	Hector Gomez 	R-R 	6'3" 	200 	Mar 5, 1988
+bb:924	bb:playerid	"924"^^xs:integer .
+bb:924	bb:number	"5"^^xs:integer .
+bb:924	bb:lastname	"Gomez" .
+bb:924	bb:firstname	"Hector" .
+bb:924	bb:position	"infielder" .
+bb:924	bb:team	bbr:Brewers .
+bb:924	bb:bats	"right" .
+bb:924	bb:throws	"right" .
+bb:924	bb:weight	"200"^^xs:integer .
+bb:924	bb:date-of-birth	"1988-03-05"^^xs:date .
+bb:924	rdf:type		bbr:infielder .
+
+#	Luis Jimenez 	R-R 	6'1" 	205 	Jan 18, 1988
+bb:925	bb:playerid	"925"^^xs:integer .
+bb:925	bb:lastname	"Jimenez" .
+bb:925	bb:firstname	"Luis" .
+bb:925	bb:position	"infielder" .
+bb:925	bb:team	bbr:Brewers .
+bb:925	bb:bats	"right" .
+bb:925	bb:throws	"right" .
+bb:925	bb:weight	"205"^^xs:integer .
+bb:925	bb:date-of-birth	"1988-01-18"^^xs:date .
+bb:925	rdf:type		bbr:infielder .
+
+#	Adam Lind 	L-L 	6'2" 	195 	Jul 17, 1983
+bb:926	bb:playerid	"926"^^xs:integer .
+bb:926	bb:lastname	"Lind" .
+bb:926	bb:firstname	"Adam" .
+bb:926	bb:position	"infielder" .
+bb:926	bb:team	bbr:Brewers .
+bb:926	bb:bats	"left" .
+bb:926	bb:throws	"left" .
+bb:926	bb:weight	"195"^^xs:integer .
+bb:926	bb:date-of-birth	"1983-07-17"^^xs:date .
+bb:926	rdf:type		bbr:infielder .
+
+#25 	Hunter Morris 	L-R 	6'2" 	225 	Oct 7, 1988
+bb:927	bb:playerid	"927"^^xs:integer .
+bb:927	bb:number	"25"^^xs:integer .
+bb:927	bb:lastname	"Morris" .
+bb:927	bb:firstname	"Hunter" .
+bb:927	bb:position	"infielder" .
+bb:927	bb:team	bbr:Brewers .
+bb:927	bb:bats	"left" .
+bb:927	bb:throws	"right" .
+bb:927	bb:weight	"225"^^xs:integer .
+bb:927	bb:date-of-birth	"1988-10-07"^^xs:date .
+bb:927	rdf:type		bbr:infielder .
+
+#16 	Aramis Ramirez 	R-R 	6'1" 	205 	Jun 25, 1978
+bb:928	bb:playerid	"928"^^xs:integer .
+bb:928	bb:number	"16"^^xs:integer .
+bb:928	bb:lastname	"Ramirez" .
+bb:928	bb:firstname	"Aramis" .
+bb:928	bb:position	"infielder" .
+bb:928	bb:team	bbr:Brewers .
+bb:928	bb:bats	"right" .
+bb:928	bb:throws	"right" .
+bb:928	bb:weight	"205"^^xs:integer .
+bb:928	bb:date-of-birth	"1978-06-25"^^xs:date .
+bb:928	rdf:type		bbr:infielder .
+
+#15 	Jason Rogers 	R-R 	6'2" 	245 	Mar 13, 1988
+bb:929	bb:playerid	"929"^^xs:integer .
+bb:929	bb:number	"15"^^xs:integer .
+bb:929	bb:lastname	"Rogers" .
+bb:929	bb:firstname	"Jason" .
+bb:929	bb:position	"infielder" .
+bb:929	bb:team	bbr:Brewers .
+bb:929	bb:bats	"right" .
+bb:929	bb:throws	"right" .
+bb:929	bb:weight	"245"^^xs:integer .
+bb:929	bb:date-of-birth	"1988-03-13"^^xs:date .
+bb:929	rdf:type		bbr:infielder .
+
+#9 	Jean Segura 	R-R 	5'10" 	205 	Mar 17, 1990
+bb:930	bb:playerid	"930"^^xs:integer .
+bb:930	bb:number	"9"^^xs:integer .
+bb:930	bb:lastname	"Segura" .
+bb:930	bb:firstname	"Jean" .
+bb:930	bb:position	"infielder" .
+bb:930	bb:team	bbr:Brewers .
+bb:930	bb:bats	"right" .
+bb:930	bb:throws	"right" .
+bb:930	bb:weight	"205"^^xs:integer .
+bb:930	bb:date-of-birth	"1990-03-17"^^xs:date .
+bb:930	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#8 	Ryan Braun 	R-R 	6'2" 	200 	Nov 17, 1983
+bb:931	bb:playerid	"931"^^xs:integer .
+bb:931	bb:number	"8"^^xs:integer .
+bb:931	bb:lastname	"Braun" .
+bb:931	bb:firstname	"Ryan" .
+bb:931	bb:position	"outfielder" .
+bb:931	bb:team	bbr:Brewers .
+bb:931	bb:bats	"right" .
+bb:931	bb:throws	"right" .
+bb:931	bb:weight	"200"^^xs:integer .
+bb:931	bb:date-of-birth	"1983-11-17"^^xs:date .
+bb:931	rdf:type		bbr:outfielder .
+
+#18 	Khris Davis 	R-R 	5'11" 	190 	Dec 21, 1987
+bb:932	bb:playerid	"932"^^xs:integer .
+bb:932	bb:number	"18"^^xs:integer .
+bb:932	bb:lastname	"Davis" .
+bb:932	bb:firstname	"Khris" .
+bb:932	bb:position	"outfielder" .
+bb:932	bb:team	bbr:Brewers .
+bb:932	bb:bats	"right" .
+bb:932	bb:throws	"right" .
+bb:932	bb:weight	"190"^^xs:integer .
+bb:932	bb:date-of-birth	"1987-12-21"^^xs:date .
+bb:932	rdf:type		bbr:outfielder .
+
+#27 	Carlos Gomez 	R-R 	6'3" 	220 	Dec 4, 1985
+bb:933	bb:playerid	"933"^^xs:integer .
+bb:933	bb:number	"27"^^xs:integer .
+bb:933	bb:lastname	"Gomez" .
+bb:933	bb:firstname	"Carlos" .
+bb:933	bb:position	"outfielder" .
+bb:933	bb:team	bbr:Brewers .
+bb:933	bb:bats	"right" .
+bb:933	bb:throws	"right" .
+bb:933	bb:weight	"220"^^xs:integer .
+bb:933	bb:date-of-birth	"1985-12-04"^^xs:date .
+bb:933	rdf:type		bbr:outfielder .
+
+#3 	Elian Herrera 	S-R 	5'10" 	195 	Feb 1, 1985
+bb:934	bb:playerid	"934"^^xs:integer .
+bb:934	bb:number	"3"^^xs:integer .
+bb:934	bb:lastname	"Herrera" .
+bb:934	bb:firstname	"Elian" .
+bb:934	bb:position	"outfielder" .
+bb:934	bb:team	bbr:Brewers .
+bb:934	bb:bats	"switch" .
+bb:934	bb:throws	"right" .
+bb:934	bb:weight	"195"^^xs:integer .
+bb:934	bb:date-of-birth	"1985-02-01"^^xs:date .
+bb:934	rdf:type		bbr:outfielder .
+
+#28 	Gerardo Parra 	L-L 	5'11" 	200 	May 6, 1987
+bb:935	bb:playerid	"935"^^xs:integer .
+bb:935	bb:number	"28"^^xs:integer .
+bb:935	bb:lastname	"Parra" .
+bb:935	bb:firstname	"Gerardo" .
+bb:935	bb:position	"outfielder" .
+bb:935	bb:team	bbr:Brewers .
+bb:935	bb:bats	"left" .
+bb:935	bb:throws	"left" .
+bb:935	bb:weight	"200"^^xs:integer .
+bb:935	bb:date-of-birth	"1987-05-06"^^xs:date .
+bb:935	rdf:type		bbr:outfielder .
+
+#1 	Logan Schafer 	L-L 	6'1" 	195 	Sep 8, 1986
+bb:936	bb:playerid	"936"^^xs:integer .
+bb:936	bb:number	"1"^^xs:integer .
+bb:936	bb:lastname	"Schafer" .
+bb:936	bb:firstname	"Logan" .
+bb:936	bb:position	"outfielder" .
+bb:936	bb:team	bbr:Brewers .
+bb:936	bb:bats	"left" .
+bb:936	bb:throws	"left" .
+bb:936	bb:weight	"195"^^xs:integer .
+bb:936	bb:date-of-birth	"1986-09-08"^^xs:date .
+bb:936	rdf:type		bbr:outfielder .
+
+#	Manager	Ron Roenicke
+bb:957	bb:lastname	"Roenicke" .
+bb:957	bb:firstname	"Ron" .
+bb:957	bb:position	"manager" .
+bb:957	bb:team	bbr:Brewers .
+bb:957	bb:number	"100"^^xs:integer .
+bb:957	bbr:coachingRole		bbr:manager .
+
+#	Coach	Jerry Narron
+bb:958	bb:lastname	"Narron" .
+bb:958	bb:firstname	"Jerry" .
+bb:958	bb:position	"coach" .
+bb:958	bb:number	"100"^^xs:integer .
+bb:958	bb:team	bbr:Brewers .
+bb:958	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Darnell Coles
+bb:959	bb:lastname	"Coles" .
+bb:959	bb:firstname	"Darnell" .
+bb:959	bb:position	"coach" .
+bb:959	bb:number	"100"^^xs:integer .
+bb:959	bb:team	bbr:Brewers .
+bb:959	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:960	bb:lastname	"LASTNAME" .
+bb:960	bb:firstname	"FIRSTNAME" .
+bb:960	bb:position	"coach" .
+bb:960	bb:number	"100"^^xs:integer .
+bb:960	bb:team	bbr:Brewers .
+bb:960	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:961	bb:lastname	"LASTNAME" .
+bb:961	bb:firstname	"FIRSTNAME" .
+bb:961	bb:position	"coach" .
+bb:961	bb:number	"100"^^xs:integer .
+bb:961	bb:team	bbr:Brewers .
+bb:961	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Ed Sedar
+bb:962	bb:lastname	"Sedar" .
+bb:962	bb:firstname	"Ed" .
+bb:962	bb:position	"coach" .
+bb:962	bb:number	"100"^^xs:integer .
+bb:962	bb:team	bbr:Brewers .
+bb:962	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Rick Kranitz
+bb:963	bb:lastname	"Kranitz" .
+bb:963	bb:firstname	"Rick" .
+bb:963	bb:position	"coach" .
+bb:963	bb:number	"100"^^xs:integer .
+bb:963	bb:team	bbr:Brewers .
+bb:963	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Lee Tunnell
+bb:964	bb:lastname	"Tunnell" .
+bb:964	bb:firstname	"Lee" .
+bb:964	bb:position	"coach" .
+bb:964	bb:number	"100"^^xs:integer .
+bb:964	bb:team	bbr:Brewers .
+bb:964	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Marcus Hanel
+bb:965	bb:lastname	"Hanel" .
+bb:965	bb:firstname	"Marcus" .
+bb:965	bb:position	"coach" .
+bb:965	bb:number	"100"^^xs:integer .
+bb:965	bb:team	bbr:Brewers .
+bb:965	bbr:coachingRole		bbr:bullpenCatcher .
+
+

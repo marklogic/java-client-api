@@ -1,0 +1,51 @@
+@prefix ken: <http://example.org/kennedy/> .
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+
+ken:person1 ken:spouse ken:person2 .
+ken:person1 foaf:knows ken:person2 .
+ken:person1 foaf:knows ken:person3 .
+ken:person1 foaf:knows ken:person5 .
+ken:person1 foaf:knows ken:person7 .
+
+ken:person2 foaf:knows ken:person11 .
+ken:person2 foaf:knows ken:person3 .
+ken:person3 foaf:knows ken:person13 .
+ken:person13 foaf:knows ken:person17 .
+ken:person13 foaf:knows ken:person19 .
+
+ken:person4 foaf:knows ken:person6 .
+ken:person6 foaf:knows ken:person8 .
+ken:person8 foaf:knows ken:person10 .
+ken:person10 foaf:knows ken:person12 .
+ken:person12 foaf:knows ken:person14 .
+ken:person14 foaf:knows ken:person16 .
+ken:person16 foaf:knows ken:person18 .
+ken:person18 foaf:knows ken:person20 .
+
+ken:person20 foaf:knows ken:person20 .
+
+ken:person9 foaf:knows ken:person12 .
+ken:person12 foaf:knows ken:person15 .
+ken:person15 foaf:knows ken:person18 .
+ken:person18 foaf:knows ken:person9 .
+
+ken:person1 a ken:Person .
+ken:person2 a ken:Person .
+ken:person3 a ken:Person .
+ken:person4 a ken:Person .
+ken:person5 a ken:Person .
+ken:person6 a ken:Person .
+ken:person7 a ken:Person .
+ken:person8 a ken:Person .
+ken:person9 a ken:Person .
+ken:person10 a ken:Person .
+ken:person11 a ken:Person .
+ken:person12 a ken:Person .
+ken:person13 a ken:Person .
+ken:person14 a ken:Person .
+ken:person15 a ken:Person .
+ken:person16 a ken:Person .
+ken:person17 a ken:Person .
+ken:person18 a ken:Person .
+ken:person19 a ken:Person .
+ken:person20 a ken:Person .

@@ -1,0 +1,7 @@
+{
+  "#about" :
+    {
+       "http://purl.org/dc/elements/1.1/title": [ { "type" : "literal" , "value" : "Anna's Homepage" } ]
+    }
+}
+

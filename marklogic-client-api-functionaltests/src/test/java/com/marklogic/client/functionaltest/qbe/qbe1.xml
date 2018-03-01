@@ -1,0 +1,11 @@
+<q:qbe xmlns:q="http://marklogic.com/appservices/querybyexample">
+    <q:query>
+        <title><q:word>Vannevar</q:word></title>
+        <id>0011</id>
+        <p><q:word>atlantic</q:word></p>
+        <popularity><q:gt>3</q:gt></popularity>
+    </q:query>
+    <q:response>
+        <q:extract><title/><id/><p/><popularity/></q:extract>
+    </q:response>
+</q:qbe>

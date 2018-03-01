@@ -1,0 +1,7 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <default-suggestion-source>
+    <range type="xs:date">
+      <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+    </range>
+  </default-suggestion-source>
+ </options>

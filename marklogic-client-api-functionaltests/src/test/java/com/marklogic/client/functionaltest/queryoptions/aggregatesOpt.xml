@@ -1,0 +1,20 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <values name="pop-aggr">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+    </range>
+  </values>
+  <values name="score-aggr">
+    <range type="xs:decimal">
+      <element ns="http://test.aggr.com" name="score"/>
+    </range>
+  </values>
+  <tuples name="pop-rate-tups">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+    </range>
+    <range type="xs:int">
+      <element ns="http://test.tups.com" name="rate"/>
+    </range>
+  </tuples>
+</options>

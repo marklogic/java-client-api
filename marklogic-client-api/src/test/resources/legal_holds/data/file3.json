@@ -1,0 +1,6 @@
+{ "description": "This file is referenced by file1.json which has a legal hold",
+  "type": "X",
+  "originJurisdiction": "Y",
+  "state": "resolved",
+  "lastModified": "2007-12-31T00:00:00-08:00"
+}

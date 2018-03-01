@@ -1,0 +1,1 @@
+{"rule":{"name":"RULE-TEST-1-JSON", "description":"rule for test1 json", "search":{"query":{"word-constraint-query":{"constraint-name":"intitle", "text":"Vannevar"}}, "options":{"constraint":{"name":"intitle", "word":{"element":{"name":"title", "ns":""}}}}}, "rule-metadata":{"rule-number":"one json"}}}

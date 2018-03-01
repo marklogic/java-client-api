@@ -1,0 +1,19 @@
+<doc>
+  <city>cape town</city>
+  <distance direction="south">377.9</distance>
+  <date>1999-04-22</date>
+  <metro rate="2">true</metro>
+  <description>The earliest known remnants in the region were found at Peers cave in Fish Hoek</description>
+  <popularity>3</popularity>
+  <location>
+    <latLonPoint>-33.91,18.42</latLonPoint>
+    <latLonParent>
+      <latLonChild>-33.91,18.42</latLonChild>
+    </latLonParent>
+    <latLonPair>
+      <lat>-33.91</lat>
+      <long>18.42</long>
+    </latLonPair>
+    <latLonAttrPair lat="-33.91" long="18.42"></latLonAttrPair>
+  </location>
+</doc>

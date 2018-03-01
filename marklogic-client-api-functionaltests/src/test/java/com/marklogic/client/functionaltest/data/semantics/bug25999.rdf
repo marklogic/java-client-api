@@ -1,0 +1,2886 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE rdf:RDF [
+     <!ENTITY vin  "http://wineagent.tw.rpi.edu/data/wine.rdf#" >
+     <!ENTITY food "http://wineagent.tw.rpi.edu/data/food.rdf#" >
+     <!ENTITY owl  "http://www.w3.org/2002/07/owl#" >
+     <!ENTITY xsd  "http://www.w3.org/2001/XMLSchema#" >
+     <!ENTITY agent "http://wineagent.tw.rpi.edu/data/agent.rdf#" >
+     <!ENTITY geo  "http://sws.geonames.org/" >
+     <!ENTITY foaf "http://xmlns.com/foaf/0.1/" >
+   ]>
+<rdf:RDF
+  xmlns     = "http://wineagent.tw.rpi.edu/data/wine.rdf#"
+  xmlns:food= "http://wineagent.tw.rpi.edu/data/food.rdf#"
+  xml:base  = "http://wineagent.tw.rpi.edu/data/wine.rdf#"
+  xmlns:vin = "http://wineagent.tw.rpi.edu/data/wine.rdf#"
+  xmlns:owl = "http://www.w3.org/2002/07/owl#"
+  xmlns:rdf = "http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+  xmlns:rdfs= "http://www.w3.org/2000/01/rdf-schema#"
+  xmlns:foaf= "http://xmlns.com/foaf/0.1/"
+  xmlns:agent="http://wineagent.tw.rpi.edu/data/agent.rdf#"
+  xmlns:xsd = "http://www.w3.org/2001/XMLSchema#">
+  <owl:AnnotationProperty rdf:about="http://wineagent.tw.rpi.edu/data/agent.rdf#isSelectableProperty">
+    <rdfs:label xml:lang="en">Is Selectable Property</rdfs:label>
+  </owl:AnnotationProperty>
+
+  <owl:Ontology rdf:about="">
+    <rdfs:comment>
+      Adapted from the sample ontology provided with the OWL 1.0 specification
+      from the World Wide Web Consortium.
+    </rdfs:comment>
+<!--
+    <owl:imports rdf:resource="http://wineagent.tw.rpi.edu/data/foaf-dl.rdf"/>
+-->
+  </owl:Ontology>
+  
+  <owl:ObjectProperty rdf:ID="hasMaker">
+    <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+    <rdfs:label xml:lang="en">Has Maker</rdfs:label>
+    <rdfs:range rdf:resource="&foaf;Agent"/>
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasWinemaker">
+    <rdfs:label xml:lang="en">Has Winemaker</rdfs:label>
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="&foaf;Agent"/>
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="producesWine">
+    <owl:inverseOf rdf:resource="#hasMaker"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Produces Wine</rdfs:label>
+    <rdfs:domain rdf:resource="#Winery"/>
+    <rdfs:range rdf:resource="#Wine"/>
+  </owl:ObjectProperty>
+
+  <owl:Class rdf:ID="Wine">
+    <rdfs:subClassOf rdf:resource="&food;PotableLiquid"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasMaker"/>
+	<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasMaker"/>
+	<owl:allValuesFrom rdf:resource="#Winery"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:allValuesFrom rdf:resource="#WineSugar"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom rdf:resource="#WineBody"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:minCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom rdf:resource="#WineFlavor"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:cardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:cardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:allValuesFrom rdf:resource="#WineColor"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:someValuesFrom rdf:resource="#Region"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string">Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Region">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Region</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="Winery">
+    <rdfs:subClassOf rdf:resource="&foaf;Organization"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Winery</rdfs:label>
+  </owl:Class>
+
+  <owl:Class rdf:ID="WineGrape">
+    <rdfs:subClassOf rdf:resource="&food;Grape"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Wine Grape</rdfs:label>
+  </owl:Class>
+
+  <!-- Wine Classes by Color -->
+  <owl:Class rdf:ID="RedWine">
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Red Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="RoseWine">
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Rose"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Rose Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="WhiteWine">
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>White Wine</rdfs:label>
+  </owl:Class>
+
+  <!-- Wine Classes by Sugar -->
+  <owl:Class rdf:ID="NonSweetWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Non-sweet Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Dry"/>
+	      <owl:Thing rdf:about="#OffDry"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SweetWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sweet Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Sweet"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+
+  <!-- Wine Classes by Location -->
+  <owl:Class rdf:ID="AnjouWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Anjou Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Rose"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Light"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#OffDry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#LoireWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#AnjouRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="BordeauxWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Bordeaux Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#BordeauxRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="BurgundyWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Burgundy Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#BourgogneRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="FrenchWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>French Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#France"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="LoireWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Loire Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#LoireRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="RedTableWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Red Table Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#TableWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ToursWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Tours Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#LoireWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#ToursRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CheninBlancGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+
+  <!-- Wine Classes by Varietal -->
+  <owl:Class rdf:ID="CabernetFrancWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cabernet Franc Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Moderate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Medium"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CabernetFrancGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PetiteSyrahWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Petite Syrah Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Medium"/>
+	      <owl:Thing rdf:about="#Full"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PetiteSyrahGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="CabernetSauvignonWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cabernet Sauvignon Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Medium"/>
+	      <owl:Thing rdf:about="#Full"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CabernetSauvignonGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ChardonnayWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chardonnay Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Full"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Strong"/>
+	      <owl:Thing rdf:about="#Moderate"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#ChardonnayGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ZinfandelWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Zinfandel Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#ZinfandelGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Full"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="TableWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Table Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="DessertWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Dessert Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Wine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#OffDry"/>
+	      <owl:Thing rdf:about="#Sweet"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="RieslingWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Riesling Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#WhiteWine"/>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#RieslingGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SweetRieslingWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sweet Riesling Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#DessertWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Full"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#RieslingWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Sweet"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="StEmilionWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>St. Emilion Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Strong"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CabernetSauvignonGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#BordeauxWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#StEmilionRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="MerlotWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Merlot Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Delicate"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Light"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#MerlotGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PauillacWine">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Full"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Strong"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CabernetSauvignonGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#MedocWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#PauillacRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Pauillac Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="MedocWine">
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#BordeauxWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#MedocRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Medoc Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="MargauxWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Margaux Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#MerlotGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#MedocWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#MargauxRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="LateHarvestWine">
+    <rdfs:subClassOf rdf:resource="#Wine"/>
+    <owl:disjointWith rdf:resource="#EarlyHarvestWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Sweet"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Late Harvest Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="EarlyHarvestWine">
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Early Harvest Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Wine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Dry"/>
+	      <owl:Thing rdf:about="#OffDry"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SauternesWine">
+    <rdfs:subClassOf rdf:resource="#LateHarvestWine"/>
+    <rdfs:subClassOf rdf:resource="#BordeauxWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#SauterneRegion"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Medium"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Sauternes Wine</rdfs:label>
+  </owl:Class>
+  <owl:Class rdf:ID="MeursaultWine">
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Meursault Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Full"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#WhiteBurgundyWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#MeursaultRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="WhiteBurgundyWine">
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>White Burgundy Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#BurgundyWine"/>
+      <owl:Class rdf:about="#WhiteWine"/>
+    </owl:intersectionOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#ChardonnayGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SemillonOrSauvignonBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Semillon or Sauvignon Blanc</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Medium"/>
+	      <owl:Thing rdf:about="#Full"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#SemillonGrape"/>
+	      <owl:Thing rdf:about="#SauvignonBlancGrape"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PinotNoirWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Noir Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PinotNoirGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PinotBlancWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Blanc Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PinotBlancGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SauvignonBlancWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sauvignon Blanc Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#SemillonOrSauvignonBlanc"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#SauvignonBlancGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="MeritageWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Meritage Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#CabernetSauvignonGrape"/>
+	      <owl:Thing rdf:about="#CabernetFrancGrape"/>
+	      <owl:Thing rdf:about="#MalbecGrape"/>
+	      <owl:Thing rdf:about="#PetiteVerdotGrape"/>
+	      <owl:Thing rdf:about="#MerlotGrape"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:minCardinality rdf:datatype="&xsd;nonNegativeInteger">2</owl:minCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="DryRieslingWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Dry Riesling Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Light"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#RieslingWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="RedBurgundyWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Red Burgundy Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PinotNoirGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#BurgundyWine"/>
+      <owl:Class rdf:about="#RedWine"/>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="CotesDOrWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cotes D'Or Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Moderate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="&food;RedBurgundyWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#CotesDOrRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ChiantiWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chianti Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#ItalianWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#ChiantiRegion"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#SangioveseGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Moderate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Light"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SancerreWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sancerre Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Medium"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#OffDry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#SauvignonBlancGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#LoireWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#SancerreRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="BeaujolaisWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Beaujolais Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;Red"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Light"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#GamayNoirGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#BeaujolaisRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ChampagneWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Champagne Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#SparklingWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#ChampagneRegion"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="CheninBlancWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chenin Blanc Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Moderate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Full"/>
+	      <owl:Thing rdf:about="#Medium"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Dry"/>
+	      <owl:Thing rdf:about="#OffDry"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#CheninBlancGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ItalianWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Italian Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#Italy"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="ProseccoWine">
+    <rdfs:label xml:lang="en">Prosecco Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#ItalianWine"/>
+    <rdfs:subClassOf rdf:resource="#SparklingWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SemillonWine">
+    <rdfs:label xml:lang="en">Semillon Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#SemillonOrSauvignonBlanc"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#SemillonGrape"/>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="SparklingWine">
+    <rdfs:label xml:lang="en">Sparkling Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#Wine"/>
+  </owl:Class>
+  <owl:Class rdf:ID="PortWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Port Wine</rdfs:label>
+    <rdfs:subClassOf rdf:resource="#RedWine"/>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#Portugal"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Full"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Strong"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Sweet"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="PinotGrigioWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Grigio Wine</rdfs:label>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#Wine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PinotGrisGrape"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+  </owl:Class>
+  <owl:Class rdf:ID="MuscadetWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Muscadet Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:hasValue rdf:resource="#Light"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:hasValue rdf:resource="#Delicate"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasSugar"/>
+	<owl:hasValue rdf:resource="#Dry"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:hasValue rdf:resource="#PinotBlancGrape"/>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#madeFromGrape"/>
+	<owl:maxCardinality rdf:datatype="&xsd;nonNegativeInteger">1</owl:maxCardinality>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#LoireWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#locatedIn"/>
+	<owl:hasValue rdf:resource="#MuscadetRegion"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+  <owl:Class rdf:ID="IceWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Ice Wine</rdfs:label>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasBody"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Medium"/>
+	      <owl:Thing rdf:about="#Full"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <rdfs:subClassOf>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="#hasFlavor"/>
+	<owl:allValuesFrom>
+	  <owl:Class>
+	    <owl:oneOf rdf:parseType="Collection">
+	      <owl:Thing rdf:about="#Moderate"/>
+	      <owl:Thing rdf:about="#Strong"/>
+	    </owl:oneOf>
+	  </owl:Class>
+	</owl:allValuesFrom>
+      </owl:Restriction>
+    </rdfs:subClassOf>
+    <owl:intersectionOf rdf:parseType="Collection">
+      <owl:Class rdf:about="#LateHarvestWine"/>
+      <owl:Class rdf:about="#DessertWine"/>
+      <owl:Restriction>
+	<owl:onProperty rdf:resource="&food;hasColor"/>
+	<owl:hasValue rdf:resource="&food;White"/>
+      </owl:Restriction>
+    </owl:intersectionOf>
+  </owl:Class>
+
+  <owl:ObjectProperty rdf:ID="madeFromGrape">
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Made From Grape</rdfs:label>
+    <rdfs:subPropertyOf rdf:resource="&food;madeFromFruit"/>
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="#WineGrape"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasSugar">
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Has Sugar</rdfs:label>
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="#WineSugar"/>
+  </owl:ObjectProperty>
+<!--
+  <owl:ObjectProperty rdf:ID="hasColor">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Has Color</rdfs:label>
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="#WineColor"/>
+  </owl:ObjectProperty>
+-->
+  <owl:ObjectProperty rdf:ID="locatedIn">
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Located In</rdfs:label>
+    <rdf:type rdf:resource="&owl;TransitiveProperty"/>
+    <rdfs:domain rdf:resource="&owl;Thing"/>
+    <rdfs:range rdf:resource="#Region"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasBody">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Has Body</rdfs:label>
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="#WineBody"/>
+  </owl:ObjectProperty>
+  <owl:ObjectProperty rdf:ID="hasFlavor">
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Has Flavor</rdfs:label>
+<!--
+    <rdfs:domain rdf:resource="#Wine"/>
+    <rdfs:range rdf:resource="#WineFlavor"/>
+-->
+  </owl:ObjectProperty>
+  <owl:DatatypeProperty rdf:ID="yearValue">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Year Value</rdfs:label>
+    <rdfs:domain rdf:resource="#VintageYear"/>
+    <rdfs:range rdf:resource="&xsd;positiveInteger"/>
+  </owl:DatatypeProperty>
+  <owl:Class rdf:ID="WineSugar">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Wine Sugar</rdfs:label>
+    <owl:oneOf rdf:parseType="Collection">
+      <owl:Thing rdf:about="#Dry"/>
+      <owl:Thing rdf:about="#OffDry"/>
+      <owl:Thing rdf:about="#Sweet"/>
+    </owl:oneOf>
+  </owl:Class>
+  <owl:Class rdf:ID="WineColor">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Wine Color</rdfs:label>
+    <owl:oneOf rdf:parseType="Collection">
+      <owl:Thing rdf:about="&food;Red"/>
+      <owl:Thing rdf:about="&food;Rose"/>
+      <owl:Thing rdf:about="&food;White"/>
+    </owl:oneOf>
+  </owl:Class>
+  <owl:Class rdf:ID="WineBody">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Wine Body</rdfs:label>
+    <owl:oneOf rdf:parseType="Collection">
+      <owl:Thing rdf:about="#Light"/>
+      <owl:Thing rdf:about="#Medium"/>
+      <owl:Thing rdf:about="#Full"/>
+    </owl:oneOf>
+  </owl:Class>
+  <owl:Class rdf:ID="WineFlavor">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Wine Flavor</rdfs:label>
+    <owl:oneOf rdf:parseType="Collection">
+      <owl:Thing rdf:about="#Delicate"/>
+      <owl:Thing rdf:about="#Moderate"/>
+      <owl:Thing rdf:about="#Strong"/>
+    </owl:oneOf>
+  </owl:Class>
+  <owl:ObjectProperty rdf:ID="hasVintageYear">
+    <agent:isSelectableProperty rdf:datatype="&xsd;boolean">true</agent:isSelectableProperty>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Has Vintage Year</rdfs:label>
+    <rdf:type rdf:resource="&owl;FunctionalProperty"/>
+  </owl:ObjectProperty>
+  <owl:Class rdf:ID="VintageYear">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Vintage Year</rdfs:label>
+  </owl:Class>
+
+  <WineColor rdf:about="&food;Red">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Red</rdfs:label>
+  </WineColor>
+  <WineColor rdf:about="&food;Rose">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Rosé</rdfs:label>
+  </WineColor>
+  <WineColor rdf:about="&food;White">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>White</rdfs:label>
+  </WineColor>
+
+  <WineFlavor rdf:ID="Delicate">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Delicate</rdfs:label>
+  </WineFlavor>
+  <WineFlavor rdf:ID="Moderate">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Moderate</rdfs:label>
+  </WineFlavor>
+  <WineFlavor rdf:ID="Strong">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Strong</rdfs:label>
+  </WineFlavor>
+
+  <WineBody rdf:ID="Light">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Light</rdfs:label>
+  </WineBody>
+  <WineBody rdf:ID="Medium">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Medium</rdfs:label>
+  </WineBody>
+  <WineBody rdf:ID="Full">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Full</rdfs:label>
+  </WineBody>
+
+  <WineSugar rdf:ID="Dry">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Dry</rdfs:label>
+  </WineSugar>
+  <WineSugar rdf:ID="OffDry">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Off Dry</rdfs:label>
+  </WineSugar>
+  <WineSugar rdf:ID="Sweet">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sweet</rdfs:label>
+  </WineSugar>
+
+  <!-- Wine Grapes -->
+  <!-- White Grapes -->
+  <WineGrape rdf:ID="Albari&#241;oGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Albari&#241;o Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Aligot&#233;Grape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Aligot&#233; Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ArneisGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Arneis Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="BourboulencGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Bourboulenc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ChardonnayGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chardonnay Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CheninBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chenin Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ClairetteBlancheGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Clairette Blance Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ColobardGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Colobard Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="FianoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Fiano Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GarganegaGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Garganega Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Gew&#252;rztraminerGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gew&#252;rztraminer Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GrenacheBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Grenache Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GrenacheGrisGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Grenache Gris Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Gr&#252;nerVeltlinerGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gr&#252;ner Veltliner Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="KernerGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Kerner Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Maccab&#233;oGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Maccab&#233;o Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MarsanneGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marsanne Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MelonGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Melon Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Morio-MuskatGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Morio-Muskat Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="M&#252;ller-ThurgauGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>M&#252;ller-Thurgau Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MuscadelleGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Muscadelle Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MuscatGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Muscat Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="NeuburgerGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Neuburger Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PicpoulBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Picpoul Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotGrisGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Gris Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="RieslingGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Riesling Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="RousanneGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Rousanne Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="SauvignonBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sauvignon Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ScheurebeGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Scheurebe Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="SemillonGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Semillon Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TerretBlancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Terret Blanc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TerretGrisGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Terret Gris Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TorrontesGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Trebbiano</rdfs:label>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Ungi Blanc</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TrebbianoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Trebbiano Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="VerdelhoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Verdelho Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="VernacciaGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Vernaccia Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ViognierGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Viognier Grape</rdfs:label>
+  </WineGrape>
+  <!-- Black Grapes -->
+  <WineGrape rdf:ID="AlicanteBouschetGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Alicante Bouschet Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="AramonGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Aramon Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="BarberaGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Barbera Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="BlackCorinthGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Black Corinth Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CabernetFrancGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cabernet Franc Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CabernetSauvignonGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cabernet Sauvignon Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CarignanGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Carignan Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Carmen&#232;reGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Carmen&#232;re Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CarnelianGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Carnelian Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CharbonoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Charbono Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CinsaultGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cinsault Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CorvinaGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corvina Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="CounoiseGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Counoise Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="DuriffGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Duriff Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GamayNoirGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gamay Noir Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GrenacheGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Grenache Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GrignoliinoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Grignoliino Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="GrosVerdotGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gros Verdot Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MalbecGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Malbec Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MerlotGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Merlot Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MeunierGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Meunier Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MissionGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mission Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Moure&#233;dreGrape">
+    <rdfs:label xml:lang="en">Mourv&#233;dre</rdfs:label>
+    <rdfs:label xml:lang="en">Mataro</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="MuscardinGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Muscardin Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="NegretteGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Negrette Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="NebbioloGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Nebbiolo Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PetiteVerdotGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Petite Verdot Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PetiteSyrahGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Petite Syrah Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PicpoulGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Picpoul Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotNoirGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Noir Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotMeunierGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot Meunier Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotStGeorgeGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinot St. George Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PinotageGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Pinotage Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="PrimitivoGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Primitivo Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="RubiredGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Rubired Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="RubyCabernetGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Ruby Cabernet Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="StLaurentGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>St. Laurent Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="SangioveseGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sangiovese Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Souz&#227;oGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Souz&#227;oGrape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="SyrahGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Syrah</rdfs:label>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Shiraz</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TempranilloGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Tempranillo Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TerretNoirGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Terret Noir Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TintaBarrocaGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Tinta Barroca Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TintaC&#227;Grape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Tinta C&#227; Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="TintaNegraMoleGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Tinta Negra Mole Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="VaccareseGrape">
+    <rdfs:label xml:lang="en">Vaccarese</rdfs:label>
+    <rdfs:label xml:lang="en">Camarese Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Valdepe&#241;asGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Valdepe&#241;as Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="Valdigui&#233;Grape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Valdigui&#233; Grape</rdfs:label>
+  </WineGrape>
+  <WineGrape rdf:ID="ZinfandelGrape">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Zinfandel Grape</rdfs:label>
+  </WineGrape>
+
+  <!-- Red Wines -->
+  <!--
+  <StEmilionWine rdf:ID="ChateauChevalBlancStEmilion">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Cheval Blanc St. Emilion</rdfs:label>
+    <hasMaker rdf:resource="#ChateauChevalBlanc"/>
+  </StEmilionWine>
+
+  <PauillacWine rdf:ID="ChateauLafiteRothschildPauillac">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Lafite Rothschild Pauillac</rdfs:label>
+    <hasMaker rdf:resource="#ChateauLafiteRothschild"/>
+  </PauillacWine>
+
+  <BeaujolaisWine rdf:ID="ChateauMorgonBeaujolais">
+    <hasMaker rdf:resource="#ChateauMorgon"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Morgon Beaujolais</rdfs:label>
+  </BeaujolaisWine>
+
+  <ChiantiWine rdf:ID="ChiantiClassico">
+    <hasBody rdf:resource="#Medium"/>
+    <hasMaker rdf:resource="#McGuinnesso"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chianti Classico</rdfs:label>
+  </ChiantiWine>
+
+  <SancerreWine rdf:ID="ClosDeLaPoussieSancerre">
+    <hasMaker rdf:resource="#ClosDeLaPoussie"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Clos De La Poussie Sancerre</rdfs:label>
+  </SancerreWine>
+
+  <CotesDOrWine rdf:ID="ClosDeVougeotCotesDOr">
+    <hasMaker rdf:resource="#ClosDeVougeot"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Clos De Vougeot Cotes DOr</rdfs:label>
+  </CotesDOrWine>
+
+  <SemillonWine rdf:ID="CongressSpringsSemillon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Congress Springs Semillon</rdfs:label>
+    <hasMaker rdf:resource="#CongressSprings"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </SemillonWine>
+
+  <RieslingWine rdf:ID="CorbansDryWhiteRiesling">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corbans Dry White Riesling</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Corbans"/>
+    <hasSugar rdf:resource="#OffDry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </RieslingWine>
+
+  <SauvignonBlancWine rdf:ID="CorbansPrivateBinSauvignonBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corbans Private Bin Sauvignon Blanc</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Corbans"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </SauvignonBlancWine>
+
+  <SauvignonBlancWine rdf:ID="CorbansSauvignonBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corbans Sauvignon Blanc</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Corbans"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Medium"/>
+  </SauvignonBlancWine>
+
+  <WhiteBurgundyWine rdf:ID="CortonMontrachetWhiteBurgundy">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corton Montrachet White Burgundy</rdfs:label>
+    <hasMaker rdf:resource="#CortonMontrachet"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </WhiteBurgundyWine>
+
+  <ZinfandelWine rdf:ID="CotturiZinfandel">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cotturi Zinfandel</rdfs:label>
+    <hasBody rdf:resource="#Full"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasSugar rdf:resource="#Dry"/>
+  </ZinfandelWine>
+
+  <ZinfandelWine rdf:ID="ElyseZinfandel">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Elyse Zinfandel</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#Elyse"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Full"/>
+  </ZinfandelWine>
+
+  <CabernetSauvignonWine rdf:ID="FormanCabernet">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Forman Cabernet Sauvignon</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#Forman"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Medium"/>
+  </CabernetSauvignonWine>
+
+  <ChardonnayWine rdf:ID="FormanChardonnay">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Forman Chardonnay</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#Forman"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Full"/>
+  </ChardonnayWine>
+
+  <CheninBlancWine rdf:ID="FoxenCheninBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Foxen Chenin Blanc</rdfs:label>
+    <locatedIn rdf:resource="#SantaBarbaraRegion"/>
+    <hasMaker rdf:resource="#Foxen"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Full"/>
+  </CheninBlancWine>
+
+  <MerlotWine rdf:ID="GaryFarrellMerlot">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gary Farrell Merlot</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion"/>
+    <hasMaker rdf:resource="#GaryFarrell"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </MerlotWine>
+
+  <SemillonWine rdf:ID="KalinCellarsSemillon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Kalin Cellars Semillon</rdfs:label>
+    <hasMaker rdf:resource="#KalinCellars"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </SemillonWine>
+
+  <MeritageWine rdf:ID="KathrynKennedyLateral">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Kathryn Kennedy Lateral</rdfs:label>
+    <hasMaker rdf:resource="#KathrynKennedy"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Delicate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </MeritageWine>
+
+  <PinotNoirWine rdf:ID="LaneTannerPinotNoir">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Lane Tanner Pinot Noir</rdfs:label>
+    <locatedIn rdf:resource="#SantaBarbaraRegion"/>
+    <hasMaker rdf:resource="#LaneTanner"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Delicate"/>
+    <hasBody rdf:resource="#Light"/>
+  </PinotNoirWine>
+
+  <MerlotWine rdf:ID="LongridgeMerlot">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Longridge Merlot</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Longridge"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Light"/>
+  </MerlotWine>
+
+  <CabernetSauvignonWine rdf:ID="MariettaCabernetSauvignon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marietta Cabernet Sauvignon</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion" />
+    <hasMaker rdf:resource="#Marietta"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </CabernetSauvignonWine>
+
+  <RedTableWine rdf:ID="MariettaOldVinesRed">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marietta Old Vines Red</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion"/>
+    <hasMaker rdf:resource="#Marietta"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </RedTableWine>
+
+  <PetiteSyrahWine rdf:ID="MariettaPetiteSyrah">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marietta Petite Syrah</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion"/>
+    <hasMaker rdf:resource="#Marietta"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </PetiteSyrahWine>
+
+  <ZinfandelWine rdf:ID="MariettaZinfandel">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marietta Zinfandel</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion"/>
+    <hasMaker rdf:resource="#Marietta"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ZinfandelWine>
+
+  <ChardonnayWine rdf:ID="MountEdenVineyardEdnaValleyChardonnay">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mount Eden Vineyard Edna Valley Chardonnay</rdfs:label>
+    <locatedIn rdf:resource="#EdnaValleyRegion" />
+    <hasMaker rdf:resource="#MountEdenVineyard"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ChardonnayWine>
+
+  <PinotNoirWine rdf:ID="MountEdenVineyardEstatePinotNoir">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mount Eden Vineyard Estate Pinot Noir</rdfs:label>
+    <locatedIn rdf:resource="#EdnaValleyRegion"/>
+    <hasMaker rdf:resource="#MountEdenVineyard"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </PinotNoirWine>
+
+  <ChardonnayWine rdf:ID="MountadamChardonnay">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mountadam Chardonnay</rdfs:label>
+    <locatedIn rdf:resource="#SouthAustraliaRegion" />
+    <hasMaker rdf:resource="#Mountadam"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </ChardonnayWine>
+
+  <PinotNoirWine rdf:ID="MountadamPinotNoir">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mountadam Pinot Noir</rdfs:label>
+    <locatedIn rdf:resource="#SouthAustraliaRegion"/>
+    <hasMaker rdf:resource="#Mountadam"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </PinotNoirWine>
+
+  <DryRieslingWine rdf:ID="MountadamRiesling">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mountadam Riesling</rdfs:label>
+    <locatedIn rdf:resource="#SouthAustraliaRegion"/>
+    <hasMaker rdf:resource="#Mountadam"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Delicate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </DryRieslingWine>
+
+  <CabernetSauvignonWine rdf:ID="PageMillWineryCabernetSauvignon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Page Mill Winery Cabernet Sauvignon</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#PageMillWinery"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </CabernetSauvignonWine>
+
+  <ChardonnayWine rdf:ID="PeterMccoyChardonnay">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Peter Mccoy Chardonnay</rdfs:label>
+    <locatedIn rdf:resource="#SonomaValleyRegion"/>
+    <hasMaker rdf:resource="#PeterMccoy"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ChardonnayWine>
+
+  <WhiteBurgundyWine rdf:ID="PulignyMontrachetWhiteBurgundy">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Puligny Montrachet White Burgundy</rdfs:label>
+    <hasMaker rdf:resource="#PulignyMontrachet"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </WhiteBurgundyWine>
+
+  <AnjouWine rdf:ID="RoseDAnjou">
+    <hasMaker rdf:resource="#DAnjou"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Rose D'Anjou</rdfs:label>
+  </AnjouWine>
+
+  <CabernetSauvignonWine rdf:ID="SantaCruzMountainVineyardCabernetSauvignon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Santa Cruz Mountain Vineyard Cabernet Sauvignon</rdfs:label>
+    <locatedIn rdf:resource="#SantaCruzMountainsRegion"/>
+    <hasMaker rdf:resource="#SantaCruzMountainVineyard"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </CabernetSauvignonWine>
+
+  <WhiteWine rdf:ID="StGenevieveTexasWhite">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>St. Genevieve Texas White</rdfs:label>
+    <locatedIn rdf:resource="#CentralTexasRegion"/>
+    <hasMaker rdf:resource="#StGenevieve"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+  </WhiteWine>
+
+  <ZinfandelWine rdf:ID="SaucelitoCanyonZinfandel">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Saucelito Canyon Zinfandel</rdfs:label>
+    <locatedIn rdf:resource="#ArroyoGrandeRegion"/>
+    <hasMaker rdf:resource="#SaucelitoCanyon"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ZinfandelWine>
+
+  <ZinfandelWine rdf:ID="SaucelitoCanyonZinfandel1998">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Saucelito Canyon Zinfandel 1998</rdfs:label>
+    <locatedIn rdf:resource="#ArroyoGrandeRegion"/>
+    <hasVintageYear rdf:resource="#Year1998"/>
+    <hasMaker rdf:resource="#SaucelitoCanyon"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ZinfandelWine>
+
+  <SweetRieslingWine rdf:ID="SchlossRothermelTrochenbierenausleseRiesling">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Schloss Rothermel Trochenbierenauslese Riesling</rdfs:label>
+    <locatedIn rdf:resource="#Germany"/>
+    <hasMaker rdf:resource="#SchlossVolrad"/>
+    <hasSugar rdf:resource="#Sweet"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </SweetRieslingWine>
+
+  <SweetRieslingWine rdf:ID="SclossVolradTrochenbierenausleseRiesling">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Schloss Volrad Trochenbierenauslese Riesling</rdfs:label>
+    <locatedIn rdf:resource="#Germany"/>
+    <hasMaker rdf:resource="#SchlossVolrad"/>
+    <hasSugar rdf:resource="#Sweet"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Full"/>
+  </SweetRieslingWine>
+
+  <PetiteSyrahWine rdf:ID="SeanThackreySiriusPetiteSyrah">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sean Thackrey Sirius Petite Syrah</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#SeanThackrey"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasBody rdf:resource="#Full"/>
+  </PetiteSyrahWine>
+
+  <IceWine rdf:ID="SelaksIceWine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Selaks Ice Wine</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Selaks"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+    <hasColor rdf:resource="&food;White"/>
+  </IceWine>
+
+  <SauvignonBlancWine rdf:ID="SelaksSauvignonBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Selaks Sauvignon Blanc</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Selaks"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </SauvignonBlancWine>
+
+  <MuscadetWine rdf:ID="SevreEtMaineMuscadet">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sevre et Maine Muscadet</rdfs:label>
+    <hasMaker rdf:resource="#SevreEtMaine"/>
+  </MuscadetWine>
+
+  <SauvignonBlancWine rdf:ID="StonleighSauvignonBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Stonleigh Sauvignon Blanc</rdfs:label>
+    <locatedIn rdf:resource="#NewZealand"/>
+    <hasMaker rdf:resource="#Stonleigh"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Delicate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </SauvignonBlancWine>
+
+  <PortWine rdf:ID="TaylorPort">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Taylor Port</rdfs:label>
+    <hasMaker rdf:resource="#Taylor"/>
+  </PortWine>
+
+  <CheninBlancWine rdf:ID="VentanaCheninBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Ventana Chenin Blanc</rdfs:label>
+    <locatedIn rdf:resource="#CentralCoastRegion"/>
+    <hasMaker rdf:resource="#Ventana"/>
+    <hasSugar rdf:resource="#OffDry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </CheninBlancWine>
+
+  <CabernetFrancWine rdf:ID="WhitehallLaneCabernetFranc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Whitehall Lane Cabernet Franc</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#WhitehallLane"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </CabernetFrancWine>
+
+  <DessertWine rdf:ID="WhitehallLanePrimavera">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Whitehall Lane Primavera</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasSugar rdf:resource="#Sweet"/>
+    <hasFlavor rdf:resource="#Delicate"/>
+    <hasBody rdf:resource="#Light"/>
+  </DessertWine>
+  -->
+  <!-- White Wines -->
+  <!--
+  <ChardonnayWine rdf:ID="BancroftChardonnay">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Bancroft Chardonnay</rdfs:label>
+    <locatedIn rdf:resource="#NapaValleyRegion"/>
+    <hasMaker rdf:resource="#Bancroft"/>
+    <hasSugar rdf:resource="#Dry"/>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasBody rdf:resource="#Medium"/>
+  </ChardonnayWine>
+
+  <SauternesWine rdf:ID="ChateauDYchemSauterne">
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Chateau d'Ychem Sauterne</rdfs:label>
+    <madeFromGrape rdf:resource="#SauvignonBlancGrape"/>
+    <madeFromGrape rdf:resource="#SemillonGrape"/>
+    <hasFlavor rdf:resource="#Strong"/>
+    <hasMaker rdf:resource="#ChateauDYchem"/>
+  </SauternesWine>
+
+  <MeursaultWine rdf:ID="ChateauDeMeursaultMeursault">
+    <rdfs:label rdf:datatype="&xsd;string" xml:lang="en"
+		>Chateau De Meursault Meursault</rdfs:label>
+    <hasFlavor rdf:resource="#Moderate"/>
+    <hasMaker rdf:resource="#ChateauDeMeursault"/>
+  </MeursaultWine>
+
+  <MargauxWine rdf:ID="ChateauMargaux">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateaux Margaux</rdfs:label>
+    <hasMaker rdf:resource="#ChateauMargauxWinery"/>
+  </MargauxWine>
+  -->
+
+  <!-- Vintage Years -->
+  <VintageYear rdf:ID="Year1998">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>1998</rdfs:label>
+    <yearValue rdf:datatype="&xsd;positiveInteger">1998</yearValue>
+  </VintageYear>
+
+  <!-- Wineries -->
+  <Winery rdf:ID="Beringer">
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Beringer</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Bancroft">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Bancroft</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauChevalBlanc">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Cheval Blanc</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauDYchem">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Cheateau D Ychem</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauDeMeursault">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau De Meursault</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauLafiteRothschild">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Lafite Rothschild</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauMargauxWinery">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Margaux Winery</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ChateauMorgon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Chateau Morgon</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ClosDeLaPoussie">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Clos De La Poussie</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="ClosDeVougeot">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Clos De Vougeot</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="CongressSprings">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Congress Springs</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Corbans">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corbans</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="CortonMontrachet">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Corton Montrachet</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="DAnjou">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>D'Anjou</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Elyse">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Elyse</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Forman">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Forman Winery</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Foxen">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Foxen Winery</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="GaryFarrell">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Gary Farrell</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="KalinCellars">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Kalin Cellars</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="KathrynKennedy">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Kathryn Kennedy</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="LaneTanner">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Lane Tanner</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Longridge">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Longridge</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Marietta">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Marietta</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="McGuinnesso">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>McGuinnesso</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Mountadam">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mountadam</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="MountEdenVineyard">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Mount Eden Vineyard</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="PageMillWinery">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Page Mill Winery</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="PeterMccoy">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Peter Mccoy</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="PulignyMontrachet">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Puligny Montrachet</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="SantaCruzMountainVineyard">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Santa Cruz Mountain Vineyard</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="SaucelitoCanyon">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Saucelito Canyon</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="SchlossVolrad">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Schloss Volrad</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="SeanThackrey">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sean Thackrey</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Selaks">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Selaks</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="SevreEtMaine">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Sevre et Maine</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="StGenevieve">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>St. Genevieve</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Stonleigh">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Stonleigh</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Taylor">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Taylor</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="WhitehallLane">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Whitehall Lane</rdfs:label>
+  </Winery>
+  <Winery rdf:ID="Ventana">
+    <rdfs:label xml:lang="en" rdf:datatype="&xsd;string"
+		>Ventana</rdfs:label>
+  </Winery>
+  
+  <!-- Regions -->
+  <!-- Region information about Argentina -->
+  <Region rdf:ID="Argentina">
+    <rdfs:label xml:lang="en">Argentina</rdfs:label>
+  </Region>
+  
+  
+  <!-- Region information about Australia -->
+  <Region rdf:ID="Australia">
+    <rdfs:label xml:lang="en">Australia</rdfs:label>
+  </Region>
+  <Region rdf:ID="SouthAustraliaRegion">
+    <rdfs:label xml:lang="en">South Australia</rdfs:label>
+    <locatedIn rdf:resource="#Australia"/>
+  </Region>
+  
+  
+  <!-- Region information about Chile -->
+  <Region rdf:ID="Chile">
+    <rdfs:label xml:lang="en">Chile</rdfs:label>
+  </Region>
+
+
+  <!-- Region information about France -->
+  <Region rdf:ID="France">
+    <rdfs:label xml:lang="en">France</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;3017382/"/>
+  </Region>
+  <Region rdf:ID="AlsaceRegion">
+    <rdfs:label xml:lang="en">Alsace, France</rdfs:label>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="AnjouRegion">
+    <rdfs:label xml:lang="en">Anjou, France</rdfs:label>
+    <locatedIn rdf:resource="#LoireRegion"/>
+  </Region>
+  <Region rdf:ID="BeaujolaisRegion">
+    <rdfs:label xml:lang="en">Beaujolais, France</rdfs:label>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="BordeauxRegion">
+    <rdfs:label xml:lang="en">Bordeaux, France</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;3031582/"/>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="BourgogneRegion">
+    <rdfs:label xml:lang="en">Bourgogne, France</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;3030967/"/>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="ChampagneRegion">
+    <rdfs:label xml:lang="en">Champagne, France</rdfs:label>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="CotesDOrRegion">
+    <rdfs:label xml:lang="en">Cotes D'Or, France</rdfs:label>
+    <locatedIn rdf:resource="#BourgogneRegion"/>
+  </Region>
+  <Region rdf:ID="LoireRegion">
+    <rdfs:label xml:lang="en">Loire Valley, France</rdfs:label>
+    <locatedIn rdf:resource="#France"/>
+  </Region>
+  <Region rdf:ID="MargauxRegion">
+    <rdfs:label xml:lang="en">Margau, France</rdfs:label>
+    <locatedIn rdf:resource="#MedocRegion"/>
+  </Region>
+  <Region rdf:ID="MedocRegion">
+    <rdfs:label xml:lang="en">Medoc, France</rdfs:label>
+    <locatedIn rdf:resource="#BordeauxRegion"/>
+  </Region>
+  <Region rdf:ID="MeursaultRegion">
+    <rdfs:label xml:lang="en">Meursault, France</rdfs:label>
+    <locatedIn rdf:resource="#BourgogneRegion"/>
+  </Region>
+  <Region rdf:ID="MuscadetRegion">
+    <rdfs:label xml:lang="en">Muscadet, France</rdfs:label>
+    <locatedIn rdf:resource="#LoireRegion"/>
+  </Region>
+  <Region rdf:ID="PauillacRegion">
+    <rdfs:label xml:lang="en">Pauillac, France</rdfs:label>
+    <locatedIn rdf:resource="#MedocRegion"/>
+  </Region>
+  <Region rdf:ID="SancerreRegion">
+    <rdfs:label xml:lang="en">Sancerre, France</rdfs:label>
+    <locatedIn rdf:resource="#LoireRegion"/>
+  </Region>
+  <Region rdf:ID="SauterneRegion">
+    <rdfs:label xml:lang="en">Sauterne, France</rdfs:label>
+    <locatedIn rdf:resource="#BordeauxRegion"/>
+  </Region>
+  <Region rdf:ID="StEmilionRegion">
+    <rdfs:label xml:lang="en">St. Emilion, France</rdfs:label>
+    <locatedIn rdf:resource="#BordeauxRegion"/>
+  </Region>
+  <Region rdf:ID="ToursRegion">
+    <rdfs:label xml:lang="en">Tours, France</rdfs:label>
+    <locatedIn rdf:resource="#LoireRegion"/>
+  </Region>
+
+
+  <!-- Region information about Germany -->
+  <Region rdf:ID="Germany">
+    <rdfs:label xml:lang="en">Germany</rdfs:label>
+  </Region>
+
+
+  <!-- Region information about Italy -->
+  <Region rdf:ID="Italy">
+    <rdfs:label xml:lang="en">Italy</rdfs:label>
+  </Region>
+  <Region rdf:ID="ChiantiRegion">
+    <rdfs:label xml:lang="en">Chianti, Italy</rdfs:label>
+    <locatedIn rdf:resource="#Italy"/>
+  </Region>
+  <Region rdf:ID="VenetoRegion">
+    <rdfs:label xml:lang="en">Veneto, Italy</rdfs:label>
+    <locatedIn rdf:resource="#Italy"/>
+  </Region>
+
+
+  <!-- Region information about New Zealand -->
+  <Region rdf:ID="NewZealand">
+    <rdfs:label xml:lang="en">New Zealand</rdfs:label>
+  </Region>
+  <Region rdf:ID="MarlboroughRegion">
+    <rdfs:label xml:lang="en">Marlborough, New Zealand</rdfs:label>
+    <locatedIn rdf:resource="#MarlboroughRegion"/>
+  </Region>
+
+
+  <!-- Region information about Portugal -->
+  <Region rdf:ID="Portugal">
+    <rdfs:label xml:lang="en">Portugal</rdfs:label>
+  </Region>
+
+
+  <!-- Region information about South Africa -->
+  <Region rdf:ID="SouthAfrica">
+    <rdfs:label xml:lang="en">South Africa</rdfs:label>
+  </Region>
+
+
+  <!-- Region information about Spain -->
+  <Region rdf:ID="Spain">
+    <rdfs:label xml:lang="en">Spain</rdfs:label>
+  </Region>
+
+
+  <!-- Region information about the United States -->
+  <Region rdf:ID="UnitedStates">
+    <rdfs:label xml:lang="en">United States of America</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;6252001/"/>
+  </Region>
+  <Region rdf:ID="ArroyoGrandeRegion">
+    <rdfs:label xml:lang="en">Arroyo Grande, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="CaliforniaRegion">
+    <rdfs:label xml:lang="en">California, USA</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;5332921/"/>
+    <locatedIn rdf:resource="#UnitedStates"/>
+  </Region>
+  <Region rdf:ID="CentralCoastRegion">
+    <rdfs:label xml:lang="en">Central Coast, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="CentralTexasRegion">
+    <rdfs:label xml:lang="en">Central Texas, USA</rdfs:label>
+    <locatedIn rdf:resource="#TexasRegion"/>
+  </Region>
+  <Region rdf:ID="EdnaValleyRegion">
+    <rdfs:label xml:lang="en">Edna Valley, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="FingerLakesRegion">
+    <rdfs:label xml:lang="en">Finger Lakes, NY, USA</rdfs:label>
+    <locatedIn rdf:resource="#NewYorkRegion"/>
+  </Region>
+  <Region rdf:ID="MendocinoRegion">
+    <rdfs:label xml:lang="en">Mendocino, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="NapaValleyRegion">
+    <rdfs:label xml:lang="en">Napa Valley, CA, USA</rdfs:label>
+    <owl:sameAs rdf:resource="&geo;5376101/"/>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="NewYorkRegion">
+    <rdfs:label xml:lang="en">New York, USA</rdfs:label>
+    <locatedIn rdf:resource="#NewYorkRegion"/>
+  </Region>
+  <Region rdf:ID="OregonRegion">
+    <rdfs:label xml:lang="en">Oregon, USA</rdfs:label>
+    <locatedIn rdf:resource="#UnitedStates"/>
+  </Region>
+  <Region rdf:ID="SantaBarbaraRegion">
+    <rdfs:label xml:lang="en">Santa Barbara, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="SantaCruzMountainsRegion">
+    <rdfs:label xml:lang="en">Santa Cruz Mountains, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="SonomaValleyRegion">
+    <rdfs:label xml:lang="en">Sonoma Valley, CA, USA</rdfs:label>
+    <locatedIn rdf:resource="#CaliforniaRegion"/>
+  </Region>
+  <Region rdf:ID="TexasRegion">
+    <rdfs:label xml:lang="en">Texas, USA</rdfs:label>
+    <locatedIn rdf:resource="#UnitedStates"/>
+  </Region>
+  <Region rdf:ID="WashingtonRegion">
+    <rdfs:label xml:lang="en">Washington, USA</rdfs:label>
+    <locatedIn rdf:resource="#UnitedStates"/>
+  </Region>
+</rdf:RDF>

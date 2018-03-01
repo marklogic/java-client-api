@@ -1,0 +1,376 @@
+<tripleSets xmlns:sem="http://marklogic.com/semantics">
+  <masterRelated>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">John Doe</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing John Doe</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pitcher</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1981-05-04</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">25.45</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">31</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#001</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/001</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Bob Brian</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Bob Brian</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Outfielder</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1999-01-15</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">78.45</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">23</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#002</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/003</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Josh Ream</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Josh Ream</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pitcher</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1985-11-30</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">53.10</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">29</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#003</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/001</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pat Crenshaw</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Pat Crenshaw</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Catcher</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1998-09-01</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">33.89</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">25</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#004</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/005</sem:object>
+      </sem:triple>
+    </sem:triples>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pedro Barrozo</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Pedro Barrozo</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Midfielder</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1991-12-09</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">41.65</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">19</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#005</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/002</sem:object>
+      </sem:triple>
+    </sem:triples>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Aoki Yamada</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Aoki Yamada</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">First Base</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1987-03-15</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">55.2</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">34</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#006</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/003</sem:object>
+      </sem:triple>
+    </sem:triples>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Matt Rose</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Matt Rose</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pitcher</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1984-11-01</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">32.89</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">29</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/005</sem:object>
+      </sem:triple>
+    </sem:triples>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Matt Rose</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Matt Rose</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Pitcher</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1984-11-01</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">32.89</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">29</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#007</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/005</sem:object>
+      </sem:triple>
+    </sem:triples>
+    <sem:triples>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/name</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Juan Leone</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/type</sem:predicate>
+        <sem:object>http://marklogic.com/baseball/players/bbtype/Dataset</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/description</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Describing Juan Leone</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/position</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#string">Second Base</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/dob</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#date">1993-08-17</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/eff</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#decimal">29.77</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/age</sem:predicate>
+        <sem:object datatype="http://www.w3.org/2001/XMLSchema#integer">27</sem:object>
+      </sem:triple>
+      <sem:triple>
+        <sem:subject>http://marklogic.com/baseball/id#008</sem:subject>
+        <sem:predicate>http://marklogic.com/baseball/players/team</sem:predicate>
+        <sem:object>http://marklogic.com/mlb/team/id/001</sem:object>
+      </sem:triple>
+    </sem:triples>
+  </masterRelated>
+</tripleSets>

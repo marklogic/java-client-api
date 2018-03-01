@@ -1,0 +1,21 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <debug>true</debug>
+  <constraint name="id">
+    <value>
+      <element ns="" name="id"/>
+    </value>
+  </constraint>
+  <constraint name="date">
+    <value>
+      <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+    </value>
+  </constraint>
+  <constraint name="title">
+    <value>
+      <element ns="" name="title"/>
+    </value>
+  </constraint>
+</options>

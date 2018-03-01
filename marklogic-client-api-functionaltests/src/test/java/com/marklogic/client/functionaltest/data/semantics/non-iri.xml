@@ -1,0 +1,27 @@
+<sem:triples xmlns:sem="http://marklogic.com/semantics">
+<sem:triple>
+<sem:subject datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:subject>
+<sem:predicate datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#double">3.11</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:subject>
+<sem:predicate datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#double">4.11</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:subject>
+<sem:predicate datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:subject>
+<sem:predicate datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#double">6.11</sem:object>
+</sem:triple>
+<sem:triple>
+<sem:subject datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:subject>
+<sem:predicate datatype="http://www.w3.org/2001/XMLSchema#double">5.11</sem:predicate>
+<sem:object datatype="http://www.w3.org/2001/XMLSchema#double">7.11</sem:object>
+</sem:triple>
+</sem:triples>

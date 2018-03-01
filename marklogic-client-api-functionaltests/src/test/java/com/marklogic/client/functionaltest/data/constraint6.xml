@@ -1,0 +1,15 @@
+<root>
+  <add>5</add>
+  <subtract>5</subtract>
+  <multiply>2</multiply>
+  <divide>20</divide>
+  <concatenateAfter>Hi</concatenateAfter>
+  <concatenateBetween>Version</concatenateBetween>
+  <concatenateBefore>7</concatenateBefore>
+  <substringAfter>ML Version 7</substringAfter>
+  <substringBefore>ML Version 7</substringBefore>
+  <replaceRegex>Client</replaceRegex>
+  <applyLibrary>API</applyLibrary>
+  <applyLibraryValues>Tests</applyLibraryValues>
+  <applyLibraryFragments>Mayank</applyLibraryFragments>
+</root>

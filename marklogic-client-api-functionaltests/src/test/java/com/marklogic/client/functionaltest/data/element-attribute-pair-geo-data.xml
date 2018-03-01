@@ -1,0 +1,38 @@
+<places>
+    <point latitude="39.55" longitude="116.25">
+        <name>beijing</name>
+        <description>city in china</description>
+    </point>
+    <point latitude="13.45" longitude="100.30">
+        <name>bangkok</name>
+        <description>city in thailand</description>
+    </point>
+    <point latitude="90" longitude="100">
+        <name>norh pole</name>
+        <description>place where Santa lives</description>
+    </point>
+    <point latitude="-90" longitude="100">
+        <name>south pole</name>
+        <description>place where Bad Santa lives</description>
+    </point>
+    <point latitude="53.90" longitude="-166.63">
+        <name>Unalaska Island</name>
+        <description>Part of the Aleutian Islands. Near Alaska</description>
+    </point>
+    <point latitude="-.15" longitude="-78.35">
+        <name>Quito</name>
+        <description>Capital of Ecuador. Near the equator.</description>
+    </point>
+    <point latitude="-8.31" longitude="179.13">
+        <name>Funafuti</name>
+        <description>Capital of island nation of Tuvalu.</description>
+    </point>
+    <point latitude="52" longitude="13">
+        <name>Berlin</name>
+        <description>City in Germany</description>
+    </point>
+    <p>How is the weather in Quito <point latitude="-.15" longitude="-78.35"/></p>
+    <p>How is the weather in Quito today or tomorrow <point latitude="-.15" longitude="-78.35"/>. I need vacation.</p>
+    <p>How is the weather in North Pole <point latitude="90" longitude="100"/></p>
+    <p>How is the weather in the North Pole today or tomorrow <point latitude="90" longitude="100"/>. I need vacation.</p>
+</places>

@@ -1,0 +1,343 @@
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><title>MarkLogic Java API Overview</title></head>
+<body>
+<h2>MarkLogic Java API</h2>
+<p>
+	The MarkLogic Java API support reading, writing, and deleting
+	document content and metadata as well as querying documents.
+</p>
+
+<h2>Before Starting</h2>
+<p>
+	Before using the API, create a REST server for your database.
+	If the database has existing documents, modify the roles with
+	privileges to read and write those documents to inherit from
+	rest-reader and rest-writer. 
+</p>
+<h2>Creating a Database Client</h2>
+<p>
+	Use {@link com.marklogic.client.DatabaseClientFactory}.newClient()
+	to create a client for a database.  You can then use the
+	{@link com.marklogic.client.DatabaseClient} factory methods
+	(which begin with "new") to create document, configuration,
+	and query managers.
+</p>
+<h2>Working with Document Managers</h2>
+<p>
+	Use the {@link com.marklogic.client.DatabaseClient} to create
+	the appropriate document manager for the format of the content --
+	a {@link com.marklogic.client.document.BinaryDocumentManager} for a binary
+	document or an {@link com.marklogic.client.document.XMLDocumentManager} for
+	an XML document. The client also provides {@link com.marklogic.client.document.JSONDocumentManager}
+	and {@link com.marklogic.client.document.TextDocumentManager} document manager
+	for those formats. Use {@link com.marklogic.client.document.GenericDocumentManager}
+	if you don't know the format or need to process multiple documents
+	with different formats.  
+</p>
+<p>
+	To identify a document in the database, you use a String with the document URI.
+</p>
+<p>
+	To access document content, you can create a <em>handle</em> object that provides
+	strongly-typed support for an IO representation.	This concept of content handles
+	is core to the Java API (making use of the Adapter design pattern so the API can read
+	or write content with a diverse and extensible set of representations). You can define
+	new handle classes to integrate new IO representations into the API.
+</p>
+<p>
+	For frequently-used requests, you can also write an IO object or specify an IO class
+	to read an object directly. Internally, these shortcut methods create the handle for you.
+	By default, the IO representations supported in shortcut methods include byte[],
+	DOM Document, File, InputStream, SAX InputSource, Reader, Transformer Source, String,
+	StAX XMLEventReader, and StAX XMLEventWriter. You can enable shortcut support
+	for dom4j Document, JDOM Document, GSON JsonElement, Jackson JsonNode, JAXB POJOs, or
+	XOM Document.
+</p>
+<p>
+	For instance, consider a binary JPEG file. To write this file to the database
+	using a strongly typed handle, you create a {@link com.marklogic.client.io.FileHandle}
+	and call the handle's set() method with the File object. You then pass the handle
+	to the operation that writes the binary content to the database.
+</p>
+<p>
+	Similarly, let's say you want to read the content of an XML document from the database
+	into a DOM document. You pass a {@link com.marklogic.client.io.DOMHandle} to the
+	operation that reads the XML content.  The read operation populates the DOMHandle
+	with the content. You can then call the handle's get() method
+	to get the org.w3c.dom.Document object. In short, a handle acts as a container
+	for content in a representation.
+</p>
+<p>
+	To read document content from the database, pass the document URI string
+	and a handle to the read() method 
+	of the document manager. Then use the methods of the handle to get the content.  
+	The following example reads the content of the <code>/db/path/to/myDoc.xml</code>
+	database document into a DOM document:
+</p>
+<pre>
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+DOMHandle handle = new DOMHandle();
+
+docMgr.read(docId, handle);
+
+Document document = handle.get();
+</pre>
+<p>
+	The following example reads the document with the equivalent shortcut method:
+</p>
+<pre>
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+
+Document document = docMgr.readAs(docId, Document.class);
+</pre>
+<p>
+	To write content to a document in the database, set the content in a handle and then pass the 
+	document URI string and the content handle to the write() method
+	of the document manager. The following example write the content of the 
+	<code>/db/path/to/myDoc.xml</code> database document from a DOM document:
+</p>
+<pre>
+Document document = ... <em>create or modify the document</em> ...;
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+DOMHandle handle = new DOMHandle();
+handle.set(document);
+
+docMgr.write(docId, handle);
+</pre>
+<p>
+	The following example writes the document with the equivalent shortcut method:
+</p>
+<pre>
+Document document = ... <em>create or modify the document</em> ...;
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myDoc.xml";
+
+docMgr.writeAs(docId, document);
+</pre>
+<p>
+	To learn which handles you can use to read the content of an XML document, look at the classes 
+	that implement {@link com.marklogic.client.io.marker.XMLReadHandle}.  To learn which handles
+	you can use to write the content of an XML document, look at the classes that implement
+	{@link com.marklogic.client.io.marker.XMLWriteHandle}.  
+	{@link com.marklogic.client.document.BinaryDocumentManager},
+	{@link com.marklogic.client.document.JSONDocumentManager},
+	{@link com.marklogic.client.document.TextDocumentManager}, and
+	{@link com.marklogic.client.document.GenericDocumentManager}
+	each have corresponding read and write handles that identify the handle classes
+	that can be used when reading and writing documents of that format. The shortcut methods
+	of each document manager work with the same IO objects supported by the handles that are
+	accepted by the document manager and that implement {@link com.marklogic.client.io.marker.ContentHandle}.
+</p>
+<p>
+	You can read or write document metadata in the same request as document
+	content or separately.
+</p>
+<h2>Working with Query Options</h2>
+<p>
+    To prepare a database for search applications, you will have created
+    indexes on the fields and elements of documents.  Query options
+    declare and configure the use of indexes for search and query
+    applications. You specify query options as a JSON or XML structure.
+    You use {@link com.marklogic.client.admin.QueryOptionsManager} to
+    write query options in JSON or XML to the server or to read
+    query options back into the application.  
+</p>
+<p>
+    The following example writes new query options named "shipments" with a
+    single constraint.  The constraint, of type "value" names the "port"
+    location within documents for queries that use the "shipments" query
+    options.
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+String options = new StringBuilder()
+            .append("&lt;search:options&gt;")
+            .append(    "&lt;search:constraint name=\"port\"&gt;")
+            .append(        "&lt;search:value&gt;")
+            .append(            "&lt;search:element name=\"port\" ns=\"\"/&gt;")
+            .append(        "&lt;/search:value&gt;")
+            .append(    "&lt;/search:constraint&gt;")
+            .append("&lt;/search:options&gt;")
+            .toString();
+
+StringHandle handle = new StringHandle(options);
+
+optionsMgr.writeOptions("shipments", handle);
+</pre>
+<p>
+	The following example writes the query options with the equivalent shortcut method:
+</p>
+<pre>
+QueryOptionsManager optionsMgr = client.newQueryOptionsManager();
+
+String options = new StringBuilder()
+            .append("&lt;search:options&gt;")
+            .append(    "&lt;search:constraint name=\"port\"&gt;")
+            .append(        "&lt;search:value&gt;")
+            .append(            "&lt;search:element name=\"port\" ns=\"\"/&gt;")
+            .append(        "&lt;/search:value&gt;")
+            .append(    "&lt;/search:constraint&gt;")
+            .append("&lt;/search:options&gt;")
+            .toString();
+
+optionsMgr.writeOptionsAs("shipments", Format.XML, options);
+</pre>
+<h2>Working with the Query Manager</h2>
+<p>
+	Use {@link com.marklogic.client.query.QueryManager} to search documents or
+	extract values, co-occurrences of values, or full tuple records from
+	document indexes.  The search() method takes the name for search options
+	that you wrote to the database previously, a query definition including
+	the search criteria, and a handle for representing the results.  You can
+	supply search criteria as a string, keys-value pairs, or a structure.
+	You can	represent results as JSON, XML, or a Java data structure. 
+</p>
+<p>
+	The following example uses the "shipments" query options written to database previously.
+	The search criteria matches documents that contain the term "electronics" as well as
+	a <code>&lt;port&gt;</code> element with a value of "Lisbon".  The example reads
+	the search results into a DOM document.
+</p>
+<pre>
+QueryManager queryMgr = client.newQueryManager();
+
+StringQueryDefinition querydef = queryMgr.newStringDefinition("shipments");
+querydef.setCriteria("electronics port:Lisbon");
+
+DOMHandle handle = new DOMHandle();
+
+queryMgr.search(querydef, handle);
+
+Document results = handle.get();
+</pre>
+<p>
+	Besides XML or JSON, you can also get search results as a Java data structure by using
+	{@link com.marklogic.client.io.SearchHandle}.  This approach is often the most convenient
+	way to manipulate search results as demonstrated in the following example:
+</p>
+<pre>
+QueryManager queryMgr = client.newQueryManager();
+
+StringQueryDefinition querydef = queryMgr.newStringDefinition("shipments");
+querydef.setCriteria("electronics port:Lisbon");
+
+SearchHandle results = new SearchHandle();
+
+queryMgr.search(querydef, results);
+
+... <em>do something at the response level (total response, metrics, and so on)</em> ...
+for (MatchDocumentSummary docSummary: results.getMatchResults()) {
+    ... <em>do something for a matching document</em> ...
+    for (MatchLocation location : docSummary.getMatchLocations()) {
+        ... <em>do something at the match location level</em> ...
+        for (MatchSnippet snippet : location.getSnippets()) {
+            if (snippet.isHighlighted()) {
+                ... <em>do something with highlighted text</em> ...
+            } else {
+                ... <em>do something with unhighlighted text</em> ...
+            }
+        }
+    }
+}
+</pre>
+<h2>Concise Code with Fluent Interfaces</h2>
+<p>The API makes use of the Fluent Interface design pattern so that, when you become familiar with the API,
+you can execute operations concisely.
+</p>
+<p>
+    For instance, because the read() method returns the content handle,
+    the earlier read operation can be expressed in a single line:
+</p>
+<pre>
+org.w3c.dom.Document document =
+    client.newXMLDocumentManager().read(
+        client.newDocId("/db/path/to/myDoc.xml"),
+        new DOMHandle()
+        ).get();
+</pre>
+<p>
+    Because most handles provide a <code>with()</code> method that sets the content and
+    returns the handle, you can a write operation in a single line:
+</p>
+<pre>
+Document document = ... <em>create or modify the document</em> ...;
+
+client.newXMLDocumentManager().write(
+    client.newDocId("/db/path/to/myDoc.xml"),
+    new DOMHandle().with(document)
+    );
+</pre>
+<p>
+	When convenient, you can write a search operation in a single line:
+</p>
+<pre>
+Document results = client.newQueryManager().search(
+    queryMgr.newStringDefinition("shipments").withCriteria("electronics port:Lisbon"),
+    new DOMHandle()
+    ).get();
+</pre>
+<a name="ShortcutMethods"></a>
+<h2>Registering New IO Representations for Shortcut Methods</h2>
+<p>
+    To use extra IO handles like
+    {@link com.marklogic.client.extra.dom4j.DOM4JHandle},
+    {@link com.marklogic.client.extra.gson.GSONHandle},
+    {@link com.marklogic.client.extra.jdom.JDOMHandle}, or
+    {@link com.marklogic.client.extra.xom.XOMHandle}, you download the
+    library integrated by the handle and add the library to the classpath.
+    You can enable support in shortcut methods for the IO representation
+    provided by an extra library by registering a factory for the handle
+    using {@link com.marklogic.client.DatabaseClientFactory}.getHandleRegistry().
+</p>
+<p>
+    You can also register a factory for the built-in JAXB and JacksonDatabind handles 
+    to support IO on your POJO classes in shortcut methods.  The following example
+    registers the JAXB handle for one or more POJO classes and writes
+    and reads the POJOs as database documents.  The same pattern works with 
+    JacksonDatabindHandle.
+</p>
+<pre>
+// configure once before creating a client
+DatabaseClientFactory.getHandleRegistry().register(
+	JAXBHandle.newFactory(Product.class, ... <em>other POJO classes</em> ...)
+	);
+
+// ... <em>create a database client</em> ...
+
+XMLDocumentManager docMgr = client.newXMLDocumentManager();
+String docId = "/db/path/to/myPOJO.xml";
+
+Product product = ... <em>create or modify the POJO</em> ...;
+
+docMgr.writeAs(docId, product);
+
+// ... <em>at some other time</em> ...
+
+Product product = docMgr.readAs(docId, Product.class);
+</pre>
+
+<a name="logging"></a>
+<h2>Enabling Logging</h2>
+<p>
+    We use <a href="http://www.slf4j.org/manual.html">slf4j</a> for logging.
+    This means you can choose any slf4j-compliant logging framework such as
+    Logback, AVSL, JDK logging, Log4j, or Simple.  If you don't know which to
+    choose, we recommend Logback since it is a native implementation and the
+    easiest to configure.  Please follow the instructions on the slf4j website to
+    configure your logging framework.  It should take no more than 15 minutes.
+
+    Once your logging framework is configured with slf4j, you should be able to
+    see and manage logging from the Java-client API.  This is especially
+    important for long-running QueryBatcher and WriteBatcher jobs.
+</p>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>
+</body>
+</html>

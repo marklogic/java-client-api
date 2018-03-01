@@ -1,0 +1,3 @@
+<http://example.org/ml/people/John_Smith> <livesIn> "London" .
+<http://example.org/ml/people/Jane_Smith> <livesIn> "London" .
+<http://example.org/ml/people/Jack_Smith> <livesIn> "Glasgow" .

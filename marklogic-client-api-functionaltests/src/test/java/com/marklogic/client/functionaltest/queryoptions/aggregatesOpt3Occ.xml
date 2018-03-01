@@ -1,0 +1,28 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <values name="pop-aggr">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+    </range>
+  </values>
+  <values name="date-val">
+    <range type="xs:date">
+      <element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+    </range>
+  </values>
+  <values name="score-aggr">
+    <range type="xs:decimal">
+      <element ns="http://test.aggr.com" name="score"/>
+    </range>
+  </values>
+  <tuples name="pop-rate-tups">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+    </range>
+    <range type="xs:int">
+      <element ns="http://test.tups.com" name="rate"/>
+    </range>
+	<range type="xs:decimal">
+      <element ns="http://test.aggr.com" name="score"/>
+    </range>
+  </tuples>
+</options>

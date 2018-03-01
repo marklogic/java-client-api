@@ -1,0 +1,10 @@
+<root>
+  <title>Vannevar served</title>
+  <popularity>5</popularity>
+  <id>0024</id>
+  <date xmlns="http://purl.org/dc/elements/1.1/">2008-04-04</date>
+  <price xmlns="http://cloudbank.com" amt="12.34"/>
+  <score xmlns="http://test.aggr.com">12.34</score>
+  <rate xmlns="http://test.tups.com">3</rate>
+  <p>Vannevar served as a prominent policymaker and public intellectual.</p>
+</root>

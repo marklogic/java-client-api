@@ -1,0 +1,613 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#45 	Anthony Bass 	R-R 	6'2" 	200 	Nov 1, 1987
+bb:601	bb:playerid	"601"^^xs:integer .
+bb:601	bb:number	"45"^^xs:integer .
+bb:601	bb:lastname	"Bass" .
+bb:601	bb:firstname	"Anthony" .
+bb:601	bb:position	"pitcher" .
+bb:601	bb:team	bbr:Astros .
+bb:601	bb:bats	"right" .
+bb:601	bb:throws	"right" .
+bb:601	bb:weight	"200"^^xs:integer .
+bb:601	bb:date-of-birth	"1987-11-01"^^xs:date .
+bb:601	rdf:type		bbr:pitcher .
+bb:601	rdf:type		bbr:setup .
+
+#58 	Jake Buchanan 	R-R 	6'0" 	235 	Sep 24, 1989
+bb:602	bb:playerid	"602"^^xs:integer .
+bb:602	bb:number	"58"^^xs:integer .
+bb:602	bb:lastname	"Buchanan" .
+bb:602	bb:firstname	"Jake" .
+bb:602	bb:position	"pitcher" .
+bb:602	bb:team	bbr:Astros .
+bb:602	bb:bats	"right" .
+bb:602	bb:throws	"right" .
+bb:602	bb:weight	"235"^^xs:integer .
+bb:602	bb:date-of-birth	"1989-09-24"^^xs:date .
+bb:602	rdf:type		bbr:pitcher .
+bb:602	rdf:type		bbr:setup .
+
+#66 	Kevin Chapman 	L-L 	6'3" 	225 	Feb 19, 1988
+bb:603	bb:playerid	"603"^^xs:integer .
+bb:603	bb:number	"66"^^xs:integer .
+bb:603	bb:lastname	"Chapman" .
+bb:603	bb:firstname	"Kevin" .
+bb:603	bb:position	"pitcher" .
+bb:603	bb:team	bbr:Astros .
+bb:603	bb:bats	"left" .
+bb:603	bb:throws	"left" .
+bb:603	bb:weight	"225"^^xs:integer .
+bb:603	bb:date-of-birth	"1988-02-19"^^xs:date .
+bb:603	rdf:type		bbr:pitcher .
+bb:603	rdf:type		bbr:setup .
+
+#62 	Luis Cruz 	L-L 	5'9" 	200 	Sep 10, 1990
+bb:604	bb:playerid	"604"^^xs:integer .
+bb:604	bb:number	"62"^^xs:integer .
+bb:604	bb:lastname	"Cruz" .
+bb:604	bb:firstname	"Luis" .
+bb:604	bb:position	"pitcher" .
+bb:604	bb:team	bbr:Astros .
+bb:604	bb:bats	"left" .
+bb:604	bb:throws	"left" .
+bb:604	bb:weight	"200"^^xs:integer .
+bb:604	bb:date-of-birth	"1990-09-10"^^xs:date .
+bb:604	rdf:type		bbr:pitcher .
+bb:604	rdf:type		bbr:setup .
+
+#44 	Samuel Deduno 	R-R 	6'3" 	190 	Jul 2, 1983
+bb:605	bb:playerid	"605"^^xs:integer .
+bb:605	bb:number	"44"^^xs:integer .
+bb:605	bb:lastname	"Deduno" .
+bb:605	bb:firstname	"Samuel" .
+bb:605	bb:position	"pitcher" .
+bb:605	bb:team	bbr:Astros .
+bb:605	bb:bats	"right" .
+bb:605	bb:throws	"right" .
+bb:605	bb:weight	"190"^^xs:integer .
+bb:605	bb:date-of-birth	"1983-07-02"^^xs:date .
+bb:605	rdf:type		bbr:pitcher .
+bb:605	rdf:type		bbr:setup .
+
+#38 	Darin Downs 	R-L 	6'3" 	210 	Dec 26, 1984
+bb:606	bb:playerid	"606"^^xs:integer .
+bb:606	bb:number	"38"^^xs:integer .
+bb:606	bb:lastname	"Downs" .
+bb:606	bb:firstname	"Darin" .
+bb:606	bb:position	"pitcher" .
+bb:606	bb:team	bbr:Astros .
+bb:606	bb:bats	"right" .
+bb:606	bb:throws	"left" .
+bb:606	bb:weight	"210"^^xs:integer .
+bb:606	bb:date-of-birth	"1984-12-26"^^xs:date .
+bb:606	rdf:type		bbr:pitcher .
+bb:606	rdf:type		bbr:setup .
+
+#46 	Scott Feldman 	L-R 	6'7" 	230 	Feb 7, 1983
+bb:607	bb:playerid	"607"^^xs:integer .
+bb:607	bb:number	"46"^^xs:integer .
+bb:607	bb:lastname	"Feldman" .
+bb:607	bb:firstname	"Scott" .
+bb:607	bb:position	"pitcher" .
+bb:607	bb:team	bbr:Astros .
+bb:607	bb:bats	"left" .
+bb:607	bb:throws	"right" .
+bb:607	bb:weight	"230"^^xs:integer .
+bb:607	bb:date-of-birth	"1983-02-07"^^xs:date .
+bb:607	rdf:type		bbr:pitcher .
+bb:607	rdf:type		bbr:setup .
+
+#35 	Josh Fields 	R-R 	6'0" 	190 	Aug 19, 1985
+bb:608	bb:playerid	"608"^^xs:integer .
+bb:608	bb:number	"35"^^xs:integer .
+bb:608	bb:lastname	"Fields" .
+bb:608	bb:firstname	"Josh" .
+bb:608	bb:position	"pitcher" .
+bb:608	bb:team	bbr:Astros .
+bb:608	bb:bats	"right" .
+bb:608	bb:throws	"right" .
+bb:608	bb:weight	"190"^^xs:integer .
+bb:608	bb:date-of-birth	"1985-08-19"^^xs:date .
+bb:608	rdf:type		bbr:pitcher .
+bb:608	rdf:type		bbr:setup .
+
+#48 	Michael Foltynewicz 	R-R 	6'4" 	220 	Oct 7, 1991
+bb:609	bb:playerid	"609"^^xs:integer .
+bb:609	bb:number	"48"^^xs:integer .
+bb:609	bb:lastname	"Foltynewicz" .
+bb:609	bb:firstname	"Michael" .
+bb:609	bb:position	"pitcher" .
+bb:609	bb:team	bbr:Astros .
+bb:609	bb:bats	"right" .
+bb:609	bb:throws	"right" .
+bb:609	bb:weight	"220"^^xs:integer .
+bb:609	bb:date-of-birth	"1991-10-07"^^xs:date .
+bb:609	rdf:type		bbr:pitcher .
+bb:609	rdf:type		bbr:setup .
+
+#	Will Harris 	R-R 	6'4" 	225 	Aug 28, 1984
+bb:610	bb:playerid	"610"^^xs:integer .
+bb:610	bb:lastname	"Harris" .
+bb:610	bb:firstname	"Will" .
+bb:610	bb:position	"pitcher" .
+bb:610	bb:team	bbr:Astros .
+bb:610	bb:bats	"right" .
+bb:610	bb:throws	"right" .
+bb:610	bb:weight	"225"^^xs:integer .
+bb:610	bb:date-of-birth	"1984-08-28"^^xs:date .
+bb:610	rdf:type		bbr:pitcher .
+bb:610	rdf:type		bbr:setup .
+
+#60 	Dallas Keuchel 	L-L 	6'3" 	210 	Jan 1, 1988
+bb:611	bb:playerid	"611"^^xs:integer .
+bb:611	bb:number	"60"^^xs:integer .
+bb:611	bb:lastname	"Keuchel" .
+bb:611	bb:firstname	"Dallas" .
+bb:611	bb:position	"pitcher" .
+bb:611	bb:team	bbr:Astros .
+bb:611	bb:bats	"left" .
+bb:611	bb:throws	"left" .
+bb:611	bb:weight	"210"^^xs:integer .
+bb:611	bb:date-of-birth	"1988-01-01"^^xs:date .
+bb:611	rdf:type		bbr:pitcher .
+bb:611	rdf:type		bbr:setup .
+
+#31 	Collin McHugh 	R-R 	6'2" 	195 	Jun 19, 1987
+bb:612	bb:playerid	"612"^^xs:integer .
+bb:612	bb:number	"31"^^xs:integer .
+bb:612	bb:lastname	"McHugh" .
+bb:612	bb:firstname	"Collin" .
+bb:612	bb:position	"pitcher" .
+bb:612	bb:team	bbr:Astros .
+bb:612	bb:bats	"right" .
+bb:612	bb:throws	"right" .
+bb:612	bb:weight	"195"^^xs:integer .
+bb:612	bb:date-of-birth	"1987-06-19"^^xs:date .
+bb:612	rdf:type		bbr:pitcher .
+bb:612	rdf:type		bbr:setup .
+
+#39 	Brett Oberholtzer 	L-L 	6'1" 	225 	Jul 1, 1989
+bb:613	bb:playerid	"613"^^xs:integer .
+bb:613	bb:number	"39"^^xs:integer .
+bb:613	bb:lastname	"Oberholtzer" .
+bb:613	bb:firstname	"Brett" .
+bb:613	bb:position	"pitcher" .
+bb:613	bb:team	bbr:Astros .
+bb:613	bb:bats	"left" .
+bb:613	bb:throws	"left" .
+bb:613	bb:weight	"225"^^xs:integer .
+bb:613	bb:date-of-birth	"1989-07-01"^^xs:date .
+bb:613	rdf:type		bbr:pitcher .
+bb:613	rdf:type		bbr:setup .
+
+#41 	Brad Peacock 	R-R 	6'1" 	210 	Feb 2, 1988
+bb:614	bb:playerid	"614"^^xs:integer .
+bb:614	bb:number	"41"^^xs:integer .
+bb:614	bb:lastname	"Peacock" .
+bb:614	bb:firstname	"Brad" .
+bb:614	bb:position	"pitcher" .
+bb:614	bb:team	bbr:Astros .
+bb:614	bb:bats	"right" .
+bb:614	bb:throws	"right" .
+bb:614	bb:weight	"210"^^xs:integer .
+bb:614	bb:date-of-birth	"1988-02-02"^^xs:date .
+bb:614	rdf:type		bbr:pitcher .
+bb:614	rdf:type		bbr:setup .
+
+#50 	Chad Qualls 	R-R 	6'4" 	240 	Aug 17, 1978
+bb:615	bb:playerid	"615"^^xs:integer .
+bb:615	bb:number	"50"^^xs:integer .
+bb:615	bb:lastname	"Qualls" .
+bb:615	bb:firstname	"Chad" .
+bb:615	bb:position	"pitcher" .
+bb:615	bb:team	bbr:Astros .
+bb:615	bb:bats	"right" .
+bb:615	bb:throws	"right" .
+bb:615	bb:weight	"240"^^xs:integer .
+bb:615	bb:date-of-birth	"1978-08-17"^^xs:date .
+bb:615	rdf:type		bbr:pitcher .
+bb:615	rdf:type		bbr:setup .
+
+#29 	Tony Sipp 	L-L 	6'0" 	190 	Jul 12, 1983
+bb:616	bb:playerid	"616"^^xs:integer .
+bb:616	bb:number	"29"^^xs:integer .
+bb:616	bb:lastname	"Sipp" .
+bb:616	bb:firstname	"Tony" .
+bb:616	bb:position	"pitcher" .
+bb:616	bb:team	bbr:Astros .
+bb:616	bb:bats	"left" .
+bb:616	bb:throws	"left" .
+bb:616	bb:weight	"190"^^xs:integer .
+bb:616	bb:date-of-birth	"1983-07-12"^^xs:date .
+bb:616	rdf:type		bbr:pitcher .
+bb:616	rdf:type		bbr:setup .
+
+#43 	Alex White 	R-R 	6'3" 	220 	Aug 29, 1988
+bb:617	bb:playerid	"617"^^xs:integer .
+bb:617	bb:number	"43"^^xs:integer .
+bb:617	bb:lastname	"White" .
+bb:617	bb:firstname	"Alex" .
+bb:617	bb:position	"pitcher" .
+bb:617	bb:team	bbr:Astros .
+bb:617	bb:bats	"right" .
+bb:617	bb:throws	"right" .
+bb:617	bb:weight	"220"^^xs:integer .
+bb:617	bb:date-of-birth	"1988-08-29"^^xs:date .
+bb:617	rdf:type		bbr:pitcher .
+bb:617	rdf:type		bbr:setup .
+
+#59 	Asher Wojciechowski 	R-R 	6'4" 	240 	Dec 21, 1988
+bb:618	bb:playerid	"618"^^xs:integer .
+bb:618	bb:number	"59"^^xs:integer .
+bb:618	bb:lastname	"Wojciechowski" .
+bb:618	bb:firstname	"Asher" .
+bb:618	bb:position	"pitcher" .
+bb:618	bb:team	bbr:Astros .
+bb:618	bb:bats	"right" .
+bb:618	bb:throws	"right" .
+bb:618	bb:weight	"240"^^xs:integer .
+bb:618	bb:date-of-birth	"1988-12-21"^^xs:date .
+bb:618	rdf:type		bbr:pitcher .
+bb:618	rdf:type		bbr:setup .
+
+#61 	Josh Zeid 	R-R 	6'4" 	235 	Mar 24, 1987
+bb:619	bb:playerid	"619"^^xs:integer .
+bb:619	bb:number	"61"^^xs:integer .
+bb:619	bb:lastname	"Zeid" .
+bb:619	bb:firstname	"Josh" .
+bb:619	bb:position	"pitcher" .
+bb:619	bb:team	bbr:Astros .
+bb:619	bb:bats	"right" .
+bb:619	bb:throws	"right" .
+bb:619	bb:weight	"235"^^xs:integer .
+bb:619	bb:date-of-birth	"1987-03-24"^^xs:date .
+bb:619	rdf:type		bbr:pitcher .
+bb:619	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#15 	Jason Castro 	L-R 	6'3" 	215 	Jun 18, 1987
+bb:620	bb:playerid	"620"^^xs:integer .
+bb:620	bb:number	"15"^^xs:integer .
+bb:620	bb:lastname	"Castro" .
+bb:620	bb:firstname	"Jason" .
+bb:620	bb:position	"catcher" .
+bb:620	bb:team	bbr:Astros .
+bb:620	bb:bats	"left" .
+bb:620	bb:throws	"right" .
+bb:620	bb:weight	"215"^^xs:integer .
+bb:620	bb:date-of-birth	"1987-06-18"^^xs:date .
+bb:620	rdf:type		bbr:catcher .
+
+#	Hank Conger 	S-R 	6'2" 	220 	Jan 29, 1988
+bb:621	bb:playerid	"621"^^xs:integer .
+bb:621	bb:lastname	"Conger" .
+bb:621	bb:firstname	"Hank" .
+bb:621	bb:position	"catcher" .
+bb:621	bb:team	bbr:Astros .
+bb:621	bb:bats	"switch" .
+bb:621	bb:throws	"right" .
+bb:621	bb:weight	"220"^^xs:integer .
+bb:621	bb:date-of-birth	"1988-01-29"^^xs:date .
+bb:621	rdf:type		bbr:catcher .
+
+#22 	Carlos Corporan 	S-R 	6'2" 	245 	Jan 7, 1984
+bb:622	bb:playerid	"622"^^xs:integer .
+bb:622	bb:number	"22"^^xs:integer .
+bb:622	bb:lastname	"Corporan" .
+bb:622	bb:firstname	"Carlos" .
+bb:622	bb:position	"catcher" .
+bb:622	bb:team	bbr:Astros .
+bb:622	bb:bats	"switch" .
+bb:622	bb:throws	"right" .
+bb:622	bb:weight	"245"^^xs:integer .
+bb:622	bb:date-of-birth	"1984-01-07"^^xs:date .
+bb:622	rdf:type		bbr:catcher .
+
+#12 	Max Stassi 	R-R 	5'10" 	200 	Mar 15, 1991
+bb:623	bb:playerid	"623"^^xs:integer .
+bb:623	bb:number	"12"^^xs:integer .
+bb:623	bb:lastname	"Stassi" .
+bb:623	bb:firstname	"Max" .
+bb:623	bb:position	"catcher" .
+bb:623	bb:team	bbr:Astros .
+bb:623	bb:bats	"right" .
+bb:623	bb:throws	"right" .
+bb:623	bb:weight	"200"^^xs:integer .
+bb:623	bb:date-of-birth	"1991-03-15"^^xs:date .
+bb:623	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#27 	Jose Altuve 	R-R 	5'6" 	175 	May 6, 1990
+bb:624	bb:playerid	"624"^^xs:integer .
+bb:624	bb:number	"27"^^xs:integer .
+bb:624	bb:lastname	"Altuve" .
+bb:624	bb:firstname	"Jose" .
+bb:624	bb:position	"infielder" .
+bb:624	bb:team	bbr:Astros .
+bb:624	bb:bats	"right" .
+bb:624	bb:throws	"right" .
+bb:624	bb:weight	"175"^^xs:integer .
+bb:624	bb:date-of-birth	"1990-05-06"^^xs:date .
+bb:624	rdf:type		bbr:infielder .
+
+#30 	Matt Dominguez 	R-R 	6'1" 	215 	Aug 28, 1989
+bb:625	bb:playerid	"625"^^xs:integer .
+bb:625	bb:number	"30"^^xs:integer .
+bb:625	bb:lastname	"Dominguez" .
+bb:625	bb:firstname	"Matt" .
+bb:625	bb:position	"infielder" .
+bb:625	bb:team	bbr:Astros .
+bb:625	bb:bats	"right" .
+bb:625	bb:throws	"right" .
+bb:625	bb:weight	"215"^^xs:integer .
+bb:625	bb:date-of-birth	"1989-08-28"^^xs:date .
+bb:625	rdf:type		bbr:infielder .
+
+#9 	Marwin Gonzalez 	S-R 	6'1" 	205 	Mar 14, 1989
+bb:626	bb:playerid	"626"^^xs:integer .
+bb:626	bb:number	"9"^^xs:integer .
+bb:626	bb:lastname	"Gonzalez" .
+bb:626	bb:firstname	"Marwin" .
+bb:626	bb:position	"infielder" .
+bb:626	bb:team	bbr:Astros .
+bb:626	bb:bats	"switch" .
+bb:626	bb:throws	"right" .
+bb:626	bb:weight	"205"^^xs:integer .
+bb:626	bb:date-of-birth	"1989-03-14"^^xs:date .
+bb:626	rdf:type		bbr:infielder .
+
+#18 	Marc Krauss 	L-R 	6'2" 	245 	Oct 5, 1987
+bb:627	bb:playerid	"627"^^xs:integer .
+bb:627	bb:number	"18"^^xs:integer .
+bb:627	bb:lastname	"Krauss" .
+bb:627	bb:firstname	"Marc" .
+bb:627	bb:position	"infielder" .
+bb:627	bb:team	bbr:Astros .
+bb:627	bb:bats	"left" .
+bb:627	bb:throws	"right" .
+bb:627	bb:weight	"245"^^xs:integer .
+bb:627	bb:date-of-birth	"1987-10-05"^^xs:date .
+bb:627	rdf:type		bbr:infielder .
+
+#3 	Gregorio Petit 	R-R 	5'10" 	195 	Dec 10, 1984
+bb:628	bb:playerid	"628"^^xs:integer .
+bb:628	bb:number	"3"^^xs:integer .
+bb:628	bb:lastname	"Petit" .
+bb:628	bb:firstname	"Gregorio" .
+bb:628	bb:position	"infielder" .
+bb:628	bb:team	bbr:Astros .
+bb:628	bb:bats	"right" .
+bb:628	bb:throws	"right" .
+bb:628	bb:weight	"195"^^xs:integer .
+bb:628	bb:date-of-birth	"1984-12-10"^^xs:date .
+bb:628	rdf:type		bbr:infielder .
+
+#28 	Jon Singleton 	L-L 	6'2" 	255 	Sep 18, 1991
+bb:629	bb:playerid	"629"^^xs:integer .
+bb:629	bb:number	"28"^^xs:integer .
+bb:629	bb:lastname	"Singleton" .
+bb:629	bb:firstname	"Jon" .
+bb:629	bb:position	"infielder" .
+bb:629	bb:team	bbr:Astros .
+bb:629	bb:bats	"left" .
+bb:629	bb:throws	"left" .
+bb:629	bb:weight	"255"^^xs:integer .
+bb:629	bb:date-of-birth	"1991-09-18"^^xs:date .
+bb:629	rdf:type		bbr:infielder .
+
+#2 	Jonathan Villar 	S-R 	6'1" 	205 	May 2, 1991
+bb:630	bb:playerid	"630"^^xs:integer .
+bb:630	bb:number	"2"^^xs:integer .
+bb:630	bb:lastname	"Villar" .
+bb:630	bb:firstname	"Jonathan" .
+bb:630	bb:position	"infielder" .
+bb:630	bb:team	bbr:Astros .
+bb:630	bb:bats	"switch" .
+bb:630	bb:throws	"right" .
+bb:630	bb:weight	"205"^^xs:integer .
+bb:630	bb:date-of-birth	"1991-05-02"^^xs:date .
+bb:630	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#21 	Dexter Fowler 	S-R 	6'4" 	190 	Mar 22, 1986
+bb:631	bb:playerid	"631"^^xs:integer .
+bb:631	bb:number	"21"^^xs:integer .
+bb:631	bb:lastname	"Fowler" .
+bb:631	bb:firstname	"Dexter" .
+bb:631	bb:position	"outfielder" .
+bb:631	bb:team	bbr:Astros .
+bb:631	bb:bats	"switch" .
+bb:631	bb:throws	"right" .
+bb:631	bb:weight	"190"^^xs:integer .
+bb:631	bb:date-of-birth	"1986-03-22"^^xs:date .
+bb:631	rdf:type		bbr:outfielder .
+
+#19 	Robbie Grossman 	S-L 	6'0" 	195 	Sep 16, 1989
+bb:632	bb:playerid	"632"^^xs:integer .
+bb:632	bb:number	"19"^^xs:integer .
+bb:632	bb:lastname	"Grossman" .
+bb:632	bb:firstname	"Robbie" .
+bb:632	bb:position	"outfielder" .
+bb:632	bb:team	bbr:Astros .
+bb:632	bb:bats	"switch" .
+bb:632	bb:throws	"left" .
+bb:632	bb:weight	"195"^^xs:integer .
+bb:632	bb:date-of-birth	"1989-09-16"^^xs:date .
+bb:632	rdf:type		bbr:outfielder .
+
+#0 	L.J. Hoes 	R-R 	6'0" 	200 	Mar 5, 1990
+bb:633	bb:playerid	"633"^^xs:integer .
+bb:633	bb:lastname	"Hoes" .
+bb:633	bb:firstname	"L.J." .
+bb:633	bb:position	"outfielder" .
+bb:633	bb:team	bbr:Astros .
+bb:633	bb:bats	"right" .
+bb:633	bb:throws	"right" .
+bb:633	bb:weight	"200"^^xs:integer .
+bb:633	bb:date-of-birth	"1990-03-05"^^xs:date .
+bb:633	rdf:type		bbr:outfielder .
+
+#6 	Jake Marisnick 	R-R 	6'4" 	225 	Mar 30, 1991
+bb:634	bb:playerid	"634"^^xs:integer .
+bb:634	bb:number	"6"^^xs:integer .
+bb:634	bb:lastname	"Marisnick" .
+bb:634	bb:firstname	"Jake" .
+bb:634	bb:position	"outfielder" .
+bb:634	bb:team	bbr:Astros .
+bb:634	bb:bats	"right" .
+bb:634	bb:throws	"right" .
+bb:634	bb:weight	"225"^^xs:integer .
+bb:634	bb:date-of-birth	"1991-03-30"^^xs:date .
+bb:634	rdf:type		bbr:outfielder .
+
+#8 	Alex Presley 	L-L 	5'10" 	190 	Jul 25, 1985
+bb:635	bb:playerid	"635"^^xs:integer .
+bb:635	bb:number	"8"^^xs:integer .
+bb:635	bb:lastname	"Presley" .
+bb:635	bb:firstname	"Alex" .
+bb:635	bb:position	"outfielder" .
+bb:635	bb:team	bbr:Astros .
+bb:635	bb:bats	"left" .
+bb:635	bb:throws	"left" .
+bb:635	bb:weight	"190"^^xs:integer .
+bb:635	bb:date-of-birth	"1985-07-25"^^xs:date .
+bb:635	rdf:type		bbr:outfielder .
+
+#13 	Domingo Santana 	R-R 	6'5" 	225 	Aug 5, 1992
+bb:636	bb:playerid	"636"^^xs:integer .
+bb:636	bb:number	"13"^^xs:integer .
+bb:636	bb:lastname	"Santana" .
+bb:636	bb:firstname	"Domingo" .
+bb:636	bb:position	"outfielder" .
+bb:636	bb:team	bbr:Astros .
+bb:636	bb:bats	"right" .
+bb:636	bb:throws	"right" .
+bb:636	bb:weight	"225"^^xs:integer .
+bb:636	bb:date-of-birth	"1992-08-05"^^xs:date .
+bb:636	rdf:type		bbr:outfielder .
+
+#4 	George Springer 	R-R 	6'3" 	205 	Sep 19, 1989
+bb:637	bb:playerid	"637"^^xs:integer .
+bb:637	bb:number	"4"^^xs:integer .
+bb:637	bb:lastname	"Springer" .
+bb:637	bb:firstname	"George" .
+bb:637	bb:position	"outfielder" .
+bb:637	bb:team	bbr:Astros .
+bb:637	bb:bats	"right" .
+bb:637	bb:throws	"right" .
+bb:637	bb:weight	"205"^^xs:integer .
+bb:637	bb:date-of-birth	"1989-09-19"^^xs:date .
+bb:637	rdf:type		bbr:outfielder .
+
+# 	Designated Hitter 	B/T 	Ht 	Wt 	DOB
+#23 	Chris Carter 	R-R 	6'4" 	250 	Dec 18, 1986
+bb:638	bb:playerid	"638"^^xs:integer .
+bb:638	bb:number	"23"^^xs:integer .
+bb:638	bb:lastname	"Carter" .
+bb:638	bb:firstname	"Chris" .
+bb:638	bb:position	"unknown" .
+bb:638	bb:team	bbr:Astros .
+bb:638	bb:bats	"right" .
+bb:638	bb:throws	"right" .
+bb:638	bb:weight	"250"^^xs:integer .
+bb:638	bb:date-of-birth	"1986-12-18"^^xs:date .
+bb:638	rdf:type		bbr:unknown .
+
+#	Manager	A.J. Hinch
+bb:659	bb:lastname	"Hinch" .
+bb:659	bb:firstname	"A.J." .
+bb:659	bb:position	"manager" .
+bb:659	bb:team	bbr:Astros .
+bb:659	bb:number	"100"^^xs:integer .
+bb:659	bbr:coachingRole		bbr:manager .
+
+#	Coach	Trey Hillman
+bb:660	bb:lastname	"Hillman" .
+bb:660	bb:firstname	"Trey" .
+bb:660	bb:position	"coach" .
+bb:660	bb:number	"100"^^xs:integer .
+bb:660	bb:team	bbr:Astros .
+bb:660	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Dave Hudgens
+bb:661	bb:lastname	"Hudgens" .
+bb:661	bb:firstname	"Dave" .
+bb:661	bb:position	"coach" .
+bb:661	bb:number	"100"^^xs:integer .
+bb:661	bb:team	bbr:Astros .
+bb:661	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Alan Zinter
+bb:662	bb:lastname	"Zinter" .
+bb:662	bb:firstname	"Alan" .
+bb:662	bb:position	"coach" .
+bb:662	bb:number	"100"^^xs:integer .
+bb:662	bb:team	bbr:Astros .
+bb:662	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Rich Dauer
+bb:663	bb:lastname	"Dauer" .
+bb:663	bb:firstname	"Rich" .
+bb:663	bb:position	"coach" .
+bb:663	bb:number	"100"^^xs:integer .
+bb:663	bb:team	bbr:Astros .
+bb:663	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Gary Pettis
+bb:664	bb:lastname	"Pettis" .
+bb:664	bb:firstname	"Gary" .
+bb:664	bb:position	"coach" .
+bb:664	bb:number	"100"^^xs:integer .
+bb:664	bb:team	bbr:Astros .
+bb:664	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Brent Strom
+bb:665	bb:lastname	"Strom" .
+bb:665	bb:firstname	"Brent" .
+bb:665	bb:position	"coach" .
+bb:665	bb:number	"100"^^xs:integer .
+bb:665	bb:team	bbr:Astros .
+bb:665	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Craig Bjornson
+bb:666	bb:lastname	"Bjornson" .
+bb:666	bb:firstname	"Craig" .
+bb:666	bb:position	"coach" .
+bb:666	bb:number	"100"^^xs:integer .
+bb:666	bb:team	bbr:Astros .
+bb:666	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Javier Bracamonte
+bb:667	bb:lastname	"Bracamonte" .
+bb:667	bb:firstname	"Javier" .
+bb:667	bb:position	"coach" .
+bb:667	bb:number	"100"^^xs:integer .
+bb:667	bb:team	bbr:Astros .
+bb:667	bbr:coachingRole		bbr:bullpenCatcher .
+
+

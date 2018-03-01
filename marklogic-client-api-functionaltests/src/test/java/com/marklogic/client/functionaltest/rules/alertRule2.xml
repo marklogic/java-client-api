@@ -1,0 +1,22 @@
+<rapi:rule xmlns:rapi="http://marklogic.com/rest-api">
+  <rapi:name>RULE-TEST-2</rapi:name>
+  <rapi:description>rule for test2</rapi:description>
+  <search:search xmlns:search="http://marklogic.com/appservices/search">
+    <search:query>
+   	  <search:range-constraint-query>
+   	    <search:constraint-name>date</search:constraint-name>
+   	    <search:value>2005-01-01</search:value>
+   	  </search:range-constraint-query>
+	</search:query>
+    <search:options>
+      <search:constraint name="date">
+        <search:range type="xs:date" facet="false">
+          <search:element ns="http://purl.org/dc/elements/1.1/" name="date"/>
+        </search:range>
+      </search:constraint>
+    </search:options>
+  </search:search>
+  <rapi:rule-metadata>
+    <rule-number>two</rule-number>
+  </rapi:rule-metadata>
+</rapi:rule>

@@ -1,0 +1,27 @@
+{"root":{ "item":{
+
+"point":"POINT(149.765 -69.307969)",
+"point-desc":"Json Point In South East part",
+
+"linestring":"LINESTRING(135.445 -65.45764,149.3445 -69.232,169.34534 -76.34546)",
+"line-desc":"Json Linestring In South East part",
+"line-vertices":"3",
+
+"circle":"@16 -69.307969,149.765",
+"circle-desc":"Circle In South East part",
+
+"box":"[-75.73459, 140.765, -65.7457, 170.124312]",
+"box-desc":"Json Box In South East part",
+
+"polygon":"POLYGON((166.21 -59.64,166.4 -78.47,150.0 -88.71,133.78 -78.37,133.01 -59.19,150.0 -49.7,166.21 -59.64))",
+"poly-desc":"Json Polygon In South East part",
+"poly-vertices":"6",
+
+"complex-polygon":"POLYGON((166.21 -59.64,166.4 -78.47,150.0 -88.71,133.78 -78.37,133.01 -59.19,150.0 -49.7,166.21 -59.64), (160.11 -69.0,150.0 -78.41,135.36 -69.0,150.0 -58.09,160.11 -69.0))",
+"comppoly-desc":"Json Complex Polygon In South East part",
+"comppoly-outer-vertices":"6",
+"comppoly-inner-vertices":"4"
+},
+"region":"South-East"}
+}
+

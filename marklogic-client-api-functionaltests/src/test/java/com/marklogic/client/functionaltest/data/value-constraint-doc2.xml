@@ -1,0 +1,10 @@
+<books>
+	<book year="2011">
+		<title>The Lord of The Rings</title>
+		<author>Some authors</author>
+	</book>
+	<book year="1998">
+		<title>Indiana Jones</title>
+		<author>Steven Spielberg</author>
+	</book>
+</books>

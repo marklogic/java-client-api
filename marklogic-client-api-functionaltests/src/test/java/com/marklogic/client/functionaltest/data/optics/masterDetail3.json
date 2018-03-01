@@ -1,0 +1,64 @@
+{
+  "sets3": {
+    "masterSet3": {
+      "master3": [
+        {
+          "id": "3",
+          "name": "Master 3",
+          "date": "2016-03-01"
+        },
+        {
+          "id": "4",
+          "name": "Master 4",
+          "date": "2016-05-25"
+        }
+      ]
+    },
+    "detailSet3": {
+      "detail3": [
+        {
+          "id": "7",
+          "name": "Detail 7",
+          "masterId": "3",
+          "amount": "64.33",
+          "color": "red"
+        },
+        {
+          "id": "8",
+          "name": "Detail 8",
+          "masterId": "4",
+          "amount": "89.36",
+          "color": "blue"
+        },
+        {
+          "id": "9",
+          "name": "Detail 9",
+          "masterId": "1",
+          "amount": "72.90",
+          "color": "yellow"
+        },
+        {
+          "id": "10",
+          "name": "Detail 10",
+          "masterId": "2",
+          "amount": "30.26",
+          "color": "black"
+        },
+        {
+          "id": "11",
+          "name": "Detail 11",
+          "masterId": "3",
+          "amount": "82.04",
+          "color": "green"
+        },
+        {
+          "id": "12",
+          "name": "Detail 12",
+          "masterId": "1",
+          "amount": "25.86",
+          "color": "red"
+        }
+      ]
+    }
+  }
+}

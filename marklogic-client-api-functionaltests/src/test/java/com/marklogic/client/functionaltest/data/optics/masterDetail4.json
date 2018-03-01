@@ -1,0 +1,43 @@
+{
+  "sets4": {
+    "masterSet4": {
+      "master4": [
+        {
+          "id": "100",
+          "name": "Master 100",
+          "date": "2016-03-11"
+        },
+        {
+          "id": "200",
+          "name": "Master 200",
+          "date": "2016-04-02"
+        }
+      ]
+    },
+    "detailSet4": {
+      "detail4": [
+        {
+          "id": "100",
+          "name": "Detail 100",
+          "masterId": "100",
+          "amount": "64.33",
+          "color": "red"
+        },
+        {
+          "id": "200",
+          "name": "Detail 200",
+          "masterId": "200",
+          "amount": "89.36",
+          "color": "blue"
+        },
+        {
+          "id": "300",
+          "name": "Detail 300",
+          "masterId": "200",
+          "amount": "72.90",
+          "color": "yellow"
+        }
+      ]
+    }
+  }
+}

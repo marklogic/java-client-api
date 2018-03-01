@@ -1,0 +1,574 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#	Logan Bawcom 	R-R 	6'2" 	220 	Nov 2, 1988
+bb:1401	bb:playerid	"1401"^^xs:integer .
+bb:1401	bb:lastname	"Bawcom" .
+bb:1401	bb:firstname	"Logan" .
+bb:1401	bb:position	"pitcher" .
+bb:1401	bb:team	bbr:Mariners .
+bb:1401	bb:bats	"right" .
+bb:1401	bb:throws	"right" .
+bb:1401	bb:weight	"220"^^xs:integer .
+bb:1401	bb:date-of-birth	"1988-11-02"^^xs:date .
+bb:1401	rdf:type		bbr:pitcher .
+bb:1401	rdf:type		bbr:setup .
+
+#29 	Roenis Elias 	L-L 	6'1" 	190 	Aug 1, 1988
+bb:1402	bb:playerid	"1402"^^xs:integer .
+bb:1402	bb:number	"29"^^xs:integer .
+bb:1402	bb:lastname	"Elias" .
+bb:1402	bb:firstname	"Roenis" .
+bb:1402	bb:position	"pitcher" .
+bb:1402	bb:team	bbr:Mariners .
+bb:1402	bb:bats	"left" .
+bb:1402	bb:throws	"left" .
+bb:1402	bb:weight	"190"^^xs:integer .
+bb:1402	bb:date-of-birth	"1988-08-01"^^xs:date .
+bb:1402	rdf:type		bbr:pitcher .
+bb:1402	rdf:type		bbr:setup .
+
+#40 	Danny Farquhar 	R-R 	5'9" 	185 	Feb 17, 1987
+bb:1403	bb:playerid	"1403"^^xs:integer .
+bb:1403	bb:number	"40"^^xs:integer .
+bb:1403	bb:lastname	"Farquhar" .
+bb:1403	bb:firstname	"Danny" .
+bb:1403	bb:position	"pitcher" .
+bb:1403	bb:team	bbr:Mariners .
+bb:1403	bb:bats	"right" .
+bb:1403	bb:throws	"right" .
+bb:1403	bb:weight	"185"^^xs:integer .
+bb:1403	bb:date-of-birth	"1987-02-17"^^xs:date .
+bb:1403	rdf:type		bbr:pitcher .
+bb:1403	rdf:type		bbr:setup .
+
+#64 	Anthony Fernandez 	L-L 	6'4" 	215 	Jun 8, 1990
+bb:1404	bb:playerid	"1404"^^xs:integer .
+bb:1404	bb:number	"64"^^xs:integer .
+bb:1404	bb:lastname	"Fernandez" .
+bb:1404	bb:firstname	"Anthony" .
+bb:1404	bb:position	"pitcher" .
+bb:1404	bb:team	bbr:Mariners .
+bb:1404	bb:bats	"left" .
+bb:1404	bb:throws	"left" .
+bb:1404	bb:weight	"215"^^xs:integer .
+bb:1404	bb:date-of-birth	"1990-06-08"^^xs:date .
+bb:1404	rdf:type		bbr:pitcher .
+bb:1404	rdf:type		bbr:setup .
+
+#41 	Charlie Furbush 	L-L 	6'5" 	215 	Apr 11, 1986
+bb:1405	bb:playerid	"1405"^^xs:integer .
+bb:1405	bb:number	"41"^^xs:integer .
+bb:1405	bb:lastname	"Furbush" .
+bb:1405	bb:firstname	"Charlie" .
+bb:1405	bb:position	"pitcher" .
+bb:1405	bb:team	bbr:Mariners .
+bb:1405	bb:bats	"left" .
+bb:1405	bb:throws	"left" .
+bb:1405	bb:weight	"215"^^xs:integer .
+bb:1405	bb:date-of-birth	"1986-04-11"^^xs:date .
+bb:1405	rdf:type		bbr:pitcher .
+bb:1405	rdf:type		bbr:setup .
+
+#34 	Felix Hernandez 	R-R 	6'3" 	225 	Apr 8, 1986
+bb:1406	bb:playerid	"1406"^^xs:integer .
+bb:1406	bb:number	"34"^^xs:integer .
+bb:1406	bb:lastname	"Hernandez" .
+bb:1406	bb:firstname	"Felix" .
+bb:1406	bb:position	"pitcher" .
+bb:1406	bb:team	bbr:Mariners .
+bb:1406	bb:bats	"right" .
+bb:1406	bb:throws	"right" .
+bb:1406	bb:weight	"225"^^xs:integer .
+bb:1406	bb:date-of-birth	"1986-04-08"^^xs:date .
+bb:1406	rdf:type		bbr:pitcher .
+bb:1406	rdf:type		bbr:setup .
+
+#60 	Danny Hultzen 	L-L 	6'3" 	210 	Nov 28, 1989
+bb:1407	bb:playerid	"1407"^^xs:integer .
+bb:1407	bb:number	"60"^^xs:integer .
+bb:1407	bb:lastname	"Hultzen" .
+bb:1407	bb:firstname	"Danny" .
+bb:1407	bb:position	"pitcher" .
+bb:1407	bb:team	bbr:Mariners .
+bb:1407	bb:bats	"left" .
+bb:1407	bb:throws	"left" .
+bb:1407	bb:weight	"210"^^xs:integer .
+bb:1407	bb:date-of-birth	"1989-11-28"^^xs:date .
+bb:1407	rdf:type		bbr:pitcher .
+bb:1407	rdf:type		bbr:setup .
+
+#18 	Hisashi Iwakuma 	R-R 	6'3" 	210 	Apr 12, 1981
+bb:1408	bb:playerid	"1408"^^xs:integer .
+bb:1408	bb:number	"18"^^xs:integer .
+bb:1408	bb:lastname	"Iwakuma" .
+bb:1408	bb:firstname	"Hisashi" .
+bb:1408	bb:position	"pitcher" .
+bb:1408	bb:team	bbr:Mariners .
+bb:1408	bb:bats	"right" .
+bb:1408	bb:throws	"right" .
+bb:1408	bb:weight	"210"^^xs:integer .
+bb:1408	bb:date-of-birth	"1981-04-12"^^xs:date .
+bb:1408	rdf:type		bbr:pitcher .
+bb:1408	rdf:type		bbr:setup .
+
+#52 	Dominic Leone 	R-R 	5'11" 	210 	Oct 26, 1991
+bb:1409	bb:playerid	"1409"^^xs:integer .
+bb:1409	bb:number	"52"^^xs:integer .
+bb:1409	bb:lastname	"Leone" .
+bb:1409	bb:firstname	"Dominic" .
+bb:1409	bb:position	"pitcher" .
+bb:1409	bb:team	bbr:Mariners .
+bb:1409	bb:bats	"right" .
+bb:1409	bb:throws	"right" .
+bb:1409	bb:weight	"210"^^xs:integer .
+bb:1409	bb:date-of-birth	"1991-10-26"^^xs:date .
+bb:1409	rdf:type		bbr:pitcher .
+bb:1409	rdf:type		bbr:setup .
+
+#44 	Lucas Luetge 	L-L 	6'4" 	205 	Mar 24, 1987
+bb:1410	bb:playerid	"1410"^^xs:integer .
+bb:1410	bb:number	"44"^^xs:integer .
+bb:1410	bb:lastname	"Luetge" .
+bb:1410	bb:firstname	"Lucas" .
+bb:1410	bb:position	"pitcher" .
+bb:1410	bb:team	bbr:Mariners .
+bb:1410	bb:bats	"left" .
+bb:1410	bb:throws	"left" .
+bb:1410	bb:weight	"205"^^xs:integer .
+bb:1410	bb:date-of-birth	"1987-03-24"^^xs:date .
+bb:1410	rdf:type		bbr:pitcher .
+bb:1410	rdf:type		bbr:setup .
+
+#37 	Brandon Maurer 	R-R 	6'5" 	220 	Jul 3, 1990
+bb:1411	bb:playerid	"1411"^^xs:integer .
+bb:1411	bb:number	"37"^^xs:integer .
+bb:1411	bb:lastname	"Maurer" .
+bb:1411	bb:firstname	"Brandon" .
+bb:1411	bb:position	"pitcher" .
+bb:1411	bb:team	bbr:Mariners .
+bb:1411	bb:bats	"right" .
+bb:1411	bb:throws	"right" .
+bb:1411	bb:weight	"220"^^xs:integer .
+bb:1411	bb:date-of-birth	"1990-07-03"^^xs:date .
+bb:1411	rdf:type		bbr:pitcher .
+bb:1411	rdf:type		bbr:setup .
+
+#31 	Yoervis Medina 	R-R 	6'3" 	245 	Jul 27, 1988
+bb:1412	bb:playerid	"1412"^^xs:integer .
+bb:1412	bb:number	"31"^^xs:integer .
+bb:1412	bb:lastname	"Medina" .
+bb:1412	bb:firstname	"Yoervis" .
+bb:1412	bb:position	"pitcher" .
+bb:1412	bb:team	bbr:Mariners .
+bb:1412	bb:bats	"right" .
+bb:1412	bb:throws	"right" .
+bb:1412	bb:weight	"245"^^xs:integer .
+bb:1412	bb:date-of-birth	"1988-07-27"^^xs:date .
+bb:1412	rdf:type		bbr:pitcher .
+bb:1412	rdf:type		bbr:setup .
+
+#65 	James Paxton 	L-L 	6'4" 	220 	Nov 6, 1988
+bb:1413	bb:playerid	"1413"^^xs:integer .
+bb:1413	bb:number	"65"^^xs:integer .
+bb:1413	bb:lastname	"Paxton" .
+bb:1413	bb:firstname	"James" .
+bb:1413	bb:position	"pitcher" .
+bb:1413	bb:team	bbr:Mariners .
+bb:1413	bb:bats	"left" .
+bb:1413	bb:throws	"left" .
+bb:1413	bb:weight	"220"^^xs:integer .
+bb:1413	bb:date-of-birth	"1988-11-06"^^xs:date .
+bb:1413	rdf:type		bbr:pitcher .
+bb:1413	rdf:type		bbr:setup .
+
+#50 	Erasmo Ramirez 	R-R 	5'11" 	200 	May 2, 1990
+bb:1414	bb:playerid	"1414"^^xs:integer .
+bb:1414	bb:number	"50"^^xs:integer .
+bb:1414	bb:lastname	"Ramirez" .
+bb:1414	bb:firstname	"Erasmo" .
+bb:1414	bb:position	"pitcher" .
+bb:1414	bb:team	bbr:Mariners .
+bb:1414	bb:bats	"right" .
+bb:1414	bb:throws	"right" .
+bb:1414	bb:weight	"200"^^xs:integer .
+bb:1414	bb:date-of-birth	"1990-05-02"^^xs:date .
+bb:1414	rdf:type		bbr:pitcher .
+bb:1414	rdf:type		bbr:setup .
+
+#56 	Fernando Rodney 	R-R 	5'11" 	220 	Mar 18, 1977
+bb:1415	bb:playerid	"1415"^^xs:integer .
+bb:1415	bb:number	"56"^^xs:integer .
+bb:1415	bb:lastname	"Rodney" .
+bb:1415	bb:firstname	"Fernando" .
+bb:1415	bb:position	"pitcher" .
+bb:1415	bb:team	bbr:Mariners .
+bb:1415	bb:bats	"right" .
+bb:1415	bb:throws	"right" .
+bb:1415	bb:weight	"220"^^xs:integer .
+bb:1415	bb:date-of-birth	"1977-03-18"^^xs:date .
+bb:1415	rdf:type		bbr:pitcher .
+bb:1415	rdf:type		bbr:closer .
+
+#39 	Carson Smith 	R-R 	6'6" 	215 	Oct 19, 1989
+bb:1416	bb:playerid	"1416"^^xs:integer .
+bb:1416	bb:number	"39"^^xs:integer .
+bb:1416	bb:lastname	"Smith" .
+bb:1416	bb:firstname	"Carson" .
+bb:1416	bb:position	"pitcher" .
+bb:1416	bb:team	bbr:Mariners .
+bb:1416	bb:bats	"right" .
+bb:1416	bb:throws	"right" .
+bb:1416	bb:weight	"215"^^xs:integer .
+bb:1416	bb:date-of-birth	"1989-10-19"^^xs:date .
+bb:1416	rdf:type		bbr:pitcher .
+bb:1416	rdf:type		bbr:setup .
+
+#32 	Taijuan Walker 	R-R 	6'4" 	230 	Aug 13, 1992
+bb:1417	bb:playerid	"1417"^^xs:integer .
+bb:1417	bb:number	"32"^^xs:integer .
+bb:1417	bb:lastname	"Walker" .
+bb:1417	bb:firstname	"Taijuan" .
+bb:1417	bb:position	"pitcher" .
+bb:1417	bb:team	bbr:Mariners .
+bb:1417	bb:bats	"right" .
+bb:1417	bb:throws	"right" .
+bb:1417	bb:weight	"230"^^xs:integer .
+bb:1417	bb:date-of-birth	"1992-08-13"^^xs:date .
+bb:1417	rdf:type		bbr:pitcher .
+bb:1417	rdf:type		bbr:setup .
+
+#54 	Tom Wilhelmsen 	R-R 	6'6" 	220 	Dec 16, 1983
+bb:1418	bb:playerid	"1418"^^xs:integer .
+bb:1418	bb:number	"54"^^xs:integer .
+bb:1418	bb:lastname	"Wilhelmsen" .
+bb:1418	bb:firstname	"Tom" .
+bb:1418	bb:position	"pitcher" .
+bb:1418	bb:team	bbr:Mariners .
+bb:1418	bb:bats	"right" .
+bb:1418	bb:throws	"right" .
+bb:1418	bb:weight	"220"^^xs:integer .
+bb:1418	bb:date-of-birth	"1983-12-16"^^xs:date .
+bb:1418	rdf:type		bbr:pitcher .
+bb:1418	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#2 	Jesus Sucre 	R-R 	6'0" 	225 	Apr 30, 1988
+bb:1419	bb:playerid	"1419"^^xs:integer .
+bb:1419	bb:number	"2"^^xs:integer .
+bb:1419	bb:lastname	"Sucre" .
+bb:1419	bb:firstname	"Jesus" .
+bb:1419	bb:position	"catcher" .
+bb:1419	bb:team	bbr:Mariners .
+bb:1419	bb:bats	"right" .
+bb:1419	bb:throws	"right" .
+bb:1419	bb:weight	"225"^^xs:integer .
+bb:1419	bb:date-of-birth	"1988-04-30"^^xs:date .
+bb:1419	rdf:type		bbr:catcher .
+
+#3 	Mike Zunino 	R-R 	6'2" 	220 	Mar 25, 1991
+bb:1420	bb:playerid	"1420"^^xs:integer .
+bb:1420	bb:number	"3"^^xs:integer .
+bb:1420	bb:lastname	"Zunino" .
+bb:1420	bb:firstname	"Mike" .
+bb:1420	bb:position	"catcher" .
+bb:1420	bb:team	bbr:Mariners .
+bb:1420	bb:bats	"right" .
+bb:1420	bb:throws	"right" .
+bb:1420	bb:weight	"220"^^xs:integer .
+bb:1420	bb:date-of-birth	"1991-03-25"^^xs:date .
+bb:1420	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#8 	Willie Bloomquist 	R-R 	5'11" 	190 	Nov 27, 1977
+bb:1421	bb:playerid	"1421"^^xs:integer .
+bb:1421	bb:number	"8"^^xs:integer .
+bb:1421	bb:lastname	"Bloomquist" .
+bb:1421	bb:firstname	"Willie" .
+bb:1421	bb:position	"infielder" .
+bb:1421	bb:team	bbr:Mariners .
+bb:1421	bb:bats	"right" .
+bb:1421	bb:throws	"right" .
+bb:1421	bb:weight	"190"^^xs:integer .
+bb:1421	bb:date-of-birth	"1977-11-27"^^xs:date .
+bb:1421	rdf:type		bbr:infielder .
+
+#22 	Robinson Cano 	L-R 	6'0" 	210 	Oct 22, 1982
+bb:1422	bb:playerid	"1422"^^xs:integer .
+bb:1422	bb:number	"22"^^xs:integer .
+bb:1422	bb:lastname	"Cano" .
+bb:1422	bb:firstname	"Robinson" .
+bb:1422	bb:position	"infielder" .
+bb:1422	bb:team	bbr:Mariners .
+bb:1422	bb:bats	"left" .
+bb:1422	bb:throws	"right" .
+bb:1422	bb:weight	"210"^^xs:integer .
+bb:1422	bb:date-of-birth	"1982-10-22"^^xs:date .
+bb:1422	rdf:type		bbr:infielder .
+
+#66 	Ji-Man Choi 	S-R 	6'1" 	225 	May 19, 1991
+bb:1423	bb:playerid	"1423"^^xs:integer .
+bb:1423	bb:number	"66"^^xs:integer .
+bb:1423	bb:lastname	"Choi" .
+bb:1423	bb:firstname	"Ji-Man" .
+bb:1423	bb:position	"infielder" .
+bb:1423	bb:team	bbr:Mariners .
+bb:1423	bb:bats	"switch" .
+bb:1423	bb:throws	"right" .
+bb:1423	bb:weight	"225"^^xs:integer .
+bb:1423	bb:date-of-birth	"1991-05-19"^^xs:date .
+bb:1423	rdf:type		bbr:infielder .
+
+#5 	Brad Miller 	L-R 	6'2" 	200 	Oct 18, 1989
+bb:1424	bb:playerid	"1424"^^xs:integer .
+bb:1424	bb:number	"5"^^xs:integer .
+bb:1424	bb:lastname	"Miller" .
+bb:1424	bb:firstname	"Brad" .
+bb:1424	bb:position	"infielder" .
+bb:1424	bb:team	bbr:Mariners .
+bb:1424	bb:bats	"left" .
+bb:1424	bb:throws	"right" .
+bb:1424	bb:weight	"200"^^xs:integer .
+bb:1424	bb:date-of-birth	"1989-10-18"^^xs:date .
+bb:1424	rdf:type		bbr:infielder .
+
+#63 	Jesus Montero 	R-R 	6'3" 	235 	Nov 28, 1989
+bb:1425	bb:playerid	"1425"^^xs:integer .
+bb:1425	bb:number	"63"^^xs:integer .
+bb:1425	bb:lastname	"Montero" .
+bb:1425	bb:firstname	"Jesus" .
+bb:1425	bb:position	"infielder" .
+bb:1425	bb:team	bbr:Mariners .
+bb:1425	bb:bats	"right" .
+bb:1425	bb:throws	"right" .
+bb:1425	bb:weight	"235"^^xs:integer .
+bb:1425	bb:date-of-birth	"1989-11-28"^^xs:date .
+bb:1425	rdf:type		bbr:infielder .
+
+#20 	Logan Morrison 	L-L 	6'3" 	245 	Aug 25, 1987
+bb:1426	bb:playerid	"1426"^^xs:integer .
+bb:1426	bb:number	"20"^^xs:integer .
+bb:1426	bb:lastname	"Morrison" .
+bb:1426	bb:firstname	"Logan" .
+bb:1426	bb:position	"infielder" .
+bb:1426	bb:team	bbr:Mariners .
+bb:1426	bb:bats	"left" .
+bb:1426	bb:throws	"left" .
+bb:1426	bb:weight	"245"^^xs:integer .
+bb:1426	bb:date-of-birth	"1987-08-25"^^xs:date .
+bb:1426	rdf:type		bbr:infielder .
+
+#	Carlos Rivero 	R-R 	6'3" 	200 	May 20, 1988
+bb:1427	bb:playerid	"1427"^^xs:integer .
+bb:1427	bb:lastname	"Rivero" .
+bb:1427	bb:firstname	"Carlos" .
+bb:1427	bb:position	"infielder" .
+bb:1427	bb:team	bbr:Mariners .
+bb:1427	bb:bats	"right" .
+bb:1427	bb:throws	"right" .
+bb:1427	bb:weight	"200"^^xs:integer .
+bb:1427	bb:date-of-birth	"1988-05-20"^^xs:date .
+bb:1427	rdf:type		bbr:infielder .
+
+#15 	Kyle Seager 	L-R 	6'0" 	210 	Nov 3, 1987
+bb:1428	bb:playerid	"1428"^^xs:integer .
+bb:1428	bb:number	"15"^^xs:integer .
+bb:1428	bb:lastname	"Seager" .
+bb:1428	bb:firstname	"Kyle" .
+bb:1428	bb:position	"infielder" .
+bb:1428	bb:team	bbr:Mariners .
+bb:1428	bb:bats	"left" .
+bb:1428	bb:throws	"right" .
+bb:1428	bb:weight	"210"^^xs:integer .
+bb:1428	bb:date-of-birth	"1987-11-03"^^xs:date .
+bb:1428	rdf:type		bbr:infielder .
+
+#1 	Chris Taylor 	R-R 	6'1" 	190 	Aug 29, 1990
+bb:1429	bb:playerid	"1429"^^xs:integer .
+bb:1429	bb:number	"1"^^xs:integer .
+bb:1429	bb:lastname	"Taylor" .
+bb:1429	bb:firstname	"Chris" .
+bb:1429	bb:position	"infielder" .
+bb:1429	bb:team	bbr:Mariners .
+bb:1429	bb:bats	"right" .
+bb:1429	bb:throws	"right" .
+bb:1429	bb:weight	"190"^^xs:integer .
+bb:1429	bb:date-of-birth	"1990-08-29"^^xs:date .
+bb:1429	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#13 	Dustin Ackley 	L-R 	6'1" 	195 	Feb 26, 1988
+bb:1430	bb:playerid	"1430"^^xs:integer .
+bb:1430	bb:number	"13"^^xs:integer .
+bb:1430	bb:lastname	"Ackley" .
+bb:1430	bb:firstname	"Dustin" .
+bb:1430	bb:position	"outfielder" .
+bb:1430	bb:team	bbr:Mariners .
+bb:1430	bb:bats	"left" .
+bb:1430	bb:throws	"right" .
+bb:1430	bb:weight	"195"^^xs:integer .
+bb:1430	bb:date-of-birth	"1988-02-26"^^xs:date .
+bb:1430	rdf:type		bbr:outfielder .
+
+#16 	Austin Jackson 	R-R 	6'1" 	185 	Feb 1, 1987
+bb:1431	bb:playerid	"1431"^^xs:integer .
+bb:1431	bb:number	"16"^^xs:integer .
+bb:1431	bb:lastname	"Jackson" .
+bb:1431	bb:firstname	"Austin" .
+bb:1431	bb:position	"outfielder" .
+bb:1431	bb:team	bbr:Mariners .
+bb:1431	bb:bats	"right" .
+bb:1431	bb:throws	"right" .
+bb:1431	bb:weight	"185"^^xs:integer .
+bb:1431	bb:date-of-birth	"1987-02-01"^^xs:date .
+bb:1431	rdf:type		bbr:outfielder .
+
+#99 	James Jones 	L-L 	6'4" 	200 	Sep 24, 1988
+bb:1432	bb:playerid	"1432"^^xs:integer .
+bb:1432	bb:number	"99"^^xs:integer .
+bb:1432	bb:lastname	"Jones" .
+bb:1432	bb:firstname	"James" .
+bb:1432	bb:position	"outfielder" .
+bb:1432	bb:team	bbr:Mariners .
+bb:1432	bb:bats	"left" .
+bb:1432	bb:throws	"left" .
+bb:1432	bb:weight	"200"^^xs:integer .
+bb:1432	bb:date-of-birth	"1988-09-24"^^xs:date .
+bb:1432	rdf:type		bbr:outfielder .
+
+#29 	Julio Morban 	L-L 	6'1" 	210 	Feb 13, 1992
+bb:1433	bb:playerid	"1433"^^xs:integer .
+bb:1433	bb:number	"29"^^xs:integer .
+bb:1433	bb:lastname	"Morban" .
+bb:1433	bb:firstname	"Julio" .
+bb:1433	bb:position	"outfielder" .
+bb:1433	bb:team	bbr:Mariners .
+bb:1433	bb:bats	"left" .
+bb:1433	bb:throws	"left" .
+bb:1433	bb:weight	"210"^^xs:integer .
+bb:1433	bb:date-of-birth	"1992-02-13"^^xs:date .
+bb:1433	rdf:type		bbr:outfielder .
+
+#7 	Stefen Romero 	R-R 	6'2" 	220 	Oct 17, 1988
+bb:1434	bb:playerid	"1434"^^xs:integer .
+bb:1434	bb:number	"7"^^xs:integer .
+bb:1434	bb:lastname	"Romero" .
+bb:1434	bb:firstname	"Stefen" .
+bb:1434	bb:position	"outfielder" .
+bb:1434	bb:team	bbr:Mariners .
+bb:1434	bb:bats	"right" .
+bb:1434	bb:throws	"right" .
+bb:1434	bb:weight	"220"^^xs:integer .
+bb:1434	bb:date-of-birth	"1988-10-17"^^xs:date .
+bb:1434	rdf:type		bbr:outfielder .
+
+#55 	Michael Saunders 	L-R 	6'4" 	225 	Nov 19, 1986
+bb:1435	bb:playerid	"1435"^^xs:integer .
+bb:1435	bb:number	"55"^^xs:integer .
+bb:1435	bb:lastname	"Saunders" .
+bb:1435	bb:firstname	"Michael" .
+bb:1435	bb:position	"outfielder" .
+bb:1435	bb:team	bbr:Mariners .
+bb:1435	bb:bats	"left" .
+bb:1435	bb:throws	"right" .
+bb:1435	bb:weight	"225"^^xs:integer .
+bb:1435	bb:date-of-birth	"1986-11-19"^^xs:date .
+bb:1435	rdf:type		bbr:outfielder .
+
+#	Manager	Lloyd McClendon
+bb:1456	bb:lastname	"McClendon" .
+bb:1456	bb:firstname	"Lloyd" .
+bb:1456	bb:position	"manager" .
+bb:1456	bb:team	bbr:Mariners .
+bb:1456	bb:number	"23"^^xs:integer .
+bb:1456	bbr:coachingRole		bbr:manager .
+
+#	Coach	Trent Jewett
+bb:1457	bb:lastname	"Jewett" .
+bb:1457	bb:firstname	"Trent" .
+bb:1457	bb:position	"coach" .
+bb:1457	bb:number	"33"^^xs:integer .
+bb:1457	bb:team	bbr:Mariners .
+bb:1457	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Howard Johnson
+bb:1458	bb:lastname	"Johnson" .
+bb:1458	bb:firstname	"Howard" .
+bb:1458	bb:position	"coach" .
+bb:1458	bb:number	"10"^^xs:integer .
+bb:1458	bb:team	bbr:Mariners .
+bb:1458	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	FIRSTNAME LASTNAME
+bb:1459	bb:lastname	"LASTNAME" .
+bb:1459	bb:firstname	"FIRSTNAME" .
+bb:1459	bb:position	"coach" .
+bb:1459	bb:number	"100"^^xs:integer .
+bb:1459	bb:team	bbr:Mariners .
+bb:1459	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Chris Woodward
+bb:1460	bb:lastname	"Woodward" .
+bb:1460	bb:firstname	"Chris" .
+bb:1460	bb:position	"coach" .
+bb:1460	bb:number	"25"^^xs:integer .
+bb:1460	bb:team	bbr:Mariners .
+bb:1460	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Rich Donelly
+bb:1461	bb:lastname	"Donelly" .
+bb:1461	bb:firstname	"Rich" .
+bb:1461	bb:position	"coach" .
+bb:1461	bb:number	"26"^^xs:integer .
+bb:1461	bb:team	bbr:Mariners .
+bb:1461	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Rick Waits
+bb:1462	bb:lastname	"Waits" .
+bb:1462	bb:firstname	"Rick" .
+bb:1462	bb:position	"coach" .
+bb:1462	bb:number	"47"^^xs:integer .
+bb:1462	bb:team	bbr:Mariners .
+bb:1462	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Mike Rojas
+bb:1463	bb:lastname	"Rojas" .
+bb:1463	bb:firstname	"Mike" .
+bb:1463	bb:position	"coach" .
+bb:1463	bb:number	"48"^^xs:integer .
+bb:1463	bb:team	bbr:Mariners .
+bb:1463	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Jason Phillips
+bb:1464	bb:lastname	"Phillips" .
+bb:1464	bb:firstname	"Jason" .
+bb:1464	bb:position	"coach" .
+bb:1464	bb:number	"62"^^xs:integer .
+bb:1464	bb:team	bbr:Mariners .
+bb:1464	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+

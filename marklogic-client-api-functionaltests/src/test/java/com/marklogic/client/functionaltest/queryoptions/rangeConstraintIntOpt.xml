@@ -1,0 +1,11 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <transform-results apply="raw"/>
+  <constraint name="pop">
+    <range type="xs:int">
+      <element ns="" name="popularity"/>
+    </range>
+  </constraint>
+</options>

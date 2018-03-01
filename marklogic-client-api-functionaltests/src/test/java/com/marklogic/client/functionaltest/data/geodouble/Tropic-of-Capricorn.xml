@@ -1,0 +1,28 @@
+<root>
+<item>
+
+<point>POINT(136.406250 -26.797920)</point>
+<point-desc>Point In Tropic of Capricorn - Australia</point-desc>
+
+<linestring>LINESTRING(131.7897 -26.87,133.0987 -24.9808,135.23245 -22.7868,136.79807 -20.232349,139.34534 -18.34,141.8908 -16.0988,143.23098 -14.344,145.4564 -12.0988)</linestring>
+<line-desc>Linestring In Tropic of Capricorn - Australia</line-desc>
+<line-vertices>8</line-vertices>
+
+<circle>@120.5 -26.797920,136.406250</circle>
+<circle-desc>Circle In Tropic of Capricorn - Australia</circle-desc>
+
+<box>[-40.234, 100.4634, -20.345, 140.45230]</box>
+<box-desc>Box In Tropic of Capricorn - Australia</box-desc>
+
+<polygon>POLYGON((153.65 -8.35,170.57 -26.0,162.52 -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0 10.26,153.65 -8.35))</polygon>
+<poly-desc>Polygon  In Tropic of Capricorn - Australia</poly-desc>
+<poly-vertices>8</poly-vertices>
+
+<complex-polygon>POLYGON((153.65 -8.35,170.57 -26.0,162.52 -52.52,136.0 -56.35,111.0 -51.0,100.89 -26.0,108.18 1.82,136.0 10.26,153.65 -8.35), (154.59 -19.96,145.89 -39.61,128.97 -35.68,122.97 -21.77,136.0 -8.63,154.59 -19.96))</complex-polygon>
+<comppoly-desc>Complex Polygon In Tropic of Capricorn - Australia</comppoly-desc>
+<comppoly-inner-vertices>5</comppoly-inner-vertices>
+<comppoly-outer-vertices>8</comppoly-outer-vertices>
+
+</item>
+<region>Tropic-of-Capricorn</region>
+</root>

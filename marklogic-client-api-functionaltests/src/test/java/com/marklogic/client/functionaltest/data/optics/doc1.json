@@ -1,0 +1,18 @@
+{
+  "city":"london",
+  "distance":50.4,
+  "date":"2007-01-01",
+  "metro":true,
+  "description":"Two recent discoveries indicate probable very early settlements near the Thames",
+  "popularity":5,
+  "location":{
+    "latLonPoint":"51.50, -0.12",
+    "latLonPair":{
+      "lat":51.5,
+      "long":-0.12
+    },
+    "latLonParent":{
+      "latLonChild":"51.50, -0.12"
+    }
+  }
+}

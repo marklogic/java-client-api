@@ -1,0 +1,19 @@
+<doc>
+  <city>beijing</city>
+  <distance direction="east">134.5</distance>
+  <date>1981-11-09</date>
+  <metro rate="3">true</metro>
+  <description>The Miyun Reservoir, on the upper reaches of the Chaobai River, is the largest reservoir within the municipality </description>
+  <popularity>5</popularity>
+  <location>
+    <latLonPoint>39.90,116.40</latLonPoint>
+    <latLonParent>
+      <latLonChild>39.90,116.40</latLonChild>
+    </latLonParent>
+    <latLonPair>
+      <lat>39.90</lat>
+      <long>116.40</long>
+    </latLonPair>
+    <latLonAttrPair lat="39.90" long="116.40"></latLonAttrPair>
+  </location>
+</doc>

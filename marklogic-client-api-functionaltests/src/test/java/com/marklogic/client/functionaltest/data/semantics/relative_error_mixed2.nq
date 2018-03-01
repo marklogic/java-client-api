@@ -1,0 +1,3 @@
+<#me> <http://www.w3.org/1999/02/22-rdf-syntax-ns#type> <http://xmlns.com/foaf/0.1/Person> <http://originalGraph>.
+<http://example.org/alice/foaf.rdf#me> <http://xmlns.com/foaf/0.1/name> "Alice" <http://originalGraph>.
+<http://example.org/alice/foaf.rdf#you> <http://xmlns.com/foaf/0.1/name> "Alice" <http://example.org/alice/foaf.rdf> <http://originalGraph>.

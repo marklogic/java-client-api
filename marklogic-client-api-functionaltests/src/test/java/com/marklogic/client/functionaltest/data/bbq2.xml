@@ -1,0 +1,9 @@
+<entry xmlns="http://example.com" date="2008-07-01T11:44:32.345-07:00">
+   <title>Red, Hot, and Blue</title>
+   <abstract>Texas-style sauce with extra heat</abstract>
+   <flavor-descriptor>habenero</flavor-descriptor>
+   <flavor-descriptor>black pepper</flavor-descriptor>
+   <flavor-descriptor>smoky</flavor-descriptor>
+   <scoville>72000</scoville>
+   <rating>4.0</rating>
+</entry>

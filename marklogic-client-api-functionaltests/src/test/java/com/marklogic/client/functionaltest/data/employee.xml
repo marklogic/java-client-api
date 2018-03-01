@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Company>
+  <Employee>
+	<name>John</name>
+  </Employee>
+  <Employee>
+	<name>Jane</name>
+  </Employee>
+  <Employee>
+	<name>Bob</name>
+  </Employee>
+</Company>    

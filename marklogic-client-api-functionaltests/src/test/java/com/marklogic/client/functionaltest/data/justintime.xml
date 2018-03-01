@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<product>
+    <name>Just-In-Time</name>
+    <industry>Retail</industry>
+    <description>Represents inventory at point-of-sale as a heatmap.
+    Automates brokering of transfers and shipments to maintain inventory
+    at specified levels.
+    </description>
+</product>

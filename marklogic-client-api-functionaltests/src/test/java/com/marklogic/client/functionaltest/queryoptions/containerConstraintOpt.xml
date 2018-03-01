@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<options xmlns="http://marklogic.com/appservices/search">
+  <return-metrics>false</return-metrics>
+  <debug>true</debug>
+  <return-qtext>false</return-qtext>
+  <constraint name="title-contain">
+    <container>
+      <element name="title" ns="" />
+    </container>
+  </constraint>
+</options>	

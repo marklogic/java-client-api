@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<doc>
+  <name>jack_jill</name>
+  <g-elem-point>-11,-4</g-elem-point>
+  <g-elem-child-parent>
+    <g-elem-child-point>-11,-4</g-elem-child-point>
+  </g-elem-child-parent>
+  <g-elem-pair>
+    <lat>-11</lat>
+    <long>-4</long>
+  </g-elem-pair>
+  <g-attr-pair lat="-11" long="-4"/>
+</doc>

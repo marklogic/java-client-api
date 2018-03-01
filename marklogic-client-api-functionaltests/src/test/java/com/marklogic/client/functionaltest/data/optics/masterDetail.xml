@@ -1,0 +1,59 @@
+<sets>
+  <masterSet>
+    <master>
+      <id>1</id>
+      <name>Master 1</name>
+      <date>2015-12-01</date>
+    </master>
+    <master>
+      <id>2</id>
+      <name>Master 2</name>
+      <date>2015-12-02</date>
+    </master>
+  </masterSet>
+  <detailSet>
+    <detail>
+      <id>1</id>
+      <name>Detail 1</name>
+      <masterId>1</masterId>
+      <amount>10.01</amount>
+      <color>blue</color>
+    </detail>
+    <detail>
+      <id>2</id>
+      <name>Detail 2</name>
+      <masterId>2</masterId>
+      <amount>20.02</amount>
+      <color>blue</color>
+    </detail>
+    <detail>
+      <id>3</id>
+      <name>Detail 3</name>
+      <masterId>1</masterId>
+      <amount>30.03</amount>
+      <color>blue</color>
+    </detail>
+    <detail>
+      <id>4</id>
+      <name>Detail 4</name>
+      <masterId>2</masterId>
+      <amount>40.04</amount>
+      <color>green</color>
+    </detail>
+    <detail>
+      <id>5</id>
+      <name>Detail 5</name>
+      <masterId>1</masterId>
+      <amount>50.05</amount>
+      <color>green</color>
+    </detail>
+    <detail>
+      <id>6</id>
+      <name>Detail 6</name>
+      <masterId>2</masterId>
+      <amount>60.06</amount>
+      <color>green</color>
+    </detail>
+  </detailSet>
+</sets>
+

@@ -1,0 +1,32 @@
+<search xmlns="http://marklogic.com/appservices/search">
+	<options xmlns="http://marklogic.com/appservices/search">
+	<values name="grandchild">
+		<range type="xs:string">
+			<element ns="" name="grandchild"/>
+		</range>
+	<values-option>limit=2</values-option>
+	</values>
+	<tuples name="co">
+		<range type="xs:double">
+			<element ns="" name="double"/>
+		</range>
+		<range type="xs:int">
+			<element ns="" name="int"/>
+		</range>
+	</tuples>
+	<tuples name="n-way">
+		<range type="xs:double">
+			<element ns="" name="double"/>
+		</range>
+		<range type="xs:int">
+			<element ns="" name="int"/>
+		</range>
+		<range type="xs:string">
+			<element ns="" name="string"/>
+		</range>
+		<values-option>ascending</values-option>
+	</tuples>
+		<return-metrics>true</return-metrics>
+		<return-values>true</return-values>
+	</options>
+</search>

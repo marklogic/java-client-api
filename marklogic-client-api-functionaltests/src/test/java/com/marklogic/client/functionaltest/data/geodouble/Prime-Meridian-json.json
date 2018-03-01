@@ -1,0 +1,27 @@
+{"root":{ "item":{
+
+"point":"POINT(0 37.463235)",
+"point-desc":"Json Point In Prime-Meridian",
+
+"linestring":"LINESTRING(-3.897 35.253,-2.87 36.345,-1.578 37.353,0.43 38.3453,1.4875 39.4735,2.57767 40.34535)",
+"line-desc":"Json Linestring In Prime-Meridian",
+"line-vertices":"6",
+
+"circle":"@3525 37.463235,0",
+"circle-desc":"Json Circle In Prime-Meridian",
+
+"box":"[30.8456, -10.34634, 40.345, 10.4564]",
+"box-desc":"Json Box On Prime-Meridian",
+
+"polygon":"POLYGON((23.15 50.37,23.62 23.36,0.0 8.68,-18.84 26.12,-24.07 50.9,-0.0 58.04,23.15 50.37))",
+"poly-desc":"Json Polygon In Prime-Meridian",
+"poly-vertices":"6",
+
+"complex-polygon":"POLYGON((23.15 50.37,23.62 23.36,0.0 8.68,-18.84 26.12,-24.07 50.9,-0.0 58.04,23.15 50.37), (13.46 41.37,8.78 24.92,-11.13 21.68,-11.98 40.89,-0.0 51.58,13.46 41.37))",
+"comppoly-desc":"Json Complex Polygon In Prime-Meridian",
+"comppoly-outer-vertices":"6",
+"comppoly-inner-vertices":"5"
+},
+"region":"Prime-Meridian"}
+}
+

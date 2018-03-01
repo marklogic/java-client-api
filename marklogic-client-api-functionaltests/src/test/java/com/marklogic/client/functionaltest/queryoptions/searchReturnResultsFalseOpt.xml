@@ -1,0 +1,8 @@
+<options xmlns="http://marklogic.com/appservices/search">
+  <constraint name="intitle">
+    <word>
+      <element ns="" name="title"/>
+    </word>
+  </constraint>
+  <return-results>false</return-results>
+</options>

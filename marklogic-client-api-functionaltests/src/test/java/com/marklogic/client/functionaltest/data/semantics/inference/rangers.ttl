@@ -1,0 +1,645 @@
+
+prefix bb: <http://marklogic.com/baseball/players#> 
+prefix bbr: <http://marklogic.com/baseball/rules#> 
+prefix xs: <http://www.w3.org/2001/XMLSchema#> 
+prefix rdf: <http://www.w3.org/1999/02/22-rdf-syntax-ns#> 
+prefix rdfs: <http://www.w3.org/2000/01/rdf-schema#> 
+
+
+#bb:pX  bb:playerid "XX"^^xs:integer .
+#bb:XX  bb:lastname     "LASTNAME" .
+#bb:XX  bb:firstname    "FIRSTNAME" .
+#bb:XX  bb:position     "POSITION" .
+#bb:XX  bb:number       "NUMBER"^^xs:integer .
+#bb:XX  bb:team         "Athletics" .
+#bb:XX  bb:birthdate    "1989-10-26"^^xs:date .
+#bb:XX  bb:bats         "right" .
+#bb:XX  bb:throws       "right" .
+#bb:XX  bb:height       "" .
+#bb:XX  bb:weight       "220"^^xs:integer .
+#bb:XXX a       bbr:player .
+#bb:XXX a       bbr:pitcher .
+#bb:XXX a       bbr:starter .
+#bb:XXX a       bbr:setup .
+
+
+# 	Pitchers 	B/T 	Ht 	Wt 	DOB
+#59 	Lisalverto Bonilla 	S-R 	6'0" 	175 	Jun 18, 1990
+bb:2101	bb:playerid	"2101"^^xs:integer .
+bb:2101	bb:number	"59"^^xs:integer .
+bb:2101	bb:lastname	"Bonilla" .
+bb:2101	bb:firstname	"Lisalverto" .
+bb:2101	bb:position	"pitcher" .
+bb:2101	bb:team	bbr:Rangers .
+bb:2101	bb:bats	"switch" .
+bb:2101	bb:throws	"right" .
+bb:2101	bb:weight	"175"^^xs:integer .
+bb:2101	bb:date-of-birth	"1990-06-18"^^xs:date .
+bb:2101	rdf:type		bbr:pitcher .
+bb:2101	rdf:type		bbr:setup .
+
+#65 	Alex Claudio 	L-L 	6'3" 	160 	Jan 31, 1992
+bb:2102	bb:playerid	"2102"^^xs:integer .
+bb:2102	bb:number	"65"^^xs:integer .
+bb:2102	bb:lastname	"Claudio" .
+bb:2102	bb:firstname	"Alex" .
+bb:2102	bb:position	"pitcher" .
+bb:2102	bb:team	bbr:Rangers .
+bb:2102	bb:bats	"left" .
+bb:2102	bb:throws	"left" .
+bb:2102	bb:weight	"160"^^xs:integer .
+bb:2102	bb:date-of-birth	"1992-01-31"^^xs:date .
+bb:2102	rdf:type		bbr:pitcher .
+bb:2102	rdf:type		bbr:setup .
+
+#11 	Yu Darvish 	R-R 	6'5" 	215 	Aug 16, 1986
+bb:2103	bb:playerid	"2103"^^xs:integer .
+bb:2103	bb:number	"11"^^xs:integer .
+bb:2103	bb:lastname	"Darvish" .
+bb:2103	bb:firstname	"Yu" .
+bb:2103	bb:position	"pitcher" .
+bb:2103	bb:team	bbr:Rangers .
+bb:2103	bb:bats	"right" .
+bb:2103	bb:throws	"right" .
+bb:2103	bb:weight	"215"^^xs:integer .
+bb:2103	bb:date-of-birth	"1986-08-16"^^xs:date .
+bb:2103	rdf:type		bbr:pitcher .
+bb:2103	rdf:type		bbr:setup .
+
+#62 	Jon Edwards 	R-R 	6'5" 	230 	Jan 8, 1988
+bb:2104	bb:playerid	"2104"^^xs:integer .
+bb:2104	bb:number	"62"^^xs:integer .
+bb:2104	bb:lastname	"Edwards" .
+bb:2104	bb:firstname	"Jon" .
+bb:2104	bb:position	"pitcher" .
+bb:2104	bb:team	bbr:Rangers .
+bb:2104	bb:bats	"right" .
+bb:2104	bb:throws	"right" .
+bb:2104	bb:weight	"230"^^xs:integer .
+bb:2104	bb:date-of-birth	"1988-01-08"^^xs:date .
+bb:2104	rdf:type		bbr:pitcher .
+bb:2104	rdf:type		bbr:setup .
+
+#30 	Neftali Feliz 	R-R 	6'3" 	225 	May 2, 1988
+bb:2105	bb:playerid	"2105"^^xs:integer .
+bb:2105	bb:number	"30"^^xs:integer .
+bb:2105	bb:lastname	"Feliz" .
+bb:2105	bb:firstname	"Neftali" .
+bb:2105	bb:position	"pitcher" .
+bb:2105	bb:team	bbr:Rangers .
+bb:2105	bb:bats	"right" .
+bb:2105	bb:throws	"right" .
+bb:2105	bb:weight	"225"^^xs:integer .
+bb:2105	bb:date-of-birth	"1988-05-02"^^xs:date .
+bb:2105	rdf:type		bbr:pitcher .
+bb:2105	rdf:type		bbr:setup .
+
+#54 	Matt Harrison 	L-L 	6'4" 	240 	Sep 16, 1985
+bb:2106	bb:playerid	"2106"^^xs:integer .
+bb:2106	bb:number	"54"^^xs:integer .
+bb:2106	bb:lastname	"Harrison" .
+bb:2106	bb:firstname	"Matt" .
+bb:2106	bb:position	"pitcher" .
+bb:2106	bb:team	bbr:Rangers .
+bb:2106	bb:bats	"left" .
+bb:2106	bb:throws	"left" .
+bb:2106	bb:weight	"240"^^xs:integer .
+bb:2106	bb:date-of-birth	"1985-09-16"^^xs:date .
+bb:2106	rdf:type		bbr:pitcher .
+bb:2106	rdf:type		bbr:setup .
+
+#45 	Derek Holland 	S-L 	6'2" 	210 	Oct 9, 1986
+bb:2107	bb:playerid	"2107"^^xs:integer .
+bb:2107	bb:number	"45"^^xs:integer .
+bb:2107	bb:lastname	"Holland" .
+bb:2107	bb:firstname	"Derek" .
+bb:2107	bb:position	"pitcher" .
+bb:2107	bb:team	bbr:Rangers .
+bb:2107	bb:bats	"switch" .
+bb:2107	bb:throws	"left" .
+bb:2107	bb:weight	"210"^^xs:integer .
+bb:2107	bb:date-of-birth	"1986-10-09"^^xs:date .
+bb:2107	rdf:type		bbr:pitcher .
+bb:2107	rdf:type		bbr:setup .
+
+#50 	Michael Kirkman 	L-L 	6'4" 	220 	Sep 18, 1986
+bb:2108	bb:playerid	"2108"^^xs:integer .
+bb:2108	bb:number	"50"^^xs:integer .
+bb:2108	bb:lastname	"Kirkman" .
+bb:2108	bb:firstname	"Michael" .
+bb:2108	bb:position	"pitcher" .
+bb:2108	bb:team	bbr:Rangers .
+bb:2108	bb:bats	"left" .
+bb:2108	bb:throws	"left" .
+bb:2108	bb:weight	"220"^^xs:integer .
+bb:2108	bb:date-of-birth	"1986-09-18"^^xs:date .
+bb:2108	rdf:type		bbr:pitcher .
+bb:2108	rdf:type		bbr:setup .
+
+#64 	Phil Klein 	R-R 	6'7" 	260 	Apr 30, 1989
+bb:2109	bb:playerid	"2109"^^xs:integer .
+bb:2109	bb:number	"64"^^xs:integer .
+bb:2109	bb:lastname	"Klein" .
+bb:2109	bb:firstname	"Phil" .
+bb:2109	bb:position	"pitcher" .
+bb:2109	bb:team	bbr:Rangers .
+bb:2109	bb:bats	"right" .
+bb:2109	bb:throws	"right" .
+bb:2109	bb:weight	"260"^^xs:integer .
+bb:2109	bb:date-of-birth	"1989-04-30"^^xs:date .
+bb:2109	rdf:type		bbr:pitcher .
+bb:2109	rdf:type		bbr:setup .
+
+#	Corey Knebel 	R-R 	6'3" 	195 	Nov 26, 1991
+bb:2110	bb:playerid	"2110"^^xs:integer .
+bb:2110	bb:lastname	"Knebel" .
+bb:2110	bb:firstname	"Corey" .
+bb:2110	bb:position	"pitcher" .
+bb:2110	bb:team	bbr:Rangers .
+bb:2110	bb:bats	"right" .
+bb:2110	bb:throws	"right" .
+bb:2110	bb:weight	"195"^^xs:integer .
+bb:2110	bb:date-of-birth	"1991-11-26"^^xs:date .
+bb:2110	rdf:type		bbr:pitcher .
+bb:2110	rdf:type		bbr:setup .
+
+#22 	Nick Martinez 	L-R 	6'1" 	175 	Aug 5, 1990
+bb:2111	bb:playerid	"2111"^^xs:integer .
+bb:2111	bb:number	"22"^^xs:integer .
+bb:2111	bb:lastname	"Martinez" .
+bb:2111	bb:firstname	"Nick" .
+bb:2111	bb:position	"pitcher" .
+bb:2111	bb:team	bbr:Rangers .
+bb:2111	bb:bats	"left" .
+bb:2111	bb:throws	"right" .
+bb:2111	bb:weight	"175"^^xs:integer .
+bb:2111	bb:date-of-birth	"1990-08-05"^^xs:date .
+bb:2111	rdf:type		bbr:pitcher .
+bb:2111	rdf:type		bbr:setup .
+
+#55 	Roman Mendez 	R-R 	6'3" 	190 	Jul 25, 1990
+bb:2112	bb:playerid	"2112"^^xs:integer .
+bb:2112	bb:number	"55"^^xs:integer .
+bb:2112	bb:lastname	"Mendez" .
+bb:2112	bb:firstname	"Roman" .
+bb:2112	bb:position	"pitcher" .
+bb:2112	bb:team	bbr:Rangers .
+bb:2112	bb:bats	"right" .
+bb:2112	bb:throws	"right" .
+bb:2112	bb:weight	"190"^^xs:integer .
+bb:2112	bb:date-of-birth	"1990-07-25"^^xs:date .
+bb:2112	rdf:type		bbr:pitcher .
+bb:2112	rdf:type		bbr:setup .
+
+#36 	Miles Mikolas 	R-R 	6'5" 	220 	Aug 23, 1988
+bb:2113	bb:playerid	"2113"^^xs:integer .
+bb:2113	bb:number	"36"^^xs:integer .
+bb:2113	bb:lastname	"Mikolas" .
+bb:2113	bb:firstname	"Miles" .
+bb:2113	bb:position	"pitcher" .
+bb:2113	bb:team	bbr:Rangers .
+bb:2113	bb:bats	"right" .
+bb:2113	bb:throws	"right" .
+bb:2113	bb:weight	"220"^^xs:integer .
+bb:2113	bb:date-of-birth	"1988-08-23"^^xs:date .
+bb:2113	rdf:type		bbr:pitcher .
+bb:2113	rdf:type		bbr:setup .
+
+#41 	Alexi Ogando 	R-R 	6'4" 	200 	Oct 5, 1983
+bb:2114	bb:playerid	"2114"^^xs:integer .
+bb:2114	bb:number	"41"^^xs:integer .
+bb:2114	bb:lastname	"Ogando" .
+bb:2114	bb:firstname	"Alexi" .
+bb:2114	bb:position	"pitcher" .
+bb:2114	bb:team	bbr:Rangers .
+bb:2114	bb:bats	"right" .
+bb:2114	bb:throws	"right" .
+bb:2114	bb:weight	"200"^^xs:integer .
+bb:2114	bb:date-of-birth	"1983-10-05"^^xs:date .
+bb:2114	rdf:type		bbr:pitcher .
+bb:2114	rdf:type		bbr:setup .
+
+#44 	Spencer Patton 	R-R 	6'1" 	185 	Feb 20, 1988
+bb:2115	bb:playerid	"2115"^^xs:integer .
+bb:2115	bb:number	"44"^^xs:integer .
+bb:2115	bb:lastname	"Patton" .
+bb:2115	bb:firstname	"Spencer" .
+bb:2115	bb:position	"pitcher" .
+bb:2115	bb:team	bbr:Rangers .
+bb:2115	bb:bats	"right" .
+bb:2115	bb:throws	"right" .
+bb:2115	bb:weight	"185"^^xs:integer .
+bb:2115	bb:date-of-birth	"1988-02-20"^^xs:date .
+bb:2115	rdf:type		bbr:pitcher .
+bb:2115	rdf:type		bbr:setup .
+
+#33 	Martin Perez 	L-L 	6'0" 	190 	Apr 4, 1991
+bb:2116	bb:playerid	"2116"^^xs:integer .
+bb:2116	bb:number	"33"^^xs:integer .
+bb:2116	bb:lastname	"Perez" .
+bb:2116	bb:firstname	"Martin" .
+bb:2116	bb:position	"pitcher" .
+bb:2116	bb:team	bbr:Rangers .
+bb:2116	bb:bats	"left" .
+bb:2116	bb:throws	"left" .
+bb:2116	bb:weight	"190"^^xs:integer .
+bb:2116	bb:date-of-birth	"1991-04-04"^^xs:date .
+bb:2116	rdf:type		bbr:pitcher .
+bb:2116	rdf:type		bbr:setup .
+
+#49 	Aaron Poreda 	L-L 	6'6" 	240 	Oct 1, 1986
+bb:2117	bb:playerid	"2117"^^xs:integer .
+bb:2117	bb:number	"49"^^xs:integer .
+bb:2117	bb:lastname	"Poreda" .
+bb:2117	bb:firstname	"Aaron" .
+bb:2117	bb:position	"pitcher" .
+bb:2117	bb:team	bbr:Rangers .
+bb:2117	bb:bats	"left" .
+bb:2117	bb:throws	"left" .
+bb:2117	bb:weight	"240"^^xs:integer .
+bb:2117	bb:date-of-birth	"1986-10-01"^^xs:date .
+bb:2117	rdf:type		bbr:pitcher .
+bb:2117	rdf:type		bbr:setup .
+
+#46 	Robbie Ross Jr. 	L-L 	5'11" 	215 	Jun 24, 1989
+bb:2118	bb:playerid	"2118"^^xs:integer .
+bb:2118	bb:number	"46"^^xs:integer .
+bb:2118	bb:lastname	"Ross Jr." .
+bb:2118	bb:firstname	"Robbie" .
+bb:2118	bb:position	"pitcher" .
+bb:2118	bb:team	bbr:Rangers .
+bb:2118	bb:bats	"left" .
+bb:2118	bb:throws	"left" .
+bb:2118	bb:weight	"215"^^xs:integer .
+bb:2118	bb:date-of-birth	"1989-06-24"^^xs:date .
+bb:2118	rdf:type		bbr:pitcher .
+bb:2118	rdf:type		bbr:setup .
+
+#39 	Ben Rowen 	R-R 	6'4" 	190 	Nov 15, 1988
+bb:2119	bb:playerid	"2119"^^xs:integer .
+bb:2119	bb:number	"39"^^xs:integer .
+bb:2119	bb:lastname	"Rowen" .
+bb:2119	bb:firstname	"Ben" .
+bb:2119	bb:position	"pitcher" .
+bb:2119	bb:team	bbr:Rangers .
+bb:2119	bb:bats	"right" .
+bb:2119	bb:throws	"right" .
+bb:2119	bb:weight	"190"^^xs:integer .
+bb:2119	bb:date-of-birth	"1988-11-15"^^xs:date .
+bb:2119	rdf:type		bbr:pitcher .
+bb:2119	rdf:type		bbr:setup .
+
+#52 	Tanner Scheppers 	R-R 	6'4" 	200 	Jan 17, 1987
+bb:2120	bb:playerid	"2120"^^xs:integer .
+bb:2120	bb:number	"52"^^xs:integer .
+bb:2120	bb:lastname	"Scheppers" .
+bb:2120	bb:firstname	"Tanner" .
+bb:2120	bb:position	"pitcher" .
+bb:2120	bb:team	bbr:Rangers .
+bb:2120	bb:bats	"right" .
+bb:2120	bb:throws	"right" .
+bb:2120	bb:weight	"200"^^xs:integer .
+bb:2120	bb:date-of-birth	"1987-01-17"^^xs:date .
+bb:2120	rdf:type		bbr:pitcher .
+bb:2120	rdf:type		bbr:setup .
+
+#23 	Nick Tepesch 	R-R 	6'4" 	225 	Oct 12, 1988
+bb:2121	bb:playerid	"2121"^^xs:integer .
+bb:2121	bb:number	"23"^^xs:integer .
+bb:2121	bb:lastname	"Tepesch" .
+bb:2121	bb:firstname	"Nick" .
+bb:2121	bb:position	"pitcher" .
+bb:2121	bb:team	bbr:Rangers .
+bb:2121	bb:bats	"right" .
+bb:2121	bb:throws	"right" .
+bb:2121	bb:weight	"225"^^xs:integer .
+bb:2121	bb:date-of-birth	"1988-10-12"^^xs:date .
+bb:2121	rdf:type		bbr:pitcher .
+bb:2121	rdf:type		bbr:setup .
+
+#37 	Shawn Tolleson 	R-R 	6'2" 	210 	Jan 19, 1988
+bb:2122	bb:playerid	"2122"^^xs:integer .
+bb:2122	bb:number	"37"^^xs:integer .
+bb:2122	bb:lastname	"Tolleson" .
+bb:2122	bb:firstname	"Shawn" .
+bb:2122	bb:position	"pitcher" .
+bb:2122	bb:team	bbr:Rangers .
+bb:2122	bb:bats	"right" .
+bb:2122	bb:throws	"right" .
+bb:2122	bb:weight	"210"^^xs:integer .
+bb:2122	bb:date-of-birth	"1988-01-19"^^xs:date .
+bb:2122	rdf:type		bbr:pitcher .
+bb:2122	rdf:type		bbr:setup .
+
+#63 	Matt West 	R-R 	6'1" 	200 	Nov 21, 1988
+bb:2123	bb:playerid	"2123"^^xs:integer .
+bb:2123	bb:number	"63"^^xs:integer .
+bb:2123	bb:lastname	"West" .
+bb:2123	bb:firstname	"Matt" .
+bb:2123	bb:position	"pitcher" .
+bb:2123	bb:team	bbr:Rangers .
+bb:2123	bb:bats	"right" .
+bb:2123	bb:throws	"right" .
+bb:2123	bb:weight	"200"^^xs:integer .
+bb:2123	bb:date-of-birth	"1988-11-21"^^xs:date .
+bb:2123	rdf:type		bbr:pitcher .
+bb:2123	rdf:type		bbr:setup .
+
+# 	Catchers 	B/T 	Ht 	Wt 	DOB
+#61 	Robinson Chirinos 	R-R 	6'1" 	205 	Jun 5, 1984
+bb:2124	bb:playerid	"2124"^^xs:integer .
+bb:2124	bb:number	"61"^^xs:integer .
+bb:2124	bb:lastname	"Chirinos" .
+bb:2124	bb:firstname	"Robinson" .
+bb:2124	bb:position	"catcher" .
+bb:2124	bb:team	bbr:Rangers .
+bb:2124	bb:bats	"right" .
+bb:2124	bb:throws	"right" .
+bb:2124	bb:weight	"205"^^xs:integer .
+bb:2124	bb:date-of-birth	"1984-06-05"^^xs:date .
+bb:2124	rdf:type		bbr:catcher .
+
+#6 	Tomas Telis 	S-R 	5'8" 	200 	Jun 18, 1991
+bb:2125	bb:playerid	"2125"^^xs:integer .
+bb:2125	bb:number	"6"^^xs:integer .
+bb:2125	bb:lastname	"Telis" .
+bb:2125	bb:firstname	"Tomas" .
+bb:2125	bb:position	"catcher" .
+bb:2125	bb:team	bbr:Rangers .
+bb:2125	bb:bats	"switch" .
+bb:2125	bb:throws	"right" .
+bb:2125	bb:weight	"200"^^xs:integer .
+bb:2125	bb:date-of-birth	"1991-06-18"^^xs:date .
+bb:2125	rdf:type		bbr:catcher .
+
+# 	Infielders 	B/T 	Ht 	Wt 	DOB
+#1 	Elvis Andrus 	R-R 	6'0" 	200 	Aug 26, 1988
+bb:2126	bb:playerid	"2126"^^xs:integer .
+bb:2126	bb:number	"1"^^xs:integer .
+bb:2126	bb:lastname	"Andrus" .
+bb:2126	bb:firstname	"Elvis" .
+bb:2126	bb:position	"infielder" .
+bb:2126	bb:team	bbr:Rangers .
+bb:2126	bb:bats	"right" .
+bb:2126	bb:throws	"right" .
+bb:2126	bb:weight	"200"^^xs:integer .
+bb:2126	bb:date-of-birth	"1988-08-26"^^xs:date .
+bb:2126	rdf:type		bbr:infielder .
+
+#29 	Adrian Beltre 	R-R 	5'11" 	220 	Apr 7, 1979
+bb:2127	bb:playerid	"2127"^^xs:integer .
+bb:2127	bb:number	"29"^^xs:integer .
+bb:2127	bb:lastname	"Beltre" .
+bb:2127	bb:firstname	"Adrian" .
+bb:2127	bb:position	"infielder" .
+bb:2127	bb:team	bbr:Rangers .
+bb:2127	bb:bats	"right" .
+bb:2127	bb:throws	"right" .
+bb:2127	bb:weight	"220"^^xs:integer .
+bb:2127	bb:date-of-birth	"1979-04-07"^^xs:date .
+bb:2127	rdf:type		bbr:infielder .
+
+#84 	Prince Fielder 	L-R 	5'11" 	275 	May 9, 1984
+bb:2128	bb:playerid	"2128"^^xs:integer .
+bb:2128	bb:number	"84"^^xs:integer .
+bb:2128	bb:lastname	"Fielder" .
+bb:2128	bb:firstname	"Prince" .
+bb:2128	bb:position	"infielder" .
+bb:2128	bb:team	bbr:Rangers .
+bb:2128	bb:bats	"left" .
+bb:2128	bb:throws	"right" .
+bb:2128	bb:weight	"275"^^xs:integer .
+bb:2128	bb:date-of-birth	"1984-05-09"^^xs:date .
+bb:2128	rdf:type		bbr:infielder .
+
+#18 	Mitch Moreland 	L-L 	6'2" 	230 	Sep 6, 1985
+bb:2129	bb:playerid	"2129"^^xs:integer .
+bb:2129	bb:number	"18"^^xs:integer .
+bb:2129	bb:lastname	"Moreland" .
+bb:2129	bb:firstname	"Mitch" .
+bb:2129	bb:position	"infielder" .
+bb:2129	bb:team	bbr:Rangers .
+bb:2129	bb:bats	"left" .
+bb:2129	bb:throws	"left" .
+bb:2129	bb:weight	"230"^^xs:integer .
+bb:2129	bb:date-of-birth	"1985-09-06"^^xs:date .
+bb:2129	rdf:type		bbr:infielder .
+
+#12 	Rougned Odor 	L-R 	5'11" 	170 	Feb 3, 1994
+bb:2130	bb:playerid	"2130"^^xs:integer .
+bb:2130	bb:number	"12"^^xs:integer .
+bb:2130	bb:lastname	"Odor" .
+bb:2130	bb:firstname	"Rougned" .
+bb:2130	bb:position	"infielder" .
+bb:2130	bb:team	bbr:Rangers .
+bb:2130	bb:bats	"left" .
+bb:2130	bb:throws	"right" .
+bb:2130	bb:weight	"170"^^xs:integer .
+bb:2130	bb:date-of-birth	"1994-02-03"^^xs:date .
+bb:2130	rdf:type		bbr:infielder .
+
+#13 	Jurickson Profar 	S-R 	6'0" 	165 	Feb 20, 1993
+bb:2131	bb:playerid	"2131"^^xs:integer .
+bb:2131	bb:number	"13"^^xs:integer .
+bb:2131	bb:lastname	"Profar" .
+bb:2131	bb:firstname	"Jurickson" .
+bb:2131	bb:position	"infielder" .
+bb:2131	bb:team	bbr:Rangers .
+bb:2131	bb:bats	"switch" .
+bb:2131	bb:throws	"right" .
+bb:2131	bb:weight	"165"^^xs:integer .
+bb:2131	bb:date-of-birth	"1993-02-20"^^xs:date .
+bb:2131	rdf:type		bbr:infielder .
+
+#9 	Adam Rosales 	R-R 	6'1" 	195 	May 20, 1983
+bb:2132	bb:playerid	"2132"^^xs:integer .
+bb:2132	bb:number	"9"^^xs:integer .
+bb:2132	bb:lastname	"Rosales" .
+bb:2132	bb:firstname	"Adam" .
+bb:2132	bb:position	"infielder" .
+bb:2132	bb:team	bbr:Rangers .
+bb:2132	bb:bats	"right" .
+bb:2132	bb:throws	"right" .
+bb:2132	bb:weight	"195"^^xs:integer .
+bb:2132	bb:date-of-birth	"1983-05-20"^^xs:date .
+bb:2132	rdf:type		bbr:infielder .
+
+#16 	Ryan Rua 	R-R 	6'2" 	205 	Mar 11, 1990
+bb:2133	bb:playerid	"2133"^^xs:integer .
+bb:2133	bb:number	"16"^^xs:integer .
+bb:2133	bb:lastname	"Rua" .
+bb:2133	bb:firstname	"Ryan" .
+bb:2133	bb:position	"infielder" .
+bb:2133	bb:team	bbr:Rangers .
+bb:2133	bb:bats	"right" .
+bb:2133	bb:throws	"right" .
+bb:2133	bb:weight	"205"^^xs:integer .
+bb:2133	bb:date-of-birth	"1990-03-11"^^xs:date .
+bb:2133	rdf:type		bbr:infielder .
+
+#3 	Luis Sardinas 	S-R 	6'1" 	150 	May 16, 1993
+bb:2134	bb:playerid	"2134"^^xs:integer .
+bb:2134	bb:number	"3"^^xs:integer .
+bb:2134	bb:lastname	"Sardinas" .
+bb:2134	bb:firstname	"Luis" .
+bb:2134	bb:position	"infielder" .
+bb:2134	bb:team	bbr:Rangers .
+bb:2134	bb:bats	"switch" .
+bb:2134	bb:throws	"right" .
+bb:2134	bb:weight	"150"^^xs:integer .
+bb:2134	bb:date-of-birth	"1993-05-16"^^xs:date .
+bb:2134	rdf:type		bbr:infielder .
+
+# 	Outfielders 	B/T 	Ht 	Wt 	DOB
+#35 	Jim Adduci 	L-L 	6'2" 	210 	May 15, 1985
+bb:2135	bb:playerid	"2135"^^xs:integer .
+bb:2135	bb:number	"35"^^xs:integer .
+bb:2135	bb:lastname	"Adduci" .
+bb:2135	bb:firstname	"Jim" .
+bb:2135	bb:position	"outfielder" .
+bb:2135	bb:team	bbr:Rangers .
+bb:2135	bb:bats	"left" .
+bb:2135	bb:throws	"left" .
+bb:2135	bb:weight	"210"^^xs:integer .
+bb:2135	bb:date-of-birth	"1985-05-15"^^xs:date .
+bb:2135	rdf:type		bbr:outfielder .
+
+#15 	Michael Choice 	R-R 	6'0" 	215 	Nov 10, 1989
+bb:2136	bb:playerid	"2136"^^xs:integer .
+bb:2136	bb:number	"15"^^xs:integer .
+bb:2136	bb:lastname	"Choice" .
+bb:2136	bb:firstname	"Michael" .
+bb:2136	bb:position	"outfielder" .
+bb:2136	bb:team	bbr:Rangers .
+bb:2136	bb:bats	"right" .
+bb:2136	bb:throws	"right" .
+bb:2136	bb:weight	"215"^^xs:integer .
+bb:2136	bb:date-of-birth	"1989-11-10"^^xs:date .
+bb:2136	rdf:type		bbr:outfielder .
+
+#17 	Shin-Soo Choo 	L-L 	5'11" 	205 	Jul 13, 1982
+bb:2137	bb:playerid	"2137"^^xs:integer .
+bb:2137	bb:number	"17"^^xs:integer .
+bb:2137	bb:lastname	"Choo" .
+bb:2137	bb:firstname	"Shin-Soo" .
+bb:2137	bb:position	"outfielder" .
+bb:2137	bb:team	bbr:Rangers .
+bb:2137	bb:bats	"left" .
+bb:2137	bb:throws	"left" .
+bb:2137	bb:weight	"205"^^xs:integer .
+bb:2137	bb:date-of-birth	"1982-07-13"^^xs:date .
+bb:2137	rdf:type		bbr:outfielder .
+
+#2 	Leonys Martin 	L-R 	6'2" 	190 	Mar 6, 1988
+bb:2138	bb:playerid	"2138"^^xs:integer .
+bb:2138	bb:number	"2"^^xs:integer .
+bb:2138	bb:lastname	"Martin" .
+bb:2138	bb:firstname	"Leonys" .
+bb:2138	bb:position	"outfielder" .
+bb:2138	bb:team	bbr:Rangers .
+bb:2138	bb:bats	"left" .
+bb:2138	bb:throws	"right" .
+bb:2138	bb:weight	"190"^^xs:integer .
+bb:2138	bb:date-of-birth	"1988-03-06"^^xs:date .
+bb:2138	rdf:type		bbr:outfielder .
+
+#19 	Daniel Robertson 	R-R 	5'8" 	170 	Sep 30, 1985
+bb:2139	bb:playerid	"2139"^^xs:integer .
+bb:2139	bb:number	"19"^^xs:integer .
+bb:2139	bb:lastname	"Robertson" .
+bb:2139	bb:firstname	"Daniel" .
+bb:2139	bb:position	"outfielder" .
+bb:2139	bb:team	bbr:Rangers .
+bb:2139	bb:bats	"right" .
+bb:2139	bb:throws	"right" .
+bb:2139	bb:weight	"170"^^xs:integer .
+bb:2139	bb:date-of-birth	"1985-09-30"^^xs:date .
+bb:2139	rdf:type		bbr:outfielder .
+
+#20 	Jake Smolinski 	R-R 	5'11" 	215 	Feb 9, 1989
+bb:2140	bb:playerid	"2140"^^xs:integer .
+bb:2140	bb:number	"20"^^xs:integer .
+bb:2140	bb:lastname	"Smolinski" .
+bb:2140	bb:firstname	"Jake" .
+bb:2140	bb:position	"outfielder" .
+bb:2140	bb:team	bbr:Rangers .
+bb:2140	bb:bats	"right" .
+bb:2140	bb:throws	"right" .
+bb:2140	bb:weight	"215"^^xs:integer .
+bb:2140	bb:date-of-birth	"1989-02-09"^^xs:date .
+bb:2140	rdf:type		bbr:outfielder .
+
+#	Manager	Jeff Banister
+bb:2161	bb:lastname	"Banister" .
+bb:2161	bb:firstname	"Jeff" .
+bb:2161	bb:position	"manager" .
+bb:2161	bb:team	bbr:Rangers .
+bb:2161	bb:number	"100"^^xs:integer .
+bb:2161	bbr:coachingRole		bbr:manager .
+
+#	Coach	Steve Buechele
+bb:2162	bb:lastname	"Buechele" .
+bb:2162	bb:firstname	"Steve" .
+bb:2162	bb:position	"coach" .
+bb:2162	bb:number	"100"^^xs:integer .
+bb:2162	bb:team	bbr:Rangers .
+bb:2162	bbr:coachingRole		bbr:benchCoach .
+
+#	Coach	Dave Magadan
+bb:2163	bb:lastname	"Magadan" .
+bb:2163	bb:firstname	"Dave" .
+bb:2163	bb:position	"coach" .
+bb:2163	bb:number	"14"^^xs:integer .
+bb:2163	bb:team	bbr:Rangers .
+bb:2163	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Bobby Jones
+bb:2164	bb:lastname	"Jones" .
+bb:2164	bb:firstname	"Bobby" .
+bb:2164	bb:position	"coach" .
+bb:2164	bb:number	"100"^^xs:integer .
+bb:2164	bb:team	bbr:Rangers .
+bb:2164	bbr:coachingRole		bbr:hittingCoach .
+
+#	Coach	Hector Ortiz
+bb:2165	bb:lastname	"Ortiz" .
+bb:2165	bb:firstname	"Hector" .
+bb:2165	bb:position	"coach" .
+bb:2165	bb:number	"100"^^xs:integer .
+bb:2165	bb:team	bbr:Rangers .
+bb:2165	bbr:coachingRole		bbr:firstBaseCoach .
+
+#	Coach	Tony Beasley
+bb:2166	bb:lastname	"Beasley" .
+bb:2166	bb:firstname	"Tony" .
+bb:2166	bb:position	"coach" .
+bb:2166	bb:number	"100"^^xs:integer .
+bb:2166	bb:team	bbr:Rangers .
+bb:2166	bbr:coachingRole		bbr:thirdBaseCoach .
+
+#	Coach	Mike Maddux
+bb:2167	bb:lastname	"Maddux" .
+bb:2167	bb:firstname	"Mike" .
+bb:2167	bb:position	"coach" .
+bb:2167	bb:number	"31"^^xs:integer .
+bb:2167	bb:team	bbr:Rangers .
+bb:2167	bbr:coachingRole		bbr:pitchingCoach .
+
+#	Coach	Andy Hawkins
+bb:2168	bb:lastname	"Hawkins" .
+bb:2168	bb:firstname	"Andy" .
+bb:2168	bb:position	"coach" .
+bb:2168	bb:number	"40"^^xs:integer .
+bb:2168	bb:team	bbr:Rangers .
+bb:2168	bbr:coachingRole		bbr:bullpenCoach .
+
+#	Coach	Josh Frasier
+bb:2169	bb:lastname	"Frasier" .
+bb:2169	bb:firstname	"Josh" .
+bb:2169	bb:position	"coach" .
+bb:2169	bb:number	"66"^^xs:integer .
+bb:2169	bb:team	bbr:Rangers .
+bb:2169	bbr:coachingRole		bbr:bullpenCatcher .
+
+
+
