@@ -1,3 +1,0 @@
-@prefix ken: <http://example.org/kennedy/> .
-ken:person1 ken:spouse ken:person13 .
-

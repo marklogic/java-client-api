@@ -1,1 +1,0 @@
-<rapi:values-list xmlns:rapi="http://marklogic.com/rest-api"><rapi:values><rapi:name>size</rapi:name><rapi:uri>/v1/values/size?options=photos</rapi:uri></rapi:values><rapi:values><rapi:name>size-exposure</rapi:name><rapi:uri>/v1/values/size-exposure?options=photos</rapi:uri></rapi:values></rapi:values-list>

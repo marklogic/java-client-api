@@ -1,3 +1,3 @@
 rootProject.name = 'marklogic-client-api-parent'
 include ':marklogic-client-api'
-include ':java-client-api-functionaltests'
+include ':marklogic-client-api-functionaltests'

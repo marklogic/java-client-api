@@ -1,8 +1,0 @@
-{ "description": "This file has a legal hold",
-  "type": "X",
-  "originJurisdiction": "Y",
-  "state": "resolved",
-  "hold": "true",
-  "lastModified": "2007-12-31T00:00:00-08:00",
-  "referencedUris": ["/LegalHoldsTest/file3.json"]
-}

@@ -96,7 +96,8 @@ public class BinaryDocumentTest {
    BinaryDocumentManager docMgr = Common.client.newBinaryDocumentManager();
    DocumentWriteSet writeset =docMgr.newWriteSet();
    FileHandle h1 = new FileHandle(new File(
-     "../java-client-api-functionaltests/src/test/java/com/marklogic/client" +
+     "../marklogic-client-api-functionaltests/src/test/java/com/marklogic" +
+       "/client" +
        "/functionaltest/data" +
        "/Sega-4MB.jpg"));
    String uri = "BinaryDocumentTest_" + new Random().nextInt(10000) + "/" + "Sega-4MB.jpg";

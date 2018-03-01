@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<search:options xmlns:search="http://marklogic.com/appservices/search">
-    <search:constraint name="favorited">
-        <search:value>
-            <search:element ns="" name="favorited"/>
-        </search:value>
-    </search:constraint>
-</search:options>
-

@@ -1,3 +1,0 @@
-<search:query xmlns:search="http://marklogic.com/appservices/search">
-  <search:term-query><search:text>foo</search:text></search:term-query>
-</search:query>

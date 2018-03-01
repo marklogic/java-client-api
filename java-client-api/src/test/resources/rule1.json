@@ -1,9 +1,0 @@
-{"rule":{"name":"javatestrule",
-     "description":"rule to demonstrate REST alerting",
-     "search":{
-        "qtext":"favorited:true",
-        "options":{
-           "constraint":[
-           		{"name":"favorited",
-           		"value":{"element":{"ns":"","name":"favorited"}}}]}},	
-       	"rule-metadata":{}}}

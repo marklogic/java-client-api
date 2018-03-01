@@ -1,6 +1,0 @@
-<search:options xmlns:search="http://marklogic.com/appservices/search">
-	<search:constraint name="prop">
-        <search:properties/>
-	</search:constraint>
-	<search:return-facets>true</search:return-facets>
-</search:options>

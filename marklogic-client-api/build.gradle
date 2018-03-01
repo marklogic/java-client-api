@@ -123,9 +123,12 @@ publishing {
     }
 }
 
+distZip {
+    archiveName= "$project.name-$project.version-with-dependencies.zip"
+}
+
 distributions {
     main {
-        baseName= "$project.name-with-dependencies"
         contents {
             from("src/main/resources") {
                 include ("Readme.txt")

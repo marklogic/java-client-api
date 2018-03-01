@@ -1,3 +1,0 @@
-@prefix : <http://example.org/foo> .
-# the object of this triple is the RDF collection blank node
-:subject :predicate ( :a :b :c ) . 
