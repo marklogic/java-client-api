@@ -3,7 +3,6 @@ apply plugin: 'maven-publish'
 apply plugin: 'java-library-distribution'
 
 group = 'com.marklogic'
-version = '5.0-SNAPSHOT'
 
 description = "The official MarkLogic Java client API."
 
@@ -48,9 +47,8 @@ task sourcesJar(type: Jar) {
 
 javadoc {
     options.overview = "src/main/javadoc/overview.html"
-    options.windowTitle = "Marklogic Java Client API $project.version " +
-            "Documentation"
-    options.docTitle = "MarkLogic Java Client API $project.version"
+    options.windowTitle = "$rootProject.describedName $rootProject.version"
+    options.docTitle = "$rootProject.describedName $rootProject.version"
     options.bottom = "Copyright &copy; 2013-2017 MarkLogic Corporation."
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
@@ -62,11 +60,12 @@ task javadocJar (type: Jar, dependsOn: javadoc) {
     from javadoc.destinationDir
 }
 
+task generateJavaDocs
 
 Node pomCustomizations = new NodeBuilder(). project {
-    name 'Marklogic Java Client API'
+    name '$rootProject.describedName'
     packaging 'jar'
-    textdescription 'The official MarkLogic Java client API'
+    textdescription '$project.description'
     url 'https://github.com/marklogic/java-client-api'
 
     scm {
@@ -124,7 +123,7 @@ publishing {
 }
 
 distZip {
-    archiveName= "$project.name-$project.version-with-dependencies.zip"
+    archiveName= "$project.name-$rootProject.version-with-dependencies.zip"
 }
 
 distributions {
