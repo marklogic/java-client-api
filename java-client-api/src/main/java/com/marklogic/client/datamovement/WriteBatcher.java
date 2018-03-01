@@ -140,7 +140,7 @@ public interface WriteBatcher extends Batcher {
    * to be batched and then written to the server when a batch is full
    * or {@link #flushAsync} or {@link #flushAndWait} is called.</p>
    * 
-   * @param DocumentWriteOperation the DocumentWriteOperation object containing 
+   * @param writeOperation the DocumentWriteOperation object containing 
    *          the document's details to be written to the server
    * @return WriteBatcher the batcher containing the documents added
    */
