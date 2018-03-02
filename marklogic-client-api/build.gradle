@@ -46,6 +46,7 @@ task sourcesJar(type: Jar) {
 }
 
 javadoc {
+    maxMemory="3500m"
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
@@ -117,6 +118,12 @@ publishing {
     }
     repositories {
         maven {
+            if(project.hasProperty("mavenUser")) {
+                credentials {
+                    username mavenUser
+                    password mavenPassword
+                }
+            }
             url publishUrl
         }
     }
