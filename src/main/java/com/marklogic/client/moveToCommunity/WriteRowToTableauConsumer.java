@@ -134,7 +134,9 @@ public class WriteRowToTableauConsumer
               column.type + " is incompatible with data type \"" + value.getClass().getName() + "\"");
           }
         }
-        table.insert(row);
+        synchronized (this) {
+          table.insert(row);
+        }
       } finally {
         row.close();
       }

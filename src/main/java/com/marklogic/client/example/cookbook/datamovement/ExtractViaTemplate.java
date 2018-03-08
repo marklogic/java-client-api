@@ -25,6 +25,7 @@ import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 import com.marklogic.client.document.JSONDocumentManager;
+import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.example.cookbook.datamovement.Employee.Gender;
@@ -46,12 +47,12 @@ public class ExtractViaTemplate {
   private static int threadCount = 3;
   private static int batchSize   = 3;
   private String templateUri = "employees.tde";
-
+  private static DatabaseClient client = DatabaseClientSingleton.get();
 
   public static final JSONDocumentManager docMgr =
-    DatabaseClientSingleton.get().newJSONDocumentManager();
+      client.newJSONDocumentManager();
   public static final DataMovementManager moveMgr =
-    DatabaseClientSingleton.get().newDataMovementManager();
+      client.newDataMovementManager();
   private static final SimpleDateFormat df =
     new SimpleDateFormat("yyyy-MM-dd");
 

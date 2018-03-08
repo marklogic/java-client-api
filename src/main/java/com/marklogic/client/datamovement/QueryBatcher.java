@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import java.util.concurrent.TimeUnit;
+
 import com.marklogic.client.DatabaseClient;
 
 /**
@@ -141,6 +142,14 @@ public interface QueryBatcher extends Batcher {
   QueryBatcher onQueryFailure(QueryFailureListener listener);
 
   /**
+   * <p>Add a listener to run when the Query job is completed i.e. when all the 
+   * document URIs are retrieved and the associated listeners are completed</p>
+   *
+   * @param listener the code to run when the Query job is completed
+   * @return this instance for method chaining
+   */
+  QueryBatcher onJobCompletion(QueryBatcherListener listener);
+  /**
    * Retry in the same thread to query a batch that failed. This method will
    * throw an Exception if it fails again, so it can be wrapped in a try-catch
    * block.
@@ -170,6 +179,13 @@ public interface QueryBatcher extends Batcher {
   QueryBatchListener[] getUrisReadyListeners();
 
   /**
+   * Get the array of QueryBatcherListener instances registered via
+   * onJobCompletion.
+   *
+   * @return the QueryBatcherListener instances this batcher is using
+   */
+  QueryBatcherListener[] getQueryJobCompletionListeners();
+  /**
    * Get the array of QueryFailureListener instances
    * registered via onBatchFailure including the HostAvailabilityListener
    * registered by default.
@@ -198,6 +214,13 @@ public interface QueryBatcher extends Batcher {
    */
   void setQueryFailureListeners(QueryFailureListener... listeners);
 
+  /**
+   * Remove any existing QueryBatcherListener instances registered via
+   * onJobCompletion and replace them with the provided listeners.
+   *
+   * @param listeners the QueryBatcherListener instances this batcher should use
+   */
+  void setQueryJobCompletionListeners(QueryBatcherListener... listeners);
   /**
    * Specifies that matching uris should be retrieved as they were when this
    * QueryBatcher job started.  This enables a point-in-time query so that
@@ -343,5 +366,10 @@ public interface QueryBatcher extends Batcher {
    */
   void retryWithFailureListeners(QueryEvent queryEvent);
 
+  /**
+   * Gets the primary DatabaseClient associated with the batcher
+   * 
+   * @return the primary DatabaseClient instance
+   */
   DatabaseClient getPrimaryClient();
 }

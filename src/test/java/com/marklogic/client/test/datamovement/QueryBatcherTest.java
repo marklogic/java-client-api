@@ -498,8 +498,58 @@ public class QueryBatcherTest {
     moveMgr.startJob(queryBatcher);
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
-    assertTrue("Close method is not called on WriteBatchListener", calledBatchListener.get());
-    assertTrue("Close method is not called on WriteFailureListener", calledFailureListener.get());
+    assertTrue("Close method is not called on QueryBatchListener", calledBatchListener.get());
+    assertTrue("Close method is not called on QueryFailureListener", calledFailureListener.get());
+  }
+
+  @Test
+  public void testJobCompletionListeners() throws InterruptedException {
+
+    AtomicBoolean urisReadyFlag = new AtomicBoolean(false);
+    AtomicBoolean jobCompletionFlag = new AtomicBoolean(false);
+
+    StructuredQueryDefinition query = new StructuredQueryBuilder().and();
+    query.setCollections(qhbTestCollection);
+    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+        .onUrisReady(batch -> {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          urisReadyFlag.set(true);
+        })
+        .onJobCompletion(batcher -> {
+          try {
+            Thread.sleep(2000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          assertTrue("UrisReady listener is not completed yet", urisReadyFlag.get());
+          jobCompletionFlag.set(true);
+        });
+    moveMgr.startJob(queryBatcher);
+    queryBatcher.awaitCompletion();
+    moveMgr.stopJob(queryBatcher);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+    urisReadyFlag.set(false);
+    jobCompletionFlag.set(false);
+    QueryBatcher queryBatcher2 = moveMgr.newQueryBatcher(query)
+        .onUrisReady(batch -> {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          urisReadyFlag.set(true);
+        })
+        .onJobCompletion(batcher -> {
+          assertTrue("UrisReady listener is not completed yet", urisReadyFlag.get());
+          jobCompletionFlag.set(true);
+        });
+    moveMgr.startJob(queryBatcher2);
+    Thread.sleep(1100);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
   }
 
   @Test

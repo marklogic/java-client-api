@@ -20,6 +20,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -27,7 +28,6 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
-
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.datamovement.BatchFailureListener;
 import com.marklogic.client.datamovement.QueryBatchListener;
@@ -209,84 +209,114 @@ public class ExtractViaTemplateListener implements QueryBatchListener, AutoClose
         public Iterator<TypedRow> iterator() {
           return new Iterator<TypedRow>() {
             private String uri = null;
+            private TypedRow nextRow = null;
+            private boolean rowUsed = true;
 
             public TypedRow next() {
-              return getOneTypedRow(jp);
+              // We get the next value in the iterator when we call hasNext().
+              // This had to be done since we need to check whether the next
+              // entry is a valid row or not as there is a possibility of empty
+              // rows.
+              if ( nextRow == null && !hasNext() ) {
+                throw new NoSuchElementException("No more elements found in this iterator");
+              }
+              rowUsed = true;
+              return nextRow;
             }
 
             public boolean hasNext() {
-              return jp.currentToken() != JsonToken.END_OBJECT;
+              if ( !rowUsed ) {
+                return true;
+              } else {
+                if ( jp.currentToken() != JsonToken.END_OBJECT ) {
+                  nextRow = getOneTypedRow(jp);
+                  return nextRow == null ? false : true;
+                } else {
+                  return false;
+                }
+              }
             }
 
             /*
              * This is a helper method for the iterator which returns one row
-             * (the next row) when next() is called for the iterator.
+             * (the next row) when next() is called for the iterator. This is
+             * designed in such a way that this method returns the next valid
+             * row parsed from the JSON handle. This returns null only when
+             * there is no valid rows in the remaining contents of the handle.
              */
             private TypedRow getOneTypedRow(JsonParser jp) {
               try {
                 // Process the initial URI part
-                if ( uri == null ) {
-                  if ( jp.currentToken() != JsonToken.FIELD_NAME ) {
-                    throw new MarkLogicIOException("Expected a uri for next template result");
+                while (true) {
+                  if ( uri == null ) {
+                    if ( jp.currentToken() != JsonToken.FIELD_NAME ) {
+                      throw new MarkLogicIOException("Expected a uri for next template result");
+                    }
+                    uri = jp.getCurrentName();
+                    if ( jp.nextToken() != JsonToken.START_ARRAY ) {
+                      throw new MarkLogicIOException("Expected an array of rows");
+                    }
+                    jp.nextToken();
                   }
-                  uri = jp.getCurrentName();
-                  if ( jp.nextToken() != JsonToken.START_ARRAY ) {
-                    throw new MarkLogicIOException("Expected an array of rows");
+                  // If the current token is an END_ARRAY, then it is an empty
+                  // row. Log a warning and continue with the next row or return
+                  // null if there is no valid row
+                  if ( jp.currentToken() == JsonToken.END_ARRAY ) {
+                    logger.warn("No row found for Uri - " + uri);
+                    uri = null;
+                    if ( jp.nextToken() != JsonToken.END_OBJECT ) {
+                      continue;
+                    } else {
+                      return null;
+                    }
                   }
-                  jp.nextToken();
-                }
                   // Process subsequent rows for the same URI if there are
                   // multiple templates involved.
-                if ( jp.currentToken() != JsonToken.START_OBJECT ) {
-                  throw new MarkLogicIOException("Expected a JSON object containing a row");
-                }
-                if ( "triple".equals(jp.nextFieldName()) ) {
-                  throw new MarkLogicIOException("Expected a row but we got a triple. We don't support triples");
-                }
-                if ( !"row".equals(jp.getCurrentName())
-                    || jp.nextToken() != JsonToken.START_OBJECT ) {
-                  throw new MarkLogicIOException("Expected row to start");
-                }
-                while ( ! "data".equals(jp.nextFieldName()) ) {}
-                if ( jp.nextToken() != JsonToken.START_OBJECT ||
-                    ! "rownum".equals(jp.nextFieldName()) ) {
-                  throw new MarkLogicIOException("Expected a row of values");
-                }
-                String rowNum = jp.nextTextValue();
-                TypedRow row = new TypedRow(uri, rowNum);
-                while ( jp.nextToken() == JsonToken.FIELD_NAME ) {
-                  JsonToken valueType = jp.nextToken();
-                  if ( valueType == JsonToken.VALUE_STRING ) {
-                    row.put(jp.getCurrentName(),
-                        pb.xs.string(jp.getText()));
-                  } else if ( valueType == JsonToken.VALUE_NUMBER_INT ) {
-                    row.put(jp.getCurrentName(),
-                        pb.xs.integer(jp.getIntValue()));
-                  } else if ( valueType == JsonToken.VALUE_NUMBER_FLOAT ) {
-                    row.put(jp.getCurrentName(),
-                        pb.xs.floatVal(jp.getFloatValue()));
-                  } else if ( valueType == JsonToken.VALUE_TRUE ||
-                      valueType == JsonToken.VALUE_FALSE ) {
-                    row.put(jp.getCurrentName(),
-                        pb.xs.booleanVal(jp.getBooleanValue()));
-                  } else if ( valueType == JsonToken.VALUE_NULL ) {
-                    row.put(jp.getCurrentName(), null);
-                  } else {
-                    throw new MarkLogicIOException("Unexpected value type for column \"" +
-                        jp.getCurrentName() + "\"");
+                  if ( jp.currentToken() != JsonToken.START_OBJECT ) {
+                    throw new MarkLogicIOException("Expected a JSON object containing a row");
                   }
+                  if ( "triple".equals(jp.nextFieldName()) ) {
+                    throw new MarkLogicIOException("Expected a row but we got a triple. We don't support triples");
+                  }
+                  if ( !"row".equals(jp.getCurrentName()) || jp.nextToken() != JsonToken.START_OBJECT ) {
+                    throw new MarkLogicIOException("Expected row to start");
+                  }
+                  while (!"data".equals(jp.nextFieldName())) {
+                  }
+                  if ( jp.nextToken() != JsonToken.START_OBJECT || !"rownum".equals(jp.nextFieldName()) ) {
+                    throw new MarkLogicIOException("Expected a row of values");
+                  }
+                  String rowNum = jp.nextTextValue();
+                  TypedRow row = new TypedRow(uri, rowNum);
+                  while (jp.nextToken() == JsonToken.FIELD_NAME) {
+                    JsonToken valueType = jp.nextToken();
+                    if ( valueType == JsonToken.VALUE_STRING ) {
+                      row.put(jp.getCurrentName(), pb.xs.string(jp.getText()));
+                    } else if ( valueType == JsonToken.VALUE_NUMBER_INT ) {
+                      row.put(jp.getCurrentName(), pb.xs.integer(jp.getIntValue()));
+                    } else if ( valueType == JsonToken.VALUE_NUMBER_FLOAT ) {
+                      row.put(jp.getCurrentName(), pb.xs.floatVal(jp.getFloatValue()));
+                    } else if ( valueType == JsonToken.VALUE_TRUE || valueType == JsonToken.VALUE_FALSE ) {
+                      row.put(jp.getCurrentName(), pb.xs.booleanVal(jp.getBooleanValue()));
+                    } else if ( valueType == JsonToken.VALUE_NULL ) {
+                      row.put(jp.getCurrentName(), null);
+                    } else {
+                      throw new MarkLogicIOException(
+                          "Unexpected value type for column \"" + jp.getCurrentName() + "\"");
+                    }
+                  }
+                  if ( jp.currentToken() != JsonToken.END_OBJECT || jp.nextToken() != JsonToken.END_OBJECT
+                      || jp.nextToken() != JsonToken.END_OBJECT ) {
+                    throw new MarkLogicIOException("Expected row to end");
+                  }
+                  if ( jp.nextToken() == JsonToken.END_ARRAY ) {
+                    uri = null;
+                    jp.nextToken();
+                  }
+                  return row;
                 }
-                if ( jp.currentToken() != JsonToken.END_OBJECT ||
-                     jp.nextToken()    != JsonToken.END_OBJECT ||
-                     jp.nextToken() != JsonToken.END_OBJECT ) {
-                  throw new MarkLogicIOException("Expected row to end");
-                }
-                if ( jp.nextToken() == JsonToken.END_ARRAY ) {
-                  uri = null;
-                  jp.nextToken();
-                }
-                return row;
-              } catch (IOException e) {
+              }
+              catch (IOException e) {
                 throw new MarkLogicIOException(e);
               }
             }
