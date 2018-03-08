@@ -26,6 +26,7 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.QueryBatchException;
 import com.marklogic.client.datamovement.QueryEvent;
+import com.marklogic.client.datamovement.QueryBatcherListener;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -63,6 +64,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private boolean threadCountSet = false;
   private List<QueryBatchListener> urisReadyListeners = new ArrayList<>();
   private List<QueryFailureListener> failureListeners = new ArrayList<>();
+  private List<QueryBatcherListener> jobCompletionListeners = new ArrayList<>();
   private QueryThreadPoolExecutor threadPool;
   private boolean consistentSnapshot = false;
   private final AtomicLong batchNumber = new AtomicLong(0);
@@ -75,6 +77,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private final AtomicBoolean started = new AtomicBoolean(false);
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
   private JobTicket jobTicket;
+  private Thread runJobCompletionListeners;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
@@ -350,6 +353,33 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool = new QueryThreadPoolExecutor(1, this);
     threadPool.setCorePoolSize(getThreadCount());
     threadPool.setMaximumPoolSize(getThreadCount());
+    runJobCompletionListeners = new Thread(new Runnable() {
+      @Override
+      public void run() {
+        if ( stopped.get() == true ) {
+          logger.warn("Cancelling task to run the job completion listeners since the batcher is stopped");
+          return;
+        }
+        if ( jobCompletionListeners.size() > 0 ) {
+          boolean isCompleted = awaitCompletion();
+          if ( isCompleted ) {
+            for (QueryBatcherListener listener : jobCompletionListeners) {
+              if ( Thread.interrupted() ) {
+                logger.warn("Thread interrupted while running job completion listeners");
+                return;
+              }
+              try {
+                listener.processEvent(QueryBatcherImpl.this);
+              } catch (Throwable e) {
+                logger.error("Exception thrown by an onJobCompletion listener", e);
+              }
+            }
+          } else {
+            logger.warn("Job Completion interrupted");
+          }
+        }
+      }
+    });
   }
 
   /* When withForestConfig is called before the job starts, it just provides
@@ -673,7 +703,13 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // if even one isn't done, short-circuit out of this method and don't shutdown
       if ( isDone.get() == false ) return;
     }
-    // if we made it this far, all forests are done.  let's shutdown.
+    // if we made it this far, all forests are done. let's run the Job
+    // completion listeners and shutdown.
+    if ( !runJobCompletionListeners.isAlive() ) {
+      synchronized(this) {
+        if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
+      }
+    }
     threadPool.shutdown();
   }
 
@@ -768,6 +804,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
           }
           logger.warn("Error iterating to queue uris", t.toString());
         }
+        runJobCompletionListeners.start();
         threadPool.shutdown();
       }
     };
@@ -777,10 +814,12 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   public void stop() {
     stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
+    boolean allDone = true;
     if ( query != null ) {
       for ( AtomicBoolean isDone : forestIsDone.values() ) {
         // if even one isn't done, log a warning
-        if ( isDone.get() == false ) {
+        allDone = isDone.get();
+        if ( allDone == false ) {
           logger.warn("QueryBatcher instance \"{}\" stopped before all results were retrieved",
             getJobName());
           break;
@@ -788,9 +827,19 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       }
     } else {
       if ( iterator != null && iterator.hasNext() ) {
+        allDone = false;
         logger.warn("QueryBatcher instance \"{}\" stopped before all results were processed",
           getJobName());
       }
+    }
+    if ( allDone ) {
+      try {
+        runJobCompletionListeners.join();
+      } catch (InterruptedException e) {
+        logger.warn("Thread interrupted while waiting for the Job completion listeners");
+      }
+    } else {
+      if ( runJobCompletionListeners != null ) runJobCompletionListeners.interrupt();
     }
     closeAllListeners();
   }
@@ -845,6 +894,34 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       super.terminated();
       synchronized(objectToNotifyFrom) {
         objectToNotifyFrom.notifyAll();
+      }
+    }
+  }
+
+  @Override
+  public DatabaseClient getPrimaryClient() {
+    return ((DataMovementManagerImpl) moveMgr).getPrimaryClient();
+  }
+
+  @Override
+  public QueryBatcher onJobCompletion(QueryBatcherListener listener) {
+    if ( listener == null ) throw new IllegalArgumentException("listener must not be null");
+    jobCompletionListeners.add(listener);
+    return this;
+  }
+
+  @Override
+  public QueryBatcherListener[] getQueryJobCompletionListeners() {
+    return jobCompletionListeners.toArray(new QueryBatcherListener[jobCompletionListeners.size()]);
+  }
+
+  @Override
+  public void setQueryJobCompletionListeners(QueryBatcherListener... listeners) {
+    requireNotStarted();
+    jobCompletionListeners.clear();
+    if ( listeners != null ) {
+      for (QueryBatcherListener listener : listeners) {
+        jobCompletionListeners.add(listener);
       }
     }
   }
