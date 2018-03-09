@@ -1,3 +1,0 @@
-UrisToWriterListenerExamples_8681/test3.txt
-UrisToWriterListenerExamples_8681/test1.txt
-UrisToWriterListenerExamples_8681/test2.txt
