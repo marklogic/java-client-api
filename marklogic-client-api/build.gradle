@@ -136,14 +136,12 @@ distZip {
 distributions {
     main {
         contents {
+            from("..") {
+                include("LEGALNOTICES.TXT")
+            }
             from("src/main/resources") {
                 include ("Readme.txt")
                 include ("LICENSE.txt")
-                include ("NOTICE.txt")
-                include ("ASL-v2_0.txt")
-                include ("CDDL-v1_1.txt")
-                include ("EPL-v1_0.txt")
-                include ("MIT-X11.txt")
             }
             into ("example") {
                 from ("src/main/resources") {

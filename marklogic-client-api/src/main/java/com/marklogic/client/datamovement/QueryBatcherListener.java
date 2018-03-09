@@ -23,15 +23,15 @@ public interface QueryBatcherListener
    *     QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
    *         .withBatchSize(1000)
    *         .withThreadCount(20)
-   *         .onUrisReady(batch -> {
+   *         .onUrisReady(batch -&gt; {
    *             for ( String uri : batch.getItems() ) {
    *                 if ( uri.endsWith(".txt") ) {
    *                     batch.getClient().newDocumentManager().delete(uri);
    *                 }
    *             }
    *         })
-   *         .onQueryFailure(queryBatchException -> queryBatchException.printStackTrace())
-   *         .onJobCompletion(batcher -> {
+   *         .onQueryFailure(queryBatchException -&gt; queryBatchException.printStackTrace())
+   *         .onJobCompletion(batcher -&gt; {
    *            JobReport report = new JobReportImpl(batcher);
    *            System.out.println("Success Batch count " + report.getSuccessBatchesCount());
    *         });

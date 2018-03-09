@@ -51,16 +51,16 @@ import com.marklogic.client.util.RequestParameters;
  * <br>
  * For example:
  *
- * <pre>
+ * <pre>{@code
  * StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
  * QueryBatcher qb = moveMgr.newQueryBatcher(query)
- *     .onUrisReady(new ExtractViaTemplateListener().withTemplate(templateUri).onTypedRowReady(row -> {
+ *     .onUrisReady(new ExtractViaTemplateListener().withTemplate(templateUri).onTypedRowReady(row -&gt; {
  *       System.out.println("row:" + row);
  *     }));
  * moveMgr.startJob(qb);
  * qb.awaitCompletion();
  * moveMgr.stopJob(qb);
- * </pre>
+ * }</pre>
  *
  * If any of the consumers registered with this listener implements the
  * AutoCloseable interface and has a resource that needs to be closed, we have
