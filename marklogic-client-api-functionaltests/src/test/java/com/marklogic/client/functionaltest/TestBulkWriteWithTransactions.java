@@ -120,19 +120,16 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
     assertTrue("Document properties count", result);
 
     // Permissions
-    String expectedPermissions1 = "size:4|flexrep-eval:[READ]|rest-reader:[READ]|app-user:[UPDATE, READ]|rest-writer:[UPDATE]|";
+    String actualPermissions = getDocumentPermissionsString(permissions);
 
-    // Split up app-user permissions because the list of permissions are not
-    // ordered.
-    String[] appUserPermissions = getDocumentPermissionsString(permissions).split("app-user:");
-    String[] actualPermissions = appUserPermissions[0].split("\\|");
-    System.out.println(actualPermissions.toString());
-    assertTrue("Document permissions difference", appUserPermissions[1].contains("UPDATE, READ") || appUserPermissions[1].contains("READ, UPDATE"));
-
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[0]));
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[1]));
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[2]));
-
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:6"));
+    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue("Document permissions difference in app-user permissions",
+        (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
+    
     // Collections
     String expectedCollections = "size:2|my-collection1|my-collection2|";
     String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");
@@ -152,13 +149,15 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 
     // Permissions
 
-    String expectedPermissions1 = "size:3|flexrep-eval:[READ]|rest-reader:[READ]|rest-writer:[UPDATE]|";
-    String[] actualPermissions = getDocumentPermissionsString(permissions).split("\\|");
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[0]));
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[1]));
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[2]));
-    assertTrue("Document permissions difference", expectedPermissions1.contains(actualPermissions[3]));
+    String actualPermissions = getDocumentPermissionsString(permissions);
+    System.out.println("Returned permissions: " + actualPermissions);
 
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
+    assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
     // Collections
     String expectedCollections = "size:1|http://permission-collections/|";
     String[] actualCollections = getDocumentCollectionsString(collections).split("\\|");

@@ -141,7 +141,9 @@ public class TestMetadata extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in app-user permissions",
@@ -328,7 +330,9 @@ public class TestMetadata extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in app-user permissions",
@@ -405,7 +409,9 @@ public class TestMetadata extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in app-user permissions",
@@ -482,7 +488,9 @@ public class TestMetadata extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println("Returned permissions: " + actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in app-user permissions",
@@ -626,7 +634,9 @@ public class TestMetadata extends BasicJavaClientREST {
       assertTrue("JSONPatch1 not found", patchCollStr.contains("JSONPatch1"));
       assertTrue("JSONPatch3 not found", patchCollStr.contains("JSONPatch3"));
 
-      assertTrue("Document permissions difference in size value", patchPermStr.contains("size:3"));
+      assertTrue("Document permissions difference in size value", patchPermStr.contains("size:5"));
+      assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+      assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
       assertTrue("Document permissions difference in rest-reader permission", patchPermStr.contains("rest-reader:[READ]"));
       assertTrue("Document permissions difference in rest-reader permission", patchPermStr.contains("rest-writer:[UPDATE]"));
 
@@ -709,7 +719,9 @@ public class TestMetadata extends BasicJavaClientREST {
     } finally {
       // release clients
       client.release();
-      elsclient.release();
+      if (elsclient != null) {
+		elsclient.release();
+	}
     }
   }
 

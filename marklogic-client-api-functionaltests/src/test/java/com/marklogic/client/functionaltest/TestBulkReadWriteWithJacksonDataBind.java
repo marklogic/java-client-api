@@ -130,7 +130,7 @@ public class TestBulkReadWriteWithJacksonDataBind extends
     System.out.println(actualPermissions);
 
     assertTrue("Document permissions difference in size value",
-        actualPermissions.contains("size:3"));
+        actualPermissions.contains("size:5"));
     // assertTrue(
     // "Document permissions difference in flexrep-eval permission",
     // actualPermissions.contains("flexrep-eval:[READ]"));
@@ -142,6 +142,8 @@ public class TestBulkReadWriteWithJacksonDataBind extends
         "Document permissions difference in app-user permissions",
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions
             .contains("app-user:[READ, UPDATE]")));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);

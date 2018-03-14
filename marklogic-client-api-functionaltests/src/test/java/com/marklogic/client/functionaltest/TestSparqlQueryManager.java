@@ -2386,7 +2386,9 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
     }
     System.out.println("Returned permissions from OriginalGraph : " + stringPermissions);
 
-    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", stringPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", stringPermissions.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", stringPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", stringPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in sem-query-role permission", stringPermissions.contains("sem-query-role:"));
@@ -2447,7 +2449,9 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 
     System.out.println("Returned permissions from Copy graph is : " + stringPermissionsCopy);
 
-    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", stringPermissions.contains("size:5"));
+    assertTrue("Document permissions difference in harmonized-updater permission", stringPermissionsCopy.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", stringPermissionsCopy.contains("harmonized-reader:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", stringPermissionsCopy.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", stringPermissionsCopy.contains("rest-writer:[UPDATE]"));
 
@@ -2478,7 +2482,9 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
       String actualPermissions = getDocumentPermissionsString(permissions);
       System.out.println("Returned permissions from DocumentMetadataHandle : " + actualPermissions);
 
-      assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+      assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
+      assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+      assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
       assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
       assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
       // Better way?

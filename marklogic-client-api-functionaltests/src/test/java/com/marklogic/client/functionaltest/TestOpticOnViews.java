@@ -1389,8 +1389,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 
     rowMgr.resultDoc(plan4, jacksonHandleStr);
     JsonNode jsonResultsStr = jacksonHandleStr.get();
-    // Should have 0 nodes returned.
-    assertTrue("No nodes should have returned from testjoinInnerWithDataTypes method ", jsonResultsStr == null);
+    // Should have 3 nodes returned.
+    assertEquals("Three nodes not returned from testjoinInnerWithDataTypes method ", 3, jsonResultsStr.path("rows").size());
 
     // Pass as a date
     try {

@@ -387,7 +387,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
           String actual = docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString();
           System.out.println("Actual" + actual);
 
-          assertXpathEvaluatesTo("2", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
+          assertXpathEvaluatesTo("4", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
           assertXpathEvaluatesTo("1",
               "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-reader'])", actual);
           assertXpathEvaluatesTo("1",
@@ -413,7 +413,7 @@ public class TestPatchCardinality extends BasicJavaClientREST {
           String actual = docMgr.readMetadata(docId, new DocumentMetadataHandle()).toString();
           System.out.println("Actual" + actual);
 
-          assertXpathEvaluatesTo("2", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
+          assertXpathEvaluatesTo("4", "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission'])", actual);
           assertXpathEvaluatesTo("1",
               "count(/*[local-name()='metadata']/*[local-name()='permissions']/*[local-name()='permission']/*[local-name()='role-name' and string(.)='rest-reader'])", actual);
           assertXpathEvaluatesTo("1",

@@ -160,12 +160,14 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:4"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:6"));
     assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
     assertTrue("Document permissions difference in app-user permissions",
         (actualPermissions.contains("app-user:[UPDATE, READ]") || actualPermissions.contains("app-user:[READ, UPDATE]")));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String actualCollections = getDocumentCollectionsString(collections);
@@ -191,10 +193,12 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
     assertTrue("Document permissions difference in flexrep-eval permission", actualPermissions.contains("flexrep-eval:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
     assertTrue("Document permissions difference in rest-writer permission", actualPermissions.contains("rest-writer:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-updater permission", actualPermissions.contains("harmonized-updater:[UPDATE]"));
+    assertTrue("Document permissions difference in harmonized-reader permission", actualPermissions.contains("harmonized-reader:[READ]"));
 
     // Collections
     String expectedCollections = "size:1|http://permission-collections/|";
