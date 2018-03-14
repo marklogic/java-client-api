@@ -1,7 +1,7 @@
 xquery version "1.0-ml";
 
 module namespace bootstrap = "http://marklogic.com/rest-api/resource/bootstrap";
-(: Copyright 2002-2017 Mark Logic Corporation.  All Rights Reserved. :)
+(: Copyright 2002-2018 Mark Logic Corporation.  All Rights Reserved. :)
 
 import module namespace admin = "http://marklogic.com/xdmp/admin" at "/MarkLogic/admin.xqy";
 import module namespace temporal = "http://marklogic.com/xdmp/temporal" at "/MarkLogic/temporal.xqy";
