@@ -225,6 +225,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       // different threads than the main JUnit thread.
       // JUnit can not assert on different threads; other than the main one.
       StringBuilder batchResults = new StringBuilder();
+      StringBuilder forestResults = new StringBuilder();
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
@@ -240,6 +241,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
             .append('|')
             .append(batch.getJobBatchNumber())
             .append('|');
+        forestResults.append(batch.getForest().getForestName());
 
       });
       queryBatcher1.onQueryFailure(throwable -> {
@@ -262,7 +264,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
         assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints4.xml"));
         // Verify Forest Name.
-        assertTrue("Forest name not correct", res[1].contains(fNames[0]));
+        assertTrue("Forest name not correct", forestResults.toString().contains(fNames[0]));
       }
     } catch (Exception e) {
       System.out.print(e.getMessage());

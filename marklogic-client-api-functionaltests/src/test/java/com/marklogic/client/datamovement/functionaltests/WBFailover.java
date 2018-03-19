@@ -92,6 +92,8 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 		}
 		hostLists.add("localhost");
+		createDB(dbName);
+		Thread.currentThread().sleep(500L);
 		// Assuming the tests are run on 3 node cluster
 		Assert.assertEquals(hostLists.size(), 7);
 		int index = new Random().nextInt(hostLists.size());
@@ -134,8 +136,7 @@ public class WBFailover extends BasicJavaClientREST {
 		} else {
 			Assert.fail("Unsupported platform");
 		}
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
+		
 		for (int i = 0; i < hostNames.length; i++) {
 			if (i != 0) {
 				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);

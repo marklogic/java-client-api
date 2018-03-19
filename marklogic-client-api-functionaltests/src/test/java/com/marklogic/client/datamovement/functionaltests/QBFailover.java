@@ -117,6 +117,8 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 		}
 		hostLists.add("localhost");
+		createDB(dbName);
+		Thread.currentThread().sleep(500L);
 		int index = new Random().nextInt(hostLists.size());
 		dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
 		evalClient = DatabaseClientFactory.newClient(host, port, dbName, user, password, Authentication.DIGEST);
@@ -159,9 +161,7 @@ public class QBFailover extends BasicJavaClientREST {
 		} else {
 			Assert.fail("Unsupported platform");
 		}
-
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
+		
 		for (int i = 0; i < hostNames.length; i++) {
 			if (i != 0) {
 				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
