@@ -26,7 +26,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import au.com.bytecode.opencsv.CSVReader;
+import com.opencsv.CSVReader;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DOMHandle;

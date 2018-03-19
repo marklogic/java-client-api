@@ -94,7 +94,7 @@ public class SemanticsPermissionsTest {
   public void C_testGetPermissions() throws Exception {
     GraphManager readPrivilegedGmgr = readPrivilegedClient.newGraphManager();
     GraphPermissions permissions = readPrivilegedGmgr.getPermissions(graphUri);
-    assertEquals(4, permissions.size());
+    assertEquals(6, permissions.size());
     assertNotNull(permissions.get("read-privileged"));
     assertNotNull(permissions.get("write-privileged"));
     assertEquals(1, permissions.get("read-privileged").size());
@@ -109,7 +109,7 @@ public class SemanticsPermissionsTest {
     perms = perms.permission("read-privileged", Capability.EXECUTE);
     gmgr.writePermissions(graphUri, perms);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
-    assertEquals(3, permissions.size());
+    assertEquals(5, permissions.size());
     assertNotNull(permissions.get("read-privileged"));
     assertEquals(1, permissions.get("read-privileged").size());
     for ( Capability capability : permissions.get("read-privileged") ) {
@@ -122,7 +122,7 @@ public class SemanticsPermissionsTest {
     GraphPermissions perms = gmgr.permission("read-privileged", Capability.READ);
     gmgr.mergePermissions(graphUri, perms);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
-    assertEquals(3, permissions.size());
+    assertEquals(5, permissions.size());
     assertNotNull(permissions.get("read-privileged"));
     assertEquals(2, permissions.get("read-privileged").size());
     for ( Capability capability : permissions.get("read-privileged") ) {
@@ -137,7 +137,7 @@ public class SemanticsPermissionsTest {
   public void F_testDeletePermissions() throws Exception {
     gmgr.deletePermissions(graphUri);
     GraphPermissions permissions = gmgr.getPermissions(graphUri);
-    assertEquals(2, permissions.size());
+    assertEquals(4, permissions.size());
     assertNull(permissions.get("read-privileged"));
   }
 
@@ -151,7 +151,7 @@ public class SemanticsPermissionsTest {
       .withUpdatePermission("write-privileged", Capability.UPDATE);
     sparqlMgr.executeUpdate(qdef);
     GraphPermissions getPermissions = gmgr.getPermissions(localGraphUri);
-    assertEquals(3, getPermissions.size());
+    assertEquals(5, getPermissions.size());
     assertNotNull(getPermissions.get("write-privileged"));
     assertEquals(2, getPermissions.get("write-privileged").size());
     for ( Capability capability : getPermissions.get("write-privileged") ) {

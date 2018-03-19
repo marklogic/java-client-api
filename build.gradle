@@ -27,7 +27,7 @@ subprojects {
     dependencies {
         testCompile group: 'junit', name: 'junit', version:'4.12'
         testCompile group: 'xmlunit', name: 'xmlunit', version:'1.6'
-        compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.6'
+        compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
         compileOnly group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.3'
     }
 }

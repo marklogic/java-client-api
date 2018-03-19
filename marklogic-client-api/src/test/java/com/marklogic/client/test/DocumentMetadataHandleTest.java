@@ -143,7 +143,7 @@ public class DocumentMetadataHandleTest {
       assertTrue("Collection with wrong values", collections.contains("/document/collection1") && collections.contains("/document/collection2"));
       DocumentPermissions permissions = metaReadHandle.getPermissions();
       // rest-reader and rest-writer expected
-      assertEquals("Permissions with wrong size", 3, permissions.size());
+      assertEquals("Permissions with wrong size", 5, permissions.size());
       assertTrue("Permissions without key", permissions.containsKey("app-user"));
       assertEquals("Permission key with wrong value size", 2, permissions.get("app-user").size());
       assertTrue("Permission key with wrong values", permissions.get("app-user").contains(Capability.READ) && permissions.get("app-user").contains(Capability.UPDATE));
