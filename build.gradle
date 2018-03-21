@@ -30,6 +30,10 @@ subprojects {
         compileOnly group: 'org.apache.commons', name: 'commons-lang3', version:'3.7'
         compileOnly group: 'org.apache.httpcomponents', name: 'httpclient', version:'4.5.3'
     }
+
+    test {
+        systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
+    }
 }
 
 task wrapper(type: Wrapper) {
