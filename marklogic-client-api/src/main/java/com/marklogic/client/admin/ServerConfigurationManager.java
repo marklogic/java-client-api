@@ -160,11 +160,13 @@ public interface ServerConfigurationManager {
    * @return	a new manager for query options
    */
   QueryOptionsManager        newQueryOptionsManager();
-  /**
-   * Creates a manager for listing, reading, writing, and deleting
-   * namespace bindings.
-   * @return	a new manager for namespace bindings
-   */
+ /**
+  * Deprecated. To configure namespaces on a MarkLogic server, use Management REST API.
+  * @return	a new manager for namespace bindings
+  *
+  * See <a href="https://docs.marklogic.com/REST/management/app-servers">Management REST API</a>
+  */
+  @Deprecated
   NamespacesManager newNamespacesManager();
   /**
    * Creates a manager for listing, reading, writing, and deleting
