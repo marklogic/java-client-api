@@ -23,42 +23,49 @@ import com.marklogic.client.ResourceNotFoundException;
 import javax.xml.namespace.NamespaceContext;
 
 /**
- * The NamespacesManager provides access and editing for the namespaces defined on the server.
+ * Deprecated. To configure namespaces on a MarkLogic server, use Management REST API.
  *
- * To use NamespacesManager, an application must authenticate as rest-admin.
+ * See <a href="https://docs.marklogic.com/REST/management/app-servers">Management REST API</a>
  */
+@Deprecated
 public interface NamespacesManager {
   /**
    * Returns the namespace URI bound to the specified prefix on the server.
    * @param prefix	the prefix for the binding
    * @return	the namespace URI
    */
+  @Deprecated
   String readPrefix(String prefix) throws ForbiddenUserException, FailedRequestException;
   /**
    * Reads all of the namespace bindings from the server.
    * @return	a namespace context with the bindings
    */
+  @Deprecated
   NamespaceContext readAll() throws ForbiddenUserException, FailedRequestException;
   /**
    * Creates a namespace binding on the server.
    * @param prefix	the prefix bound to the URI
    * @param namespaceURI	the URI bound to the prefix
    */
+  @Deprecated
   void addPrefix(String prefix, String namespaceURI) throws ForbiddenUserException, FailedRequestException;
   /**
    * Writes a namespace binding on the server.
    * @param prefix	the prefix bound to the URI
    * @param namespaceURI	the URI bound to the prefix
    */
+  @Deprecated
   void updatePrefix(String prefix, String namespaceURI) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   /**
    * Deletes a namespace binding on the server.
    * @param prefix	the prefix bound to the URI
    */
+  @Deprecated
   void deletePrefix(String prefix) throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   /**
    * Deletes all namespace bindings on the server.
    */
+  @Deprecated
   void deleteAll() throws ForbiddenUserException, FailedRequestException;
   /**
    * Starts debugging client requests. You can suspend and resume debugging output
@@ -66,9 +73,11 @@ public interface NamespacesManager {
    *
    * @param logger	the logger that receives debugging output
    */
+  @Deprecated
   void startLogging(RequestLogger logger);
   /**
    *  Stops debugging client requests.
    */
+  @Deprecated
   void stopLogging();
 }
