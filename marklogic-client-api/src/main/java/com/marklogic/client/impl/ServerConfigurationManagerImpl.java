@@ -35,7 +35,6 @@ import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
-import com.marklogic.client.admin.NamespacesManager;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.admin.ResourceExtensionsManager;
 import com.marklogic.client.admin.ServerConfigurationManager;
@@ -282,10 +281,6 @@ class ServerConfigurationManagerImpl
       new ExtensionLibrariesManagerImpl(services);
     extensionMgr.setHandleRegistry(getHandleRegistry());
     return extensionMgr;
-  }
-  @Override
-  public NamespacesManager newNamespacesManager() {
-    return new NamespacesManagerImpl(services);
   }
   @Override
   public QueryOptionsManager newQueryOptionsManager() {

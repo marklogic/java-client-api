@@ -162,12 +162,6 @@ public interface ServerConfigurationManager {
   QueryOptionsManager        newQueryOptionsManager();
   /**
    * Creates a manager for listing, reading, writing, and deleting
-   * namespace bindings.
-   * @return	a new manager for namespace bindings
-   */
-  NamespacesManager newNamespacesManager();
-  /**
-   * Creates a manager for listing, reading, writing, and deleting
    * resource service extensions.
    * @return	a new manager for resource service extensions
    */
