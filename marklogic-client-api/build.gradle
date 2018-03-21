@@ -1,6 +1,6 @@
 apply plugin: 'maven'
 apply plugin: 'maven-publish'
-apply plugin: 'java-library-distribution'
+apply plugin: 'distribution'
 
 group = 'com.marklogic'
 
@@ -60,8 +60,6 @@ task javadocJar (type: Jar, dependsOn: javadoc) {
     classifier = 'javadoc'
     from javadoc.destinationDir
 }
-
-task generateJavaDocs
 
 Node pomCustomizations = new NodeBuilder(). project {
     name '$rootProject.describedName'
@@ -131,6 +129,7 @@ publishing {
 
 distZip {
     archiveName= "$project.name-$rootProject.version-with-dependencies.zip"
+    dependsOn javadoc
 }
 
 distributions {
@@ -160,6 +159,10 @@ distributions {
             }
             into ("doc/api") {
                 from ("build/docs/javadoc")
+            }
+            into("lib") {
+                from jar
+                from(project.configurations.runtime)
             }
         }
     }
