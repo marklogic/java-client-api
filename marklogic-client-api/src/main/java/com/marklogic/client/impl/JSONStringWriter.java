@@ -38,6 +38,13 @@ public class JSONStringWriter {
     builder.append("{");
     isFirst = true;
   }
+  public void writeStartObjectInLoop() {
+    if (isFirst)
+      isFirst = false;
+    else
+      builder.append(", ");
+    writeStartObject();
+  }
   public void writeStartEntry(String key) {
     if (isFirst)
       isFirst = false;

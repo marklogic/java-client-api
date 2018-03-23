@@ -252,8 +252,8 @@ class DocumentMetadataPatchBuilderImpl
         } else {
           serializer.writeStartArray();
           for (Object value: call.args) {
-            serializer.writeStartObject();
-            serializer.writeStartEntry("value");
+            serializer.writeStartObjectInLoop();
+            serializer.writeStartEntry("$value");
             serializer.writeStringValue(value);
             serializer.writeEndObject();
           }

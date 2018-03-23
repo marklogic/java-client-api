@@ -19,6 +19,7 @@ import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.HashMap;
@@ -40,6 +41,8 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 
+import com.marklogic.client.admin.ExtensionLibrariesManager;
+import com.marklogic.client.io.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -57,23 +60,29 @@ import com.marklogic.client.document.DocumentPatchBuilder;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.DocumentPatchBuilder.Position;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.InputSourceHandle;
-import com.marklogic.client.io.SourceHandle;
-import com.marklogic.client.io.StringHandle;
-import com.marklogic.client.io.XMLEventReaderHandle;
-import com.marklogic.client.io.XMLStreamReaderHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 import com.marklogic.client.util.EditableNamespaceContext;
 import java.util.Map;
 
 public class XMLDocumentTest {
+
+  private static ExtensionLibrariesManager libsMgr = null;
+
   @BeforeClass
   public static void beforeClass() {
+    Common.connectAdmin();
+    // get a manager
+    libsMgr = Common.adminClient
+      .newServerConfigManager().newExtensionLibrariesManager();
+
+    // write XQuery file to the modules database
+    libsMgr.write("/ext/my-lib.xqy", new FileHandle(
+      new File("src/test/resources/my-lib.xqy")).withFormat(Format.TEXT));
     Common.connect();
   }
   @AfterClass
   public static void afterClass() {
+    libsMgr.delete("/ext/my-lib.xqy");
   }
 
   @SuppressWarnings("unchecked")
@@ -333,6 +342,11 @@ public class XMLDocumentTest {
     patchBldr.delete("fourthChild");
     patchBldr.replaceApply("fifthChild", Cardinality.ONE, patchBldr.call().multiply(3));
 
+    patchBldr.library("http://marklogic.com/java-unit-test/my-lib",
+      "/ext/my-lib.xqy");
+    patchBldr.replaceApply("/root/sixthChild",
+      patchBldr.call().applyLibraryValues("getMin", 18, 21));
+
     DocumentPatchHandle patchHandle = patchBldr.build();
 
     for (int i=0; i < 2; i++) {
@@ -352,6 +366,9 @@ public class XMLDocumentTest {
       Element fifthChild = domDocument.createElement("fifthChild");
       fifthChild.setTextContent("5");
       root.appendChild(fifthChild);
+      Element sixthChild = domDocument.createElement("sixthChild");
+      sixthChild.setTextContent("31");
+      root.appendChild(sixthChild);
       domDocument.appendChild(root);
 
       docMgr.write(docId, new DOMHandle().with(domDocument));
@@ -379,6 +396,7 @@ public class XMLDocumentTest {
       root.replaceChild(domDocument.createElement("replacedSecondChild"), secondChild);
       thirdChild.setTextContent("new value");
       fifthChild.setTextContent("15");
+      sixthChild.setTextContent("18");
       root.removeChild(fourthChild);
 
       String expected = Common.testDocumentToString(domDocument);

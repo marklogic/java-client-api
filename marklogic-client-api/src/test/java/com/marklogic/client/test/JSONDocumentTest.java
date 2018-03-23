@@ -24,6 +24,7 @@ import java.io.IOException;
 import java.io.Reader;
 import java.nio.charset.Charset;
 
+import com.marklogic.client.admin.ExtensionLibrariesManager;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -53,6 +54,7 @@ import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public class JSONDocumentTest {
 
+  private static ExtensionLibrariesManager libsMgr = null;
   final static String metadata =
     "  {\"collections\":\n" +
     "    [\"collection1\",\n" +
@@ -73,11 +75,20 @@ public class JSONDocumentTest {
 
   @BeforeClass
   public static void beforeClass() {
+    Common.connectAdmin();
+    // get a manager
+    libsMgr = Common.adminClient
+      .newServerConfigManager().newExtensionLibrariesManager();
+
+    // write XQuery file to the modules database
+    libsMgr.write("/ext/my-lib.xqy", new FileHandle(
+      new File("src/test/resources/my-lib.xqy")).withFormat(Format.TEXT));
     Common.connect();
   }
 
   @AfterClass
   public static void afterClass() {
+    libsMgr.delete("/ext/my-lib.xqy");
   }
 
   @Test
@@ -124,6 +135,7 @@ public class JSONDocumentTest {
     String docId = "/test/testWrite1.json";
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode sourceNode = makeContent(mapper);
+    sourceNode.put("numberKey3" , 31);
     String content = mapper.writeValueAsString(sourceNode);
     JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
     docMgr.write(docId, new StringHandle().with(content));
@@ -156,6 +168,10 @@ public class JSONDocumentTest {
     patchBldr.replaceValue("$.booleanKey", true);
     patchBldr.replaceValue("$.numberKey2", 2);
     patchBldr.replaceValue("$.nullKey", null);
+    patchBldr.library("http://marklogic.com/java-unit-test/my-lib",
+      "/ext/my-lib.xqy");
+    patchBldr.replaceApply("$.numberKey3",
+      patchBldr.call().applyLibraryValues("getMin", 18, 21));
 
     DocumentPatchHandle patchHandle = patchBldr.pathLanguage(
       PathLanguage.JSONPATH).build();
@@ -185,7 +201,7 @@ public class JSONDocumentTest {
     expectedNode.put("booleanKey", true);
     expectedNode.put("numberKey2", 2);
     expectedNode.putNull("nullKey");
-
+    expectedNode.put("numberKey3" , 18);
 
     String docText = docMgr.read(docId, new StringHandle()).get();
     assertNotNull("Read null string for patched JSON content", docText);
@@ -268,6 +284,7 @@ public class JSONDocumentTest {
     String docId = "/test/testWrite1.json";
     ObjectMapper mapper = new ObjectMapper();
     ObjectNode sourceNode = makeContent(mapper);
+    sourceNode.put("numberKey3", 31);
     String content = mapper.writeValueAsString(sourceNode);
 
     JSONDocumentManager docMgr = Common.client.newJSONDocumentManager();
@@ -292,7 +309,10 @@ public class JSONDocumentTest {
     patchBldr.replaceValue("/booleanKey", true);
     patchBldr.replaceValue("/numberKey2", 2);
     patchBldr.replaceValue("/nullKey", null);
-
+    patchBldr.library("http://marklogic.com/java-unit-test/my-lib",
+      "/ext/my-lib.xqy");
+    patchBldr.replaceApply("/numberKey3",
+      patchBldr.call().applyLibraryValues("getMin", 18, 21));
     //patchBldr.replaceApply("/node()/arrayKey/node()[string(.) eq '3']",
     //		patchBldr.call().add(2));
 
@@ -329,6 +349,7 @@ public class JSONDocumentTest {
     expectedNode.put("booleanKey", true);
     expectedNode.put("numberKey2", 2);
     expectedNode.putNull("nullKey");
+    expectedNode.put("numberKey3", 18);
 
     String docText = docMgr.read(docId, new StringHandle()).get();
 
