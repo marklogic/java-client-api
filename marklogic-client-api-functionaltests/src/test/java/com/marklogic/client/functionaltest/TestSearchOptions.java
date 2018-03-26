@@ -575,6 +575,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     client.release();
   }
   
+  // Note : Test asserts changed due to the fact that different serialization and parsers produce diff NS 
   @Test
   public void testXmlFilesRestrictedXPaths() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException,
       TransformerException
@@ -662,7 +663,8 @@ public class TestSearchOptions extends BasicJavaClientREST {
             for (ExtractedItem item : extracted) {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from price element search " + extractItem);
-                assertTrue("Extracted price items incorrect", extractItem.contains("<price xmlns=\"http://cloudbank.com\" amt=\"0.1\"/>"));
+                assertTrue("Extracted price items incorrect", extractItem.contains("http://cloudbank.com"));
+                assertTrue("Extracted price items incorrect", extractItem.contains("amt=\"0.1\""));
             }
         }
     }
@@ -691,7 +693,10 @@ public class TestSearchOptions extends BasicJavaClientREST {
                 String extractItem = item.getAs(String.class);
                 System.out.println("Extracted item from date and ancestor element search " + extractItem);
                 assertTrue("Extracted date and ancestor items incorrect", 
-                            extractItem.contains("<root><date xmlns=\"http://purl.org/dc/elements/1.1/\">2005-01-01</date></root>"));
+                            extractItem.contains("http://purl.org/dc/elements/1.1"));
+                assertTrue("Extracted date and ancestor items incorrect", 
+                        extractItem.contains("2005-01-01"));
+
             }
         }
     }
