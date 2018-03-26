@@ -277,6 +277,16 @@ public class WriteBatcherTest {
     batcher.setBatchFailureListeners(null);
     failureListeners = batcher.getBatchFailureListeners();
     assertEquals(0, failureListeners.length);
+
+    try {
+      HostAvailabilityListener ha = new HostAvailabilityListener(moveMgr)
+        .withMinHosts(2);
+      fail("should have thrown IllegalArgumentException since minHosts was " +
+        "set to a number greater than the number of hosts in the cluster");
+    } catch (IllegalArgumentException e) {
+      logger.debug("[testListenerManagement] threw expected exception since " +
+        "HostAvailabilityListener was initialized with greater minHosts: " + e);
+    }
   }
 
   /*

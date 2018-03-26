@@ -116,5 +116,6 @@ public class ExportToWriterListenerTest {
       while ( reader.readLine() != null ) lines++;
       assertEquals( "There should be 100 lines in the output file", 100, lines );
     }
+    if(outputFile.exists()) outputFile.delete();
   }
 }

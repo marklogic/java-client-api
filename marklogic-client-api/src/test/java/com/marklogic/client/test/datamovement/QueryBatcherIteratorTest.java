@@ -148,6 +148,7 @@ public class QueryBatcherIteratorTest {
 
     if ( failures2.length() > 0 ) fail(failures2.toString());
     assertEquals(numDocs, successDocs2.get());
+    if(tempFile.exists()) tempFile.delete();
   }
 
   @Test

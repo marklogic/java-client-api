@@ -130,6 +130,9 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
     if (numHosts <= 0) throw new IllegalArgumentException("numHosts must be > 0");
+    int numConfigHosts = moveMgr.readForestConfig().getPreferredHosts().length;
+    if (numHosts > numConfigHosts) throw new IllegalArgumentException
+      ("numHosts must be less than or equal to the number of hosts in the cluster");
     this.minHosts = numHosts;
     return this;
   }
