@@ -332,6 +332,12 @@ public interface PlanBuilderBase {
          */
         public PlanBuilder.ModifyPlan where(CtsQueryExpr condition);
         /**
+         * This method restricts the row set to rows matched by an SQL boolean expression. To construct the condition argument, pass the SQL boolean expression as a string to the sqlCondition() method.
+         * @param condition  The SQL boolean expression on which to match as returned by sqlCondition().
+         * @return  a ModifyPlan object
+         */
+        public PlanBuilder.ModifyPlan where(PlanCondition condition);
+        /**
          * This method adjusts the row set based on the triples for the sem.store definition, 
          * restricting the triples to the documents matched by a cts.query expression and
          * expanding the triples based on inferencing rules.  

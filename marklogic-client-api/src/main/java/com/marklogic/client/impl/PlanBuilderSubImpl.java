@@ -28,40 +28,7 @@ import com.marklogic.client.expression.SemExpr;
 import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.JSONReadHandle;
-import com.marklogic.client.type.ArrayNodeExpr;
-import com.marklogic.client.type.AttributeNodeExpr;
-import com.marklogic.client.type.AttributeNodeSeqExpr;
-import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.CtsReferenceExpr;
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.JsonContentNodeExpr;
-import com.marklogic.client.type.ObjectNodeExpr;
-import com.marklogic.client.type.PlanAggregateCol;
-import com.marklogic.client.type.PlanCase;
-import com.marklogic.client.type.PlanColumn;
-import com.marklogic.client.type.PlanExprCol;
-import com.marklogic.client.type.PlanFunction;
-import com.marklogic.client.type.PlanGroupConcatOptionSeq;
-import com.marklogic.client.type.PlanJsonProperty;
-import com.marklogic.client.type.PlanParamBindingVal;
-import com.marklogic.client.type.PlanParamExpr;
-import com.marklogic.client.type.PlanPrefixer;
-import com.marklogic.client.type.PlanSystemColumn;
-import com.marklogic.client.type.PlanTripleOption;
-import com.marklogic.client.type.PlanTriplePatternSeq;
-import com.marklogic.client.type.PlanValueOption;
-import com.marklogic.client.type.SemIriVal;
-import com.marklogic.client.type.SemStoreExpr;
-import com.marklogic.client.type.XmlContentNodeExpr;
-import com.marklogic.client.type.XmlContentNodeSeqExpr;
-import com.marklogic.client.type.XsBooleanExpr;
-import com.marklogic.client.type.XsLongVal;
-import com.marklogic.client.type.XsQNameExpr;
-import com.marklogic.client.type.XsQNameVal;
-import com.marklogic.client.type.XsStringSeqVal;
-import com.marklogic.client.type.XsStringVal;
+import com.marklogic.client.type.*;
 
 public class PlanBuilderSubImpl extends PlanBuilderImpl {
   public PlanBuilderSubImpl() {
@@ -665,6 +632,11 @@ public class PlanBuilderSubImpl extends PlanBuilderImpl {
 
     @Override
     public ModifyPlan where(CtsQueryExpr condition) {
+      return new ModifyPlanSubImpl(this, "op", "where", new Object[]{ condition });
+    }
+
+    @Override
+    public ModifyPlan where(PlanCondition condition) {
       return new ModifyPlanSubImpl(this, "op", "where", new Object[]{ condition });
     }
 
