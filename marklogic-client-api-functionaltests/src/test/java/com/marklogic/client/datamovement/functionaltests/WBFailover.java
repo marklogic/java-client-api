@@ -32,6 +32,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -242,6 +243,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testBlackListHost() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -287,6 +290,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testStopOneNode() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -332,6 +337,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testRestart() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -380,6 +387,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testRepeatedStopOneNode() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -437,6 +446,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testStopTwoNodes() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -496,6 +507,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testMinHosts() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -539,6 +552,8 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 350000)
 	public void testWhiteBlackListNPE() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())

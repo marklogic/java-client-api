@@ -36,6 +36,7 @@ import org.apache.http.impl.client.DefaultHttpClient;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -282,6 +283,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void testStopOneNode() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -317,6 +320,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void testRestart() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -354,6 +359,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void testRepeatedStopOneNode() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -398,6 +405,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void testMinNodes() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -442,6 +451,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void testStopTwoNodes() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger success = new AtomicInteger(0);
@@ -485,6 +496,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplace() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -555,6 +568,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceTwoNodes() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -627,6 +642,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceRepeated() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -705,6 +722,8 @@ public class QBFailover extends BasicJavaClientREST {
 
 	@Test(timeout = 450000)
 	public void massDeleteConsistentSnapShot() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicBoolean isRunning = new AtomicBoolean(true);
 		Map<String, String> props = new HashMap<String, String>();
