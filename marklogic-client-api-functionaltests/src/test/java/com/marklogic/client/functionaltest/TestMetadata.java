@@ -17,8 +17,8 @@
 package com.marklogic.client.functionaltest;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -32,39 +32,32 @@ import javax.xml.bind.JAXBException;
 import javax.xml.namespace.QName;
 
 import org.json.JSONException;
-import org.json.XML;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.Transaction;
 import com.marklogic.client.document.BinaryDocumentManager;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.DocumentPatchBuilder;
-import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder;
+import com.marklogic.client.document.DocumentPatchBuilder.PathLanguage;
 import com.marklogic.client.document.DocumentUriTemplate;
-import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.DocumentPatchHandle;
 
 public class TestMetadata extends BasicJavaClientREST {
