@@ -3,10 +3,6 @@ test {
     events 'started','passed', 'skipped'
   }
 
-  tasks.withType(JavaCompile) {
-    options.encoding = 'UTF-8'
-  }
-
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'

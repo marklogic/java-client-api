@@ -8,7 +8,9 @@ subprojects {
         ext.slf4jVersion = '1.7.25'
         ext.logbackVersion = '1.2.3'
     }
-
+ 	tasks.withType(JavaCompile) {
+    	options.encoding = 'UTF-8'
+  	}
     sourceCompatibility = "1.8"
     targetCompatibility = "1.8"
 
@@ -32,6 +34,7 @@ subprojects {
     }
 
     test {
+    	systemProperty "file.encoding", "UTF-8"
         systemProperty "javax.xml.stream.XMLOutputFactory", "com.sun.xml.internal.stream.XMLOutputFactoryImpl"
     }
 }
