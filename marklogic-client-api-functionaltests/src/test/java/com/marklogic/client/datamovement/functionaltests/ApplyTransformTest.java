@@ -38,6 +38,7 @@ import org.apache.commons.io.FileUtils;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -572,6 +573,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	// ISSUE # 569
 	@Test
 	public void jsMasstransformReplaceDelete() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
 
 		// transform
 		ServerTransform transform = new ServerTransform("jsTransform");
