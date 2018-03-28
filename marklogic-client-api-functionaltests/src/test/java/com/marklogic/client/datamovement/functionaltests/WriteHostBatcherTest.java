@@ -17,6 +17,7 @@
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
@@ -81,9 +82,11 @@ import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.datamovement.impl.WriteJobReportListener;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
+import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.impl.DatabaseClientImpl;
+import com.marklogic.client.impl.DocumentWriteOperationImpl;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -95,6 +98,10 @@ import com.marklogic.client.io.OutputStreamHandle;
 import com.marklogic.client.io.OutputStreamSender;
 import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
 public class WriteHostBatcherTest extends BasicJavaClientREST {
@@ -326,6 +333,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 45
 	@Test
 	public void testAdd() throws Exception {
+		System.out.println("In testAdd method");
 		final StringBuffer successBatch = new StringBuffer();
 		final StringBuffer failureBatch = new StringBuffer();
 		final String query1 = "fn:count(fn:doc())";
@@ -491,6 +499,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 60
 	@Test
 	public void testAddAs() throws Exception {
+		System.out.println("In testAddAs method");
 		final StringBuffer successBatch = new StringBuffer();
 		final StringBuffer failureBatch = new StringBuffer();
 		final String query1 = "fn:count(fn:doc())";
@@ -541,6 +550,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 60
 	@Test
 	public void testAddandAddAs() throws Exception {
+		System.out.println("In testAddandAddAs method");
 		final StringBuffer successBatch = new StringBuffer();
 		final StringBuffer failureBatch = new StringBuffer();
 		final String query1 = "fn:count(fn:doc())";
@@ -700,6 +710,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// Immutability of WriteBatcher- ISSUE # 26
 	@Test
 	public void testHostBatcherImmutability() throws Exception {
+		System.out.println("In testHostBatcherImmutability method");
 
 		WriteBatcher ihb = dmManager.newWriteBatcher();
 		ServerTransform transform = null;
@@ -769,6 +780,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE # 38
 	@Test
 	public void testNumberofBatches() throws Exception {
+		System.out.println("In testNumberofBatches method");
 
 		final AtomicInteger numberOfSuccessFulBatches = new AtomicInteger(0);
 		final AtomicBoolean state = new AtomicBoolean(true);
@@ -799,6 +811,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE # 39, 40, 589
 	@Test
 	public void testClientObject() throws Exception {
+		System.out.println("In testClientObject method");
 
 		final StringBuffer successHost = new StringBuffer();
 		final StringBuffer successDb = new StringBuffer();
@@ -860,6 +873,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 549
 	@Test
 	public void testBatchObject() throws Exception {
+		System.out.println("In testBatchObject method");
 
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 
@@ -941,6 +955,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE # 28- expected to fail in ea2
 	@Test
 	public void testWithInvalidValues() throws Exception {
+		System.out.println("In testWithInvalidValues method");
 
 		final String query1 = "fn:count(fn:doc())";
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
@@ -980,6 +995,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testflushAsync() throws Exception {
+		System.out.println("In testflushAsync method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -1013,6 +1029,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testInsertoReadOnlyForest() throws Exception {
+		System.out.println("In testInsertoReadOnlyForest method");
+		
 		Map<String, String> properties = new HashMap<>();
 		properties.put("updates-allowed", "read-only");
 		for (int i = 0; i < clusterInfo.size(); i++)
@@ -1059,6 +1077,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testInsertoDisabledDB() throws Exception {
+		System.out.println("In testInsertoDisabledDB method");
+		
 		Map<String, String> properties = new HashMap<>();
 		properties.put("enabled", "false");
 		final String query1 = "fn:count(fn:doc())";
@@ -1105,6 +1125,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testServerXQueryTransformSuccess() throws Exception {
+		System.out.println("In testServerXQueryTransformSuccess method");
+		
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -1191,6 +1213,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testServerXQueryTransformFailure() throws Exception {
+		System.out.println("In testServerXQueryTransformFailure method");
+		
 		final String query1 = "fn:count(fn:doc())";
 		final AtomicInteger successCount = new AtomicInteger(0);
 
@@ -1286,6 +1310,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// Multiple threads writing to same WHB object with unique uri's
 	@Test
 	public void testAddMultiThreadedSuccess() throws Exception {
+		System.out.println("In testAddMultiThreadedSuccess method");
 
 		final String query1 = "fn:count(fn:doc())";
 		ihbMT = dmManager.newWriteBatcher();
@@ -1329,6 +1354,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 48
 	@Test
 	public void testAddMultiThreadedFailureEventCount() throws Exception {
+		System.out.println("In testAddMultiThreadedFailureEventCount method");
 
 		final AtomicInteger eventCount = new AtomicInteger(0);
 		ihbMT = dmManager.newWriteBatcher();
@@ -1381,6 +1407,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// thread count =10 and txsize =3
 	@Test
 	public void testAddMultiThreadedwithTransactionsizeSuccess() throws Exception {
+		System.out.println("In testAddMultiThreadedwithTransactionsizeSuccess method");
 
 		final String query1 = "fn:count(fn:doc())";
 		final AtomicInteger count = new AtomicInteger(0);
@@ -1465,6 +1492,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// Failing intermittently with rewriteWHB branch
 	@Ignore
 	public void testAddMultiThreadedLessDocsSuccess() throws Exception {
+		System.out.println("In testAddMultiThreadedLessDocsSuccess method");
 
 		final String query1 = "fn:count(fn:doc())";
 		final AtomicInteger count = new AtomicInteger(0);
@@ -1551,6 +1579,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// Git Issue # 62
 	@Ignore
 	public void testAddMultiThreadedwithThreadCountFailure() throws Exception {
+		System.out.println("In testAddMultiThreadedwithThreadCountFailure method");
 
 		final AtomicInteger count = new AtomicInteger(0);
 		final AtomicInteger eventCount = new AtomicInteger(0);
@@ -1637,6 +1666,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE # 58
 	@Ignore
 	public void testTransactionSize() throws Exception {
+		System.out.println("In testTransactionSize method");
+		
 		try {
 			final String query1 = "fn:count(fn:doc())";
 
@@ -1687,6 +1718,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// Adding 25000 docs with thread count = 20
 	@Test
 	public void testThreadSize() throws Exception {
+		System.out.println("In testThreadSize method");
+		
 		try {
 			final String query1 = "fn:count(fn:doc())";
 
@@ -1785,6 +1818,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testNPESuccessCallBack() throws Exception {
+		System.out.println("In testNPESuccessCallBack method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -1833,6 +1867,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testNPEFailureCallBack() throws Exception {
+		System.out.println("In testNPEFailureCallBack method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -1873,6 +1908,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testEmptyFlush() throws Exception {
+		System.out.println("In testEmptyFlush method");
+		
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
 		ihb2.withBatchSize(5);
 
@@ -1899,6 +1936,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testAddMultiThreadedStopJob() throws Exception {
+		System.out.println("In testAddMultiThreadedStopJob method");
 
 		final String query1 = "fn:count(fn:doc())";
 		WriteJobReportListener jrl = new WriteJobReportListener();
@@ -1978,6 +2016,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testAddMultiStartJob() throws Exception {
+		System.out.println("In testAddMultiStartJob method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -2031,6 +2070,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// test flushAsync()
 	@Test
 	public void testInserttoDisabledAppServer() throws Exception {
+		System.out.println("In testInserttoDisabledAppServer method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -2078,6 +2118,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE 588
 	@Test
 	public void testRetry() throws Exception {
+		System.out.println("In testRetry method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -2130,6 +2171,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ea3
 	@Test
 	public void testDisableAppServerDuringInsert() throws Exception {
+		System.out.println("In testDisableAppServerDuringInsert method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Thread t1 = new Thread(new StopServerRunnable());
@@ -2202,6 +2244,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// to assert on counts.
 	@Ignore
 	public void testDisableDBDuringInsert() throws Exception {
+		System.out.println("In testDisableDBDuringInsert method");
 
 		Thread t1 = new Thread(new DisabledDBRunnable());
 		AtomicBoolean failCheck = new AtomicBoolean(false);
@@ -2262,8 +2305,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testNoHost() throws Exception {
+	public void testNoHost() throws Exception {		
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testNoHost method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2330,6 +2374,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testNullConfig() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testNullConfig method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2360,6 +2405,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testQBWhiteList() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testQBWhiteList method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2422,6 +2468,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testWBWhiteList() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testWBWhiteList method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2472,6 +2519,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testQBBlackList() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testQBBlackList method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2536,6 +2584,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testWBBlackList() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testWBBlackList method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2589,7 +2638,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testBlackWhiteList() throws Exception {
-
+		System.out.println("In testBlackWhiteList method");
 		FilteredForestConfiguration forestConfig = null;
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -2620,6 +2669,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testNoServer() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		System.out.println("In testNoServer method");
 
 		final String query1 = "fn:count(fn:doc())";
 		Map<String, String> properties = new HashMap<>();
@@ -2733,6 +2783,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	// ISSUE -646
 	@Ignore
 	public void addWithMetadata() throws Exception {
+		System.out.println("In addWithMetadata method");
 
 		final String query1 = "fn:count(fn:doc())";
 
@@ -2768,5 +2819,146 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+	}
+	@Test
+	public void testDocumentWriteOperationAdd() throws Exception {
+		System.out.println("In testDocumentWriteOperationAdd method");
+		
+		final StringBuffer successBatch = new StringBuffer();
+		final StringBuffer failureBatch = new StringBuffer();
+		final String query1 = "fn:count(fn:doc())";
+		
+		 String docId[] = { "/foo/test/myFoo1.txt", "/foo/test/myFoo2.txt", "/foo/test/myFoo3.txt",
+			        "/foo/test/myFoo4.txt", "/foo/test/myFoo5.txt", "/foo/test/myFoo6.txt",
+			        "/foo/test/myFoo7.txt", "/foo/test/myFoo8.txt", "/foo/test/myFoo9.txt" };
+
+		// Test 1 All success with addAs (batchSize =8)
+		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+		replenishStream();
+		WriteBatcher ihb3 = dmManager.newWriteBatcher();
+		ihb3.withBatchSize(8);
+		ihb3.onBatchSuccess(batch -> {
+			for (WriteEvent w : batch.getItems()) {
+				successBatch.append(w.getTargetUri() + ":");
+
+			}
+
+		}).onBatchFailure((batch, throwable) -> {
+			for (WriteEvent w : batch.getItems()) {
+
+				failureBatch.append(w.getTargetUri() + ":");
+			}
+		});
+		dmManager.startJob(ihb3);
+		// Use DocumentWriteOperation Impl class to test Git #647
+		
+		// get the original metadata
+	    Document docMetadata = getXMLMetadata("metadata-original.xml");
+	    // create handle to write metadata
+	    DOMHandle writeMetadataHandle = new DOMHandle();
+	    writeMetadataHandle.set(docMetadata);
+	    // get the content
+	    StringHandle contHandle1 = new StringHandle().with("This is so foo1");
+	    StringHandle contHandle2 = new StringHandle().with("This is so foo2");
+	    StringHandle contHandle3 = new StringHandle().with("This is so foo3");
+	    
+	    StringHandle contHandle4 = new StringHandle().with("This is so foo4");
+	    StringHandle contHandle5 = new StringHandle().with("This is so foo5");
+	    // Generate a series of DocumentWriteOperation instances.
+	    DocumentWriteOperationImpl docWriteOpsImp1 = new DocumentWriteOperationImpl(
+	    		OperationType.DOCUMENT_WRITE,
+	    		docId[0],
+	    		writeMetadataHandle,
+	    		contHandle1
+	    		);
+	    DocumentWriteOperationImpl docWriteOpsImp2 = new DocumentWriteOperationImpl(
+	    		OperationType.DOCUMENT_WRITE,
+	    		docId[1],
+	    		writeMetadataHandle,
+	    		contHandle2
+	    		);
+	    DocumentWriteOperationImpl docWriteOpsImp3 = new DocumentWriteOperationImpl(
+	    		OperationType.DOCUMENT_WRITE,
+	    		docId[2],
+	    		writeMetadataHandle,
+	    		contHandle3
+	    		);
+	    // Use only DocumentWriteOperation
+		
+		ihb3.add(docWriteOpsImp1).add(docWriteOpsImp2).add(docWriteOpsImp3);
+
+		ihb3.flushAndWait();
+		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 3);
+
+		DocumentMetadataHandle mHandle1 = readMetadataFromDocument(dbClient, docId[0], "XML");
+		assertEquals(0, mHandle1.getQuality());
+		assertTrue(mHandle1.getCollections().iterator().next().matches("coll[1|2]"));
+		Assert.assertTrue(mHandle1.getCollections().size() == 2);
+		
+		String actualProperties = getDocumentPropertiesString(mHandle1.getProperties());
+		System.out.println("Returned properties: " + actualProperties);
+		assertTrue("Document properties difference in size value", actualProperties.contains("size:6"));
+	    assertTrue("Document property reviewed not found or not correct", actualProperties.contains("Company:Mark Logic Corporation"));
+	    assertTrue("Document property myInteger not found or not correct", actualProperties.contains("filter-capabilities:text subfiles HD-HTML"));
+	    assertTrue("Document property myDecimal not found or not correct", actualProperties.contains("popularity:5"));	    
+	    assertTrue("Document property myString not found or not correct", actualProperties.contains("Author:MarkLogic"));
+	    assertTrue("Document property myString not found or not correct", actualProperties.contains("content-type:application/msword"));
+	    assertTrue("Document property myString not found or not correct", actualProperties.contains("AppName:Microsoft Office Word"));
+	    
+	    // Add to write batcher again mixture of ContentHandle and DocumentWriteOperation with default metadata instance
+	    DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
+	    metadataHandle.getCollections().addAll("my-collection1", "my-collection2");
+	    metadataHandle.getPermissions().add("app-user", Capability.UPDATE, Capability.READ);
+	    metadataHandle.getProperties().put("reviewed", true);
+	    metadataHandle.getProperties().put("myString", "foo");
+	    metadataHandle.getProperties().put("myInteger", 10);
+	    metadataHandle.getProperties().put("myDecimal", 34.56678);
+	    
+	    metadataHandle.setQuality(23);
+	    DocumentWriteOperationImpl docWriteOpsImp4 = new DocumentWriteOperationImpl(
+	    		OperationType.DISABLE_METADATA_DEFAULT,
+	    		docId[4],
+	    		metadataHandle,
+	    		contHandle5
+	    		);
+	    
+	    ihb3.add(docId[3], contHandle4).add(docWriteOpsImp4);
+	    
+	    ihb3.flushAndWait();
+		System.out.println("Size is " + dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 5);
+		
+		// Read back document from second  DocumentWriteOperation to verify meta-data.
+		DocumentMetadataHandle mHandle2 = readMetadataFromDocument(dbClient, docId[4], "XML");		
+		
+		DocumentProperties properties = mHandle2.getProperties();	    
+	    DocumentCollections collections = mHandle2.getCollections();
+
+	    // Properties
+	    String actualProperties2 = getDocumentPropertiesString(properties);
+	    System.out.println("Returned properties: " + actualProperties);	    
+
+	    assertTrue("Document properties difference in size value", actualProperties2.contains("size:4"));
+	    assertTrue("Document property reviewed not found or not correct", actualProperties2.contains("reviewed:true"));
+	    assertTrue("Document property myInteger not found or not correct", actualProperties2.contains("myInteger:10"));
+	    assertTrue("Document property myDecimal not found or not correct", actualProperties2.contains("myDecimal:34.56678"));	    
+	    assertTrue("Document property myString not found or not correct", actualProperties2.contains("myString:foo"));
+	    
+	    // Collections
+	    String actualCollections = getDocumentCollectionsString(collections);
+	    System.out.println("Returned collections: " + actualCollections);
+
+	    assertTrue("Document collections difference in size value", actualCollections.contains("size:2"));
+	    assertTrue("my-collection1 not found", actualCollections.contains("my-collection1"));
+	    assertTrue("my-collection2 not found", actualCollections.contains("my-collection2"));
+	    
+	    // Read the first document from the second batch. No Properties or collection available
+	    
+	 	DocumentMetadataHandle mHandle3 = readMetadataFromDocument(dbClient, docId[3], "XML");
+	 	assertTrue("Document properties difference in size value", mHandle3.getProperties().size()==0);
+	 	assertTrue("Document collections difference in size value", mHandle3.getCollections().size()==0);
+		
+		clearDB(port);
 	}
 }
