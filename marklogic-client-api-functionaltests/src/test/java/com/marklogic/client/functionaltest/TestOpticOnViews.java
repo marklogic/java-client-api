@@ -356,14 +356,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
 
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.union(plan2)
         .select(p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color")
         )
@@ -400,7 +400,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
@@ -409,7 +409,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
                 p.col( "masterId")
                 )
         )
-        .orderBy(p.asc(p.col( "id")));
+        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -458,7 +458,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
         .select(
             p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color")
         )
@@ -536,14 +536,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinLeftOuter(plan2)
         .select(
             p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color")
         )
@@ -583,14 +583,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinCrossProduct(plan2)
         .select(
             p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color")
         )
@@ -1066,7 +1066,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanBuilder p = rowMgr.newPlanBuilder();
 
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
@@ -1076,7 +1076,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
                 p.col( "masterId")
                 )
         )
-        .orderBy(p.asc(p.col( "id")))
+        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "master", "id")))
         .select(p.col( "color"))
         .whereDistinct()
         .orderBy(p.desc(p.col( "color")));
@@ -1116,7 +1116,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
         .select(
             p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName",p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color")
         )
@@ -1266,9 +1266,9 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan3 = plan1.joinInner(plan2)
         .where(p.eq(p.schemaCol("opticFunctionalTest", "master", "id"),
             p.col( "masterId"))
@@ -1611,7 +1611,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
                   p.col( "masterId")
                   )
           )
-          .orderBy(p.asc(p.col( "id_invalid")));
+          .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id_invalid")));
 
       JacksonHandle jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1689,17 +1689,17 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     // intersect with different number of columns
     try {
       ModifyPlan plan3 = plan1.select(p.schemaCol("opticFunctionalTest", "master", "id"))
           .intersect(
               plan2.select(
-                  p.col( "id"),
-                  p.col( "masterId")
+            		  p.schemaCol("opticFunctionalTest", "detail", "id"),
+                  p.schemaCol("opticFunctionalTest", "master", "masterId")
                   )
           )
-          .orderBy(p.asc(p.col("id")));
+          .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
 
       jacksonHandle = new JacksonHandle();
       jacksonHandle.setMimetype("application/json");
@@ -1824,7 +1824,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanSystemColumn fIdCol1 = p.fragmentIdCol("fragIdCol1");
     PlanSystemColumn fIdCol2 = p.fragmentIdCol("fragIdCol2");
 
-    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, p.fragmentIdCol("fragIdCol1"))
+    ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail", null, fIdCol1)
         .orderBy(p.col( "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master", null, fIdCol2)
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
@@ -1838,7 +1838,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
         .select(
             p.as("MasterName", p.schemaCol("opticFunctionalTest", "master", "name")),
             p.schemaCol("opticFunctionalTest", "master", "date"),
-            p.as("DetailName", p.col( "name")),
+            p.as("DetailName", p.schemaCol("opticFunctionalTest", "detail", "name")),
             p.col( "amount"),
             p.col( "color"),
             fIdCol1,
@@ -1874,7 +1874,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
-        .orderBy(p.col( "id"));
+        .orderBy(p.schemaCol("opticFunctionalTest", "detail", "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")
         .orderBy(p.schemaCol("opticFunctionalTest", "master", "id"));
     PlanParamExpr idParam = p.param("ID");
@@ -1882,7 +1882,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
         .where(
             p.eq(p.schemaCol("opticFunctionalTest", "master", "id"), idParam)
         )
-        .orderBy(p.asc(p.col( "id")));
+        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
     JacksonHandle jacksonHandle = new JacksonHandle();
     jacksonHandle.setMimetype("application/json");
 
@@ -2070,7 +2070,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 							  p.col( "masterId")
 							  )
 					  )
-			  .orderBy(p.asc(p.col( "id")));
+			  .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail" , "id")));
 	  JacksonHandle jacksonHandle = new JacksonHandle();
 	  jacksonHandle.setMimetype("application/json");
 
@@ -2153,14 +2153,14 @@ public class TestOpticOnViews extends BasicJavaClientREST {
 	  PlanBuilder p = rowMgr.newPlanBuilder();
 	  
 	  PlanExprColSeq colSeqSel = p.colSeq(
-			  p.col( "id"),
-			  p.col( "color"),
+			  p.schemaCol("opticFunctionalTest", "detail", "id"),
+			  p.schemaCol("opticFunctionalTest", "detail", "color"),
              p.as("masterName", p.schemaCol("opticFunctionalTest", "master", "name"))
 			  );
 	 
 	  ModifyPlan plan1 = p.fromSql("select * FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id")		     
 			  	.select(colSeqSel)
-		        .orderBy(p.asc(p.col( "id")));
+		        .orderBy(p.asc(p.schemaCol("opticFunctionalTest", "detail", "id")));
 		          
 	  JacksonHandle jacksonHandle = new JacksonHandle();
 	  jacksonHandle.setMimetype("application/json");
@@ -2304,83 +2304,6 @@ public void testFromSqlBetweenAndSqlCondition() throws KeyManagementException, N
 	  assertEquals("Row 3 myPlan value incorrect", "Detail 3", jsonResults.path(2).path("myPlan.name").path("value").asText());
  }
  
- /*
-  * fromsql 
- TEST 26 - negative test on arbitrary builtin function
- TEST 29 - negative test on incorrect sql statement
- TEST 30 - negative test on incorrect sql condition
- */
- @Test
- public void testFromSqlNegativeIncorrectSql() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
- {
-	  System.out.println("In testFromSqlNegativeIncorrectSql method");
-	  RowManager rowMgr = client.newRowManager();
-	  PlanBuilder p = rowMgr.newPlanBuilder();
-	  //TEST 29 - negative test on incorrect sql statement
-	  ModifyPlan plan1 = p.fromSql(
-			  "SELECT opticFunctionalTest.detail.id, opticFunctionalTest.detail.name " 
-					  + " UNION " 
-					  + " SELECT opticFunctionalTest.master.id, opticFunctionalTest.master.name FROM opticFunctionalTest.master ORDER BY name",
-					  "myPlan"
-			  )
-			  .orderBy(p.desc("id"))
-		      .offsetLimit(1, 3);		      
-	  JacksonHandle jacksonHandle = new JacksonHandle();
-	  jacksonHandle.setMimetype("application/json");
-	  String extStr = null;
-
-	  try {
-	  rowMgr.resultDoc(plan1, jacksonHandle);
-	  }
-	  catch(Exception ex) {
-		  extStr = ex.getMessage();
-		  System.out.println("TEST29 Exception is + " + extStr);
-	  }
-	  assertTrue("Exception message incorrect from testFromSqlNegativeIncorrectSql", 
-			  extStr.contains("SQL-NOCOLUMN: return plan.sql(select); -- Column not found"));
-	  //TEST 30 - negative test on incorrect sql condition
-	  ModifyPlan plan2 = p.fromSql(
-			  			"SELECT (opticFunctionalTest.detail.amount + opticFunctionalTest.detail.masterId) AS added " 
-					  + " (opticFunctionalTest.detail.amount - opticFunctionalTest.master.id) AS substracted, " 
-					  + " (opticFunctionalTest.detail.amount % opticFunctionalTest.master.id) AS modulo, "
-					  + " (opticFunctionalTest.detail.amount / (opticFunctionalTest.detail.amount * opticFunctionalTest.detail.id)) AS divided "
-					  + " FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master WHERE opticFunctionalTest.detail.masterId = opticFunctionalTest.master.id)"
-					  )
-			  .orderBy(p.asc("substracted"));
-	  JacksonHandle jacksonHandle2 = new JacksonHandle();
-	  jacksonHandle2.setMimetype("application/json");
-	  String extStr2 = null;
-
-	  try {
-	  rowMgr.resultDoc(plan2, jacksonHandle);
-	  }
-	  catch(Exception ex) {
-		  extStr2 = ex.getMessage();
-		  System.out.println("TEST30 Exception is + " + extStr2);
-	  }
-	  assertTrue("Exception message incorrect from testFromSqlNegativeIncorrectSql", 
-			  extStr2.contains("Unexpected token syntax error"));
-	  //TEST 26 - negative test on arbitrary builtin function
-	  ModifyPlan plan3 = p.fromSql
-			  (
-	  			"SELECT * FROM opticFunctionalTest.detail INNER JOIN opticFunctionalTest.master ORDER BY opticFunctionalTest.detail.id"
-			  )
-			  .where(p.sqlCondition("<http://www.w3.org/2005/xpath-functions#abs>(-3) = 'theNumericColumn'"));
-	  JacksonHandle jacksonHandle3 = new JacksonHandle();
-	  jacksonHandle3.setMimetype("application/json");
-	  String extStr3 = null;
-
-	  try {
-		  rowMgr.resultDoc(plan3, jacksonHandle);
-	  }
-	  catch(Exception ex) {
-		  extStr3 = ex.getMessage();
-		  System.out.println("TEST30 Exception is + " + extStr3);
-	  }
-	  assertTrue("Exception message incorrect from testFromSqlNegativeIncorrectSql", 
-			  extStr3.contains("Unexpected token syntax error"));
- }
-
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     System.out.println("In tear down");
