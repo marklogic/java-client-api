@@ -280,7 +280,7 @@ public class WriteBatcherTest {
 
     try {
       HostAvailabilityListener ha = new HostAvailabilityListener(moveMgr)
-        .withMinHosts(2);
+        .withMinHosts(5);
       fail("should have thrown IllegalArgumentException since minHosts was " +
         "set to a number greater than the number of hosts in the cluster");
     } catch (IllegalArgumentException e) {

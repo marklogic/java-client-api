@@ -31,6 +31,7 @@ import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.stream.XMLEventReader;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
+import javax.xml.stream.events.Attribute;
 import javax.xml.stream.events.StartElement;
 import javax.xml.stream.events.XMLEvent;
 import javax.xml.transform.Transformer;
@@ -174,7 +175,7 @@ public class XMLDocumentTest {
         continue;
       StartElement element = event.asStartElement();
       elementCount++;
-      Iterator<Object> attributes = element.getAttributes();
+      Iterator<Attribute> attributes = element.getAttributes();
       while (attributes.hasNext()) {
         attributes.next();
         attributeCount++;
