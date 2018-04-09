@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,6 +76,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
+  private final Object lock = new Object();
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
   private JobTicket jobTicket;
   private Thread runJobCompletionListeners;
@@ -350,9 +352,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
       getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
-    threadPool = new QueryThreadPoolExecutor(1, this);
-    threadPool.setCorePoolSize(getThreadCount());
-    threadPool.setMaximumPoolSize(getThreadCount());
+    threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
     runJobCompletionListeners = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -872,12 +872,40 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
+  /**
+   * A handler for rejected tasks that waits for the work queue to
+   * become empty and then submits the rejected task
+   */
+  private class BlockingRunsPolicy implements RejectedExecutionHandler {
+    /**
+     * Waits for the work queue to become empty and then submits the rejected task,
+     * unless the executor has been shut down, in which case the task is discarded.
+     *
+     * @param runnable the runnable task requested to be executed
+     * @param executor the executor attempting to execute this task
+     */
+    public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
+      if ( !executor.isShutdown() ) {
+        try {
+          synchronized ( lock ) {
+            if(executor.getQueue().remainingCapacity() == 0) {
+              lock.wait();
+            }
+          }
+        } catch ( InterruptedException e ) {
+          logger.warn("Thread interrupted while waiting for the work queue to become empty" + e);
+        }
+        if ( !executor.isShutdown() ) executor.execute(runnable);
+      }
+    }
+  }
+
   private class QueryThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
 
     QueryThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
       super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(threadCount * 50), new ThreadPoolExecutor.CallerRunsPolicy());
+        new LinkedBlockingQueue<Runnable>(threadCount * 25), new BlockingRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
@@ -890,10 +918,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+      super.afterExecute(r, t);
+      synchronized ( lock ) {
+        lock.notify();
+      }
+    }
+
+    @Override
     protected void terminated() {
       super.terminated();
       synchronized(objectToNotifyFrom) {
         objectToNotifyFrom.notifyAll();
+      }
+      synchronized ( lock ) {
+        lock.notify();
       }
     }
   }
