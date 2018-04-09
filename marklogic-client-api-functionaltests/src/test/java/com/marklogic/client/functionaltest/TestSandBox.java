@@ -1172,7 +1172,7 @@ public class TestSandBox extends BasicJavaClientREST {
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
 
-    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:3"));
+    assertTrue("Document permissions difference in size value", actualPermissions.contains("size:5"));
     // assertTrue("Document permissions difference in flexrep-eval permission",
     // actualPermissions.contains("flexrep-eval:[READ]"));
     assertTrue("Document permissions difference in rest-reader permission", actualPermissions.contains("rest-reader:[READ]"));
