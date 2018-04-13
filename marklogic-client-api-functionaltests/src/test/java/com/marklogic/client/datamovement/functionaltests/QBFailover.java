@@ -156,7 +156,9 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
 		} else if (OS.indexOf("nux") >= 0) {
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
+			// Avoid creating Forest at same location when multiple Linux platforms are used
+			String uniqueForestStr = localhost +"-" + version;
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + uniqueForestStr + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
 		} else {

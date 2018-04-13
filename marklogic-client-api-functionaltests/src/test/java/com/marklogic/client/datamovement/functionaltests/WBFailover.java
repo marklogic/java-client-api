@@ -6,6 +6,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.net.InetAddress;
 import java.text.SimpleDateFormat;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -103,6 +104,7 @@ public class WBFailover extends BasicJavaClientREST {
 		dmManager = dbClient.newDataMovementManager();
 
 		Map<String, String> props = new HashMap<>();
+		String localhost = InetAddress.getLocalHost().getHostName().toLowerCase();
 		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
 				.eval().next().getString().charAt(0));
 		if (OS.indexOf("win") >= 0) {
@@ -131,7 +133,9 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
 		} else if (OS.indexOf("nux") >= 0) {
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
+			// Avoid creating Forest at same location when multiple Linux platforms are used
+			String uniqueForestStr = localhost +"-" + version;
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + uniqueForestStr + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
 		} else {
