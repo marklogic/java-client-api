@@ -6,6 +6,7 @@ test {
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
+  exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
 
 /* The minimal number of tests that run in a sandbox environment */
