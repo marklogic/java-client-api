@@ -76,10 +76,11 @@ public class WBFailover extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
+		host = getRestAppServerHostName();
+		
 		server = getRestAppServerName();
         port = getRestAppServerPort();
         
-		host = getRestAppServerHostName();
 		hostNames = getHosts();
 		// Add all possible hostnames and pick a random one to create a client
 		hostLists = new ArrayList<String>();
@@ -94,17 +95,16 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 		}
 		hostLists.add("localhost");
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
-		// Assuming the tests are run on 3 node cluster
-		Assert.assertEquals(hostLists.size(), 7);
+		// Assuming the tests are run on 3 node cluster. If order that test is not marked as a failure add a check.
+		if (hostLists.size() > 1) {
+			Assert.assertEquals(hostLists.size(), 7);
+		}
 		int index = new Random().nextInt(hostLists.size());
-		dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
-		evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
+		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
+		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
 		Map<String, String> props = new HashMap<>();
-		String localhost = InetAddress.getLocalHost().getHostName().toLowerCase();
 		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
 				.eval().next().getString().charAt(0));
 		if (OS.indexOf("win") >= 0) {
@@ -133,15 +133,14 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
 		} else if (OS.indexOf("nux") >= 0) {
-			// Avoid creating Forest at same location when multiple Linux platforms are used
-			String uniqueForestStr = localhost +"-" + version;
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + uniqueForestStr + "/temp-";
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
 		} else {
 			Assert.fail("Unsupported platform");
 		}
-		
+		createDB(dbName);
+		Thread.currentThread().sleep(500L);
 		for (int i = 0; i < hostNames.length; i++) {
 			if (i != 0) {
 				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
@@ -160,6 +159,8 @@ public class WBFailover extends BasicJavaClientREST {
 		changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 
 		Thread.currentThread().sleep(2000L);
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
 
 		associateRESTServerWithDB(server, dbName);
 

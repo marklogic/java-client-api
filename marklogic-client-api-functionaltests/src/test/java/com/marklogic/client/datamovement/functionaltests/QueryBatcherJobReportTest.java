@@ -104,6 +104,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			count++;
 			Thread.currentThread().sleep(500L);
 		}
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
 
 		assocRESTServer(server, dbName, port);
 
@@ -170,9 +172,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		clearDB(port);
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < clusterInfo.size(); i++) {
+		for (int i = 0; i < hostNames.length; i++) {
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));
 		}

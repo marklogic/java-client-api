@@ -165,6 +165,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			count++;
 			Thread.currentThread().sleep(500L);
 		}
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
 		assocRESTServer(server, dbName, port);
 
 		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
@@ -210,7 +212,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < clusterInfo.size(); i++) {
+		for (int i = 0; i < hostNames.length; i++) {
 			System.out.println(dbName + "-" + (i + 1));
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));

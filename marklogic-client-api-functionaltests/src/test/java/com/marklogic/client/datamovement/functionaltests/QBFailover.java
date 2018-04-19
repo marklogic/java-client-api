@@ -95,10 +95,11 @@ public class QBFailover extends BasicJavaClientREST {
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
 		loadGradleProperties();
-		server = getRestAppServerName();
-	    port = getRestAppServerPort();
-	    
 		host = getRestAppServerHostName();
+		
+		server = getRestAppServerName();
+        port = getRestAppServerPort();
+     		
 		hostNames = getHosts();
 		// Add all possible hostnames and pick a random one to create a client
 		List<String> hostLists = new ArrayList<String>();
@@ -118,11 +119,9 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 		}
 		hostLists.add("localhost");
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
 		int index = new Random().nextInt(hostLists.size());
-		dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
-		evalClient = DatabaseClientFactory.newClient(host, port, dbName, user, password, Authentication.DIGEST);
+		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
+		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
 		System.out.println("Connected to: " + dbClient.getHost());
 		dmManager = dbClient.newDataMovementManager();
 		tempMgr = evalClient.newDataMovementManager();
@@ -156,15 +155,15 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
 		} else if (OS.indexOf("nux") >= 0) {
-			// Avoid creating Forest at same location when multiple Linux platforms are used
-			String uniqueForestStr = localhost +"-" + version;
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + uniqueForestStr + "/temp-";
+			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
 		} else if (OS.indexOf("mac") >= 0) {
 			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
 		} else {
 			Assert.fail("Unsupported platform");
 		}
-		
+
+		createDB(dbName);
+		Thread.currentThread().sleep(500L);
 		for (int i = 0; i < hostNames.length; i++) {
 			if (i != 0) {
 				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
@@ -182,6 +181,8 @@ public class QBFailover extends BasicJavaClientREST {
 		props.put("journaling", "strict");
 		changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 		Thread.currentThread().sleep(500L);
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
 		associateRESTServerWithDB(server, dbName);
 
 		// StringHandle

@@ -249,8 +249,14 @@ public abstract class ConnectedRESTQA {
 
 	public static void postRequest(Map<String, String> payload, Map<String, String> params, String endpoint) {
 		DefaultHttpClient client = null;
+		JSONObject JSONpayload = null; 
 		try {
-			JSONObject JSONpayload = new JSONObject(payload);
+			if (payload == null) {
+				JSONpayload = new JSONObject();
+			}
+			else {
+				JSONpayload = new JSONObject(payload);
+			}
 			client = new DefaultHttpClient();
 			client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
 					new UsernamePasswordCredentials("admin", "admin"));
