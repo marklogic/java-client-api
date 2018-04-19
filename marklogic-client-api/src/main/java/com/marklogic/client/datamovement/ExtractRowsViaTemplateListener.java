@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.example.cookbook.datamovement;
+package com.marklogic.client.datamovement;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -29,10 +29,6 @@ import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
 import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.datamovement.BatchFailureListener;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.StringHandle;
@@ -54,7 +50,7 @@ import com.marklogic.client.util.RequestParameters;
  * <pre>{@code
  * StructuredQueryDefinition query = new StructuredQueryBuilder().directory(1, "/employees/");
  * QueryBatcher qb = moveMgr.newQueryBatcher(query)
- *     .onUrisReady(new ExtractViaTemplateListener().withTemplate(templateUri).onTypedRowReady(row -&gt; {
+ *     .onUrisReady(new ExtractRowsViaTemplateListener().withTemplate(templateUri).onTypedRowReady(row -&gt; {
  *       System.out.println("row:" + row);
  *     }));
  * moveMgr.startJob(qb);
@@ -85,17 +81,17 @@ import com.marklogic.client.util.RequestParameters;
  * emitted by the rows. Also, the templates should emit only rows and not
  * triples.
  */
-public class ExtractViaTemplateListener implements QueryBatchListener, AutoCloseable {
+public class ExtractRowsViaTemplateListener implements QueryBatchListener, AutoCloseable {
   private static Logger logger =
-    LoggerFactory.getLogger(ExtractViaTemplateListener.class);
+    LoggerFactory.getLogger(ExtractRowsViaTemplateListener.class);
   private List<String> templateUris = new ArrayList<>();
   private String templateDb;
   private List<Consumer<TypedRow>> rowListeners = new ArrayList<>();
   private List<BatchFailureListener<QueryBatch>> failureListeners = new ArrayList<>();
   private PlanBuilder pb;
 
-  public ExtractViaTemplateListener() {
-    logger.debug("new ExtractViaTemplateListener - this should print once/job; " +
+  public ExtractRowsViaTemplateListener() {
+    logger.debug("new ExtractRowsViaTemplateListener - this should print once/job; " +
       "if you see this once/batch, fix your job configuration");
   }
 
@@ -106,12 +102,12 @@ public class ExtractViaTemplateListener implements QueryBatchListener, AutoClose
    * @param templateUri the uri of the template to be applied to each batch.
    * @return the instance for chaining
    */
-  public ExtractViaTemplateListener withTemplate(String templateUri) {
+  public ExtractRowsViaTemplateListener withTemplate(String templateUri) {
     this.templateUris.add(templateUri);
     return this;
   }
 
-  private ExtractViaTemplateListener withTemplateDatabase(String templateDatabase) {
+  private ExtractRowsViaTemplateListener withTemplateDatabase(String templateDatabase) {
     this.templateDb = templateDatabase;
     return this;
   }
@@ -123,7 +119,7 @@ public class ExtractViaTemplateListener implements QueryBatchListener, AutoClose
    * @param listener the listener which needs to be applied to each row
    * @return the instance for chaining
    */
-  public ExtractViaTemplateListener onTypedRowReady(Consumer<TypedRow> listener) {
+  public ExtractRowsViaTemplateListener onTypedRowReady(Consumer<TypedRow> listener) {
     rowListeners.add(listener);
     return this;
   }
@@ -136,7 +132,7 @@ public class ExtractViaTemplateListener implements QueryBatchListener, AutoClose
    *
    * @return this instance for method chaining
    */
-  public ExtractViaTemplateListener onFailure(BatchFailureListener<QueryBatch> listener) {
+  public ExtractRowsViaTemplateListener onFailure(BatchFailureListener<QueryBatch> listener) {
     failureListeners.add(listener);
     return this;
   }
@@ -147,7 +143,7 @@ public class ExtractViaTemplateListener implements QueryBatchListener, AutoClose
   }
 
   /**
-   * This is the method QueryBatcher calls for ExtractViaTemplateListener to do
+   * This is the method QueryBatcher calls for ExtractRowsViaTemplateListener to do
    * its thing. You should not need to call it.
    *
    * @param batch the batch of uris and some metadata about the current status

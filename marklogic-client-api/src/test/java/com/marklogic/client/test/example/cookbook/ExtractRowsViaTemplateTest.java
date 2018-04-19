@@ -17,11 +17,11 @@ package com.marklogic.client.test.example.cookbook;
 
 import org.junit.Test;
 
-import com.marklogic.client.example.cookbook.datamovement.ExtractViaTemplate;
+import com.marklogic.client.example.cookbook.datamovement.ExtractRowsViaTemplate;
 
-public class ExtractViaTemplateTest {
+public class ExtractRowsViaTemplateTest {
   @Test
   public void testMain() throws Exception {
-    ExtractViaTemplate.main(new String[0]);
+    ExtractRowsViaTemplate.main(new String[0]);
   }
 }

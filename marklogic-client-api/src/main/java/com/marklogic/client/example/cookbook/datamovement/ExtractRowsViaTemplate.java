@@ -24,6 +24,7 @@ import java.util.GregorianCalendar;
 import com.fasterxml.jackson.core.JsonParser.Feature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.marklogic.client.datamovement.ExtractRowsViaTemplateListener;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -43,7 +44,7 @@ import com.marklogic.client.query.StructuredQueryDefinition;
  * to a Tableau TDE (Tableau Data Extract) file.
  *
  */
-public class ExtractViaTemplate {
+public class ExtractRowsViaTemplate {
   private static int threadCount = 3;
   private static int batchSize   = 3;
   private String templateUri = "employees.tde";
@@ -57,7 +58,7 @@ public class ExtractViaTemplate {
     new SimpleDateFormat("yyyy-MM-dd");
 
   public static void main(String[] args) throws ParseException, IOException {
-    new ExtractViaTemplate().run();
+    new ExtractRowsViaTemplate().run();
   }
 
   public void run() throws ParseException, IOException {
@@ -67,7 +68,7 @@ public class ExtractViaTemplate {
       .onUrisReady(
         // This object will be closed by the QueryBatcher when stopJob is
         // called and hence there won't be a resource leak.
-        new ExtractViaTemplateListener()
+        new ExtractRowsViaTemplateListener()
           .withTemplate(templateUri)
           .onTypedRowReady( row -> {
             System.out.println("row:" + row);
@@ -88,7 +89,7 @@ public class ExtractViaTemplate {
      *
      * QueryBatcher qbConsumer = moveMgr.newQueryBatcher(query)
      *  .onUrisReady(
-     *    new ExtractViaTemplateListener()
+     *    new ExtractRowsViaTemplateListener()
      *      .withTemplate(templateName)
      *      .onTypedRowReady(tableauWriter)
      *  );
