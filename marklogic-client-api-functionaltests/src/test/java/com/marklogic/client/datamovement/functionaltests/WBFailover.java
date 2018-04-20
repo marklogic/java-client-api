@@ -82,92 +82,93 @@ public class WBFailover extends BasicJavaClientREST {
         port = getRestAppServerPort();
         
 		hostNames = getHosts();
-		// Add all possible hostnames and pick a random one to create a client
-		hostLists = new ArrayList<String>();
-		Pattern pattern = null;
-		Matcher matcher = null;
-		for (String host : hostNames) {
-			hostLists.add(host);
-			pattern = Pattern.compile("(.+?)(?=\\.)");
-			matcher = pattern.matcher(host);
-			if (matcher.find()) {
-				hostLists.add(matcher.group(1));
-			}
-		}
-		hostLists.add("localhost");
-		// Assuming the tests are run on 3 node cluster. If order that test is not marked as a failure add a check.
-		if (hostLists.size() > 1) {
-			Assert.assertEquals(hostLists.size(), 7);
-		}
-		int index = new Random().nextInt(hostLists.size());
-		dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password, Authentication.DIGEST);
-		evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
-		dmManager = dbClient.newDataMovementManager();
-
-		Map<String, String> props = new HashMap<>();
-		String version = String.valueOf(evalClient.newServerEval().xquery("xquery version \"1.0-ml\"; xdmp:version()")
-				.eval().next().getString().charAt(0));
-		if (OS.indexOf("win") >= 0) {
-			Properties prop = new Properties();
-			InputStream input = null;
-			String location = null;
-			String seperator = File.separator;
-			try {
-				input = new FileInputStream(System.getProperty("user.dir") + seperator + ".." + seperator + ".."
-						+ seperator + "qa" + seperator + "failover-location.properties");
-				prop.load(input);
-				location = prop.getProperty("location");
-				System.out.println(prop.getProperty("location"));
-			} catch (IOException ex) {
-				ex.printStackTrace();
-				Assert.fail("Forest location file not found");
-			} finally {
-				if (input != null) {
-					try {
-						input.close();
-					} catch (IOException e) {
-						e.printStackTrace();
-						Assert.fail("Forest location file not found");
-					}
+		// Perform the setup on multiple nodes only.
+		if (hostNames.length > 1) {
+			// Add all possible hostnames and pick a random one to create a client
+			hostLists = new ArrayList<String>();
+			Pattern pattern = null;
+			Matcher matcher = null;
+			for (String host : hostNames) {
+				hostLists.add(host);
+				pattern = Pattern.compile("(.+?)(?=\\.)");
+				matcher = pattern.matcher(host);
+				if (matcher.find()) {
+					hostLists.add(matcher.group(1));
 				}
 			}
-			dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
-		} else if (OS.indexOf("nux") >= 0) {
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
-		} else if (OS.indexOf("mac") >= 0) {
-			dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
-		} else {
-			Assert.fail("Unsupported platform");
-		}
-		createDB(dbName);
-		Thread.currentThread().sleep(500L);
-		for (int i = 0; i < hostNames.length; i++) {
-			if (i != 0) {
-				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
+			hostLists.add("localhost");
+			// Assuming the tests are run on 3 node cluster.
+			Assert.assertEquals(hostLists.size(), 7);
+			
+			int index = new Random().nextInt(hostLists.size());
+			dbClient = DatabaseClientFactory.newClient(hostLists.get(index), port, user, password,
+					Authentication.DIGEST);
+			evalClient = DatabaseClientFactory.newClient(host, port, user, password, Authentication.DIGEST);
+			dmManager = dbClient.newDataMovementManager();
+			Map<String, String> props = new HashMap<>();
+			String version = String.valueOf(evalClient.newServerEval()
+					.xquery("xquery version \"1.0-ml\"; xdmp:version()").eval().next().getString().charAt(0));
+			if (OS.indexOf("win") >= 0) {
+				Properties prop = new Properties();
+				InputStream input = null;
+				String location = null;
+				String seperator = File.separator;
+				try {
+					input = new FileInputStream(System.getProperty("user.dir") + seperator + ".." + seperator + ".."
+							+ seperator + "qa" + seperator + "failover-location.properties");
+					prop.load(input);
+					location = prop.getProperty("location");
+					System.out.println(prop.getProperty("location"));
+				} catch (IOException ex) {
+					ex.printStackTrace();
+					Assert.fail("Forest location file not found");
+				} finally {
+					if (input != null) {
+						try {
+							input.close();
+						} catch (IOException e) {
+							e.printStackTrace();
+							Assert.fail("Forest location file not found");
+						}
+					}
+				}
+				dataDir = location + "/space/dmsdk-failover/win/" + version + "/temp-";
+			} else if (OS.indexOf("nux") >= 0) {
+				dataDir = "/project/qa-netapp/space/dmsdk-failover/linux/" + version + "/temp-";
+			} else if (OS.indexOf("mac") >= 0) {
+				dataDir = "/project/qa-netapp/space/dmsdk-failover/mac/" + version + "/temp-";
 			} else {
-				createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), null);
-
+				Assert.fail("Unsupported platform");
 			}
-			props.put("database", dbName);
-			props.put("state", "attach");
-			postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
+			createDB(dbName);
+			Thread.currentThread().sleep(500L);
+			for (int i = 0; i < hostNames.length; i++) {
+				if (i != 0) {
+					createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), hostNames[0]);
+				} else {
+					createForest(dbName + "-" + (i + 1), hostNames[i], dataDir + (i + 1), null);
 
-			Thread.currentThread().sleep(3000L);
+				}
+				props.put("database", dbName);
+				props.put("state", "attach");
+				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
+
+				Thread.currentThread().sleep(3000L);
+			}
+			props = new HashMap<>();
+			props.put("journaling", "strict");
+			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
+			Thread.currentThread().sleep(2000L);
+			// Create App Server if needed.
+			createRESTServerWithDB(server, port);
+			associateRESTServerWithDB(server, dbName);
+			// StringHandle
+			stringTriple = "<top-song xmlns=\"http://marklogic.com/MLU/top-songs\"> <!--Copyright (c) 2010 Mark Logic Corporation. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published bythe Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled \"GNU Free Documentation License.\" Content derived from http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&action=edit&redlink=1 Modified in February 2010 by Mark Logic Corporation under the terms of the GNU Free Documentation License.-->  <title href=\"http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&amp;action=edit&amp;redlink=1\" xmlns:ts=\"http://marklogic.com/MLU/top-songs\">Blue Champagne</title>  <artist xmlns:ts=\"http://marklogic.com/MLU/top-songs\"/>  <weeks last=\"1941-09-27\">    <week>1941-09-27</week>  </weeks>  <descr/></top-song>";
+			stringHandle = new StringHandle(stringTriple);
+			stringHandle.setFormat(Format.XML);
+		} else {
+			System.out.println("Test skipped -  setUpBeforeClass");
 		}
-		props = new HashMap<>();
-		props.put("journaling", "strict");
-		changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
-
-		Thread.currentThread().sleep(2000L);
-		// Create App Server if needed.
-		createRESTServerWithDB(server, port);
-
-		associateRESTServerWithDB(server, dbName);
-
-		// StringHandle
-		stringTriple = "<top-song xmlns=\"http://marklogic.com/MLU/top-songs\"> <!--Copyright (c) 2010 Mark Logic Corporation. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published bythe Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled \"GNU Free Documentation License.\" Content derived from http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&action=edit&redlink=1 Modified in February 2010 by Mark Logic Corporation under the terms of the GNU Free Documentation License.-->  <title href=\"http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&amp;action=edit&amp;redlink=1\" xmlns:ts=\"http://marklogic.com/MLU/top-songs\">Blue Champagne</title>  <artist xmlns:ts=\"http://marklogic.com/MLU/top-songs\"/>  <weeks last=\"1941-09-27\">    <week>1941-09-27</week>  </weeks>  <descr/></top-song>";
-		stringHandle = new StringHandle(stringTriple);
-		stringHandle.setFormat(Format.XML);
 	}
 
 	private static void createForest(String forestName, String hostname, String dataDir, String failoverHost) {
@@ -187,63 +188,76 @@ public class WBFailover extends BasicJavaClientREST {
 
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
-		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
-			System.out.println(dbName + "-" + (i + 1));
-			detachForest(dbName, dbName + "-" + (i + 1));
-			deleteForest(dbName + "-" + (i + 1));
+		// Perform the setup on multiple nodes only.
+		if (hostNames.length > 1) {
+			associateRESTServerWithDB(server, "Documents");
+			for (int i = 0; i < hostNames.length; i++) {
+				System.out.println(dbName + "-" + (i + 1));
+				detachForest(dbName, dbName + "-" + (i + 1));
+				deleteForest(dbName + "-" + (i + 1));
+			}
+			deleteDB(dbName);
+		} else {
+			System.out.println("Test skipped -  tearDownAfterClass");
 		}
-		deleteDB(dbName);
-
 	}
 
 	@Before
 	public void setUp() throws Exception {
-		for (int i = 0; i < hostNames.length; i++) {
-			if (!isRunning(hostNames[i])) {
-				serverStartStop(hostNames[i], "start");
+		// Perform the setup on multiple nodes only.
+		if (hostNames.length > 1) {			
+			for (int i = 0; i < hostNames.length; i++) {
+				if (!isRunning(hostNames[i])) {
+					serverStartStop(hostNames[i], "start");
+				}
+				Assert.assertTrue(isRunning(hostNames[i]));
 			}
-			Assert.assertTrue(isRunning(hostNames[i]));
+			if (!(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
+				clearDB(port);
+			}
+			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
+			ForestConfiguration fc = dmManager.readForestConfig();
+			Forest[] f = fc.listForests();
+			f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
+					.toArray(new Forest[hostNames.length]);
+			Assert.assertEquals(f.length, hostNames.length);
+			Assert.assertEquals(f.length, 3L);
+		} else {
+			System.out.println("Test skipped -  setUp");
 		}
-		if (!(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0)) {
-			clearDB(port);
-		}
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
-		ForestConfiguration fc = dmManager.readForestConfig();
-		Forest[] f = fc.listForests();
-		f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
-				.toArray(new Forest[hostNames.length]);
-		Assert.assertEquals(f.length, hostNames.length);
-		Assert.assertEquals(f.length, 3L);
 	}
 
 	@After
 	public void tearDown() throws Exception {
-		Map<String, String> props = new HashMap<>();
-		props.put("database", dbName);
-		System.out.println("Restarting servers");
-		for (int i = hostNames.length - 1; i >= 1; i--) {
-			props.put("enabled", "false");
-			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
-			System.out.println("Disabling " + dbName + "-" + (i + 1));
-			changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
-			Thread.currentThread().sleep(1000L);
-			System.out.println("Restarting server " + hostNames[i]);
-			try {
-				serverStartStop(hostNames[i], "start");
-			} catch (Exception e) {
-				e.printStackTrace();
+		// Perform the setup on multiple nodes only.
+		if (hostNames.length > 1) {
+			Map<String, String> props = new HashMap<>();
+			props.put("database", dbName);
+			System.out.println("Restarting servers");
+			for (int i = hostNames.length - 1; i >= 1; i--) {
+				props.put("enabled", "false");
+				System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+				System.out.println("Disabling " + dbName + "-" + (i + 1));
+				changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
+				Thread.currentThread().sleep(1000L);
+				System.out.println("Restarting server " + hostNames[i]);
+				try {
+					serverStartStop(hostNames[i], "start");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				Thread.currentThread().sleep(1000L);
+				System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
+				System.out.println("Enabling " + dbName + "-" + (i + 1));
+				props.put("enabled", "true");
+				changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
+				Thread.currentThread().sleep(1000L);
 			}
-			Thread.currentThread().sleep(1000L);
-			System.out.println(new SimpleDateFormat("yyyy.MM.dd.HH.mm.ss").format(new Date()));
-			System.out.println("Enabling " + dbName + "-" + (i + 1));
-			props.put("enabled", "true");
-			changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
-			Thread.currentThread().sleep(1000L);
+			System.out.println("Clearing DB");
+			clearDB(port);
+		} else {
+			System.out.println("Test skipped -  tearDown");
 		}
-
-		System.out.println("Clearing DB");
-		clearDB(port);
 	}
 
 	@Test(timeout = 350000)
