@@ -97,6 +97,9 @@ public class DeleteListenerTest extends BasicJavaClientREST {
  	createRESTServerWithDB(server, port);
 
     assocRESTServer(server, dbName, port);
+    if (IsSecurityEnabled()) {
+		enableSecurityOnRESTServer(server, dbName);
+	}
 
     dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
     DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);

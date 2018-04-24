@@ -95,6 +95,9 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		createRESTServerWithDB(server, port);
 
 		associateRESTServerWithDB(server, dbName);
+		if (IsSecurityEnabled()) {
+			enableSecurityOnRESTServer(server, dbName);
+		}
 
 		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
 		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);

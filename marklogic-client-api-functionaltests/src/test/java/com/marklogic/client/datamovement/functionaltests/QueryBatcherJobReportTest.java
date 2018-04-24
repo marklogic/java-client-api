@@ -106,8 +106,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		}
 		// Create App Server if needed.
 		createRESTServerWithDB(server, port);
-
 		assocRESTServer(server, dbName, port);
+		if (IsSecurityEnabled()) {
+			enableSecurityOnRESTServer(server, dbName);
+		}
 
 		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
 	            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();

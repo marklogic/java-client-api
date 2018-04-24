@@ -185,6 +185,9 @@ public class QBFailover extends BasicJavaClientREST {
 			// Create App Server if needed.
 			createRESTServerWithDB(server, port);
 			associateRESTServerWithDB(server, dbName);
+			if (IsSecurityEnabled()) {
+				enableSecurityOnRESTServer(server, dbName);
+			}
 			// StringHandle
 			stringTriple = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";
 			stringHandle = new StringHandle(stringTriple);
