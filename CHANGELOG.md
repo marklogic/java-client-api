@@ -1,5 +1,28 @@
 # CHANGELOG
 
+## 4.0.4
+
+#### New Functionality
+- [#839](https://github.com/marklogic/java-client-api/issues/839) - Export Data from Documents as Rows using DMSDK's ExportRowsViaTemplateListener by supplying a query and a TDE template name
+- [#853](https://github.com/marklogic/java-client-api/issues/853) - Exposed new Optic enhancements such as fromSql, fromSparql etc
+- [#882](https://github.com/marklogic/java-client-api/issues/882) - QueryBatcher Enhancements - Listeners can be registered with onJobCompletion to run listeners when the QueryJob is completed. Also methods have been added to get the primary client of the Batcher.
+- [#891](https://github.com/marklogic/java-client-api/issues/891) - The Batchers will automatically close the listeners registered with them if they have implemented AutoCloseable and have some resources to close
+- [#647](https://github.com/marklogic/java-client-api/issues/647) - Added an overload in WriteBatcher to add DocumentWriteOperation
+- [#835](https://github.com/marklogic/java-client-api/issues/835) - During Failover, if the hosts come back up from offline status, it would be automatically added back to the list of hosts
+- [#877](https://github.com/marklogic/java-client-api/issues/877) - Changed the Java Client API maven project to a gradle project
+
+#### Improvements and Bug Fixes
+- [#874](https://github.com/marklogic/java-client-api/issues/874) - EvalResultIterator implements Closeable and it can be now used in the try with resources pattern
+- [#892](https://github.com/marklogic/java-client-api/issues/892) - Removed NewCookie and replaced it with OkHttp Cookie thereby eliminating the mock implementation of RuntimDelegate class
+- [#567](https://github.com/marklogic/java-client-api/issues/567) - Cookbook recipe for moving data out of one MarkLogic database to another (intra/inter cluster) and having server and JVM transforms mid way.
+- [#909](https://github.com/marklogic/java-client-api/issues/909) - Added an overload for ModifyPlanBase.where to accept PlanCondition
+- [#879](https://github.com/marklogic/java-client-api/issues/879) - Increase queue size (will use more memory) for QueryBatcher so iterator thread won't be distracted running batches as often and can be more focused on feeding the queue
+- [#850](https://github.com/marklogic/java-client-api/issues/850) - Deprecated getQuerySuccessListeners and added getUrisReadyListeners
+- [#836](https://github.com/marklogic/java-client-api/issues/836) - A Failover Bug where WriteBatcher hangs forever in awaitCompletion due to internal inconsistency
+- [#474](https://github.com/marklogic/java-client-api/issues/474) - Performance Optimization when calling XMLOutputFactory::newInstance
+- [#826](https://github.com/marklogic/java-client-api/issues/826) - Fixed inconsistency in to return the correct number of writes so far for WriteBatches
+- [#860](https://github.com/marklogic/java-client-api/issues/860) - removed many License files and replaced it with LEGALNOTICES.txt
+
 ## 4.0.3
 
 #### New Functionality
