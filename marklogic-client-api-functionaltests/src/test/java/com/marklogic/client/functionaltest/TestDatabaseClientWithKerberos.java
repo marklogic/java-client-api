@@ -289,10 +289,10 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
     // Permissions
     String actualPermissions = getDocumentPermissionsString(permissions);
     System.out.println(actualPermissions);
-    // size:3|rest-writer:[EXECUTE, READ,
+    // size:5|rest-writer:[EXECUTE, READ,
     // UPDATE]|rest-reader:[READ]|app-user:[READ, UPDATE]|
     assertTrue("Document permissions difference in size value",
-        actualPermissions.contains("size:3"));
+        actualPermissions.contains("size:5"));
     assertTrue("Document permissions difference in rest-reader permission",
         actualPermissions.contains("rest-reader:[READ]"));
     // Split up rest-writer:[READ, EXECUTE, UPDATE] string
