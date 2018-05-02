@@ -1,0 +1,37 @@
+test {
+  testLogging{
+    events 'started','passed', 'skipped'
+  }
+
+  exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
+  exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
+  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
+  exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
+}
+
+/* The minimal number of tests that run in a sandbox environment */
+
+task testSandbox(type:Test) {
+  include 'com/marklogic/client/functionaltest/TestSandBox.class'
+}
+
+/* The code repositories to consult for dependencies */
+
+repositories {
+  maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
+  maven { url "http://developer.marklogic.com/maven2" }
+}
+
+jacocoTestReport {
+  group = "Reporting"
+  description = "Generate Jacoco coverage reports after running tests."
+  additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
+}
+
+dependencies {  
+  compile project (':marklogic-client-api')
+  compile group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
+  compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
+  compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+  compile group: 'commons-io', name: 'commons-io', version: '2.6'
+}
