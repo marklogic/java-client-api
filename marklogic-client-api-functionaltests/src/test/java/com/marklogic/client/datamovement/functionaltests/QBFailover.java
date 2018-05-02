@@ -1,6 +1,22 @@
+/*
+ * Copyright 2014-2018 MarkLogic Corporation
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *    http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -58,7 +74,11 @@ import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatch;
+import com.marklogic.client.datamovement.QueryBatchException;
+import com.marklogic.client.datamovement.QueryBatchListener;
 import com.marklogic.client.datamovement.QueryBatcher;
+import com.marklogic.client.datamovement.QueryBatcherListener;
+import com.marklogic.client.datamovement.QueryFailureListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -99,7 +119,13 @@ public class QBFailover extends BasicJavaClientREST {
 		
 		server = getRestAppServerName();
         port = getRestAppServerPort();
-     		
+     	
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
+		associateRESTServerWithDB(server, dbName);
+		if (IsSecurityEnabled()) {
+			enableSecurityOnRESTServer(server, dbName);
+		}
 		hostNames = getHosts();
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
@@ -182,12 +208,7 @@ public class QBFailover extends BasicJavaClientREST {
 			props.put("journaling", "strict");
 			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 			Thread.currentThread().sleep(500L);
-			// Create App Server if needed.
-			createRESTServerWithDB(server, port);
-			associateRESTServerWithDB(server, dbName);
-			if (IsSecurityEnabled()) {
-				enableSecurityOnRESTServer(server, dbName);
-			}
+			
 			// StringHandle
 			stringTriple = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so foo</foo>";
 			stringHandle = new StringHandle(stringTriple);
@@ -782,6 +803,116 @@ public class QBFailover extends BasicJavaClientREST {
 		changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 		System.out.println("Count: " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		assertEquals(0, evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+	}
+	
+	/* This test is intended to test closing of listeners when job is done.
+	 * 
+	 * 
+	 */
+	@Test(timeout = 450000)
+	public void testListenerCloseables() throws Exception {
+		Assume.assumeTrue(hostNames.length > 1);
+		
+		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
+		AtomicInteger success = new AtomicInteger(0);
+		// There two variables are to track close method on Listeners.
+		AtomicBoolean testCloseOnBatchListenerUriReady = new AtomicBoolean(false);
+		AtomicBoolean testCloseOnFailureListenerQueryFailure = new AtomicBoolean(false);
+		
+		// This variable tracks the OnJobCompleteion status
+		AtomicBoolean getOnePrimaryDBClient = new AtomicBoolean(false);
+		
+		// Track primary database client on all listeners and job completion
+		StringBuilder sb_strBatchListenerUriReady = new StringBuilder();
+		StringBuilder sb_strJobCompletionListener = new StringBuilder();
+		
+		
+		class TestCloseOnBatchListenerUriReady implements QueryBatchListener, AutoCloseable {
+
+			@Override
+			public void close() throws Exception {				
+				System.out.println("Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
+				testCloseOnBatchListenerUriReady.set(true);
+			}
+
+			@Override
+			public void processEvent(QueryBatch batch) {				
+				System.out.println("processEvent called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
+				// Verify the Primary DatabaseClient instance
+				if (!getOnePrimaryDBClient.get()) {
+					getOnePrimaryDBClient.set(true);
+					sb_strBatchListenerUriReady.append(batch.getBatcher().getPrimaryClient().getHost());
+					sb_strBatchListenerUriReady.append("|");
+					sb_strBatchListenerUriReady.append(batch.getBatcher().getPrimaryClient().getPort());					
+				}
+			}			
+		}
+		
+		class TestCloseOnBatchListenerQueryFailure implements QueryFailureListener, AutoCloseable {
+
+			@Override
+			public void close() throws Exception {				
+				System.out.println("Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");
+				testCloseOnFailureListenerQueryFailure.set(true);
+			}
+			
+			@Override
+			public void processFailure(QueryBatchException failure) {
+				System.out.println("processFailure called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");				
+			}			
+		}
+		
+		// Listener to be called when QueryBatcher has completed reading all URIs
+		class TestQBJobCompleteionListener implements QueryBatcherListener {
+
+			@Override
+			public void processEvent(QueryBatcher batcher) {
+				System.out.println("processEvent called from testMinNodesWithCloseable in TestQBJobCompleteionListener class");
+
+				// Verify a detail - ticket Id at end of completion				
+				sb_strJobCompletionListener.append(batcher.getBatchSize());				
+			}			
+		}
+		
+		try {
+			
+			TestCloseOnBatchListenerUriReady closeBatchURIs = new TestCloseOnBatchListenerUriReady();
+			TestCloseOnBatchListenerQueryFailure closeQueryFailure = new TestCloseOnBatchListenerQueryFailure();
+			TestQBJobCompleteionListener jobCompleteListener = new TestQBJobCompleteionListener();
+			
+			QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+					.withBatchSize(4000).withThreadCount(5);
+						
+			// Add the new Listeners to the batcher.
+
+			batcher.onUrisReady((batch) -> {
+				success.addAndGet(batch.getItems().length);
+			}).onQueryFailure(queryException -> {
+				queryException.printStackTrace();
+			}).onUrisReady(closeBatchURIs)
+			.onQueryFailure(closeQueryFailure)
+			.onJobCompletion(jobCompleteListener);
+
+			ticket = dmManager.startJob(batcher);
+			
+			batcher.awaitCompletion();
+			dmManager.stopJob(ticket);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		// Verify the DatabaseClient instances.
+		System.out.println("Primary database instance is  " + sb_strBatchListenerUriReady.toString());
+		
+		// Verify the close status
+		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class", testCloseOnBatchListenerUriReady.get());
+		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class", testCloseOnFailureListenerQueryFailure.get());		
+		
+		// Verify the batch size on job completion
+		assertTrue("Job Completion details not equal", 
+				sb_strJobCompletionListener.toString().equalsIgnoreCase("4000"));
+		// Verify the primary database client
+		assertTrue("Primary database details not correct", 
+						sb_strBatchListenerUriReady.toString().contains(String.valueOf(port)));
 	}
 
 	private void serverStartStop(String server, String command) throws Exception {
