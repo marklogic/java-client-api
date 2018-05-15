@@ -129,8 +129,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	private static DocumentMetadataHandle docMeta2;
 	private static ReaderHandle readerHandle1;
 	private static OutputStreamHandle osHandle1;
-	private static WriteBatcher ihbMT;
-	private static JsonNode clusterInfo;
+	private static WriteBatcher ihbMT;	
 	private static String[] hostNames;
 
 	private static String stringTriple;
@@ -175,10 +174,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
 		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
-
+		
 		// JacksonHandle
 		jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
 		jacksonHandle = new JacksonHandle();
@@ -275,8 +271,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				int byteCount = 0;
 				while ((byteCount = docStreamwrongjson.read(buf)) != -1) {
 					out.write(buf, 0, byteCount);
-				}
-
+				}				
 			}
 		};
 
@@ -1038,7 +1033,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		
 		Map<String, String> properties = new HashMap<>();
 		properties.put("updates-allowed", "read-only");
-		for (int i = 0; i < clusterInfo.size(); i++)
+		for (int i = 0; i < hostNames.length; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 		final String query1 = "fn:count(fn:doc())";
 
@@ -1047,7 +1042,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
 
-		for (int i = 0; i < clusterInfo.size(); i++)
+		for (int i = 0; i < hostNames.length; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -1069,7 +1064,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb2.flushAndWait();
 
 		properties.put("updates-allowed", "all");
-		for (int i = 0; i < clusterInfo.size(); i++)
+		for (int i = 0; i < hostNames.length; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);

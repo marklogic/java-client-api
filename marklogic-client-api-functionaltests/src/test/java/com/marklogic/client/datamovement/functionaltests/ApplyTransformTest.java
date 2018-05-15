@@ -84,7 +84,6 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	private static int port = 8000;
 	private static String password = "admin";
 	private static String server = "App-Services";
-	private static JsonNode clusterInfo;
 
 	private static JacksonHandle jacksonHandle;
 	private static JacksonHandle jacksonHandle1;
@@ -134,9 +133,6 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
         DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// FileHandle
 		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));
@@ -775,7 +771,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		ihb2.flushAndWait();
 
 		FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
-				.withRenamedHost("localhost", "127.0.0.1").withWhiteList("127.0.0.1");
+				.withRenamedHost(host, "127.0.0.1").withWhiteList("127.0.0.1");
 
 		Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
 		QueryBatcher getUris = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("NoHost"));
@@ -799,6 +795,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
+			System.out.println("OUtput URI is " + rec.getUri() + "  Currently Node's value " +  dh.get().get("c").asText());
 			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
 			count++;
 		}
