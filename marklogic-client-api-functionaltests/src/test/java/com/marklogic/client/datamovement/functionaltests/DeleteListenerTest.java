@@ -169,9 +169,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     clearDB(port);
   }
 
-  // Added Ignore until Git Issue 920 is fixed. This test causes entire test suite to hang.
-  // Zero Diff Task
-  @Ignore
   public void massDeleteSingleThread() throws Exception {
     Set<String> uriSet = new HashSet<>();
 
