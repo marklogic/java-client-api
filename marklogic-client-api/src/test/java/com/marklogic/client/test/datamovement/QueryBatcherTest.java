@@ -210,6 +210,22 @@ public class QueryBatcherTest {
   }
 
   @Test
+  public void testIterator() throws Exception {
+    Map<String, String[]> matchesByForest = new HashMap<>();
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-2", new String[] {uri5});
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
+    String[] uris = new String[] {uri1, uri2, uri3, uri4, uri5};
+    List<String> uriList = Arrays.asList(uris);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 1, 1, false);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 2, 2, false);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 2, 3, false);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 2, 10, false);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 10, 1, false);
+    runQueryBatcher(moveMgr.newQueryBatcher(uriList.iterator()), null, matchesByForest, 18, 33, false);
+  }
+
+  @Test
   public void testRawCombinedQuery() throws Exception {
     StringHandle structuredQuery = new StringHandle(
       "{ \"search\": " +
@@ -233,9 +249,7 @@ public class QueryBatcherTest {
   }
 
   public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
-      int batchSize, int threadCount)
-    throws Exception
-  {
+        int batchSize, int threadCount, boolean queryBatcherChecks) throws Exception {
     String queryBatcherJobId = "QueryBatcherJobId";
     String queryBatcherJobName = "QueryBatcherJobName";
     int numExpected = 0;
@@ -258,13 +272,15 @@ public class QueryBatcherTest {
         batch -> {
           successfulBatchCount.incrementAndGet();
           totalResults.addAndGet(batch.getItems().length);
-          String forestName = batch.getForest().getForestName();
-          // atomically gets the set unless it's missing in which case it creates it
-          Set<String> matches = results.computeIfAbsent(forestName, k->ConcurrentHashMap.<String>newKeySet());
-          for ( String uri : batch.getItems() ) {
-            matches.add(uri);
+          if(queryBatcherChecks) {
+            String forestName = batch.getForest().getForestName();
+            // atomically gets the set unless it's missing in which case it creates it
+            Set<String> matches = results.computeIfAbsent(forestName, k->ConcurrentHashMap.<String>newKeySet());
+            for ( String uri : batch.getItems() ) {
+              matches.add(uri);
+            }
+            batchDatabaseName.set(batch.getForest().getDatabaseName());
           }
-          batchDatabaseName.set(batch.getForest().getDatabaseName());
           batchTicket.set(batch.getJobTicket());
           batchTimestamp.set(batch.getTimestamp());
         }
@@ -276,8 +292,8 @@ public class QueryBatcherTest {
           failures.append("ERROR:[" + throwable + "]\n");
         }
       )
-        .withJobId(queryBatcherJobId)
-        .withJobName(queryBatcherJobName);
+      .withJobId(queryBatcherJobId)
+      .withJobName(queryBatcherJobName);
 
     assertEquals(batchSize, queryBatcher.getBatchSize());
     assertEquals(threadCount, queryBatcher.getThreadCount());
@@ -309,8 +325,6 @@ public class QueryBatcherTest {
       fail(failures.toString());
     }
 
-    assertEquals("java-unittest", batchDatabaseName.get());
-
     // make sure we got the right number of results
     assertEquals(numExpected, totalResults.get());
 
@@ -327,25 +341,32 @@ public class QueryBatcherTest {
     assertEquals("Job Report has incorrect failure events counts", failureBatchCount.get(), report.getFailureEventsCount());
     //assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
 
-    // make sure we get the same number of results via search for the same query
-    SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
-    assertEquals(numExpected, searchResults.getTotalResults());
-
-    // if there are only the three expected forests, make sure we got the expected results per forest
-    if ( queryBatcher.getForestConfig().listForests().length == 3 ) {
-      for ( String forest : matchesByForest.keySet() ) {
-        String[] expected = matchesByForest.get(forest);
-        for ( String uri : expected ) {
-          if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
-            for ( String resultsForest : results.keySet() ) {
-              logger.error("Results found for forest {}: {}, expected {}", resultsForest, results.get(resultsForest),
-                Arrays.asList(matchesByForest.get(resultsForest)));
+    if(queryBatcherChecks) {
+      assertEquals("java-unittest", batchDatabaseName.get());
+      // make sure we get the same number of results via search for the same query
+      SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
+      assertEquals(numExpected, searchResults.getTotalResults());
+      // if there are only the three expected forests, make sure we got the expected results per forest
+      if ( queryBatcher.getForestConfig().listForests().length == 3 ) {
+        for ( String forest : matchesByForest.keySet() ) {
+          String[] expected = matchesByForest.get(forest);
+          for ( String uri : expected ) {
+            if ( results.get(forest) == null || ! results.get(forest).contains(uri) ) {
+              for ( String resultsForest : results.keySet() ) {
+                logger.error("Results found for forest {}: {}, expected {}", resultsForest, results.get(resultsForest),
+                    Arrays.asList(matchesByForest.get(resultsForest)));
+              }
+              fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
             }
-            fail("Missing uri=[" + uri + "] from forest=[" + forest + "]");
           }
         }
       }
     }
+  }
+
+  public void runQueryBatcher(QueryBatcher queryBatcher, QueryDefinition query, Map<String,String[]> matchesByForest,
+      int batchSize, int threadCount) throws Exception {
+    runQueryBatcher(queryBatcher, query, matchesByForest, batchSize, threadCount, true);
   }
 
   @Test
