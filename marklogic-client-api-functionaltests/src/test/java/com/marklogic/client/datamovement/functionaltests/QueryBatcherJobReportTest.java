@@ -324,7 +324,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		String uri = null;
 
 		// Insert 10 K documents
-		for (int i = 0; i < 6000; i++) {
+		for (int i = 0; i < 60000; i++) {
 			uri = "/firstName" + i + ".json";
 			wbatcher.add(uri, handle);
 		}
@@ -362,7 +362,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		System.out.println("getFailureEventsCount(): " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		System.out.println("getFailureBatchesCount(): " + dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 
-		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+		Assert.assertEquals(60000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
