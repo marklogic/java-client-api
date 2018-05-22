@@ -119,7 +119,14 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     ConnectedRESTQA.updateTemporalCollectionForLSQT(dbName,
         temporalLsqtCollectionName, true);
     appServerHostname = getRestAppServerHostName();
-    restPort = getRestServerPort();
+    restPort = getRestServerPort(); 
+        
+    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "temporal:statement-set-system-time",
+            "temporal-document-protect", "temporal-document-wipe");
+    createUserRolesWithPrevilages("replaceRoleTest", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    
+    createRESTUser("eval-user", "x", "test-eval", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
+    createRESTUser("eval-readeruser", "x", "rest-reader");
     Thread.sleep(1000);
   }
 
@@ -132,6 +139,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     deleteRESTUser("eval-user");
     deleteRESTUser("eval-readeruser");
     deleteUserRole("test-eval");
+    deleteUserRole("replaceRoleTest");
 
     // Temporal collection needs to be deleted before temporal axis associated
     // with it can be deleted
@@ -151,11 +159,9 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke", "temporal:statement-set-system-time",
-        "temporal-document-protect", "temporal-document-wipe");
+    
 
-    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
-    createRESTUser("eval-readeruser", "x", "rest-reader");
+    
     writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
   }
 
@@ -270,7 +276,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldrXML.addMetadataValue("MLVersion", "MarkLogic 9.0");
     patchBldrXML.addCollection("/document/collection3");
-    patchBldrXML.addPermission("admin", Capability.READ);
+    patchBldrXML.addPermission("replaceRoleTest", Capability.READ);
     patchBldrXML.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandleXML = patchBldrXML.build();
 
@@ -281,7 +287,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Verify that patch succeeded.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -302,13 +308,13 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     // Verify the first patch's contents.
 
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
     // Verify that second patch with JSON succeeded.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataJson.contains("<rapi:metadata-value key=\"MLVersionJson\">MarkLogic 9.0 Json</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataJson.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataJson.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataJson.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataJson.contains("<rapi:collection>/document/collection3Json</rapi:collection>"));
 
@@ -328,7 +334,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXMLMul.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXMLMul.contains("<rapi:metadata-value key=\"MlClientProg1\">Java</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXMLMul.contains("<rapi:metadata-value key=\"MlClientProg2\">Node/SJS</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXMLMul.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXMLMul.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXMLMul.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXMLMul.contains("<rapi:collection>/document/collection3</rapi:collection>"));
   }
@@ -368,7 +374,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldrXML.addMetadataValue("MLVersion", "MarkLogic 9.0");
     patchBldrXML.addCollection("/document/collection3");
-    patchBldrXML.addPermission("admin", Capability.READ);
+    patchBldrXML.addPermission("replaceRoleTest", Capability.READ);
     patchBldrXML.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandleXML = patchBldrXML.build();
 
@@ -378,7 +384,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     System.out.println(" After Changing " + contentMetadataXML);
     // Verify that patch succeeded.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">MarkLogic 9.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -426,7 +432,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldrXML.addMetadataValue("MLVersion", "MLVersion");
     patchBldrXML.addCollection("/document/collection3");
-    patchBldrXML.addPermission("admin", Capability.READ);
+    patchBldrXML.addPermission("replaceRoleTest", Capability.READ);
     patchBldrXML.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandleXML = patchBldrXML.build();
 
@@ -437,7 +443,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Verify that patch succeeded.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">MLVersion</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -452,7 +458,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Verify that patch succeeded. Seems to work. Replaces the key value.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML2.contains("<rapi:metadata-value key=\"MLVersion\">MLVersionNew</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML2.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML2.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
   }
 
   /*
@@ -488,7 +494,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     DocumentMetadataPatchBuilder patchBldrXML = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldrXML.addMetadataValue("MLVersion", "9.0");
     patchBldrXML.addCollection("/document/collection3");
-    patchBldrXML.addPermission("admin", Capability.READ);
+    patchBldrXML.addPermission("replaceRoleTest", Capability.READ);
     patchBldrXML.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandleXML = patchBldrXML.build();
 
@@ -499,7 +505,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Verify that patch succeeded.
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion\">9.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -513,7 +519,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
 
     // Verify that patch succeeded. Seems to work. Replaces the key value.
     assertFalse("Patch did not succeed - Meta data Delete Values", contentMetadataXML2.contains("<rapi:metadata-value key=\"MLVersion\">9.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML2.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Add Permission Values", contentMetadataXML2.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
 
     // Add back the same key
     DocumentMetadataPatchBuilder patchBldrXML3 = xmlDocMgr.newPatchBuilder(Format.XML);
@@ -529,7 +535,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion\">10.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML3.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML3.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML3.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML3.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -545,7 +551,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"MLVersion\">10.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML4.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML4.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML4.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML4.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -560,7 +566,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML5.contains("<rapi:metadata-value key=\"MLVersion\">10.0</rapi:metadata-value>"));
     assertFalse("Patch did not succeed - Meta data Values", contentMetadataXML5.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertFalse("Patch did not succeed - Meta data Values", contentMetadataXML5.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML5.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML5.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML5.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML5.contains("<rapi:collection>/document/collection3</rapi:collection>"));
   }
@@ -602,7 +608,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     patchBldrXML.addMetadataValue("MLVersion11", "9.0");
     patchBldrXML.addMetadataValue("MLVersion12", "12.0");
     patchBldrXML.addCollection("/document/collection3");
-    patchBldrXML.addPermission("admin", Capability.READ);
+    patchBldrXML.addPermission("replaceRoleTest", Capability.READ);
     patchBldrXML.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandleXML = patchBldrXML.build();
 
@@ -616,7 +622,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion10\">9.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion11\">9.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -634,7 +640,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML2.contains("<rapi:metadata-value key=\"MLVersion10\">10.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML2.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML2.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML2.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML2.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML2.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML2.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -651,7 +657,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion10\">10.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML3.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML3.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML3.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML3.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML3.contains("<rapi:collection>/document/collection3</rapi:collection>"));
 
@@ -670,7 +676,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"MLVersion11\">11.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"MLVersion12\">12.0</rapi:metadata-value>"));
     assertTrue("Patch did not succeed - Meta data Values", contentMetadataXML4.contains("<rapi:metadata-value key=\"NewAndReplace\">Added</rapi:metadata-value>"));
-    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML4.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Patch did not succeed - Permission Values", contentMetadataXML4.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Patch did not succeed - Property", contentMetadataXML4.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
     assertTrue("Patch did not succeed - Collection", contentMetadataXML4.contains("<rapi:collection>/document/collection3</rapi:collection>"));
   }
@@ -1179,7 +1185,7 @@ public class TestBiTempMetaValues extends BasicJavaClientREST {
     String content = jsonDocMgr.read(docId, new StringHandle()).get();
     assertTrue("Wrong number of results", content.contains("1999 Skyway Park - Updated - JSON"));
 
-    // Sleep for 40 secs and try to delete the same docId.
+    // Sleep for 60 secs and try to delete the same docId.
     Thread.sleep(60000);
     Transaction t1 = writerClient.openTransaction();
     // TODO replace get with search and verify the system end time for the

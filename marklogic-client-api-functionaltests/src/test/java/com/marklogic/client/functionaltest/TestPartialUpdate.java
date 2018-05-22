@@ -80,7 +80,8 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
 
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
-    createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
+    createUserRolesWithPrevilages("replaceRoleTest", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createRESTUser("eval-user", "x", "test-eval", "replaceRoleTest", "rest-admin", "rest-writer", "rest-reader");
     appServerHostname = getRestAppServerHostName();
   }
 
@@ -708,7 +709,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentMetadataPatchBuilder patchBldr = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldr.addCollection("/document/collection3");
-    patchBldr.addPermission("admin", Capability.READ);
+    patchBldr.addPermission("replaceRoleTest", Capability.READ);
     patchBldr.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
@@ -716,9 +717,9 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     String contentMetadata1 = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Changing " + contentMetadata1);
 
-    // Check
+    // Check    
     assertTrue("Collection not added", contentMetadata1.contains("<rapi:collection>/document/collection3</rapi:collection>"));
-    assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));    
     assertTrue("Property not added", contentMetadata1.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
 
     // //
@@ -735,7 +736,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     // Check
     assertTrue("Collection not added", contentMetadataRep.contains("<rapi:collection>/document/collection4</rapi:collection>"));
-    assertTrue("Permission not added", contentMetadataRep.contains("<rapi:role-name>admin</rapi:role-name>"));
+    assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));
     assertTrue("Property not added", contentMetadataRep.contains("<Hello xsi:type=\"xs:string\">Bye</Hello>"));
 
     // //
@@ -743,7 +744,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // //
     DocumentMetadataPatchBuilder patchBldrDel = xmlDocMgr.newPatchBuilder(Format.XML);
     patchBldrDel.deleteCollection("/document/collection4");
-    patchBldrDel.deletePermission("admin");
+    patchBldrDel.deletePermission("replaceRoleTest");
     patchBldrDel.deleteProperty("Hello");
     DocumentPatchHandle patchHandleDel = patchBldrDel.build();
     xmlDocMgr.patch(docId, patchHandleDel);
@@ -1370,5 +1371,6 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     cleanupRESTServer(dbName, fNames);
     deleteRESTUser("eval-user");
     deleteUserRole("test-eval");
+    deleteUserRole("replaceRoleTest");
   }
 }
