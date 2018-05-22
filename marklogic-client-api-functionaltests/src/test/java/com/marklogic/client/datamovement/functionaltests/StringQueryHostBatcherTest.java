@@ -110,7 +110,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with Java/REST Client API
-    client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
     dmManager = client.newDataMovementManager();
   }
 
