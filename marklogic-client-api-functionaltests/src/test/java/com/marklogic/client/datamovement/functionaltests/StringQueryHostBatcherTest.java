@@ -124,6 +124,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     client.release();
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
     detachForest(dbName, fNames[0]);
 
     deleteDB(dbName);

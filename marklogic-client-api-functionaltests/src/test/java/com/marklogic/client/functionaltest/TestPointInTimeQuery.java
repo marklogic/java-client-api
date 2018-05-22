@@ -392,5 +392,7 @@ public class TestPointInTimeQuery extends BasicJavaClientREST {
   {
     System.out.println("In tear down");
     cleanupRESTServer(dbName, fNames);
+    deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
   }
 }

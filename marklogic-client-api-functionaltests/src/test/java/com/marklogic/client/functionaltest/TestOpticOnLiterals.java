@@ -1641,5 +1641,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     // release client
     client.release();
     cleanupRESTServer(dbName, fNames);
+    deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
   }
 }
