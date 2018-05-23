@@ -160,7 +160,11 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     }
 
     ihb2.flushAndWait();
-    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+    // Adding a wait to avoid intermittent setup fails on doc count asserts
+    Thread.currentThread().sleep(2000L);
+    int docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+    System.out.println("Number of docs written to DB from DeleteListenerTest setup method is " + docCount);
+    Assert.assertTrue(docCount == 2000);
 
   }
 
