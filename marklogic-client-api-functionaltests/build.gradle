@@ -6,6 +6,7 @@ test {
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
+  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithCertBasedAuth.class'
   exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
   exclude 'com/marklogic/client/datamovement/functionaltests/QBFailover.class'
   exclude 'com/marklogic/client/datamovement/functionaltests/WBFailover.class'
