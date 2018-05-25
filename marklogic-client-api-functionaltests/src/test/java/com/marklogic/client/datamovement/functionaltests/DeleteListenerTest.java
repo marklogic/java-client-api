@@ -173,6 +173,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     clearDB(port);
   }
 
+  @Test
   public void massDeleteSingleThread() throws Exception {
     Set<String> uriSet = new HashSet<>();
 
