@@ -8,8 +8,6 @@ test {
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithCertBasedAuth.class'
   exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
-  exclude 'com/marklogic/client/datamovement/functionaltests/QBFailover.class'
-  exclude 'com/marklogic/client/datamovement/functionaltests/WBFailover.class'
 }
 // Zero Diff Task - QB and WBFailover tests should be removed from exclude once they are fixed to have local disk failover.
 /* The minimal number of tests that run in a sandbox environment */
@@ -36,5 +34,7 @@ dependencies {
   compile group: 'org.skyscreamer', name: 'jsonassert', version: '1.5.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.11.0'
   compile group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.11.0'
+  compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.25'
+  testCompile group: 'ch.qos.logback', name: 'logback-classic', version:'1.2.3'
   compile group: 'commons-io', name: 'commons-io', version: '2.6'
 }
