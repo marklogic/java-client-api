@@ -87,11 +87,11 @@ public class WBFailover extends BasicJavaClientREST {
 		password = getAdminPassword();
 		user = getAdminUser();
 		server = getRestAppServerName();
-        port = getRestAppServerPort();
-        
-        // Create App Server if needed.
-        createRESTServerWithDB(server, port);
-        hostNames = getHosts();
+		port = getRestAppServerPort();
+
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
+		hostNames = getHosts();
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
 			// Add all possible hostnames and pick a random one to create a client
@@ -109,9 +109,10 @@ public class WBFailover extends BasicJavaClientREST {
 			hostLists.add("localhost");
 			// Assuming the tests are run on 3 node cluster.
 			Assert.assertEquals(hostLists.size(), 7);
-			
+
 			int index = new Random().nextInt(hostLists.size());
-			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
+			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
+					Authentication.DIGEST);
 			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
 			dmManager = dbClient.newDataMovementManager();
 			Map<String, String> props = new HashMap<>();
@@ -120,21 +121,21 @@ public class WBFailover extends BasicJavaClientREST {
 				if (i == 0) {
 					createForest(dbName + "-" + (i + 1), hostNames[i], null);
 				} else {
-					createForest(dbName + "-" + (i + 1)+"-replica", hostNames[0], null);
-					createForest(dbName + "-" + (i + 1), hostNames[i], dbName + "-" + (i + 1)+"-replica");
+					createForest(dbName + "-" + (i + 1) + "-replica", hostNames[0], null);
+					createForest(dbName + "-" + (i + 1), hostNames[i], dbName + "-" + (i + 1) + "-replica");
 
 				}
 				props.put("database", dbName);
 				props.put("state", "attach");
-				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));				
+				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
 			}
 			props = new HashMap<String, String>();
 			props.put("journaling", "strict");
 			changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 			associateRESTServerWithDB(server, dbName);
-	        if (IsSecurityEnabled()) {
-	        	enableSecurityOnRESTServer(server, dbName);
-	        }
+			if (IsSecurityEnabled()) {
+				enableSecurityOnRESTServer(server, dbName);
+			}
 			// StringHandle
 			stringTriple = "<top-song xmlns=\"http://marklogic.com/MLU/top-songs\"> <!--Copyright (c) 2010 Mark Logic Corporation. Permission is granted to copy, distribute and/or modify this document under the terms of the GNU Free Documentation License, Version 1.2 or any later version published bythe Free Software Foundation; with no Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts. A copy of the license is included in the section entitled \"GNU Free Documentation License.\" Content derived from http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&action=edit&redlink=1 Modified in February 2010 by Mark Logic Corporation under the terms of the GNU Free Documentation License.-->  <title href=\"http://en.wikipedia.org/w/index.php?title=Blue_Champagne_(song)&amp;action=edit&amp;redlink=1\" xmlns:ts=\"http://marklogic.com/MLU/top-songs\">Blue Champagne</title>  <artist xmlns:ts=\"http://marklogic.com/MLU/top-songs\"/>  <weeks last=\"1941-09-27\">    <week>1941-09-27</week>  </weeks>  <descr/></top-song>";
 			stringHandle = new StringHandle(stringTriple);
@@ -147,14 +148,13 @@ public class WBFailover extends BasicJavaClientREST {
 	private static void removeReplica(String string) {
 		String query = "xquery version \"1.0-ml\";"
 				+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
-				+" let $config := admin:get-configuration()\r\n" + 
-				"  let $forest := xdmp:forest(\""+ string +"\")\r\n" + 
-				"  let $replica-forest := xdmp:forest(\""+string+"-replica"+"\")\r\n" + 
-				"  let $save := admin:forest-remove-replica($config, $forest, $replica-forest)";
+				+ " let $config := admin:get-configuration()\r\n" + "  let $forest := xdmp:forest(\"" + string
+				+ "\")\r\n" + "  let $replica-forest := xdmp:forest(\"" + string + "-replica" + "\")\r\n"
+				+ "  let $save := admin:forest-remove-replica($config, $forest, $replica-forest)";
 		query += " let $saveconfig := admin:save-configuration($save)" + "return ()";
 		evalClient.newServerEval().xquery(query).eval();
 	}
-	
+
 	private static void createForest(String forestName, String hostname, String replica) {
 		String query = "xquery version \"1.0-ml\";"
 				+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
@@ -163,66 +163,54 @@ public class WBFailover extends BasicJavaClientREST {
 
 		query += " let $save := admin:save-configuration($forest-create)" + " return ()";
 		evalClient.newServerEval().xquery(query).eval();
-		
+
 		if (replica != null) {
 			query = "xquery version \"1.0-ml\";"
 					+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
-					+" let $config := admin:get-configuration()\r\n"  
-					+"let $config :=  admin:forest-add-replica($config,admin:forest-get-id($config, \""
-					+ forestName + "\"),admin:forest-get-id($config, \""+replica+"\")) ";
+					+ " let $config := admin:get-configuration()\r\n"
+					+ "let $config :=  admin:forest-add-replica($config,admin:forest-get-id($config, \"" + forestName
+					+ "\"),admin:forest-get-id($config, \"" + replica + "\")) ";
 			query += " let $save := admin:save-configuration($config)" + " return ()";
 			evalClient.newServerEval().xquery(query).eval();
 		}
 
 	}
+
 	private String getForestState(String forest) {
-		String query = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n" + 
-				"xdmp:forest-status(xdmp:forest(\""+forest+"\"))/h:state/text()";
+		String query = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n"
+				+ "xdmp:forest-status(xdmp:forest(\"" + forest + "\"))/h:state/text()";
 		return evalClient.newServerEval().xquery(query).eval().next().getString();
 	}
 
-	//replica should be in "sync replicating" and master should be "open"
+	// replica should be in "sync replicating" and master should be "open"
 	private boolean checkForestState() {
-		String stateCheck ="declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n" + 
-				"let $ids := xdmp:database-forests(xdmp:database(\""+dbName+"\"),xs:boolean(\"true\"))\r\n" + 
-				"let $output := \r\n" + 
-				"for $id in $ids\r\n" + 
-				"let $forest :=  xdmp:forest-status($id)\r\n" + 
-				"let $forest-name := $forest/h:forest-name/text()\r\n" + 
-				"let $forest-state := $forest/h:state/text()\r\n" + 
-				"let $states :=\r\n" + 
-				"if (fn:contains($forest-name, \"replica\"))\r\n" + 
-				"then\r\n" + 
-				"  if(fn:matches($forest-state,\"sync replicating\"))\r\n" + 
-				"  then\r\n" + 
-				"  xs:boolean(\"true\")\r\n" + 
-				"  else\r\n" + 
-				"  xs:boolean(\"false\")\r\n" + 
-				"else\r\n" + 
-				"  if(fn:matches($forest-state,\"open\"))\r\n" + 
-				"  then\r\n" + 
-				"  xs:boolean(\"true\")\r\n" + 
-				"  else\r\n" + 
-				"  xs:boolean(\"false\")\r\n" + 
-				"return $states\r\n" + 
-				"return cts:contains($output,\"false\")";
+		String stateCheck = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n"
+				+ "let $ids := xdmp:database-forests(xdmp:database(\"" + dbName + "\"),xs:boolean(\"true\"))\r\n"
+				+ "let $output := \r\n" + "for $id in $ids\r\n" + "let $forest :=  xdmp:forest-status($id)\r\n"
+				+ "let $forest-name := $forest/h:forest-name/text()\r\n"
+				+ "let $forest-state := $forest/h:state/text()\r\n" + "let $states :=\r\n"
+				+ "if (fn:contains($forest-name, \"replica\"))\r\n" + "then\r\n"
+				+ "  if(fn:matches($forest-state,\"sync replicating\"))\r\n" + "  then\r\n"
+				+ "  xs:boolean(\"true\")\r\n" + "  else\r\n" + "  xs:boolean(\"false\")\r\n" + "else\r\n"
+				+ "  if(fn:matches($forest-state,\"open\"))\r\n" + "  then\r\n" + "  xs:boolean(\"true\")\r\n"
+				+ "  else\r\n" + "  xs:boolean(\"false\")\r\n" + "return $states\r\n"
+				+ "return cts:contains($output,\"false\")";
 		int count = 2;
-		while(evalClient.newServerEval().xquery(stateCheck).eval().next().getString().equals("true")) {
-			if(count > 0) {
+		while (evalClient.newServerEval().xquery(stateCheck).eval().next().getString().equals("true")) {
+			if (count > 0) {
 				count--;
 				try {
 					Thread.sleep(15000L);
 				} catch (InterruptedException e) {
-					
+
 				}
-			}
-			else {
+			} else {
 				return false;
 			}
 		}
 		return true;
 	}
-	
+
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		// Perform the setup on multiple nodes only.
@@ -233,8 +221,8 @@ public class WBFailover extends BasicJavaClientREST {
 				detachForest(dbName, dbName + "-" + (i + 1));
 				if (i != 0) {
 					removeReplica(dbName + "-" + (i + 1));
-					deleteForest(dbName + "-" + (i + 1)+"-replica");
-				} 
+					deleteForest(dbName + "-" + (i + 1) + "-replica");
+				}
 				deleteForest(dbName + "-" + (i + 1));
 			}
 			deleteDB(dbName);
@@ -246,7 +234,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Before
 	public void setUp() throws Exception {
 		// Perform the setup on multiple nodes only.
-		if (hostNames.length > 1) {			
+		if (hostNames.length > 1) {
 			ForestConfiguration fc = dmManager.readForestConfig();
 			Forest[] f = fc.listForests();
 			f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
@@ -260,44 +248,43 @@ public class WBFailover extends BasicJavaClientREST {
 	}
 
 	private void clearForests() {
-		String forestIds = "xdmp:database-forests(xdmp:database(\""+dbName+"\"),xs:boolean(\"true\"))";
+		String forestIds = "xdmp:database-forests(xdmp:database(\"" + dbName + "\"),xs:boolean(\"true\"))";
 		EvalResultIterator itr = evalClient.newServerEval().xquery(forestIds).eval();
-		while(itr.hasNext()) {
+		while (itr.hasNext()) {
 			String forestId = itr.next().getString();
-			evalClient.newServerEval().xquery("xdmp:forest-clear("+forestId+")").eval();
+			evalClient.newServerEval().xquery("xdmp:forest-clear(" + forestId + ")").eval();
 		}
 	}
-	
+
 	private void waitForForest(String testStatus) throws InterruptedException {
 		for (int i = hostNames.length - 1; i >= 1; i--) {
 			boolean cond1 = false;
 			boolean cond2 = false;
 			int count = 12;
-			while(count > 0){
+			while (count > 0) {
 				count--;
-				String status1 = getForestState(dbName + "-" + (i + 1)+"-replica").toLowerCase();
+				String status1 = getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase();
 				String status2 = getForestState(dbName + "-" + (i + 1)).toLowerCase();
-				cond1 = (status1.equals("open")|| status1.equals("sync replicating"));
-				cond2 = (status2.equals("open")|| status2.equals("sync replicating"));
-				if("test".equals(testStatus)) {
-					if(isRunning(hostNames[i])) {
+				cond1 = (status1.equals("open") || status1.equals("sync replicating"));
+				cond2 = (status2.equals("open") || status2.equals("sync replicating"));
+				if ("test".equals(testStatus)) {
+					if (isRunning(hostNames[i])) {
 						cond1 = status1.equals("sync replicating");
-						cond2 = status2.equals("open"); 
-					}
-					else {
+						cond2 = status2.equals("open");
+					} else {
 						cond2 = status2.equals("unmounted");
 						cond1 = status1.equals("open");
 					}
 				}
-				System.out.println("Status 1: "+ status1);
-				System.out.println("Status 2: "+ status2);
-				if(cond1 && cond2)
+				System.out.println("Status 1: " + status1);
+				System.out.println("Status 2: " + status2);
+				if (cond1 && cond2)
 					break;
 				Thread.sleep(5000L);
 			}
 		}
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {
 		// Perform the setup on multiple nodes only.
@@ -305,10 +292,8 @@ public class WBFailover extends BasicJavaClientREST {
 			System.out.println("Restarting servers");
 			for (int i = hostNames.length - 1; i >= 1; i--) {
 				System.out.println("Restarting server " + hostNames[i]);
-				if(!isRunning(hostNames[i])) {
-					serverStartStop(hostNames[i], "start");	
-					Thread.sleep(1000L);
-				}		
+				serverStartStop(hostNames[i], "start");
+				Thread.sleep(2000L);
 				Assert.assertTrue(isRunning(hostNames[i]));
 			}
 			waitForForest("after");
@@ -316,21 +301,21 @@ public class WBFailover extends BasicJavaClientREST {
 			waitForForest("after");
 			Map<String, String> props = new HashMap<>();
 			for (int i = hostNames.length - 1; i >= 1; i--) {
-				if(! "open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase())) {
+				if (!"open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase())) {
 					props.put("enabled", "true");
 					System.out.println("Enabling " + dbName + "-" + (i + 1));
 					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 					Thread.sleep(3000L);
 					props.put("enabled", "false");
-					System.out.println("Disabling " + dbName + "-" + (i + 1)+"-replica");
-					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1)+"-replica" + "/properties");
-					
+					System.out.println("Disabling " + dbName + "-" + (i + 1) + "-replica");
+					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "-replica" + "/properties");
+
 					props.put("enabled", "true");
-					System.out.println("Enabling " + dbName + "-" + (i + 1)+"-replica");
-					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1)+"-replica" + "/properties");
+					System.out.println("Enabling " + dbName + "-" + (i + 1) + "-replica");
+					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "-replica" + "/properties");
 				}
 				waitForForest("after");
-				Assert.assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));	
+				Assert.assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));
 			}
 		} else {
 			System.out.println("Test skipped -  tearDown");
@@ -340,7 +325,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testBlackListHost() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -367,7 +352,7 @@ public class WBFailover extends BasicJavaClientREST {
 				successCount.getAndAdd(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
 				failState.set(true);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -376,7 +361,7 @@ public class WBFailover extends BasicJavaClientREST {
 				ihb2.add(uri, stringHandle);
 			}
 			ihb2.flushAndWait();
-			
+
 			Assert.assertFalse(failState.get());
 			Assert.assertFalse(containsBLHost.get());
 			Assert.assertEquals(10000, successCount.get());
@@ -390,7 +375,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testStopOneNode() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -410,7 +395,7 @@ public class WBFailover extends BasicJavaClientREST {
 				System.out.println(throwable.getMessage());
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -426,21 +411,23 @@ public class WBFailover extends BasicJavaClientREST {
 				}
 			}
 			ihb2.flushAndWait();
-
+			Thread.sleep(2000L);
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
-	
+
 	@Test(timeout = 350000)
 	public void testStopOneNodeLongDuration() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -460,7 +447,7 @@ public class WBFailover extends BasicJavaClientREST {
 				throwable.printStackTrace();
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -480,17 +467,19 @@ public class WBFailover extends BasicJavaClientREST {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
-	
+
 	@Test(timeout = 350000)
 	public void testStopOneNodeShortDuration() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -510,7 +499,7 @@ public class WBFailover extends BasicJavaClientREST {
 				throwable.printStackTrace();
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -530,7 +519,9 @@ public class WBFailover extends BasicJavaClientREST {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -540,7 +531,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testRestart() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
 		final AtomicInteger successCount = new AtomicInteger(0);
@@ -561,7 +552,7 @@ public class WBFailover extends BasicJavaClientREST {
 				throwable.printStackTrace();
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -583,6 +574,8 @@ public class WBFailover extends BasicJavaClientREST {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
 
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
@@ -593,7 +586,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testRepeatedStopOneNode() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -615,7 +608,7 @@ public class WBFailover extends BasicJavaClientREST {
 				throwable.printStackTrace();
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -639,7 +632,9 @@ public class WBFailover extends BasicJavaClientREST {
 				}
 			}
 			ihb2.flushAndWait();
-
+			Thread.sleep(2000L);
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
@@ -655,7 +650,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testStopTwoNodes() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -677,7 +672,7 @@ public class WBFailover extends BasicJavaClientREST {
 				throwable.printStackTrace();
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
-				if(throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
+				if (throwable.getMessage().contains("XDMP-XDQPNOSESSION")) {
 					ihb2.retry(batch);
 				}
 			});
@@ -702,7 +697,9 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 
 			ihb2.flushAndWait();
-
+			Thread.sleep(2000L);
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
@@ -719,7 +716,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testMinHosts() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -764,7 +761,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testWhiteBlackListNPE() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())

@@ -112,11 +112,11 @@ public class QBFailover extends BasicJavaClientREST {
 		password = getAdminPassword();
 		user = getAdminUser();
 		server = getRestAppServerName();
-        port = getRestAppServerPort();
-        
-        // Create App Server if needed.
-        createRESTServerWithDB(server, port);
-        hostNames = getHosts();
+		port = getRestAppServerPort();
+
+		// Create App Server if needed.
+		createRESTServerWithDB(server, port);
+		hostNames = getHosts();
 		// Perform the setup on multiple nodes only.
 		if (hostNames.length > 1) {
 			// Add all possible hostnames and pick a random one to create a client
@@ -138,7 +138,8 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			hostLists.add("localhost");
 			int index = new Random().nextInt(hostLists.size());
-			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password, Authentication.DIGEST);
+			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
+					Authentication.DIGEST);
 			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
 			dmManager = dbClient.newDataMovementManager();
 			tempMgr = evalClient.newDataMovementManager();
@@ -148,13 +149,13 @@ public class QBFailover extends BasicJavaClientREST {
 				if (i == 0) {
 					createForest(dbName + "-" + (i + 1), hostNames[i], null);
 				} else {
-					createForest(dbName + "-" + (i + 1)+"-replica", hostNames[0], null);
-					createForest(dbName + "-" + (i + 1), hostNames[i], dbName + "-" + (i + 1)+"-replica");
+					createForest(dbName + "-" + (i + 1) + "-replica", hostNames[0], null);
+					createForest(dbName + "-" + (i + 1), hostNames[i], dbName + "-" + (i + 1) + "-replica");
 
 				}
 				props.put("database", dbName);
 				props.put("state", "attach");
-				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));			
+				postRequest(null, props, "/manage/v2/forests/" + dbName + "-" + (i + 1));
 			}
 			props = new HashMap<>();
 			props.put("journaling", "strict");
@@ -189,15 +190,14 @@ public class QBFailover extends BasicJavaClientREST {
 	private static void removeReplica(String string) {
 		String query = "xquery version \"1.0-ml\";"
 				+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
-				+" let $config := admin:get-configuration()\r\n" + 
-				"  let $forest := xdmp:forest(\""+ string +"\")\r\n" + 
-				"  let $replica-forest := xdmp:forest(\""+string+"-replica"+"\")\r\n" + 
-				"  let $save := admin:forest-remove-replica($config, $forest, $replica-forest)";
+				+ " let $config := admin:get-configuration()\r\n" + "  let $forest := xdmp:forest(\"" + string
+				+ "\")\r\n" + "  let $replica-forest := xdmp:forest(\"" + string + "-replica" + "\")\r\n"
+				+ "  let $save := admin:forest-remove-replica($config, $forest, $replica-forest)";
 		query += " let $saveconfig := admin:save-configuration($save)" + "return ()";
 		System.out.println("Query is " + query);
 		evalClient.newServerEval().xquery(query).eval();
 	}
-	
+
 	private static void createForest(String forestName, String hostname, String replica) {
 		String query = "xquery version \"1.0-ml\";"
 				+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
@@ -207,60 +207,48 @@ public class QBFailover extends BasicJavaClientREST {
 		query += " let $save := admin:save-configuration($forest-create)" + " return ()";
 		System.out.println("Query is " + query);
 		evalClient.newServerEval().xquery(query).eval();
-		
+
 		if (replica != null) {
 			query = "xquery version \"1.0-ml\";"
 					+ "import module namespace admin = \"http://marklogic.com/xdmp/admin\" at \"/MarkLogic/admin.xqy\";"
-					+" let $config := admin:get-configuration()\r\n"  
-					+"let $config :=  admin:forest-add-replica($config,admin:forest-get-id($config, \""
-					+ forestName + "\"),admin:forest-get-id($config, \""+replica+"\")) ";
+					+ " let $config := admin:get-configuration()\r\n"
+					+ "let $config :=  admin:forest-add-replica($config,admin:forest-get-id($config, \"" + forestName
+					+ "\"),admin:forest-get-id($config, \"" + replica + "\")) ";
 			query += " let $save := admin:save-configuration($config)" + " return ()";
 			System.out.println("Query is " + query);
 			evalClient.newServerEval().xquery(query).eval();
 		}
 	}
+
 	private String getForestState(String forest) {
-		String query = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n" + 
-				"xdmp:forest-status(xdmp:forest(\""+forest+"\"))/h:state/text()";
+		String query = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n"
+				+ "xdmp:forest-status(xdmp:forest(\"" + forest + "\"))/h:state/text()";
 		return evalClient.newServerEval().xquery(query).eval().next().getString();
 	}
-	
-	//replica should be in "sync replicating" and master should be "open"
+
+	// replica should be in "sync replicating" and master should be "open"
 	private boolean checkForestState() {
-		String stateCheck ="declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n" + 
-				"let $ids := xdmp:database-forests(xdmp:database(\""+dbName+"\"),xs:boolean(\"true\"))\r\n" + 
-				"let $output := \r\n" + 
-				"for $id in $ids\r\n" + 
-				"let $forest :=  xdmp:forest-status($id)\r\n" + 
-				"let $forest-name := $forest/h:forest-name/text()\r\n" + 
-				"let $forest-state := $forest/h:state/text()\r\n" + 
-				"let $states :=\r\n" + 
-				"if (fn:contains($forest-name, \"replica\"))\r\n" + 
-				"then\r\n" + 
-				"  if(fn:matches($forest-state,\"sync replicating\"))\r\n" + 
-				"  then\r\n" + 
-				"  xs:boolean(\"true\")\r\n" + 
-				"  else\r\n" + 
-				"  xs:boolean(\"false\")\r\n" + 
-				"else\r\n" + 
-				"  if(fn:matches($forest-state,\"open\"))\r\n" + 
-				"  then\r\n" + 
-				"  xs:boolean(\"true\")\r\n" + 
-				"  else\r\n" + 
-				"  xs:boolean(\"false\")\r\n" + 
-				"return $states\r\n" + 
-				"return cts:contains($output,\"false\")";
+		String stateCheck = "declare namespace h = \"http://marklogic.com/xdmp/status/forest\";\r\n"
+				+ "let $ids := xdmp:database-forests(xdmp:database(\"" + dbName + "\"),xs:boolean(\"true\"))\r\n"
+				+ "let $output := \r\n" + "for $id in $ids\r\n" + "let $forest :=  xdmp:forest-status($id)\r\n"
+				+ "let $forest-name := $forest/h:forest-name/text()\r\n"
+				+ "let $forest-state := $forest/h:state/text()\r\n" + "let $states :=\r\n"
+				+ "if (fn:contains($forest-name, \"replica\"))\r\n" + "then\r\n"
+				+ "  if(fn:matches($forest-state,\"sync replicating\"))\r\n" + "  then\r\n"
+				+ "  xs:boolean(\"true\")\r\n" + "  else\r\n" + "  xs:boolean(\"false\")\r\n" + "else\r\n"
+				+ "  if(fn:matches($forest-state,\"open\"))\r\n" + "  then\r\n" + "  xs:boolean(\"true\")\r\n"
+				+ "  else\r\n" + "  xs:boolean(\"false\")\r\n" + "return $states\r\n"
+				+ "return cts:contains($output,\"false\")";
 		int count = 3;
-		while(evalClient.newServerEval().xquery(stateCheck).eval().next().getString().equals("true")) {
-			if(count > 0) {
+		while (evalClient.newServerEval().xquery(stateCheck).eval().next().getString().equals("true")) {
+			if (count > 0) {
 				count--;
 				try {
 					Thread.sleep(15000L);
 				} catch (InterruptedException e) {
-					
+
 				}
-			}
-			else {
+			} else {
 				return false;
 			}
 		}
@@ -277,8 +265,8 @@ public class QBFailover extends BasicJavaClientREST {
 				detachForest(dbName, dbName + "-" + (i + 1));
 				if (i != 0) {
 					removeReplica(dbName + "-" + (i + 1));
-					deleteForest(dbName + "-" + (i + 1)+"-replica");
-				} 
+					deleteForest(dbName + "-" + (i + 1) + "-replica");
+				}
 				deleteForest(dbName + "-" + (i + 1));
 			}
 			deleteDB(dbName);
@@ -301,45 +289,44 @@ public class QBFailover extends BasicJavaClientREST {
 					.toArray(new Forest[hostNames.length]);
 			Assert.assertEquals(f.length, hostNames.length);
 			Assert.assertEquals(f.length, 3L);
-		} 
-		else {
+		} else {
 			System.out.println("Test skipped -  setUp");
 		}
 	}
 
 	private void clearForests() {
-		String forestIds = "xdmp:database-forests(xdmp:database(\""+dbName+"\"),xs:boolean(\"true\"))";
+		String forestIds = "xdmp:database-forests(xdmp:database(\"" + dbName + "\"),xs:boolean(\"true\"))";
 		EvalResultIterator itr = evalClient.newServerEval().xquery(forestIds).eval();
-		while(itr.hasNext()) {
+		while (itr.hasNext()) {
 			String forestId = itr.next().getString();
-			evalClient.newServerEval().xquery("xdmp:forest-clear("+forestId+")").eval();
+			evalClient.newServerEval().xquery("xdmp:forest-clear(" + forestId + ")").eval();
 		}
 	}
-	
+
 	private void waitForForest(String testStatus) throws InterruptedException {
 		for (int i = hostNames.length - 1; i >= 1; i--) {
 			boolean cond1 = false;
 			boolean cond2 = false;
 			int count = 12;
-			while(count > 0){
+			while (count > 0) {
 				count--;
-				String status1 = getForestState(dbName + "-" + (i + 1)+"-replica").toLowerCase();
+				String status1 = getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase();
 				String status2 = getForestState(dbName + "-" + (i + 1)).toLowerCase();
-				cond1 = (status1.equals("open")|| status1.equals("sync replicating"));
-				cond2 = (status2.equals("open")|| status2.equals("sync replicating"));
-				System.out.println("Status 1: "+ status1);
-				System.out.println("Status 2: "+ status2);
-				if("test".equals(testStatus)) {
+				cond1 = (status1.equals("open") || status1.equals("sync replicating"));
+				cond2 = (status2.equals("open") || status2.equals("sync replicating"));
+				System.out.println("Status 1: " + status1);
+				System.out.println("Status 2: " + status2);
+				if ("test".equals(testStatus)) {
 					cond2 = cond2 || (status2.equals("unmounted"));
 				}
-				if(cond1 && cond2)
+				if (cond1 && cond2)
 					break;
 				Thread.sleep(5000L);
 			}
-			System.out.println("Wait Count is "+count);
+			System.out.println("Wait Count is " + count);
 		}
 	}
-	
+
 	@After
 	public void tearDown() throws Exception {
 		// Perform the setup on multiple nodes only.
@@ -347,10 +334,8 @@ public class QBFailover extends BasicJavaClientREST {
 			System.out.println("Restarting servers");
 			for (int i = hostNames.length - 1; i >= 1; i--) {
 				System.out.println("Restarting server " + hostNames[i]);
-				if(!isRunning(hostNames[i])) {
-					serverStartStop(hostNames[i], "start");	
-					Thread.sleep(1000L);
-				}		
+				serverStartStop(hostNames[i], "start");
+				Thread.sleep(2000L);
 				Assert.assertTrue(isRunning(hostNames[i]));
 			}
 			waitForForest("after");
@@ -358,36 +343,37 @@ public class QBFailover extends BasicJavaClientREST {
 			waitForForest("after");
 			Map<String, String> props = new HashMap<>();
 			for (int i = hostNames.length - 1; i >= 1; i--) {
-				System.out.println("Replica: "+getForestState(dbName + "-" + (i + 1)+"-replica").toLowerCase());
+				System.out.println("Replica: " + getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase());
 				System.out.println(getForestState(dbName + "-" + (i + 1)).toLowerCase());
-				if(! "open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase())) {
+				if (!"open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase())) {
 					props.put("enabled", "true");
 					System.out.println("Enabling " + dbName + "-" + (i + 1));
 					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 					Thread.sleep(3000L);
 					props.put("enabled", "false");
-					System.out.println("Disabling " + dbName + "-" + (i + 1)+"-replica");
-					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1)+"-replica" + "/properties");
-					
+					System.out.println("Disabling " + dbName + "-" + (i + 1) + "-replica");
+					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "-replica" + "/properties");
+
 					props.put("enabled", "true");
-					System.out.println("Enabling " + dbName + "-" + (i + 1)+"-replica");
-					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1)+"-replica" + "/properties");
+					System.out.println("Enabling " + dbName + "-" + (i + 1) + "-replica");
+					changeProperty(props, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "-replica" + "/properties");
 				}
 				waitForForest("after");
-				System.out.println("After Replica: "+getForestState(dbName + "-" + (i + 1)+"-replica").toLowerCase());
+				System.out
+						.println("After Replica: " + getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase());
 				System.out.println(getForestState(dbName + "-" + (i + 1)).toLowerCase());
-				Assert.assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));	
+				Assert.assertTrue("open".equals(getForestState(dbName + "-" + (i + 1)).toLowerCase()));
 			}
-			//checkForestState();
+			// checkForestState();
 		} else {
 			System.out.println("Test skipped -  tearDown");
 		}
 	}
-	
+
 	@Test(timeout = 450000)
 	public void testStopOneNode() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -420,11 +406,11 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
-	
+
 	@Test(timeout = 450000)
 	public void testStopOneNodeShortDuration() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -457,11 +443,11 @@ public class QBFailover extends BasicJavaClientREST {
 		assertEquals("document count", 20000, success.intValue());
 		assertEquals("document count", 0, failure.intValue());
 	}
-	
+
 	@Test(timeout = 450000)
 	public void testStopOneNodeLongDuration() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -498,7 +484,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void testRestart() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -537,7 +523,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void testRepeatedStopOneNode() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -583,7 +569,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void testMinNodes() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		AtomicInteger failure = new AtomicInteger(0);
@@ -629,7 +615,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void testStopTwoNodes() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger success = new AtomicInteger(0);
@@ -664,6 +650,9 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			batcher.awaitCompletion();
 			dmManager.stopJob(ticket);
+			Thread.sleep(2000L);
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
 			System.out.println("Success " + success.intValue());
 			assertEquals("document count", 20000, success.intValue());
 		} catch (Exception e) {
@@ -674,7 +663,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplace() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -714,10 +703,12 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		batcher.awaitCompletion();
 		dmManager.stopJob(ticket);
-		
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
 		waitForForest("test");
-		System.out.println("State is :"+getForestState("QBFailover-2"));
-		System.out.println("State is :"+getForestState("QBFailover-2-replica"));
+		System.out.println("State is :" + getForestState("QBFailover-2"));
+		System.out.println("State is :" + getForestState("QBFailover-2-replica"));
 		AtomicInteger modified = new AtomicInteger(0);
 		AtomicBoolean passed = new AtomicBoolean(true);
 		QueryBatcher readBatcher = tempMgr.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
@@ -751,7 +742,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceTwoNodes() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -794,6 +785,8 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		batcher.awaitCompletion();
 		dmManager.stopJob(ticket);
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		waitForForest("test");
 		AtomicInteger modified = new AtomicInteger(0);
 		AtomicBoolean passed = new AtomicBoolean(true);
@@ -826,7 +819,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void xQueryMasstransformReplaceRepeated() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
@@ -873,6 +866,9 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		batcher.awaitCompletion();
 		dmManager.stopJob(ticket);
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		waitForForest("test");
 		System.out.println("Success " + success.intValue());
 		System.out.println("Failure " + failure.intValue());
@@ -907,7 +903,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@Test(timeout = 450000)
 	public void massDeleteConsistentSnapShot() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicBoolean isRunning = new AtomicBoolean(true);
 		Map<String, String> props = new HashMap<String, String>();
@@ -938,103 +934,108 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		batcher.awaitCompletion();
 		dmManager.stopJob(ticket);
-
+		Thread.sleep(2000L);
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		props.put("merge-timestamp", "0");
 		changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
 		System.out.println("Count: " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		assertEquals(0, evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	}
-	
-	/* This test is intended to test closing of listeners when job is done.
+
+	/*
+	 * This test is intended to test closing of listeners when job is done.
 	 * 
 	 * 
 	 */
 	@Test(timeout = 450000)
 	public void testListenerCloseables() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		AtomicInteger success = new AtomicInteger(0);
 		// There two variables are to track close method on Listeners.
 		AtomicBoolean testCloseOnBatchListenerUriReady = new AtomicBoolean(false);
 		AtomicBoolean testCloseOnFailureListenerQueryFailure = new AtomicBoolean(false);
-		
+
 		// This variable tracks the OnJobCompleteion status
 		AtomicBoolean getOnePrimaryDBClient = new AtomicBoolean(false);
-		
+
 		// Track primary database client on all listeners and job completion
 		StringBuilder sb_strBatchListenerUriReady = new StringBuilder();
 		StringBuilder sb_strJobCompletionListener = new StringBuilder();
-		
-		
+
 		class TestCloseOnBatchListenerUriReady implements QueryBatchListener, AutoCloseable {
 
 			@Override
-			public void close() throws Exception {				
-				System.out.println("Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
+			public void close() throws Exception {
+				System.out.println(
+						"Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
 				testCloseOnBatchListenerUriReady.set(true);
 			}
 
 			@Override
-			public void processEvent(QueryBatch batch) {				
-				System.out.println("processEvent called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
+			public void processEvent(QueryBatch batch) {
+				System.out.println(
+						"processEvent called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class");
 				// Verify the Primary DatabaseClient instance
 				if (!getOnePrimaryDBClient.get()) {
 					getOnePrimaryDBClient.set(true);
 					sb_strBatchListenerUriReady.append(batch.getBatcher().getPrimaryClient().getHost());
 					sb_strBatchListenerUriReady.append("|");
-					sb_strBatchListenerUriReady.append(batch.getBatcher().getPrimaryClient().getPort());					
+					sb_strBatchListenerUriReady.append(batch.getBatcher().getPrimaryClient().getPort());
 				}
-			}			
+			}
 		}
-		
+
 		class TestCloseOnBatchListenerQueryFailure implements QueryFailureListener, AutoCloseable {
 
 			@Override
-			public void close() throws Exception {				
-				System.out.println("Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");
+			public void close() throws Exception {
+				System.out.println(
+						"Close called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");
 				testCloseOnFailureListenerQueryFailure.set(true);
 			}
-			
+
 			@Override
 			public void processFailure(QueryBatchException failure) {
-				System.out.println("processFailure called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");				
-			}			
+				System.out.println(
+						"processFailure called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class");
+			}
 		}
-		
+
 		// Listener to be called when QueryBatcher has completed reading all URIs
 		class TestQBJobCompleteionListener implements QueryBatcherListener {
 
 			@Override
 			public void processEvent(QueryBatcher batcher) {
-				System.out.println("processEvent called from testMinNodesWithCloseable in TestQBJobCompleteionListener class");
+				System.out.println(
+						"processEvent called from testMinNodesWithCloseable in TestQBJobCompleteionListener class");
 
-				// Verify a detail - ticket Id at end of completion				
-				sb_strJobCompletionListener.append(batcher.getBatchSize());				
-			}			
+				// Verify a detail - ticket Id at end of completion
+				sb_strJobCompletionListener.append(batcher.getBatchSize());
+			}
 		}
-		
+
 		try {
-			
+
 			TestCloseOnBatchListenerUriReady closeBatchURIs = new TestCloseOnBatchListenerUriReady();
 			TestCloseOnBatchListenerQueryFailure closeQueryFailure = new TestCloseOnBatchListenerQueryFailure();
 			TestQBJobCompleteionListener jobCompleteListener = new TestQBJobCompleteionListener();
-			
+
 			QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 					.withBatchSize(4000).withThreadCount(5);
-						
+
 			// Add the new Listeners to the batcher.
 
 			batcher.onUrisReady((batch) -> {
 				success.addAndGet(batch.getItems().length);
 			}).onQueryFailure(queryException -> {
 				queryException.printStackTrace();
-			}).onUrisReady(closeBatchURIs)
-			.onQueryFailure(closeQueryFailure)
-			.onJobCompletion(jobCompleteListener);
+			}).onUrisReady(closeBatchURIs).onQueryFailure(closeQueryFailure).onJobCompletion(jobCompleteListener);
 
 			ticket = dmManager.startJob(batcher);
-			
+
 			batcher.awaitCompletion();
 			dmManager.stopJob(ticket);
 		} catch (Exception e) {
@@ -1042,17 +1043,18 @@ public class QBFailover extends BasicJavaClientREST {
 		}
 		// Verify the DatabaseClient instances.
 		System.out.println("Primary database instance is  " + sb_strBatchListenerUriReady.toString());
-		
+
 		// Verify the close status
-		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class", testCloseOnBatchListenerUriReady.get());
-		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class", testCloseOnFailureListenerQueryFailure.get());		
-		
+		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerUriReady class",
+				testCloseOnBatchListenerUriReady.get());
+		assertTrue("Close is not called from testMinNodesWithCloseable in TestCloseOnBatchListenerQueryFailure class",
+				testCloseOnFailureListenerQueryFailure.get());
+
 		// Verify the batch size on job completion
-		assertTrue("Job Completion details not equal", 
-				sb_strJobCompletionListener.toString().equalsIgnoreCase("4000"));
+		assertTrue("Job Completion details not equal", sb_strJobCompletionListener.toString().equalsIgnoreCase("4000"));
 		// Verify the primary database client
-		assertTrue("Primary database details not correct", 
-						sb_strBatchListenerUriReady.toString().contains(String.valueOf(port)));
+		assertTrue("Primary database details not correct",
+				sb_strBatchListenerUriReady.toString().contains(String.valueOf(port)));
 	}
 
 	private void serverStartStop(String server, String command) throws Exception {
@@ -1084,7 +1086,7 @@ public class QBFailover extends BasicJavaClientREST {
 		while ((s = stdError.readLine()) != null) {
 			System.out.println(s);
 		}
-		System.out.println(command + " " + server + " completed");	
+		System.out.println(command + " " + server + " completed");
 	}
 
 	private void addDocs() {
@@ -1117,13 +1119,12 @@ public class QBFailover extends BasicJavaClientREST {
 			String body = handler.handleResponse(response);
 			if (body.toLowerCase().contains("healthy")) {
 				return true;
-			}
-			else {
+			} else {
 				return false;
 			}
 
 		} catch (Exception e) {
 			return false;
-		}	
+		}
 	}
 }
