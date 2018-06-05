@@ -283,7 +283,7 @@ public class TestFileHandle extends BasicJavaClientREST {
 
     // get the binary size
     long size = fileRead.length();
-    long expectedSize = 17154;
+    long expectedSize = 34543;
 
     assertEquals("Binary size difference", expectedSize, size);
 
