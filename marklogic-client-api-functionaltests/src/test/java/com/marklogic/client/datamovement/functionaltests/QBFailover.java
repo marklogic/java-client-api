@@ -49,6 +49,7 @@ import org.junit.Assert;
 import org.junit.Assume;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.w3c.dom.Node;
 
@@ -948,7 +949,8 @@ public class QBFailover extends BasicJavaClientREST {
 	 * 
 	 * 
 	 */
-	@Test(timeout = 450000)
+	@Ignore
+	//@Test(timeout = 450000)
 	public void testListenerCloseables() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
 
