@@ -263,9 +263,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
 		// Tolerate upto 2 for these counts
 		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count1.get()) <= 2);
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count2.get());
-		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
-
+		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count2.get()) <= 2);
+		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count3.get()) <= 2);
 	}
 
 	@Test
