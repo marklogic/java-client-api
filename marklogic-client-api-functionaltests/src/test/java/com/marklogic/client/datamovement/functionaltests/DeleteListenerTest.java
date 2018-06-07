@@ -18,6 +18,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -159,13 +160,16 @@ public class DeleteListenerTest extends BasicJavaClientREST {
       ihb2.add(uri, meta, jacksonHandle);
     }
 
-    ihb2.flushAndWait();
-    // Adding a wait to avoid intermittent setup fails on doc count asserts
-    Thread.currentThread().sleep(2000L);
-    int docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-    System.out.println("Number of docs written to DB from DeleteListenerTest setup method is " + docCount);
-    Assert.assertTrue(docCount == 2000);
-
+    int docCount = 0;
+    if (ihb2.awaitCompletion(1, TimeUnit.MINUTES)) {
+    	Thread.currentThread().sleep(2000L);
+        docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
+        System.out.println("Number of docs written to DB from DeleteListenerTest setup method is " + docCount);
+        Assert.assertTrue(docCount == 2000);
+    }
+    else {
+    	System.out.println("Not all docs written to DB from DeleteListenerTest setup method. Doc count is " + docCount);
+    }    
   }
 
   @After

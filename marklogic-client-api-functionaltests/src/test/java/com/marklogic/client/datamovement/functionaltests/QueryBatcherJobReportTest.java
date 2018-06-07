@@ -551,6 +551,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		transform.put("value", "French");
 		List<String> skippedBatch = new ArrayList<>();
 		List<String> successBatch = new ArrayList<>();
+		List<String> failureBatch = new ArrayList<>();
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
@@ -564,6 +565,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
 				}).onBatchFailure((batch, throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
+					failureBatch.addAll(batchList);
 					throwable.printStackTrace();
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
 
@@ -602,10 +604,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		System.out.println("Counter values from end of TEST");
 		
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
+		System.out.println("stopTransformJobTest: Failed: " + failureBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : count " + doccount);
+		System.out.println("stopTransformJobTest : Value of doccount from DocumentManager read " + doccount);
 		Assert.assertEquals(2000 - doccount, successBatch.size());
-		Assert.assertEquals(2000 - doccount, successCount.get());
+		// This should be the number of URI read (success count + any failed transform counts
+		Assert.assertEquals(2000 - (doccount + failureBatch.size()), successCount.get());
 
 	}
 }

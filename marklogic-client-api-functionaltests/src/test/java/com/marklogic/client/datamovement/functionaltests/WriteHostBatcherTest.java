@@ -883,11 +883,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(batch -> {
 			System.out.println("Success");
-			if (batch.getJobTicket() == testBatchJobTicket) {
+			if (batch.getJobTicket().getJobId().equalsIgnoreCase(testBatchJobTicket.getJobId())) {
 				succObj.set(true);
 			}
 			if (batch.getJobBatchNumber() == 1 && succObj.get()) {
-				System.out.println(batch.getJobBatchNumber());
+				System.out.println("onBatchSuccess: batch # is " + batch.getJobBatchNumber());
 				succObj.set(true);
 			} else {
 				succObj.set(false);
@@ -910,11 +910,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		}).onBatchFailure((batch, throwable) -> {
 			System.out.println("Failure");
-			if (batch.getJobTicket() == testBatchJobTicket) {
+			if (batch.getJobTicket().getJobId().equalsIgnoreCase(testBatchJobTicket.getJobId())) {
 				failObj.set(true);
 			}
 			if (batch.getJobBatchNumber() == 2 && failObj.get()) {
-				System.out.println(batch.getJobBatchNumber());
+				System.out.println("onBatchFailure: batch # is " + batch.getJobBatchNumber());
 				failObj.set(true);
 			} else {
 				failObj.set(false);
