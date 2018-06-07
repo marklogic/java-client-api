@@ -161,7 +161,10 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     }
 
     int docCount = 0;
-    if (ihb2.awaitCompletion(3, TimeUnit.MINUTES)) {
+    ihb2.flushAndWait();
+    boolean bfin = ihb2.awaitCompletion(3, TimeUnit.MINUTES);
+    
+    if (bfin) {
     	Thread.currentThread().sleep(2000L);
         docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
         System.out.println("Number of docs written to DB from DeleteListenerTest setup method is " + docCount);
