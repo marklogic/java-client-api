@@ -41,6 +41,7 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -146,7 +147,9 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     ihb2.withBatchSize(27).withThreadCount(10);
     ihb2.onBatchSuccess(
         batch -> {
-
+        	for (WriteEvent w : batch.getItems()) {
+        		 System.out.println("URI written is " + w.getTargetUri());
+			}
         }
         )
         .onBatchFailure(
