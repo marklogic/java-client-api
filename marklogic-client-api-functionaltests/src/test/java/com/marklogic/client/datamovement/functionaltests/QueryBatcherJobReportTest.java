@@ -607,8 +607,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
 		System.out.println("stopTransformJobTest : Value of doccount from DocumentManager read " + doccount);
 		Assert.assertEquals(2000 - doccount, successBatch.size());
-		// This should be the number of URI read (success count + any failed transform counts
-		Assert.assertEquals(2000 - (doccount + failureBatch.size()), successCount.get());
 
 	}
 }
