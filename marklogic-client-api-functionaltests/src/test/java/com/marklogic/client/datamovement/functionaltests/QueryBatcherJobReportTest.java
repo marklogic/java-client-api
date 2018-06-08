@@ -535,8 +535,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		assertEquals("document count", 2000, doccount);
 		Assert.assertTrue(success.get());
 		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		// Tolerate a difference of 2 between the counts
-		Assert.assertTrue(Math.abs(batchCount.get()-count.get()) <= 2);
+		// Tolerate a difference of 5 between the counts
+		Assert.assertTrue(Math.abs(batchCount.get()-count.get()) <= 5);
 		Assert.assertEquals(2000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 
 	}
