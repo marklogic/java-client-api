@@ -780,7 +780,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       createForest(testMultipleForest[1], testMultipleDB);
       associateRESTServerWithDB(restServerName, testMultipleDB);
       setupAppServicesConstraint(testMultipleDB);
-      Thread.sleep(10000);
+      Thread.sleep(60000);
 
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
