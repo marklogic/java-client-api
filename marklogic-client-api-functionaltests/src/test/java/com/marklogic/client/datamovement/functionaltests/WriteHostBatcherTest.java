@@ -245,7 +245,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			props.put("enabled", "true");
 			changeProperty(props, "/manage/v2/servers/" + server + "/properties");
 		}
-
+		Thread.sleep(10000L);
 		clearDB(port);
 	}
 

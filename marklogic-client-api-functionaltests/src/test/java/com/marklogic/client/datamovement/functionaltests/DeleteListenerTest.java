@@ -142,7 +142,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    Thread.currentThread().sleep(1000L);
+    Thread.currentThread().sleep(10000L);
     WriteBatcher ihb2 = dmManager.newWriteBatcher();
     ihb2.withBatchSize(27).withThreadCount(10);
     ihb2.onBatchSuccess(
