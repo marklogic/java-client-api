@@ -9,7 +9,7 @@ test {
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithCertBasedAuth.class'
   exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
-// Zero Diff Task - QB and WBFailover tests should be removed from exclude once they are fixed to have local disk failover.
+
 /* The minimal number of tests that run in a sandbox environment */
 
 task testSandbox(type:Test) {
@@ -21,12 +21,6 @@ task testSandbox(type:Test) {
 repositories {
   maven {url "http://distro.marklogic.com/nexus/repository/maven-snapshots" }
   maven { url "http://developer.marklogic.com/maven2" }
-}
-
-jacocoTestReport {
-  group = "Reporting"
-  description = "Generate Jacoco coverage reports after running tests."
-  additionalSourceDirs = files(sourceSets.main.allJava.srcDirs)
 }
 
 dependencies {  
