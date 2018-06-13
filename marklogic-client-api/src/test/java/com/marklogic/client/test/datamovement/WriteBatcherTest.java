@@ -515,8 +515,12 @@ public class WriteBatcherTest {
     long batchMinTime = new Date().getTime();
     assertFalse("Job should not be started yet", batcher.isStarted());
     moveMgr.startJob(batcher);
+    long batcherStartTime = new Date().getTime();
     assertTrue("Job should be started now", batcher.isStarted());
     JobTicket ticket = moveMgr.getActiveJob(writeBatcherJobId);
+    JobReport reportTime = moveMgr.getJobReport(ticket);
+    Date reportStartDate = reportTime.getJobStartTime().getTime();
+
     assertEquals(batchSize, batcher.getBatchSize());
     assertEquals(writeBatcherJobId, batcher.getJobId());
     assertEquals(batcherThreadCount, batcher.getThreadCount());
@@ -599,6 +603,13 @@ public class WriteBatcherTest {
 
     long minTime = new Date().getTime()-200;
     Date reportDate = report.getReportTimestamp().getTime();
+    Date reportEndDate = report.getJobEndTime().getTime();
+
+    assertTrue("Job Report should return null for end timestamp", reportTime.getJobEndTime() == null);
+    assertTrue("Job Report has incorrect start timestamp", reportStartDate.getTime() >= batchMinTime &&
+            +      reportStartDate.getTime() <= batcherStartTime);
+    assertTrue("Job Report has incorrect end timestamp", reportEndDate.getTime() >= reportStartDate.getTime() &&
+          +      reportEndDate.getTime() <= maxTime);
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
     assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
     assertEquals("Job Report has incorrect successful event counts", successfulCount.get(),report.getSuccessEventsCount());

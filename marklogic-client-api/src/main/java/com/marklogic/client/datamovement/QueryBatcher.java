@@ -365,11 +365,4 @@ public interface QueryBatcher extends Batcher {
    * @param queryEvent the information about the batch that failed
    */
   void retryWithFailureListeners(QueryEvent queryEvent);
-
-  /**
-   * Gets the primary DatabaseClient associated with the batcher
-   * 
-   * @return the primary DatabaseClient instance
-   */
-  DatabaseClient getPrimaryClient();
 }

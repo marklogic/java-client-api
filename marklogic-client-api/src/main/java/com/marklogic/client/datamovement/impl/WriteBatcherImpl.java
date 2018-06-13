@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import java.io.Closeable;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -24,23 +25,12 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedDeque;
 import java.util.concurrent.ConcurrentLinkedQueue;
-import java.util.concurrent.ConcurrentSkipListSet;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
-import java.util.concurrent.LinkedBlockingDeque;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
@@ -231,6 +221,8 @@ public class WriteBatcherImpl
   private final AtomicBoolean started = new AtomicBoolean(false);
   private boolean usingTransactions = false;
   private JobTicket jobTicket;
+  private Calendar jobStartTime;
+  private Calendar jobEndTime;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
     super();
@@ -266,6 +258,7 @@ public class WriteBatcherImpl
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
       started.set(true);
+      jobStartTime = Calendar.getInstance();
     }
   }
 
@@ -661,6 +654,7 @@ public class WriteBatcherImpl
 
   public void stop() {
     stopped.set(true);
+    jobEndTime = Calendar.getInstance();
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
   }
@@ -700,6 +694,24 @@ public class WriteBatcherImpl
   public JobTicket getJobTicket() {
     requireInitialized();
     return jobTicket;
+  }
+
+  @Override
+  public Calendar getJobStartTime() {
+    if(! this.isStarted()) {
+      return null;
+    } else {
+      return jobStartTime;
+    }
+  }
+
+  @Override
+  public Calendar getJobEndTime() {
+    if(! this.isStopped()) {
+      return null;
+    } else {
+      return jobEndTime;
+    }
   }
 
   @Override
@@ -772,6 +784,11 @@ public class WriteBatcherImpl
     requireNotInitialized();
     this.transform = transform;
     return this;
+  }
+
+  @Override
+  public DatabaseClient getPrimaryClient() {
+    return ((DataMovementManagerImpl) moveMgr).getPrimaryClient();
   }
 
   @Override

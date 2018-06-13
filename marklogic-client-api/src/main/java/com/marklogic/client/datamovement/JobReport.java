@@ -55,4 +55,20 @@ public interface JobReport {
    * @return the timestamp of the JobReport
    */
   Calendar getReportTimestamp();
+
+  /**
+   * Gets the timestamp at which {@link WriteBatcher} or {@link QueryBatcher}
+   * started the job
+   *
+   * @return the job start time or null if the job hasn't started yet
+   */
+  Calendar getJobStartTime();
+
+  /**
+   * Gets the timestamp at which {@link WriteBatcher} or {@link QueryBatcher}
+   * finished the job
+   *
+   * @return the job end time or null if the job hasn't ended yet
+   */
+  Calendar getJobEndTime();
 }
