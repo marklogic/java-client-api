@@ -224,6 +224,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	public void setUp() throws Exception {
 		if (getDocumentCount(dbName) != 0) {
 			clearDB(port);
+			Thread.sleep(10000L);
 		}
 	}
 
