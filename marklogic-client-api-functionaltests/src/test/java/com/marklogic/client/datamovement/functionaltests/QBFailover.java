@@ -369,6 +369,7 @@ public class QBFailover extends BasicJavaClientREST {
 		} else {
 			System.out.println("Test skipped -  tearDown");
 		}
+		Thread.sleep(5000L);
 	}
 
 	@Test(timeout = 450000)
