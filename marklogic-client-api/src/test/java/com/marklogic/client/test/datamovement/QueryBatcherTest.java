@@ -303,6 +303,7 @@ public class QueryBatcherTest {
     long minTime = new Date().getTime();
     assertFalse("Job should not be started yet", queryBatcher.isStarted());
     moveMgr.startJob(queryBatcher);
+    long reportStartTime = new Date().getTime();
     JobTicket ticket = moveMgr.getActiveJob(queryBatcherJobId);
     assertTrue("Job should be started now", queryBatcher.isStarted());
     assertEquals(queryBatcherJobName, ticket.getBatcher().getJobName());
@@ -316,6 +317,7 @@ public class QueryBatcherTest {
       fail("Job did not finish, it was interrupted");
     }
 
+    assertTrue("Job Report should return null for end timestamp", report.getJobEndTime() == null);
     moveMgr.stopJob(ticket.getBatcher());
 
     assertTrue("Job should be stopped now", queryBatcher.isStopped());
@@ -334,6 +336,12 @@ public class QueryBatcherTest {
     assertTrue("Batch has incorrect timestamp=" + batchDate.getTime() + " should be between " +
       minTime + " and " + maxTime, batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();
+    Date reportStartDate = report.getJobStartTime().getTime();
+    Date reportEndDate = report.getJobEndTime().getTime();
+    assertTrue("Job Report has incorrect start timestamp", reportStartDate.getTime() >= minTime &&
+      reportStartDate.getTime() <= reportStartTime);
+    assertTrue("Job Report has incorrect end timestamp", reportEndDate.getTime() >= reportStartDate.getTime() &&
+      reportEndDate.getTime() <= maxTime);
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
     assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
     assertEquals("Job Report has incorrect successful event counts", totalResults.get(),report.getSuccessEventsCount());
@@ -400,9 +408,9 @@ public class QueryBatcherTest {
       public Iterator<String> iterator() {
         AtomicInteger steps = new AtomicInteger(0);
         return new Iterator<String>() {
-          public boolean hasNext() { return steps.incrementAndGet() <= 2; }
+          public boolean hasNext() { return steps.get() <= 2; }
           public String next() {
-            if ( steps.get() == 1 ) return "some uri.txt";
+            if ( steps.incrementAndGet() == 1 ) return "some uri.txt";
             else throw new InternalError(errorMessage);
           }
         };
@@ -553,6 +561,7 @@ public class QueryBatcherTest {
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
     urisReadyFlag.set(false);
     jobCompletionFlag.set(false);
     QueryBatcher queryBatcher2 = moveMgr.newQueryBatcher(query)
@@ -570,6 +579,31 @@ public class QueryBatcherTest {
         });
     moveMgr.startJob(queryBatcher2);
     Thread.sleep(1100);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    QueryBatcher queryBatcher3 = moveMgr.newQueryBatcher(query)
+        .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher3);
+    queryBatcher3.awaitCompletion();
+    moveMgr.stopJob(queryBatcher3);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    String[] uris = new String[] {"uri1.txt", "uri2.txt", "uri3.json", "uri4.xml","uri5.png"};
+    QueryBatcher queryBatcher4 = moveMgr.newQueryBatcher(Arrays.asList(uris).iterator())
+        .onUrisReady(batch -> {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          urisReadyFlag.set(true);
+        })
+        .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher4);
+    queryBatcher4.awaitCompletion();
+    moveMgr.stopJob(queryBatcher4);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
   }
 

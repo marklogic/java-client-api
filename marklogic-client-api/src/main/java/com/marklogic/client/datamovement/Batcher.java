@@ -15,6 +15,10 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.DatabaseClient;
+
+import java.util.Calendar;
+
 /** The base class (shared methods) for {@link QueryBatcher} and {@link WriteBatcher}. */
 public interface Batcher {
   /**
@@ -128,4 +132,25 @@ public interface Batcher {
    * @throws IllegalStateException if this job has not yet been started
    */
   JobTicket getJobTicket();
+
+  /**
+   * Gets the time at which the Batcher was started
+   *
+   * @return the Calendar instance and null if the job hasn't started yet
+   */
+  Calendar getJobStartTime();
+
+  /**
+   * Gets the time at which the Batcher was stopped
+   *
+   * @return the Calendar instance and null if the job hasn't ended yet
+   */
+  Calendar getJobEndTime();
+
+  /**
+   * Gets the primary DatabaseClient associated with the batcher
+   *
+   * @return the primary DatabaseClient instance
+   */
+  DatabaseClient getPrimaryClient();
 }
