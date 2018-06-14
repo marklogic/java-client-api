@@ -437,12 +437,13 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
 
   }
 
-  @Test(expected = FailedRequestException.class)
+  @Test
   public void testBulkWritewithTransactionCommitTimeOut() throws KeyManagementException, NoSuchAlgorithmException, Exception {
 
     int count = 1;
     String docId[] = { "Sega-4MB.jpg" };
     // boolean tstatus =false;
+    try {
     Transaction t = client.openTransaction("timeoutTrans", 1);
     BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
 
@@ -477,6 +478,12 @@ public class TestBulkWriteWithTransactions extends BasicJavaClientREST {
       count++;
     }
     assertEquals("document count", 102, count);
+    }
+    catch (Exception ex) {
+    	String strEx = ex.toString();
+    	System.out.println("Exception from testBulkWritewithTransactionCommitTimeOut is " + strEx);
+    	assertTrue("Exception not thrown", strEx.contains("FailedRequestException"));
+    }
   }
 
   /*
