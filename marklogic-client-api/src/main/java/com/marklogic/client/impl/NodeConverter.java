@@ -35,10 +35,7 @@ import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamReader;
 import javax.xml.transform.Source;
 import javax.xml.transform.stream.StreamSource;
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.Reader;
+import java.io.*;
 import java.util.stream.Stream;
 
 public class NodeConverter {
@@ -308,4 +305,52 @@ public class NodeConverter {
       return (values == null) ? null : values.map(NodeConverter::XMLStreamReaderToHandle);
    }
 
+   static public byte[] InputStreamToBytes(InputStream inputStream) {
+      try {
+         if (inputStream == null) {
+            return null;
+         }
+
+         ByteArrayOutputStream out = new ByteArrayOutputStream();
+         byte[] buf = new byte[8192];
+         int byteCount = -1;
+         while ((byteCount=inputStream.read(buf)) != -1) {
+            out.write(buf, 0, byteCount);
+         }
+         return out.toByteArray();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+   }
+   static public Reader InputStreamToReader(InputStream inputStream) {
+      try {
+         if (inputStream == null) {
+            return null;
+         }
+
+         return new InputStreamReader(inputStream, "UTF-8");
+      } catch (UnsupportedEncodingException e) {
+         throw new RuntimeException(e);
+      }
+   }
+   static public String InputStreamToString(InputStream inputStream) {
+      return ReaderToString(InputStreamToReader(inputStream));
+   }
+   static public String ReaderToString(Reader reader) {
+      try {
+         if (reader == null) {
+            return null;
+         }
+
+         StringBuilder bldr = new StringBuilder();
+         char[] buf = new char[8192];
+         int charCount = -1;
+         while ((charCount=reader.read(buf)) != -1) {
+            bldr.append(buf, 0, charCount);
+         }
+         return bldr.toString();
+      } catch (IOException e) {
+         throw new RuntimeException(e);
+      }
+   }
 }
