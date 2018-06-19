@@ -1,0 +1,10 @@
+{
+  "functionName" : "beginTransactionNoSession",
+  "params" : [ {
+    "name" : "uri",
+    "datatype" : "string"
+  }, {
+    "name" : "text",
+    "datatype" : "string"
+  } ]
+}

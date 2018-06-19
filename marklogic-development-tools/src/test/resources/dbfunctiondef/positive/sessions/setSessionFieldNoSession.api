@@ -1,0 +1,7 @@
+{
+  "functionName" : "setSessionFieldNoSession",
+  "params" : [ {
+    "name" : "fieldName",
+    "datatype" : "string"
+  } ]
+}

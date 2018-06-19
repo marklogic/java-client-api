@@ -1,0 +1,13 @@
+{
+  "functionName" : "sleepify",
+  "params" : [ {
+    "name" : "sleeper",
+    "datatype" : "session"
+  }, {
+    "name" : "sleeptime",
+    "datatype" : "unsignedInt"
+  } ],
+  "return" : {
+    "datatype" : "boolean"
+  }
+}

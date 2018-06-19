@@ -1,0 +1,13 @@
+{
+  "functionName" : "beginTransaction",
+  "params" : [ {
+    "name" : "transaction",
+    "datatype" : "session"
+  }, {
+    "name" : "uri",
+    "datatype" : "string"
+  }, {
+    "name" : "text",
+    "datatype" : "string"
+  } ]
+}
