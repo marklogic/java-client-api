@@ -1,0 +1,16 @@
+{
+  "functionName" : "getSessionField",
+  "params" : [ {
+    "name" : "timestamper",
+    "datatype" : "session"
+  }, {
+    "name" : "fieldName",
+    "datatype" : "string"
+  }, {
+    "name" : "fieldValue",
+    "datatype" : "unsignedLong"
+  } ],
+  "return" : {
+    "datatype" : "boolean"
+  }
+}

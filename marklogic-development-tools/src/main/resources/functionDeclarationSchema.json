@@ -1,0 +1,65 @@
+{"$schema":      "http://json-schema.org/draft-07/schema#",
+  "title":       "MarkLogic Endpoint Function Declaration",
+  "type":        "object",
+  "definitions": {
+    "desc": {
+      "type":"string", "description":"Documentation about the property"
+    },
+    "datatype": {
+      "type":"string", "description":"The type of the value",
+      "enum":[
+        "boolean", "date", "dateTime", "dayTimeDuration", "decimal", "double", "float",
+        "int", "long", "string", "time", "unsignedInt", "unsignedLong",
+        "array", "object",
+        "binaryDocument", "jsonDocument", "textDocument", "xmlDocument",
+        "session"
+      ]
+    },
+    "nullable": {
+      "type":"boolean", "description":"Whether a null value is allowed",
+      "default":false
+    },
+    "multiple": {
+      "type":"boolean", "description":"Whether multiple values are allowed",
+      "default":false
+    }
+  },
+  "required":    ["functionName"],
+  "properties":  {
+    "functionName": {
+      "type":"string", "description":"The name of the database function"
+    },
+    "desc":         {"$ref":"#/definitions/desc"},
+    "params":       {
+      "type":"array", "description":"The parameters of the function",
+      "items": {
+        "type":"object",
+        "required":   ["name", "datatype"],
+        "properties": {
+          "name":  {
+            "type":"string", "description":"The name of the function parameter"
+          },
+          "desc":     {"$ref":"#/definitions/desc"},
+          "datatype": {"$ref":"#/definitions/datatype"},
+          "nullable": {"$ref":"#/definitions/nullable"},
+          "multiple": {"$ref":"#/definitions/multiple"}
+        }
+      }
+    },
+    "return": {
+      "type":"object", "description":"The return value of the function",
+      "required":   ["datatype"],
+      "properties": {
+        "desc":     {"$ref":"#/definitions/desc"},
+        "datatype": {"$ref":"#/definitions/datatype"},
+        "nullable": {"$ref":"#/definitions/nullable"},
+        "multiple": {"$ref":"#/definitions/multiple"}
+      }
+    },
+    "errorDetail": {
+      "type":"string", "description":"Controls reporting of error detail from the appserver",
+      "enum":    ["log", "return"],
+      "default": "log"
+    }
+  }
+}
