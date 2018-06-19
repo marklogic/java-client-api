@@ -282,7 +282,8 @@ public class ValueConverter {
       return DatatypeConverter.parseString(value);
     if ("xs:time".equals(type))
       return DatatypeConverter.parseTime(value);
-    if ("xs:unsignedInt".equals(type)) return StringToUnsignedInteger(value);
+    if ("xs:unsignedInt".equals(type))
+      return DatatypeConverter.parseUnsignedInt(value);
     if ("xs:unsignedLong".equals(type)) {
       BigInteger bi = DatatypeConverter.parseInteger(value);
       if (bi.compareTo(MAX_UNSIGNED_LONG) < 0) {
