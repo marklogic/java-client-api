@@ -74,6 +74,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private final AtomicReference<List<DatabaseClient>> clientList = new AtomicReference<>();
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
+  private Set<Forest> retryForestSet = new HashSet<>();
   private AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
@@ -160,6 +161,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // we're obviously not done with this forest
     forestIsDone.get(retryForest).set(false);
+    retryForestSet.add(retryForest);
     long start = queryEvent.getForestResultsSoFar() + 1;
     logger.trace("retryForest: {}, retryHost: {}, start: {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
@@ -657,7 +659,11 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          isDone.set(true);
+          if(! retryForestSet.contains(forest)) {
+            isDone.set(true);
+          } else {
+            retryForestSet.remove(forest);
+          }
         } else if ( t instanceof RuntimeException ) {
           throw (RuntimeException) t;
         } else {
