@@ -34,7 +34,7 @@ compileTestKotlin {
 }
 
 test {
-    include 'com/marklogic/client/tools/**'
+    include 'com/marklogic/client/test/dbfunction/**'
 }
 
 task setupTestServer(type: JavaExec) {
