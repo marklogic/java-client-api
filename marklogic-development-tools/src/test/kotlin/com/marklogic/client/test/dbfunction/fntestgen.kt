@@ -25,12 +25,14 @@ import com.marklogic.client.document.TextDocumentManager
 import com.marklogic.client.io.DocumentMetadataHandle
 import com.marklogic.client.io.FileHandle
 import com.marklogic.client.io.StringHandle
-import com.marklogic.client.tools.*
+import com.marklogic.client.tools.proxy.Generator
 import java.io.File
 
 import java.lang.IllegalStateException
 
 val TEST_PACKAGE = "com.marklogic.client.test.dbfunction.generated"
+
+val generator = Generator()
 
 enum class TestVariant {
   VALUE, NULL, EMPTY
@@ -626,11 +628,11 @@ fun dbfTestGenerate(testDir: String) {
   val mappedTestdefs    = mapper.readValue<ObjectNode>(mappedTestdefFile)
   docMgr.write("/dbf/mappedTest.json", docMeta, FileHandle(mappedTestdefFile))
 
-  val atomicMap   = getAtomicDataTypes()
+  val atomicMap   = generator.getAtomicDataTypes()
   val atomicNames = atomicMap.keys.toTypedArray()
   val atomicMax   = atomicNames.size - 1
 
-  val documentMap   = getDocumentDataTypes()
+  val documentMap   = generator.getDocumentDataTypes()
   val documentNames = documentMap.keys.toTypedArray()
   val documentMax   = documentNames.size - 1
 
@@ -1426,7 +1428,7 @@ if (true) {
           else -> throw IllegalStateException("""unknown response body type ${responseBodyType}""")
         } // end of branching on response body type
 
-        serviceBundleToJava(bundleFilename, javaBaseDir)
+        generator.serviceBundleToJava(bundleFilename, javaBaseDir)
         writeJUnitRequestTest(
             testPath+bundleTester+".java",
             generateJUnitTest(bundleTested, bundleTester, testingFuncs)
@@ -1517,7 +1519,7 @@ if (true) {
     }
   }
 
-  serviceBundleToJava(atomicMappingBundleFilename, javaBaseDir)
+  generator.serviceBundleToJava(atomicMappingBundleFilename, javaBaseDir)
   writeJUnitRequestTest(
       testPath+atomicMappingBundleTester+".java",
       generateJUnitTest(atomicMappingBundleTested, atomicMappingBundleTester, atomicMappingTestingFuncs,
@@ -1610,7 +1612,7 @@ if (true) {
   }
 
 // System.out.println(documentMappingTestingFuncs.joinToString("\n"))
-  serviceBundleToJava(documentMappingBundleFilename, javaBaseDir)
+  generator.serviceBundleToJava(documentMappingBundleFilename, javaBaseDir)
   writeJUnitRequestTest(
       testPath+documentMappingBundleTester+".java",
       generateJUnitTest(documentMappingBundleTested, documentMappingBundleTester, documentMappingTestingFuncs,
@@ -1624,7 +1626,7 @@ if (true) {
   val sessionBundleFilename  = sessionBundleJSONPath+"service.json"
 
   // TODO: generate session database functions and JUnit test scripts
-  serviceBundleToJava(sessionBundleFilename, javaBaseDir)
+  generator.serviceBundleToJava(sessionBundleFilename, javaBaseDir)
   File(sessionBundleJSONPath)
       .listFiles()
       .filter{file -> (file.extension == "api")}
@@ -1918,7 +1920,7 @@ fun generateJUnitCallTest(
   val returnNullable    = funcReturn?.get("nullable") === true
   val returnMappedType  =
       if (returnType === null || returnKind === null) null
-      else getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
+      else generator.getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
   val returnCustom      = returnMapping !== null && returnMappedType?.contains('.') === true
   val returnConstructor =
       if (typeConstructors === null || !returnCustom) null
@@ -1993,7 +1995,7 @@ fun generateJUnitCallTest(
           """assertStreamEquals("${testName}", ${assertExpected}, ${assertActual}"""
         else
           """assertStringEqual("${testName}", new String[]{${assertExpected}}, ${assertActual}"""
-      else if (returnNullable && getPrimitiveDataTypes().containsKey(returnType))
+      else if (returnNullable && generator.getPrimitiveDataTypes().containsKey(returnType))
         """${asserter}("${testName}", ${returnMappedType}.valueOf(${assertExpected}), ${assertActual}"""
       else if (returnType == "double" || returnType == "float")
         """${asserter}("${testName}", ${assertExpected}, ${assertActual}"""
@@ -2029,7 +2031,7 @@ fun testVal(
   val dataKind   = getDataKind(dataType, typedef) as String
   val isMultiple = typedef.get("multiple") === true
   val isNullable = typedef.get("nullable") === true
-  val mappedType = getJavaDataType(dataType, mapping, dataKind, isNullable, isMultiple)
+  val mappedType = generator.getJavaDataType(dataType, mapping, dataKind, isNullable, isMultiple)
   return testVal(
     typeTests, dataType, dataKind, isNullable, isMultiple, mappedType, testVariant, typeConstructors, mappedTestdefs
     )
