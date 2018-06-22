@@ -13,10 +13,13 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.tools
+package com.marklogic.client.tools.gradle
 
-import com.marklogic.client.tools.proxy.Generator
+import org.gradle.api.Plugin
+import org.gradle.api.Project
 
-fun main(args: Array<String>) {
-  Generator().serviceBundleToJava(args[0], args[1])
+open class ToolsPlugin : Plugin<Project> {
+  override fun apply(project: Project) {
+    project.tasks.create("generateProxy", GeneratorTask::class.java)
+  }
 }
