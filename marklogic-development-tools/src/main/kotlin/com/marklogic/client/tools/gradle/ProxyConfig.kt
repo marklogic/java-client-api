@@ -15,17 +15,7 @@
  */
 package com.marklogic.client.tools.gradle
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import com.marklogic.gradle.MarkLogicPlugin
-
-open class ToolsPlugin : Plugin<Project> {
-  override fun apply(project: Project) {
-// TODO: integrate only in the build script?
-    project.plugins.apply(MarkLogicPlugin::class.java)
-
-    project.extensions.add("proxyConfig", ProxyConfig())
-
-    project.tasks.create("generateProxy", GeneratorTask::class.java)
-  }
+class ProxyConfig {
+  var serviceBundleFilename : String = ""
+  var javaBaseDirectory     : String = ""
 }
