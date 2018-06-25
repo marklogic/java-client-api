@@ -590,7 +590,7 @@ fun main(args: Array<String>) {
 fun dbfTestGenerate(testDir: String) {
   val javaBaseDir  = testDir+"java/"
   val testPath     = javaBaseDir+TEST_PACKAGE.replace(".", "/")+"/"
-  val jsonPath     = testDir+"resources/dbfunctiondef/generated/"
+  val jsonPath     = testDir+"ml-modules/root/dbfunctiondef/generated/"
   val endpointBase = "/dbf/test/"
 
   File(testPath).mkdirs()
@@ -1621,7 +1621,7 @@ if (true) {
 }
 
 if (true) {
-  val sessionBundleJSONPath  = testDir+"resources/dbfunctiondef/positive/sessions/"
+  val sessionBundleJSONPath  = testDir+"ml-modules/root/dbfunctiondef/positive/sessions/"
   val sessionsBundleEndpoint = endpointBase+"sessions/"
   val sessionBundleFilename  = sessionBundleJSONPath+"service.json"
 

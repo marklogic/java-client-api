@@ -28,18 +28,26 @@ open class GeneratorTask : DefaultTask() {
 
   @TaskAction
   fun serviceBundleToJava() {
+    val proxyConfig = project.property("proxyConfig") as ProxyConfig
     if (serviceBundleFilename == "") {
-      if (!project.hasProperty("serviceBundleFilename")) {
+      if (proxyConfig.serviceBundleFilename != "") {
+        serviceBundleFilename = proxyConfig.serviceBundleFilename
+      } else if (project.hasProperty("serviceBundleFilename")) {
+        serviceBundleFilename = project.property("serviceBundleFilename") as String
+      } else {
         throw IllegalArgumentException("serviceBundleFilename not specified")
       }
-      serviceBundleFilename = project.property("serviceBundleFilename") as String
     }
     if (javaBaseDirectory == "") {
-      if (!project.hasProperty("javaBaseDirectory")) {
-        throw IllegalArgumentException("javaBaseDirectory not specified")
+      if (proxyConfig.javaBaseDirectory != "") {
+        javaBaseDirectory = proxyConfig.javaBaseDirectory
+      } else if (project.hasProperty("javaBaseDirectory")) {
+        javaBaseDirectory = project.property("javaBaseDirectory") as String
+      } else {
+        javaBaseDirectory = project.projectDir.resolve("src/main/java").path
       }
-      javaBaseDirectory = project.property("javaBaseDirectory") as String
     }
+
     generator.serviceBundleToJava(serviceBundleFilename, javaBaseDirectory)
   }
 }

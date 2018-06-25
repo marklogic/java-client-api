@@ -27,57 +27,199 @@ class GeneratorTaskTest {
   @get:Rule
   val testDir = TemporaryFolder()
 
+  var isInitialized = false
+
+  lateinit var testEnv : TestDir
+  class TestDir {
+    val srcDir      : File
+    val serviceDir  : File
+    val javaBaseDir : File
+    val buildFile   : File
+    val propsFile   : File
+    val outClass    : File
+
+    constructor(testDir: TemporaryFolder) {
+      val sourcePath = "ml-modules/root/dbfunctiondef/positive/sessions"
+
+      srcDir      = testDir.newFolder("src")
+      serviceDir  = srcDir.resolve(sourcePath)
+      javaBaseDir = srcDir.resolve("main/java")
+      buildFile   = testDir.newFile("build.gradle")
+      propsFile   = testDir.newFile("gradle.properties")
+      outClass    = javaBaseDir.resolve("com/marklogic/client/test/dbfunction/positive/SessionsBundle.java")
+
+      serviceDir.mkdirs()
+      File("src/test/"+sourcePath).copyRecursively(serviceDir, overwrite=true)
+
+      javaBaseDir.mkdirs()
+/*
+for (file in srcDir.walk().iterator()) {
+  println(file.path)
+}
+ */
+    }
+  }
+
+  fun initTestEnv() {
+    if (!isInitialized) {
+      testEnv       = TestDir(testDir)
+      isInitialized = true
+    }
+  }
+
   @Test
-  fun testProxyGenerator() {
-    val srcDir    = testDir.newFolder("src")
-    val outDir    = testDir.newFolder("out")
-    val buildFile = testDir.newFile("build.gradle")
+  fun testTaskInit() {
+    initTestEnv()
 
-    File("src/test/resources/dbfunctiondef/positive/sessions")
-        .copyRecursively(srcDir, overwrite=true)
-
-    buildFile.writeText("""
+    testEnv.buildFile.writeText("""
 plugins {
+    id 'com.marklogic.ml-gradle'
     id 'com.marklogic.client.tools'
 }
 
 task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {
-    serviceBundleFilename = '${srcDir.path}/service.json'
-    javaBaseDirectory     = '${outDir.path}'
+    serviceBundleFilename = '${testEnv.serviceDir.path}/service.json'
+    javaBaseDirectory     = '${testEnv.javaBaseDir.path}'
 }
 """)
-    var result = GradleRunner
+    val result = GradleRunner
         .create()
         .withProjectDir(testDir.root)
         .withPluginClasspath()
         .withArguments("generateTestProxy")
         .withDebug(true)
         .build()
-
-    val outClass = outDir.resolve("com/marklogic/client/test/dbfunction/positive/SessionsBundle.java")
+// println("testTaskInit(): "+result.output)
 // println(outClass.readText())
-// println(result.output)
-    assertTrue("buildscript did not generate ${outClass.path}", outClass.exists())
+    assertTrue("buildscript did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
-    outClass.delete()
+    testEnv.buildFile.delete()
+    testEnv.outClass.delete()
+  }
 
-    buildFile.writeText("""
+  @Test
+  fun testCommandLineInit() {
+    initTestEnv()
+
+    testEnv.buildFile.writeText("""
 plugins {
+    id 'com.marklogic.ml-gradle'
     id 'com.marklogic.client.tools'
 }
 """)
 
-    result = GradleRunner
+    val result = GradleRunner
         .create()
         .withProjectDir(testDir.root)
         .withPluginClasspath()
         .withArguments(
-            """-PserviceBundleFilename=${srcDir.path}/service.json""",
-            """-PjavaBaseDirectory=${outDir.path}""",
+            """-PserviceBundleFilename=${testEnv.serviceDir.path}/service.json""",
+            """-PjavaBaseDirectory=${testEnv.javaBaseDir.path}""",
             "generateProxy"
            )
         .withDebug(true)
         .build()
-    assertTrue("command line did not generate ${outClass.path}", outClass.exists())
+// println("testCommandLineInit(): "+result.output)
+// println(outClass.readText())
+    assertTrue("command line did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
+
+    testEnv.buildFile.delete()
+    testEnv.outClass.delete()
   }
+
+  @Test
+  fun testPropertiesFile() {
+    initTestEnv()
+
+    testEnv.buildFile.writeText("""
+plugins {
+    id 'com.marklogic.ml-gradle'
+    id 'com.marklogic.client.tools'
+}
+""")
+
+    testEnv.propsFile.writeText("""
+serviceBundleFilename=${testEnv.serviceDir.path}/service.json
+javaBaseDirectory=${testEnv.javaBaseDir.path}
+""")
+
+    val result = GradleRunner
+        .create()
+        .withProjectDir(testDir.root)
+        .withPluginClasspath()
+        .withArguments("generateProxy")
+        .withDebug(true)
+        .build()
+// println("testPropertiesFile(): "+result.output)
+// println(outClass.readText())
+    assertTrue("config did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
+
+    testEnv.buildFile.delete()
+    testEnv.propsFile.delete()
+    testEnv.outClass.delete()
+  }
+
+  @Test
+  fun testConfig() {
+    initTestEnv()
+
+    testEnv.buildFile.writeText("""
+plugins {
+    id 'com.marklogic.ml-gradle'
+    id 'com.marklogic.client.tools'
+}
+
+ext {
+    proxyConfig {
+        serviceBundleFilename = '${testEnv.serviceDir.path}/service.json'
+        javaBaseDirectory     = '${testEnv.javaBaseDir.path}'
+    }
+}
+""")
+
+    val result = GradleRunner
+        .create()
+        .withProjectDir(testDir.root)
+        .withPluginClasspath()
+        .withArguments("generateProxy")
+        .withDebug(true)
+        .build()
+// println("testConfig(): "+result.output)
+// println(outClass.readText())
+    assertTrue("config did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
+
+    testEnv.buildFile.delete()
+    testEnv.outClass.delete()
+  }
+
+  @Test
+  fun testJavaDefault() {
+    initTestEnv()
+
+    testEnv.buildFile.writeText("""
+plugins {
+    id 'com.marklogic.ml-gradle'
+    id 'com.marklogic.client.tools'
+}
+
+task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {
+    serviceBundleFilename = '${testEnv.serviceDir.path}/service.json'
+}
+""")
+    val result = GradleRunner
+        .create()
+        .withProjectDir(testDir.root)
+        .withPluginClasspath()
+        .withArguments("generateTestProxy")
+        .withDebug(true)
+        .build()
+// println("testJavaDefault(): "+result.output)
+// println(outClass.readText())
+    assertTrue("buildscript did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
+
+    testEnv.buildFile.delete()
+    testEnv.outClass.delete()
+  }
+
+// TODO: test with scan for services
 }
