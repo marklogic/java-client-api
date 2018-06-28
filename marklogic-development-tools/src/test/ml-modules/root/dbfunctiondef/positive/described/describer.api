@@ -1,0 +1,16 @@
+{
+  "functionName" : "describer",
+  "desc" : "A most descriptive method.",
+  "params" : [ {
+    "name" : "first",
+    "desc" : "Descriptive input.",
+    "datatype" : "int"
+  } ],
+  "return" : {
+    "datatype" : "boolean",
+    "desc" : "Descriptive output."
+  },
+  "$comment" : [
+    "The comment value is ignored."
+  ]
+}

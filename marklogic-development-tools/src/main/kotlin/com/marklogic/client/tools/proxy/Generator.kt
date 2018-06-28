@@ -344,6 +344,9 @@ class Generator {
 
     val hasSession  = servdef.get("hasSession")?.asBoolean() === true
 
+    val classDesc   = servdef.get("desc")?.asText() ?:
+        "Provides a set of operations on the database server"
+
     val classSrc  = """package ${packageName};
 
 // IMPORTANT: Do not edit. This file is generated.
@@ -354,6 +357,9 @@ import com.marklogic.client.DatabaseClient;
 
 import com.marklogic.client.impl.AbstractProxy;
 
+/**
+ * ${classDesc}
+ */
 public class ${className} extends AbstractProxy {
 
     public static ${className} on(DatabaseClient db) {
@@ -436,6 +442,8 @@ ${returnImports ?: ""}
     if (funcName === null || funcName.length === 0) {
       throw IllegalArgumentException("function without name")
     }
+    val funcDesc = funcdef.get("desc")?.asText() ?:
+      "Invokes the ${funcName} operation on the database server"
 
     val funcParams = funcdef.withArray("params")
     val funcReturn = funcdef.get("return")
@@ -448,12 +456,13 @@ ${returnImports ?: ""}
 
     var sessionParam : ObjectNode? = null
 
-    val payloadParams  = mutableListOf<ObjectNode>()
+    val payloadParams = mutableListOf<ObjectNode>()
     funcParams?.forEach{param ->
       val funcParam = (param as ObjectNode)
+      val paramName = funcParam.get("name").asText()
       val paramType = funcParam.get("datatype")?.asText()
       if (paramType === null) throw IllegalArgumentException(
-          "${funcParam.get("name").asText()} parameter of $funcName function has no datatype"
+          "$paramName parameter of $funcName function has no datatype"
       )
       else if (atomicTypes.containsKey(paramType)) {
         funcParam.put("dataKind", "atomic")
@@ -474,7 +483,7 @@ ${returnImports ?: ""}
         servdef.put("hasSession", true)
       }
       else throw IllegalArgumentException(
-          "${funcParam.get("name").asText()} parameter of $funcName function has invalid datatype: $paramType"
+          "$paramName parameter of $funcName function has invalid datatype: $paramType"
       )
     }
 
@@ -527,6 +536,7 @@ ${returnImports ?: ""}
           else       -> "none"
         }
 
+    val paramDescs     = mutableListOf<String>()
     val sigParams      = funcParams?.map{funcParam ->
       val paramName     = funcParam.get("name").asText()
       val paramType     = funcParam.get("datatype").asText()
@@ -538,6 +548,10 @@ ${returnImports ?: ""}
       val sigType       =
           if (!isMultiple) mappedType
           else             "Stream<"+mappedType+">"
+      val paramDesc     = "@param ${paramName}\t" + (
+          funcParam.get("desc")?.asText() ?: "provides input"
+          )
+      paramDescs.add(paramDesc)
       sigType+" "+paramName
     }?.joinToString(", ")
 
@@ -545,6 +559,11 @@ ${returnImports ?: ""}
         if (returnType === null)  "void"
         else if (!returnMultiple) returnMapped
         else                      "Stream<"+returnMapped+">"
+    val returnDesc     =
+        if (funcReturn === null) ""
+        else "@return\t" + (
+            funcReturn.get("desc")?.asText() ?: "as output"
+            )
 
     val callFuncName = endpointMethod+"For"+responseBody.capitalize()
     val callStart    =
@@ -642,8 +661,14 @@ ${returnImports ?: ""}
           else        -> throw IllegalArgumentException("""unknown response body type ${responseBody}""")
         }
 
-// TODO: JavaDoc from summary
     val javaSource     = """
+  /**
+   * ${funcDesc}
+   *
+   * ${ if (paramDescs.size == 0) "" else paramDescs.joinToString("""
+   * """)}
+   * ${returnDesc}
+   */
     public ${returnSig} ${funcName}(${sigParams ?: ""}) {
       ${returnConverter
     }request("${moduleFilename}", ParameterValuesKind.${paramsKind})
@@ -723,5 +748,113 @@ ${returnImports ?: ""}
         else if (param.get("multiple")?.asBoolean() === true) ValueCardinality.MULTIPLE
         else                                                  ValueCardinality.SINGLE
     return nextCardinality
+  }
+
+  fun declarationToModuleStubImpl(functionFilename: String, moduleExtension: String) {
+    if (functionFilename === null || functionFilename.length == 0) {
+      throw IllegalArgumentException("null declaration file")
+    }
+
+    val functionFile = File(functionFilename)
+    if (!functionFile.exists()) {
+      throw IllegalArgumentException("declaration file doesn't exist: "+functionFilename)
+    }
+
+    if(moduleExtension != "sjs" && moduleExtension != "xqy") {
+      throw IllegalArgumentException("invalid module extension: "+moduleExtension)
+    }
+
+    val moduleFile = functionFile.parentFile.resolve(
+        functionFile.nameWithoutExtension+"."+moduleExtension
+    )
+    if (moduleFile.exists()) {
+      throw IllegalArgumentException("module file already exists: "+moduleFile.absolutePath)
+    }
+
+    val mapper         = jacksonObjectMapper()
+
+    val atomicTypes    = getAtomicDataTypes()
+    val documentTypes  = getDocumentDataTypes()
+
+    val funcdef        = mapper.readValue<ObjectNode>(functionFile)
+    val funcParams     = funcdef.withArray("params")
+
+    val funcReturn     = funcdef.get("return")
+    val returnType     = funcReturn?.get("datatype")?.asText()
+    val returnNullable = funcReturn?.get("nullable")?.asBoolean() === true
+    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() === true
+    val returnCardinal =
+        if (returnType === null) ""
+        else getServerCardinality(returnMultiple, returnNullable)
+    val returnTypeName =
+        if (returnType === null) ""
+        else getServerType(returnType, atomicTypes, documentTypes, moduleExtension)
+
+    val prologSource   =
+        if (moduleExtension == "sjs")
+          """'use strict';
+// declareUpdate(); // Note: uncomment if changing the database state
+"""
+        else """xquery version "1.0-ml";
+
+declare option xdmp:mapping "false";
+"""
+    val paramsSource   =
+        if (funcParams === null) ""
+        else funcParams.map{funcParam ->
+          val paramName   = funcParam.get("name").asText()
+          val paramType   = funcParam.get("datatype").asText()
+          val isMultiple  = funcParam.get("multiple")?.asBoolean() === true
+          val isNullable  = funcParam.get("nullable")?.asBoolean() === true
+          val cardinality = getServerCardinality(isMultiple, isNullable)
+          val typeName    = getServerType(paramType, atomicTypes, documentTypes, moduleExtension)
+          val paramdef    =
+              if (moduleExtension == "sjs")
+                "var ${paramName}; // instance of ${typeName}${cardinality}"
+              else "declare variable $${paramName} as ${typeName}${cardinality} external;"
+          paramdef
+        }.filterNotNull().joinToString("""
+""")
+    val returnSource   =
+        if (moduleExtension == "sjs") """
+// TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables
+"""
+        else """
+(: TODO:  produce the ${returnTypeName}${returnCardinal} output from the input variables :)
+"""
+    val moduleSource   = """${prologSource}
+${paramsSource}
+${returnSource}
+"""
+    moduleFile.writeText(moduleSource)
+  }
+  fun getServerType(paramType: String, atomicTypes: Map<String,String>,
+                    documentTypes: Map<String,String>, moduleExtension: String
+  ): String? {
+    val typeName   =
+        if (paramType == "session")
+          null
+        else if (atomicTypes.containsKey(paramType))
+          if (moduleExtension == "sjs") "xs."+paramType
+          else                          "xs:"+paramType
+        else if (documentTypes.containsKey(paramType))
+          when (paramType) {
+            "array","object" ->
+              if (moduleExtension == "sjs") paramType.capitalize()+"Node"
+              else                          paramType+"-node()"
+            else ->
+              if (moduleExtension == "sjs") "DocumentNode"
+              else                          "document-node()"
+          }
+        else throw IllegalArgumentException("invalid datatype: $paramType")
+    return typeName
+  }
+  fun getServerCardinality(isMultiple: Boolean, isNullable: Boolean): String {
+    val cardinality =
+        if      (isMultiple  && isNullable)  "*"
+        else if (isMultiple  && !isNullable) "+"
+        else if (!isMultiple && isNullable)  "?"
+        else                                 ""
+    return cardinality
   }
 }

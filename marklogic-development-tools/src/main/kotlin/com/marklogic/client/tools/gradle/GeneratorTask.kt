@@ -19,7 +19,7 @@ import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-// @CacheableTask
+// TODO: declare outputs
 open class GeneratorTask : DefaultTask() {
   val generator = Generator()
 

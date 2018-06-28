@@ -1621,25 +1621,96 @@ if (true) {
 }
 
 if (true) {
-  val sessionBundleJSONPath  = testDir+"ml-modules/root/dbfunctiondef/positive/sessions/"
-  val sessionsBundleEndpoint = endpointBase+"sessions/"
-  val sessionBundleFilename  = sessionBundleJSONPath+"service.json"
+  for (testName in listOf("sessions", "described")) {
+    val manualBundleJSONPath = "${testDir}ml-modules/root/dbfunctiondef/positive/${testName}/"
+    val manualBundleEndpoint = endpointBase+testName+"/"
+    val manualBundleFilename = manualBundleJSONPath+"service.json"
 
-  // TODO: generate session database functions and JUnit test scripts
-  generator.serviceBundleToJava(sessionBundleFilename, javaBaseDir)
-  File(sessionBundleJSONPath)
-      .listFiles()
-      .filter{file -> (file.extension == "api")}
-      .forEach{apiFile ->
-        val baseName = apiFile.nameWithoutExtension
-        val apiName  = baseName +".api"
-        val modName  = baseName +".sjs"
-        modMgr.write(
-            modMgr.newWriteSet()
-                .add(sessionsBundleEndpoint+apiName, docMeta, FileHandle(apiFile))
-                .add(sessionsBundleEndpoint+modName, docMeta, FileHandle(File(sessionBundleJSONPath+modName)))
+    generator.serviceBundleToJava(manualBundleFilename, javaBaseDir)
+    File(manualBundleJSONPath)
+        .listFiles()
+        .filter{file -> (file.extension == "api")}
+        .forEach{apiFile ->
+          val baseName = apiFile.nameWithoutExtension
+          val apiName  = baseName +".api"
+          val modName  = baseName +".sjs"
+          modMgr.write(
+              modMgr.newWriteSet()
+                  .add(manualBundleEndpoint+apiName, docMeta, FileHandle(apiFile))
+                  .add(manualBundleEndpoint+modName, docMeta, FileHandle(File(manualBundleJSONPath+modName)))
+          )
+        }
+  }
+}
+
+if (true) {
+  val moduleInitName       = "initializer"
+  val moduleInitParams     = allTestTypes.mapIndexed{i, testdef -> mapOf(
+      "name"     to "param" + (i + 1),
+      "datatype" to atomicNames[i],
+      "multiple" to testdef["multiple"],
+      "nullable" to testdef["nullable"]
+  )}
+  val moduleInitReturn     = mapOf("datatype" to "boolean")
+  val moduleInitTestdef    = mapOf(
+      "functionName" to moduleInitName,
+      "params"       to moduleInitParams,
+      "return"       to moduleInitReturn
+      )
+  val moduleInitTestString = serializer.writeValueAsString(moduleInitTestdef)
+  for (modExtension in listOf("sjs", "xqy")) {
+    val moduleInitBundle           = "moduleInit"+modExtension.capitalize()
+    val moduleInitBundleTested     = moduleInitBundle.capitalize()+"Bundle"
+    val moduleInitBundleTester     = moduleInitBundleTested+"Test"
+    val moduleInitBundleJSONPath   = jsonPath+moduleInitBundle+"/"
+    val moduleInitBundleFilename   = moduleInitBundleJSONPath+"service.json"
+    val moduleInitBundleEndpoint   = endpointBase+moduleInitBundle+"/"
+    val moduleInitBundleJSONString = serializer.writeValueAsString(mapOf(
+        "endpointDirectory" to moduleInitBundleEndpoint,
+        "\$javaClass"       to TEST_PACKAGE+"."+moduleInitBundleTested
+    ))
+    File(moduleInitBundleJSONPath).mkdirs()
+    File(moduleInitBundleFilename).writeText(moduleInitBundleJSONString, Charsets.UTF_8)
+
+    val moduleInitAPIName     = moduleInitName+".api"
+    val moduleInitAPIFilename = moduleInitBundleJSONPath+moduleInitAPIName
+    val moduleInitAPIFile     = File(moduleInitAPIFilename)
+
+    val moduleInitModName     = moduleInitName+"."+modExtension
+    val moduleInitModFilename = moduleInitBundleJSONPath+moduleInitModName
+    val moduleInitModFile     = File(moduleInitModFilename)
+
+    moduleInitAPIFile.writeText(moduleInitTestString, Charsets.UTF_8)
+
+    if (moduleInitModFile.exists()) {
+      moduleInitModFile.delete()
+    }
+    generator.declarationToModuleStubImpl(moduleInitAPIFilename, modExtension)
+    moduleInitModFile.appendText("""
+${
+    when (modExtension) {
+      "sjs" -> "true;"
+      "xqy" -> "fn:true()"
+      else  -> IllegalArgumentException("unknown module extension: "+modExtension)
+    }}
+""", Charsets.UTF_8)
+
+    generator.serviceBundleToJava(moduleInitBundleFilename, javaBaseDir)
+
+    modMgr.write(
+        modMgr.newWriteSet()
+            .add(moduleInitBundleEndpoint+moduleInitAPIName, docMeta, FileHandle(moduleInitAPIFile))
+            .add(moduleInitBundleEndpoint+moduleInitModName, docMeta, FileHandle(moduleInitModFile))
         )
-      }
+
+    val moduleInitTestingFunctions = listOf(
+        generateJUnitCallTest(moduleInitName, moduleInitParams, moduleInitReturn, testdefs)
+        )
+    writeJUnitRequestTest(
+        testPath+moduleInitBundleTester+".java",
+        generateJUnitTest(moduleInitBundleTested, moduleInitBundleTester, moduleInitTestingFunctions)
+        )
+  }
 }
 
   db.release()

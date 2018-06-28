@@ -13,20 +13,10 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client.tools.gradle
+package com.marklogic.client.tools
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import com.marklogic.gradle.MarkLogicPlugin
+import com.marklogic.client.tools.proxy.Generator
 
-open class ToolsPlugin : Plugin<Project> {
-  override fun apply(project: Project) {
-// TODO: integrate only in the build script?
-    project.plugins.apply(MarkLogicPlugin::class.java)
-
-    project.extensions.add("proxyConfig", ProxyConfig())
-
-    project.tasks.create("generateProxy",    GeneratorTask::class.java)
-    project.tasks.create("initializeModule", ModuleInitTask::class.java)
-  }
+fun main(args: Array<String>) {
+  Generator().declarationToModuleStubImpl(args[0], args[1])
 }

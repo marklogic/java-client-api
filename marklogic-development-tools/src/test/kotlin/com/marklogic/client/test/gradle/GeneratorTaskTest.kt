@@ -49,14 +49,9 @@ class GeneratorTaskTest {
       outClass    = javaBaseDir.resolve("com/marklogic/client/test/dbfunction/positive/SessionsBundle.java")
 
       serviceDir.mkdirs()
-      File("src/test/"+sourcePath).copyRecursively(serviceDir, overwrite=true)
+      File("src/test/" + sourcePath).copyRecursively(serviceDir, overwrite=true)
 
       javaBaseDir.mkdirs()
-/*
-for (file in srcDir.walk().iterator()) {
-  println(file.path)
-}
- */
     }
   }
 
@@ -89,8 +84,6 @@ task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {
         .withArguments("generateTestProxy")
         .withDebug(true)
         .build()
-// println("testTaskInit(): "+result.output)
-// println(outClass.readText())
     assertTrue("buildscript did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
     testEnv.buildFile.delete()
@@ -119,8 +112,6 @@ plugins {
            )
         .withDebug(true)
         .build()
-// println("testCommandLineInit(): "+result.output)
-// println(outClass.readText())
     assertTrue("command line did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
     testEnv.buildFile.delete()
@@ -150,8 +141,6 @@ javaBaseDirectory=${testEnv.javaBaseDir.path}
         .withArguments("generateProxy")
         .withDebug(true)
         .build()
-// println("testPropertiesFile(): "+result.output)
-// println(outClass.readText())
     assertTrue("config did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
     testEnv.buildFile.delete()
@@ -184,8 +173,6 @@ ext {
         .withArguments("generateProxy")
         .withDebug(true)
         .build()
-// println("testConfig(): "+result.output)
-// println(outClass.readText())
     assertTrue("config did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
     testEnv.buildFile.delete()
@@ -213,13 +200,9 @@ task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {
         .withArguments("generateTestProxy")
         .withDebug(true)
         .build()
-// println("testJavaDefault(): "+result.output)
-// println(outClass.readText())
     assertTrue("buildscript did not generate ${testEnv.outClass.path}", testEnv.outClass.exists())
 
     testEnv.buildFile.delete()
     testEnv.outClass.delete()
   }
-
-// TODO: test with scan for services
 }
