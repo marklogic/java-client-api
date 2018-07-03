@@ -31,6 +31,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -62,6 +63,9 @@ import com.marklogic.client.semantics.SPARQLQueryDefinition;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.CallParts.CallRequest;
+import com.marklogic.client.CallParts.CallField;
+import com.marklogic.client.CallParts.HttpMethod;
 
 public interface RESTServices {
 
@@ -272,6 +276,12 @@ public interface RESTServices {
 
   // backdoor
   public Object getClientImplementation();
+
+  CallRequest makeEmptyRequest(String endpoint, HttpMethod method, SessionState session);
+
+  CallRequest makeAtomicBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params);
+
+  CallRequest makeNodeBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params);
 
   public enum ResponseStatus {
     OK() {

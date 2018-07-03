@@ -15,6 +15,11 @@
  */
 package com.marklogic.client;
 
+import com.marklogic.client.impl.ClientCookie;
+
+import java.util.List;
+
 public interface SessionState {
-   public String getSessionId();
+  public String getSessionId();
+  List<ClientCookie> getCookies();
 }

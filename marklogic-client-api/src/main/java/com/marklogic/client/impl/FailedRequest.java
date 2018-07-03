@@ -54,6 +54,8 @@ public class FailedRequest {
 
   private String statusString;
 
+  private String stackTrace;
+
   private static class FailedRequestXMLParser implements FailedRequestParser {
 
     @Override
@@ -161,6 +163,14 @@ public class FailedRequest {
    * No argument constructor so an external class can generate FailedRequest objects.
    */
   public FailedRequest() {
+  }
+
+  public String getStackTrace() {
+    return stackTrace;
+  }
+
+  public void setStackTrace(String stackTrace) {
+    this.stackTrace = stackTrace;
   }
 
   public String getMessage() {

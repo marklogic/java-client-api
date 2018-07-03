@@ -45,6 +45,7 @@ public class JSONErrorParser implements FailedRequestParser {
       failure.setStatusString(errorBody.get("status"));
       failure.setMessageCode(errorBody.get("messageCode"));
       failure.setMessageString(errorBody.get("message"));
+      failure.setStackTrace(errorBody.get("stackTrace"));
     } catch (JsonParseException e1) {
       failure.setStatusCode(httpStatus);
       failure.setMessageString("Request failed. Error body not received from server");
