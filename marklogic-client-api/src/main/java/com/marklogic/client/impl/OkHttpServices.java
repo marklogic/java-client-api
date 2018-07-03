@@ -15,7 +15,11 @@
  */
 package com.marklogic.client.impl;
 
-import com.marklogic.client.impl.ClientCookie;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -26,6 +30,7 @@ import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.MarkLogicInternalException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -40,12 +45,14 @@ import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.eval.EvalResult;
 import com.marklogic.client.eval.EvalResultIterator;
-import com.marklogic.client.extensions.ResourceServices;
+
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.JacksonParserHandle;
 import com.marklogic.client.io.OutputStreamSender;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
@@ -80,6 +87,7 @@ import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
+import com.marklogic.client.CallParts.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
@@ -114,7 +122,6 @@ import org.slf4j.LoggerFactory;
 import javax.mail.BodyPart;
 import javax.mail.Header;
 import javax.mail.MessagingException;
-import javax.mail.internet.ContentDisposition;
 import javax.mail.internet.MimeMultipart;
 import javax.mail.util.ByteArrayDataSource;
 import javax.naming.InvalidNameException;
@@ -138,6 +145,7 @@ import java.io.Writer;
 import java.math.BigDecimal;
 import java.net.URLEncoder;
 import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.security.cert.Certificate;
@@ -159,6 +167,8 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @SuppressWarnings({ "unchecked", "rawtypes" })
 public class OkHttpServices implements RESTServices {
@@ -174,6 +184,9 @@ public class OkHttpServices implements RESTServices {
   static final private int DELAY_MULTIPLIER  =     20;
   static final private int DEFAULT_MAX_DELAY = 120000;
   static final private int DEFAULT_MIN_RETRY =      8;
+
+  private final static MediaType URLENCODED_MIME_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=UTF-8");
+  private final static String UTF8_ID = StandardCharsets.UTF_8.toString();
 
   static protected class HostnameVerifierAdapter implements HostnameVerifier {
     private SSLHostnameVerifier verifier;
@@ -496,7 +509,11 @@ public class OkHttpServices implements RESTServices {
   }
 
   private int makeFirstRequest(int retry) {
-    Response response = sendRequestOnce(setupRequest("ping", null).head());
+    return makeFirstRequest(baseUri, "ping", retry);
+  }
+
+  private int makeFirstRequest(HttpUrl requestUri, String path, int retry) {
+    Response response = sendRequestOnce(setupRequest(requestUri, path, null).head());
     int statusCode = response.code();
     if (statusCode != STATUS_SERVICE_UNAVAILABLE) {
       response.close();
@@ -4087,41 +4104,45 @@ public class OkHttpServices implements RESTServices {
       if ( requestBldr == null ) {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
-      HttpUrl uri = requestBldr.build().url();
-      for (ClientCookie cookie : transaction.getCookies()) {
-        // don't forward the cookie if it requires https and we're not using https
-        if ( cookie.isSecure() && ! uri.isHttps() ) {
-          continue;
-        }
-        // don't forward the cookie if it requires a path and we're using a different path
-        if ( cookie.getPath() != null ) {
-          String path = uri.encodedPath();
-          if ( path == null || ! path.startsWith(cookie.getPath()) ) {
-            continue;
-          }
-        }
-        // don't forward the cookie if it requires a domain and we're using a different domain
-        if ( cookie.getDomain() != null ) {
-          if ( uri.host() == null || ! uri.host().equals(cookie.getDomain()) ) {
-            continue;
-          }
-        }
-        // don't forward the cookie if it has 0 for max age
-        if ( cookie.getMaxAge() == 0 ) {
-          continue;
-        }
-        // TODO: eval if we need handling for MIN_VALUE
-        // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
-        // don't forward the cookie if it has a max age and we're past the max age
-        if ( cookie.getMaxAge() > 0 ) {
-          Calendar expiration = (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone();
-          expiration.roll(Calendar.SECOND, cookie.getMaxAge());
-          if ( System.currentTimeMillis() > expiration.getTimeInMillis() ) {
-            continue;
-          }
-        }
-        requestBldr = requestBldr.addHeader(HEADER_COOKIE, cookie.toString());
+      requestBldr = addCookies(requestBldr, transaction.getCookies(), (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone());
+    }
+    return requestBldr;
+  }
+
+  private Request.Builder addCookies(Request.Builder requestBldr, List<ClientCookie> cookies, Calendar expiration) {
+    HttpUrl uri = requestBldr.build().url();
+    for (ClientCookie cookie : cookies) {
+      // don't forward the cookie if it requires https and we're not using https
+      if ( cookie.isSecure() && ! uri.isHttps() ) {
+        continue;
       }
+      // don't forward the cookie if it requires a path and we're using a different path
+      if ( cookie.getPath() != null ) {
+        String path = uri.encodedPath();
+        if ( path == null || ! path.startsWith(cookie.getPath()) ) {
+          continue;
+        }
+      }
+      // don't forward the cookie if it requires a domain and we're using a different domain
+      if ( cookie.getDomain() != null ) {
+        if ( uri.host() == null || ! uri.host().equals(cookie.getDomain()) ) {
+          continue;
+        }
+      }
+      // don't forward the cookie if it has 0 for max age
+      if ( cookie.getMaxAge() == 0 ) {
+        continue;
+      }
+      // TODO: eval if we need handling for MIN_VALUE
+      // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
+      // don't forward the cookie if it has a max age and we're past the max age
+      if ( expiration != null && cookie.getMaxAge() > 0 ) {
+        expiration.roll(Calendar.SECOND, cookie.getMaxAge());
+        if ( System.currentTimeMillis() > expiration.getTimeInMillis() ) {
+          continue;
+        }
+      }
+      requestBldr = requestBldr.addHeader(HEADER_COOKIE, cookie.toString());
     }
     return requestBldr;
   }
@@ -4214,10 +4235,10 @@ public class OkHttpServices implements RESTServices {
     return MIMETYPE_MULTIPART_MIXED + "; boundary=" + UUID.randomUUID().toString();
   }
 
-  private Request.Builder setupRequest(String path, RequestParameters params) {
+  private Request.Builder setupRequest(HttpUrl requestUri, String path, RequestParameters params) {
     if ( path == null ) throw new IllegalArgumentException("path cannot be null");
     if ( path.startsWith("/") ) path = path.substring(1);
-    HttpUrl.Builder uri = baseUri.resolve(path).newBuilder();
+    HttpUrl.Builder uri = requestUri.resolve(path).newBuilder();
     if ( params != null ) {
       for ( String key : params.keySet() ) {
         for ( String value : params.get(key) ) {
@@ -4229,8 +4250,12 @@ public class OkHttpServices implements RESTServices {
       uri.addQueryParameter("database", database);
     }
     Request.Builder request = new Request.Builder()
-      .url(uri.build());
+        .url(uri.build());
     return request;
+  }
+
+  private Request.Builder setupRequest(String path, RequestParameters params) {
+    return setupRequest(baseUri, path, params);
   }
 
   private Request.Builder setupRequest(Request.Builder requestBldr,
@@ -5362,5 +5387,702 @@ public class OkHttpServices implements RESTServices {
 
   private interface Consumer<T> {
     void accept(T t);
+  }
+
+  // API First Changes
+  static private class EmptyRequestBody extends RequestBody {
+    @Override
+    public MediaType contentType() {
+      return null;
+    }
+    @Override
+    public void writeTo(BufferedSink sink) {
+    }
+  }
+
+  static class AtomicRequestBody extends RequestBody {
+    private MediaType  contentType;
+    private String     value;
+    AtomicRequestBody(String value, MediaType contentType) {
+      super();
+      this.value = value;
+      this.contentType = contentType;
+    }
+    @Override
+    public MediaType contentType() {
+      return contentType;
+    }
+    @Override
+    public void writeTo(BufferedSink sink) throws IOException {
+      sink.writeUtf8(value);
+    }
+  }
+
+  public class CallRequestImpl implements CallRequest {
+    private SessionState session;
+    private Request.Builder requestBldr;
+    private RequestBody requestBody;
+    private boolean hasStreamingPart;
+    private HttpMethod method;
+    private String endpoint;
+    private HttpUrl callBaseUri;
+
+    CallRequestImpl(String endpoint, HttpMethod method, SessionState session) {
+      this.endpoint = endpoint;
+      this.method = method;
+      this.session = session;
+      this.hasStreamingPart = false;
+      this.callBaseUri = new HttpUrl.Builder()
+          .scheme(baseUri.scheme())
+          .host(baseUri.host())
+          .port(baseUri.port())
+          .encodedPath("/")
+          .build();
+    }
+
+    @Override
+    public CallResponse withEmptyResponse() {
+      prepareRequestBuilder();
+      CallResponseImpl responseImpl = new CallResponseImpl();
+      executeRequest(responseImpl);
+      return responseImpl;
+    }
+
+    @Override
+    public SingleCallResponse withDocumentResponse(Format format) {
+      prepareRequestBuilder();
+      SingleCallResponseImpl responseImpl = new SingleCallResponseImpl(format);
+      this.requestBldr = forDocumentResponse(requestBldr, format);
+      executeRequest(responseImpl);
+      return responseImpl;
+    }
+
+    @Override
+    public MultipleCallResponse withMultipartMixedResponse(Format format) {
+      prepareRequestBuilder();
+      MultipleCallResponseImpl responseImpl = new MultipleCallResponseImpl(format);
+      this.requestBldr = forMultipartMixedResponse(requestBldr);
+      executeRequest(responseImpl);
+      return responseImpl;
+    }
+
+    @Override
+    public boolean hasStreamingPart() {
+      return this.hasStreamingPart;
+    }
+
+    @Override
+    public SessionState getSession() {
+      return this.session;
+    }
+
+    @Override
+    public String getEndpoint() {
+      return this.endpoint;
+    }
+
+    @Override
+    public HttpMethod getHttpMethod() {
+      return this.method;
+    }
+
+    private void prepareRequestBuilder() {
+      this.requestBldr = setupRequest(callBaseUri, endpoint, null);
+      if (session != null) {
+        Calendar expiration = ((AbstractProxy.SessionStateImpl) session).getCreatedTimestamp() != null ?
+            (Calendar) ((AbstractProxy.SessionStateImpl) session).getCreatedTimestamp().clone() : null;
+        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), expiration);
+        // Add the Cookie header for SessionId if we have a session object passed
+        this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
+      }
+      addHttpMethod();
+    }
+
+    private void addHttpMethod() {
+      if(method != null && method == HttpMethod.POST) {
+        if(requestBody == null) {
+          throw new IllegalStateException("Request Body is null!");
+        }
+        this.requestBldr.post(requestBody);
+      } else {
+        throw new IllegalStateException("HTTP method is null or invalid!");
+      }
+    }
+
+    private void executeRequest(CallResponseImpl responseImpl) {
+      SessionState session = getSession();
+      //TODO: Add a telemetry agent if needed
+      // requestBuilder = addTelemetryAgentId(requestBuilder);
+
+      boolean hasStreamingPart = hasStreamingPart();
+      Consumer<Boolean> resendableConsumer = resendable -> {
+        if (hasStreamingPart) {
+          checkFirstRequest();
+          throw new ResourceNotResendableException(
+              "Cannot retry request for " + getEndpoint());
+        }
+      };
+
+      Function<Request.Builder, Response> sendRequestFunction = requestBldr -> {
+        if (isFirstRequest() && hasStreamingPart) makeFirstRequest(callBaseUri, "", 0);
+        Response response = sendRequestOnce(requestBldr);
+        if (isFirstRequest()) setFirstRequest(false);
+        return response;
+      };
+
+      Response response = sendRequestWithRetry(requestBldr, sendRequestFunction, resendableConsumer);
+
+      if(session != null) {
+        List<ClientCookie> cookies = new ArrayList<>();
+        for ( String setCookie : response.headers(HEADER_SET_COOKIE) ) {
+          ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
+          cookies.add(cookie);
+        }
+        ((AbstractProxy.SessionStateImpl)session).setCookies(cookies);
+      }
+      responseImpl.setResponse(response);
+      checkStatus(response);
+    }
+
+    private void checkStatus(Response response) {
+      int statusCode = response.code();
+      if (statusCode >= 300) {
+        FailedRequest failure = extractErrorFields(response);
+        int status = response.code();
+        if (status == STATUS_NOT_FOUND) {
+          throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
+        } else if (status == STATUS_FORBIDDEN) {
+          throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
+        }
+        throw new FailedRequestException("failed to " + method + " at " + endpoint + ": "
+            + getReasonPhrase(response), failure);
+      }
+    }
+
+    public CallRequest withEmptyRequest() {
+      requestBody = new EmptyRequestBody();
+      return this;
+    }
+
+    public CallRequest withAtomicBodyRequest(CallField... params) {
+      String atomics = Stream.of(params)
+          .map(param -> encodeParamValue(param))
+          .filter(param -> param != null)
+          .collect(Collectors.joining("&"));
+      requestBody = RequestBody.create(URLENCODED_MIME_TYPE, (atomics == null) ? "" : atomics);
+      return this;
+    }
+
+    public CallRequest withNodeBodyRequest(CallField... params) {
+      this.requestBody = makeRequestBody(params);
+      return this;
+    }
+
+    private RequestBody makeRequestBody(String value) {
+      if (value == null) {
+        return new EmptyRequestBody();
+      }
+      return new AtomicRequestBody(value, MediaType.parse("text/plain"));
+    }
+
+    private RequestBody makeRequestBody(AbstractWriteHandle document) {
+      if (document == null) {
+        return new EmptyRequestBody();
+      }
+      HandleImplementation handleBase = HandleAccessor.as(document);
+      Format format = handleBase.getFormat();
+      String mimetype = (format == Format.BINARY) ?
+          "application/x-unknown-content-type" : handleBase.getMimetype();
+      MediaType mediaType = MediaType.parse(mimetype);
+      return (document instanceof OutputStreamSender) ?
+          new StreamingOutputImpl((OutputStreamSender) document, null, mediaType) :
+          new ObjectRequestBody(HandleAccessor.sendContent(document), mediaType);
+    }
+
+    private RequestBody makeRequestBody(CallField[] params) {
+      if (params == null || params.length == 0) {
+        return new EmptyRequestBody();
+      }
+
+      MultipartBody.Builder multiBldr = new MultipartBody.Builder();
+      multiBldr.setType(MultipartBody.FORM);
+
+      Condition hasValue = new Condition();
+      Condition hasStreamingPartCondition = new Condition();
+      for (CallField param: params) {
+        if (param == null) {
+          continue;
+        }
+
+        final String paramName = param.getParamName();
+        if (param instanceof SingleAtomicCallField) {
+          String paramValue = ((SingleAtomicCallField) param).getParamValue();
+          if (paramValue != null) {
+            hasValue.set();
+            multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+          }
+        } else if (param instanceof MultipleAtomicCallField) {
+          Stream<String> paramValues = ((MultipleAtomicCallField) param).getParamValues();
+          if (paramValues != null) {
+            paramValues
+                .filter(paramValue -> paramValue != null)
+                .forEachOrdered(paramValue ->
+                    multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue))
+                );
+          }
+        } else if (param instanceof SingleNodeCallField) {
+          AbstractWriteHandle paramValue = ((SingleNodeCallField) param).getParamValue();
+          if (paramValue != null) {
+            HandleImplementation handleBase = HandleAccessor.as(paramValue);
+            if(! handleBase.isResendable()) {
+              hasStreamingPartCondition.set();
+            }
+            hasValue.set();
+            multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+          }
+        } else if (param instanceof MultipleNodeCallField) {
+          Stream<? extends AbstractWriteHandle> paramValues = ((MultipleNodeCallField) param).getParamValues();
+          if (paramValues != null) {
+            paramValues
+                .filter(paramValue -> paramValue != null)
+                .forEachOrdered(paramValue -> {
+                  HandleImplementation handleBase = HandleAccessor.as(paramValue);
+                  if(!handleBase.isResendable()) {
+                    hasStreamingPartCondition.set();
+                  }
+                  hasValue.set();
+                  multiBldr.addFormDataPart(paramName, null, makeRequestBody(paramValue));
+                });
+          }
+        } else {
+          throw new IllegalStateException(
+              "unknown multipart "+paramName+" param of: "+param.getClass().getName()
+          );
+        }
+      }
+
+      if (!hasValue.get()) {
+        return new EmptyRequestBody();
+      }
+      this.hasStreamingPart = hasStreamingPartCondition.get();
+      return multiBldr.build();
+    }
+
+  }
+
+  @Override
+  public CallRequest makeEmptyRequest(String endpoint, HttpMethod method, SessionState session) {
+      return new CallRequestImpl(endpoint, method, session).withEmptyRequest();
+  }
+
+  @Override
+  public CallRequest makeAtomicBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params) {
+    if (params == null || params.length == 0) {
+      return makeEmptyRequest(endpoint, method, session);
+    }
+    return new CallRequestImpl(endpoint, method, session).withAtomicBodyRequest(params);
+  }
+
+  @Override
+  public CallRequest makeNodeBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params) {
+    if (params == null || params.length == 0) {
+      return makeEmptyRequest(endpoint, method, session);
+    }
+    return new CallRequestImpl(endpoint, method, session).withNodeBodyRequest(params);
+  }
+
+  private String encodeParamValue(String paramName, String value) {
+    if (value == null) {
+      return null;
+    }
+    try {
+      return paramName+"="+URLEncoder.encode(value, UTF8_ID);
+    } catch(UnsupportedEncodingException e) {
+      throw new IllegalStateException("UTF-8 is unsupported", e);
+    }
+  }
+
+  private String encodeParamValue(SingleAtomicCallField param) {
+    if (param == null) {
+      return null;
+    }
+    return encodeParamValue(param.getParamName(), param.getParamValue());
+  }
+
+  private String encodeParamValue(MultipleAtomicCallField param) {
+    if (param == null) {
+      return null;
+    }
+    String         paramName   = param.getParamName();
+    Stream<String> paramValues = param.getParamValues();
+    if (paramValues == null) {
+      return null;
+    }
+    String encodedParamValues = paramValues
+        .map(paramValue -> encodeParamValue(paramName, paramValue))
+        .filter(paramValue -> (paramValue != null))
+        .collect(Collectors.joining("&"));
+    if (encodedParamValues == null || encodedParamValues.length() == 0) {
+      return null;
+    }
+    return encodedParamValues;
+  }
+
+  private String encodeParamValue(CallField param) {
+    if (param == null) {
+      return null;
+    } else if (param instanceof SingleAtomicCallField) {
+      return encodeParamValue((SingleAtomicCallField) param);
+    } else if (param instanceof MultipleAtomicCallField) {
+      return encodeParamValue((MultipleAtomicCallField) param);
+    }
+    throw new IllegalStateException(
+        "could not encode parameter "+param.getParamName()+" of type: "+param.getClass().getName()
+    );
+  }
+
+  static class CallResponseImpl implements CallResponse {
+    private boolean isNull = true;
+    private Response response;
+
+    void setResponse(Response response) {
+      this.response = response;
+    }
+
+    @Override
+    public boolean isNull() {
+      return isNull;
+    }
+
+    void setNull(boolean isNull) {
+      this.isNull = isNull;
+    }
+
+    @Override
+    public int getStatusCode() {
+      return response.code();
+    }
+
+    @Override
+    public String getStatusMsg() {
+      return response.message();
+    }
+
+    //TODO: Check if this is needed since we are parsing it in the checkStatus(Respose).
+    //TODO: It might throw a closed exception since the response would be closed. Remove it after some testing
+    @Override
+    public String getErrorBody() {
+      try (ResponseBody errorBody = response.body()) {
+        if (errorBody.contentLength() > 0) {
+          MediaType errorType = errorBody.contentType();
+          if (errorType != null) {
+            String errorContentType = errorType.toString();
+            if (errorContentType != null && errorContentType.startsWith("application/") && errorContentType.contains("json")) {
+              return errorBody.string();
+            }
+          }
+        }
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+      return null;
+    }
+  }
+
+  static class SingleCallResponseImpl extends CallResponseImpl implements SingleCallResponse, AutoCloseable {
+    private Format format;
+    private ResponseBody responseBody;
+    SingleCallResponseImpl(Format format) {
+      this.format = format;
+    }
+    void setResponse(Response response) {
+      super.setResponse(response);
+      setResponseBody(response.body());
+    }
+    void setResponseBody(ResponseBody responseBody) {
+      if (!checkNull(responseBody, format)) {
+        this.responseBody = responseBody;
+        setNull(false);
+      }
+    }
+
+    @Override
+    public byte[] asBytes() {
+      try {
+        if (responseBody == null) {
+          return null;
+        }
+        byte[] value = responseBody.bytes();
+        closeImpl();
+        return value;
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public InputStream asInputStream() {
+      return (responseBody == null) ? null : responseBody.byteStream();
+    }
+    @Override
+    public InputStreamHandle asInputStreamHandle() {
+      return (responseBody == null) ? null : new InputStreamHandle(asInputStream());
+    }
+    @Override
+    public Reader asReader() {
+      return (responseBody == null) ? null : responseBody.charStream();
+    }
+    @Override
+    public ReaderHandle asReaderHandle() {
+      return (responseBody == null) ? null : new ReaderHandle(asReader());
+    }
+    @Override
+    public String asString() {
+      try {
+        if (responseBody == null) {
+          return null;
+        }
+        String value = responseBody.string();
+        closeImpl();
+        return value;
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+
+    @Override
+    public void close() throws Exception {
+      if (responseBody != null) {
+        closeImpl();
+      }
+    }
+
+    private void closeImpl() {
+      responseBody.close();
+      responseBody = null;
+    }
+  }
+
+  static class MultipleCallResponseImpl extends CallResponseImpl implements MultipleCallResponse {
+    private Format format;
+    private MimeMultipart multipart;
+    MultipleCallResponseImpl(Format format){
+      this.format = format;
+    }
+    void setResponse(Response response) {
+      try {
+        super.setResponse(response);
+        ResponseBody responseBody = response.body();
+        if (responseBody == null) {
+          setNull(true);
+          return;
+        }
+        MediaType contentType = responseBody.contentType();
+        if (contentType == null) {
+          setNull(true);
+          return;
+        }
+        ByteArrayDataSource dataSource = new ByteArrayDataSource(
+            responseBody.byteStream(), contentType.toString()
+        );
+        setMultipart(new MimeMultipart(dataSource));
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    void setMultipart(MimeMultipart multipart) {
+      if (!checkNull(multipart, format)) {
+        this.multipart = multipart;
+        setNull(false);
+      }
+    }
+
+    @Override
+    public Stream<byte[]> asStreamOfBytes() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<byte[]> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(NodeConverter.InputStreamToBytes(bodyPart.getInputStream()));
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new RuntimeException(e);
+      } catch (IOException e) {
+        throw new RuntimeException(e);
+      }
+    }
+    @Override
+    public Stream<InputStreamHandle> asStreamOfInputStreamHandle() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<InputStreamHandle> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(new InputStreamHandle(bodyPart.getInputStream()));
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Stream<InputStream> asStreamOfInputStream() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<InputStream> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(bodyPart.getInputStream());
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Stream<Reader> asStreamOfReader() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<Reader> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(NodeConverter.InputStreamToReader(bodyPart.getInputStream()));
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Stream<ReaderHandle> asStreamOfReaderHandle() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<ReaderHandle> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(new ReaderHandle(NodeConverter.InputStreamToReader(bodyPart.getInputStream())));
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+    @Override
+    public Stream<String> asStreamOfString() {
+      try {
+        if (multipart == null) {
+          return Stream.empty();
+        }
+        int partCount = multipart.getCount();
+
+        Stream.Builder<String> builder = Stream.builder();
+        for (int i=0; i < partCount; i++) {
+          BodyPart bodyPart = multipart.getBodyPart(i);
+          builder.accept(NodeConverter.InputStreamToString(bodyPart.getInputStream()));
+        }
+        return builder.build();
+      } catch (MessagingException e) {
+        throw new MarkLogicIOException(e);
+      } catch (IOException e) {
+        throw new MarkLogicIOException(e);
+      }
+    }
+  }
+
+  static protected boolean checkNull(ResponseBody body, Format format) {
+    if (body != null) {
+      if (body.contentLength() == 0) {
+        body.close();
+      } else {
+        MediaType actualType  = body.contentType();
+        String    defaultType = (format == Format.BINARY) ?
+            "application/x-unknown-content-type" : format.getDefaultMimetype();
+        if (actualType == null) {
+          body.close();
+          throw new RuntimeException(
+              "Returned document with unknown mime type instead of "+defaultType
+          );
+        } else if (!actualType.toString().startsWith(defaultType)) {
+          body.close();
+          throw new RuntimeException(
+              "Returned document as "+actualType.toString()+" instead of "+defaultType
+          );
+        }
+        return false;
+      }
+    }
+    return true;
+  }
+
+  static protected boolean checkNull(MimeMultipart multipart, Format format) {
+    if (multipart != null) {
+      try {
+        if (multipart.getCount() != 0) {
+          BodyPart firstPart   = multipart.getBodyPart(0);
+          String   actualType  = (firstPart == null) ? null : firstPart.getContentType();
+          String   defaultType = (format == Format.BINARY) ?
+              "application/x-unknown-content-type" : format.getDefaultMimetype();
+          if (actualType == null || !actualType.startsWith(defaultType)) {
+            throw new RuntimeException(
+                "Returned document as "+actualType+" instead of "+defaultType
+            );
+          }
+          return false;
+        }
+      } catch (MessagingException e) {
+        new MarkLogicIOException(e);
+      }
+    }
+    return true;
+  }
+
+  Request.Builder forDocumentResponse(Request.Builder requestBldr, Format format) {
+    return requestBldr.addHeader(HEADER_ACCEPT, (format == Format.BINARY) ? "application/x-unknown-content-type" : format.getDefaultMimetype());
+  }
+
+  Request.Builder forMultipartMixedResponse(Request.Builder requestBldr) {
+    return requestBldr.addHeader(HEADER_ACCEPT, multipartMixedWithBoundary());
+  }
+
+  static protected class Condition {
+    private boolean is = false;
+    protected boolean get() {
+    return is;
+  }
+    protected void set() {
+      if (!is)
+        is = true;
+    }
   }
 }
