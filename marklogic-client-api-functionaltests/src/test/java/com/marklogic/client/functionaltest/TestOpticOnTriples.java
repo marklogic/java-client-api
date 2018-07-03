@@ -131,15 +131,20 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     createForest(schemafNames[0], schemadbName);
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
+    
+    createUserRolesWithPrevilages("opticRole", "tde-admin", "tde-view", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
+    		                             "rest-reader", "rest-extension-user", "manage-user");    
+
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "admin", "admin", Authentication.DIGEST);
-        client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
+        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
     }
     else {
-        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
-    }    
-
+        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
+        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
+    }
+   
     // You can enable the triple positions index for faster near searches using
     // cts:triple-range-query.
     
@@ -1604,6 +1609,8 @@ public class TestOpticOnTriples extends BasicJavaClientREST {
     System.out.println("In tear down");
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
+    deleteUserRole("opticRole");
+    deleteRESTUser("opticUser");
     setDatabaseProperties(dbName, "schema-database", dbName);
     deleteDB(schemadbName);
     deleteForest(schemafNames[0]);
