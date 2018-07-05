@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.tools.proxy
 
-import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.node.ObjectNode
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
 import com.fasterxml.jackson.module.kotlin.readValue
@@ -235,25 +234,6 @@ class Generator {
     }
     return mapping
   }
-  fun getConversionStart(
-      datatype: String?, mapped: String?, kind: String?, isPrimitive: Boolean, isNullable: Boolean, isMultiple: Boolean
-  ): String {
-    val returnName     =
-        if (datatype === null || mapped === null)  null
-        else if (mapped == "int")                  "Integer"
-        else if (mapped == "unsignedInt")          "UnsignedInteger"
-        else if (mapped == "unsignedInt")          "UnsignedLong"
-        else                                       getJavaConverterName()[mapped]
-    val conversionStart =
-        if (returnName === null)            ""
-        else if (kind == "document")
-          if (isMultiple)                   "return asStreamOf"+returnName+"("
-          else                              "return as"+returnName+"("
-        else if (isMultiple)                "return asArrayOf"+returnName+"("
-        else if (isPrimitive && isNullable) "return asNullable"+returnName+"("
-        else                                "return as"+returnName+"("
-    return conversionStart
-  }
   fun serviceBundleToJava(servFilename: String, javaBaseDir: String) {
     val warnings = mutableListOf<String>()
     val mapper   = jacksonObjectMapper()
@@ -335,6 +315,7 @@ class Generator {
     classFile.parentFile.mkdirs()
     classFile.writeText(classSrc)
   }
+// TODO: generate interface IClassName for mocking
   fun generateServClass(
       servdef: ObjectNode, endpointDirectory: String, servFilename: String, fullClassName: String, funcImports: String, funcSrc: String
   ): String {
@@ -355,25 +336,26 @@ ${funcImports}
 
 import com.marklogic.client.DatabaseClient;
 
-import com.marklogic.client.impl.AbstractProxy;
+import com.marklogic.client.impl.BaseProxy;
 
 /**
  * ${classDesc}
  */
-public class ${className} extends AbstractProxy {
+public class ${className} {
+    private BaseProxy baseProxy;
 
     public static ${className} on(DatabaseClient db) {
         return new ${className}(db);
     }
 
     public ${className}(DatabaseClient db) {
-        super(db, "${requestDir}");
+        baseProxy = new BaseProxy(db, "${requestDir}");
     }${
 // TODO: JavaDoc for the session state factory
     if (!hasSession) ""
     else """
     public SessionState newSessionState() {
-      return newSessionStateImpl();
+      return baseProxy.newSessionStateImpl();
     }"""
     }
 ${funcSrc}
@@ -501,12 +483,10 @@ ${returnImports ?: ""}
     }
     val returnNullable = funcReturn?.get("nullable")?.asBoolean() === true
     val returnMultiple = funcReturn?.get("multiple")?.asBoolean() === true
-    val isPrimitive    = (returnKind == "atomic" && getPrimitiveDataTypes().containsKey(returnType))
     val returnMapped   =
         if (returnType === null || returnKind === null) null
         else getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
 
-    val endpointPath   = moduleFilename
     val endpointMethod = "post"
 
     val paramsKind     =
@@ -523,18 +503,6 @@ ${returnImports ?: ""}
         else if (atomicCardinality === ValueCardinality.NONE && documentCardinality === ValueCardinality.NONE)
           "NONE"
         else throw InternalError("Unknown combination of atomic and document parameter cardinality")
-
-    val requestBody    =
-        if (documentCardinality    !== ValueCardinality.NONE) "multipart"
-        else if (atomicCardinality !== ValueCardinality.NONE) "urlencoded"
-        else                                                  "none"
-    val responseBody    =
-        if (returnMultiple) "multipart"
-        else when(returnKind){
-          "document" -> "document"
-          "atomic"   -> "text"
-          else       -> "none"
-        }
 
     val paramDescs     = mutableListOf<String>()
     val sigParams      = funcParams?.map{funcParam ->
@@ -565,10 +533,6 @@ ${returnImports ?: ""}
             funcReturn.get("desc")?.asText() ?: "as output"
             )
 
-    val callFuncName = endpointMethod+"For"+responseBody.capitalize()
-    val callStart    =
-        getConversionStart(returnType, returnMapped, returnKind, isPrimitive, returnNullable, returnMultiple)
-
     val sessionName     =
         if (sessionParam === null) null
         else (sessionParam as ObjectNode).get("name").asText()
@@ -587,7 +551,7 @@ ${returnImports ?: ""}
       val isMultiple   = funcParam.get("multiple")?.asBoolean() === true
       val isNullable   = funcParam.get("nullable")?.asBoolean() === true
       val mappedType   = getJavaDataType(paramType, paramMapping, paramKind, isNullable, isMultiple)
-      """${paramKind}Param("${paramName}", ${isNullable}, ${typeConverter(paramType)}.from${
+      """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, BaseProxy.${typeConverter(paramType)}.from${
       if (mappedType.contains("."))
         mappedType.substringAfterLast(".").capitalize()
       else
@@ -600,7 +564,7 @@ ${returnImports ?: ""}
         if (returnType === null || returnMapped === null)
           ""
         else
-          """return ${typeConverter(returnType)}.to${
+          """return BaseProxy.${typeConverter(returnType)}.to${
           if (returnMapped.contains("."))
             returnMapped.substringAfterLast(".").capitalize()
           else
@@ -617,50 +581,6 @@ ${returnImports ?: ""}
         else                              """.responseSingle(${returnNullable}, ${returnFormat})
         )"""
 
-    val callEndpoint =
-        if (sessionParam === null)
-          """toEndpoint("${endpointPath}")"""
-        else
-          """toEndpoint("${endpointPath}", ${
-          (sessionParam as ObjectNode).get("name").asText()
-          }, ${
-          (sessionParam as ObjectNode).get("nullable")?.asText() ?: "false"
-          })"""
-    val callParams   =
-        when (requestBody) {
-          "none"       -> ""
-          "urlencoded" -> {
-            if (atomicCardinality === ValueCardinality.SINGLE)
-              ", "+generateParm(payloadParams[0] as ObjectNode, false)
-            else
-              """,
-          urlencodedParams(""" + payloadParams.map { funcParam ->
-                generateParm(funcParam as ObjectNode, false)
-              }.filterNotNull().joinToString(",") + """
-          )"""
-          }
-          "multipart"  -> """,
-            partParams("""+payloadParams.map { funcParam ->
-            generateParm(funcParam as ObjectNode)
-          }.filterNotNull().joinToString(",")+"""
-            )"""
-          else -> throw IllegalArgumentException("""unknown request body type ${requestBody}""")
-        }
-    val callFormat   =
-        if (returnType == null || returnKind != "document" || returnMultiple) ""
-        else typeFormat(returnType)
-    val callEnd      =
-        when (responseBody) {
-          "none"      ->                   ")"
-          "text"      ->                   "))"
-          "document"  ->                   """, ${callFormat}), ${callFormat}, ${returnNullable})"""
-          "multipart" -> {
-            if (returnKind == "document") """), ${callFormat}, ${returnNullable})"""
-            else                          """), ${returnNullable})"""
-          }
-          else        -> throw IllegalArgumentException("""unknown response body type ${responseBody}""")
-        }
-
     val javaSource     = """
   /**
    * ${funcDesc}
@@ -671,11 +591,12 @@ ${returnImports ?: ""}
    */
     public ${returnSig} ${funcName}(${sigParams ?: ""}) {
       ${returnConverter
-    }request("${moduleFilename}", ParameterValuesKind.${paramsKind})
+    }baseProxy
+        .request("${moduleFilename}", BaseProxy.ParameterValuesKind.${paramsKind})
         .withSession(${sessionChained})
         .withParams(
         ${paramsChained})
-        .withMethod("post")
+        .withMethod("${endpointMethod}")
         ${returnChained};
     }
 """
@@ -693,54 +614,6 @@ ${returnImports ?: ""}
         if (documentType == "array" || documentType == "object") "Format.JSON"
         else "Format."+documentType.substringBefore("Document").toUpperCase()
     return format;
-  }
-  fun generateParm(funcParam: ObjectNode, asPart: Boolean = true): String {
-    val paramName   = funcParam.get("name").asText()
-    val paramType   = funcParam.get("datatype").asText()
-    val paramKind   = funcParam.get("dataKind").asText()
-    val isMultiple  = funcParam.get("multiple")?.asBoolean() === true
-    val isNullable  = funcParam.get("nullable")?.asBoolean() === true
-    val baseSerial  =
-        if (asPart) "paramPart"
-        else        "paramEncoded"
-    val serializer  =
-        if (paramKind == "atomic" && paramType.startsWith("unsigned")) baseSerial+"Unsigned"
-        else                                                                  baseSerial
-    val valConvert  =
-        when(paramKind) {
-          "atomic"   -> paramName
-          "document" -> generateDocValue(paramName, paramType, isMultiple)
-          else       -> throw IllegalArgumentException("""unknown data kind for conversion ${paramKind}""")
-        }
-    val paramConversion =
-        if (isMultiple) {
-          """
-            ${serializer}("${paramName}", ${isNullable}, ${valConvert})"""
-        } else if (!isNullable && paramKind == "atomic" && getPrimitiveDataTypes().containsKey(paramType)) {
-          """
-            ${serializer}("${paramName}", ${valConvert})"""
-        } else {
-          """
-            ${serializer}("${paramName}", ${isNullable}, ${valConvert})"""
-        }
-    return paramConversion
-  }
-  fun generateDocPayload(docParam: JsonNode): String {
-    return generateDocValue(
-        docParam.get("name").asText(), docParam.get("datatype").asText(), false
-    )
-  }
-  fun generateDocValue(paramName: String, paramType: String, isMultiple: Boolean): String {
-    val docFormat     =
-        if (paramType == "array" || paramType == "object") "json"
-        else paramType.substringBefore("Document")
-    val docConversion =
-        if (isMultiple)
-          """(Stream<AbstractWriteHandle>) ((${paramName} == null) ? null :
-                ${paramName}.map(doc -> withFormat(asHandle(doc), Format.${docFormat.toUpperCase()})))"""
-        else
-          """as${docFormat.capitalize()}(asHandle(${paramName}))"""
-    return docConversion
   }
   fun paramKindCardinality(currCardinality: ValueCardinality, param: ObjectNode): ValueCardinality {
     val nextCardinality =

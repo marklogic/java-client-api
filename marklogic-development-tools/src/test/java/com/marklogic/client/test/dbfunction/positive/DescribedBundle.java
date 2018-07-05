@@ -13,19 +13,20 @@ import com.marklogic.client.io.marker.AbstractWriteHandle;
 
 import com.marklogic.client.DatabaseClient;
 
-import com.marklogic.client.impl.AbstractProxy;
+import com.marklogic.client.impl.BaseProxy;
 
 /**
  * A most descriptive class.
  */
-public class DescribedBundle extends AbstractProxy {
+public class DescribedBundle {
+    private BaseProxy baseProxy;
 
     public static DescribedBundle on(DatabaseClient db) {
         return new DescribedBundle(db);
     }
 
     public DescribedBundle(DatabaseClient db) {
-        super(db, "/dbf/test/described/");
+        baseProxy = new BaseProxy(db, "/dbf/test/described/");
     }
 
   /**
@@ -35,11 +36,12 @@ public class DescribedBundle extends AbstractProxy {
    * @return	Descriptive output.
    */
     public Boolean describer(Integer first) {
-      return BooleanType.toBoolean(
-        request("describer.sjs", ParameterValuesKind.SINGLE_ATOMIC)
+      return BaseProxy.BooleanType.toBoolean(
+        baseProxy
+        .request("describer.sjs", BaseProxy.ParameterValuesKind.SINGLE_ATOMIC)
         .withSession()
         .withParams(
-        atomicParam("first", false, IntegerType.fromInteger(first)))
+        BaseProxy.atomicParam("first", false, BaseProxy.IntegerType.fromInteger(first)))
         .withMethod("post")
         .responseSingle(false, null)
         );

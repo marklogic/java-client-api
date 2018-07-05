@@ -15,9 +15,7 @@
  */
 package com.marklogic.client.impl;
 
-import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -53,9 +51,7 @@ import java.util.concurrent.ThreadLocalRandom;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
-
-// TODO: better name?
-public class AbstractProxy {
+public class BaseProxy {
    private static ObjectMapper mapper = null;
    private String         endpointDir;
    private RESTServices services;
@@ -68,7 +64,7 @@ public class AbstractProxy {
       return mapper;
    }
 
-   protected AbstractProxy(DatabaseClient db, String endpointDir) {
+   public BaseProxy(DatabaseClient db, String endpointDir) {
       if (db == null) {
          throw new IllegalStateException("Cannot connect with null database client");
       }
@@ -82,14 +78,14 @@ public class AbstractProxy {
       this.services = dbImpl.getServices();
    }
 
-   static protected interface ServerDataType {
+   protected interface ServerDataType {
    }
-   static protected interface AtomicDataType extends ServerDataType {
+   protected interface AtomicDataType extends ServerDataType {
    }
-   static protected interface NodeDataType extends ServerDataType {
+   protected interface NodeDataType extends ServerDataType {
 // TODO: format for passing to asHandle()???
    }
-   static final protected class BooleanType implements AtomicDataType {
+   static final public class BooleanType implements AtomicDataType {
       static final public String         fromBoolean(Boolean value)                    { return ValueConverter.BooleanToString(value);  }
       static final public Stream<String> fromBoolean(Stream<? extends Boolean> values) { return ValueConverter.BooleanToString(values); }
       static final public String         fromString(String value)                      { return value;                                  }
@@ -99,7 +95,7 @@ public class AbstractProxy {
       static final public String          toString(SingleCallResponse response)    { return response.asString();                                         }
       static final public Stream<String>  toString(MultipleCallResponse response)  { return response.asStreamOfString();                                 }
    }
-   static final protected class DateType implements AtomicDataType {
+   static final public class DateType implements AtomicDataType {
       static final public String         fromLocalDate(LocalDate value)                    { return ValueConverter.LocalDateToString(value);  }
       static final public Stream<String> fromLocalDate(Stream<? extends LocalDate> values) { return ValueConverter.LocalDateToString(values); }
       static final public String         fromString(String value)                          { return value;                                    }
@@ -109,7 +105,7 @@ public class AbstractProxy {
       static final public String            toString(SingleCallResponse response)      { return response.asString();                                           }
       static final public Stream<String>    toString(MultipleCallResponse response)    { return response.asStreamOfString();                                   }
    }
-   static final protected class DateTimeType implements AtomicDataType {
+   static final public class DateTimeType implements AtomicDataType {
       static final public String         fromDate(Date value)                                         { return ValueConverter.DateToString(value);            }
       static final public Stream<String> fromDate(Stream<? extends Date> values)                      { return ValueConverter.DateToString(values);           }
       static final public String         fromLocalDateTime(LocalDateTime value)                       { return ValueConverter.LocalDateTimeToString(value);   }
@@ -127,7 +123,7 @@ public class AbstractProxy {
       static final public String                 toString(SingleCallResponse response)           { return response.asString();                                                }
       static final public Stream<String>         toString(MultipleCallResponse response)         { return response.asStreamOfString();                                        }
    }
-   static final protected class DayTimeDurationType implements AtomicDataType {
+   static final public class DayTimeDurationType implements AtomicDataType {
       static final public String         fromDuration(Duration value)                    { return ValueConverter.DurationToString(value);  }
       static final public Stream<String> fromDuration(Stream<? extends Duration> values) { return ValueConverter.DurationToString(values); }
       static final public String         fromString(String value)                        { return value;                                   }
@@ -137,7 +133,7 @@ public class AbstractProxy {
       static final public String           toString(SingleCallResponse response)     { return response.asString();                                          }
       static final public Stream<String>   toString(MultipleCallResponse response)   { return response.asStreamOfString();                                  }
    }
-   static final protected class DecimalType implements AtomicDataType {
+   static final public class DecimalType implements AtomicDataType {
       static final public String         fromBigDecimal(BigDecimal value)                    { return ValueConverter.BigDecimalToString(value);  }
       static final public Stream<String> fromBigDecimal(Stream<? extends BigDecimal> values) { return ValueConverter.BigDecimalToString(values); }
       static final public String         fromString(String value)                            { return value;                                     }
@@ -147,7 +143,7 @@ public class AbstractProxy {
       static final public String             toString(SingleCallResponse response)       { return response.asString();                                            }
       static final public Stream<String>     toString(MultipleCallResponse response)     { return response.asStreamOfString();                                    }
    }
-   static final protected class DoubleType implements AtomicDataType {
+   static final public class DoubleType implements AtomicDataType {
       static final public String         fromDouble(Double value)                    { return ValueConverter.DoubleToString(value);  }
       static final public Stream<String> fromDouble(Stream<? extends Double> values) { return ValueConverter.DoubleToString(values); }
       static final public String         fromString(String value)                    { return value;                                 }
@@ -157,7 +153,7 @@ public class AbstractProxy {
       static final public String         toString(SingleCallResponse response)   { return response.asString();                                        }
       static final public Stream<String> toString(MultipleCallResponse response) { return response.asStreamOfString();                                }
    }
-   static final protected class FloatType implements AtomicDataType {
+   static final public class FloatType implements AtomicDataType {
       static final public String         fromFloat(Float value)                    { return ValueConverter.FloatToString(value);  }
       static final public Stream<String> fromFloat(Stream<? extends Float> values) { return ValueConverter.FloatToString(values); }
       static final public String         fromString(String value)                  { return value;                                }
@@ -167,7 +163,7 @@ public class AbstractProxy {
       static final public String         toString(SingleCallResponse response)   { return response.asString();                                       }
       static final public Stream<String> toString(MultipleCallResponse response) { return response.asStreamOfString();                               }
    }
-   static final protected class IntegerType implements AtomicDataType {
+   static final public class IntegerType implements AtomicDataType {
       static final public String         fromInteger(Integer value)                    { return ValueConverter.IntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.IntegerToString(values); }
       static final public String         fromString(String value)                      { return value;                                  }
@@ -177,7 +173,7 @@ public class AbstractProxy {
       static final public String          toString(SingleCallResponse response)    { return response.asString();                                         }
       static final public Stream<String>  toString(MultipleCallResponse response)  { return response.asStreamOfString();                                 }
    }
-   static final protected class LongType implements AtomicDataType {
+   static final public class LongType implements AtomicDataType {
       static final public String         fromLong(Long value)                    { return ValueConverter.LongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.LongToString(values); }
       static final public String         fromString(String value)                { return value;                               }
@@ -187,13 +183,13 @@ public class AbstractProxy {
       static final public String         toString(SingleCallResponse response)   { return response.asString();                                      }
       static final public Stream<String> toString(MultipleCallResponse response) { return response.asStreamOfString();                              }
    }
-   static final protected class StringType implements AtomicDataType {
+   static final public class StringType implements AtomicDataType {
       static final public String         fromString(String value)          { return value;  }
       static final public Stream<String> fromString(Stream<String> values) { return values; }
       static final public String         toString(SingleCallResponse response)   { return response.asString();         }
       static final public Stream<String> toString(MultipleCallResponse response) { return response.asStreamOfString(); }
    }
-   static final protected class TimeType implements AtomicDataType {
+   static final public class TimeType implements AtomicDataType {
       static final public String         fromLocalTime(LocalTime value)                      { return ValueConverter.LocalTimeToString(value);   }
       static final public Stream<String> fromLocalTime(Stream<? extends LocalTime> values)   { return ValueConverter.LocalTimeToString(values);  }
       static final public String         fromOffsetTime(OffsetTime value)                    { return ValueConverter.OffsetTimeToString(value);  }
@@ -207,7 +203,7 @@ public class AbstractProxy {
       static final public String             toString(SingleCallResponse response)       { return response.asString();                                            }
       static final public Stream<String>     toString(MultipleCallResponse response)     { return response.asStreamOfString();                                    }
    }
-   static final protected class UnsignedIntegerType implements AtomicDataType {
+   static final public class UnsignedIntegerType implements AtomicDataType {
       static final public String         fromInteger(Integer value)                    { return ValueConverter.UnsignedIntegerToString(value);  }
       static final public Stream<String> fromInteger(Stream<? extends Integer> values) { return ValueConverter.UnsignedIntegerToString(values); }
       static final public String         fromString(String value)                      { return value;                                          }
@@ -217,7 +213,7 @@ public class AbstractProxy {
       static final public String          toString(SingleCallResponse response)    { return response.asString();                                                 }
       static final public Stream<String>  toString(MultipleCallResponse response)  { return response.asStreamOfString();                                         }
    }
-   static final protected class UnsignedLongType implements AtomicDataType {
+   static final public class UnsignedLongType implements AtomicDataType {
       static final public String         fromLong(Long value)                    { return ValueConverter.UnsignedLongToString(value);  }
       static final public Stream<String> fromLong(Stream<? extends Long> values) { return ValueConverter.UnsignedLongToString(values); }
       static final public String         fromString(String value)                { return value;                                       }
@@ -227,7 +223,7 @@ public class AbstractProxy {
       static final public String         toString(SingleCallResponse response)   { return response.asString();                                              }
       static final public Stream<String> toString(MultipleCallResponse response) { return response.asStreamOfString();                                      }
    }
-   static final protected class BinaryDocumentType implements NodeDataType {
+   static final public class BinaryDocumentType implements NodeDataType {
       static final public BinaryWriteHandle fromBinaryWriteHandle(BinaryWriteHandle value) {
          return NodeConverter.BinaryWriter(value);
       }
@@ -270,7 +266,7 @@ public class AbstractProxy {
       static final public InputStream              toInputStream(SingleCallResponse response)        { return response.asInputStream();         }
       static final public Stream<InputStream>      toInputStream(MultipleCallResponse response)      { return response.asStreamOfInputStream(); }
    }
-   static protected class JsonDocumentType implements NodeDataType {
+   static public class JsonDocumentType implements NodeDataType {
       static final public JSONWriteHandle fromJSONWriteHandle(JSONWriteHandle value) {
          return NodeConverter.JSONWriter(value);
       }
@@ -369,11 +365,11 @@ public class AbstractProxy {
       static final public String                 toString(SingleCallResponse response)           { return response.asString();              }
       static final public Stream<String>         toString(MultipleCallResponse response)         { return response.asStreamOfString();      }
    }
-   static final protected class ArrayType extends JsonDocumentType {
+   static final public class ArrayType extends JsonDocumentType {
    }
-   static final protected class ObjectType extends JsonDocumentType {
+   static final public class ObjectType extends JsonDocumentType {
    }
-   static final protected class TextDocumentType implements NodeDataType {
+   static final public class TextDocumentType implements NodeDataType {
       static final public TextWriteHandle fromTextWriteHandle(TextWriteHandle value) {
          return NodeConverter.TextWriter(value);
       }
@@ -424,7 +420,7 @@ public class AbstractProxy {
       static final public String              toString(SingleCallResponse response)              { return response.asString();              }
       static final public Stream<String>      toString(MultipleCallResponse response)            { return response.asStreamOfString();      }
    }
-   static final protected class XmlDocumentType implements NodeDataType {
+   static final public class XmlDocumentType implements NodeDataType {
       static final public XMLWriteHandle fromXMLWriteHandle(XMLWriteHandle value) {
          return NodeConverter.XMLWriter(value);
       }
@@ -536,11 +532,11 @@ public class AbstractProxy {
       static final public String                toString(SingleCallResponse response)          { return response.asString();              }
       static final public Stream<String>        toString(MultipleCallResponse response)        { return response.asStreamOfString();      }
    }
-   static protected enum ParameterValuesKind {
+   static public enum ParameterValuesKind {
       NONE, SINGLE_ATOMIC, SINGLE_NODE, MULTIPLE_ATOMICS, MULTIPLE_NODES, MULTIPLE_MIXED;
    }
 
-   protected DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
+   public DBFunctionRequest request(String module, ParameterValuesKind paramsKind) {
       if (module == null) {
          throw new IllegalArgumentException("null module");
       }
@@ -555,16 +551,16 @@ public class AbstractProxy {
     */
 
 
-   static protected SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
+   static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleAtomicCallField(paramName, value);
    }
-   static protected MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
+   static public MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, Stream<String> values) {
       return isParamNull(paramName, isNullable, values) ? null : new MultipleAtomicCallField(paramName, values);
    }
-   static protected SingleNodeCallField documentParam(String paramName, boolean isNullable, AbstractWriteHandle value) {
+   static public SingleNodeCallField documentParam(String paramName, boolean isNullable, AbstractWriteHandle value) {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleNodeCallField(paramName, value);
    }
-   static protected MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends AbstractWriteHandle> values) {
+   static public MultipleNodeCallField documentParam(String paramName, boolean isNullable, Stream<? extends AbstractWriteHandle> values) {
       return isParamNull(paramName, isNullable, values) ? null : new MultipleNodeCallField(paramName, values);
    }
    static protected boolean isParamNull(String paramName, boolean isNullable, Object value) {
@@ -576,7 +572,7 @@ public class AbstractProxy {
       return true;
    }
 
-   static protected class DBFunctionRequest {
+   static public class DBFunctionRequest {
       private RESTServices  services;
       private String              endpoint;
       private ParameterValuesKind paramsKind;
@@ -676,7 +672,7 @@ public class AbstractProxy {
    }
 
    // TODO: Move this away from the class! For now keeping it here so that tests are not broken
-   protected SessionState newSessionStateImpl() {
+   public SessionState newSessionStateImpl() {
       return new SessionStateImpl();
    }
    // TODO: spin off into standalone impl class?

@@ -15,10 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.JsonMappingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
@@ -5489,8 +5485,8 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        Calendar expiration = ((AbstractProxy.SessionStateImpl) session).getCreatedTimestamp() != null ?
-            (Calendar) ((AbstractProxy.SessionStateImpl) session).getCreatedTimestamp().clone() : null;
+        Calendar expiration = ((BaseProxy.SessionStateImpl) session).getCreatedTimestamp() != null ?
+            (Calendar) ((BaseProxy.SessionStateImpl) session).getCreatedTimestamp().clone() : null;
         this.requestBldr = addCookies(this.requestBldr, session.getCookies(), expiration);
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
@@ -5538,7 +5534,7 @@ public class OkHttpServices implements RESTServices {
           ClientCookie cookie = ClientCookie.parse(requestBldr.build().url(), setCookie);
           cookies.add(cookie);
         }
-        ((AbstractProxy.SessionStateImpl)session).setCookies(cookies);
+        ((BaseProxy.SessionStateImpl)session).setCookies(cookies);
       }
       responseImpl.setResponse(response);
       checkStatus(response);
