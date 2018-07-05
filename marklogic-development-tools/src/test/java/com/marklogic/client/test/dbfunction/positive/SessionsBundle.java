@@ -37,7 +37,7 @@ public class SessionsBundle {
         baseProxy = new BaseProxy(db, "/dbf/test/sessions/");
     }
     public SessionState newSessionState() {
-      return baseProxy.newSessionStateImpl();
+      return baseProxy.newSessionState();
     }
 
   /**

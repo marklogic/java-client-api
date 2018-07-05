@@ -47,8 +47,6 @@ import java.io.*;
 import java.math.BigDecimal;
 import java.time.*;
 import java.util.*;
-import java.util.concurrent.ThreadLocalRandom;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Stream;
 
 public class BaseProxy {
@@ -671,52 +669,7 @@ public class BaseProxy {
       }
    }
 
-   // TODO: Move this away from the class! For now keeping it here so that tests are not broken
-   public SessionState newSessionStateImpl() {
+   public SessionState newSessionState() {
       return new SessionStateImpl();
    }
-   // TODO: spin off into standalone impl class?
-   static public class SessionStateImpl implements SessionState {
-      private List<ClientCookie> cookies;
-      private String sessionId;
-      private AtomicBoolean setCreatedTimestamp;
-      private Calendar created;
-
-      protected SessionStateImpl() {
-         sessionId = Long.toUnsignedString(ThreadLocalRandom.current().nextLong(), 16);
-         cookies = new ArrayList<>();
-         setCreatedTimestamp = new AtomicBoolean(false);
-      }
-
-      @Override
-      public String getSessionId() {
-         return sessionId;
-      }
-
-      @Override
-      public List<ClientCookie> getCookies() {
-         return cookies;
-      }
-
-      public void setCookies(List<ClientCookie> cookies) {
-         if ( cookies != null ) {
-            if(setCreatedTimestamp.compareAndSet(false, true)) {
-               created = Calendar.getInstance();
-               for (ClientCookie cookie : cookies) {
-                  // Drop the SessionId cookie received from the server. We add it every
-                  // time we make a request with a SessionState object passed
-                  if(cookie.getName().equalsIgnoreCase("SessionId")) continue;
-                  // make a clone to ensure we're not holding on to any resources
-                  // related to an HTTP connection that need to be released
-                  this.cookies.add(new ClientCookie(cookie));
-               }
-            }
-         }
-      }
-
-      public Calendar getCreatedTimestamp() {
-         return created;
-      }
-   }
-
 }

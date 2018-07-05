@@ -355,7 +355,7 @@ public class ${className} {
     if (!hasSession) ""
     else """
     public SessionState newSessionState() {
-      return baseProxy.newSessionStateImpl();
+      return baseProxy.newSessionState();
     }"""
     }
 ${funcSrc}
