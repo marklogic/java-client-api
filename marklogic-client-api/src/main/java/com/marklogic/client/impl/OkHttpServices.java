@@ -83,7 +83,6 @@ import com.marklogic.client.semantics.SPARQLRuleset;
 import com.marklogic.client.util.EditableNamespaceContext;
 import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.util.RequestParameters;
-import com.marklogic.client.CallParts.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
