@@ -35,7 +35,7 @@ import com.marklogic.client.io.marker.TextReadHandle;
 import com.marklogic.client.io.marker.TextWriteHandle;
 import com.marklogic.client.io.marker.XMLReadHandle;
 import com.marklogic.client.io.marker.XMLWriteHandle;
-import com.marklogic.client.CallParts.*;
+import com.marklogic.client.impl.RESTServices.*;
 
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
