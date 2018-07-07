@@ -19,7 +19,7 @@ import com.marklogic.client.tools.proxy.Generator
 import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
-class ModuleInitTask : DefaultTask() {
+open class ModuleInitTask : DefaultTask() {
   val generator = Generator()
 
   var functionFile:    String = ""
