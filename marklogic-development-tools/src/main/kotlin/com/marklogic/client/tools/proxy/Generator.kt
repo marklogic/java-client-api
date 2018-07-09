@@ -487,7 +487,7 @@ ${returnImports ?: ""}
         if (returnType === null || returnKind === null) null
         else getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
 
-    val endpointMethod = "post"
+    val endpointMethod = "POST"
 
     val paramsKind     =
         if (atomicCardinality !== ValueCardinality.NONE && documentCardinality !== ValueCardinality.NONE)

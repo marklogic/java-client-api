@@ -42,7 +42,7 @@ public class DescribedBundle {
         .withSession()
         .withParams(
         BaseProxy.atomicParam("first", false, BaseProxy.IntegerType.fromInteger(first)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseSingle(false, null)
         );
     }

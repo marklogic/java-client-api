@@ -52,7 +52,7 @@ public class SessionsBundle {
         .withSession()
         .withParams(
         BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseNone();
     }
 
@@ -71,7 +71,7 @@ public class SessionsBundle {
         .withSession("timestamper", timestamper, false)
         .withParams(
         BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseSingle(false, null)
         );
     }
@@ -91,7 +91,7 @@ public class SessionsBundle {
         .withParams(
         BaseProxy.atomicParam("uri", false, BaseProxy.StringType.fromString(uri)),
         BaseProxy.atomicParam("text", false, BaseProxy.StringType.fromString(text)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseNone();
     }
 
@@ -110,7 +110,7 @@ public class SessionsBundle {
         .withSession("sleeper", sleeper, false)
         .withParams(
         BaseProxy.atomicParam("sleeptime", false, BaseProxy.UnsignedIntegerType.fromInteger(sleeptime)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseSingle(false, null)
         );
     }
@@ -130,7 +130,7 @@ public class SessionsBundle {
         .withSession("transaction", transaction, true)
         .withParams(
         BaseProxy.atomicParam("uri", false, BaseProxy.StringType.fromString(uri)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseSingle(false, null)
         );
     }
@@ -148,7 +148,7 @@ public class SessionsBundle {
         .withSession("transaction", transaction, false)
         .withParams(
         )
-        .withMethod("post")
+        .withMethod("POST")
         .responseNone();
     }
 
@@ -169,7 +169,7 @@ public class SessionsBundle {
         .withParams(
         BaseProxy.atomicParam("fieldName", false, BaseProxy.StringType.fromString(fieldName)),
         BaseProxy.atomicParam("fieldValue", false, BaseProxy.UnsignedLongType.fromLong(fieldValue)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseSingle(false, null)
         );
     }
@@ -190,7 +190,7 @@ public class SessionsBundle {
         .withParams(
         BaseProxy.atomicParam("uri", false, BaseProxy.StringType.fromString(uri)),
         BaseProxy.atomicParam("text", false, BaseProxy.StringType.fromString(text)))
-        .withMethod("post")
+        .withMethod("POST")
         .responseNone();
     }
 

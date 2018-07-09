@@ -81,7 +81,6 @@ public class BaseProxy {
    protected interface AtomicDataType extends ServerDataType {
    }
    protected interface NodeDataType extends ServerDataType {
-// TODO: format for passing to asHandle()???
    }
    static final public class BooleanType implements AtomicDataType {
       static final public String         fromBoolean(Boolean value)                    { return ValueConverter.BooleanToString(value);  }
@@ -541,14 +540,6 @@ public class BaseProxy {
       return new DBFunctionRequest(this.services, this.endpointDir, module, paramsKind);
    }
 
-   /* TODO: DELETE
-   static protected MultipleAtomicCallField atomicParam(String paramName, boolean isNullable, String[] values) {
-            return isParamEmpty(paramName, isNullable, (values == null) ? 0 : values.length) ? null :
-                  new MultipleAtomicCallField(paramName, Stream.of(values));
-         }
-    */
-
-
    static public SingleAtomicCallField atomicParam(String paramName, boolean isNullable, String value) {
       return isParamNull(paramName, isNullable, value)  ? null : new SingleAtomicCallField(paramName, value);
    }
@@ -571,13 +562,12 @@ public class BaseProxy {
    }
 
    static public class DBFunctionRequest {
-      private RESTServices  services;
+      private RESTServices        services;
       private String              endpoint;
       private ParameterValuesKind paramsKind;
-      private CallField[]   params;
+      private CallField[]         params;
       private SessionState        session;
-      // TODO: use
-      private String              method;
+      private HttpMethod          method = HttpMethod.POST;
       private DBFunctionRequest(RESTServices services, String endpointDir, String module, ParameterValuesKind paramsKind) {
          this.services   = services;
          endpoint        = endpointDir + module;
@@ -599,38 +589,34 @@ public class BaseProxy {
          return this;
       }
       public DBFunctionRequest withMethod(String method) {
-         this.method = method;
+         this.method = HttpMethod.valueOf(method);
          return this;
       }
 
       private CallRequest makeRequest() {
          switch(paramsKind) {
             case NONE:
-               return services.makeEmptyRequest(endpoint, HttpMethod.POST, session);
+               return services.makeEmptyRequest(endpoint, method, session);
             case SINGLE_ATOMIC:
             case MULTIPLE_ATOMICS:
                if (params == null || params.length == 0 || (params.length == 1 && params[0] == null)) {
-                  return services.makeEmptyRequest(endpoint, HttpMethod.POST, session);
+                  return services.makeEmptyRequest(endpoint, method, session);
                }
-               return services.makeAtomicBodyRequest(endpoint, HttpMethod.POST, session, params);
+               return services.makeAtomicBodyRequest(endpoint, method, session, params);
             case SINGLE_NODE:
                if (params == null || params.length == 0) {
-                  return services.makeEmptyRequest(endpoint, HttpMethod.POST, session);
+                  return services.makeEmptyRequest(endpoint, method, session);
                } else if (params.length > 1) {
                   throw new InternalError("multiple parameters instead of single node");
                } else if (params[0] == null) {
-                  return services.makeEmptyRequest(endpoint, HttpMethod.POST, session);
+                  return services.makeEmptyRequest(endpoint, method, session);
                } else if (params.length > 1 || !(params[0] instanceof SingleNodeCallField)) {
                   throw new InternalError("invalid parameter type instead of single node: "+params[0].getClass().getName());
                }
-/* TODO: potential future
-            SingleNodeCallField singleNode = (SingleNodeCallField) params[0];
-            return services.makePostRequest(endpoint, session, singleNode.getParamValue());
- */
-               return services.makeNodeBodyRequest(endpoint, HttpMethod.POST, session, params);
+               return services.makeNodeBodyRequest(endpoint, method, session, params);
             case MULTIPLE_NODES:
             case MULTIPLE_MIXED:
-               return services.makeNodeBodyRequest(endpoint, HttpMethod.POST, session, params);
+               return services.makeNodeBodyRequest(endpoint, method, session, params);
             default:
                throw new InternalError("unknown parameters kind: "+paramsKind.name());
          }
