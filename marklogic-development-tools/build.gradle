@@ -1,15 +1,17 @@
 plugins {
     id 'java'
     id 'java-gradle-plugin'
+    id 'maven-publish'
     id 'org.jetbrains.kotlin.jvm' version '1.2.51'
 }
 
 apply plugin: 'kotlin'
 apply plugin: 'java'
 apply plugin: 'java-gradle-plugin'
+apply plugin: 'maven-publish'
 
-group 'com.marklogic'
-version '5.0-SNAPSHOT'
+group   'com.marklogic'
+version '4.1'
 
 sourceCompatibility = '1.8'
 targetCompatibility = '1.8'
@@ -29,9 +31,17 @@ dependencies {
     testCompile group: 'junit', name: 'junit', version: '4.12'
 }
 
-jar {
+task pluginJar(type: Jar) {
     version = '4.1'
     exclude('functionDeclarationSchema.json')
+}
+
+publishing {
+    publications {
+        main(MavenPublication) {
+            artifact pluginJar
+        }
+    }
 }
 
 compileKotlin {
