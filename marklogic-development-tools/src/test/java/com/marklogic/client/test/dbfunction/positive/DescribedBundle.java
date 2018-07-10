@@ -3,13 +3,6 @@ package com.marklogic.client.test.dbfunction.positive;
 // IMPORTANT: Do not edit. This file is generated.
 
 
-import java.util.stream.Stream;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-
-
-
-
 
 import com.marklogic.client.DatabaseClient;
 
@@ -21,10 +14,23 @@ import com.marklogic.client.impl.BaseProxy;
 public class DescribedBundle {
     private BaseProxy baseProxy;
 
+    /**
+     * Creates a DescribedBundle object for executing operations on the database server.
+     *
+     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+     * client object can be used for any number of requests and in multiple threads.
+     *
+     * @param db	provides a client for communicating with the database server
+     * @return	an object for session state
+     */
     public static DescribedBundle on(DatabaseClient db) {
         return new DescribedBundle(db);
     }
 
+    /**
+     * The constructor for a DescribedBundle object for executing operations on the database server.
+     * @param db	provides a client for communicating with the database server
+     */
     public DescribedBundle(DatabaseClient db) {
         baseProxy = new BaseProxy(db, "/dbf/test/described/");
     }

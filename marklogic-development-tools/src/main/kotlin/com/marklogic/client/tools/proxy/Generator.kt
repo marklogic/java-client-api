@@ -148,7 +148,6 @@ class Generator {
             "java.lang.String")
     )
   }
-  // TODO: distinguish write handles from read handles
   fun getDocumentMappings(): Map<String,Set<String>> {
     return mapOf(
         "array"             to setOf(
@@ -258,11 +257,15 @@ class Generator {
     val moduleFiles   = mutableMapOf<String, File>()
     val functionFiles = mutableMapOf<String, File>()
     servFile.parentFile.listFiles().forEach{file ->
-      // TODO: overriding default extensions
+      val basename = file.nameWithoutExtension
       when(file.extension) {
-        "api"        -> functionFiles[ file.nameWithoutExtension ] = file
-// TODO: error if already exists
-        "sjs", "xqy" -> moduleFiles[   file.nameWithoutExtension ] = file
+        "api"        -> functionFiles[basename] = file
+        "sjs", "xqy" ->
+          if (!moduleFiles.containsKey(basename))
+          moduleFiles[basename] = file
+          else throw RuntimeException(
+                "can have only one of the ${file.name} and ${moduleFiles[basename]?.name} files"
+            )
       }
     }
     val moduleRoots   = moduleFiles.keys
@@ -281,14 +284,18 @@ class Generator {
       mapper.readValue<ObjectNode>(file)
     }
 
-// TODO: emit warnings
+    if (warnings.size > 0) {
+      System.err.println(warnings.joinToString("""
+"""))
+    }
 
+    val funcDepend  = mutableSetOf<String>()
     val funcSrc     = funcdefs.map{(root, funcdef) ->
-      generateFuncSrc(servdef, moduleFiles[root]!!.name, funcdef)
+      generateFuncSrc(funcDepend, servdef, moduleFiles[root]!!.name, funcdef)
     }.joinToString("\n")
-    val funcImports = funcdefs.map{(root, funcdef) ->
-      generateFuncImports(funcdef)
-    }.distinct().joinToString("\n")
+    val funcImports =
+        if (funcDepend.isEmpty()) ""
+        else "import "+funcDepend.joinToString(";\nimport ")+";\n"
 
     val classSrc = generateServClass(
         servdef, endpointDirectory, servFilename, fullClassName, funcImports, funcSrc
@@ -309,13 +316,9 @@ class Generator {
     val classFilename = javaBaseDir+if (javaBaseDir.endsWith("/")) {""} else {"/"}+
         fullClassName.replace(".", "/")+".java"
     val classFile     = File(classFilename)
-//    println(javaFilename)
-//    println(javaSource)
-//    println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(functiondef))
     classFile.parentFile.mkdirs()
     classFile.writeText(classSrc)
   }
-// TODO: generate interface IClassName for mocking
   fun generateServClass(
       servdef: ObjectNode, endpointDirectory: String, servFilename: String, fullClassName: String, funcImports: String, funcSrc: String
   ): String {
@@ -344,16 +347,34 @@ import com.marklogic.client.impl.BaseProxy;
 public class ${className} {
     private BaseProxy baseProxy;
 
+    /**
+     * Creates a ${className} object for executing operations on the database server.
+     *
+     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+     * client object can be used for any number of requests and in multiple threads.
+     *
+     * @param db	provides a client for communicating with the database server
+     * @return	an object for session state
+     */
     public static ${className} on(DatabaseClient db) {
         return new ${className}(db);
     }
 
+    /**
+     * The constructor for a ${className} object for executing operations on the database server.
+     * @param db	provides a client for communicating with the database server
+     */
     public ${className}(DatabaseClient db) {
         baseProxy = new BaseProxy(db, "${requestDir}");
     }${
-// TODO: JavaDoc for the session state factory
     if (!hasSession) ""
     else """
+    /**
+     * Creates an object to track a session for a set of operations
+     * that require session state on the database server.
+     *
+     * @return	an object for session state
+     */
     public SessionState newSessionState() {
       return baseProxy.newSessionState();
     }"""
@@ -363,63 +384,9 @@ ${funcSrc}
 """
     return classSrc
   }
-  fun generateFuncImports(funcdef: ObjectNode): String {
-    val funcParams     = funcdef.get("params")
-    val funcReturn     = funcdef.get("return")
-
-    val documentTypes  = getDocumentDataTypes()
-    val atomicTypes    = getAtomicDataTypes()
-
-    val returnType     = funcReturn?.get("datatype")?.asText()
-    val returnMapping  = funcReturn?.get("\$javaClass")?.asText()
-    val returnKind     =
-        if (returnType === null)                        null
-        else if (atomicTypes.containsKey(returnType))   "atomic"
-        else if (documentTypes.containsKey(returnType)) "document"
-        else throw IllegalArgumentException("invalid return datatype: $returnType")
-    val returnNullable = funcReturn?.get("nullable")?.asBoolean() === true
-    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() === true
-    val returnMapped   =
-        if (returnType === null || returnKind === null) null
-        else getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
-
-    val paramImports   =
-        funcParams?.map{funcParam ->
-          val paramType    = funcParam.get("datatype").asText()
-          val paramMapping = funcParam.get("\$javaClass")?.asText()
-          val paramKind    = funcParam.get("dataKind").asText()
-          val isMultiple   = funcParam.get("multiple")?.asBoolean() === true
-          val isNullable   = funcParam.get("nullable")?.asBoolean() === true
-          val mappedType   = getJavaDataType(paramType, paramMapping, paramKind, isNullable, isMultiple)
-          val paramImport  =
-              if (!documentTypes.containsKey(paramType)) {
-                if (paramKind == "system") "import com.marklogic.client.$mappedType;"
-                else                       null
-              } else if (!mappedType.contains(".")) {
-                """import java.io.${mappedType};
-"""
-              } else                       null
-          paramImport
-        }?.filterNotNull()?.sorted()?.distinct()?.joinToString("")
-
-// TODO: imports based on return datatype only if not imported for parameter
-    val returnImports  =
-        if (returnMapped === null || returnKind != "document")
-          null
-        else if (!returnMapped.contains("."))
-          """import java.io.${returnMapped};
-"""
-        else null
-    return """
-import java.util.stream.Stream;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-
-${paramImports ?: ""}
-${returnImports ?: ""}
-"""
-  }
-  fun generateFuncSrc(servdef: ObjectNode, moduleFilename: String, funcdef: ObjectNode): String {
+  fun generateFuncSrc(
+      funcDepend: MutableSet<String>, servdef: ObjectNode, moduleFilename: String, funcdef: ObjectNode
+  ): String {
     val funcName = funcdef.get("functionName")?.asText()
     if (funcName === null || funcName.length === 0) {
       throw IllegalArgumentException("function without name")
@@ -443,30 +410,28 @@ ${returnImports ?: ""}
       val funcParam = (param as ObjectNode)
       val paramName = funcParam.get("name").asText()
       val paramType = funcParam.get("datatype")?.asText()
+
       if (paramType === null) throw IllegalArgumentException(
           "$paramName parameter of $funcName function has no datatype"
-      )
+        )
       else if (atomicTypes.containsKey(paramType)) {
         funcParam.put("dataKind", "atomic")
         atomicCardinality = paramKindCardinality(atomicCardinality, funcParam)
         payloadParams.add(funcParam)
-      }
-      else if (documentTypes.containsKey(paramType)) {
+      } else if (documentTypes.containsKey(paramType)) {
         funcParam.put("dataKind", "document")
         payloadParams.add(funcParam)
         documentCardinality = paramKindCardinality(documentCardinality, funcParam)
-      }
-      else if (paramType == "session") {
+      } else if (paramType == "session") {
         if (sessionParam !== null) {
           throw IllegalArgumentException("$funcName function has multiple session parameters")
         }
         funcParam.put("dataKind", "system")
         sessionParam = funcParam
         servdef.put("hasSession", true)
-      }
-      else throw IllegalArgumentException(
+      } else throw IllegalArgumentException(
           "$paramName parameter of $funcName function has invalid datatype: $paramType"
-      )
+        )
     }
 
     val returnType     = funcReturn?.get("datatype")?.asText()
@@ -519,10 +484,36 @@ ${returnImports ?: ""}
       val paramDesc     = "@param ${paramName}\t" + (
           funcParam.get("desc")?.asText() ?: "provides input"
           )
+      when (paramKind) {
+        "document" -> {
+          funcDepend.add("com.marklogic.client.io.Format")
+          if (mappedType.contains(".") === true) {
+            funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
+          } else {
+            funcDepend.add("java.io.$mappedType")
+          }
+        }
+        "system" ->
+          funcDepend.add("com.marklogic.client.$mappedType")
+      }
+      if (isMultiple) {
+        funcDepend.add("java.util.stream.Stream")
+      }
       paramDescs.add(paramDesc)
       sigType+" "+paramName
     }?.joinToString(", ")
 
+    if (returnKind == "document") {
+      funcDepend.add("com.marklogic.client.io.Format")
+      if (returnMapped?.contains(".") === true) {
+        funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
+      } else {
+        funcDepend.add("java.io.$returnMapped")
+      }
+    }
+    if (returnMultiple) {
+      funcDepend.add("java.util.stream.Stream")
+    }
     val returnSig      =
         if (returnType === null)  "void"
         else if (!returnMultiple) returnMapped

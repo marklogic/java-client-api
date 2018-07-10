@@ -2,21 +2,7 @@ package com.marklogic.client.test.dbfunction.positive;
 
 // IMPORTANT: Do not edit. This file is generated.
 
-
-import java.util.stream.Stream;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-
-
-
-
-
-import java.util.stream.Stream;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.marker.AbstractWriteHandle;
-
 import com.marklogic.client.SessionState;
-
 
 
 import com.marklogic.client.DatabaseClient;
@@ -29,13 +15,32 @@ import com.marklogic.client.impl.BaseProxy;
 public class SessionsBundle {
     private BaseProxy baseProxy;
 
+    /**
+     * Creates a SessionsBundle object for executing operations on the database server.
+     *
+     * The DatabaseClientFactory class can create the DatabaseClient parameter. A single
+     * client object can be used for any number of requests and in multiple threads.
+     *
+     * @param db	provides a client for communicating with the database server
+     * @return	an object for session state
+     */
     public static SessionsBundle on(DatabaseClient db) {
         return new SessionsBundle(db);
     }
 
+    /**
+     * The constructor for a SessionsBundle object for executing operations on the database server.
+     * @param db	provides a client for communicating with the database server
+     */
     public SessionsBundle(DatabaseClient db) {
         baseProxy = new BaseProxy(db, "/dbf/test/sessions/");
     }
+    /**
+     * Creates an object to track a session for a set of operations
+     * that require session state on the database server.
+     *
+     * @return	an object for session state
+     */
     public SessionState newSessionState() {
       return baseProxy.newSessionState();
     }
