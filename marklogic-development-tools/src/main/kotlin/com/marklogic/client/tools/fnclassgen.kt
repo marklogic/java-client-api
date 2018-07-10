@@ -18,5 +18,10 @@ package com.marklogic.client.tools
 import com.marklogic.client.tools.proxy.Generator
 
 fun main(args: Array<String>) {
-  Generator().serviceBundleToJava(args[0], args[1])
+  if (args.size === 2) {
+    Generator().serviceBundleToJava(args[0], args[1])
+  } else {
+    System.err.println("usage: fnclassgen servFilename javaBaseDir")
+    System.exit(-1)
+  }
 }

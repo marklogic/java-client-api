@@ -263,7 +263,7 @@ class Generator {
         "sjs", "xqy" ->
           if (!moduleFiles.containsKey(basename))
           moduleFiles[basename] = file
-          else throw RuntimeException(
+          else throw IllegalArgumentException(
                 "can have only one of the ${file.name} and ${moduleFiles[basename]?.name} files"
             )
       }

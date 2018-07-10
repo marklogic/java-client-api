@@ -585,8 +585,14 @@ fun getDocumentMappingConstructors(): Map<String,Map<String,String>> {
 }
 
 fun main(args: Array<String>) {
-  dbfTestGenerate(args[0])
+  if (args.size === 1) {
+    dbfTestGenerate(args[0])
+  } else {
+    System.err.println("usage: fntestgen testDir")
+    System.exit(-1)
+  }
 }
+
 fun dbfTestGenerate(testDir: String) {
   val javaBaseDir  = testDir+"java/"
   val testPath     = javaBaseDir+TEST_PACKAGE.replace(".", "/")+"/"
@@ -2144,18 +2150,3 @@ fun getDataKind(dataType: String?, typedef: Map<String,*>?) : String? {
   else
     return "atomic"
 }
-
-/*
-TODO: response tests
-    one atomic return value as header with no response body
-    one or more atomic return values with an application/x-www-form-urlencoded response body
-        one atomic return value
-        two atomic return values
-    one or more document return values with a multipart/form-data response body
-        one JSON document return value
-        two XML document return values
-        two text and binary document return values
-
-TODO: GET none requestBody + document responseBody
-
- */
