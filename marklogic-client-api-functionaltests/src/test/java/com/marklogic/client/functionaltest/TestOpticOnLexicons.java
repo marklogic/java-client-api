@@ -128,7 +128,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
    
-    createUserRolesWithPrevilages("opticRole", "tde-admin", "tde-view", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
