@@ -289,16 +289,20 @@ class Generator {
 """))
     }
 
+    val funcDecl    = mutableListOf<String>()
     val funcDepend  = mutableSetOf<String>()
     val funcSrc     = funcdefs.map{(root, funcdef) ->
-      generateFuncSrc(funcDepend, servdef, moduleFiles[root]!!.name, funcdef)
+      generateFuncSrc(funcDecl, funcDepend, servdef, moduleFiles[root]!!.name, funcdef)
     }.joinToString("\n")
     val funcImports =
         if (funcDepend.isEmpty()) ""
         else "import "+funcDepend.joinToString(";\nimport ")+";\n"
+    val funcDecls   =
+        if (funcDecl.isEmpty()) ""
+        else funcDecl.joinToString("")
 
     val classSrc = generateServClass(
-        servdef, endpointDirectory, servFilename, fullClassName, funcImports, funcSrc
+        servdef, endpointDirectory, servFilename, fullClassName, funcImports, funcDecls, funcSrc
     )
 
     writeClass(servdef, fullClassName, classSrc, javaBaseDir)
@@ -320,7 +324,8 @@ class Generator {
     classFile.writeText(classSrc)
   }
   fun generateServClass(
-      servdef: ObjectNode, endpointDirectory: String, servFilename: String, fullClassName: String, funcImports: String, funcSrc: String
+      servdef: ObjectNode, endpointDirectory: String, servFilename: String,
+      fullClassName: String, funcImports: String, funcDecls: String, funcSrc: String
   ): String {
     val packageName = fullClassName.substringBeforeLast(".")
     val className   = fullClassName.substringAfterLast(".")
@@ -344,9 +349,7 @@ import com.marklogic.client.impl.BaseProxy;
 /**
  * ${classDesc}
  */
-public class ${className} {
-    private BaseProxy baseProxy;
-
+public interface ${className} {
     /**
      * Creates a ${className} object for executing operations on the database server.
      *
@@ -356,16 +359,24 @@ public class ${className} {
      * @param db	provides a client for communicating with the database server
      * @return	an object for session state
      */
-    public static ${className} on(DatabaseClient db) {
-        return new ${className}(db);
-    }
+    static ${className} on(DatabaseClient db) {
+        final class Impl implements ${className} {
+            private BaseProxy baseProxy;
 
-    /**
-     * The constructor for a ${className} object for executing operations on the database server.
-     * @param db	provides a client for communicating with the database server
-     */
-    public ${className}(DatabaseClient db) {
-        baseProxy = new BaseProxy(db, "${requestDir}");
+            private Impl(DatabaseClient dbClient) {
+                baseProxy = new BaseProxy(dbClient, "${requestDir}");
+            }${
+    if (!hasSession) ""
+    else """
+            @Override
+            public SessionState newSessionState() {
+              return baseProxy.newSessionState();
+            }"""
+    }
+${funcSrc}
+        }
+
+        return new Impl(db);
     }${
     if (!hasSession) ""
     else """
@@ -375,17 +386,16 @@ public class ${className} {
      *
      * @return	an object for session state
      */
-    public SessionState newSessionState() {
-      return baseProxy.newSessionState();
-    }"""
+    SessionState newSessionState();"""
     }
-${funcSrc}
+${funcDecls}
 }
 """
     return classSrc
   }
   fun generateFuncSrc(
-      funcDepend: MutableSet<String>, servdef: ObjectNode, moduleFilename: String, funcdef: ObjectNode
+      funcDecl: MutableList<String>, funcDepend: MutableSet<String>, servdef: ObjectNode,
+      moduleFilename: String, funcdef: ObjectNode
   ): String {
     val funcName = funcdef.get("functionName")?.asText()
     if (funcName === null || funcName.length === 0) {
@@ -549,7 +559,7 @@ ${funcSrc}
         mappedType.capitalize()
       }(${paramName}))"""
     }?.joinToString(""",
-        """)
+                    """)
 
     val returnConverter =
         if (returnType === null || returnMapped === null)
@@ -561,18 +571,20 @@ ${funcSrc}
           else
             returnMapped.capitalize()
           }(
-        """
+                """
     val returnFormat  =
         if (returnType == null || returnKind != "document") "null"
         else typeFormat(returnType)
     val returnChained =
         if (returnKind === null)          """.responseNone()"""
         else if (returnMultiple === true) """.responseMultiple(${returnNullable}, ${returnFormat})
-        )"""
+                )"""
         else                              """.responseSingle(${returnNullable}, ${returnFormat})
-        )"""
+                )"""
 
-    val javaSource     = """
+    val sigSource      = """${returnSig} ${funcName}(${sigParams ?: ""})"""
+
+    val declSource     = """
   /**
    * ${funcDesc}
    *
@@ -580,18 +592,24 @@ ${funcSrc}
    * """)}
    * ${returnDesc}
    */
-    public ${returnSig} ${funcName}(${sigParams ?: ""}) {
-      ${returnConverter
-    }baseProxy
-        .request("${moduleFilename}", BaseProxy.ParameterValuesKind.${paramsKind})
-        .withSession(${sessionChained})
-        .withParams(
-        ${paramsChained})
-        .withMethod("${endpointMethod}")
-        ${returnChained};
-    }
+    ${sigSource};
 """
-    return javaSource
+    funcDecl.add(declSource)
+
+    val defSource      = """
+            @Override
+            public ${sigSource} {
+              ${returnConverter
+              }baseProxy
+                .request("${moduleFilename}", BaseProxy.ParameterValuesKind.${paramsKind})
+                .withSession(${sessionChained})
+                .withParams(
+                    ${paramsChained})
+                .withMethod("${endpointMethod}")
+                ${returnChained};
+            }
+"""
+    return defSource
   }
   fun typeConverter(datatype: String) : String {
     val converter =
