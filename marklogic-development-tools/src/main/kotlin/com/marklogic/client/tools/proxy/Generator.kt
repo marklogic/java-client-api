@@ -360,10 +360,10 @@ public interface ${className} {
      * @return	an object for session state
      */
     static ${className} on(DatabaseClient db) {
-        final class Impl implements ${className} {
+        final class ${className}Impl implements ${className} {
             private BaseProxy baseProxy;
 
-            private Impl(DatabaseClient dbClient) {
+            private ${className}Impl(DatabaseClient dbClient) {
                 baseProxy = new BaseProxy(dbClient, "${requestDir}");
             }${
     if (!hasSession) ""
@@ -376,7 +376,7 @@ public interface ${className} {
 ${funcSrc}
         }
 
-        return new Impl(db);
+        return new ${className}Impl(db);
     }${
     if (!hasSession) ""
     else """

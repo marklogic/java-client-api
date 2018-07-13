@@ -22,10 +22,10 @@ public interface DescribedBundle {
      * @return	an object for session state
      */
     static DescribedBundle on(DatabaseClient db) {
-        final class Impl implements DescribedBundle {
+        final class DescribedBundleImpl implements DescribedBundle {
             private BaseProxy baseProxy;
 
-            private Impl(DatabaseClient dbClient) {
+            private DescribedBundleImpl(DatabaseClient dbClient) {
                 baseProxy = new BaseProxy(dbClient, "/dbf/test/described/");
             }
 
@@ -44,7 +44,7 @@ public interface DescribedBundle {
 
         }
 
-        return new Impl(db);
+        return new DescribedBundleImpl(db);
     }
 
   /**

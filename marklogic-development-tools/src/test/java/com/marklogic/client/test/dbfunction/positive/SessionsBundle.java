@@ -23,10 +23,10 @@ public interface SessionsBundle {
      * @return	an object for session state
      */
     static SessionsBundle on(DatabaseClient db) {
-        final class Impl implements SessionsBundle {
+        final class SessionsBundleImpl implements SessionsBundle {
             private BaseProxy baseProxy;
 
-            private Impl(DatabaseClient dbClient) {
+            private SessionsBundleImpl(DatabaseClient dbClient) {
                 baseProxy = new BaseProxy(dbClient, "/dbf/test/sessions/");
             }
             @Override
@@ -142,7 +142,7 @@ public interface SessionsBundle {
 
         }
 
-        return new Impl(db);
+        return new SessionsBundleImpl(db);
     }
     /**
      * Creates an object to track a session for a set of operations
