@@ -715,7 +715,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 1 added value incorrect", "12", node.path("added").path("value").asText());
     assertEquals("Row 1 subtracted value incorrect", "0", node.path("subtracted").path("value").asText());
     assertEquals("Row 1 divided value incorrect", "1", node.path("divided").path("value").asText());
-    assertEquals("Row 1 multiplied value incorrect", "0.6", node.path("multiplied").path("value").asText());
+    assertEquals("Row 1 multiplied value incorrect", "0.600000023841858", node.path("multiplied").path("value").asText());
     assertEquals("Row 1 caseExpr value incorrect", "foo", node.path("caseExpr").path("value").asText());
 
     node = jsonBindingsNodes.path(1);
@@ -731,7 +731,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 4 added value incorrect", "15", node.path("added").path("value").asText());
     assertEquals("Row 4 subtracted value incorrect", "-3", node.path("subtracted").path("value").asText());
     assertEquals("Row 4 divided value incorrect", "0.25", node.path("divided").path("value").asText());
-    assertEquals("Row 4 multiplied value incorrect", "2.4", node.path("multiplied").path("value").asText());
+    assertEquals("Row 4 multiplied value incorrect", "2.400000095367432", node.path("multiplied").path("value").asText());
     assertEquals("Row 4 caseExpr value incorrect", "bar", node.path("caseExpr").path("value").asText());
   }
 
