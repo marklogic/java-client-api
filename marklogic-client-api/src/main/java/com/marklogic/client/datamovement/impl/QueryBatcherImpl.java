@@ -50,6 +50,7 @@ import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -74,7 +75,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private final AtomicReference<List<DatabaseClient>> clientList = new AtomicReference<>();
   private Map<Forest,AtomicLong> forestResults = new HashMap<>();
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
-  private Set<Forest> retryForestSet = new HashSet<>();
+  private Map<Forest, AtomicInteger> retryForestMap = new HashMap<>();
   private AtomicBoolean runJobCompletionListeners = new AtomicBoolean(false);
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
@@ -161,7 +162,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // we're obviously not done with this forest
     forestIsDone.get(retryForest).set(false);
-    retryForestSet.add(retryForest);
+    retryForestMap.get(retryForest).incrementAndGet();
     long start = queryEvent.getForestResultsSoFar() + 1;
     logger.trace("retryForest: {}, retryHost: {}, start: {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
@@ -408,6 +409,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       hosts.put(forest.getPreferredHost(), forest);
       if ( forestResults.get(forest) == null ) forestResults.put(forest, new AtomicLong());
       if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
+      if ( retryForestMap.get(forest) == null ) retryForestMap.put(forest, new AtomicInteger(0));
     }
     logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     List<DatabaseClient> newClientList = new ArrayList<>();
@@ -659,10 +661,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
               logger.error("Exception thrown by an onQueryFailure listener", e2);
             }
           }
-          if(! retryForestSet.contains(forest)) {
+          if(retryForestMap.get(forest).get() == 0) {
             isDone.set(true);
           } else {
-            retryForestSet.remove(forest);
+            retryForestMap.get(forest).decrementAndGet();
           }
         } else if ( t instanceof RuntimeException ) {
           throw (RuntimeException) t;
