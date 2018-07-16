@@ -270,6 +270,10 @@ public class OkHttpServices implements RESTServices {
   }
 
   private FailedRequest extractErrorFields(Response response) {
+    return extractErrorFields(response, true);
+  }
+
+  private FailedRequest extractErrorFields(Response response, boolean restServerCall) {
     if ( response == null ) return null;
     try {
       if ( response.code() == STATUS_UNAUTHORIZED ) {
@@ -280,7 +284,7 @@ public class OkHttpServices implements RESTServices {
       }
       String responseBody = getEntity(response.body(), String.class);
       InputStream is = new ByteArrayInputStream(responseBody.getBytes("UTF-8"));
-      FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is);
+      FailedRequest handler = FailedRequest.getFailedRequest(response.code(), response.header(HEADER_CONTENT_TYPE), is, restServerCall);
       if ( handler.getMessage() == null ) {
         handler.setMessageString(responseBody);
       }
@@ -5491,6 +5495,7 @@ public class OkHttpServices implements RESTServices {
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }
       addHttpMethod();
+      this.requestBldr.addHeader(HEADER_ERROR_FORMAT, MIMETYPE_APPLICATION_JSON);
     }
 
     private void addHttpMethod() {
@@ -5535,19 +5540,23 @@ public class OkHttpServices implements RESTServices {
         }
         ((SessionStateImpl)session).setCookies(cookies);
       }
-      responseImpl.setResponse(response);
       checkStatus(response);
+      responseImpl.setResponse(response);
     }
 
     private void checkStatus(Response response) {
       int statusCode = response.code();
       if (statusCode >= 300) {
-        FailedRequest failure = extractErrorFields(response);
         int status = response.code();
+        FailedRequest failure = extractErrorFields(response, false);
         if (status == STATUS_NOT_FOUND) {
-          throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
+          ResourceNotFoundException ex = failure == null ? new ResourceNotFoundException("Could not " + method  + " at " + endpoint) :
+              new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
+          throw ex;
         } else if (status == STATUS_FORBIDDEN) {
-          throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
+          ForbiddenUserException ex = failure == null ? new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint) :
+              new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
+          throw ex;
         }
         throw new FailedRequestException("failed to " + method + " at " + endpoint + ": "
             + getReasonPhrase(response), failure);

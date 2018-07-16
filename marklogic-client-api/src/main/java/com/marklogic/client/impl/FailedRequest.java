@@ -120,6 +120,10 @@ public class FailedRequest {
    * send an InputStream to this handler in order to create an error block.
    */
   public static FailedRequest getFailedRequest(int httpStatus, String contentType, InputStream content) {
+    return getFailedRequest(httpStatus, contentType, content, true);
+  }
+
+  public static FailedRequest getFailedRequest(int httpStatus, String contentType, InputStream content, boolean restServerCall) {
     FailedRequest failure = null;
 
     // by default XML is supported
@@ -132,18 +136,24 @@ public class FailedRequest {
       } else if ( "json".equals(mediaType.subtype()) ) {
         failure = jsonFailedRequest(httpStatus, content);
       }
-    } else if (httpStatus == 404) {
-      failure = new FailedRequest();
-      failure.setStatusCode(httpStatus);
-      failure.setMessageString("");
-      failure.setStatusString("Not Found");
     }
     if ( failure == null ) {
-      failure = new FailedRequest();
-      failure.setStatusCode(httpStatus);
-      failure.setMessageCode("UNKNOWN");
-      failure.setMessageString("Server (not a REST instance?) did not respond with an expected REST Error message.");
-      failure.setStatusString("UNKNOWN");
+      if (httpStatus == 404) {
+        failure = new FailedRequest();
+        failure.setStatusCode(httpStatus);
+        failure.setMessageString("Not Found");
+        failure.setStatusString("Not Found");
+      } else {
+        failure = new FailedRequest();
+        failure.setStatusCode(httpStatus);
+        failure.setMessageCode("UNKNOWN");
+        if(restServerCall) {
+          failure.setMessageString("Server (not a REST instance?) did not respond with an expected REST Error message.");
+        } else {
+          failure.setMessageString("Server did not respond with an expected Error message.");
+        }
+        failure.setStatusString("UNKNOWN");
+      }
     }
     if (failure.getStatusCode() == 401) {
       failure.setMessageString("Unauthorized");
