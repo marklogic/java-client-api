@@ -72,6 +72,7 @@ public interface RESTServices {
 
   String HEADER_ACCEPT = "Accept";
   String HEADER_COOKIE = "Cookie";
+  String HEADER_ERROR_FORMAT = "X-Error-Accept";
   String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   String HEADER_CONTENT_LENGTH = "Content-Length";
   String HEADER_CONTENT_TYPE = "Content-Type";
