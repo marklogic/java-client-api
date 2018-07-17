@@ -5491,6 +5491,7 @@ public class OkHttpServices implements RESTServices {
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }
       addHttpMethod();
+      this.requestBldr.addHeader(HEADER_ERROR_FORMAT, MIMETYPE_APPLICATION_JSON);
     }
 
     private void addHttpMethod() {
@@ -5535,22 +5536,41 @@ public class OkHttpServices implements RESTServices {
         }
         ((SessionStateImpl)session).setCookies(cookies);
       }
-      responseImpl.setResponse(response);
       checkStatus(response);
+      responseImpl.setResponse(response);
     }
 
     private void checkStatus(Response response) {
       int statusCode = response.code();
       if (statusCode >= 300) {
-        FailedRequest failure = extractErrorFields(response);
-        int status = response.code();
-        if (status == STATUS_NOT_FOUND) {
-          throw new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
-        } else if (status == STATUS_FORBIDDEN) {
-          throw new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
+        FailedRequest failure = null;
+        MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
+        if ( "json".equals(mediaType.subtype()) ) {
+          failure = extractErrorFields(response);
         }
-        throw new FailedRequestException("failed to " + method + " at " + endpoint + ": "
-            + getReasonPhrase(response), failure);
+        if ( statusCode == STATUS_UNAUTHORIZED ) {
+          failure = new FailedRequest();
+          failure.setMessageString("Unauthorized");
+          failure.setStatusString("Failed Auth");
+        } else if (statusCode == STATUS_NOT_FOUND) {
+          ResourceNotFoundException ex = failure == null ? new ResourceNotFoundException("Could not " + method  + " at " + endpoint) :
+              new ResourceNotFoundException("Could not " + method  + " at " + endpoint, failure);
+          throw ex;
+        } else if (statusCode == STATUS_FORBIDDEN) {
+          ForbiddenUserException ex = failure == null ? new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint) :
+              new ForbiddenUserException("User is not allowed to " + method + " at " + endpoint, failure);
+          throw ex;
+        } else {
+          failure = new FailedRequest();
+          failure.setStatusCode(statusCode);
+          failure.setMessageCode("UNKNOWN");
+          failure.setMessageString("Server did not respond with an expected Error message.");
+          failure.setStatusString("UNKNOWN");
+        }
+        FailedRequestException ex = failure == null ? new FailedRequestException("failed to " + method + " at " + endpoint + ": "
+            + getReasonPhrase(response)) : new FailedRequestException("failed to " + method + " at " + endpoint + ": "
+                + getReasonPhrase(response), failure);
+        throw ex;
       }
     }
 
