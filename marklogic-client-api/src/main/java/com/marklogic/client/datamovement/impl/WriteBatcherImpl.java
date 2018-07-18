@@ -257,8 +257,8 @@ public class WriteBatcherImpl
       logger.info("threadCount={}", getThreadCount());
       logger.info("batchSize={}", getBatchSize());
       if ( usingTransactions == true ) logger.info("transactionSize={}", transactionSize);
-      started.set(true);
       jobStartTime = Calendar.getInstance();
+      started.set(true);
     }
   }
 
@@ -653,8 +653,8 @@ public class WriteBatcherImpl
   }
 
   public void stop() {
-    stopped.set(true);
     jobEndTime = Calendar.getInstance();
+    stopped.set(true);
     if ( threadPool != null ) threadPool.shutdownNow();
     closeAllListeners();
   }

@@ -334,8 +334,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     for (QueryBatchListener urisReadyListener : urisReadyListeners) {
       urisReadyListener.initializeListener(this);
     }
-    started.set(true);
     jobStartTime = Calendar.getInstance();
+    started.set(true);
     if ( query != null ) {
       startQuerying();
     } else {
