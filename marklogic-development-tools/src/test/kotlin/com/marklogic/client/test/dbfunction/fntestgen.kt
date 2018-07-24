@@ -585,7 +585,7 @@ fun getDocumentMappingConstructors(): Map<String,Map<String,String>> {
 }
 
 fun main(args: Array<String>) {
-  if (args.size === 1) {
+  if (args.size == 1) {
     dbfTestGenerate(args[0])
   } else {
     System.err.println("usage: fntestgen testDir")
@@ -659,8 +659,8 @@ fun dbfTestGenerate(testDir: String) {
 
   val allAtomicParams = atomicNames.indices.map{i ->
     val atomicCurr = atomicNames[i]
-    val testMultiple = (i % 3) === 0
-    val testNullable = (i % 2) === 0
+    val testMultiple = (i % 3) == 0
+    val testNullable = (i % 2) == 0
     mapOf(
         "name"     to "param"+(i + 1), "datatype" to atomicCurr,
         "multiple" to testMultiple,    "nullable" to testNullable
@@ -668,8 +668,8 @@ fun dbfTestGenerate(testDir: String) {
     }
   val allDocumentParams = documentNames.indices.map{i ->
     val documentCurr = documentNames[i]
-    val testMultiple = (i % 3) === 0
-    val testNullable = (i % 2) === 0
+    val testMultiple = (i % 3) == 0
+    val testNullable = (i % 2) == 0
     mapOf(
         "name"     to "param"+(i + 1), "datatype" to documentCurr,
         "multiple" to testMultiple,    "nullable" to testNullable
@@ -686,7 +686,7 @@ if (true) {
     for (requestBodyNum in requestBodyTypes.indices) {
       val requestBodyType = requestBodyTypes[requestBodyNum]
       val requestBody     = requestBodyType.capitalize()
-      val isSJS           = ((responseBodyNum + requestBodyNum) % 2) === 0
+      val isSJS           = ((responseBodyNum + requestBodyNum) % 2) == 0
 
       val requestParams =
         if (responseBodyType === "none")
@@ -904,7 +904,7 @@ if (true) {
                       }
 
                       // negative test of actual multiple arity for expected single arity
-                      val atomicOther       = atomicNames[if (i === atomicMax) 0 else i + 1]
+                      val atomicOther       = atomicNames[if (i == atomicMax) 0 else i + 1]
                       val arityErrName      = testName+"ArityErr"
                       val arityErrServerdef = replaceFuncName(testdef, arityErrName)
                       persistServerdef(
@@ -960,7 +960,7 @@ if (true) {
                 for (i in documentNames.indices) {
                   val docCurr = documentNames[i]
                   val atomic1 = atomicNames[i]
-                  val atomic2 = atomicNames[if (i === atomicMax) 0 else i + 1]
+                  val atomic2 = atomicNames[if (i == atomicMax) 0 else i + 1]
                   val docTestTypes = allTestTypes
                   for (testNum in docTestTypes.indices) {
                     val testType      = docTestTypes[testNum]
@@ -1088,7 +1088,7 @@ if (true) {
                       }
 
                       // negative test of actual multiple arity for expected single arity
-                      val atomicOther       = atomicNames[if (i === atomicMax) 0 else i + 1]
+                      val atomicOther       = atomicNames[if (i == atomicMax) 0 else i + 1]
                       val arityErrName      = docTestName+"ArityErr"
                       val arityErrServerdef = replaceFuncName(docTestdef, arityErrName)
                       persistServerdef(
@@ -1228,8 +1228,9 @@ if (true) {
           "document" -> {
             for (i in documentNames.indices) {
               val docCurr = documentNames[i]
-              val atomic1 = atomicNames[i]
-              val atomic2 = atomicNames[if (i === atomicMax) 0 else i + 1]
+// TODO: atomics as well as documents
+//            val atomic1 = atomicNames[i]
+//            val atomic2 = atomicNames[if (i == atomicMax) 0 else i + 1]
 
               val docTestTypes = nonMultipleTestTypes
               for (testNum in docTestTypes.indices) {
@@ -1317,11 +1318,11 @@ if (true) {
               }
             }}
           "multipart" -> {
-// TODO: atomics as well as documents
             for (i in documentNames.indices) {
               val docCurr = documentNames[i]
-              val atomic1 = atomicNames[i]
-              val atomic2 = atomicNames[if (i === atomicMax) 0 else i + 1]
+// TODO: atomics as well as documents
+//            val atomic1 = atomicNames[i]
+//            val atomic2 = atomicNames[if (i == atomicMax) 0 else i + 1]
 
               val docTestTypes = multipleTestTypes
               for (testNum in docTestTypes.indices) {
@@ -1467,7 +1468,7 @@ if (true) {
     val datatype             = atomicMappingDatatypes[datatypeNum]
     val testBaseStart        = atomicMappingBundle+datatype.capitalize()
     val datatypeConstructors = atomicMappingConstructors[datatype] as Map<String,String>
-    val isSJS                = (datatypeNum % 2) === 0
+    val isSJS                = (datatypeNum % 2) == 0
     for (mappedType in datatypeConstructors.keys) {
       // mappedType.capitalize().replace('.', '_')
       val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
@@ -1555,7 +1556,7 @@ if (true) {
     val datatype             = documentMappedDatatypes[datatypeNum]
     val testBaseStart        = documentMappingBundle+datatype.capitalize()
     val datatypeConstructors = documentMappingConstructors[datatype] as Map<String,String>
-    val isSJS                = (datatypeNum % 2) === 0
+    val isSJS                = (datatypeNum % 2) == 0
     for (mappedType in datatypeConstructors.keys) {
       val testMapped        = mappedType.split('.').map{word -> word.capitalize()}.joinToString("")
       val mappedConstructor = datatypeConstructors[mappedType] as String
@@ -1691,7 +1692,7 @@ if (true) {
     if (moduleInitModFile.exists()) {
       moduleInitModFile.delete()
     }
-    generator.declarationToModuleStubImpl(moduleInitAPIFilename, modExtension)
+    generator.endpointDeclToModStubImpl(moduleInitAPIFilename, modExtension)
     moduleInitModFile.appendText("""
 ${
     when (modExtension) {
@@ -1726,9 +1727,8 @@ fun pickDocOther(documentNames: Array<String>, documentMax: Int, docCurr: String
   val docOther =
       when (docCurr) {
         "array", "object", "jsonDocument" -> "xmlDocument"
-        "jsonDocument" -> "xmlDocument"
-        "xmlDocument"  -> "jsonDocument"
-        else           -> documentNames[if (i === documentMax) 0 else i + 1]
+        "xmlDocument"                     -> "jsonDocument"
+        else                              -> documentNames[if (i == documentMax) 0 else i + 1]
       }
   return docOther
 }
@@ -1826,7 +1826,7 @@ return xdmp:apply(xdmp:function(xs:QName("makeResult"), "/dbf/test/testInspector
 """
   return moduleDoc;
 }
-fun serializeArg(dataKind: String, paramTest: JsonNode, mappedType: String, testConstructor: String?) : String {
+fun serializeArg(paramTest: JsonNode, mappedType: String, testConstructor: String?) : String {
   val text   = paramTest.asText()
   val argRaw =
       when(mappedType) {
@@ -1993,12 +1993,12 @@ fun generateJUnitCallTest(
   val returnType        = funcReturn?.get("datatype")    as String?
   val returnMapping     = funcReturn?.get("\$javaClass") as String?
   val returnKind        = getDataKind(returnType, funcReturn)
-  val returnMultiple    = funcReturn?.get("multiple") === true
-  val returnNullable    = funcReturn?.get("nullable") === true
+  val returnMultiple    = funcReturn?.get("multiple") == true
+  val returnNullable    = funcReturn?.get("nullable") == true
   val returnMappedType  =
       if (returnType === null || returnKind === null) null
       else generator.getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
-  val returnCustom      = returnMapping !== null && returnMappedType?.contains('.') === true
+  val returnCustom      = returnMapping !== null && returnMappedType?.contains('.') == true
   val returnConstructor =
       if (typeConstructors === null || !returnCustom) null
       else typeConstructors[returnType]?.substringAfter(returnType+"As")
@@ -2106,8 +2106,8 @@ fun testVal(
   val dataType   = typedef.get("datatype") as String
   val mapping    = typedef.get("\$javaClass") as String?
   val dataKind   = getDataKind(dataType, typedef) as String
-  val isMultiple = typedef.get("multiple") === true
-  val isNullable = typedef.get("nullable") === true
+  val isMultiple = typedef.get("multiple") == true
+  val isNullable = typedef.get("nullable") == true
   val mappedType = generator.getJavaDataType(dataType, mapping, dataKind, isNullable, isMultiple)
   return testVal(
     typeTests, dataType, dataKind, isNullable, isMultiple, mappedType, testVariant, typeConstructors, mappedTestdefs
@@ -2126,16 +2126,16 @@ fun testVal(
       if (typeConstructors === null) null
       else typeConstructors[dataType]
   val testValue       =
-      if (testValues === null || testValues.size() === 0 || (isNullable && testVariant === TestVariant.NULL)) {
+      if (testValues === null || testValues.size() == 0 || (isNullable && testVariant === TestVariant.NULL)) {
         "null"
       } else if (isNullable && isMultiple && testVariant === TestVariant.EMPTY) {
         """Stream.empty()"""
       } else if (isMultiple) {
         """Stream.of(${testValues.map{ testValue ->
-          serializeArg(dataKind, testValue, mappedType, testConstructor)
+          serializeArg(testValue, mappedType, testConstructor)
         }.joinToString(", ")})"""
       } else {
-        serializeArg(dataKind, testValues[0], mappedType, testConstructor)
+        serializeArg(testValues[0], mappedType, testConstructor)
       }
   return testValue
 }

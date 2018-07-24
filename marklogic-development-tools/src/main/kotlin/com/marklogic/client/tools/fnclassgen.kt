@@ -21,7 +21,7 @@ fun main(args: Array<String>) {
   if (args.size === 2) {
     Generator().serviceBundleToJava(args[0], args[1])
   } else {
-    System.err.println("usage: fnclassgen servFilename javaBaseDir")
+    System.err.println("usage: fnclassgen serviceDeclarationFile javaBaseDir")
     System.exit(-1)
   }
 }

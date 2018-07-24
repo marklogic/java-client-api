@@ -25,7 +25,7 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.io.IOException;
 
-public class GeneratorTaskTest {
+public class EndpointProxiesGenTaskTest {
   @Rule
   public TemporaryFolder testDir = new TemporaryFolder();
 
@@ -74,9 +74,9 @@ public class GeneratorTaskTest {
       .append("plugins {\n")
       .append("  id 'com.marklogic.client.tools'\n")
       .append("}\n")
-      .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {\n")
-      .append("  serviceBundleFilename = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
-      .append("  javaBaseDirectory     = '"+testEnv.javaBaseDir.getPath()+"'\n")
+      .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {\n")
+      .append("  serviceDeclarationFile = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
+      .append("  javaBaseDirectory      = '"+testEnv.javaBaseDir.getPath()+"'\n")
       .append("}\n");
     writeBuildFile(buildText);
 
@@ -108,9 +108,9 @@ public class GeneratorTaskTest {
         .withProjectDir(testDir.getRoot())
         .withPluginClasspath()
         .withArguments(
-            "-PserviceBundleFilename="+testEnv.serviceDir.getPath()+"/service.json",
+            "-PserviceDeclarationFile="+testEnv.serviceDir.getPath()+"/service.json",
             "-PjavaBaseDirectory="+testEnv.javaBaseDir.getPath(),
-            "generateProxy"
+            "generateEndpointProxies"
            )
         .withDebug(true)
         .build();
@@ -131,7 +131,7 @@ public class GeneratorTaskTest {
     writeBuildFile(fileText);
 
     fileText = new StringBuilder()
-      .append("serviceBundleFilename="+testEnv.serviceDir.getPath()+"/service.json\n")
+      .append("serviceDeclarationFile="+testEnv.serviceDir.getPath()+"/service.json\n")
       .append("javaBaseDirectory="+testEnv.javaBaseDir.getPath()+"\n")
       .append("}\n");
     GradleTestUtil.writeTextFile(fileText.toString(), testEnv.propsFile);
@@ -140,7 +140,7 @@ public class GeneratorTaskTest {
         .create()
         .withProjectDir(testDir.getRoot())
         .withPluginClasspath()
-        .withArguments("generateProxy")
+        .withArguments("generateEndpointProxies")
         .withDebug(true)
         .build();
     assertTrue("config did not generate "+testEnv.outClass.getPath(), testEnv.outClass.exists());
@@ -159,9 +159,9 @@ public class GeneratorTaskTest {
       .append("  id 'com.marklogic.client.tools'\n")
       .append("}\n")
       .append("ext {\n")
-      .append("    proxyConfig {\n")
-      .append("        serviceBundleFilename = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
-      .append("        javaBaseDirectory     = '"+testEnv.javaBaseDir.getPath()+"'\n")
+      .append("    endpointProxiesConfig {\n")
+      .append("        serviceDeclarationFile = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
+      .append("        javaBaseDirectory      = '"+testEnv.javaBaseDir.getPath()+"'\n")
       .append("    }\n")
       .append("}\n");
     writeBuildFile(buildText);
@@ -170,7 +170,7 @@ public class GeneratorTaskTest {
         .create()
         .withProjectDir(testDir.getRoot())
         .withPluginClasspath()
-        .withArguments("generateProxy")
+        .withArguments("generateEndpointProxies")
         .withDebug(true)
         .build();
     assertTrue("config did not generate "+testEnv.outClass.getPath(), testEnv.outClass.exists());
@@ -187,8 +187,8 @@ public class GeneratorTaskTest {
       .append("plugins {\n")
       .append("  id 'com.marklogic.client.tools'\n")
       .append("}\n")
-      .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.GeneratorTask) {\n")
-      .append("  serviceBundleFilename = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
+      .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {\n")
+      .append("  serviceDeclarationFile = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
       .append("}\n");
     writeBuildFile(buildText);
 

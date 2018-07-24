@@ -15,7 +15,7 @@
  */
 package com.marklogic.client.tools.gradle
 
-class ProxyConfig {
-  var serviceBundleFilename : String = ""
-  var javaBaseDirectory     : String = ""
+class EndpointProxiesConfig {
+  var serviceDeclarationFile : String = ""
+  var javaBaseDirectory      : String = ""
 }

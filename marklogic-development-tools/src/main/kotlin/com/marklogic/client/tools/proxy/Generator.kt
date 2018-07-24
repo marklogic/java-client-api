@@ -233,33 +233,33 @@ class Generator {
     }
     return mapping
   }
-  fun serviceBundleToJava(servFilename: String, javaBaseDir: String) {
+  fun serviceBundleToJava(servDeclFilename: String, javaBaseDir: String) {
     val warnings = mutableListOf<String>()
     val mapper   = jacksonObjectMapper()
 
-    val servFile = File(servFilename)
-    val servdef  = mapper.readValue<ObjectNode>(servFile)
+    val servDeclFile = File(servDeclFilename)
+    val servdef      = mapper.readValue<ObjectNode>(servDeclFile)
 
     var endpointDirectory = servdef.get("endpointDirectory")?.asText()
     if (endpointDirectory === null) {
-      throw IllegalArgumentException("no endpointDirectory property in $servFilename")
+      throw IllegalArgumentException("no endpointDirectory property in $servDeclFilename")
     } else if (endpointDirectory.length === 0) {
-      throw IllegalArgumentException("empty endpointDirectory property in $servFilename")
+      throw IllegalArgumentException("empty endpointDirectory property in $servDeclFilename")
     } else if (!endpointDirectory.endsWith("/")) {
       endpointDirectory = endpointDirectory+"/"
     }
 
     val fullClassName = servdef.get("\$javaClass")?.asText()
     if (fullClassName === null) {
-      throw IllegalArgumentException("no \$javaClass property in $servFilename")
+      throw IllegalArgumentException("no \$javaClass property in $servDeclFilename")
     }
 
     val moduleFiles   = mutableMapOf<String, File>()
-    val functionFiles = mutableMapOf<String, File>()
-    servFile.parentFile.listFiles().forEach{file ->
+    val endpointDeclFiles = mutableMapOf<String, File>()
+    servDeclFile.parentFile.listFiles().forEach{file ->
       val basename = file.nameWithoutExtension
       when(file.extension) {
-        "api"        -> functionFiles[basename] = file
+        "api"        -> endpointDeclFiles[basename] = file
         "sjs", "xqy" ->
           if (!moduleFiles.containsKey(basename))
           moduleFiles[basename] = file
@@ -269,11 +269,11 @@ class Generator {
       }
     }
     val moduleRoots   = moduleFiles.keys
-    val functionRoots = functionFiles.keys
+    val functionRoots = endpointDeclFiles.keys
     unpairedWarnings(warnings, moduleFiles, functionRoots,
         "endpoint main module without function declaration")
 
-    val funcdefs    = functionFiles.filter{entry ->
+    val funcdefs    = endpointDeclFiles.filter{entry ->
       if (moduleRoots.contains(entry.key)) {
         true
       } else {
@@ -302,7 +302,7 @@ class Generator {
         else funcDecl.joinToString("")
 
     val classSrc = generateServClass(
-        servdef, endpointDirectory, servFilename, fullClassName, funcImports, funcDecls, funcSrc
+        servdef, endpointDirectory, servDeclFilename, fullClassName, funcImports, funcDecls, funcSrc
     )
 
     writeClass(servdef, fullClassName, classSrc, javaBaseDir)
@@ -324,7 +324,7 @@ class Generator {
     classFile.writeText(classSrc)
   }
   fun generateServClass(
-      servdef: ObjectNode, endpointDirectory: String, servFilename: String,
+      servdef: ObjectNode, endpointDirectory: String, servDeclFilename: String,
       fullClassName: String, funcImports: String, funcDecls: String, funcSrc: String
   ): String {
     val packageName = fullClassName.substringBeforeLast(".")
@@ -632,22 +632,22 @@ ${funcDecls}
     return nextCardinality
   }
 
-  fun declarationToModuleStubImpl(functionFilename: String, moduleExtension: String) {
-    if (functionFilename === null || functionFilename.length == 0) {
+  fun endpointDeclToModStubImpl(endpointDeclFilename: String, moduleExtension: String) {
+    if (endpointDeclFilename === null || endpointDeclFilename.length == 0) {
       throw IllegalArgumentException("null declaration file")
     }
 
-    val functionFile = File(functionFilename)
-    if (!functionFile.exists()) {
-      throw IllegalArgumentException("declaration file doesn't exist: "+functionFilename)
+    val endpointDeclFile = File(endpointDeclFilename)
+    if (!endpointDeclFile.exists()) {
+      throw IllegalArgumentException("declaration file doesn't exist: "+endpointDeclFilename)
     }
 
     if(moduleExtension != "sjs" && moduleExtension != "xqy") {
       throw IllegalArgumentException("invalid module extension: "+moduleExtension)
     }
 
-    val moduleFile = functionFile.parentFile.resolve(
-        functionFile.nameWithoutExtension+"."+moduleExtension
+    val moduleFile = endpointDeclFile.parentFile.resolve(
+        endpointDeclFile.nameWithoutExtension+"."+moduleExtension
     )
     if (moduleFile.exists()) {
       throw IllegalArgumentException("module file already exists: "+moduleFile.absolutePath)
@@ -658,7 +658,7 @@ ${funcDecls}
     val atomicTypes    = getAtomicDataTypes()
     val documentTypes  = getDocumentDataTypes()
 
-    val funcdef        = mapper.readValue<ObjectNode>(functionFile)
+    val funcdef        = mapper.readValue<ObjectNode>(endpointDeclFile)
     val funcParams     = funcdef.withArray("params")
 
     val funcReturn     = funcdef.get("return")

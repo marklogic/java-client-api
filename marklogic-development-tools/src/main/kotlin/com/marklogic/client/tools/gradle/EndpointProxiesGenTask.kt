@@ -20,27 +20,27 @@ import org.gradle.api.DefaultTask
 import org.gradle.api.tasks.TaskAction
 
 // TODO: declare outputs
-open class GeneratorTask : DefaultTask() {
+open class EndpointProxiesGenTask : DefaultTask() {
   val generator = Generator()
 
-  var serviceBundleFilename: String = ""
-  var javaBaseDirectory:     String = ""
+  var serviceDeclarationFile: String = ""
+  var javaBaseDirectory:      String = ""
 
   @TaskAction
   fun serviceBundleToJava() {
-    val proxyConfig = project.property("proxyConfig") as ProxyConfig
-    if (serviceBundleFilename == "") {
-      if (proxyConfig.serviceBundleFilename != "") {
-        serviceBundleFilename = proxyConfig.serviceBundleFilename
-      } else if (project.hasProperty("serviceBundleFilename")) {
-        serviceBundleFilename = project.property("serviceBundleFilename") as String
+    val proxiesConfig = project.property("endpointProxiesConfig") as EndpointProxiesConfig
+    if (serviceDeclarationFile == "") {
+      if (proxiesConfig.serviceDeclarationFile != "") {
+        serviceDeclarationFile = proxiesConfig.serviceDeclarationFile
+      } else if (project.hasProperty("serviceDeclarationFile")) {
+        serviceDeclarationFile = project.property("serviceDeclarationFile") as String
       } else {
-        throw IllegalArgumentException("serviceBundleFilename not specified")
+        throw IllegalArgumentException("serviceDeclarationFile not specified")
       }
     }
     if (javaBaseDirectory == "") {
-      if (proxyConfig.javaBaseDirectory != "") {
-        javaBaseDirectory = proxyConfig.javaBaseDirectory
+      if (proxiesConfig.javaBaseDirectory != "") {
+        javaBaseDirectory = proxiesConfig.javaBaseDirectory
       } else if (project.hasProperty("javaBaseDirectory")) {
         javaBaseDirectory = project.property("javaBaseDirectory") as String
       } else {
@@ -48,6 +48,6 @@ open class GeneratorTask : DefaultTask() {
       }
     }
 
-    generator.serviceBundleToJava(serviceBundleFilename, javaBaseDirectory)
+    generator.serviceBundleToJava(serviceDeclarationFile, javaBaseDirectory)
   }
 }

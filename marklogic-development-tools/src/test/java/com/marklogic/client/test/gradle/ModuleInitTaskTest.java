@@ -108,8 +108,8 @@ public class ModuleInitTaskTest {
       .append("  id 'com.marklogic.client.tools'\n")
       .append("}\n")
       .append("task initModuleTest(type: com.marklogic.client.tools.gradle.ModuleInitTask) {\n")
-      .append("  functionFile    = '"+apiFile.getPath()+"'\n")
-      .append("  moduleExtension = '"+modExtension+"'\n")
+      .append("  endpointDeclarationFile = '"+apiFile.getPath()+"'\n")
+      .append("  moduleExtension         = '"+modExtension+"'\n")
       .append("}\n");
     writeBuildFile(buildText);
 
@@ -139,7 +139,7 @@ public class ModuleInitTaskTest {
         .withProjectDir(testDir.getRoot())
         .withPluginClasspath()
         .withArguments(
-            "-PfunctionFile="+apiFile.getPath(),
+            "-PendpointDeclarationFile="+apiFile.getPath(),
             "-PmoduleExtension="+modExtension,
             "initializeModule"
         )

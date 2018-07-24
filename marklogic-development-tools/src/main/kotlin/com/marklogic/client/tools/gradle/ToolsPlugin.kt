@@ -21,9 +21,9 @@ import org.gradle.api.Project
 open class ToolsPlugin : Plugin<Project> {
   override fun apply(project: Project) {
 
-    project.extensions.add("proxyConfig", ProxyConfig())
+    project.extensions.add("endpointProxiesConfig", EndpointProxiesConfig())
 
-    project.tasks.create("generateProxy",    GeneratorTask::class.java)
-    project.tasks.create("initializeModule", ModuleInitTask::class.java)
+    project.tasks.create("generateEndpointProxies", EndpointProxiesGenTask::class.java)
+    project.tasks.create("initializeModule",        ModuleInitTask::class.java)
   }
 }

@@ -22,16 +22,16 @@ import org.gradle.api.tasks.TaskAction
 open class ModuleInitTask : DefaultTask() {
   val generator = Generator()
 
-  var functionFile:    String = ""
-  var moduleExtension: String = ""
+  var endpointDeclarationFile: String = ""
+  var moduleExtension:         String = ""
 
   @TaskAction
   fun declarationToModuleStub() {
-    if (functionFile == "") {
-      if (project.hasProperty("functionFile")) {
-        functionFile = project.property("functionFile") as String
+    if (endpointDeclarationFile == "") {
+      if (project.hasProperty("endpointDeclarationFile")) {
+        endpointDeclarationFile = project.property("endpointDeclarationFile") as String
       } else {
-        throw IllegalArgumentException("functionFile not specified")
+        throw IllegalArgumentException("endpointDeclarationFile not specified")
       }
     }
     if (moduleExtension== "") {
@@ -42,6 +42,6 @@ open class ModuleInitTask : DefaultTask() {
       }
     }
 
-    generator.declarationToModuleStubImpl(functionFile, moduleExtension)
+    generator.endpointDeclToModStubImpl(endpointDeclarationFile, moduleExtension)
   }
 }
