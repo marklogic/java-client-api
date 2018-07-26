@@ -1,6 +1,6 @@
 # CHANGELOG
 
-## 4.1
+## 4.1.0
 
 #### New Functionality
 - [#943](https://github.com/marklogic/java-client-api/issues/943) - Add base class for Proxy Services and integrate with the DatabaseClient
