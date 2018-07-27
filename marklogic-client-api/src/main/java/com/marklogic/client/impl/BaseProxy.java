@@ -64,10 +64,12 @@ public class BaseProxy {
 
    public BaseProxy(DatabaseClient db, String endpointDir) {
       if (db == null) {
-         throw new IllegalStateException("Cannot connect with null database client");
+         throw new IllegalArgumentException("Cannot connect with null database client");
+      } else if (db.getDatabase() != null) {
+         throw new IllegalArgumentException("Client must use the default database instead of: "+db.getDatabase());
       }
       if (endpointDir == null || endpointDir.length() == 0) {
-         throw new IllegalStateException("Cannot make requests with null or empty endpoint directory");
+         throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
       }
 
       this.endpointDir = endpointDir;

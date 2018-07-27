@@ -1997,7 +1997,7 @@ fun generateJUnitCallTest(
   val returnNullable    = funcReturn?.get("nullable") == true
   val returnMappedType  =
       if (returnType === null || returnKind === null) null
-      else generator.getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
+      else generator.getJavaDataType(returnType, returnMapping, returnKind, returnMultiple)
   val returnCustom      = returnMapping !== null && returnMappedType?.contains('.') == true
   val returnConstructor =
       if (typeConstructors === null || !returnCustom) null
@@ -2016,7 +2016,7 @@ fun generateJUnitCallTest(
         null
       else if (returnKind === "atomic")
         testVal(
-          typeTests, returnType, returnKind, returnNullable, returnMultiple, returnMappedType, testVariant,
+          typeTests, returnType, returnNullable, returnMultiple, returnMappedType, testVariant,
             typeConstructors = typeConstructors, mappedTestdefs = mappedTestdefs
           )
       else if (returnMultiple)
@@ -2108,13 +2108,13 @@ fun testVal(
   val dataKind   = getDataKind(dataType, typedef) as String
   val isMultiple = typedef.get("multiple") == true
   val isNullable = typedef.get("nullable") == true
-  val mappedType = generator.getJavaDataType(dataType, mapping, dataKind, isNullable, isMultiple)
+  val mappedType = generator.getJavaDataType(dataType, mapping, dataKind, isMultiple)
   return testVal(
-    typeTests, dataType, dataKind, isNullable, isMultiple, mappedType, testVariant, typeConstructors, mappedTestdefs
+    typeTests, dataType, isNullable, isMultiple, mappedType, testVariant, typeConstructors, mappedTestdefs
     )
 }
 fun testVal(
-    typeTests: ObjectNode?, dataType: String, dataKind: String, isNullable: Boolean, isMultiple: Boolean,
+    typeTests: ObjectNode?, dataType: String, isNullable: Boolean, isMultiple: Boolean,
     mappedType: String, testVariant: TestVariant,
     typeConstructors: Map<String,String>? = null, mappedTestdefs: ObjectNode? = null
 ) : String {

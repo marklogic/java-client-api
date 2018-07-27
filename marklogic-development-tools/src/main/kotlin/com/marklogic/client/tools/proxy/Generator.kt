@@ -204,7 +204,7 @@ class Generator {
     return getAtomicMappings() + getDocumentMappings()
   }
   fun getJavaDataType(
-      dataType: String, mapping: String?, dataKind: String, isNullable: Boolean, isMultiple: Boolean
+      dataType: String, mapping: String?, dataKind: String, isMultiple: Boolean
   ): String {
     if (mapping === null) {
       if (dataKind == "system") {
@@ -243,7 +243,7 @@ class Generator {
     var endpointDirectory = servdef.get("endpointDirectory")?.asText()
     if (endpointDirectory === null) {
       throw IllegalArgumentException("no endpointDirectory property in $servDeclFilename")
-    } else if (endpointDirectory.length === 0) {
+    } else if (endpointDirectory.length == 0) {
       throw IllegalArgumentException("empty endpointDirectory property in $servDeclFilename")
     } else if (!endpointDirectory.endsWith("/")) {
       endpointDirectory = endpointDirectory+"/"
@@ -280,8 +280,8 @@ class Generator {
         warnings.add("function declaration without endpoint main module: "+entry.value.absolutePath)
         false
       }
-    }.mapValues{(root, file) ->
-      mapper.readValue<ObjectNode>(file)
+    }.mapValues{entry ->
+      mapper.readValue<ObjectNode>(entry.value)
     }
 
     if (warnings.size > 0) {
@@ -302,10 +302,10 @@ class Generator {
         else funcDecl.joinToString("")
 
     val classSrc = generateServClass(
-        servdef, endpointDirectory, servDeclFilename, fullClassName, funcImports, funcDecls, funcSrc
+        servdef, endpointDirectory, fullClassName, funcImports, funcDecls, funcSrc
     )
 
-    writeClass(servdef, fullClassName, classSrc, javaBaseDir)
+    writeClass(fullClassName, classSrc, javaBaseDir)
   }
   fun unpairedWarnings(
       warnings: MutableList<String>, files: Map<String, File>, other: Set<String>, msg: String
@@ -316,7 +316,7 @@ class Generator {
       }
     }
   }
-  fun writeClass(servdef: ObjectNode, fullClassName: String, classSrc: String, javaBaseDir: String) {
+  fun writeClass(fullClassName: String, classSrc: String, javaBaseDir: String) {
     val classFilename = javaBaseDir+if (javaBaseDir.endsWith("/")) {""} else {"/"}+
         fullClassName.replace(".", "/")+".java"
     val classFile     = File(classFilename)
@@ -324,14 +324,14 @@ class Generator {
     classFile.writeText(classSrc)
   }
   fun generateServClass(
-      servdef: ObjectNode, endpointDirectory: String, servDeclFilename: String,
-      fullClassName: String, funcImports: String, funcDecls: String, funcSrc: String
+      servdef: ObjectNode, endpointDirectory: String, fullClassName: String,
+      funcImports: String, funcDecls: String, funcSrc: String
   ): String {
     val packageName = fullClassName.substringBeforeLast(".")
     val className   = fullClassName.substringAfterLast(".")
     val requestDir  = endpointDirectory+if (endpointDirectory.endsWith("/")) {""} else {"/"}
 
-    val hasSession  = servdef.get("hasSession")?.asBoolean() === true
+    val hasSession  = servdef.get("hasSession")?.asBoolean() == true
 
     val classDesc   = servdef.get("desc")?.asText() ?:
         "Provides a set of operations on the database server"
@@ -398,7 +398,7 @@ ${funcDecls}
       moduleFilename: String, funcdef: ObjectNode
   ): String {
     val funcName = funcdef.get("functionName")?.asText()
-    if (funcName === null || funcName.length === 0) {
+    if (funcName === null || funcName.length == 0) {
       throw IllegalArgumentException("function without name")
     }
     val funcDesc = funcdef.get("desc")?.asText() ?:
@@ -456,11 +456,11 @@ ${funcDecls}
     if (funcReturn !== null) {
       (funcReturn as ObjectNode).put("dataKind", returnKind)
     }
-    val returnNullable = funcReturn?.get("nullable")?.asBoolean() === true
-    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() === true
+    val returnNullable = funcReturn?.get("nullable")?.asBoolean() == true
+    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() == true
     val returnMapped   =
         if (returnType === null || returnKind === null) null
-        else getJavaDataType(returnType, returnMapping, returnKind, returnNullable, returnMultiple)
+        else getJavaDataType(returnType, returnMapping, returnKind, returnMultiple)
 
     val endpointMethod = "POST"
 
@@ -485,9 +485,8 @@ ${funcDecls}
       val paramType     = funcParam.get("datatype").asText()
       val paramMapping  = funcParam.get("\$javaClass")?.asText()
       val paramKind     = funcParam.get("dataKind").asText()
-      val isMultiple    = funcParam.get("multiple")?.asBoolean() === true
-      val isNullable    = funcParam.get("nullable")?.asBoolean() === true
-      val mappedType    = getJavaDataType(paramType, paramMapping, paramKind, isNullable, isMultiple)
+      val isMultiple    = funcParam.get("multiple")?.asBoolean() == true
+      val mappedType    = getJavaDataType(paramType, paramMapping, paramKind, isMultiple)
       val sigType       =
           if (!isMultiple) mappedType
           else             "Stream<"+mappedType+">"
@@ -497,7 +496,7 @@ ${funcDecls}
       when (paramKind) {
         "document" -> {
           funcDepend.add("com.marklogic.client.io.Format")
-          if (mappedType.contains(".") === true) {
+          if (mappedType.contains(".") == true) {
             funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
           } else {
             funcDepend.add("java.io.$mappedType")
@@ -515,7 +514,7 @@ ${funcDecls}
 
     if (returnKind == "document") {
       funcDepend.add("com.marklogic.client.io.Format")
-      if (returnMapped?.contains(".") === true) {
+      if (returnMapped?.contains(".") == true) {
         funcDepend.add("com.marklogic.client.io.marker.AbstractWriteHandle")
       } else {
         funcDepend.add("java.io.$returnMapped")
@@ -539,26 +538,26 @@ ${funcDecls}
         else (sessionParam as ObjectNode).get("name").asText()
     val sessionNullable =
         if (sessionParam === null) null
-        else (sessionParam as ObjectNode).get("nullable")?.asBoolean() === true
+        else (sessionParam as ObjectNode).get("nullable")?.asBoolean() == true
     val sessionChained  =
         if (sessionParam === null) ""
         else  """"${sessionName}", ${sessionName}, ${sessionNullable}"""
 
-    val paramsChained = payloadParams?.map{funcParam ->
+    val paramsChained = payloadParams.map{funcParam ->
       val paramName    = funcParam.get("name").asText()
       val paramType    = funcParam.get("datatype").asText()
       val paramKind    = funcParam.get("dataKind").asText()
       val paramMapping = funcParam.get("\$javaClass")?.asText()
-      val isMultiple   = funcParam.get("multiple")?.asBoolean() === true
-      val isNullable   = funcParam.get("nullable")?.asBoolean() === true
-      val mappedType   = getJavaDataType(paramType, paramMapping, paramKind, isNullable, isMultiple)
+      val isMultiple   = funcParam.get("multiple")?.asBoolean() == true
+      val isNullable   = funcParam.get("nullable")?.asBoolean() == true
+      val mappedType   = getJavaDataType(paramType, paramMapping, paramKind, isMultiple)
       """BaseProxy.${paramKind}Param("${paramName}", ${isNullable}, BaseProxy.${typeConverter(paramType)}.from${
       if (mappedType.contains("."))
         mappedType.substringAfterLast(".").capitalize()
       else
         mappedType.capitalize()
       }(${paramName}))"""
-    }?.joinToString(""",
+    }.joinToString(""",
                     """)
 
     val returnConverter =
@@ -573,13 +572,13 @@ ${funcDecls}
           }(
                 """
     val returnFormat  =
-        if (returnType == null || returnKind != "document") "null"
+        if (returnType === null || returnKind != "document") "null"
         else typeFormat(returnType)
     val returnChained =
-        if (returnKind === null)          """.responseNone()"""
-        else if (returnMultiple === true) """.responseMultiple(${returnNullable}, ${returnFormat})
+        if (returnKind === null)         """.responseNone()"""
+        else if (returnMultiple == true) """.responseMultiple(${returnNullable}, ${returnFormat})
                 )"""
-        else                              """.responseSingle(${returnNullable}, ${returnFormat})
+        else                             """.responseSingle(${returnNullable}, ${returnFormat})
                 )"""
 
     val sigSource      = """${returnSig} ${funcName}(${sigParams ?: ""})"""
@@ -626,14 +625,14 @@ ${funcDecls}
   }
   fun paramKindCardinality(currCardinality: ValueCardinality, param: ObjectNode): ValueCardinality {
     val nextCardinality =
-        if (currCardinality !== ValueCardinality.NONE)        ValueCardinality.MULTIPLE
-        else if (param.get("multiple")?.asBoolean() === true) ValueCardinality.MULTIPLE
-        else                                                  ValueCardinality.SINGLE
+        if (currCardinality !== ValueCardinality.NONE)       ValueCardinality.MULTIPLE
+        else if (param.get("multiple")?.asBoolean() == true) ValueCardinality.MULTIPLE
+        else                                                 ValueCardinality.SINGLE
     return nextCardinality
   }
 
   fun endpointDeclToModStubImpl(endpointDeclFilename: String, moduleExtension: String) {
-    if (endpointDeclFilename === null || endpointDeclFilename.length == 0) {
+    if (endpointDeclFilename.length == 0) {
       throw IllegalArgumentException("null declaration file")
     }
 
@@ -663,8 +662,8 @@ ${funcDecls}
 
     val funcReturn     = funcdef.get("return")
     val returnType     = funcReturn?.get("datatype")?.asText()
-    val returnNullable = funcReturn?.get("nullable")?.asBoolean() === true
-    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() === true
+    val returnNullable = funcReturn?.get("nullable")?.asBoolean() == true
+    val returnMultiple = funcReturn?.get("multiple")?.asBoolean() == true
     val returnCardinal =
         if (returnType === null) ""
         else getServerCardinality(returnMultiple, returnNullable)
@@ -686,8 +685,8 @@ declare option xdmp:mapping "false";
         else funcParams.map{funcParam ->
           val paramName   = funcParam.get("name").asText()
           val paramType   = funcParam.get("datatype").asText()
-          val isMultiple  = funcParam.get("multiple")?.asBoolean() === true
-          val isNullable  = funcParam.get("nullable")?.asBoolean() === true
+          val isMultiple  = funcParam.get("multiple")?.asBoolean() == true
+          val isNullable  = funcParam.get("nullable")?.asBoolean() == true
           val cardinality = getServerCardinality(isMultiple, isNullable)
           val typeName    = getServerType(paramType, atomicTypes, documentTypes, moduleExtension)
           val paramdef    =
