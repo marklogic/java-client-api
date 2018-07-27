@@ -66,7 +66,7 @@ public class BaseProxy {
       if (db == null) {
          throw new IllegalArgumentException("Cannot connect with null database client");
       } else if (db.getDatabase() != null) {
-         throw new IllegalArgumentException("Client must use the default database instead of: "+db.getDatabase());
+         throw new IllegalArgumentException("Client cannot specify a database - specified: "+db.getDatabase());
       }
       if (endpointDir == null || endpointDir.length() == 0) {
          throw new IllegalArgumentException("Cannot make requests with null or empty endpoint directory");
