@@ -5547,8 +5547,7 @@ public class OkHttpServices implements RESTServices {
         MediaType mediaType = MediaType.parse(response.header(HEADER_CONTENT_TYPE));
         if ( "json".equals(mediaType.subtype()) ) {
           failure = extractErrorFields(response);
-        }
-        if ( statusCode == STATUS_UNAUTHORIZED ) {
+        } else if ( statusCode == STATUS_UNAUTHORIZED ) {
           failure = new FailedRequest();
           failure.setMessageString("Unauthorized");
           failure.setStatusString("Failed Auth");
