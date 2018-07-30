@@ -30,6 +30,7 @@ import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
 import okhttp3.OkHttpClient;
@@ -628,7 +629,8 @@ public class DatabaseClientFactory {
           + "Service provider Implementaion (SPI) is invalid. CertificateAuthContext "
           + "requires SunX509 algorithm and PKCS12 Key store SPI", e);
       }
-      sslContext.init(keyMgr, null, null);
+      TrustManager[] trustManagers = trustManager == null ? null : new TrustManager[] {trustManager};
+      sslContext.init(keyMgr, trustManagers, null);
       return sslContext;
     }
 
