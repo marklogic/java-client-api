@@ -40,12 +40,11 @@ public class SessionStateImpl implements SessionState {
       return sessionId;
    }
 
-   @Override
-   public List<ClientCookie> getCookies() {
+   List<ClientCookie> getCookies() {
       return cookies;
    }
 
-   public void setCookies(List<ClientCookie> cookies) {
+   void setCookies(List<ClientCookie> cookies) {
       if ( cookies != null ) {
          if(setCreatedTimestamp.compareAndSet(false, true)) {
             created = Calendar.getInstance();
@@ -61,7 +60,7 @@ public class SessionStateImpl implements SessionState {
       }
    }
 
-   public Calendar getCreatedTimestamp() {
+   Calendar getCreatedTimestamp() {
       return created;
    }
 }

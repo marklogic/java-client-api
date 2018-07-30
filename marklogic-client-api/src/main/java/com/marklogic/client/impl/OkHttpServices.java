@@ -5414,7 +5414,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   public class CallRequestImpl implements CallRequest {
-    private SessionState session;
+    private SessionStateImpl session;
     private Request.Builder requestBldr;
     private RequestBody requestBody;
     private boolean hasStreamingPart;
@@ -5423,9 +5423,12 @@ public class OkHttpServices implements RESTServices {
     private HttpUrl callBaseUri;
 
     CallRequestImpl(String endpoint, HttpMethod method, SessionState session) {
+      if (session != null && !(session instanceof SessionStateImpl)) {
+        throw new IllegalArgumentException("Session state must be implemented by internal class: "+session.getClass().getName());
+      }
       this.endpoint = endpoint;
       this.method = method;
-      this.session = session;
+      this.session = (SessionStateImpl) session;
       this.hasStreamingPart = false;
       this.callBaseUri = new HttpUrl.Builder()
           .scheme(baseUri.scheme())
@@ -5484,8 +5487,8 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        Calendar expiration = ((SessionStateImpl) session).getCreatedTimestamp() != null ?
-            (Calendar) ((SessionStateImpl) session).getCreatedTimestamp().clone() : null;
+        Calendar expiration = session.getCreatedTimestamp() != null ?
+            (Calendar) session.getCreatedTimestamp().clone() : null;
         this.requestBldr = addCookies(this.requestBldr, session.getCookies(), expiration);
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
