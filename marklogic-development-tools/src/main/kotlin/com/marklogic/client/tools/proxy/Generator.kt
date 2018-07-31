@@ -289,6 +289,12 @@ class Generator {
 """))
     }
 
+    if (funcdefs.size == 0) {
+      throw IllegalArgumentException(
+          "no proxy declaration with endpoint module found in ${endpointDirectory}"
+          )
+    }
+
     val funcDecl    = mutableListOf<String>()
     val funcDepend  = mutableSetOf<String>()
     val funcSrc     = funcdefs.map{(root, funcdef) ->
