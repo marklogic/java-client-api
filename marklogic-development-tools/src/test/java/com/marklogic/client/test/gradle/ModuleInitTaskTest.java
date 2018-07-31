@@ -105,7 +105,7 @@ public class ModuleInitTaskTest {
   public void runTaskInitTest(File apiFile, String modExtension, File buildFile, File outDir) throws IOException {
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n")
       .append("task initModuleTest(type: com.marklogic.client.tools.gradle.ModuleInitTask) {\n")
       .append("  endpointDeclarationFile = '"+apiFile.getPath()+"'\n")
@@ -130,7 +130,7 @@ public class ModuleInitTaskTest {
   public void runCommandLineInitTest(File apiFile, String modExtension, File buildFile, File outDir) throws IOException {
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n");
     writeBuildFile(buildText);
 

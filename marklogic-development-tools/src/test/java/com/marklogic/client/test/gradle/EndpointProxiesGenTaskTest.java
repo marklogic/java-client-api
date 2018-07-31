@@ -72,7 +72,7 @@ public class EndpointProxiesGenTaskTest {
 
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n")
       .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {\n")
       .append("  serviceDeclarationFile = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
@@ -99,7 +99,7 @@ public class EndpointProxiesGenTaskTest {
 
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n");
     writeBuildFile(buildText);
 
@@ -126,7 +126,7 @@ public class EndpointProxiesGenTaskTest {
 
     StringBuilder fileText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n");
     writeBuildFile(fileText);
 
@@ -156,7 +156,7 @@ public class EndpointProxiesGenTaskTest {
 
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n")
       .append("ext {\n")
       .append("    endpointProxiesConfig {\n")
@@ -185,7 +185,7 @@ public class EndpointProxiesGenTaskTest {
 
     StringBuilder buildText = new StringBuilder()
       .append("plugins {\n")
-      .append("  id 'com.marklogic.client.tools'\n")
+      .append("  id 'com.marklogic.ml-development-tools'\n")
       .append("}\n")
       .append("task generateTestProxy(type: com.marklogic.client.tools.gradle.EndpointProxiesGenTask) {\n")
       .append("  serviceDeclarationFile = '"+testEnv.serviceDir.getPath()+"/service.json'\n")
