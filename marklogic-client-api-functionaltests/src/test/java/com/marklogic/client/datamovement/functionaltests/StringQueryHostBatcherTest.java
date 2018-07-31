@@ -278,7 +278,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * 
    * @throws Exception
    */
-  @Test
+  @Ignore
   public void testAndWordQueryWithMultipleForests() throws Exception
   {
     String testMultipleDB = "QBMultipleForestDB";
