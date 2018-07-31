@@ -33,7 +33,6 @@ dependencies {
 
 task pluginJar(type: Jar) {
     version = '4.1'
-    exclude('functionDeclarationSchema.json')
 }
 
 publishing {
