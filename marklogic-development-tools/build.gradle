@@ -2,7 +2,8 @@ plugins {
     id 'java'
     id 'java-gradle-plugin'
     id 'maven-publish'
-    id 'org.jetbrains.kotlin.jvm' version '1.2.51'
+    id 'com.gradle.plugin-publish' version '0.10.0'
+    id 'org.jetbrains.kotlin.jvm'  version '1.2.51'
 }
 
 apply plugin: 'kotlin'
@@ -43,21 +44,29 @@ publishing {
     }
 }
 
+pluginBundle {
+    website = 'http://www.gradle.org/'
+    vcsUrl = 'git@github.com:marklogic/java-client-api.git'
+    description = 'marklogic-client-tools plugin for developing data services on MarkLogic'
+    tags = ['marklogic', 'development tools', 'data services']
+
+    plugins {
+        marklogicClientToolsPlugin {
+            id = 'com.marklogic.client.tools'
+            displayName = 'marklogic-client-tools Development Tools for MarkLogic'
+            description = 'Gradle plugin for developing data services on MarkLogic'
+            tags = ['marklogic', 'development tools', 'data services']
+            version = project.version
+        }
+    }
+}
+
 compileKotlin {
     kotlinOptions.jvmTarget = '1.8'
 }
 compileTestKotlin {
     kotlinOptions.jvmTarget = '1.8'
 }
-
-/*
-test {
-    filter {
-        includeTestsMatching "com.marklogic.client.test.dbfunction.*Test"
-        includeTestsMatching "com.marklogic.client.test.gradle.*TaskTest"
-    }
-}
- */
 
 task setupTestServer(type: JavaExec) {
     classpath = sourceSets.test.runtimeClasspath
