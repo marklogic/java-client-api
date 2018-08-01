@@ -2141,6 +2141,8 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) queryDef).getCriteria();
       } else if (queryDef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
+      } else if (queryDef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
         params.add("q", text);
@@ -2972,40 +2974,51 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) qdef).getCriteria();
       } else if (qdef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+      } else if (qdef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) qdef).getCriteria();
       }
       String qtextMessage = "";
       if (text != null) {
         params.add("q", text);
         qtextMessage = " and string query \"" + text + "\"";
       }
-      if (qdef instanceof StructuredQueryDefinition) {
-        String structure = ((StructuredQueryDefinition) qdef).serialize();
+      if (qdef instanceof RawCtsQueryDefinition) {
+        String structure = ((RawCtsQueryDefinition) qdef).serialize();
+        logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
 
-        logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof RawStructuredQueryDefinition) {
-        String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+        CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
 
-        logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof CombinedQueryDefinition) {
-        String structure = ((CombinedQueryDefinition) qdef).serialize();
-
-        logger.debug("Query uris with combined query {}", structure);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof StringQueryDefinition) {
-        logger.debug("Query uris with string query \"{}\"", text);
+        return postResource(reqlog, "internal/uris", transaction, params, input, output);
       } else {
-        throw new UnsupportedOperationException("Cannot query uris with " +
-          qdef.getClass().getName());
+        if (qdef instanceof StructuredQueryDefinition) {
+          String structure = ((StructuredQueryDefinition) qdef).serialize();
+
+          logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
+            params.add("structuredQuery", structure);
+          }
+        } else if (qdef instanceof RawStructuredQueryDefinition) {
+          String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+
+          logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
+            params.add("structuredQuery", structure);
+          }
+        } else if (qdef instanceof CombinedQueryDefinition) {
+          String structure = ((CombinedQueryDefinition) qdef).serialize();
+
+          logger.debug("Query uris with combined query {}", structure);
+          if (structure != null) {
+            params.add("structuredQuery", structure);
+          }
+        } else if (qdef instanceof StringQueryDefinition) {
+          logger.debug("Query uris with string query \"{}\"", text);
+        } else {
+          throw new UnsupportedOperationException("Cannot query uris with " +
+              qdef.getClass().getName());
+        }
+        return getResource(reqlog, "internal/uris", transaction, params, output);
       }
-      return getResource(reqlog, "internal/uris", transaction, params, output);
     }
   }
 
