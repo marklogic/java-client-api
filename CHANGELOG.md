@@ -10,6 +10,7 @@
 #### Improvements and Bug Fixes
 - [881](https://github.com/marklogic/java-client-api/issues/881) - Added a BlockingRunsPolicy for rejected tasks for better threadpool utilization
 - [920](https://github.com/marklogic/java-client-api/issues/920) - Prevents QueryBatcher hang when you have a single thread
+- [971](https://github.com/marklogic/java-client-api/issues/971) - Passed the TrustManager to SSLContext so that the trust manager is taken into account
 
 ## 4.0.4
 
