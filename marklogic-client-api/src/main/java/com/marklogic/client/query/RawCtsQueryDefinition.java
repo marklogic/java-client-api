@@ -61,11 +61,4 @@ public interface RawCtsQueryDefinition extends QueryDefinition, ValueQueryDefini
    * @return	the query definition.
    */
   RawCtsQueryDefinition withHandle(CtsQueryWriteHandle handle);
-
-  /**
-   * Returns the Cts query definition as a serialized XML or JSON string.
-   *
-   * @return The serialized definition.
-   */
-  String serialize();
 }
