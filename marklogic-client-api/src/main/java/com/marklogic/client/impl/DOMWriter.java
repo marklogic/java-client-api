@@ -18,6 +18,9 @@ package com.marklogic.client.impl;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -32,6 +35,7 @@ import org.w3c.dom.Text;
 import com.marklogic.client.MarkLogicInternalException;
 
 public class DOMWriter {
+  final static private Logger logger = LoggerFactory.getLogger(DOMWriter.class);
   private XMLStreamWriter serializer;
 
   public DOMWriter() {
@@ -74,6 +78,7 @@ public class DOMWriter {
     }
   }
   public void serializeDocument(Document document) throws XMLStreamException {
+	  
     String encoding = document.getInputEncoding();
     String version  = document.getXmlVersion();
     if (encoding != null) {
@@ -94,7 +99,7 @@ public class DOMWriter {
       if (prefix != null) {
         serializer.writeStartElement(prefix, localName, namespaceURI);
       } else if (namespaceURI != null) {
-        serializer.writeStartElement(localName, namespaceURI);
+        serializer.writeStartElement("", localName, namespaceURI);
       } else {
         serializer.writeStartElement(localName);
       }
@@ -107,7 +112,7 @@ public class DOMWriter {
       if (prefix != null) {
         serializer.writeEmptyElement(prefix, localName, namespaceURI);
       } else if (namespaceURI != null) {
-        serializer.writeEmptyElement(localName, namespaceURI);
+        serializer.writeEmptyElement("", localName, namespaceURI);
       } else {
         serializer.writeEmptyElement(localName);
       }
@@ -123,10 +128,12 @@ public class DOMWriter {
       String prefix       = (namespaceURI != null) ? attribute.getPrefix() : null;
       String localName    = (namespaceURI != null) ? attribute.getLocalName() : attribute.getName();
       String value        = attribute.getValue();
-      if (prefix != null) {
-        serializer.writeAttribute(prefix, localName, namespaceURI, value);
+      if ("http://www.w3.org/2000/xmlns/".equals(namespaceURI)) {
+        //TODO: Seems there should be a better way to prevent redundant namespaces.
+      } else if (prefix != null) {
+        serializer.writeAttribute(prefix, namespaceURI, localName, value);
       } else if (namespaceURI != null) {
-        serializer.writeAttribute(localName, namespaceURI, value);
+        serializer.writeAttribute(namespaceURI, localName, value);
       } else {
         serializer.writeAttribute(localName, value);
       }
