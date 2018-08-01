@@ -2983,7 +2983,7 @@ public class OkHttpServices implements RESTServices {
         qtextMessage = " and string query \"" + text + "\"";
       }
       if (qdef instanceof RawCtsQueryDefinition) {
-        String structure = ((RawCtsQueryDefinition) qdef).serialize();
+        String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
         logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
 
         CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
