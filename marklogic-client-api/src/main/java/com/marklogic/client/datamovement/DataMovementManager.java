@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.query.QueryDefinition;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
@@ -159,6 +160,16 @@ public interface DataMovementManager {
    * @return the new QueryBatcher instance
    */
   public QueryBatcher newQueryBatcher(RawCombinedQueryDefinition query);
+
+  /**
+   * Create a new QueryBatcher instance configured to retrieve uris that
+   * match this Cts query.
+   *
+   * @param query the query used to find matching uris
+   *
+   * @return the new QueryBatcher instance
+   */
+  public QueryBatcher newQueryBatcher(RawCtsQueryDefinition query);
 
   /**
    * <p>Create a new QueryBatcher instance configured to retrieve uris from this

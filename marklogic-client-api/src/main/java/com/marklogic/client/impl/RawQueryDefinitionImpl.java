@@ -98,6 +98,7 @@ abstract public class RawQueryDefinitionImpl
       setOptionsName(optionsName);
     }
 
+    @Override
     public String serialize() {
       if (getHandle() == null) return "";
       return HandleAccessor.contentAsString(getHandle());

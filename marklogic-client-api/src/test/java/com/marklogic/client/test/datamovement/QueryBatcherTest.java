@@ -39,6 +39,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
+import com.marklogic.client.io.Format;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -174,6 +176,20 @@ public class QueryBatcherTest {
     matchesByForest.put("java-unittest-2", new String[] {uri5});
     matchesByForest.put("java-unittest-3", new String[] {uri2});
     runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 3, 2);
+  }
+
+  @Test
+  public void testRawCtsQuery() throws Exception {
+    String ctsQuery = "<cts:directory-query xmlns:cts=\"http://marklogic.com/cts\"><cts:uri>/QueryBatcherTest/</cts:uri></cts:directory-query>";
+    RawCtsQueryDefinition query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.XML)).withCriteria("Jane");
+    Map<String, String[]> matchesByForest = new HashMap<>();
+    matchesByForest.put("java-unittest-3", new String[] {uri2});
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
+    ctsQuery = "{ctsquery : {\"directoryQuery\":{\"uris\":[\"/QueryBatcherTest/\"]}}}";;
+    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
+    matchesByForest.put("java-unittest-2", new String[] {uri5});
+    query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.JSON));
+    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
   }
 
   @Test

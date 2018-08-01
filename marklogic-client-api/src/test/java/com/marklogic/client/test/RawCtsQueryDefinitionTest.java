@@ -32,6 +32,7 @@ import java.io.StringReader;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
+import com.marklogic.client.impl.HandleAccessor;
 import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -233,7 +234,12 @@ public class RawCtsQueryDefinitionTest {
 
       assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
       assertXpathEvaluatesTo("0026", "string(//*[local-name()='result'][1]//*[local-name()='id' or local-name()='highlight'])", resultDoc);
+      if(query instanceof RawCtsQueryDefinition && HandleAccessor.isResendable(((RawCtsQueryDefinition) query).getHandle())) {
+        String str = ((RawCtsQueryDefinition)query).serialize();
+        assertTrue(str.trim().contains(ctsQueryAsString.trim()));
+      }
     }
+
   }
 
   @Test
