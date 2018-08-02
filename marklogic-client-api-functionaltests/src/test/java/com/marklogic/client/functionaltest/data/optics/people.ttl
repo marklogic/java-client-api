@@ -1,0 +1,70 @@
+@prefix foaf: <http://xmlns.com/foaf/0.1/> .
+@prefix ppl:  <http://people.org/> .
+
+ppl:person1 foaf:knows ppl:person2 .
+ppl:person1 foaf:knows ppl:person3 .
+ppl:person1 foaf:knows ppl:person5 .
+ppl:person1 foaf:knows ppl:person7 .
+
+ppl:person2 foaf:knows ppl:person11 .
+ppl:person2 foaf:knows ppl:person3 .
+ppl:person3 foaf:knows ppl:person13 .
+ppl:person13 foaf:knows ppl:person17 .
+ppl:person13 foaf:knows ppl:person19 .
+
+ppl:person4 foaf:knows ppl:person6 .
+ppl:person6 foaf:knows ppl:person8 .
+ppl:person8 foaf:knows ppl:person10 .
+ppl:person10 foaf:knows ppl:person12 .
+ppl:person12 foaf:knows ppl:person14 .
+ppl:person14 foaf:knows ppl:person16 .
+ppl:person16 foaf:knows ppl:person18 .
+ppl:person18 foaf:knows ppl:person20 .
+
+ppl:person20 foaf:knows ppl:person20 .
+
+ppl:person9 foaf:knows ppl:person12 .
+ppl:person12 foaf:knows ppl:person15 .
+ppl:person15 foaf:knows ppl:person18 .
+ppl:person18 foaf:knows ppl:person9 .
+
+ppl:person1 a ppl:Person ;
+    foaf:name "Person 1" .
+ppl:person2 a ppl:Person ;
+    foaf:name "Person 2" .
+ppl:person3 a ppl:Person ;
+    foaf:name "Person 3" .
+ppl:person4 a ppl:Person ;
+    foaf:name "Person 4" .
+ppl:person5 a ppl:Person ;
+    foaf:name "Person 5" .
+ppl:person6 a ppl:Person ;
+    foaf:name "Person 6" .
+ppl:person7 a ppl:Person ;
+    foaf:name "Person 7" .
+ppl:person8 a ppl:Person ;
+    foaf:name "Person 8" .
+ppl:person9 a ppl:Person ;
+    foaf:name "Person 9" .
+ppl:person10 a ppl:Person ;
+    foaf:name "Person 10" .
+ppl:person11 a ppl:Person ;
+    foaf:name "Person 11" .
+ppl:person12 a ppl:Person ;
+    foaf:name "Person 12" .
+ppl:person13 a ppl:Person ;
+    foaf:name "Person 13" .
+ppl:person14 a ppl:Person ;
+    foaf:name "Person 14" .
+ppl:person15 a ppl:Person ;
+    foaf:name "Person 15" .
+ppl:person16 a ppl:Person ;
+    foaf:name "Person 16" .
+ppl:person17 a ppl:Person ;
+    foaf:name "Person 17" .
+ppl:person18 a ppl:Person ;
+    foaf:name "Person 18" .
+ppl:person19 a ppl:Person ;
+    foaf:name "Person 19" .
+ppl:person20 a ppl:Person ;
+    foaf:name "Person 20" .
