@@ -1,0 +1,7 @@
+{
+  "functionName" : "rollbackTransaction",
+  "params" : [ {
+    "name" : "transaction",
+    "datatype" : "session"
+  } ]
+}

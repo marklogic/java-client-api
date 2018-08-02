@@ -1,0 +1,4 @@
+{
+  "endpointDirectory" : "/dbf/test/sessions/",
+  "$javaClass" : "com.marklogic.client.test.dbfunction.positive.SessionsBundle"
+}

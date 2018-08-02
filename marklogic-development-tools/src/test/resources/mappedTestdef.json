@@ -1,0 +1,10 @@
+{
+  "java.math.BigDecimal":["1.2", "3.4"],
+  "java.util.Date":["2018-01-02+03:00", "2018-02-03Z"],
+  "java.time.Duration":["P3DT4H5M6S", "PT5H6M7S"],
+  "java.time.LocalDate":["2018-01-02", "2018-02-03"],
+  "java.time.LocalDateTime":["2018-01-02T10:09:08", "2018-01-02T11:10:09"],
+  "java.time.LocalTime":["10:09:08", "11:10:09.867"],
+  "java.time.OffsetDateTime":["2018-01-02T10:09:08+07:00", "2018-01-02T11:10:09.867Z"],
+  "java.time.OffsetTime":["10:09:08+07:00", "11:10:09.867Z"]
+ }

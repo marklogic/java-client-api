@@ -1,0 +1,14 @@
+{
+  "functionName" : "checkTransaction",
+  "params" : [ {
+    "name" : "transaction",
+    "datatype" : "session",
+    "nullable" : true
+  }, {
+    "name" : "uri",
+    "datatype" : "string"
+  } ],
+  "return" : {
+    "datatype" : "boolean"
+  }
+}

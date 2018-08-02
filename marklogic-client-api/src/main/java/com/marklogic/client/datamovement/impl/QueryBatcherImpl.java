@@ -46,6 +46,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -75,7 +76,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Map<Forest,AtomicBoolean> forestIsDone = new HashMap<>();
   private final AtomicBoolean stopped = new AtomicBoolean(false);
   private final AtomicBoolean started = new AtomicBoolean(false);
+  private final Object lock = new Object();
   private final Map<Forest,List<QueryTask>> blackListedTasks = new HashMap<>();
+  private boolean isSingleThreaded = false;
   private JobTicket jobTicket;
   private Thread runJobCompletionListeners;
 
@@ -348,11 +351,15 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       // now we've set the threadCount
       threadCountSet = true;
     }
+    // If we are iterating and if we have the thread count to 1, we have a single thread acting as both
+    // consumer and producer of the ThreadPoolExecutor queue. Hence, we produce till the maximum and start
+    // consuming and produce again. Since the thread count is 1, there is no worry about thread utilization.
+    if(getThreadCount() == 1) {
+      isSingleThreaded = true;
+    }
     logger.info("Starting job batchSize={}, threadCount={}, onUrisReady listeners={}, failure listeners={}",
       getBatchSize(), getThreadCount(), urisReadyListeners.size(), failureListeners.size());
-    threadPool = new QueryThreadPoolExecutor(1, this);
-    threadPool.setCorePoolSize(getThreadCount());
-    threadPool.setMaximumPoolSize(getThreadCount());
+    threadPool = new QueryThreadPoolExecutor(getThreadCount(), this);
     runJobCompletionListeners = new Thread(new Runnable() {
       @Override
       public void run() {
@@ -713,6 +720,91 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     threadPool.shutdown();
   }
 
+  private class IteratorTask implements Runnable {
+
+    private QueryBatcher batcher;
+
+    IteratorTask(QueryBatcher batcher) {
+      this.batcher = batcher;
+    }
+
+    @Override
+    public void run() {
+      try {
+        List<String> uriQueue = new ArrayList<>(getBatchSize());
+        while (iterator.hasNext()) {
+          uriQueue.add(iterator.next());
+          // if we've hit batchSize or the end of the iterator
+          if (uriQueue.size() == getBatchSize() || !iterator.hasNext()) {
+            final List<String> uris = uriQueue;
+            uriQueue = new ArrayList<>(getBatchSize());
+            Runnable processBatch = new Runnable() {
+              public void run() {
+                QueryBatchImpl batch = new QueryBatchImpl()
+                    .withBatcher(batcher)
+                    .withTimestamp(Calendar.getInstance())
+                    .withJobTicket(getJobTicket());
+                try {
+                  long currentBatchNumber = batchNumber.incrementAndGet();
+                  // round-robin from client 0 to (clientList.size() - 1);
+                  List<DatabaseClient> currentClientList = clientList.get();
+                  int clientIndex = (int) (currentBatchNumber % currentClientList.size());
+                  DatabaseClient client = currentClientList.get(clientIndex);
+                  batch = batch.withJobBatchNumber(currentBatchNumber)
+                      .withClient(client)
+                      .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()))
+                      .withItems(uris.toArray(new String[uris.size()]));
+                  logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
+                      batch.getJobBatchNumber(), batch.getJobResultsSoFar());
+                  for (QueryBatchListener listener : urisReadyListeners) {
+                    try {
+                      listener.processEvent(batch);
+                    } catch (Throwable e) {
+                      logger.error("Exception thrown by an onUrisReady listener", e);
+                    }
+                  }
+                } catch (Throwable t) {
+                  batch = batch.withItems(uris.toArray(new String[uris.size()]));
+                  for (QueryFailureListener listener : failureListeners) {
+                    try {
+                      listener.processFailure(new QueryBatchException(batch, t));
+                    } catch (Throwable e) {
+                      logger.error("Exception thrown by an onQueryFailure listener", e);
+                    }
+                  }
+                  logger.warn("Error iterating to queue uris: {}", t.toString());
+                }
+              }
+            };
+            threadPool.execute(processBatch);
+            // If the queue is almost full, stop producing and add a task to continue later
+            if (isSingleThreaded && threadPool.getQueue().remainingCapacity() <= 2 && iterator.hasNext()) {
+              threadPool.execute(new IteratorTask(batcher));
+              return;
+            }
+          }
+        }
+      } catch (Throwable t) {
+        for (QueryFailureListener listener : failureListeners) {
+          QueryBatchImpl batch = new QueryBatchImpl()
+              .withItems(new String[0])
+              .withClient(clientList.get().get(0))
+              .withBatcher(batcher)
+              .withTimestamp(Calendar.getInstance())
+              .withJobResultsSoFar(0);
+
+          try {
+            listener.processFailure(new QueryBatchException(batch, t));
+          } catch (Throwable e) {
+            logger.error("Exception thrown by an onQueryFailure listener", e);
+          }
+        }
+        logger.warn("Error iterating to queue uris: {}", t.toString());
+      }
+      runJobCompletionListeners.start();
+      threadPool.shutdown();
+    }
+  }
 
   /* startIterating launches in a separate thread (actually a task handled by
    * threadPool) and just loops through the Iterator<String>, batching uris of
@@ -729,86 +821,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
    * their listeners handled, they should use try-catch and handle them.
    */
   private void startIterating() {
-    final QueryBatcher batcher = this;
-    Runnable queueUris = new Runnable() {
-      public void run() {
-        try {
-          final AtomicLong batchNumber = new AtomicLong(0);
-          final AtomicLong resultsSoFar = new AtomicLong(0);
-          List<String> uriQueue = new ArrayList<>(getBatchSize());
-          while ( iterator.hasNext() ) {
-            try {
-              uriQueue.add(iterator.next());
-              // if we've hit batchSize or the end of the iterator
-              if ( uriQueue.size() == getBatchSize() || ! iterator.hasNext() ) {
-                final List<String> uris = uriQueue;
-                uriQueue = new ArrayList<>(getBatchSize());
-                Runnable processBatch = new Runnable() {
-                  public void run() {
-                    long currentBatchNumber = batchNumber.incrementAndGet();
-                    // round-robin from client 0 to (clientList.size() - 1);
-                    List<DatabaseClient> currentClientList = clientList.get();
-                    int clientIndex = (int) (currentBatchNumber % currentClientList.size());
-                    DatabaseClient client = currentClientList.get(clientIndex);
-                    QueryBatchImpl batch = new QueryBatchImpl()
-                      .withClient(client)
-                      .withBatcher(batcher)
-                      .withTimestamp(Calendar.getInstance())
-                      .withJobTicket(getJobTicket())
-                      .withJobBatchNumber(currentBatchNumber)
-                      .withJobResultsSoFar(resultsSoFar.addAndGet(uris.size()));
-                    batch = batch.withItems(uris.toArray(new String[uris.size()]));
-                    logger.trace("batch size={}, jobBatchNumber={}, jobResultsSoFar={}", uris.size(),
-                      batch.getJobBatchNumber(), batch.getJobResultsSoFar());
-                    for (QueryBatchListener listener : urisReadyListeners) {
-                      try {
-                        listener.processEvent(batch);
-                      } catch (Throwable e) {
-                        logger.error("Exception thrown by an onUrisReady listener", e);
-                      }
-                    }
-                  }
-                };
-                threadPool.execute(processBatch);
-              }
-            } catch (Throwable t) {
-              QueryBatchImpl batch = new QueryBatchImpl()
-                .withItems(new String[0])
-                .withClient(clientList.get().get(0))
-                .withBatcher(batcher)
-                .withTimestamp(Calendar.getInstance())
-                .withJobResultsSoFar(0);
-              for ( QueryFailureListener listener : failureListeners ) {
-                try {
-                  listener.processFailure(new QueryBatchException(batch, t));
-                } catch (Throwable e) {
-                  logger.error("Exception thrown by an onQueryFailure listener", e);
-                }
-              }
-              logger.warn("Error iterating to queue uris: {}", t.toString());
-            }
-          }
-        } catch (Throwable t) {
-          for ( QueryFailureListener listener : failureListeners ) {
-            try {
-              QueryBatchImpl batch = new QueryBatchImpl()
-                .withItems(new String[0])
-                .withClient(clientList.get().get(0))
-                .withBatcher(batcher)
-                .withTimestamp(Calendar.getInstance())
-                .withJobResultsSoFar(0);
-              listener.processFailure(new QueryBatchException(batch, t));
-            } catch (Throwable e) {
-              logger.error("Exception thrown by an onQueryFailure listener", e);
-            }
-          }
-          logger.warn("Error iterating to queue uris", t.toString());
-        }
-        runJobCompletionListeners.start();
-        threadPool.shutdown();
-      }
-    };
-    threadPool.execute(queueUris);
+    threadPool.execute(new IteratorTask(this));
   }
 
   public void stop() {
@@ -872,12 +885,40 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
   }
 
+  /**
+   * A handler for rejected tasks that waits for the work queue to
+   * become empty and then submits the rejected task
+   */
+  private class BlockingRunsPolicy implements RejectedExecutionHandler {
+    /**
+     * Waits for the work queue to become empty and then submits the rejected task,
+     * unless the executor has been shut down, in which case the task is discarded.
+     *
+     * @param runnable the runnable task requested to be executed
+     * @param executor the executor attempting to execute this task
+     */
+    public void rejectedExecution(Runnable runnable, ThreadPoolExecutor executor) {
+      if ( !executor.isShutdown() ) {
+        try {
+          synchronized ( lock ) {
+            if(executor.getQueue().remainingCapacity() == 0) {
+              lock.wait();
+            }
+          }
+        } catch ( InterruptedException e ) {
+          logger.warn("Thread interrupted while waiting for the work queue to become empty" + e);
+        }
+        if ( !executor.isShutdown() ) executor.execute(runnable);
+      }
+    }
+  }
+
   private class QueryThreadPoolExecutor extends ThreadPoolExecutor {
     private Object objectToNotifyFrom;
 
     QueryThreadPoolExecutor(int threadCount, Object objectToNotifyFrom) {
       super(threadCount, threadCount, 0, TimeUnit.MILLISECONDS,
-        new LinkedBlockingQueue<Runnable>(threadCount * 50), new ThreadPoolExecutor.CallerRunsPolicy());
+        new LinkedBlockingQueue<Runnable>(threadCount * 25), new BlockingRunsPolicy());
       this.objectToNotifyFrom = objectToNotifyFrom;
     }
 
@@ -890,10 +931,21 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
 
     @Override
+    protected void afterExecute(Runnable r, Throwable t) {
+      super.afterExecute(r, t);
+      synchronized ( lock ) {
+        lock.notify();
+      }
+    }
+
+    @Override
     protected void terminated() {
       super.terminated();
       synchronized(objectToNotifyFrom) {
         objectToNotifyFrom.notifyAll();
+      }
+      synchronized ( lock ) {
+        lock.notify();
       }
     }
   }

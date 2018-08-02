@@ -16,10 +16,12 @@
 package com.marklogic.client.impl;
 
 import java.io.InputStream;
+import java.io.Reader;
 import java.util.Calendar;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.X509TrustManager;
@@ -31,6 +33,7 @@ import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.ResourceNotResendableException;
+import com.marklogic.client.SessionState;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
@@ -44,6 +47,8 @@ import com.marklogic.client.eval.EvalResultIterator;
 import com.marklogic.client.extensions.ResourceServices.ServiceResult;
 import com.marklogic.client.extensions.ResourceServices.ServiceResultIterator;
 import com.marklogic.client.io.Format;
+import com.marklogic.client.io.InputStreamHandle;
+import com.marklogic.client.io.ReaderHandle;
 import com.marklogic.client.io.marker.AbstractReadHandle;
 import com.marklogic.client.io.marker.AbstractWriteHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
@@ -67,6 +72,7 @@ public interface RESTServices {
 
   String HEADER_ACCEPT = "Accept";
   String HEADER_COOKIE = "Cookie";
+  String HEADER_ERROR_FORMAT = "X-Error-Accept";
   String HEADER_CONTENT_DISPOSITION = "Content-Disposition";
   String HEADER_CONTENT_LENGTH = "Content-Length";
   String HEADER_CONTENT_TYPE = "Content-Type";
@@ -407,4 +413,99 @@ public interface RESTServices {
                      RequestParameters extraParams, String sourceDocumentURI, DocumentPatchHandle patchHandle)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException,
     FailedRequestException;
+
+  // API First Additions
+  CallRequest makeEmptyRequest(String endpoint, HttpMethod method, SessionState session);
+
+  CallRequest makeAtomicBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params);
+
+  CallRequest makeNodeBodyRequest(String endpoint, HttpMethod method, SessionState session, CallField... params);
+
+  static public enum HttpMethod {POST}
+
+  static public abstract class CallField {
+    private String paramName;
+    CallField(String paramName) {
+      this.paramName = paramName;
+    }
+    public String getParamName() {
+      return paramName;
+    }
+  }
+  static public class SingleAtomicCallField extends CallField {
+    private String paramValue;
+    public SingleAtomicCallField(String paramName, String paramValue) {
+      super(paramName);
+      this.paramValue = paramValue;
+    }
+    public String getParamValue() {
+      return paramValue;
+    }
+  }
+  static public class MultipleAtomicCallField extends CallField {
+    private Stream<String> paramValues;
+    public MultipleAtomicCallField(String paramName, Stream<String> paramValues) {
+      super(paramName);
+      this.paramValues = paramValues;
+    }
+    public Stream<String> getParamValues() {
+      return paramValues;
+    }
+  }
+  static public class SingleNodeCallField extends CallField {
+    private AbstractWriteHandle paramValue;
+    public SingleNodeCallField(String paramName, AbstractWriteHandle paramValue) {
+      super(paramName);
+      this.paramValue = paramValue;
+    }
+    public AbstractWriteHandle getParamValue() {
+      return paramValue;
+    }
+  }
+  static public class MultipleNodeCallField extends CallField {
+    private Stream<? extends AbstractWriteHandle> paramValues;
+
+    public MultipleNodeCallField(String paramName, Stream<? extends AbstractWriteHandle> paramValues) {
+      super(paramName);
+      this.paramValues = paramValues;
+    }
+    public Stream<? extends AbstractWriteHandle> getParamValues() {
+      return paramValues;
+    }
+  }
+
+  public interface CallRequest {
+    boolean hasStreamingPart();
+    SessionState getSession();
+    String getEndpoint();
+    HttpMethod getHttpMethod();
+    public CallResponse withEmptyResponse();
+    public SingleCallResponse withDocumentResponse(Format format);
+    public MultipleCallResponse withMultipartMixedResponse(Format format);
+  }
+
+  public interface CallResponse {
+    public boolean isNull();
+    public int     getStatusCode();
+    public String  getStatusMsg();
+    public String  getErrorBody();
+  }
+
+  public interface SingleCallResponse extends CallResponse {
+    public byte[]            asBytes();
+    public InputStream asInputStream();
+    public InputStreamHandle asInputStreamHandle();
+    public Reader asReader();
+    public ReaderHandle asReaderHandle();
+    public String            asString();
+  }
+
+  public interface MultipleCallResponse extends CallResponse {
+    public Stream<byte[]> asStreamOfBytes();
+    public Stream<InputStream>       asStreamOfInputStream();
+    public Stream<InputStreamHandle> asStreamOfInputStreamHandle();
+    public Stream<Reader>            asStreamOfReader();
+    public Stream<ReaderHandle>      asStreamOfReaderHandle();
+    public Stream<String>            asStreamOfString();
+  }
 }

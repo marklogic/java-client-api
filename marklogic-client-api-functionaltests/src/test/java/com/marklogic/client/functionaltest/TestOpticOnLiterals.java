@@ -70,7 +70,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   private static String schemadbName = "TestOpticOnLiteralsSchemaDB";
   private static String[] fNames = { "TestOpticOnLiteralsDB-1" };
   private static String[] schemafNames = { "TestOpticOnLiteralsSchemaDB-1" };
-
+ 
   private static DatabaseClient client;
 
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
@@ -139,14 +139,19 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
 
+    createUserRolesWithPrevilages("opticRole", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
+    createRESTUser("opticUser", "0pt1c", "tde-admin", "tde-view", "opticRole", "rest-admin", "rest-writer", 
+    		                             "rest-reader", "rest-extension-user", "manage-user");    
+
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "admin", "admin", Authentication.DIGEST);
-        client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
+        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
     }
     else {
-        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("admin", "admin"));
-        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));
+        schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
+        client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("opticUser", "0pt1c"));
     }
+
     // Install the TDE templates
     // loadFileToDB(client, filename, docURI, collection, document format)
     loadFileToDB(schemaDBclient, "masterDetail.tdex", "/optic/view/test/masterDetail.tdex", "XML", new String[] { "http://marklogic.com/xdmp/tde" });
@@ -709,7 +714,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 1 added value incorrect", "12", node.path("added").path("value").asText());
     assertEquals("Row 1 subtracted value incorrect", "0", node.path("subtracted").path("value").asText());
     assertEquals("Row 1 divided value incorrect", "1", node.path("divided").path("value").asText());
-    assertEquals("Row 1 multiplied value incorrect", "0.6", node.path("multiplied").path("value").asText());
+    assertEquals("Row 1 multiplied value incorrect", "0.600000023841858", node.path("multiplied").path("value").asText());
     assertEquals("Row 1 caseExpr value incorrect", "foo", node.path("caseExpr").path("value").asText());
 
     node = jsonBindingsNodes.path(1);
@@ -725,7 +730,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     assertEquals("Row 4 added value incorrect", "15", node.path("added").path("value").asText());
     assertEquals("Row 4 subtracted value incorrect", "-3", node.path("subtracted").path("value").asText());
     assertEquals("Row 4 divided value incorrect", "0.25", node.path("divided").path("value").asText());
-    assertEquals("Row 4 multiplied value incorrect", "2.4", node.path("multiplied").path("value").asText());
+    assertEquals("Row 4 multiplied value incorrect", "2.400000095367432", node.path("multiplied").path("value").asText());
     assertEquals("Row 4 caseExpr value incorrect", "bar", node.path("caseExpr").path("value").asText());
   }
 
@@ -1635,6 +1640,8 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     System.out.println("In tear down");
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
+    deleteUserRole("opticRole");
+    deleteRESTUser("opticUser");
     setDatabaseProperties(dbName, "schema-database", dbName);
     deleteDB(schemadbName);
     deleteForest(schemafNames[0]);

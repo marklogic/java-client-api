@@ -1541,6 +1541,12 @@ public class RowManagerImpl
       if (handle == null) {
         throw new IllegalArgumentException("Must specify handle for reading raw plan");
       }
+      if (!(handle instanceof BaseHandle)) {
+        throw new IllegalArgumentException(
+              "Cannot provide raw plan definition with invalid handle having class "+handle.getClass().getName()
+        );
+      }
+      ((BaseHandle) handle).setFormat(Format.JSON);
       this.handle = handle;
     }
     @Override
