@@ -18,6 +18,7 @@ package com.marklogic.client.test;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -99,8 +100,8 @@ public class FailedRequestTest {
 
   }
 
-
-  @Test
+  // Test testErrorOnNonREST commented out because of Git issue #865
+  @Ignore
   public void testErrorOnNonREST() throws ForbiddenUserException {
     DatabaseClient badClient = DatabaseClientFactory.newClient(Common.HOST,
       8001, new DigestAuthContext(Common.USER, Common.PASS));
