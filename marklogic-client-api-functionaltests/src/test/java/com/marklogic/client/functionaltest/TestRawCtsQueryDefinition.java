@@ -287,10 +287,16 @@ public class TestRawCtsQueryDefinition extends BasicJavaClientREST {
     JacksonHandle resultsHandle2 = new JacksonHandle();
     queryMgr.search(querydef, resultsHandle2);
 
-    // get the result
+    // get the result - Should be 0.
     JsonNode result2 = resultsHandle2.get();
-    assertTrue("Search results total incorrect", result2.path("total").asInt() == 2);
+    assertTrue("Search results total incorrect", result2.path("total").asInt() == 0);
     
+    JacksonHandle jacksonHandle2 = new JacksonHandle();
+    RawCtsQueryDefinition querydef2 = queryMgr.newRawCtsQueryDefinition(handle);
+    querydef2.setHandle(handle2.withFormat(Format.JSON));
+    queryMgr.search(querydef2, jacksonHandle2);
+    
+    result2 = jacksonHandle2.get();
     JsonNode highlightNode1 = result2.path("results").get(0).path("matches").get(0).path("match-text");
     String txt1 = highlightNode1.get(0).toString().trim();
     assertTrue("Highlight text 1 returned incorrect", highlightNode1.toString().contains("groundbreaking"));
