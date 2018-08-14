@@ -1,5 +1,17 @@
 # CHANGELOG
 
+## 4.1.0
+
+#### New Functionality
+- [#943](https://github.com/marklogic/java-client-api/issues/943) - Add base class for Proxy Services and integrate with the DatabaseClient
+- [#942](https://github.com/marklogic/java-client-api/issues/942) - Add value conversion utilities for Proxy Services
+- [#951](https://github.com/marklogic/java-client-api/issues/951) - Add utility to produce an SJS/Xquery main module from Proxy services function declaration
+
+#### Improvements and Bug Fixes
+- [881](https://github.com/marklogic/java-client-api/issues/881) - Added a BlockingRunsPolicy for rejected tasks for better threadpool utilization
+- [920](https://github.com/marklogic/java-client-api/issues/920) - Prevents QueryBatcher hang when you have a single thread
+- [971](https://github.com/marklogic/java-client-api/issues/971) - Passed the TrustManager to SSLContext so that the trust manager is taken into account
+
 ## 4.0.4
 
 #### New Functionality

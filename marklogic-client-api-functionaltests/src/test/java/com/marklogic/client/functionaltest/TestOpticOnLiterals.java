@@ -70,7 +70,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   private static String schemadbName = "TestOpticOnLiteralsSchemaDB";
   private static String[] fNames = { "TestOpticOnLiteralsDB-1" };
   private static String[] schemafNames = { "TestOpticOnLiteralsSchemaDB-1" };
-
+ 
   private static DatabaseClient client;
   private static DatabaseClient clientRes;
 

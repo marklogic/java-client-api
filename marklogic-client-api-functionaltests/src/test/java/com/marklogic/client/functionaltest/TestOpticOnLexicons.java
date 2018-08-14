@@ -65,7 +65,7 @@ public class TestOpticOnLexicons extends BasicJavaClientREST {
   private static String schemadbName = "TestOpticOnLexiconsSchemaDB";
   private static String[] fNames = { "TestOpticOnLexiconsDB-1" };
   private static String[] schemafNames = { "TestOpticOnLexiconsSchemaDB-1" };
-
+ 
   private static DatabaseClient client;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 

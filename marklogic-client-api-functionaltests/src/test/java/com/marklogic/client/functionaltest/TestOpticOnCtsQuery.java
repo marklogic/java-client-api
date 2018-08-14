@@ -66,7 +66,7 @@ public class TestOpticOnCtsQuery extends BasicJavaClientREST {
   private static String[] fNames = { "TestOpticOnCtsQueryDB-1" };
   private static String[] schemafNames = { "TestOpticOnCtsQuerySchemaDB-1" };
 
-  private static DatabaseClient client;
+  private static DatabaseClient client; 
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 
   @BeforeClass

@@ -63,7 +63,7 @@ public class TestOpticOnMixedViews extends BasicJavaClientREST {
   private static String schemadbName = "TestOpticOnMixedViewsSchemaDB";
   private static String[] fNames = { "TestOpticOnMixedViewsDB-1" };
   private static String[] schemafNames = { "TestOpticOnMixedViewsSchemaDB-1" };
-
+ 
   private static DatabaseClient client;
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
 

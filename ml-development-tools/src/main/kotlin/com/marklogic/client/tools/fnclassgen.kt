@@ -13,18 +13,15 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package com.marklogic.client;
+package com.marklogic.client.tools
 
-/**
- * Identifies a server state for sharing across multiple calls to server endpoints.
- *
- * Internally, the identifier is sent to the server as a session cookie.
- * The session cookie can be used for load balancing.
- */
-public interface SessionState {
-  /**
-   * Provides the identifier used for the server state (for instance, for use in logging).
-   * @return   the session identifier
-   */
-  public String getSessionId();
+import com.marklogic.client.tools.proxy.Generator
+
+fun main(args: Array<String>) {
+  if (args.size == 2) {
+    Generator().serviceBundleToJava(args[0], args[1])
+  } else {
+    System.err.println("usage: fnclassgen serviceDeclarationFile javaBaseDir")
+    System.exit(-1)
+  }
 }

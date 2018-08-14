@@ -309,8 +309,12 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::BigDecimalToString);
   }
   static public BigDecimal StringToBigDecimal(String value) {
-    return (value == null || value.length() == 0) ? null :
-          DatatypeConverter.parseDecimal(value);
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DatatypeConverter.parseDecimal(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to BigDecimal: "+value, e);
+    }
   }
   static public Stream<BigDecimal> StringToBigDecimal(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToBigDecimal);
@@ -329,7 +333,11 @@ public class ValueConverter {
           Boolean.valueOf(StringToBooleanPrimitive(value));
   }
   static public boolean StringToBooleanPrimitive(String value) {
-    return DatatypeConverter.parseBoolean(value);
+    try {
+      return DatatypeConverter.parseBoolean(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to boolean: "+value, e);
+    }
   }
   static public Stream<Boolean> StringToBoolean(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToBoolean);
@@ -349,8 +357,12 @@ public class ValueConverter {
     if (value == null || value.length() == 0) {
       return null;
     }
-    Calendar cal = DatatypeConverter.parseDateTime(value);
-    return cal.getTime();
+    try {
+      Calendar cal = DatatypeConverter.parseDateTime(value);
+      return cal.getTime();
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to Date: "+value, e);
+    }
   }
   static public Stream<Date> StringToDate(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToDate);
@@ -369,7 +381,11 @@ public class ValueConverter {
           Double.valueOf(StringToDoublePrimitive(value));
   }
   static public double StringToDoublePrimitive(String value) {
-    return DatatypeConverter.parseDouble(value);
+    try {
+      return DatatypeConverter.parseDouble(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to double: "+value, e);
+    }
   }
   static public Stream<Double> StringToDouble(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToDouble);
@@ -381,8 +397,12 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::DurationToString);
   }
   static public java.time.Duration StringToDuration(String value) {
-    return (value == null || value.length() == 0) ? null :
-          java.time.Duration.parse(value);
+    try {
+      return (value == null || value.length() == 0) ? null :
+            java.time.Duration.parse(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to Duration: "+value, e);
+    }
   }
   static public Stream<java.time.Duration> StringToDuration(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToDuration);
@@ -400,7 +420,11 @@ public class ValueConverter {
     return (value == null || value.length() == 0) ? null : Float.valueOf(StringToFloatPrimitive(value));
   }
   static public float StringToFloatPrimitive(String value) {
-    return DatatypeConverter.parseFloat(value);
+    try {
+      return DatatypeConverter.parseFloat(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to float: "+value, e);
+    }
   }
   static public Stream<Float> StringToFloat(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToFloat);
@@ -419,7 +443,11 @@ public class ValueConverter {
           Integer.valueOf(StringToIntegerPrimitive(value));
   }
   static public int StringToIntegerPrimitive(String value) {
-    return DatatypeConverter.parseInt(value);
+    try {
+      return DatatypeConverter.parseInt(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to int: "+value, e);
+    }
   }
   static public Stream<Integer> StringToInteger(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToInteger);
@@ -431,11 +459,15 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::LocalDateTimeToString);
   }
   static public LocalDateTime StringToLocalDateTime(String value) {
-    return (value == null || value.length() == 0) ? null :
-       DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(
-          getInstantPattern().matcher(value).replaceFirst(""),
-          LocalDateTime::from
-       );
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DateTimeFormatter.ISO_LOCAL_DATE_TIME.parse(
+                  getInstantPattern().matcher(value).replaceFirst(""),
+                  LocalDateTime::from
+            );
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to LocalDateTime: "+value, e);
+    }
   }
   static public Stream<LocalDateTime> StringToLocalDateTime(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToLocalDateTime);
@@ -447,11 +479,15 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::LocalDateToString);
   }
   static public LocalDate StringToLocalDate(String value) {
-    return (value == null || value.length() == 0) ? null :
-       DateTimeFormatter.ISO_LOCAL_DATE.parse(
-          getInstantPattern().matcher(value).replaceFirst(""),
-          LocalDate::from
-       );
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DateTimeFormatter.ISO_LOCAL_DATE.parse(
+                  getInstantPattern().matcher(value).replaceFirst(""),
+                  LocalDate::from
+            );
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to LocalDate: "+value, e);
+    }
   }
   static public Stream<LocalDate> StringToLocalDate(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToLocalDate);
@@ -463,11 +499,15 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::LocalTimeToString);
   }
   static public LocalTime StringToLocalTime(String value) {
-    return (value == null || value.length() == 0) ? null :
-       DateTimeFormatter.ISO_LOCAL_TIME.parse(
-          getInstantPattern().matcher(value).replaceFirst(""),
-          LocalTime::from
-       );
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DateTimeFormatter.ISO_LOCAL_TIME.parse(
+                  getInstantPattern().matcher(value).replaceFirst(""),
+                  LocalTime::from
+            );
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to LocalTime: "+value, e);
+    }
   }
   static public Stream<LocalTime> StringToLocalTime(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToLocalTime);
@@ -486,7 +526,11 @@ public class ValueConverter {
           Long.valueOf(StringToLongPrimitive(value));
   }
   static public long StringToLongPrimitive(String value) {
-    return DatatypeConverter.parseLong(value);
+    try {
+      return DatatypeConverter.parseLong(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to long: "+value, e);
+    }
   }
   static public Stream<Long> StringToLong(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToLong);
@@ -498,8 +542,12 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::OffsetDateTimeToString);
   }
   static public OffsetDateTime StringToOffsetDateTime(String value) {
-    return (value == null || value.length() == 0) ? null :
-          DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(value, OffsetDateTime::from);
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(value, OffsetDateTime::from);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to OffsetDateTime: "+value, e);
+    }
   }
   static public Stream<OffsetDateTime> StringToOffsetDateTime(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToOffsetDateTime);
@@ -511,15 +559,23 @@ public class ValueConverter {
     return (values == null) ? null : values.map(ValueConverter::OffsetTimeToString);
   }
   static public OffsetTime StringToOffsetTime(String value) {
-    return (value == null || value.length() == 0) ? null :
-          DateTimeFormatter.ISO_OFFSET_TIME.parse(value, OffsetTime::from);
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DateTimeFormatter.ISO_OFFSET_TIME.parse(value, OffsetTime::from);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to OffsetTime: "+value, e);
+    }
   }
   static public Stream<OffsetTime> StringToOffsetTime(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToOffsetTime);
   }
   static public String StringToString(String value) {
-    return (value == null || value.length() == 0) ? null :
-          DatatypeConverter.printString(value);
+    try {
+      return (value == null || value.length() == 0) ? null :
+            DatatypeConverter.printString(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert: "+value, e);
+    }
   }
   static public Stream<String> StringToString(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToString);
@@ -538,7 +594,11 @@ public class ValueConverter {
           Integer.valueOf(StringToUnsignedIntegerPrimitive(value));
   }
   static public int StringToUnsignedIntegerPrimitive(String value) {
-    return Integer.parseUnsignedInt(value);
+    try {
+      return Integer.parseUnsignedInt(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to unsigned int: "+value, e);
+    }
   }
   static public Stream<Integer> StringToUnsignedInteger(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToUnsignedInteger);
@@ -556,7 +616,11 @@ public class ValueConverter {
     return (value == null || value.length() == 0) ? null : Long.valueOf(StringToUnsignedIntegerLong(value));
   }
   static public long StringToUnsignedIntegerLong(String value) {
-    return Long.parseUnsignedLong(value);
+    try {
+      return Long.parseUnsignedLong(value);
+    } catch(Exception e) {
+      throw new IllegalArgumentException("Could not convert to unsigned long: "+value, e);
+    }
   }
   static public Stream<Long> StringToUnsignedLong(Stream<? extends String> values) {
     return (values == null) ? null : values.map(ValueConverter::StringToUnsignedLong);
