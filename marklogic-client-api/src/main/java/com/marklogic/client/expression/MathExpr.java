@@ -26,6 +26,7 @@ import com.marklogic.client.type.XsNumericExpr;
 import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.MathLinearModelExpr;
 import com.marklogic.client.type.MathLinearModelSeqExpr;
 
@@ -38,497 +39,627 @@ import com.marklogic.client.type.MathLinearModelSeqExpr;
 public interface MathExpr {
     /**
   * Returns the arc cosine of x, in radians, in the range from 0 to pi (inclusive).
+  *
+  * <a name="ml-server-type-acos"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:acos" target="mlserverdoc">math:acos</a>
-  * @param x  The fraction to be evaluated. Must be in the range of -1 to +1 (inclusive).
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:acos" target="mlserverdoc">math:acos</a> server function.
+  * @param x  The fraction to be evaluated. Must be in the range of -1 to +1 (inclusive).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr acos(XsDoubleExpr x);
+  public XsDoubleExpr acos(ServerExpression x);
 /**
   * Returns the arc sine of x, in radians, in the range from -pi/2 to +pi/2 (inclusive).
+  *
+  * <a name="ml-server-type-asin"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:asin" target="mlserverdoc">math:asin</a>
-  * @param x  The fraction to be evaluated. Must be in the range of -1 to +1 (inclusive).
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:asin" target="mlserverdoc">math:asin</a> server function.
+  * @param x  The fraction to be evaluated. Must be in the range of -1 to +1 (inclusive).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr asin(XsDoubleExpr x);
+  public XsDoubleExpr asin(ServerExpression x);
 /**
   * Returns the arc tangent of x, in radians. in the range from -pi/2 to +pi/2 (inclusive).
+  *
+  * <a name="ml-server-type-atan"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:atan" target="mlserverdoc">math:atan</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:atan" target="mlserverdoc">math:atan</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr atan(XsDoubleExpr x);
+  public XsDoubleExpr atan(ServerExpression x);
 /**
   * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the apropriate quadrant.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:atan2" target="mlserverdoc">math:atan2</a>
-  * @param y  The floating point dividend.
-  * @param x  The floating point divisor.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:atan2" target="mlserverdoc">math:atan2</a> server function.
+  * @param y  The floating point dividend.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param x  The floating point divisor.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr atan2(XsDoubleExpr y, double x);
+  public XsDoubleExpr atan2(ServerExpression y, double x);
 /**
   * Returns the arc tangent of y/x, in radians, in the range from -pi/2 to +pi/2 (inclusive), using the signs of y and x to determine the apropriate quadrant.
+  *
+  * <a name="ml-server-type-atan2"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:atan2" target="mlserverdoc">math:atan2</a>
-  * @param y  The floating point dividend.
-  * @param x  The floating point divisor.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:atan2" target="mlserverdoc">math:atan2</a> server function.
+  * @param y  The floating point dividend.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param x  The floating point divisor.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr atan2(XsDoubleExpr y, XsDoubleExpr x);
+  public XsDoubleExpr atan2(ServerExpression y, ServerExpression x);
 /**
   * Returns the smallest integer greater than or equal to x.
+  *
+  * <a name="ml-server-type-ceil"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:ceil" target="mlserverdoc">math:ceil</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:ceil" target="mlserverdoc">math:ceil</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr ceil(XsDoubleExpr x);
+  public XsDoubleExpr ceil(ServerExpression x);
 /**
   * Returns the Pearson correlation coefficient of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is less than 2, the function returns the empty sequence. After the elimination, if the standard deviation of the first column or the standard deviation of the second column is 0, the function returns the empty sequence.
+  *
+  * <a name="ml-server-type-correlation"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:correlation" target="mlserverdoc">math:correlation</a>
-  * @param arg  The input data set. Each array should contain a pair of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:correlation" target="mlserverdoc">math:correlation</a> server function.
+  * @param arg  The input data set. Each array should contain a pair of values.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr correlation(JsonArraySeqExpr arg);
+  public XsDoubleExpr correlation(ServerExpression arg);
 /**
   * Returns the cosine of x, in the range from -1 to +1 (inclusive).
+  *
+  * <a name="ml-server-type-cos"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:cos" target="mlserverdoc">math:cos</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:cos" target="mlserverdoc">math:cos</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr cos(XsDoubleExpr x);
+  public XsDoubleExpr cos(ServerExpression x);
 /**
   * Returns the hyperbolic cosine of x.
+  *
+  * <a name="ml-server-type-cosh"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:cosh" target="mlserverdoc">math:cosh</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:cosh" target="mlserverdoc">math:cosh</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr cosh(XsDoubleExpr x);
+  public XsDoubleExpr cosh(ServerExpression x);
 /**
   * Returns the cotangent of x.
+  *
+  * <a name="ml-server-type-cot"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:cot" target="mlserverdoc">math:cot</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:cot" target="mlserverdoc">math:cot</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr cot(XsDoubleExpr x);
+  public XsDoubleExpr cot(ServerExpression x);
 /**
   * Returns the sample covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is less than 2, the function returns the empty sequence.  
+  *
+  * <a name="ml-server-type-covariance"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:covariance" target="mlserverdoc">math:covariance</a>
-  * @param arg  The input data set. Each array should contain a pair of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:covariance" target="mlserverdoc">math:covariance</a> server function.
+  * @param arg  The input data set. Each array should contain a pair of values.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr covariance(JsonArraySeqExpr arg);
+  public XsDoubleExpr covariance(ServerExpression arg);
 /**
   * Returns the population covariance of a data set. The size of the input array should be 2. The function eliminates all pairs for which either the first element or the second element is empty. After the elimination, if the length of the input is 0, the function returns the empty sequence.  
+  *
+  * <a name="ml-server-type-covariance-p"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:covariance-p" target="mlserverdoc">math:covariance-p</a>
-  * @param arg  The input data set. Each array should contain a pair of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:covariance-p" target="mlserverdoc">math:covariance-p</a> server function.
+  * @param arg  The input data set. Each array should contain a pair of values.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr covarianceP(JsonArraySeqExpr arg);
+  public XsDoubleExpr covarianceP(ServerExpression arg);
 /**
   * Returns numeric expression converted from radians to degrees.
+  *
+  * <a name="ml-server-type-degrees"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:degrees" target="mlserverdoc">math:degrees</a>
-  * @param x  An angle expressed in radians.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:degrees" target="mlserverdoc">math:degrees</a> server function.
+  * @param x  An angle expressed in radians.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr degrees(XsDoubleExpr x);
+  public XsDoubleExpr degrees(ServerExpression x);
 /**
   * Returns e (approximately 2.71828182845905) to the xth power.
+  *
+  * <a name="ml-server-type-exp"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:exp" target="mlserverdoc">math:exp</a>
-  * @param x  The exponent to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:exp" target="mlserverdoc">math:exp</a> server function.
+  * @param x  The exponent to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr exp(XsDoubleExpr x);
+  public XsDoubleExpr exp(ServerExpression x);
 /**
   * Returns the absolute value of x.
+  *
+  * <a name="ml-server-type-fabs"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:fabs" target="mlserverdoc">math:fabs</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:fabs" target="mlserverdoc">math:fabs</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr fabs(XsDoubleExpr x);
+  public XsDoubleExpr fabs(ServerExpression x);
 /**
   * Returns the largest integer less than or equal to x.
+  *
+  * <a name="ml-server-type-floor"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:floor" target="mlserverdoc">math:floor</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:floor" target="mlserverdoc">math:floor</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr floor(XsDoubleExpr x);
+  public XsDoubleExpr floor(ServerExpression x);
 /**
   * Returns the remainder of x/y.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:fmod" target="mlserverdoc">math:fmod</a>
-  * @param x  The floating point dividend.
-  * @param y  The floating point divisor.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:fmod" target="mlserverdoc">math:fmod</a> server function.
+  * @param x  The floating point dividend.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param y  The floating point divisor.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr fmod(XsDoubleExpr x, double y);
+  public XsDoubleExpr fmod(ServerExpression x, double y);
 /**
   * Returns the remainder of x/y.
+  *
+  * <a name="ml-server-type-fmod"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:fmod" target="mlserverdoc">math:fmod</a>
-  * @param x  The floating point dividend.
-  * @param y  The floating point divisor.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:fmod" target="mlserverdoc">math:fmod</a> server function.
+  * @param x  The floating point dividend.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param y  The floating point divisor.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr fmod(XsDoubleExpr x, XsDoubleExpr y);
+  public XsDoubleExpr fmod(ServerExpression x, ServerExpression y);
 /**
   * Returns x broken up into mantissa and exponent, where x = mantissa*2^exponent.
+  *
+  * <a name="ml-server-type-frexp"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:frexp" target="mlserverdoc">math:frexp</a>
-  * @param x  The exponent to be evaluated.
-  * @return  a ItemSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:frexp" target="mlserverdoc">math:frexp</a> server function.
+  * @param x  The exponent to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr frexp(XsDoubleExpr x);
+  public ItemSeqExpr frexp(ServerExpression x);
 /**
   * Returns x*2^i.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:ldexp" target="mlserverdoc">math:ldexp</a>
-  * @param y  The floating-point number to be multiplied.
-  * @param i  The exponent integer.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:ldexp" target="mlserverdoc">math:ldexp</a> server function.
+  * @param y  The floating-point number to be multiplied.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param i  The exponent integer.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr ldexp(XsDoubleExpr y, long i);
+  public XsDoubleExpr ldexp(ServerExpression y, long i);
 /**
   * Returns x*2^i.
+  *
+  * <a name="ml-server-type-ldexp"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:ldexp" target="mlserverdoc">math:ldexp</a>
-  * @param y  The floating-point number to be multiplied.
-  * @param i  The exponent integer.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:ldexp" target="mlserverdoc">math:ldexp</a> server function.
+  * @param y  The floating-point number to be multiplied.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param i  The exponent integer.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr ldexp(XsDoubleExpr y, XsIntegerExpr i);
+  public XsDoubleExpr ldexp(ServerExpression y, ServerExpression i);
 /**
   * Returns a linear model that fits the given data set. The size of the input array should be 2, as currently only simple linear regression model is supported. The first element of the array should be the value of the dependent variable while the other element should be the value of the independent variable. 
+  *
+  * <a name="ml-server-type-linear-model"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:linear-model" target="mlserverdoc">math:linear-model</a>
-  * @param arg  The input data set. Each array should contain a pair of values.
-  * @return  a MathLinearModelExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:linear-model" target="mlserverdoc">math:linear-model</a> server function.
+  * @param arg  The input data set. Each array should contain a pair of values.  (of <a href="{@docRoot}/doc-files/types/json_array.html">json:array</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/math_linear-model.html">math:linear-model</a> server data type
   */
-  public MathLinearModelExpr linearModel(JsonArraySeqExpr arg);
+  public MathLinearModelExpr linearModel(ServerExpression arg);
 /**
   * Returns the coefficients of the linear model. Currently only simple linear regression model is supported so the return should contain only one coefficient (also called "slope").
+  *
+  * <a name="ml-server-type-linear-model-coeff"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:linear-model-coeff" target="mlserverdoc">math:linear-model-coeff</a>
-  * @param linearModel  A linear model.
-  * @return  a XsDoubleSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:linear-model-coeff" target="mlserverdoc">math:linear-model-coeff</a> server function.
+  * @param linearModel  A linear model.  (of <a href="{@docRoot}/doc-files/types/math_linear-model.html">math:linear-model</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleSeqExpr linearModelCoeff(MathLinearModelExpr linearModel);
+  public XsDoubleSeqExpr linearModelCoeff(ServerExpression linearModel);
 /**
   * Returns the intercept of the linear model.
+  *
+  * <a name="ml-server-type-linear-model-intercept"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:linear-model-intercept" target="mlserverdoc">math:linear-model-intercept</a>
-  * @param linearModel  A linear model.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:linear-model-intercept" target="mlserverdoc">math:linear-model-intercept</a> server function.
+  * @param linearModel  A linear model.  (of <a href="{@docRoot}/doc-files/types/math_linear-model.html">math:linear-model</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr linearModelIntercept(MathLinearModelExpr linearModel);
+  public XsDoubleExpr linearModelIntercept(ServerExpression linearModel);
 /**
   * Returns the R^2 value of the linear model.
+  *
+  * <a name="ml-server-type-linear-model-rsquared"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:linear-model-rsquared" target="mlserverdoc">math:linear-model-rsquared</a>
-  * @param linearModel  A linear model.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:linear-model-rsquared" target="mlserverdoc">math:linear-model-rsquared</a> server function.
+  * @param linearModel  A linear model.  (of <a href="{@docRoot}/doc-files/types/math_linear-model.html">math:linear-model</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr linearModelRsquared(MathLinearModelExpr linearModel);
+  public XsDoubleExpr linearModelRsquared(ServerExpression linearModel);
 /**
   * Returns the base-e logarithm of x.
+  *
+  * <a name="ml-server-type-log"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:log" target="mlserverdoc">math:log</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:log" target="mlserverdoc">math:log</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr log(XsDoubleExpr x);
+  public XsDoubleExpr log(ServerExpression x);
 /**
   * Returns the base-10 logarithm of x.
+  *
+  * <a name="ml-server-type-log10"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:log10" target="mlserverdoc">math:log10</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:log10" target="mlserverdoc">math:log10</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr log10(XsDoubleExpr x);
+  public XsDoubleExpr log10(ServerExpression x);
 /**
   * Returns the median of a sequence of values. The function returns the empty sequence if the input is the empty sequence.
+  *
+  * <a name="ml-server-type-median"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:median" target="mlserverdoc">math:median</a>
-  * @param arg  The sequence of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:median" target="mlserverdoc">math:median</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr median(XsDoubleSeqExpr arg);
+  public XsDoubleExpr median(ServerExpression arg);
+/**
+  * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
+  *
+  * <a name="ml-server-type-mode"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
+  */
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg);
 /**
   * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
-  * @param arg  The sequence of values.
-  * @return  a XsAnyAtomicTypeSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg);
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg, String options);
 /**
   * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
-  * @param arg  The sequence of values.
-  * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsAnyAtomicTypeSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a> server data type
   */
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, String options);
-/**
-  * Returns the mode of a sequence. The mode is the value that occurs most frequently in a data set. If no value occurs more than once in the data set, the function returns the empty sequence. If the input is the empty sequence, the function returns the empty sequence. 
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:mode" target="mlserverdoc">math:mode</a>
-  * @param arg  The sequence of values.
-  * @param options  Options. The default is ().  Options include:  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsAnyAtomicTypeSeqExpr expression sequence
-  */
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, XsStringSeqExpr options);
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg, ServerExpression options);
 /**
   * Returns x broken up into fraction and integer. x = fraction+integer.
+  *
+  * <a name="ml-server-type-modf"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:modf" target="mlserverdoc">math:modf</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:modf" target="mlserverdoc">math:modf</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleSeqExpr modf(XsDoubleExpr x);
+  public XsDoubleSeqExpr modf(ServerExpression x);
 /**
   * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
-  * @param arg  The sequence of values.
-  * @param value  The value to be "ranked".
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param value  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value);
+  public XsDoubleExpr percentRank(ServerExpression arg, String value);
+/**
+  * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
+  *
+  * <a name="ml-server-type-percent-rank"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param value  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
+  */
+  public XsDoubleExpr percentRank(ServerExpression arg, ServerExpression value);
 /**
   * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
-  * @param arg  The sequence of values.
-  * @param value  The value to be "ranked".
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param value  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value);
+  public XsDoubleExpr percentRank(ServerExpression arg, String value, String options);
 /**
   * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
-  * @param arg  The sequence of values.
-  * @param value  The value to be "ranked".
-  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param value  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value, String options);
-/**
-  * Returns the rank of a value in a data set as a percentage of the data set. If the given value is not equal to any item in the sequence, the function returns the empty sequence. See math:rank.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percent-rank" target="mlserverdoc">math:percent-rank</a>
-  * @param arg  The sequence of values.
-  * @param value  The value to be "ranked".
-  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsDoubleExpr expression
-  */
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value, XsStringSeqExpr options);
+  public XsDoubleExpr percentRank(ServerExpression arg, ServerExpression value, ServerExpression options);
 /**
   * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either arg or p is the empty sequence.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a>
-  * @param arg  The sequence of values to calculate the percentile(s) on.
-  * @param p  The sequence of percentage(s).
-  * @return  a XsDoubleSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a> server function.
+  * @param arg  The sequence of values to calculate the percentile(s) on.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param p  The sequence of percentage(s).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, double p);
+  public XsDoubleSeqExpr percentile(ServerExpression arg, double p);
 /**
   * Returns a sequence of percentile(s) given a sequence of percentage(s). The function returns the empty sequence if either arg or p is the empty sequence.
+  *
+  * <a name="ml-server-type-percentile"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a>
-  * @param arg  The sequence of values to calculate the percentile(s) on.
-  * @param p  The sequence of percentage(s).
-  * @return  a XsDoubleSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:percentile" target="mlserverdoc">math:percentile</a> server function.
+  * @param arg  The sequence of values to calculate the percentile(s) on.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param p  The sequence of percentage(s).  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, XsDoubleSeqExpr p);
+  public XsDoubleSeqExpr percentile(ServerExpression arg, ServerExpression p);
 /**
   * Returns the value of pi.
+  *
+  * <a name="ml-server-type-pi"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:pi" target="mlserverdoc">math:pi</a>
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:pi" target="mlserverdoc">math:pi</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
   public XsDoubleExpr pi();
 /**
   * Returns x^y.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:pow" target="mlserverdoc">math:pow</a>
-  * @param x  The floating-point base number.
-  * @param y  The exponent to be applied to x.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:pow" target="mlserverdoc">math:pow</a> server function.
+  * @param x  The floating-point base number.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param y  The exponent to be applied to x.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr pow(XsDoubleExpr x, double y);
+  public XsDoubleExpr pow(ServerExpression x, double y);
 /**
   * Returns x^y.
+  *
+  * <a name="ml-server-type-pow"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:pow" target="mlserverdoc">math:pow</a>
-  * @param x  The floating-point base number.
-  * @param y  The exponent to be applied to x.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:pow" target="mlserverdoc">math:pow</a> server function.
+  * @param x  The floating-point base number.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @param y  The exponent to be applied to x.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr pow(XsDoubleExpr x, XsDoubleExpr y);
+  public XsDoubleExpr pow(ServerExpression x, ServerExpression y);
 /**
   * Returns numeric expression converted from degrees to radians.
+  *
+  * <a name="ml-server-type-radians"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:radians" target="mlserverdoc">math:radians</a>
-  * @param x  An angle expressed in degrees.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:radians" target="mlserverdoc">math:radians</a> server function.
+  * @param x  An angle expressed in degrees.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr radians(XsDoubleExpr x);
+  public XsDoubleExpr radians(ServerExpression x);
 /**
   * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
-  * @param arg1  The sequence of values.
-  * @param arg2  The value to be "ranked".
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a> server function.
+  * @param arg1  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param arg2  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2);
+  public XsIntegerExpr rank(ServerExpression arg1, String arg2);
+/**
+  * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
+  *
+  * <a name="ml-server-type-rank"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a> server function.
+  * @param arg1  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param arg2  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public XsIntegerExpr rank(ServerExpression arg1, ServerExpression arg2);
 /**
   * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
-  * @param arg1  The sequence of values.
-  * @param arg2  The value to be "ranked".
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a> server function.
+  * @param arg1  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param arg2  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2);
+  public XsIntegerExpr rank(ServerExpression arg1, String arg2, String options);
 /**
   * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
-  * @param arg1  The sequence of values.
-  * @param arg2  The value to be "ranked".
-  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a> server function.
+  * @param arg1  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param arg2  The value to be "ranked".  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used.   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2, String options);
-/**
-  * Returns the rank of a value in a data set. Ranks are skipped in the event of ties. If the given value is not equal to any item in the sequence, the function returns the empty sequence. The function can be used on numeric values, xs:yearMonthDuration, xs:dayTimeDuration, xs:string, xs:anyURI, xs:date, xs:dateTime, xs:time, and cts:point.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:rank" target="mlserverdoc">math:rank</a>
-  * @param arg1  The sequence of values.
-  * @param arg2  The value to be "ranked".
-  * @param options  Options. The default is ().  Options include:  "ascending"(default) Rank the value as if the sequence was sorted in ascending order.  "descending" Rank the value as if the sequence was sorted in descending order.  "collation=URI" Applies only when $arg is of the xs:string type. If no specified, the default collation is used. "coordinate-system=name" Applies only when $arg is of the cts:point type. If no specified, the default coordinate system is used. 
-  * @return  a XsIntegerExpr expression
-  */
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2, XsStringSeqExpr options);
+  public XsIntegerExpr rank(ServerExpression arg1, ServerExpression arg2, ServerExpression options);
 /**
   * Returns the sine of x, in the range from -1 to +1 (inclusive).
+  *
+  * <a name="ml-server-type-sin"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:sin" target="mlserverdoc">math:sin</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:sin" target="mlserverdoc">math:sin</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr sin(XsDoubleExpr x);
+  public XsDoubleExpr sin(ServerExpression x);
 /**
   * Returns the hyperbolic sine of x.
+  *
+  * <a name="ml-server-type-sinh"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:sinh" target="mlserverdoc">math:sinh</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:sinh" target="mlserverdoc">math:sinh</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr sinh(XsDoubleExpr x);
+  public XsDoubleExpr sinh(ServerExpression x);
 /**
   * Returns the square root of x.
+  *
+  * <a name="ml-server-type-sqrt"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:sqrt" target="mlserverdoc">math:sqrt</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:sqrt" target="mlserverdoc">math:sqrt</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr sqrt(XsDoubleExpr x);
+  public XsDoubleExpr sqrt(ServerExpression x);
 /**
   * Returns the sample standard deviation of a sequence of values. The function returns the empty sequence if the length of the input sequence is less than 2.
+  *
+  * <a name="ml-server-type-stddev"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:stddev" target="mlserverdoc">math:stddev</a>
-  * @param arg  The sequence of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:stddev" target="mlserverdoc">math:stddev</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr stddev(XsDoubleSeqExpr arg);
+  public XsDoubleExpr stddev(ServerExpression arg);
 /**
   * Returns the standard deviation of a population. The function returns the empty sequence if the input is the empty sequence.
+  *
+  * <a name="ml-server-type-stddev-p"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:stddev-p" target="mlserverdoc">math:stddev-p</a>
-  * @param arg  The sequence of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:stddev-p" target="mlserverdoc">math:stddev-p</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr stddevP(XsDoubleSeqExpr arg);
+  public XsDoubleExpr stddevP(ServerExpression arg);
 /**
   * Returns the tangent of x.
+  *
+  * <a name="ml-server-type-tan"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:tan" target="mlserverdoc">math:tan</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:tan" target="mlserverdoc">math:tan</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr tan(XsDoubleExpr x);
+  public XsDoubleExpr tan(ServerExpression x);
 /**
   * Returns the hyperbolic tangent of x, in the range from -1 to +1 (inclusive).
+  *
+  * <a name="ml-server-type-tanh"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:tanh" target="mlserverdoc">math:tanh</a>
-  * @param x  The floating point number to be evaluated.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:tanh" target="mlserverdoc">math:tanh</a> server function.
+  * @param x  The floating point number to be evaluated.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr tanh(XsDoubleExpr x);
+  public XsDoubleExpr tanh(ServerExpression x);
+/**
+  * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
+  *
+  * <a name="ml-server-type-trunc"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a> server function.
+  * @param arg  A numeric value to truncate.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
+  */
+  public XsNumericExpr trunc(ServerExpression arg);
 /**
   * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
-  * @param arg  A numeric value to truncate.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a> server function.
+  * @param arg  A numeric value to truncate.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr trunc(XsNumericExpr arg);
+  public XsNumericExpr trunc(ServerExpression arg, long n);
 /**
   * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
-  * @param arg  A numeric value to truncate.
-  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a> server function.
+  * @param arg  A numeric value to truncate.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr trunc(XsNumericExpr arg, long n);
-/**
-  * Returns the number truncated to a certain number of decimal places. If type of arg is one of the four numeric types xs:float, xs:double, xs:decimal or xs:integer the type of the result is the same as the type of arg. If the type of arg is a type derived from one of the numeric types, the result is an instance of the base numeric type. 
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:trunc" target="mlserverdoc">math:trunc</a>
-  * @param arg  A numeric value to truncate.
-  * @param n  The numbers of decimal places to truncate to. The default is 0. Negative values cause that many digits to the left of the decimal point to be truncated.
-  * @return  a XsNumericExpr expression
-  */
-  public XsNumericExpr trunc(XsNumericExpr arg, XsIntegerExpr n);
+  public XsNumericExpr trunc(ServerExpression arg, ServerExpression n);
 /**
   * Returns the sample variance of a sequence of values. The function returns the empty sequence if the length of the input sequence is less than 2.
+  *
+  * <a name="ml-server-type-variance"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:variance" target="mlserverdoc">math:variance</a>
-  * @param arg  The sequence of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:variance" target="mlserverdoc">math:variance</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr variance(XsDoubleSeqExpr arg);
+  public XsDoubleExpr variance(ServerExpression arg);
 /**
   * Returns the population variance of a sequence of values. The function returns the empty sequence if the input is the empty sequence.
+  *
+  * <a name="ml-server-type-variance-p"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/math:variance-p" target="mlserverdoc">math:variance-p</a>
-  * @param arg  The sequence of values.
-  * @return  a XsDoubleExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/math:variance-p" target="mlserverdoc">math:variance-p</a> server function.
+  * @param arg  The sequence of values.  (of <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr varianceP(XsDoubleSeqExpr arg);
+  public XsDoubleExpr varianceP(ServerExpression arg);
 /**
   * Constructs a sequence of MathLinearModelExpr items.
   * @param items  the MathLinearModelExpr items collected by the sequence
   * @return  a MathLinearModelSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public MathLinearModelSeqExpr linearModelSeq(MathLinearModelExpr... items);
 

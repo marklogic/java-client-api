@@ -17,5 +17,7 @@ package com.marklogic.client.type;
 
 /**
  * An instance of an XML element node expression.
+ * An instance of a JSON or XML document node expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface ElementNodeExpr extends NodeExpr, ElementNodeSeqExpr, XmlContentNodeExpr, XmlRootNodeExpr { }

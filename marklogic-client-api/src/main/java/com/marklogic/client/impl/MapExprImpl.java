@@ -22,6 +22,7 @@ import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsUnsignedIntExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.MapMapExpr;
 import com.marklogic.client.type.MapMapSeqExpr;
 
@@ -40,13 +41,13 @@ class MapExprImpl implements MapExpr {
 
     
   @Override
-  public XsBooleanExpr contains(MapMapExpr map, String key) {
+  public XsBooleanExpr contains(ServerExpression map, String key) {
     return contains(map, (key == null) ? (XsStringExpr) null : xs.string(key));
   }
 
   
   @Override
-  public XsBooleanExpr contains(MapMapExpr map, XsStringExpr key) {
+  public XsBooleanExpr contains(ServerExpression map, ServerExpression key) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for contains() cannot be null");
     }
@@ -58,7 +59,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public XsUnsignedIntExpr count(MapMapExpr map) {
+  public XsUnsignedIntExpr count(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for count() cannot be null");
     }
@@ -67,7 +68,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public MapMapExpr entry(XsStringExpr key, ItemSeqExpr value) {
+  public MapMapExpr entry(ServerExpression key, ServerExpression value) {
     if (key == null) {
       throw new IllegalArgumentException("key parameter for entry() cannot be null");
     }
@@ -76,13 +77,13 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public ItemSeqExpr get(MapMapExpr map, String key) {
+  public ItemSeqExpr get(ServerExpression map, String key) {
     return get(map, (key == null) ? (XsStringExpr) null : xs.string(key));
   }
 
   
   @Override
-  public ItemSeqExpr get(MapMapExpr map, XsStringExpr key) {
+  public ItemSeqExpr get(ServerExpression map, ServerExpression key) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for get() cannot be null");
     }
@@ -94,7 +95,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public XsStringSeqExpr keys(MapMapExpr map) {
+  public XsStringSeqExpr keys(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for keys() cannot be null");
     }
@@ -109,7 +110,7 @@ class MapExprImpl implements MapExpr {
 
   
   @Override
-  public MapMapExpr map(ElementNodeExpr map) {
+  public MapMapExpr map(ServerExpression map) {
     if (map == null) {
       throw new IllegalArgumentException("map parameter for map() cannot be null");
     }
@@ -120,19 +121,19 @@ class MapExprImpl implements MapExpr {
   public MapMapSeqExpr mapSeq(MapMapExpr... items) {
     return new MapSeqListImpl(items);
   }
-  static class MapSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements MapMapSeqExpr {
+  static class MapSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements MapMapSeqExpr {
     MapSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class MapSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements MapMapSeqExpr {
+  static class MapSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MapMapSeqExpr {
     MapSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class MapCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements MapMapExpr {
+  static class MapCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MapMapExpr {
     MapCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
 

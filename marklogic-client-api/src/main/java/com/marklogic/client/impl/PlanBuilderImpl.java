@@ -24,7 +24,6 @@ import com.marklogic.client.type.BooleanNodeExpr;
 import com.marklogic.client.type.CommentNodeExpr;
 import com.marklogic.client.type.DocumentNodeExpr;
 import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.JsonContentNodeExpr;
 import com.marklogic.client.type.JsonRootNodeExpr;
@@ -53,6 +52,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.PlanAggregateCol;
 import com.marklogic.client.type.PlanAggregateColSeq;
 import com.marklogic.client.type.PlanCase;
@@ -109,7 +109,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
   // builder methods
   
   @Override
-  public XsNumericExpr add(XsNumericExpr... left) {
+  public XsNumericExpr add(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for add() cannot be null");
     }
@@ -127,7 +127,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr and(XsAnyAtomicTypeExpr... left) {
+  public XsBooleanExpr and(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for and() cannot be null");
     }
@@ -154,13 +154,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public PlanExprCol as(String column, ItemSeqExpr expression) {
+  public PlanExprCol as(String column, ServerExpression expression) {
     return as((column == null) ? (PlanColumn) null : col(column), expression);
   }
 
   
   @Override
-  public PlanExprCol as(PlanColumn column, ItemSeqExpr expression) {
+  public PlanExprCol as(PlanColumn column, ServerExpression expression) {
     if (column == null) {
       throw new IllegalArgumentException("column parameter for as() cannot be null");
     }
@@ -281,7 +281,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right) {
+  public XsNumericExpr divide(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for divide() cannot be null");
     }
@@ -293,7 +293,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr eq(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for eq() cannot be null");
     }
@@ -470,7 +470,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr ge(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for ge() cannot be null");
     }
@@ -497,7 +497,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr gt(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for gt() cannot be null");
     }
@@ -509,7 +509,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr isDefined(ItemExpr operand) {
+  public XsBooleanExpr isDefined(ServerExpression operand) {
     if (operand == null) {
       throw new IllegalArgumentException("operand parameter for isDefined() cannot be null");
     }
@@ -533,7 +533,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public BooleanNodeExpr jsonBoolean(XsBooleanExpr value) {
+  public BooleanNodeExpr jsonBoolean(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for jsonBoolean() cannot be null");
     }
@@ -542,7 +542,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public DocumentNodeExpr jsonDocument(JsonRootNodeExpr root) {
+  public DocumentNodeExpr jsonDocument(ServerExpression root) {
     if (root == null) {
       throw new IllegalArgumentException("root parameter for jsonDocument() cannot be null");
     }
@@ -563,7 +563,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public NumberNodeExpr jsonNumber(XsNumericExpr value) {
+  public NumberNodeExpr jsonNumber(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for jsonNumber() cannot be null");
     }
@@ -578,7 +578,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public TextNodeExpr jsonString(XsAnyAtomicTypeExpr value) {
+  public TextNodeExpr jsonString(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for jsonString() cannot be null");
     }
@@ -587,7 +587,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr le(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr le(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for le() cannot be null");
     }
@@ -599,7 +599,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr lt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr lt(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for lt() cannot be null");
     }
@@ -653,7 +653,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsNumericExpr modulo(XsNumericExpr left, XsNumericExpr right) {
+  public XsNumericExpr modulo(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for modulo() cannot be null");
     }
@@ -665,7 +665,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsNumericExpr multiply(XsNumericExpr... left) {
+  public XsNumericExpr multiply(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for multiply() cannot be null");
     }
@@ -674,7 +674,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right) {
+  public XsBooleanExpr ne(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for ne() cannot be null");
     }
@@ -686,7 +686,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr not(XsAnyAtomicTypeExpr operand) {
+  public XsBooleanExpr not(ServerExpression operand) {
     if (operand == null) {
       throw new IllegalArgumentException("operand parameter for not() cannot be null");
     }
@@ -722,7 +722,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsBooleanExpr or(XsAnyAtomicTypeExpr... left) {
+  public XsBooleanExpr or(ServerExpression... left) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for or() cannot be null");
     }
@@ -761,13 +761,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public PlanJsonProperty prop(String key, JsonContentNodeExpr value) {
+  public PlanJsonProperty prop(String key, ServerExpression value) {
     return prop((key == null) ? (XsStringExpr) null : xs.string(key), value);
   }
 
   
   @Override
-  public PlanJsonProperty prop(XsStringExpr key, JsonContentNodeExpr value) {
+  public PlanJsonProperty prop(ServerExpression key, ServerExpression value) {
     if (key == null) {
       throw new IllegalArgumentException("key parameter for prop() cannot be null");
     }
@@ -887,7 +887,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right) {
+  public XsNumericExpr subtract(ServerExpression left, ServerExpression right) {
     if (left == null) {
       throw new IllegalArgumentException("left parameter for subtract() cannot be null");
     }
@@ -983,13 +983,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public PlanCase when(boolean condition, ItemExpr... value) {
-    return when(xs.booleanVal(condition), new BaseTypeImpl.ItemSeqListImpl(value));
+  public PlanCase when(boolean condition, ServerExpression... value) {
+    return when(xs.booleanVal(condition), value);
   }
 
   
   @Override
-  public PlanCase when(XsBooleanExpr condition, ItemExpr... value) {
+  public PlanCase when(ServerExpression condition, ServerExpression... value) {
     if (condition == null) {
       throw new IllegalArgumentException("condition parameter for when() cannot be null");
     }
@@ -1004,7 +1004,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public AttributeNodeExpr xmlAttribute(XsQNameExpr name, XsAnyAtomicTypeExpr value) {
+  public AttributeNodeExpr xmlAttribute(ServerExpression name, ServerExpression value) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for xmlAttribute() cannot be null");
     }
@@ -1016,7 +1016,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attribute) {
+  public AttributeNodeSeqExpr xmlAttributeSeq(ServerExpression... attribute) {
     if (attribute == null) {
       throw new IllegalArgumentException("attribute parameter for xmlAttributeSeq() cannot be null");
     }
@@ -1031,7 +1031,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public CommentNodeExpr xmlComment(XsAnyAtomicTypeExpr content) {
+  public CommentNodeExpr xmlComment(ServerExpression content) {
     if (content == null) {
       throw new IllegalArgumentException("content parameter for xmlComment() cannot be null");
     }
@@ -1040,7 +1040,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public DocumentNodeExpr xmlDocument(XmlRootNodeExpr root) {
+  public DocumentNodeExpr xmlDocument(ServerExpression root) {
     if (root == null) {
       throw new IllegalArgumentException("root parameter for xmlDocument() cannot be null");
     }
@@ -1055,7 +1055,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ElementNodeExpr xmlElement(XsQNameExpr name) {
+  public ElementNodeExpr xmlElement(ServerExpression name) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for xmlElement() cannot be null");
     }
@@ -1070,7 +1070,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes) {
+  public ElementNodeExpr xmlElement(String name, ServerExpression attributes) {
+    return xmlElement((name == null) ? (XsQNameExpr) null : xs.QName(name), attributes);
+  }
+
+  
+  @Override
+  public ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for xmlElement() cannot be null");
     }
@@ -1079,13 +1085,13 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ElementNodeExpr xmlElement(String name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content) {
-    return xmlElement((name == null) ? (XsQNameExpr) null : xs.QName(name), attributes, new BaseTypeImpl.XmlContentNodeSeqListImpl(content));
+  public ElementNodeExpr xmlElement(String name, ServerExpression attributes, ServerExpression... content) {
+    return xmlElement((name == null) ? (XsQNameExpr) null : xs.QName(name), attributes, content);
   }
 
   
   @Override
-  public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content) {
+  public ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for xmlElement() cannot be null");
     }
@@ -1100,7 +1106,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public ProcessingInstructionNodeExpr xmlPi(XsStringExpr name, XsAnyAtomicTypeExpr value) {
+  public ProcessingInstructionNodeExpr xmlPi(ServerExpression name, ServerExpression value) {
     if (name == null) {
       throw new IllegalArgumentException("name parameter for xmlPi() cannot be null");
     }
@@ -1118,7 +1124,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public TextNodeExpr xmlText(XsAnyAtomicTypeExpr value) {
+  public TextNodeExpr xmlText(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for xmlText() cannot be null");
     }
@@ -1133,7 +1139,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
   
   @Override
-  public NodeSeqExpr xpath(PlanColumn column, XsStringExpr path) {
+  public NodeSeqExpr xpath(PlanColumn column, ServerExpression path) {
     if (column == null) {
       throw new IllegalArgumentException("column parameter for xpath() cannot be null");
     }
@@ -1505,7 +1511,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition) {
+  public ModifyPlan joinCrossProduct(ModifyPlan right, ServerExpression condition) {
     if (right == null) {
       throw new IllegalArgumentException("right parameter for joinCrossProduct() cannot be null");
     }
@@ -1580,7 +1586,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition) {
+  public ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition) {
     if (right == null) {
       throw new IllegalArgumentException("right parameter for joinInner() cannot be null");
     }
@@ -1619,7 +1625,7 @@ abstract class PlanBuilderImpl extends PlanBuilderBaseImpl {
 
     
   @Override
-  public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition) {
+  public ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition) {
     if (right == null) {
       throw new IllegalArgumentException("right parameter for joinLeftOuter() cannot be null");
     }

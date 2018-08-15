@@ -18,5 +18,6 @@ package com.marklogic.client.type;
 /**
  * A sequence of XML comment, element, or processing-instruction
  * node expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XmlRootNodeSeqExpr extends NodeSeqExpr { }

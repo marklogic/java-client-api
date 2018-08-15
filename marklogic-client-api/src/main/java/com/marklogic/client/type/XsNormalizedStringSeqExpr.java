@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server normalized string expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsNormalizedStringSeqExpr extends XsStringSeqExpr {
 }

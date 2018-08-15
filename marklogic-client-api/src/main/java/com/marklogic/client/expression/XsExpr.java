@@ -17,6 +17,7 @@ package com.marklogic.client.expression;
 
 import com.marklogic.client.type.ItemSeqExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeSeqExpr;
 import com.marklogic.client.type.XsAnyURIExpr;
@@ -109,248 +110,369 @@ import com.marklogic.client.type.XsYearMonthDurationSeqExpr;
 public interface XsExpr extends XsValue {
     /**
   * Constructs or casts an expression to the xs:anyURI server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsAnyURIExpr expression
+  *
+  * <a name="ml-server-type-anyURI"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr anyURI(ItemSeqExpr arg1);
+  public XsAnyURIExpr anyURI(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:base64Binary server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsBase64BinaryExpr expression
+  *
+  * <a name="ml-server-type-base64Binary"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_base64Binary.html">xs:base64Binary</a> server data type
   */
-  public XsBase64BinaryExpr base64Binary(ItemSeqExpr arg1);
+  public XsBase64BinaryExpr base64Binary(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:boolean server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsBooleanExpr expression
+  *
+  * <a name="ml-server-type-boolean"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr booleanExpr(ItemSeqExpr arg1);
+  public XsBooleanExpr booleanExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:byte server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsByteExpr expression
+  *
+  * <a name="ml-server-type-byte"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_byte.html">xs:byte</a> server data type
   */
-  public XsByteExpr byteExpr(ItemSeqExpr arg1);
+  public XsByteExpr byteExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:date server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsDateExpr expression
+  *
+  * <a name="ml-server-type-date"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a> server data type
   */
-  public XsDateExpr date(ItemSeqExpr arg1);
+  public XsDateExpr date(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:dateTime server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsDateTimeExpr expression
+  *
+  * <a name="ml-server-type-dateTime"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr dateTime(ItemSeqExpr arg1);
+  public XsDateTimeExpr dateTime(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:dayTimeDuration server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsDayTimeDurationExpr expression
+  *
+  * <a name="ml-server-type-dayTimeDuration"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dayTimeDuration.html">xs:dayTimeDuration</a> server data type
   */
-  public XsDayTimeDurationExpr dayTimeDuration(ItemSeqExpr arg1);
+  public XsDayTimeDurationExpr dayTimeDuration(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:decimal server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsDecimalExpr expression
+  *
+  * <a name="ml-server-type-decimal"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_decimal.html">xs:decimal</a> server data type
   */
-  public XsDecimalExpr decimal(ItemSeqExpr arg1);
+  public XsDecimalExpr decimal(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:double server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsDoubleExpr expression
+  *
+  * <a name="ml-server-type-double"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_double.html">xs:double</a> server data type
   */
-  public XsDoubleExpr doubleExpr(ItemSeqExpr arg1);
+  public XsDoubleExpr doubleExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:float server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsFloatExpr expression
+  *
+  * <a name="ml-server-type-float"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_float.html">xs:float</a> server data type
   */
-  public XsFloatExpr floatExpr(ItemSeqExpr arg1);
+  public XsFloatExpr floatExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:gDay server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsGDayExpr expression
+  *
+  * <a name="ml-server-type-gDay"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_gDay.html">xs:gDay</a> server data type
   */
-  public XsGDayExpr gDay(ItemSeqExpr arg1);
+  public XsGDayExpr gDay(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:gMonth server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsGMonthExpr expression
+  *
+  * <a name="ml-server-type-gMonth"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_gMonth.html">xs:gMonth</a> server data type
   */
-  public XsGMonthExpr gMonth(ItemSeqExpr arg1);
+  public XsGMonthExpr gMonth(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:gMonthDay server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsGMonthDayExpr expression
+  *
+  * <a name="ml-server-type-gMonthDay"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_gMonthDay.html">xs:gMonthDay</a> server data type
   */
-  public XsGMonthDayExpr gMonthDay(ItemSeqExpr arg1);
+  public XsGMonthDayExpr gMonthDay(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:gYear server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsGYearExpr expression
+  *
+  * <a name="ml-server-type-gYear"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_gYear.html">xs:gYear</a> server data type
   */
-  public XsGYearExpr gYear(ItemSeqExpr arg1);
+  public XsGYearExpr gYear(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:gYearMonth server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsGYearMonthExpr expression
+  *
+  * <a name="ml-server-type-gYearMonth"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_gYearMonth.html">xs:gYearMonth</a> server data type
   */
-  public XsGYearMonthExpr gYearMonth(ItemSeqExpr arg1);
+  public XsGYearMonthExpr gYearMonth(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:hexBinary server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsHexBinaryExpr expression
+  *
+  * <a name="ml-server-type-hexBinary"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_hexBinary.html">xs:hexBinary</a> server data type
   */
-  public XsHexBinaryExpr hexBinary(ItemSeqExpr arg1);
+  public XsHexBinaryExpr hexBinary(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:int server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsIntExpr expression
+  *
+  * <a name="ml-server-type-int"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_int.html">xs:int</a> server data type
   */
-  public XsIntExpr intExpr(ItemSeqExpr arg1);
+  public XsIntExpr intExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:integer server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsIntegerExpr expression
+  *
+  * <a name="ml-server-type-integer"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr integer(ItemSeqExpr arg1);
+  public XsIntegerExpr integer(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:language server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsLanguageExpr expression
+  *
+  * <a name="ml-server-type-language"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_language.html">xs:language</a> server data type
   */
-  public XsLanguageExpr language(ItemSeqExpr arg1);
+  public XsLanguageExpr language(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:long server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsLongExpr expression
+  *
+  * <a name="ml-server-type-long"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a> server data type
   */
-  public XsLongExpr longExpr(ItemSeqExpr arg1);
+  public XsLongExpr longExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:Name server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNameExpr expression
+  *
+  * <a name="ml-server-type-Name"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_Name.html">xs:Name</a> server data type
   */
-  public XsNameExpr Name(ItemSeqExpr arg1);
+  public XsNameExpr Name(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:NCName server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNCNameExpr expression
+  *
+  * <a name="ml-server-type-NCName"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_NCName.html">xs:NCName</a> server data type
   */
-  public XsNCNameExpr NCName(ItemSeqExpr arg1);
+  public XsNCNameExpr NCName(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:negativeInteger server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNegativeIntegerExpr expression
+  *
+  * <a name="ml-server-type-negativeInteger"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_negativeInteger.html">xs:negativeInteger</a> server data type
   */
-  public XsNegativeIntegerExpr negativeInteger(ItemSeqExpr arg1);
+  public XsNegativeIntegerExpr negativeInteger(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:NMTOKEN server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNMTOKENExpr expression
+  *
+  * <a name="ml-server-type-NMTOKEN"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_NMTOKEN.html">xs:NMTOKEN</a> server data type
   */
-  public XsNMTOKENExpr NMTOKEN(ItemSeqExpr arg1);
+  public XsNMTOKENExpr NMTOKEN(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:nonNegativeInteger server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNonNegativeIntegerExpr expression
+  *
+  * <a name="ml-server-type-nonNegativeInteger"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_nonNegativeInteger.html">xs:nonNegativeInteger</a> server data type
   */
-  public XsNonNegativeIntegerExpr nonNegativeInteger(ItemSeqExpr arg1);
+  public XsNonNegativeIntegerExpr nonNegativeInteger(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:nonPositiveInteger server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNonPositiveIntegerExpr expression
+  *
+  * <a name="ml-server-type-nonPositiveInteger"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_nonPositiveInteger.html">xs:nonPositiveInteger</a> server data type
   */
-  public XsNonPositiveIntegerExpr nonPositiveInteger(ItemSeqExpr arg1);
+  public XsNonPositiveIntegerExpr nonPositiveInteger(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:normalizedString server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNormalizedStringExpr expression
+  *
+  * <a name="ml-server-type-normalizedString"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_normalizedString.html">xs:normalizedString</a> server data type
   */
-  public XsNormalizedStringExpr normalizedString(ItemSeqExpr arg1);
+  public XsNormalizedStringExpr normalizedString(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:numeric server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsNumericExpr expression
+  *
+  * <a name="ml-server-type-numeric"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public XsNumericExpr numeric(ItemSeqExpr arg1);
+  public XsNumericExpr numeric(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:positiveInteger server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsPositiveIntegerExpr expression
+  *
+  * <a name="ml-server-type-positiveInteger"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_positiveInteger.html">xs:positiveInteger</a> server data type
   */
-  public XsPositiveIntegerExpr positiveInteger(ItemSeqExpr arg1);
+  public XsPositiveIntegerExpr positiveInteger(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:QName server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsQNameExpr expression
+  *
+  * <a name="ml-server-type-QName"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr QName(ItemSeqExpr arg1);
+  public XsQNameExpr QName(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:short server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsShortExpr expression
+  *
+  * <a name="ml-server-type-short"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_short.html">xs:short</a> server data type
   */
-  public XsShortExpr shortExpr(ItemSeqExpr arg1);
+  public XsShortExpr shortExpr(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:string server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsStringExpr expression
+  *
+  * <a name="ml-server-type-string"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr string(ItemSeqExpr arg1);
+  public XsStringExpr string(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:time server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsTimeExpr expression
+  *
+  * <a name="ml-server-type-time"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_time.html">xs:time</a> server data type
   */
-  public XsTimeExpr time(ItemSeqExpr arg1);
+  public XsTimeExpr time(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:token server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsTokenExpr expression
+  *
+  * <a name="ml-server-type-token"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_token.html">xs:token</a> server data type
   */
-  public XsTokenExpr token(ItemSeqExpr arg1);
+  public XsTokenExpr token(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:unsignedByte server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsUnsignedByteExpr expression
+  *
+  * <a name="ml-server-type-unsignedByte"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedByte.html">xs:unsignedByte</a> server data type
   */
-  public XsUnsignedByteExpr unsignedByte(ItemSeqExpr arg1);
+  public XsUnsignedByteExpr unsignedByte(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:unsignedInt server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsUnsignedIntExpr expression
+  *
+  * <a name="ml-server-type-unsignedInt"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr unsignedInt(ItemSeqExpr arg1);
+  public XsUnsignedIntExpr unsignedInt(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:unsignedLong server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsUnsignedLongExpr expression
+  *
+  * <a name="ml-server-type-unsignedLong"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr unsignedLong(ItemSeqExpr arg1);
+  public XsUnsignedLongExpr unsignedLong(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:unsignedShort server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsUnsignedShortExpr expression
+  *
+  * <a name="ml-server-type-unsignedShort"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedShort.html">xs:unsignedShort</a> server data type
   */
-  public XsUnsignedShortExpr unsignedShort(ItemSeqExpr arg1);
+  public XsUnsignedShortExpr unsignedShort(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:untypedAtomic server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsUntypedAtomicExpr expression
+  *
+  * <a name="ml-server-type-untypedAtomic"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_untypedAtomic.html">xs:untypedAtomic</a> server data type
   */
-  public XsUntypedAtomicExpr untypedAtomic(ItemSeqExpr arg1);
+  public XsUntypedAtomicExpr untypedAtomic(ServerExpression arg1);
 /**
   * Constructs or casts an expression to the xs:yearMonthDuration server data type.
-  * @param arg1  the expression to construct or cast
-  * @return  a XsYearMonthDurationExpr expression
+  *
+  * <a name="ml-server-type-yearMonthDuration"></a>
+  
+  * @param arg1  the expression to construct or cast.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_yearMonthDuration.html">xs:yearMonthDuration</a> server data type
   */
-  public XsYearMonthDurationExpr yearMonthDuration(ItemSeqExpr arg1);
+  public XsYearMonthDurationExpr yearMonthDuration(ServerExpression arg1);
 /**
   * Constructs a sequence of XsAnyAtomicTypeExpr items.
   * @param items  the XsAnyAtomicTypeExpr items collected by the sequence
   * @return  a XsAnyAtomicTypeSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsAnyAtomicTypeSeqExpr anyAtomicTypeSeq(XsAnyAtomicTypeExpr... items);
  
@@ -358,6 +480,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsAnyURIExpr items.
   * @param items  the XsAnyURIExpr items collected by the sequence
   * @return  a XsAnyURISeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsAnyURISeqExpr anyURISeq(XsAnyURIExpr... items);
  
@@ -365,6 +488,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsBase64BinaryExpr items.
   * @param items  the XsBase64BinaryExpr items collected by the sequence
   * @return  a XsBase64BinarySeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsBase64BinarySeqExpr base64BinarySeq(XsBase64BinaryExpr... items);
  
@@ -372,6 +496,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsBooleanExpr items.
   * @param items  the XsBooleanExpr items collected by the sequence
   * @return  a XsBooleanSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsBooleanSeqExpr booleanExprSeq(XsBooleanExpr... items);
  
@@ -379,6 +504,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsByteExpr items.
   * @param items  the XsByteExpr items collected by the sequence
   * @return  a XsByteSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsByteSeqExpr byteExprSeq(XsByteExpr... items);
  
@@ -386,6 +512,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsDateExpr items.
   * @param items  the XsDateExpr items collected by the sequence
   * @return  a XsDateSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsDateSeqExpr dateSeq(XsDateExpr... items);
  
@@ -393,6 +520,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsDateTimeExpr items.
   * @param items  the XsDateTimeExpr items collected by the sequence
   * @return  a XsDateTimeSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsDateTimeSeqExpr dateTimeSeq(XsDateTimeExpr... items);
  
@@ -400,6 +528,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsDayTimeDurationExpr items.
   * @param items  the XsDayTimeDurationExpr items collected by the sequence
   * @return  a XsDayTimeDurationSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsDayTimeDurationSeqExpr dayTimeDurationSeq(XsDayTimeDurationExpr... items);
  
@@ -407,6 +536,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsDecimalExpr items.
   * @param items  the XsDecimalExpr items collected by the sequence
   * @return  a XsDecimalSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsDecimalSeqExpr decimalSeq(XsDecimalExpr... items);
  
@@ -414,6 +544,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsDoubleExpr items.
   * @param items  the XsDoubleExpr items collected by the sequence
   * @return  a XsDoubleSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsDoubleSeqExpr doubleExprSeq(XsDoubleExpr... items);
  
@@ -421,6 +552,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsFloatExpr items.
   * @param items  the XsFloatExpr items collected by the sequence
   * @return  a XsFloatSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsFloatSeqExpr floatExprSeq(XsFloatExpr... items);
  
@@ -428,6 +560,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsGDayExpr items.
   * @param items  the XsGDayExpr items collected by the sequence
   * @return  a XsGDaySeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsGDaySeqExpr GDaySeq(XsGDayExpr... items);
  
@@ -435,6 +568,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsGMonthExpr items.
   * @param items  the XsGMonthExpr items collected by the sequence
   * @return  a XsGMonthSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsGMonthSeqExpr GMonthSeq(XsGMonthExpr... items);
  
@@ -442,6 +576,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsGMonthDayExpr items.
   * @param items  the XsGMonthDayExpr items collected by the sequence
   * @return  a XsGMonthDaySeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsGMonthDaySeqExpr GMonthDaySeq(XsGMonthDayExpr... items);
  
@@ -449,6 +584,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsGYearExpr items.
   * @param items  the XsGYearExpr items collected by the sequence
   * @return  a XsGYearSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsGYearSeqExpr GYearSeq(XsGYearExpr... items);
  
@@ -456,6 +592,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsGYearMonthExpr items.
   * @param items  the XsGYearMonthExpr items collected by the sequence
   * @return  a XsGYearMonthSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsGYearMonthSeqExpr GYearMonthSeq(XsGYearMonthExpr... items);
  
@@ -463,6 +600,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsHexBinaryExpr items.
   * @param items  the XsHexBinaryExpr items collected by the sequence
   * @return  a XsHexBinarySeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsHexBinarySeqExpr hexBinarySeq(XsHexBinaryExpr... items);
  
@@ -470,6 +608,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsIntExpr items.
   * @param items  the XsIntExpr items collected by the sequence
   * @return  a XsIntSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsIntSeqExpr intExprSeq(XsIntExpr... items);
  
@@ -477,6 +616,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsIntegerExpr items.
   * @param items  the XsIntegerExpr items collected by the sequence
   * @return  a XsIntegerSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsIntegerSeqExpr integerSeq(XsIntegerExpr... items);
  
@@ -484,6 +624,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsLanguageExpr items.
   * @param items  the XsLanguageExpr items collected by the sequence
   * @return  a XsLanguageSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsLanguageSeqExpr languageSeq(XsLanguageExpr... items);
  
@@ -491,6 +632,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsLongExpr items.
   * @param items  the XsLongExpr items collected by the sequence
   * @return  a XsLongSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsLongSeqExpr longExprSeq(XsLongExpr... items);
  
@@ -498,6 +640,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNameExpr items.
   * @param items  the XsNameExpr items collected by the sequence
   * @return  a XsNameSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNameSeqExpr NameSeq(XsNameExpr... items);
  
@@ -505,6 +648,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNCNameExpr items.
   * @param items  the XsNCNameExpr items collected by the sequence
   * @return  a XsNCNameSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNCNameSeqExpr NCNameSeq(XsNCNameExpr... items);
  
@@ -512,6 +656,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNegativeIntegerExpr items.
   * @param items  the XsNegativeIntegerExpr items collected by the sequence
   * @return  a XsNegativeIntegerSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNegativeIntegerSeqExpr negativeIntegerSeq(XsNegativeIntegerExpr... items);
  
@@ -519,6 +664,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNMTOKENExpr items.
   * @param items  the XsNMTOKENExpr items collected by the sequence
   * @return  a XsNMTOKENSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNMTOKENSeqExpr NMTOKENSeq(XsNMTOKENExpr... items);
  
@@ -526,6 +672,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNonNegativeIntegerExpr items.
   * @param items  the XsNonNegativeIntegerExpr items collected by the sequence
   * @return  a XsNonNegativeIntegerSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNonNegativeIntegerSeqExpr nonNegativeIntegerSeq(XsNonNegativeIntegerExpr... items);
  
@@ -533,6 +680,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNonPositiveIntegerExpr items.
   * @param items  the XsNonPositiveIntegerExpr items collected by the sequence
   * @return  a XsNonPositiveIntegerSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNonPositiveIntegerSeqExpr nonPositiveIntegerSeq(XsNonPositiveIntegerExpr... items);
  
@@ -540,6 +688,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNormalizedStringExpr items.
   * @param items  the XsNormalizedStringExpr items collected by the sequence
   * @return  a XsNormalizedStringSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNormalizedStringSeqExpr normalizedStringSeq(XsNormalizedStringExpr... items);
  
@@ -547,6 +696,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsNumericExpr items.
   * @param items  the XsNumericExpr items collected by the sequence
   * @return  a XsNumericSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsNumericSeqExpr numericSeq(XsNumericExpr... items);
  
@@ -554,6 +704,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsPositiveIntegerExpr items.
   * @param items  the XsPositiveIntegerExpr items collected by the sequence
   * @return  a XsPositiveIntegerSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsPositiveIntegerSeqExpr positiveIntegerSeq(XsPositiveIntegerExpr... items);
  
@@ -561,6 +712,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsQNameExpr items.
   * @param items  the XsQNameExpr items collected by the sequence
   * @return  a XsQNameSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsQNameSeqExpr QNameSeq(XsQNameExpr... items);
  
@@ -568,6 +720,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsShortExpr items.
   * @param items  the XsShortExpr items collected by the sequence
   * @return  a XsShortSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsShortSeqExpr shortExprSeq(XsShortExpr... items);
  
@@ -575,6 +728,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsStringExpr items.
   * @param items  the XsStringExpr items collected by the sequence
   * @return  a XsStringSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsStringSeqExpr stringSeq(XsStringExpr... items);
  
@@ -582,6 +736,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsTimeExpr items.
   * @param items  the XsTimeExpr items collected by the sequence
   * @return  a XsTimeSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsTimeSeqExpr timeSeq(XsTimeExpr... items);
  
@@ -589,6 +744,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsTokenExpr items.
   * @param items  the XsTokenExpr items collected by the sequence
   * @return  a XsTokenSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsTokenSeqExpr tokenSeq(XsTokenExpr... items);
  
@@ -596,6 +752,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsUnsignedByteExpr items.
   * @param items  the XsUnsignedByteExpr items collected by the sequence
   * @return  a XsUnsignedByteSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsUnsignedByteSeqExpr unsignedByteSeq(XsUnsignedByteExpr... items);
  
@@ -603,6 +760,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsUnsignedIntExpr items.
   * @param items  the XsUnsignedIntExpr items collected by the sequence
   * @return  a XsUnsignedIntSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsUnsignedIntSeqExpr unsignedIntSeq(XsUnsignedIntExpr... items);
  
@@ -610,6 +768,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsUnsignedLongExpr items.
   * @param items  the XsUnsignedLongExpr items collected by the sequence
   * @return  a XsUnsignedLongSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsUnsignedLongSeqExpr unsignedLongSeq(XsUnsignedLongExpr... items);
  
@@ -617,6 +776,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsUnsignedShortExpr items.
   * @param items  the XsUnsignedShortExpr items collected by the sequence
   * @return  a XsUnsignedShortSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsUnsignedShortSeqExpr unsignedShortSeq(XsUnsignedShortExpr... items);
  
@@ -624,6 +784,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsUntypedAtomicExpr items.
   * @param items  the XsUntypedAtomicExpr items collected by the sequence
   * @return  a XsUntypedAtomicSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsUntypedAtomicSeqExpr untypedAtomicSeq(XsUntypedAtomicExpr... items);
  
@@ -631,6 +792,7 @@ public interface XsExpr extends XsValue {
   * Constructs a sequence of XsYearMonthDurationExpr items.
   * @param items  the XsYearMonthDurationExpr items collected by the sequence
   * @return  a XsYearMonthDurationSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public XsYearMonthDurationSeqExpr yearMonthDurationSeq(XsYearMonthDurationExpr... items);
 

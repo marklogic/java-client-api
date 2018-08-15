@@ -46,7 +46,7 @@ task sourcesJar(type: Jar) {
 }
 
 javadoc {
-    maxMemory="3500m"
+    maxMemory="6000m"
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
@@ -54,6 +54,13 @@ javadoc {
     options.links = [ 'http://docs.oracle.com/javase/8/docs/api/' ]
     options.use = true
     exclude(['**/impl/**', '**/jaxb/**', '**/test/**'])
+// workaround for bug in options.docFilesSubDirs = true
+    doLast{
+        copy{
+            from "${projectDir}/src/main/javadoc/doc-files"
+            into "${buildDir}/docs/javadoc/doc-files"
+        }
+    }
 }
 
 task javadocJar (type: Jar, dependsOn: javadoc) {

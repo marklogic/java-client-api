@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * An instance of a server time expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsTimeExpr extends XsTimeSeqExpr, XsAnyAtomicTypeExpr {
 }

@@ -26,6 +26,7 @@ import com.marklogic.client.type.XsNumericExpr;
 import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.MathLinearModelExpr;
 import com.marklogic.client.type.MathLinearModelSeqExpr;
 
@@ -44,7 +45,7 @@ class MathExprImpl implements MathExpr {
 
     
   @Override
-  public XsDoubleExpr acos(XsDoubleExpr x) {
+  public XsDoubleExpr acos(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for acos() cannot be null");
     }
@@ -53,7 +54,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr asin(XsDoubleExpr x) {
+  public XsDoubleExpr asin(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for asin() cannot be null");
     }
@@ -62,7 +63,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr atan(XsDoubleExpr x) {
+  public XsDoubleExpr atan(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for atan() cannot be null");
     }
@@ -71,13 +72,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr atan2(XsDoubleExpr y, double x) {
+  public XsDoubleExpr atan2(ServerExpression y, double x) {
     return atan2(y, xs.doubleVal(x));
   }
 
   
   @Override
-  public XsDoubleExpr atan2(XsDoubleExpr y, XsDoubleExpr x) {
+  public XsDoubleExpr atan2(ServerExpression y, ServerExpression x) {
     if (y == null) {
       throw new IllegalArgumentException("y parameter for atan2() cannot be null");
     }
@@ -89,7 +90,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr ceil(XsDoubleExpr x) {
+  public XsDoubleExpr ceil(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for ceil() cannot be null");
     }
@@ -98,13 +99,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr correlation(JsonArraySeqExpr arg) {
+  public XsDoubleExpr correlation(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "correlation", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr cos(XsDoubleExpr x) {
+  public XsDoubleExpr cos(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for cos() cannot be null");
     }
@@ -113,7 +114,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr cosh(XsDoubleExpr x) {
+  public XsDoubleExpr cosh(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for cosh() cannot be null");
     }
@@ -122,7 +123,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr cot(XsDoubleExpr x) {
+  public XsDoubleExpr cot(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for cot() cannot be null");
     }
@@ -131,19 +132,19 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr covariance(JsonArraySeqExpr arg) {
+  public XsDoubleExpr covariance(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "covariance", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr covarianceP(JsonArraySeqExpr arg) {
+  public XsDoubleExpr covarianceP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "covariance-p", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr degrees(XsDoubleExpr x) {
+  public XsDoubleExpr degrees(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for degrees() cannot be null");
     }
@@ -152,7 +153,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr exp(XsDoubleExpr x) {
+  public XsDoubleExpr exp(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for exp() cannot be null");
     }
@@ -161,7 +162,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr fabs(XsDoubleExpr x) {
+  public XsDoubleExpr fabs(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for fabs() cannot be null");
     }
@@ -170,7 +171,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr floor(XsDoubleExpr x) {
+  public XsDoubleExpr floor(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for floor() cannot be null");
     }
@@ -179,13 +180,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr fmod(XsDoubleExpr x, double y) {
+  public XsDoubleExpr fmod(ServerExpression x, double y) {
     return fmod(x, xs.doubleVal(y));
   }
 
   
   @Override
-  public XsDoubleExpr fmod(XsDoubleExpr x, XsDoubleExpr y) {
+  public XsDoubleExpr fmod(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for fmod() cannot be null");
     }
@@ -197,7 +198,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public ItemSeqExpr frexp(XsDoubleExpr x) {
+  public ItemSeqExpr frexp(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for frexp() cannot be null");
     }
@@ -206,13 +207,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr ldexp(XsDoubleExpr y, long i) {
+  public XsDoubleExpr ldexp(ServerExpression y, long i) {
     return ldexp(y, xs.integer(i));
   }
 
   
   @Override
-  public XsDoubleExpr ldexp(XsDoubleExpr y, XsIntegerExpr i) {
+  public XsDoubleExpr ldexp(ServerExpression y, ServerExpression i) {
     if (y == null) {
       throw new IllegalArgumentException("y parameter for ldexp() cannot be null");
     }
@@ -224,13 +225,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public MathLinearModelExpr linearModel(JsonArraySeqExpr arg) {
+  public MathLinearModelExpr linearModel(ServerExpression arg) {
     return new LinearModelCallImpl("math", "linear-model", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleSeqExpr linearModelCoeff(MathLinearModelExpr linearModel) {
+  public XsDoubleSeqExpr linearModelCoeff(ServerExpression linearModel) {
     if (linearModel == null) {
       throw new IllegalArgumentException("linearModel parameter for linearModelCoeff() cannot be null");
     }
@@ -239,7 +240,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr linearModelIntercept(MathLinearModelExpr linearModel) {
+  public XsDoubleExpr linearModelIntercept(ServerExpression linearModel) {
     if (linearModel == null) {
       throw new IllegalArgumentException("linearModel parameter for linearModelIntercept() cannot be null");
     }
@@ -248,7 +249,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr linearModelRsquared(MathLinearModelExpr linearModel) {
+  public XsDoubleExpr linearModelRsquared(ServerExpression linearModel) {
     if (linearModel == null) {
       throw new IllegalArgumentException("linearModel parameter for linearModelRsquared() cannot be null");
     }
@@ -257,7 +258,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr log(XsDoubleExpr x) {
+  public XsDoubleExpr log(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for log() cannot be null");
     }
@@ -266,7 +267,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr log10(XsDoubleExpr x) {
+  public XsDoubleExpr log10(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for log10() cannot be null");
     }
@@ -275,31 +276,31 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr median(XsDoubleSeqExpr arg) {
+  public XsDoubleExpr median(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "median", new Object[]{ arg });
   }
 
   
   @Override
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg) {
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg) {
     return new XsExprImpl.AnyAtomicTypeSeqCallImpl("math", "mode", new Object[]{ arg });
   }
 
   
   @Override
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, String options) {
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg, String options) {
     return mode(arg, (options == null) ? (XsStringExpr) null : xs.string(options));
   }
 
   
   @Override
-  public XsAnyAtomicTypeSeqExpr mode(XsAnyAtomicTypeSeqExpr arg, XsStringSeqExpr options) {
+  public XsAnyAtomicTypeSeqExpr mode(ServerExpression arg, ServerExpression options) {
     return new XsExprImpl.AnyAtomicTypeSeqCallImpl("math", "mode", new Object[]{ arg, options });
   }
 
   
   @Override
-  public XsDoubleSeqExpr modf(XsDoubleExpr x) {
+  public XsDoubleSeqExpr modf(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for modf() cannot be null");
     }
@@ -308,13 +309,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value) {
+  public XsDoubleExpr percentRank(ServerExpression arg, String value) {
     return percentRank(arg, (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value));
   }
 
   
   @Override
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value) {
+  public XsDoubleExpr percentRank(ServerExpression arg, ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for percentRank() cannot be null");
     }
@@ -323,13 +324,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, String value, String options) {
+  public XsDoubleExpr percentRank(ServerExpression arg, String value, String options) {
     return percentRank(arg, (value == null) ? (XsAnyAtomicTypeExpr) null : xs.string(value), (options == null) ? (XsStringExpr) null : xs.string(options));
   }
 
   
   @Override
-  public XsDoubleExpr percentRank(XsAnyAtomicTypeSeqExpr arg, XsAnyAtomicTypeExpr value, XsStringSeqExpr options) {
+  public XsDoubleExpr percentRank(ServerExpression arg, ServerExpression value, ServerExpression options) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for percentRank() cannot be null");
     }
@@ -338,13 +339,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, double p) {
+  public XsDoubleSeqExpr percentile(ServerExpression arg, double p) {
     return percentile(arg, xs.doubleVal(p));
   }
 
   
   @Override
-  public XsDoubleSeqExpr percentile(XsDoubleSeqExpr arg, XsDoubleSeqExpr p) {
+  public XsDoubleSeqExpr percentile(ServerExpression arg, ServerExpression p) {
     return new XsExprImpl.DoubleSeqCallImpl("math", "percentile", new Object[]{ arg, p });
   }
 
@@ -356,13 +357,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr pow(XsDoubleExpr x, double y) {
+  public XsDoubleExpr pow(ServerExpression x, double y) {
     return pow(x, xs.doubleVal(y));
   }
 
   
   @Override
-  public XsDoubleExpr pow(XsDoubleExpr x, XsDoubleExpr y) {
+  public XsDoubleExpr pow(ServerExpression x, ServerExpression y) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for pow() cannot be null");
     }
@@ -374,7 +375,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr radians(XsDoubleExpr x) {
+  public XsDoubleExpr radians(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for radians() cannot be null");
     }
@@ -383,13 +384,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2) {
+  public XsIntegerExpr rank(ServerExpression arg1, String arg2) {
     return rank(arg1, (arg2 == null) ? (XsAnyAtomicTypeExpr) null : xs.string(arg2));
   }
 
   
   @Override
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2) {
+  public XsIntegerExpr rank(ServerExpression arg1, ServerExpression arg2) {
     if (arg2 == null) {
       throw new IllegalArgumentException("arg2 parameter for rank() cannot be null");
     }
@@ -398,13 +399,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, String arg2, String options) {
+  public XsIntegerExpr rank(ServerExpression arg1, String arg2, String options) {
     return rank(arg1, (arg2 == null) ? (XsAnyAtomicTypeExpr) null : xs.string(arg2), (options == null) ? (XsStringExpr) null : xs.string(options));
   }
 
   
   @Override
-  public XsIntegerExpr rank(XsAnyAtomicTypeSeqExpr arg1, XsAnyAtomicTypeExpr arg2, XsStringSeqExpr options) {
+  public XsIntegerExpr rank(ServerExpression arg1, ServerExpression arg2, ServerExpression options) {
     if (arg2 == null) {
       throw new IllegalArgumentException("arg2 parameter for rank() cannot be null");
     }
@@ -413,7 +414,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr sin(XsDoubleExpr x) {
+  public XsDoubleExpr sin(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for sin() cannot be null");
     }
@@ -422,7 +423,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr sinh(XsDoubleExpr x) {
+  public XsDoubleExpr sinh(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for sinh() cannot be null");
     }
@@ -431,7 +432,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr sqrt(XsDoubleExpr x) {
+  public XsDoubleExpr sqrt(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for sqrt() cannot be null");
     }
@@ -440,19 +441,19 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr stddev(XsDoubleSeqExpr arg) {
+  public XsDoubleExpr stddev(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "stddev", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr stddevP(XsDoubleSeqExpr arg) {
+  public XsDoubleExpr stddevP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "stddev-p", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr tan(XsDoubleExpr x) {
+  public XsDoubleExpr tan(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for tan() cannot be null");
     }
@@ -461,7 +462,7 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr tanh(XsDoubleExpr x) {
+  public XsDoubleExpr tanh(ServerExpression x) {
     if (x == null) {
       throw new IllegalArgumentException("x parameter for tanh() cannot be null");
     }
@@ -470,19 +471,19 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsNumericExpr trunc(XsNumericExpr arg) {
+  public XsNumericExpr trunc(ServerExpression arg) {
     return new XsExprImpl.NumericCallImpl("math", "trunc", new Object[]{ arg });
   }
 
   
   @Override
-  public XsNumericExpr trunc(XsNumericExpr arg, long n) {
+  public XsNumericExpr trunc(ServerExpression arg, long n) {
     return trunc(arg, xs.integer(n));
   }
 
   
   @Override
-  public XsNumericExpr trunc(XsNumericExpr arg, XsIntegerExpr n) {
+  public XsNumericExpr trunc(ServerExpression arg, ServerExpression n) {
     if (n == null) {
       throw new IllegalArgumentException("n parameter for trunc() cannot be null");
     }
@@ -491,13 +492,13 @@ class MathExprImpl implements MathExpr {
 
   
   @Override
-  public XsDoubleExpr variance(XsDoubleSeqExpr arg) {
+  public XsDoubleExpr variance(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "variance", new Object[]{ arg });
   }
 
   
   @Override
-  public XsDoubleExpr varianceP(XsDoubleSeqExpr arg) {
+  public XsDoubleExpr varianceP(ServerExpression arg) {
     return new XsExprImpl.DoubleCallImpl("math", "variance-p", new Object[]{ arg });
   }
 
@@ -505,19 +506,19 @@ class MathExprImpl implements MathExpr {
   public MathLinearModelSeqExpr linearModelSeq(MathLinearModelExpr... items) {
     return new LinearModelSeqListImpl(items);
   }
-  static class LinearModelSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements MathLinearModelSeqExpr {
+  static class LinearModelSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements MathLinearModelSeqExpr {
     LinearModelSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class LinearModelSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements MathLinearModelSeqExpr {
+  static class LinearModelSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MathLinearModelSeqExpr {
     LinearModelSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class LinearModelCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements MathLinearModelExpr {
+  static class LinearModelCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements MathLinearModelExpr {
     LinearModelCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
 

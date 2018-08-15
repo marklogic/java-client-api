@@ -1,0 +1,94 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>json:array Server Expression Type</title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style"/>
+    <script type="text/javascript" src="../../script.js"></script>
+  </head>
+  <body><div class="topNav"><ul class="navList" title="Navigation">
+	<li><a href="../../overview-summary.html">Overview</a></li>
+	<li><a href="../../com/marklogic/client/expression/package-summary.html">Package</a></li>
+	<li><a href="../../deprecated-list.html">Deprecated</a></li>
+	<li><a href="../../index-all.html">Index</a></li>
+	<li><a href="../../help-doc.html">Help</a></li>
+      </ul></div><div class="header"><h2>json:array Server Expression</h2></div><div class="contentContainer"><p>A server expression that returns a value of (or implicitly castable to) the json:array server type.
+For all server types, see the <a href="ml-server-type-tree.html">Server Expression Type Hierarchy</a>.</p><br/><div class="summary"><h3>Cast With</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">json:array</td>
+	    <td class="colLast"><span class="memberNameLink">json:array</span>(<span><a href="element-node.html">element-node</a> <i>array</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-array">java</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="item.html">item</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_unsignedLong.html">xs:unsignedLong</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">json:array-size</span>(<span>json:array <i>array</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-array-size">java</a></td>
+	    <td><a href="http://docs.marklogic.com/json:array-size" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="item.html">item</a>*</td>
+	    <td class="colLast"><span class="memberNameLink">json:array-values</span>(<span>json:array <i>array</i></span>, <span><a href="xs_boolean.html">xs:boolean</a> <i>flatten</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-array-values">java</a></td>
+	    <td><a href="http://docs.marklogic.com/json:array-values" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">json:array</td>
+	    <td class="colLast"><span class="memberNameLink">json:subarray</span>(<span>json:array <i>array</i></span>, <span><a href="xs_numeric.html">xs:numeric</a> <i>startingLoc</i></span>, <span><a href="xs_numeric.html">xs:numeric</a> <i>length</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-subarray">java</a></td>
+	    <td><a href="http://docs.marklogic.com/json:subarray" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">math:correlation</span>(<span>json:array <i>arg</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-correlation">java</a></td>
+	    <td><a href="http://docs.marklogic.com/math:correlation" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">math:covariance</span>(<span>json:array <i>arg</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-covariance">java</a></td>
+	    <td><a href="http://docs.marklogic.com/math:covariance" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_double.html">xs:double</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">math:covariance-p</span>(<span>json:array <i>arg</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-covariance-p">java</a></td>
+	    <td><a href="http://docs.marklogic.com/math:covariance-p" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="math_linear-model.html">math:linear-model</a>?</td>
+	    <td class="colLast"><span class="memberNameLink">math:linear-model</span>(<span>json:array <i>arg</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MathExpr.html#ml-server-type-linear-model">java</a></td>
+	    <td><a href="http://docs.marklogic.com/math:linear-model" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">json:array</td>
+	    <td class="colLast"><span class="memberNameLink">json:subarray</span>(<span>json:array <i>array</i></span>, <span><a href="xs_numeric.html">xs:numeric</a> <i>startingLoc</i></span>, <span><a href="xs_numeric.html">xs:numeric</a> <i>length</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-subarray">java</a></td>
+	    <td><a href="http://docs.marklogic.com/json:subarray" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">json:array</td>
+	    <td class="colLast"><span class="memberNameLink">json:to-array</span>(<span><a href="item.html">item</a> <i>items</i>*</span>, <span><a href="xs_numeric.html">xs:numeric</a> <i>limit</i>?</span>, <span><a href="item.html">item</a> <i>zero</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/JsonExpr.html#ml-server-type-to-array">java</a></td>
+	    <td><a href="http://docs.marklogic.com/json:to-array" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div></div></body>
+</html>

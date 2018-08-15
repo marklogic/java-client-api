@@ -17,5 +17,6 @@ package com.marklogic.client.type;
 
 /**
  * An instance of a JSON array node expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface ArrayNodeExpr extends NodeExpr, ArrayNodeSeqExpr, JsonContentNodeExpr, JsonRootNodeExpr { }
