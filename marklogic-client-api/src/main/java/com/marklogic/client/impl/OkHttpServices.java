@@ -2625,9 +2625,17 @@ public class OkHttpServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
+    return getValue(reqlog, type, key, null, isNullable, mimetype, as);
+  }
+  @Override
+  public <T> T getValue(RequestLogger reqlog, String type, String key, Transaction transaction,
+                        boolean isNullable, String mimetype, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
     logger.debug("Getting {}/{}", type, key);
 
     Request.Builder requestBldr = setupRequest(type + "/" + key, null, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
 
     Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {

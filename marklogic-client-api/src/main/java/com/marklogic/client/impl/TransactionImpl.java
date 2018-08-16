@@ -89,6 +89,7 @@ class TransactionImpl implements Transaction {
         null,
         "transactions",
         getTransactionId(),
+        this,
         false,
         handleBase.getMimetype(),
         handleBase.receiveAs()

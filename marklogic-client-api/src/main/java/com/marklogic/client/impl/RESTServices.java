@@ -199,6 +199,9 @@ public interface RESTServices {
   public <T> T getValue(RequestLogger logger, String type, String key,
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  public <T> T getValue(RequestLogger logger, String type, String key, Transaction transaction,
+                        boolean isNullable, String mimetype, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)
     throws ForbiddenUserException, FailedRequestException;
   public <T> T getValues(RequestLogger reqlog, String type, RequestParameters extraParams,
