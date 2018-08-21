@@ -47,7 +47,6 @@ public class SessionStateImpl implements SessionState {
    void setCookies(List<ClientCookie> cookies) {
       if ( cookies != null ) {
          if(setCreatedTimestamp.compareAndSet(false, true)) {
-            created = Calendar.getInstance();
             for (ClientCookie cookie : cookies) {
                // Drop the SessionId cookie received from the server. We add it every
                // time we make a request with a SessionState object passed
@@ -56,6 +55,7 @@ public class SessionStateImpl implements SessionState {
                // related to an HTTP connection that need to be released
                this.cookies.add(new ClientCookie(cookie));
             }
+            created = Calendar.getInstance();
          }
       }
    }

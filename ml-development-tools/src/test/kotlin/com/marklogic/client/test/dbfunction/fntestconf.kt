@@ -28,6 +28,8 @@ import okhttp3.RequestBody
 val contentDbName = "DBFUnitTest"
 val modulesDbName = "DBFUnitTestModules"
 val serverName    = "DBFUnitTest"
+val host          = System.getenv("TEST_HOST") ?: "localhost"
+val serverPort    = System.getenv("TEST_PORT")?.toInt() ?: 8016
 
 fun main(args: Array<String>) {
   val mapper     = jacksonObjectMapper()
@@ -57,7 +59,7 @@ fun dbfTestTeardown(serializer: ObjectWriter) {
 }
 fun setupServer(serializer: ObjectWriter) {
   val dbClient = DatabaseClientFactory.newClient(
-      "localhost",
+      host,
       8002,
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
@@ -82,7 +84,7 @@ fun setupServer(serializer: ObjectWriter) {
       mapOf<String,Any>(
         "server-name"      to serverName,
         "root"             to "/",
-        "port"             to 8016,
+        "port"             to serverPort,
         "content-database" to contentDbName,
         "modules-database" to modulesDbName
         )
@@ -94,7 +96,7 @@ fun createEntity(client: OkHttpClient, serializer: ObjectWriter, address: String
     instanceName: String, instancedef: Map<String,Any>) {
   val response = client.newCall(
     Request.Builder()
-      .url("http://localhost:8002/manage/v2/"+address)
+      .url("""http://${host}:8002/manage/v2/${address}""")
       .post(
         RequestBody.create(MediaType.parse("application/json"), serializer.writeValueAsString(instancedef))
         )
@@ -106,7 +108,7 @@ fun createEntity(client: OkHttpClient, serializer: ObjectWriter, address: String
 }
 fun setupModules() {
   val dbClient = DatabaseClientFactory.newClient(
-      "localhost",
+      host,
       8000,
       "DBFUnitTestModules",
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
@@ -132,7 +134,7 @@ fun setupModules() {
 }
 fun teardownServer(serializer: ObjectWriter) {
   val dbClient = DatabaseClientFactory.newClient(
-      "localhost",
+      host,
       8002,
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
@@ -141,7 +143,7 @@ fun teardownServer(serializer: ObjectWriter) {
 
   val response = client.newCall(
     Request.Builder()
-      .url("""http://localhost:8002/manage/v2/servers/${serverName}/properties?group-id=Default""")
+      .url("""http://${host}:8002/manage/v2/servers/${serverName}/properties?group-id=Default""")
       .put(
         RequestBody.create(MediaType.parse("application/json"), serializer.writeValueAsString(
           mapOf<String, Int>("content-database" to 0, "modules-database" to 0)
@@ -164,7 +166,7 @@ fun teardownServer(serializer: ObjectWriter) {
 fun deleteEntity(client: OkHttpClient, address: String, name: String, instanceName: String) {
   val response = client.newCall(
     Request.Builder()
-      .url("http://localhost:8002/manage/v2/"+address)
+      .url("""http://${host}:8002/manage/v2/${address}""")
       .delete()
       .build()
   ).execute()
