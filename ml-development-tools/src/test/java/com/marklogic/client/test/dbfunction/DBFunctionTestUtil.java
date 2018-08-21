@@ -15,13 +15,17 @@ public class DBFunctionTestUtil {
    // TODO - parameterizable security context
    public final static DatabaseClient db = makeTestClient();
    private static DatabaseClient makeTestClient() {
+
+      String host = System.getProperty("TEST_HOST", "localhost");
+      int    port = Integer.parseInt(System.getProperty("TEST_PORT", "8016"));;
+
       DatabaseClient db = DatabaseClientFactory.newClient(
-       "localhost",
-       8016,
+        host,
+        port,
 // TODO: use rest-reader role after amping to add header in test inspector
-//       new DatabaseClientFactory.DigestAuthContext("rest-reader", "x")
-       new DatabaseClientFactory.DigestAuthContext("admin", "admin")
-       );
+//      new DatabaseClientFactory.DigestAuthContext("rest-reader", "x")
+        new DatabaseClientFactory.DigestAuthContext("admin", "admin")
+        );
 
       try {
          OkHttpClient client = (OkHttpClient) db.getClientImplementation();
@@ -29,8 +33,8 @@ public class DBFunctionTestUtil {
          Response response = client.newCall(new Request.Builder().url(
             new HttpUrl.Builder()
                .scheme("http")
-               .host("localhost")
-               .port(8016)
+               .host(host)
+               .port(port)
                .encodedPath("/")
                .build()
             ).build()

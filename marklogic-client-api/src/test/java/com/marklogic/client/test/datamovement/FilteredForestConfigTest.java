@@ -200,7 +200,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithWriteAndQueryBatcher() throws Exception{
-    ForestConfiguration forestConfig = moveMgr.readForestConfig();
+    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
+
     long hostNum = Stream.of(forestConfig.listForests()).map(forest->forest.getPreferredHost()).distinct().count();
     if ( hostNum <= 1 ) return; // we're not in a cluster, so this test isn't valid
 
@@ -218,7 +219,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithInvalidHosts() throws Exception{
-    ForestConfiguration forestConfig = moveMgr.readForestConfig();
+    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
     String host1 = forestConfig.listForests()[0].getPreferredHost();
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)

@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -28,12 +29,7 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.test.Common;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -89,7 +85,7 @@ public class ApplyTransformTest {
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.REPLACE);
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
       .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
@@ -112,7 +108,7 @@ public class ApplyTransformTest {
     ApplyTransformListener listener = new ApplyTransformListener()
       .withTransform(transform)
       .withApplyResult(ApplyResult.IGNORE);
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
       .onUrisReady(listener);
     JobTicket ticket = moveMgr.startJob( batcher );
     batcher.awaitCompletion();
@@ -128,7 +124,8 @@ public class ApplyTransformTest {
     DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
     int numDocs = 1000;
     // write the documents
-    WriteBatcher batcher1 = moveMgr.newWriteBatcher().withBatchSize(100)
+    WriteBatcher batcher1 = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+      .withBatchSize(100)
       .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
     JobTicket ticket1 = moveMgr.startJob( batcher1 );
     for ( int i=0; i < numDocs; i++) {
@@ -148,7 +145,7 @@ public class ApplyTransformTest {
       .withApplyResult(ApplyResult.REPLACE)
       .onSuccess(batch -> count2.addAndGet(batch.getItems().length))
       .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query2)
+    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query2))
       .onUrisReady(listener)
       .withConsistentSnapshot();
     JobTicket ticket2 = moveMgr.startJob( batcher );
@@ -160,7 +157,7 @@ public class ApplyTransformTest {
     StructuredQueryDefinition query3 = sqb.value(sqb.jsonProperty("testProperty"), "test3a");
     query3.setCollections(collection);
     final AtomicInteger count3 = new AtomicInteger(0);
-    QueryBatcher batcher3 = moveMgr.newQueryBatcher(query3)
+    QueryBatcher batcher3 = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query3))
       .withBatchSize(100)
       .onUrisReady(batch -> count3.addAndGet(batch.getItems().length))
       .onQueryFailure((throwable) -> throwable.printStackTrace());
@@ -186,7 +183,7 @@ public class ApplyTransformTest {
     ServerTransform transform = new ServerTransform(transformName1);
     List skippedUris = new ArrayList<>();
     StringBuilder failures = new StringBuilder();
-    QueryBatcher batcher = moveMgr.newQueryBatcher(uris.iterator())
+    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(uris.iterator()))
       .withBatchSize(1)
       .onUrisReady(
         new ApplyTransformListener()
