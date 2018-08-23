@@ -166,20 +166,6 @@ public class QueryBatcherTest {
   }
 
   @Test
-  public void testRawCtsQuery() throws Exception {
-    String ctsQuery = "<cts:directory-query xmlns:cts=\"http://marklogic.com/cts\"><cts:uri>/QueryBatcherTest/</cts:uri></cts:directory-query>";
-    RawCtsQueryDefinition query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.XML)).withCriteria("Jane");
-    Map<String, String[]> matchesByForest = new HashMap<>();
-    matchesByForest.put("java-unittest-3", new String[] {uri2});
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
-    ctsQuery = "{ctsquery : {\"directoryQuery\":{\"uris\":[\"/QueryBatcherTest/\"]}}}";;
-    matchesByForest.put("java-unittest-1", new String[] {uri1, uri3, uri4});
-    matchesByForest.put("java-unittest-2", new String[] {uri5});
-    query = client.newQueryManager().newRawCtsQueryDefinition(new StringHandle().with(ctsQuery).withFormat(Format.JSON));
-    runQueryBatcher(moveMgr.newQueryBatcher(query), query, matchesByForest, 1, 2);
-  }
-
-  @Test
   public void testStringQuery() throws Exception {
     StringQueryDefinition query = client.newQueryManager().newStringDefinition().withCriteria("John AND dept:HR");
     query.setCollections(qhbTestCollection);
@@ -306,7 +292,6 @@ public class QueryBatcherTest {
     long minTime = new Date().getTime();
     assertFalse("Job should not be started yet", queryBatcher.isStarted());
     moveMgr.startJob(queryBatcher);
-    long reportStartTime = new Date().getTime();
     JobTicket ticket = moveMgr.getActiveJob(queryBatcherJobId);
     assertTrue("Job should be started now", queryBatcher.isStarted());
     assertEquals(queryBatcherJobName, ticket.getBatcher().getJobName());
@@ -320,7 +305,6 @@ public class QueryBatcherTest {
       fail("Job did not finish, it was interrupted");
     }
 
-    assertTrue("Job Report should return null for end timestamp", report.getJobEndTime() == null);
     moveMgr.stopJob(ticket.getBatcher());
 
     assertTrue("Job should be stopped now", queryBatcher.isStopped());
@@ -339,12 +323,6 @@ public class QueryBatcherTest {
     assertTrue("Batch has incorrect timestamp=" + batchDate.getTime() + " should be between " +
       minTime + " and " + maxTime, batchDate.getTime() >= minTime && batchDate.getTime() <= maxTime);
     Date reportDate = report.getReportTimestamp().getTime();
-    Date reportStartDate = report.getJobStartTime().getTime();
-    Date reportEndDate = report.getJobEndTime().getTime();
-    assertTrue("Job Report has incorrect start timestamp", reportStartDate.getTime() >= minTime &&
-      reportStartDate.getTime() <= reportStartTime);
-    assertTrue("Job Report has incorrect end timestamp", reportEndDate.getTime() >= reportStartDate.getTime() &&
-      reportEndDate.getTime() <= maxTime);
     assertTrue("Job Report has incorrect timestamp", reportDate.getTime() >= minTime && reportDate.getTime() <= maxTime);
     assertEquals("Job Report has incorrect successful batch counts", successfulBatchCount.get(),report.getSuccessBatchesCount());
     assertEquals("Job Report has incorrect successful event counts", totalResults.get(),report.getSuccessEventsCount());
