@@ -95,6 +95,8 @@ public class AlertingTest {
     File options = new File("src/test/resources/alerting-options.xml");
     queryOptionsManager.writeOptions("alerts", new FileHandle(options));
 
+    Common.optionsWait();
+
     queryManager = adminClient.newQueryManager();
 
     transformManager = adminClient.newServerConfigManager().newTransformExtensionsManager();
@@ -102,6 +104,7 @@ public class AlertingTest {
     File ruleTransform = new File("src/test/resources/rule-transform.xqy");
     transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
 
+    Common.moduleWait();
 
     adminClient.newServerConfigManager().setServerRequestLogging(true);
     Common.connect();

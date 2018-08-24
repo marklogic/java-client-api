@@ -147,6 +147,8 @@ public class SearchFacetTest {
     mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     mgr.writeOptions("photos", new DOMHandle(document));
 
+    Common.optionsWait();
+
     QueryManager queryMgr = Common.client.newQueryManager();
 
     StringQueryDefinition qdef = queryMgr.newStringDefinition("photos");

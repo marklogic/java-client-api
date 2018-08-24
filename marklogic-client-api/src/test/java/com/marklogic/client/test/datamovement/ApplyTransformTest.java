@@ -70,6 +70,8 @@ public class ApplyTransformTest {
       transformName1, new FileHandle(new File("src/test/resources/" + transformName1)));
     Common.newAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
       transformName2, new FileHandle(new File("src/test/resources/" + transformName2)));
+
+    Common.moduleWait();
   }
 
   @Test

@@ -73,6 +73,8 @@ public class ExtensionLibrariesTest {
     // delete it
     libsMgr.delete("/ext/my/path/to/my/module.xqy");
 
+    Common.moduleWait();
+
     try {
       // read deleted module
       xqueryModuleAsString = libsMgr.read(

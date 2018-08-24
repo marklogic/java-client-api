@@ -172,6 +172,8 @@ public class SuggestTest {
     queryOptionsMgr.writeOptions(optionsName, new StringHandle(
       suggestionOptions));
 
+    Common.optionsWait();
+
     return optionsName;
   }
 

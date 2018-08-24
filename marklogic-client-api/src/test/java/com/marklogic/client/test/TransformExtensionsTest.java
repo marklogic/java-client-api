@@ -135,6 +135,9 @@ public class TransformExtensionsTest {
 
     extensionMgr.deleteTransform(XQUERY_NAME);
     boolean transformDeleted = true;
+
+    Common.moduleWait();
+
     try {
       handle = new StringHandle();
       extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
@@ -145,6 +148,9 @@ public class TransformExtensionsTest {
     assertTrue("Failed to delete XQuery transform", transformDeleted);
 
     extensionMgr.deleteTransform(XSLT_NAME);
+
+    Common.moduleWait();
+
     try {
       handle = new StringHandle();
       extensionMgr.readXSLTransform(XSLT_NAME, handle);
@@ -153,6 +159,7 @@ public class TransformExtensionsTest {
       transformDeleted = (result == null || result.length() == 0);
     } catch(FailedRequestException ex) {
     }
+
     assertTrue("Failed to delete XSLT transform", transformDeleted);
   }
   public void writeXQueryTransform(TransformExtensionsManager extensionMgr)
@@ -163,6 +170,8 @@ public class TransformExtensionsTest {
       new StringHandle().withFormat(Format.TEXT).with(xqueryTransform),
       makeXQueryMetadata()
     );
+
+    Common.moduleWait();
   }
   public void writeXSLTransform(TransformExtensionsManager extensionMgr)
     throws ResourceNotFoundException, ResourceNotResendableException, ForbiddenUserException, FailedRequestException
@@ -172,5 +181,7 @@ public class TransformExtensionsTest {
       new StringHandle().withFormat(Format.XML).withMimetype("application/xslt+xml").with(xslTransform),
       makeXSLTMetadata()
     );
+
+    Common.moduleWait();
   }
 }

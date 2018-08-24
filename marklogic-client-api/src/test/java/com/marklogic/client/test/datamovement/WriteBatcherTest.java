@@ -115,6 +115,8 @@ public class WriteBatcherTest {
   public static void installModule() {
     Common.newAdminClient().newServerConfigManager().newTransformExtensionsManager().writeJavascriptTransform(
       transform, new FileHandle(new File("src/test/resources/" + transform)));
+
+    Common.moduleWait();
   }
 
   @Test

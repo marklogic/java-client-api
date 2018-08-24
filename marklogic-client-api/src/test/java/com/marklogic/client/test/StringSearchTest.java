@@ -277,6 +277,8 @@ public class StringSearchTest {
 
     queryOptionsMgr.writeOptions(optionsName, new StringHandle(options).withFormat(Format.JSON));
 
+    Common.optionsWait();
+
     return optionsName;
   }
 }

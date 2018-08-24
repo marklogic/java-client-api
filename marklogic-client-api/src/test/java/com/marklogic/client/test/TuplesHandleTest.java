@@ -99,6 +99,8 @@ public class TuplesHandleTest {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions2", new StringHandle(options));
 
+    Common.optionsWait();
+
     logger.debug(options.toString());
 
     QueryManager queryMgr = Common.client.newQueryManager();
@@ -133,6 +135,8 @@ public class TuplesHandleTest {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions3", new StringHandle(options));
 
+    Common.optionsWait();
+
     QueryManager queryMgr = Common.client.newQueryManager();
 
     ValuesDefinition vdef = queryMgr.newValuesDefinition("co", "valuesoptions3");
@@ -157,6 +161,8 @@ public class TuplesHandleTest {
   {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+    Common.optionsWait();
 
     QueryManager queryMgr = Common.client.newQueryManager();
 
@@ -187,6 +193,8 @@ public class TuplesHandleTest {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
+    Common.optionsWait();
+
     QueryManager queryMgr = Common.client.newQueryManager();
 
     ValuesDefinition vdef = queryMgr.newValuesDefinition("n-way", "valuesoptions");
@@ -216,6 +224,8 @@ public class TuplesHandleTest {
   {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
+
+    Common.optionsWait();
 
     QueryManager queryMgr = Common.client.newQueryManager();
     queryMgr.setPageLength(6);

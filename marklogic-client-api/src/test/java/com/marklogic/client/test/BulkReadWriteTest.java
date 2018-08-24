@@ -344,6 +344,8 @@ public class BulkReadWriteTest {
       Common.testFileToString(TransformExtensionsTest.XQUERY_FILE)
     );
 
+    Common.moduleWait();
+
     String docId[] = {"/foo/test/myFoo1.xml","/foo/test/myFoo2.xml","/foo/test/myFoo3.xml"};
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     ServerTransform transform = new ServerTransform(TransformExtensionsTest.XQUERY_NAME)
