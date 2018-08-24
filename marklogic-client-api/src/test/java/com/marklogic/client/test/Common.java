@@ -63,7 +63,7 @@ public class Common {
   final public static int     PORT         = Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
   final public static boolean PLACE_DIRECT = Boolean.parseBoolean(System.getProperty("TEST_PLACE_DIRECT", "true"));
 
-  final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST__WAIT", "false"));
+  final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
   final public static int     MODULE_WAIT   = Integer.parseInt(System.getProperty("TEST_MODULE_WAIT",   WITH_WAIT ?  "750" : "0"));
   final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "1500" : "0"));
   final public static int     OPTIONS_WAIT  = Integer.parseInt(System.getProperty("TEST_OPTIONS_WAIT",  WITH_WAIT ? "1000" : "0"));
