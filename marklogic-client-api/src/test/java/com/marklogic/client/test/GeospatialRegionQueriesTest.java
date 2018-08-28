@@ -52,6 +52,8 @@ public class GeospatialRegionQueriesTest {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml","newpolygon.xml");
     Common.adminClient.newServerConfigManager().setQueryValidation(false);
+
+    Common.propertyWait();
   }
 
   @BeforeClass
@@ -140,6 +142,8 @@ public class GeospatialRegionQueriesTest {
 
     docMgr.write(writeset);
     Common.adminClient.newServerConfigManager().setQueryValidation(true);
+
+    Common.propertyWait();
   }
 
   @Ignore

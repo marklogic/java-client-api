@@ -65,6 +65,8 @@ public class FailedRequestTest {
 
     Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
 
+    Common.propertyWait();
+
     StringWriter xml = new StringWriter();
     XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
     xsw.writeStartDocument();

@@ -102,6 +102,8 @@ public class ResourceExtensionsTest {
     handle.set(resourceServices);
     extensionMgr.writeServices(RESOURCE_NAME, handle, metadata, params);
 
+    Common.moduleWait();
+
     extensionMgr.readServices(RESOURCE_NAME, handle);
     assertEquals("Failed to retrieve resource services", resourceServices, handle.get());
 

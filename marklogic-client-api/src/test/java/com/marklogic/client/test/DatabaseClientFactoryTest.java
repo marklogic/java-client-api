@@ -78,6 +78,17 @@ public class DatabaseClientFactoryTest {
     tmpClient = Common.newEvalClient("Documents");
     try {
       assertNotNull("Factory could not create client", tmpClient);
+      String database =
+        tmpClient.newServerEval()
+          .xquery("xdmp:database-name(xdmp:database())")
+          .evalAs(String.class);
+      assertEquals("Runtime database is wrong", "Documents", database);
+/*
+      QueryManager fixupQueryMgr = tmpClient.newQueryManager();
+      DeleteQueryDefinition delQuery = fixupQueryMgr.newDeleteDefinition();
+      delQuery.setDirectory("/test/");
+      fixupQueryMgr.delete(delQuery);
+ */
       XMLDocumentManager runtimeDbDocMgr = tmpClient.newXMLDocumentManager();
       // test that doc creation happens in the Documents db
       String docContents = "<a>hello</a>";

@@ -263,7 +263,7 @@ public class WriteBatcherTest {
     assertEquals(1, successListeners.length);
     assertEquals(successListener, successListeners[0]);
 
-    batcher.setBatchSuccessListeners(null);
+    batcher.setBatchSuccessListeners((WriteBatchListener[]) null);
     successListeners = batcher.getBatchSuccessListeners();
     assertEquals(0, successListeners.length);
 
@@ -276,7 +276,7 @@ public class WriteBatcherTest {
     assertEquals(1, failureListeners.length);
     assertEquals(failureListener, failureListeners[0]);
 
-    batcher.setBatchFailureListeners(null);
+    batcher.setBatchFailureListeners((WriteFailureListener[]) null);
     failureListeners = batcher.getBatchFailureListeners();
     assertEquals(0, failureListeners.length);
 
