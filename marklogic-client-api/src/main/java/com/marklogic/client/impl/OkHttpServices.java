@@ -701,6 +701,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestOnce(Request request) {
+// System.out.println(request.method()+ " "+request.url().url().toExternalForm());
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
@@ -4260,6 +4261,7 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
+// System.out.println(uri.toString());
     return request;
   }
 
