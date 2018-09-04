@@ -69,8 +69,6 @@ public class QueryOptionsManagerTest {
 
     mgr.writeOptions("testempty", new StringHandle("{\"options\":{}}").withFormat(Format.JSON));
 
-    Common.optionsWait();
-
     String optionsResult = mgr.readOptions("testempty", new StringHandle()).get();
     logger.debug("Empty options from server {}", optionsResult);
     assertTrue("Empty options result not empty",optionsResult.contains("options"));
@@ -98,8 +96,6 @@ public class QueryOptionsManagerTest {
 
     queryOptionsMgr.writeOptions(optionsName, new DOMHandle(domDocument));
 
-    Common.optionsWait();
-
     String domString = ((DOMImplementationLS) DocumentBuilderFactory.newInstance().newDocumentBuilder()
       .getDOMImplementation()).createLSSerializer().writeToString(domDocument);
 
@@ -123,8 +119,6 @@ public class QueryOptionsManagerTest {
     FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
     jsonHandle.setFormat(Format.JSON);
     mgr.writeOptions("jsonoptions", jsonHandle);
-
-    Common.optionsWait();
 
     JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
 

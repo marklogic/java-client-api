@@ -213,8 +213,6 @@ public class LegalHoldsTest {
     libsMgr.write("/ext" + directory + "filterUrisReferencedByHolds.sjs",
       new FileHandle(new File("src/test/resources/legal_holds/filterUrisReferencedByHolds.sjs"))
         .withFormat(Format.TEXT));
-
-    Common.moduleWait();
   }
 
   private static void setMergeTimestamp(String timestampXQuery) throws Exception {

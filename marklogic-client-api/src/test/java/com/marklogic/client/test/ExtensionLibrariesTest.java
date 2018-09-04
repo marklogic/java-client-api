@@ -48,8 +48,6 @@ public class ExtensionLibrariesTest {
     libsMgr.write("/ext/my/path/to/my/module.xqy", new FileHandle(
       new File("src/test/resources/module.xqy")).withFormat(Format.TEXT));
 
-    Common.moduleWait();
-
     // read it back
     String xqueryModuleAsString = libsMgr.read(
       "/ext/my/path/to/my/module.xqy", new StringHandle()).get();
@@ -64,8 +62,6 @@ public class ExtensionLibrariesTest {
     libsMgr.write(moduleDescriptor, new FileHandle(
       new File("src/test/resources/module.xqy")).withFormat(Format.TEXT));
 
-    Common.moduleWait();
-
     // get the list of descriptors
     ExtensionLibraryDescriptor[] descriptors = libsMgr.list("/ext/my/path/to/my/");
     assertEquals("number of modules installed", 1, descriptors.length);
@@ -76,8 +72,6 @@ public class ExtensionLibrariesTest {
 
     // delete it
     libsMgr.delete("/ext/my/path/to/my/module.xqy");
-
-    Common.moduleWait();
 
     try {
       // read deleted module

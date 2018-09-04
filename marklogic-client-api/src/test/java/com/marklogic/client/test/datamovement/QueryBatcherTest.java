@@ -130,8 +130,6 @@ public class QueryBatcherTest {
     QueryOptionsManager queryOptionsMgr =
       Common.connectAdmin().newServerConfigManager().newQueryOptionsManager();
     queryOptionsMgr.writeOptions("employees", options);
-
-    Common.optionsWait();
   }
 
   @Test

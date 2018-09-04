@@ -95,8 +95,6 @@ public class RawCtsQueryDefinitionTest {
     File options = new File("src/test/resources/alerting-options.xml");
     queryOptionsManager.writeOptions("alerts", new FileHandle(options));
 
-    Common.optionsWait();
-
     Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
 
     Common.connect();

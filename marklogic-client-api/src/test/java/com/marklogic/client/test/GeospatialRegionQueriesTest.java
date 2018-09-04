@@ -203,8 +203,6 @@ public class GeospatialRegionQueriesTest {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geodoubleoptions", writeHandle);
 
-    Common.optionsWait();
-
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
 
@@ -310,8 +308,6 @@ public class GeospatialRegionQueriesTest {
 
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geooptions", writeHandle);
-
-    Common.optionsWait();
 
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder("geooptions");

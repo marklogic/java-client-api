@@ -84,8 +84,6 @@ public class JSONDocumentTest {
     libsMgr.write("/ext/my-lib.xqy", new FileHandle(
       new File("src/test/resources/my-lib.xqy")).withFormat(Format.TEXT));
 
-    Common.moduleWait();
-
     Common.connect();
   }
 

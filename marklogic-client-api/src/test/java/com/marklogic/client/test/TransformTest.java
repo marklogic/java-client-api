@@ -100,8 +100,6 @@ public class TransformTest {
       new StringHandle(Common.testFileToString(TransformExtensionsTest.XSLT_FILE)),
       TransformExtensionsTest.makeXSLTMetadata()
     );
-
-    Common.moduleWait();
   }
 
   @AfterClass
@@ -142,8 +140,6 @@ public class TransformTest {
     libMgr.write("/ext/SampleMlcpTransform.xqy",
       new StringHandle(transformContents).withFormat(Format.TEXT));
 
-    Common.moduleWait();
-
     ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
       .addParameter("ml.module", "/ext/SampleMlcpTransform.xqy")
       .addParameter("ml.namespace", "http://marklogic.com/example")
@@ -168,8 +164,6 @@ public class TransformTest {
     String transformContents = Common.testFileToString("SampleMlcpTransform.sjs");
     libMgr.write("/ext/SampleMlcpTransform.sjs",
       new StringHandle(transformContents).withFormat(Format.TEXT));
-
-    Common.moduleWait();
 
     ServerTransform transform = new ServerTransform(MLCP_TRANSFORM_ADAPTER)
       .addParameter("ml.module", "/ext/SampleMlcpTransform.sjs")
@@ -271,8 +265,6 @@ public class TransformTest {
       "};";
     extensionMgr.writeXQueryTransform( "test118", new StringHandle().with(naiveTransform));
 
-    Common.moduleWait();
-
     QueryManager q = Common.client.newQueryManager();
     StringQueryDefinition s = q.newStringDefinition("");
     s.setCriteria("a");
@@ -308,8 +300,6 @@ public class TransformTest {
       "    return $json" +
       "};";
     extensionMgr.writeXQueryTransform( "testIssue471", new StringHandle().with(transform));
-
-    Common.moduleWait();
 
     QueryManager q = Common.client.newQueryManager();
     StringQueryDefinition s = q.newStringDefinition();

@@ -63,8 +63,6 @@ public class ResourceServicesTest {
       ResourceExtensionsTest.makeParameters()
     );
 
-    Common.moduleWait();
-
     SimpleResourceManager resourceMgr =
       Common.adminClient.init(ResourceExtensionsTest.RESOURCE_NAME, new SimpleResourceManager());
 

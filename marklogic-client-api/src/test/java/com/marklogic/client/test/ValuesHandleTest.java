@@ -250,8 +250,6 @@ public class ValuesHandleTest {
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("valuesoptions", new StringHandle(options));
 
-    Common.optionsWait();
-
     return "valuesoptions";
   }
 
