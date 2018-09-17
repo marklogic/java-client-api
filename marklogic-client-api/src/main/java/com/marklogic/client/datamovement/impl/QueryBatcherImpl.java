@@ -627,7 +627,9 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
         // this try-with-resources block will call results.close() once the block is done
         // here we call the /v1/internal/uris endpoint to get the text/uri-list of documents
         // matching this structured or string query
-        try ( UrisHandle results = queryMgr.uris(query, handle, start, null, forest.getForestName()) ) {
+        try ( UrisHandle results = queryMgr.uris(
+              query, handle, start, null, (forest instanceof AnyForestConfiguration.AnyForest) ? null : forest.getForestName()
+        ) ) {
           // if we're doing consistentSnapshot and this is the first result set, let's capture the
           // serverTimestamp so we can use it for all future queries
           if ( consistentSnapshot == true && serverTimestamp.get() == -1 ) {
@@ -712,10 +714,8 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // if we made it this far, all forests are done. let's run the Job
     // completion listeners and shutdown.
-    if ( !runJobCompletionListeners.isAlive() ) {
-      synchronized(this) {
-        if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
-      }
+    synchronized(this) {
+      if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
     }
     threadPool.shutdown();
   }

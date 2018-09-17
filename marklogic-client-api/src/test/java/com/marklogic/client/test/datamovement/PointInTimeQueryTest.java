@@ -45,7 +45,7 @@ public class PointInTimeQueryTest {
   private static Logger logger = LoggerFactory.getLogger(PointInTimeQueryTest.class);
   private static int numDocs = 50;
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager();
+  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static String collection = "PointInTimeQueryTest_" +
     new Random().nextInt(10000);
 
@@ -64,7 +64,7 @@ public class PointInTimeQueryTest {
 
   public static void setup() throws Exception {
     StringBuffer failures = new StringBuffer();
-    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(10)
       .onBatchFailure((event, throwable) -> {
         throwable.printStackTrace();
@@ -101,7 +101,7 @@ public class PointInTimeQueryTest {
       logger.error("ERORR:[{}]", throwable);
       failures.append("ERORR:[" + throwable.toString() + "]");
     };
-    QueryBatcher exportBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+    QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
       .withThreadCount(1)
       .withBatchSize(30)
       .withConsistentSnapshot()
@@ -127,7 +127,7 @@ public class PointInTimeQueryTest {
     moveMgr.startJob(exportBatcher);
 
     // while the exportBatcher is still running, let's delete the docs out from under it
-    QueryBatcher deleteBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+    QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(10)
       .withConsistentSnapshot()
       .onUrisReady(new DeleteListener())

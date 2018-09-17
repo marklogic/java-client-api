@@ -54,12 +54,17 @@ public class DataMovementManagerImpl implements DataMovementManager {
   private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
+  private DatabaseClient.ConnectionPolicy connectPolicy;
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
-  public DataMovementManagerImpl(DatabaseClient client) {
+  public DataMovementManagerImpl(DatabaseClient client, DatabaseClient.ConnectionPolicy connectPolicy) {
     setPrimaryClient(client);
     clientMap.put(primaryClient.getHost(), primaryClient);
+    this.connectPolicy = connectPolicy;
+    if (connectPolicy == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) {
+      forestConfig = new AnyForestConfiguration(client);
+    }
   }
 
   @Override
@@ -137,19 +142,16 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     if ( query == null ) throw new IllegalArgumentException("query must not be null");
-    QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
-    batcher.onQueryFailure(new HostAvailabilityListener(this));
-    QueryJobReportListener queryJobListener = new QueryJobReportListener();
-    batcher.onQueryFailure(queryJobListener);
-    batcher.onQueryFailure(new NoResponseListener(this));
-    batcher.onUrisReady(queryJobListener);
-    return batcher;
+    return newQueryBatcher(new QueryBatcherImpl(query, this, getForestConfig()));
   }
 
   @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
     if ( iterator == null ) throw new IllegalArgumentException("iterator must not be null");
-    QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
+    return newQueryBatcher(new QueryBatcherImpl(iterator, this, getForestConfig()));
+  }
+
+  private QueryBatcher newQueryBatcher(QueryBatcherImpl batcher) {
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
@@ -166,7 +168,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public ForestConfiguration readForestConfig() {
-    forestConfig = service.readForestConfig();
+    if (connectPolicy == DatabaseClient.ConnectionPolicy.FOREST_HOSTS) {
+     forestConfig = service.readForestConfig();
+    }
     return forestConfig;
   }
 
@@ -201,6 +205,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
     } else {
       return null;
     }
+  }
+
+  @Override
+  public DatabaseClient.ConnectionPolicy getConnectionPolicy() {
+    return connectPolicy;
   }
 
   public DataMovementServices getDataMovementServices() {

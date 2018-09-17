@@ -51,7 +51,7 @@ import java.util.stream.Stream;
 public class FilteredForestConfigTest {
   private Logger logger = LoggerFactory.getLogger(FilteredForestConfigTest.class);
   private DatabaseClient client = Common.connect();
-  private DataMovementManager moveMgr = client.newDataMovementManager();
+  private DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
 
   private ForestConfiguration forests = () -> new Forest[] {
     new ForestImpl("host1", "openReplicaHost1", "requestHost1", "alternateHost1", "databaseName1",
@@ -66,6 +66,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testRename() {
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withRenamedHost("host1", "host1a");
 
@@ -110,6 +112,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testBlackList() {
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withBlackList("host1")
       .withBlackList("openReplicaHost2")
@@ -153,6 +157,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWhiteList() {
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withWhiteList("host1")
       .withWhiteList("openReplicaHost2")
@@ -200,7 +206,9 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithWriteAndQueryBatcher() throws Exception{
-    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
 
     long hostNum = Stream.of(forestConfig.listForests()).map(forest->forest.getPreferredHost()).distinct().count();
     if ( hostNum <= 1 ) return; // we're not in a cluster, so this test isn't valid
@@ -219,7 +227,9 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithInvalidHosts() throws Exception{
-    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
     String host1 = forestConfig.listForests()[0].getPreferredHost();
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)

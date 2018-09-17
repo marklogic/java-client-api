@@ -184,4 +184,11 @@ public interface DataMovementManager {
    * @return the latest ForestConfiguration from the server
    */
   public ForestConfiguration readForestConfig();
+
+  /**
+   * Identify the DataMovementManager uses only the primary database connection
+   * or manages a connection for each host that has forests for the database.
+   * @return the connection policy
+   */
+  public DatabaseClient.ConnectionPolicy getConnectionPolicy();
 }

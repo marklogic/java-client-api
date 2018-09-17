@@ -46,7 +46,7 @@ import java.io.FileWriter;
 public class UrisToWriterListenerExamplesTest {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamplesTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static String collection = "UrisToWriterListenerExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
@@ -74,7 +74,7 @@ public class UrisToWriterListenerExamplesTest {
 
     // begin copy fromclass javadoc in src/main/java/com/marklogic/datamovement/UrisToWriterListener.java
     FileWriter writer = new FileWriter("uriCache.txt");
-    QueryBatcher getUris = Common.initBatcher(dataMovementManager, dataMovementManager.newQueryBatcher(query))
+    QueryBatcher getUris = dataMovementManager.newQueryBatcher(query)
       .withBatchSize(5000)
       .onUrisReady( new UrisToWriterListener(writer) )
       .onQueryFailure(exception -> exception.printStackTrace());
@@ -92,9 +92,8 @@ public class UrisToWriterListenerExamplesTest {
 
     // now we have the uris, let's step through them
     try ( BufferedReader reader = new BufferedReader(new FileReader("uriCache.txt")) ) {
-      QueryBatcher performDelete = Common.initBatcher(dataMovementManager,
-            dataMovementManager.newQueryBatcher(reader.lines().iterator())
-            )
+      QueryBatcher performDelete =
+        dataMovementManager.newQueryBatcher(reader.lines().iterator())
         .onUrisReady(new DeleteListener())
         .onQueryFailure(exception-> exception.printStackTrace());
       JobTicket ticket = dataMovementManager.startJob(performDelete);

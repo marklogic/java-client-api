@@ -136,7 +136,14 @@ public class DatabaseClientImpl implements DatabaseClient {
   }
   @Override
   public DataMovementManager newDataMovementManager() {
-    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
+    return newDataMovementManager(null);
+  }
+  @Override
+  public DataMovementManager newDataMovementManager(ConnectionPolicy policy) {
+    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(
+        this,
+        (policy == null) ? ConnectionPolicy.FOREST_HOSTS : policy
+    );
     return moveMgr;
   }
   @Override

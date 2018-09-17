@@ -35,7 +35,7 @@ import com.marklogic.client.test.Common;
 
 public class ForestConfigTest {
   private static DatabaseClient client = Common.connect();
-  private DataMovementManager moveMgr = client.newDataMovementManager();
+  private DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
 
   @BeforeClass
   public static void beforeClass() {
@@ -47,6 +47,8 @@ public class ForestConfigTest {
 
   @Test
   public void testArgs() throws Exception {
+    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+
     int defaultPort = client.getPort();
     Class<?> defaultAuthContext = client.getSecurityContext().getClass();
     ForestConfiguration forestConfig = moveMgr.readForestConfig();
