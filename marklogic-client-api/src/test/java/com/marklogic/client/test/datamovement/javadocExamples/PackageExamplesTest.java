@@ -44,7 +44,7 @@ import java.util.Random;
 public class PackageExamplesTest {
   private static Logger logger = LoggerFactory.getLogger(PackageExamplesTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static String collection = "PackageExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
@@ -73,7 +73,7 @@ public class PackageExamplesTest {
     StructuredQueryDefinition query = collectionQuery;
 
     // begin copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    QueryBatcher qhb = Common.initBatcher(dataMovementManager, dataMovementManager.newQueryBatcher(query))
+    QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
       .withBatchSize(1000)
       .withThreadCount(20)
       .withConsistentSnapshot()
@@ -103,7 +103,7 @@ public class PackageExamplesTest {
     assertEquals(null, client.newDocumentManager().exists("doc2.txt"));
 
     // begin copy from "Using WriteBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    WriteBatcher whb = Common.initBatcher(dataMovementManager, dataMovementManager.newWriteBatcher())
+    WriteBatcher whb = dataMovementManager.newWriteBatcher()
       .withBatchSize(100)
       .withThreadCount(20)
       .onBatchSuccess(batch -> {

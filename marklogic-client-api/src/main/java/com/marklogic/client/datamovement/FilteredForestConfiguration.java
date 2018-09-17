@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.datamovement.Forest.HostType;
+import com.marklogic.client.datamovement.impl.AnyForestConfiguration;
 import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
 import com.marklogic.client.datamovement.impl.ForestImpl;
 
@@ -65,6 +66,9 @@ public class FilteredForestConfiguration implements ForestConfiguration {
    * @param forestConfig the ForestConfiguration to wrap
    */
   public FilteredForestConfiguration(ForestConfiguration forestConfig) {
+    if (forestConfig instanceof AnyForestConfiguration) {
+      throw new IllegalArgumentException("cannot filter the forest hosts when using only the primary host");
+    }
     this.wrappedForestConfig = forestConfig;
   }
 

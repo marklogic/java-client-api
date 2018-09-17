@@ -85,7 +85,7 @@ import com.marklogic.client.test.Common;
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
   private static DatabaseClient client = Common.connectEval();
-  private static DataMovementManager moveMgr = client.newDataMovementManager();
+  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static DocumentManager<?,?> docMgr;
   private static String uri1 = "WriteBatcherTest_content_1.txt";
   private static String uri2 = "WriteBatcherTest_content_2.txt";
@@ -123,7 +123,7 @@ public class WriteBatcherTest {
 
     StringBuilder successBatch = new StringBuilder();
     StringBuilder failureBatch = new StringBuilder();
-    WriteBatcher ihb1 =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher ihb1 =  moveMgr.newWriteBatcher()
       .withBatchSize(1)
       .onBatchSuccess(
         batch -> {
@@ -167,7 +167,7 @@ public class WriteBatcherTest {
     final StringBuffer successListenerWasRun = new StringBuffer();
     final StringBuffer failListenerWasRun = new StringBuffer();
     final StringBuffer failures = new StringBuffer();
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(2)
       .withTransform(
         new ServerTransform(transform)
@@ -233,7 +233,7 @@ public class WriteBatcherTest {
     WriteBatchListener successListener = batch -> {};
     WriteFailureListener failureListener = (batch, throwable) -> {};
 
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     WriteBatchListener[] successListeners = batcher.getBatchSuccessListeners();
     assertEquals(1, successListeners.length);
 
@@ -297,7 +297,7 @@ public class WriteBatcherTest {
     final StringBuffer successListenerWasRun = new StringBuffer();
     final StringBuffer failListenerWasRun = new StringBuffer();
     final StringBuffer failures = new StringBuffer();
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(2)
       .withTransactionSize(2)
       .withThreadCount(1)
@@ -374,12 +374,12 @@ public class WriteBatcherTest {
   @Test
   public void testZeros() throws Exception {
     try {
-      WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+      WriteBatcher batcher = moveMgr.newWriteBatcher()
         .withBatchSize(0);
       fail("should have thrown IllegalArgumentException because batchSize must be > 1");
     } catch(IllegalArgumentException e) {}
     try {
-      WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+      WriteBatcher batcher = moveMgr.newWriteBatcher()
         .withThreadCount(0);
       fail("should have thrown IllegalArgumentException because threadCount must be > 1");
     } catch(IllegalArgumentException e) {}
@@ -417,7 +417,7 @@ public class WriteBatcherTest {
       }
     }
 
-    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
         .withBatchSize(1)
         .onBatchSuccess(new CloseBatchListener())
         .onBatchFailure(new CloseFailureListener());
@@ -471,7 +471,7 @@ public class WriteBatcherTest {
     final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
     final StringBuffer failures = new StringBuffer();
     final int expectedBatches = (int) Math.ceil(totalDocCount / expectedBatchSize);
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .withBatchSize(batchSize)
       .withThreadCount(batcherThreadCount)
       .onBatchSuccess(
@@ -640,12 +640,12 @@ public class WriteBatcherTest {
   private String errorMessage = "This is an expected exception used for a negative test";
 
   public void testExceptions(DocumentWriteSet docs, int expectedSuccesses, int expectedFailures) {
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .onBatchSuccess( batch -> { throw new InternalError(errorMessage); } )
       .onBatchFailure( (batch, throwable) -> { throw new InternalError(errorMessage); } );
     testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
 
-    batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    batcher = moveMgr.newWriteBatcher()
       .onBatchSuccess( batch -> { throw new RuntimeException(errorMessage); } )
       .onBatchFailure( (batch, throwable) -> { throw new RuntimeException(errorMessage); } );
     testExceptions(batcher, docs, expectedSuccesses, expectedFailures);
@@ -679,7 +679,7 @@ public class WriteBatcherTest {
   public void testAddMultiThreadedSuccess_Issue61() throws Exception{
     String collection = whbTestCollection + ".testAddMultiThreadedSuccess_Issue61";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    WriteBatcher batcher =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(100);
     batcher.onBatchSuccess(
       batch -> {
@@ -734,7 +734,7 @@ public class WriteBatcherTest {
   public void testAddMultiThreadedSuccess_Issue48() throws Exception{
     String collection = whbTestCollection + ".testAddMultiThreadedSuccess_Issue48";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    WriteBatcher batcher =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     batcher.withBatchSize(120);
     batcher
       .onBatchSuccess( batch -> {
@@ -790,7 +790,7 @@ public class WriteBatcherTest {
   @Test
   public void testUndeclaredFormat_Issue60() {
     String collection = whbTestCollection + ".testUndeclaredFormat_Issue60";
-    WriteBatcher batcher =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
     batcher.withBatchSize(1);
     final AtomicInteger successfulCount = new AtomicInteger(0);
     batcher.onBatchSuccess(
@@ -831,7 +831,7 @@ public class WriteBatcherTest {
 
 
     final AtomicInteger failCount = new AtomicInteger(0);
-    WriteBatcher batcher =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .onBatchFailure(
         (batch, throwable) -> {
           logger.error("Error in testCloseHandles", throwable);
@@ -865,7 +865,7 @@ public class WriteBatcherTest {
     String collection = whbTestCollection + "_testMultipleFlushAnStop_Issue109";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
     assertTrue(client.newServerEval().xquery(query1).eval().next().getNumber().intValue() ==0);
-    WriteBatcher ihbMT =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(11);
     ihbMT.onBatchSuccess(
       batch -> {
@@ -944,7 +944,7 @@ public class WriteBatcherTest {
     AtomicInteger count = new AtomicInteger(0);
     AtomicBoolean isStopped = new AtomicBoolean(false);
     AtomicReference<Throwable> unexpectedError = new AtomicReference<>();
-    WriteBatcher ihbMT =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher ihbMT =  moveMgr.newWriteBatcher();
     ihbMT.withBatchSize(7).withThreadCount(60);
 
     ihbMT.onBatchSuccess( batch -> {
@@ -1040,7 +1040,7 @@ public class WriteBatcherTest {
   @Ignore
   public void testIssue646() throws Exception {
 
-    WriteBatcher ihb2 =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher ihb2 = moveMgr.newWriteBatcher()
       .withBatchSize(10);
 
     ihb2.onBatchFailure( (batch, throwable) -> throwable.printStackTrace() );
@@ -1056,7 +1056,7 @@ public class WriteBatcherTest {
 
   @Test
   public void testIssue793() {
-    WriteBatcher batcher =  Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher =  moveMgr.newWriteBatcher();
 
     batcher.addAs("test.txt", "test");
 

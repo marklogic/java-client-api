@@ -100,11 +100,21 @@ public interface DatabaseClient {
   XMLDocumentManager newXMLDocumentManager();
 
   /**
-   * Creates a manager for long-running asynchronous write or query jobs.  Don't forget
-   * to call dataMovementManager.release() when you're done with it.
+   * Creates a manager for long-running asynchronous write or query jobs
+   * with the default ConnectionPolicy.FOREST_HOSTS policy of creating
+   * a new connection for each host that has forests for the database.
+   * Don't forget to call dataMovementManager.release() when you're done with it.
    * @return	a manager supporting long-running asynchronous write or query jobs
    */
   DataMovementManager newDataMovementManager();
+
+  /**
+   * Creates a manager for long-running asynchronous write or query jobs.  Don't forget
+   * to call dataMovementManager.release() when you're done with it.
+   * @param policy	how the DataMovementManager should create connections
+   * @return	a manager supporting long-running asynchronous write or query jobs
+   */
+  DataMovementManager newDataMovementManager(ConnectionPolicy policy);
 
   /**
    * Creates a manager to query for database documents.
@@ -211,6 +221,12 @@ public interface DatabaseClient {
    * @return the new ServerEvaluationCall instance
    */
   ServerEvaluationCall newServerEval();
+
+  /**
+   * Specifies whether to connect only using the host from the initial database connection
+   * or to create a new connection for each host that has forests for the database.
+   */
+  public enum ConnectionPolicy{PRIMARY_HOST, FOREST_HOSTS}
 
   String getHost();
 

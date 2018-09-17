@@ -124,10 +124,10 @@ public class LegalHoldsTest {
       );
 
     // walk through all batches of docs matching our query
-    DataMovementManager moveMgr = evalClient.newDataMovementManager();
+    DataMovementManager moveMgr = evalClient.newDataMovementManager(Common.CONNECT_POLICY);
     StringBuilder anyFailure = new StringBuilder();
     Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
-    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(1)
       .withConsistentSnapshot()
       .onUrisReady(

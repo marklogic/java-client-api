@@ -56,7 +56,7 @@ public class QueryBatcherIteratorTest {
   Logger logger = LoggerFactory.getLogger(QueryBatcherIteratorTest.class);
   private static int numDocs = 500;
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager();
+  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static String collection = "QueryBatcherIteratorTest";
   private static String qhbTestCollection = "QueryBatcherIteratorTest_" +
     new Random().nextInt(10000);
@@ -79,7 +79,7 @@ public class QueryBatcherIteratorTest {
     assertEquals( "Since the doc doesn't exist, documentManager.exists() should return null",
       null, client.newDocumentManager().exists(collection + "/doc_1.json") );
 
-    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
       .withBatchSize(100);
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
@@ -105,7 +105,7 @@ public class QueryBatcherIteratorTest {
       query.setCollections(qhbTestCollection);
       successDocs1 = new AtomicInteger(0);
       failures = new StringBuilder();
-      QueryBatcher getUris = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+      QueryBatcher getUris = moveMgr.newQueryBatcher(query)
         .withThreadCount(5)
         .withBatchSize(100)
         .onUrisReady( new UrisToWriterListener(writer) )
@@ -129,7 +129,7 @@ public class QueryBatcherIteratorTest {
           BufferedReader reader = new BufferedReader(fileReader); )
     {
 
-      QueryBatcher doNothing = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(reader.lines().iterator()))
+      QueryBatcher doNothing = moveMgr.newQueryBatcher(reader.lines().iterator())
         .withThreadCount(6)
         .withBatchSize(19)
         .onUrisReady(batch -> successDocs2.addAndGet(batch.getItems().length))
@@ -154,7 +154,7 @@ public class QueryBatcherIteratorTest {
     query.setCollections(qhbTestCollection);
     Set<String> uris = Collections.synchronizedSet(new HashSet<>());
     StringBuilder failures = new StringBuilder();
-    QueryBatcher getUris = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+    QueryBatcher getUris = moveMgr.newQueryBatcher(query)
       .withThreadCount(6)
       .withBatchSize(5000)
       .onUrisReady( batch -> uris.addAll(Arrays.asList(batch.getItems())) )
@@ -172,7 +172,7 @@ public class QueryBatcherIteratorTest {
     AtomicInteger successDocs = new AtomicInteger();
     Set<String> uris2 = Collections.synchronizedSet(new HashSet<>());
     StringBuilder failures2 = new StringBuilder();
-    QueryBatcher performDelete = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(uris.iterator()))
+    QueryBatcher performDelete = moveMgr.newQueryBatcher(uris.iterator())
       .withThreadCount(2)
       .withBatchSize(99)
       .onUrisReady(new DeleteListener())

@@ -44,7 +44,7 @@ import com.marklogic.client.test.Common;
 public class ExportToWriterListenerTest {
   private Logger logger = LoggerFactory.getLogger(ExportToWriterListenerTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager();
+  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
   private static String collection = "ExportToWriterListenerTest_" +
     new Random().nextInt(10000);
   private static String docContents = "doc contents";
@@ -64,7 +64,7 @@ public class ExportToWriterListenerTest {
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(batcher);
     String[] uris = new String[100];
     for ( int i=0; i < 100; i++ ) {
@@ -93,7 +93,7 @@ public class ExportToWriterListenerTest {
         );
 
       QueryBatcher queryJob =
-        Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+        moveMgr.newQueryBatcher(query)
           .withThreadCount(5)
           .withBatchSize(10)
           .onUrisReady(exportListener)
