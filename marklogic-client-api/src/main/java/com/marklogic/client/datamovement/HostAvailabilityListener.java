@@ -133,7 +133,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
     if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) {
-      if (numHosts != 0) {
+      if (numHosts != 1) {
         throw new IllegalArgumentException("numHosts must be 1 when using only the primary host for the connection");
       }
     } else {
