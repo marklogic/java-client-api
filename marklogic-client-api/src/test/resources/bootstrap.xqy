@@ -1307,7 +1307,7 @@ declare function bootstrap:appserver-config()
     let $groupid  := admin:group-get-id($config, "Default")
     let $serverid := admin:appserver-get-id($config, $groupid, "java-unittest")
     return $config
-        => admin:appserver-set-distribute-timestamps($serverid,"strict")
+        => admin:appserver-set-distribute-timestamps($serverid,"cluster")
         => admin:save-configuration-without-restart()
 };
 
