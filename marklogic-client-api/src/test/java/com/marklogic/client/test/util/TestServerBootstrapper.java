@@ -49,8 +49,6 @@ public class TestServerBootstrapper {
   private String host = Common.HOST;
   private int port = Common.PORT;
 
-  final public static boolean BALANCED = Boolean.parseBoolean(System.getProperty("TEST_BALANCED", "false"));
-
   private void bootstrapRestServer() throws ClientProtocolException, IOException {
 
     Bootstrapper.main(new String[] {"-configuser", username, "-configpassword", password, "-confighost", host, "-restserver", "java-unittest", "-restport", ""+port, "-restdb", "java-unittest"});
@@ -76,7 +74,7 @@ public class TestServerBootstrapper {
   }
 
   private void invokeBootstrapExtension() throws ClientProtocolException, IOException {
-    final String params = BALANCED ? "?rs%3Abalanced=true" : "";
+    final String params = Common.BALANCED ? "?rs%3Abalanced=true" : "";
 
     DefaultHttpClient client = new DefaultHttpClient();
 

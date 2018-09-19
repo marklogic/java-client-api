@@ -69,6 +69,8 @@ public class Common {
   final public static DatabaseClient.ConnectionPolicy CONNECT_POLICY =
       DatabaseClient.ConnectionPolicy.valueOf(System.getProperty("TEST_CONNECT_POLICY", "FOREST_HOSTS"));
 
+  final public static boolean BALANCED = Boolean.parseBoolean(System.getProperty("TEST_BALANCED", "false"));
+
   public static DatabaseClient client;
   public static DatabaseClient adminClient;
   public static DatabaseClient serverAdminClient;
