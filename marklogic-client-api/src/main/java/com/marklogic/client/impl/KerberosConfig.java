@@ -93,7 +93,7 @@ public class KerberosConfig {
         return String.valueOf(this.storeKey);
     }
 
-    public void setUseFirstPassy(boolean useFirstPass) {
+    public void setUseFirstPass(boolean useFirstPass) {
         this.useFirstPass = useFirstPass;
     }
 

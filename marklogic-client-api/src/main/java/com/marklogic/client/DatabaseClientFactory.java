@@ -430,6 +430,26 @@ public class DatabaseClientFactory {
       return this;
     }
 
+    public KerberosAuthContext useFirstPass(boolean useFirstPass) {
+      this.krbConfig.setUseFirstPass(useFirstPass);
+      return this;
+    }
+
+    public KerberosAuthContext storePass(boolean storePass) {
+      this.krbConfig.setStorePass(storePass);
+      return this;
+    }
+
+    public KerberosAuthContext clearPass(boolean clearPass) {
+      this.krbConfig.setClearPass(clearPass);
+      return this;
+    }
+
+    public KerberosAuthContext tryFirstPass(boolean tryFirstPass) {
+      this.krbConfig.setTryFirstPass(tryFirstPass);
+      return this;
+    }
+
     public KerberosAuthContext useKeyTab(boolean useKeyTab) {
       this.krbConfig.setUseKeyTab(useKeyTab);
       return this;
