@@ -42,6 +42,7 @@ import com.marklogic.client.extra.httpclient.HttpClientConfigurator;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.HandleFactoryRegistryImpl;
 import com.marklogic.client.impl.OkHttpServices;
+import com.marklogic.client.impl.KerberosConfig;
 import com.marklogic.client.io.marker.ContentHandle;
 import com.marklogic.client.io.marker.ContentHandleFactory;
 
@@ -388,13 +389,64 @@ public class DatabaseClientFactory {
     }
   }
 
+
   public static class KerberosAuthContext extends AuthContext {
-    String externalName;
+
+    KerberosConfig krbConfig = new KerberosConfig();
 
     public KerberosAuthContext() {}
 
-    public KerberosAuthContext(String externalName) {
-      this.externalName = externalName;
+    public KerberosAuthContext(String principal) {
+      this.krbConfig.setPrincipal(principal);
+    }
+
+    public KerberosAuthContext useTicketCache(boolean useTicketCache) {
+      this.krbConfig.setUseTicketCache(useTicketCache);
+      return this;
+    }
+
+    public KerberosAuthContext ticketCache(String ticketCache) {
+      this.krbConfig.setTicketCache(ticketCache);
+      return this;
+    }
+
+    public KerberosAuthContext renewTGT(boolean renewTGT) {
+      this.krbConfig.setRenewTGT(renewTGT);
+      return this;
+    }
+
+    public KerberosAuthContext doNotPrompt(boolean doNotPrompt) {
+      this.krbConfig.setDoNotPrompt(doNotPrompt);
+      return this;
+    }
+
+    public KerberosAuthContext storeKey(boolean storeKey) {
+      this.krbConfig.setStoreKey(storeKey);
+      return this;
+    }
+
+    public KerberosAuthContext keyTab(String keyTab) {
+      this.krbConfig.setKeyTab(keyTab);
+      return this;
+    }
+
+    public KerberosAuthContext useKeyTab(boolean useKeyTab) {
+      this.krbConfig.setUseKeyTab(useKeyTab);
+      return this;
+    }
+
+    public KerberosAuthContext isInitiator(boolean isInitiator) {
+      this.krbConfig.setInitiator(isInitiator);
+      return this;
+    }
+
+    public KerberosAuthContext debug(boolean debug) {
+      this.krbConfig.setDebug(debug);
+      return this;
+    }
+
+    public KerberosConfig kerberosConfig() {
+      return krbConfig;
     }
 
     @Override
@@ -704,6 +756,7 @@ public class DatabaseClientFactory {
    */
   static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
     String user = null;
+    KerberosConfig kerberosConfig = null;
     String password = null;
     Authentication type = null;
     SSLContext sslContext = null;
@@ -739,7 +792,7 @@ public class DatabaseClientFactory {
       }
     } else if (securityContext instanceof KerberosAuthContext) {
       KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-      user = kerberosContext.externalName;
+      kerberosConfig = kerberosContext.krbConfig;
       type = Authentication.KERBEROS;
       if (kerberosContext.sslContext != null) {
         sslContext = kerberosContext.sslContext;
@@ -766,7 +819,7 @@ public class DatabaseClientFactory {
     }
 
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, type, sslContext, trustManager, sslVerifier);
+    services.connect(host, port, database, user, password, kerberosConfig, type, sslContext, trustManager, sslVerifier);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {

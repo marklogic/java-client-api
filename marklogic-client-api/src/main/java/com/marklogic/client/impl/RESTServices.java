@@ -116,10 +116,10 @@ public interface RESTServices {
   String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
 
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password, Authentication type,
-                      SSLContext context, SSLHostnameVerifier verifier);
-  public void connect(String host, int port, String database, String user, String password, Authentication type,
-      SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
+  public void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
+                      Authentication type, SSLContext context, SSLHostnameVerifier verifier);
+  public void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
+                      Authentication type, SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
   public DatabaseClient getDatabaseClient();
   public void setDatabaseClient(DatabaseClient client);
   public void release();
