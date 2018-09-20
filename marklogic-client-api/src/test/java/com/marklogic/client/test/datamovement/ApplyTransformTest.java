@@ -43,7 +43,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public class ApplyTransformTest {
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static GenericDocumentManager docMgr = client.newDocumentManager();
   private static QueryManager queryMgr = client.newQueryManager();
   private static StructuredQueryBuilder sqb = new StructuredQueryBuilder();

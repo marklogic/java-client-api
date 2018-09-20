@@ -40,16 +40,12 @@ import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
 import com.marklogic.client.datamovement.*;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.query.RawCtsQueryDefinition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -64,14 +60,9 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.impl.GenericDocumentImpl;
 import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
 import com.marklogic.client.test.Common;
-
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -79,7 +70,7 @@ import org.slf4j.LoggerFactory;
 public class QueryBatcherTest {
   private Logger logger = LoggerFactory.getLogger(QueryBatcherTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String uri1 = "/QueryBatcherTest/content_1.json";
   private static String uri2 = "/QueryBatcherTest/content_2.json";
   private static String uri3 = "/QueryBatcherTest/content_3.json";
@@ -330,7 +321,7 @@ public class QueryBatcherTest {
     assertEquals("Job Report has incorrect failure events counts", failureBatchCount.get(), report.getFailureEventsCount());
     //assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
 
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
 
 // TODO: verify for the entire database instead of per forest
 

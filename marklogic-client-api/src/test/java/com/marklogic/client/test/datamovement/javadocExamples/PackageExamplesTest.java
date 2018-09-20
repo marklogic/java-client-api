@@ -44,7 +44,7 @@ import java.util.Random;
 public class PackageExamplesTest {
   private static Logger logger = LoggerFactory.getLogger(PackageExamplesTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager dataMovementManager = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "PackageExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);

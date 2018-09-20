@@ -30,22 +30,15 @@ import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.impl.QueryJobReportListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.impl.WriteJobReportListener;
-import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
-import com.marklogic.client.datamovement.impl.DataMovementServices;
-import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataMovementManagerImpl implements DataMovementManager {
@@ -54,17 +47,19 @@ public class DataMovementManagerImpl implements DataMovementManager {
   private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
-  private DatabaseClient.ConnectionPolicy connectPolicy;
+  private DatabaseClient.ConnectionType connectionType;
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
-  public DataMovementManagerImpl(DatabaseClient client, DatabaseClient.ConnectionPolicy connectPolicy) {
-    setPrimaryClient(client);
-    clientMap.put(primaryClient.getHost(), primaryClient);
-    this.connectPolicy = connectPolicy;
-    if (connectPolicy == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) {
+  public DataMovementManagerImpl(DatabaseClient client) {
+    connectionType = client.getConnectionType();
+    if (connectionType == DatabaseClient.ConnectionType.GATEWAY) {
       forestConfig = new AnyForestConfiguration(client);
     }
+
+    setPrimaryClient(client);
+
+    clientMap.put(primaryClient.getHost(), primaryClient);
   }
 
   @Override
@@ -168,7 +163,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public ForestConfiguration readForestConfig() {
-    if (connectPolicy == DatabaseClient.ConnectionPolicy.FOREST_HOSTS) {
+    if (getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
      forestConfig = service.readForestConfig();
     }
     return forestConfig;
@@ -208,8 +203,8 @@ public class DataMovementManagerImpl implements DataMovementManager {
   }
 
   @Override
-  public DatabaseClient.ConnectionPolicy getConnectionPolicy() {
-    return connectPolicy;
+  public DatabaseClient.ConnectionType getConnectionType() {
+    return connectionType;
   }
 
   public DataMovementServices getDataMovementServices() {

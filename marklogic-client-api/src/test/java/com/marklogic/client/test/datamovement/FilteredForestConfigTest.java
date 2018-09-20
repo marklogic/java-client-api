@@ -19,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -51,7 +50,7 @@ import java.util.stream.Stream;
 public class FilteredForestConfigTest {
   private Logger logger = LoggerFactory.getLogger(FilteredForestConfigTest.class);
   private DatabaseClient client = Common.connect();
-  private DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private DataMovementManager moveMgr = client.newDataMovementManager();
 
   private ForestConfiguration forests = () -> new Forest[] {
     new ForestImpl("host1", "openReplicaHost1", "requestHost1", "alternateHost1", "databaseName1",
@@ -66,7 +65,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testRename() {
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withRenamedHost("host1", "host1a");
@@ -112,7 +111,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testBlackList() {
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withBlackList("host1")
@@ -157,7 +156,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWhiteList() {
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withWhiteList("host1")
@@ -206,7 +205,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithWriteAndQueryBatcher() throws Exception{
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     ForestConfiguration forestConfig = moveMgr.readForestConfig();
 
@@ -227,7 +226,7 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithInvalidHosts() throws Exception{
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     ForestConfiguration forestConfig = moveMgr.readForestConfig();
     String host1 = forestConfig.listForests()[0].getPreferredHost();

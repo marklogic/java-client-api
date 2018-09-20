@@ -98,7 +98,7 @@ public class ScenariosTest {
     private Logger logger = LoggerFactory.getLogger(this.getClass());
 
     public OurJbossESBPlugin(DatabaseClient client) {
-      moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+      moveMgr = client.newDataMovementManager();
       batcher = moveMgr.newWriteBatcher()
         .withJobName("OurJbossESBPlugin")
         .withBatchSize(BATCH_SIZE)

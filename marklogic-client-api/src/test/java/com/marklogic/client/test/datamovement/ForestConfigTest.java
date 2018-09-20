@@ -25,7 +25,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.Forest;
@@ -35,7 +34,7 @@ import com.marklogic.client.test.Common;
 
 public class ForestConfigTest {
   private static DatabaseClient client = Common.connect();
-  private DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private DataMovementManager moveMgr = client.newDataMovementManager();
 
   @BeforeClass
   public static void beforeClass() {
@@ -47,7 +46,7 @@ public class ForestConfigTest {
 
   @Test
   public void testArgs() throws Exception {
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) return;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
 
     int defaultPort = client.getPort();
     Class<?> defaultAuthContext = client.getSecurityContext().getClass();
