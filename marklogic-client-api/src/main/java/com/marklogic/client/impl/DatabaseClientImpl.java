@@ -68,11 +68,6 @@ public class DatabaseClientImpl implements DatabaseClient {
     this.securityContext = securityContext;
     this.connectionType  = connectionType;
 
-    if (connectionType == ConnectionType.GATEWAY) {
-      Set<Integer> retryStatus = services.getRetryStatus();
-      retryStatus.add(RESTServices.STATUS_BAD_GATEWAY);
-      retryStatus.add(RESTServices.STATUS_GATEWAY_TIMEOUT);
-    }
     services.setDatabaseClient(this);
   }
 
