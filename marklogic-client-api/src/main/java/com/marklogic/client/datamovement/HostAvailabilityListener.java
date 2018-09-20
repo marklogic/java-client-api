@@ -70,11 +70,6 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   private ScheduledFuture<?> future;
   Set<QueryBatchListener> retryListenersSet = new HashSet<>();
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
-  {
-    hostUnavailableExceptions.add(SocketException.class);
-    hostUnavailableExceptions.add(SSLException.class);
-    hostUnavailableExceptions.add(UnknownHostException.class);
-  }
 
   // Retry listener for Query batches, for which the list of URIs have been
   // retrieved from the server but the batch failed while applying the listener
@@ -109,6 +104,11 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   public HostAvailabilityListener(DataMovementManager moveMgr) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
     this.moveMgr = moveMgr;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+      hostUnavailableExceptions.add(SocketException.class);
+      hostUnavailableExceptions.add(SSLException.class);
+      hostUnavailableExceptions.add(UnknownHostException.class);
+    }
   }
 
   /** If a host becomes unavailable (SocketException, SSLException,
@@ -132,7 +132,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
-    if (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
       if (numHosts != 1) {
         throw new IllegalArgumentException("numHosts must be 1 when using only the primary host for the connection");
       }
@@ -224,22 +224,20 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   private synchronized boolean processException(Batcher batcher, Throwable throwable, String host) {
+    return (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) ?
+           processGatewayException(batcher, throwable, host) :
+           processForestHostException(batcher, throwable, host);
+  }
+
+  private boolean processGatewayException(Batcher batcher, Throwable throwable, String host) {
+    // if the nested retry failed, assume the MarkLogic cluster is unavailable
+    return false;
+  }
+
+  private boolean processForestHostException(Batcher batcher, Throwable throwable, String host) {
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
     boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());
-    return (moveMgr.getConnectionPolicy() == DatabaseClient.ConnectionPolicy.PRIMARY_HOST) ?
-           processPrimaryHostException(batcher, throwable, host, isHostUnavailableException) :
-           processForestHostException(batcher, throwable, host, isHostUnavailableException);
-  }
-
-  private boolean processPrimaryHostException(Batcher batcher, Throwable throwable, String host, boolean isHostUnavailableException) {
-    // TODO:  currently, cancelling the job because the load balancer is down would require
-    // a custom listener; determine whether the approach could be simplified with an array
-    // of exceptions different from the exceptions that indicate the MarkLogic host is unavailable
-    return isHostUnavailableException;
-  }
-
-  private boolean processForestHostException(Batcher batcher, Throwable throwable, String host, boolean isHostUnavailableException) {
     boolean shouldWeRetry = isHostUnavailableException;
     if ( isHostUnavailableException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();

@@ -30,7 +30,7 @@ import com.marklogic.client.test.Common;
 
 public class DeleteListenerTest {
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "DeleteListenerTest";
   private static String docContents = "doc contents";
 

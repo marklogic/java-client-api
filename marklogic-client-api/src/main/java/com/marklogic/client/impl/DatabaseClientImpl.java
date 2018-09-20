@@ -17,6 +17,7 @@ package com.marklogic.client.impl;
 
 import java.io.OutputStream;
 import java.io.Serializable;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,13 +42,9 @@ import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.pojo.PojoRepository;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
-
-import javax.net.ssl.SSLContext;
 
 public class DatabaseClientImpl implements DatabaseClient {
   static final private Logger logger = LoggerFactory.getLogger(DatabaseClientImpl.class);
@@ -58,15 +55,30 @@ public class DatabaseClientImpl implements DatabaseClient {
   private String                database;
   private HandleFactoryRegistry handleRegistry;
   private SecurityContext       securityContext;
+  private ConnectionType        connectionType;
 
-  public DatabaseClientImpl(RESTServices services, String host, int port, String database, SecurityContext securityContext)
-  {
+  public DatabaseClientImpl(RESTServices services, String host, int port, String database,
+                            SecurityContext securityContext, ConnectionType connectionType) {
+    connectionType = (connectionType == null) ? DatabaseClient.ConnectionType.DIRECT : connectionType;
+
     this.services = services;
     this.host     = host;
     this.port     = port;
     this.database = database;
     this.securityContext = securityContext;
+    this.connectionType  = connectionType;
+
+    if (connectionType == ConnectionType.GATEWAY) {
+      Set<Integer> retryStatus = services.getRetryStatus();
+      retryStatus.add(RESTServices.STATUS_BAD_GATEWAY);
+      retryStatus.add(RESTServices.STATUS_GATEWAY_TIMEOUT);
+    }
     services.setDatabaseClient(this);
+  }
+
+  @Override
+  public ConnectionType getConnectionType() {
+    return connectionType;
   }
 
   public HandleFactoryRegistry getHandleRegistry() {
@@ -136,14 +148,7 @@ public class DatabaseClientImpl implements DatabaseClient {
   }
   @Override
   public DataMovementManager newDataMovementManager() {
-    return newDataMovementManager(null);
-  }
-  @Override
-  public DataMovementManager newDataMovementManager(ConnectionPolicy policy) {
-    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(
-        this,
-        (policy == null) ? ConnectionPolicy.FOREST_HOSTS : policy
-    );
+    DataMovementManagerImpl moveMgr = new DataMovementManagerImpl(this);
     return moveMgr;
   }
   @Override
@@ -162,7 +167,6 @@ public class DatabaseClientImpl implements DatabaseClient {
   @Override
   public <T, ID extends Serializable> PojoRepository<T, ID> newPojoRepository(Class<T> clazz, Class<ID> idClass) {
     return new PojoRepositoryImpl<>(this, clazz, idClass);
-
   }
 
   @Override

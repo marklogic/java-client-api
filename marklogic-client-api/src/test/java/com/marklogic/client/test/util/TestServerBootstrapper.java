@@ -123,6 +123,7 @@ public class TestServerBootstrapper {
     } else {
       bootstrapper.bootstrapRestServer();
       bootstrapper.installBootstrapExtension();
+      Common.modulesWait();
       bootstrapper.invokeBootstrapExtension();
     }
 

@@ -46,7 +46,7 @@ import java.io.FileWriter;
 public class UrisToWriterListenerExamplesTest {
   private static Logger logger = LoggerFactory.getLogger(UrisToWriterListenerExamplesTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager dataMovementManager = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager dataMovementManager = client.newDataMovementManager();
   private static String collection = "UrisToWriterListenerExamples_" +
     new Random().nextInt(10000);
   private static DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);

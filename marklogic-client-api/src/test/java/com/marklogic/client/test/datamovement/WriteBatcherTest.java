@@ -85,7 +85,7 @@ import com.marklogic.client.test.Common;
 public class WriteBatcherTest {
   private Logger logger = LoggerFactory.getLogger(WriteBatcherTest.class);
   private static DatabaseClient client = Common.connectEval();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static DocumentManager<?,?> docMgr;
   private static String uri1 = "WriteBatcherTest_content_1.txt";
   private static String uri2 = "WriteBatcherTest_content_2.txt";

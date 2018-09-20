@@ -44,7 +44,7 @@ import com.marklogic.client.test.Common;
 public class ExportToWriterListenerTest {
   private Logger logger = LoggerFactory.getLogger(ExportToWriterListenerTest.class);
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "ExportToWriterListenerTest_" +
     new Random().nextInt(10000);
   private static String docContents = "doc contents";

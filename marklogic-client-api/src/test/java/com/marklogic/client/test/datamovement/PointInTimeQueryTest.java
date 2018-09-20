@@ -45,7 +45,7 @@ public class PointInTimeQueryTest {
   private static Logger logger = LoggerFactory.getLogger(PointInTimeQueryTest.class);
   private static int numDocs = 50;
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "PointInTimeQueryTest_" +
     new Random().nextInt(10000);
 

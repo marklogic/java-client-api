@@ -31,7 +31,7 @@ import java.util.List;
 
 public class QueryBatcherImplTest {
   private Logger logger = LoggerFactory.getLogger(QueryBatcherImplTest.class);
-  private static DataMovementManager moveMgr = Common.connect().newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = Common.connect().newDataMovementManager();
 
   @Test
   public void testFinalize() {

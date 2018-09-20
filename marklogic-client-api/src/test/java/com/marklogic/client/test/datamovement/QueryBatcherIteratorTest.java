@@ -56,7 +56,7 @@ public class QueryBatcherIteratorTest {
   Logger logger = LoggerFactory.getLogger(QueryBatcherIteratorTest.class);
   private static int numDocs = 500;
   private static DatabaseClient client = Common.connect();
-  private static DataMovementManager moveMgr = client.newDataMovementManager(Common.CONNECT_POLICY);
+  private static DataMovementManager moveMgr = client.newDataMovementManager();
   private static String collection = "QueryBatcherIteratorTest";
   private static String qhbTestCollection = "QueryBatcherIteratorTest_" +
     new Random().nextInt(10000);

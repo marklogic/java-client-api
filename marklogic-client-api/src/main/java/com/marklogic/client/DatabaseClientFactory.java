@@ -687,7 +687,25 @@ public class DatabaseClientFactory {
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, SecurityContext securityContext) {
-    return newClient(host, port, null, securityContext);
+    return newClient(host, port, null, securityContext, null);
+  }
+
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host the host with the REST server
+   * @param port the port for the REST server
+   * @param securityContext the security context created depending upon the
+   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
+   *            and communication channel type (SSL)
+   * @param connectionType whether the client connects directly to the MarkLogic host
+   *            or using a gateway such as a load balancer
+   * @return a new client for making database requests
+   */
+  static public DatabaseClient newClient(String host, int port, SecurityContext securityContext,
+                                         DatabaseClient.ConnectionType connectionType)
+  {
+    return newClient(host, port, null, securityContext, connectionType);
   }
 
   /**
@@ -703,6 +721,27 @@ public class DatabaseClientFactory {
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
+    return newClient(host, port, null, securityContext, null);
+  }
+
+  /**
+   * Creates a client to access the database by means of a REST server.
+   *
+   * @param host the host with the REST server
+   * @param port the port for the REST server
+   * @param database the database to access (default: configured database for
+   *            the REST server)
+   * @param securityContext the security context created depending upon the
+   *            authentication type - BasicAuthContext, DigestAuthContext or KerberosAuthContext
+   *            and communication channel type (SSL)
+   * @param connectionType whether the client connects directly to the MarkLogic host
+   *            or using a gateway such as a load balancer
+   * @return a new client for making database requests
+   */
+  static public DatabaseClient newClient(String host, int port, String database,
+                                         SecurityContext securityContext,
+                                         DatabaseClient.ConnectionType connectionType)
+  {
     String user = null;
     String password = null;
     Authentication type = null;
@@ -783,7 +822,9 @@ public class DatabaseClientFactory {
       }
     }
 
-    DatabaseClientImpl client = new DatabaseClientImpl(services, host, port, database, securityContext);
+    DatabaseClientImpl client = new DatabaseClientImpl(
+          services, host, port, database, securityContext, connectionType
+    );
     client.setHandleRegistry(getHandleRegistry().copy());
     return client;
   }
@@ -816,7 +857,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, null, null));
+    return newClient(host, port, null, makeSecurityContext(user, password, type, null, null), null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -832,7 +873,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, null, null));
+    return newClient(host, port, database, makeSecurityContext(user, password, type, null, null), null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -848,7 +889,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON));
+    return newClient(host, port, null, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON), null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -865,7 +906,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON));
+    return newClient(host, port, database, makeSecurityContext(user, password, type, context, SSLHostnameVerifier.COMMON), null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -882,7 +923,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    return newClient(host, port, null, makeSecurityContext(user, password, type, context, verifier));
+    return newClient(host, port, null, makeSecurityContext(user, password, type, context, verifier), null);
   }
   /**
    * Creates a client to access the database by means of a REST server.
@@ -900,7 +941,7 @@ public class DatabaseClientFactory {
    */
   @Deprecated
   static public DatabaseClient newClient(String host, int port, String database, String user, String password, Authentication type, SSLContext context, SSLHostnameVerifier verifier) {
-    return newClient(host, port, database, makeSecurityContext(user, password, type, context, verifier));
+    return newClient(host, port, database, makeSecurityContext(user, password, type, context, verifier), null);
   }
 
   /**
@@ -978,6 +1019,7 @@ public class DatabaseClientFactory {
     private           Authentication        authentication;
     private           String                externalName;
     private           SecurityContext       securityContext;
+    private           DatabaseClient.ConnectionType connectionType;
     private           HandleFactoryRegistry handleRegistry =
       HandleFactoryRegistryImpl.newDefault();
 
@@ -1190,6 +1232,24 @@ public class DatabaseClientFactory {
       this.securityContext = securityContext;
     }
     /**
+     * Identifies whether the client connects directly with a MarkLogic host
+     * or by means of a gateway such as a load balancer.
+     * @return	the connection type
+     */
+    public DatabaseClient.ConnectionType getConnectionType() {
+      return connectionType;
+    }
+    /**
+     * Specify whether the client connects directly with a MarkLogic host
+     * or by means of a gateway such as a load balancer.
+     * @param connectionType	the connection type
+     */
+    public void setConnectionType(DatabaseClient.ConnectionType connectionType) {
+      this.connectionType = connectionType;
+    }
+
+
+    /**
      * Returns the registry for associating
      * IO representation classes with handle factories.
      * @return	the registry instance
@@ -1222,8 +1282,10 @@ public class DatabaseClientFactory {
      * @return	a new client for making database requests
      */
     public DatabaseClient newClient() {
-      DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(host, port, database,
-        makeSecurityContext(user, password, authentication, context, verifier));
+      DatabaseClientImpl client = (DatabaseClientImpl) DatabaseClientFactory.newClient(
+            host, port, database,
+            makeSecurityContext(user, password, authentication, context, verifier),
+            connectionType);
       client.setHandleRegistry(getHandleRegistry().copy());
       return client;
     }
