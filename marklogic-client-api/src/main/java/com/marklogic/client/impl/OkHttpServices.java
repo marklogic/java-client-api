@@ -247,7 +247,9 @@ public class OkHttpServices implements RESTServices {
   };
 
   public OkHttpServices() {
+    retryStatus.add(STATUS_BAD_GATEWAY);
     retryStatus.add(STATUS_SERVICE_UNAVAILABLE);
+    retryStatus.add(STATUS_GATEWAY_TIMEOUT);
   }
 
   @Override
