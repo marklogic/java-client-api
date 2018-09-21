@@ -333,6 +333,7 @@ public class PojoFacadeTest {
       Common.newAdminClient().newServerConfigManager().newQueryOptionsManager();
     queryOptionsMgr.writeOptions("filtered",
       new StringHandle("{\"options\":{\"search-option\":\"filtered\"}}").withFormat(Format.JSON));
+
     StructuredQueryBuilder sqb = Common.client.newQueryManager().newStructuredQueryBuilder("filtered");
     query = sqb.and(qb.word("asciiName", new String[] {"wildcarded"}, 1, "Chittagong*"));
     try ( PojoPage<City> page = cities.search(query, 1) ) {

@@ -16,6 +16,7 @@
 package com.marklogic.client.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 import org.junit.Test;
 import org.junit.Ignore;
@@ -52,6 +53,7 @@ public class FailedRequestTest {
 
     try {
       mgr.writeOptions("testempty", new StringHandle("<options xmlns=\"http://marklogic.com/appservices/search\"/>"));
+//      assertFalse("expected options write to fail because forbidden", true);
     } catch (ForbiddenUserException e) {
       assertEquals(
           "Local message: User is not allowed to write /config/query. Server Message: You do not have permission to this method and URL.",
@@ -62,6 +64,8 @@ public class FailedRequestTest {
     mgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
 
     Common.adminClient.newServerConfigManager().setQueryOptionValidation(true);
+
+    Common.propertyWait();
 
     StringWriter xml = new StringWriter();
     XMLStreamWriter xsw = XMLOutputFactory.newInstance().createXMLStreamWriter(xml);
@@ -88,6 +92,7 @@ public class FailedRequestTest {
     logger.debug(xml.toString());
     try {
       mgr.writeOptions("testempty", new StringHandle(xml.toString()));
+//      assertFalse("expected options write to fail because empty", true);
     } catch (FailedRequestException e) {
       assertEquals(
         "Local message: /config/query write failed: Bad Request. Server Message: RESTAPI-INVALIDCONTENT: (err:FOER0000) Invalid content: Operation results in invalid Options: Operator or constraint name \"blah\" is used more than once (must be unique).",

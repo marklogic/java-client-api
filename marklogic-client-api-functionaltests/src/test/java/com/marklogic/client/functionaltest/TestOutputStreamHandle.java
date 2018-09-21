@@ -273,7 +273,7 @@ public class TestOutputStreamHandle extends BasicJavaClientREST {
 
     // get the binary size
     int size = getBinarySize(fileRead);
-    int expectedSize = 17154;
+    int expectedSize = 34543;
 
     assertEquals("Binary size difference", expectedSize, size);
 

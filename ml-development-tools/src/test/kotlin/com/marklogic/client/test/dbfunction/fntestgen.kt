@@ -605,14 +605,16 @@ fun dbfTestGenerate(testDir: String) {
   val mapper     = jacksonObjectMapper()
   val serializer = mapper.writerWithDefaultPrettyPrinter()
 
+  val host = System.getenv("TEST_HOST") ?: "localhost"
+
   val db = DatabaseClientFactory.newClient(
-      "localhost",
+      host,
       8000,
       "DBFUnitTest",
       DatabaseClientFactory.DigestAuthContext("admin", "admin")
   )
   val modDb = DatabaseClientFactory.newClient(
-      "localhost",
+      host,
       8000,
       "DBFUnitTestModules",
       DatabaseClientFactory.DigestAuthContext("admin", "admin")

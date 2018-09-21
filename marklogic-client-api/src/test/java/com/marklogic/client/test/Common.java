@@ -25,11 +25,14 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.datamovement.Batcher;
+import com.marklogic.client.datamovement.DataMovementManager;
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
+import com.marklogic.client.datamovement.ForestConfiguration;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -56,8 +59,12 @@ public class Common {
   final public static String READ_PRIVILIGED_PASS = "x";
   final public static String WRITE_PRIVILIGED_USER = "write-privileged";
   final public static String WRITE_PRIVILIGED_PASS = "x";
-  final public static String HOST     = "localhost";
-  final public static int    PORT     = 8012;
+
+  final public static String  HOST          = System.getProperty("TEST_HOST", "localhost");
+  final public static int     PORT          = Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
+  final public static boolean PLACE_DIRECT  = Boolean.parseBoolean(System.getProperty("TEST_PLACE_DIRECT", "true"));
+  final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
+  final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
 
   public static DatabaseClient client;
   public static DatabaseClient adminClient;
@@ -188,6 +195,32 @@ public class Common {
       throw new RuntimeException(e);
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
+    }
+  }
+  public static <T extends Batcher> T initBatcher(DataMovementManager moveMgr, T batcher) {
+    if (moveMgr == null || batcher == null || PLACE_DIRECT == true) {
+      return batcher;
+    }
+    return (T) batcher.withForestConfig(
+          new FilteredForestConfiguration(moveMgr.readForestConfig()).withWhiteList(HOST)
+    );
+  }
+  public static ForestConfiguration initForestConfig(ForestConfiguration forestConfig) {
+    if (forestConfig == null || PLACE_DIRECT == true) {
+      return forestConfig;
+    }
+    return new FilteredForestConfiguration(forestConfig).withWhiteList(HOST);
+  }
+  public static void propertyWait() {
+    waitFor(PROPERTY_WAIT);
+  }
+  public static void waitFor(int milliseconds) {
+    if (milliseconds > 0) {
+      try {
+        Thread.sleep(milliseconds);
+      } catch (InterruptedException e) {
+        e.printStackTrace(System.out);
+      }
     }
   }
 }

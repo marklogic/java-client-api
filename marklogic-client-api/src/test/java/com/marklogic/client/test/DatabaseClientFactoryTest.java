@@ -63,21 +63,36 @@ public class DatabaseClientFactoryTest {
 
   @Test
   public void testRuntimeDatabaseSelection() throws SAXException, IOException {
-    DatabaseClient tmpClient = Common.newEvalClient("Triggers");
+//  final String FIRST_DB_NAME  = "java-unittest";
+//  final String SECOND_DB_NAME = "java-unittest";
+    final String FIRST_DB_NAME  = "Triggers";
+    final String SECOND_DB_NAME = "Documents";
+    DatabaseClient tmpClient = Common.newEvalClient(FIRST_DB_NAME);
     try {
       assertNotNull("Factory could not create client", tmpClient);
       String database =
         tmpClient.newServerEval()
           .xquery("xdmp:database-name(xdmp:database())")
           .evalAs(String.class);
-      assertEquals("Runtime database is wrong", "Triggers", database);
+      assertEquals("Runtime database is wrong", FIRST_DB_NAME, database);
     } finally {
       tmpClient.release();
     }
 
-    tmpClient = Common.newEvalClient("Documents");
+    tmpClient = Common.newEvalClient(SECOND_DB_NAME);
     try {
       assertNotNull("Factory could not create client", tmpClient);
+      String database =
+        tmpClient.newServerEval()
+          .xquery("xdmp:database-name(xdmp:database())")
+          .evalAs(String.class);
+      assertEquals("Runtime database is wrong", SECOND_DB_NAME, database);
+/*
+      QueryManager fixupQueryMgr = tmpClient.newQueryManager();
+      DeleteQueryDefinition delQuery = fixupQueryMgr.newDeleteDefinition();
+      delQuery.setDirectory("/test/");
+      fixupQueryMgr.delete(delQuery);
+ */
       XMLDocumentManager runtimeDbDocMgr = tmpClient.newXMLDocumentManager();
       // test that doc creation happens in the Documents db
       String docContents = "<a>hello</a>";
@@ -89,7 +104,7 @@ public class DatabaseClientFactoryTest {
       ServerEvaluationCall getHello =
         Common.evalClient.newServerEval()
           .javascript("xdmp.eval('fn.doc(\"" + docUri + "\")', " +
-            "null, {database:xdmp.database(\"Documents\")})");
+            "null, {database:xdmp.database(\"" + SECOND_DB_NAME + "\")})");
       // make sure we can see the doc
       String value = getHello.evalAs(String.class);
       assertXMLEqual("Doc contents incorrect", docContents, value);

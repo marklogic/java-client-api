@@ -39,6 +39,9 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
+import com.marklogic.client.datamovement.*;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.query.RawCtsQueryDefinition;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -61,20 +64,6 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.UrisToWriterListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatchException;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.GenericDocumentImpl;
 import com.marklogic.client.datamovement.impl.QueryBatchImpl;
@@ -115,7 +104,7 @@ public class QueryBatcherTest {
   }
 
   public static void setup() throws Exception {
-    WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
+    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
     moveMgr.startJob(writeBatcher);
     // a collection so we're only looking at docs related to this test
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
@@ -265,7 +254,7 @@ public class QueryBatcherTest {
     final AtomicReference<Calendar> batchTimestamp = new AtomicReference<>();
     final Map<String, Set<String>> results = new ConcurrentHashMap<>();
     final StringBuffer failures = new StringBuffer();
-    queryBatcher
+    Common.initBatcher(moveMgr, queryBatcher)
       .withBatchSize(batchSize)
       .withThreadCount(threadCount)
       .onUrisReady(
@@ -400,9 +389,9 @@ public class QueryBatcherTest {
       public Iterator<String> iterator() {
         AtomicInteger steps = new AtomicInteger(0);
         return new Iterator<String>() {
-          public boolean hasNext() { return steps.incrementAndGet() <= 2; }
+          public boolean hasNext() { return steps.get() <= 2; }
           public String next() {
-            if ( steps.get() == 1 ) return "some uri.txt";
+            if ( steps.incrementAndGet() == 1 ) return "some uri.txt";
             else throw new InternalError(errorMessage);
           }
         };
@@ -424,14 +413,14 @@ public class QueryBatcherTest {
   }
 
   public List<String> testQueryExceptions(QueryDefinition query, int expectedSuccesses, int expectedFailures) {
-    QueryBatcher queryBatcher = newQueryBatcher(query)
+    QueryBatcher queryBatcher = Common.initBatcher(moveMgr, newQueryBatcher(query))
       .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
     testExceptions(queryBatcher, expectedSuccesses, expectedFailures);
 
     // collect the uris this time
     List<String> matchingUris = Collections.synchronizedList(new ArrayList<>());
-    queryBatcher = newQueryBatcher(query)
+    queryBatcher = Common.initBatcher(moveMgr, newQueryBatcher(query))
       .onUrisReady( batch -> matchingUris.addAll(Arrays.asList(batch.getItems())) )
       .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
@@ -440,12 +429,12 @@ public class QueryBatcherTest {
   }
 
   public void testIteratorExceptions(List<String> uris, int expectedSuccesses, int expectedFailures) {
-    QueryBatcher uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
+    QueryBatcher uriListBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(uris.iterator()))
       .onUrisReady( batch -> { throw new InternalError(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new InternalError(errorMessage); } );
     testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
 
-    uriListBatcher = moveMgr.newQueryBatcher(uris.iterator())
+    uriListBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(uris.iterator()))
       .onUrisReady( batch -> { throw new RuntimeException(errorMessage); } )
       .onQueryFailure( queryThrowable -> { throw new RuntimeException(errorMessage); } );
     testExceptions(uriListBatcher, expectedSuccesses, expectedFailures);
@@ -512,7 +501,7 @@ public class QueryBatcherTest {
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().and();
     query.setCollections(qhbTestCollection);
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher queryBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
         .onUrisReady(new CloseBatchListener())
         .onQueryFailure(new CloseFailureListener());
 
@@ -531,7 +520,7 @@ public class QueryBatcherTest {
 
     StructuredQueryDefinition query = new StructuredQueryBuilder().and();
     query.setCollections(qhbTestCollection);
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher queryBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
         .onUrisReady(batch -> {
           try {
             Thread.sleep(1000);
@@ -553,9 +542,10 @@ public class QueryBatcherTest {
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
     urisReadyFlag.set(false);
     jobCompletionFlag.set(false);
-    QueryBatcher queryBatcher2 = moveMgr.newQueryBatcher(query)
+    QueryBatcher queryBatcher2 = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
         .onUrisReady(batch -> {
           try {
             Thread.sleep(1000);
@@ -570,6 +560,31 @@ public class QueryBatcherTest {
         });
     moveMgr.startJob(queryBatcher2);
     Thread.sleep(1100);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    QueryBatcher queryBatcher3 = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+      .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher3);
+    queryBatcher3.awaitCompletion();
+    moveMgr.stopJob(queryBatcher3);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    String[] uris = new String[] {"uri1.txt", "uri2.txt", "uri3.json", "uri4.xml","uri5.png"};
+    QueryBatcher queryBatcher4 = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(Arrays.asList(uris).iterator()))
+        .onUrisReady(batch -> {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          urisReadyFlag.set(true);
+        })
+        .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher4);
+    queryBatcher4.awaitCompletion();
+    moveMgr.stopJob(queryBatcher4);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
   }
 
@@ -629,7 +644,9 @@ public class QueryBatcherTest {
           }
 
           public QueryBatcher getBatcher() {
-            return moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"));
+            return Common.initBatcher(moveMgr,
+                moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection("dummy"))
+                );
           }
         };
         listener.processEvent(mockQueryBatch);
@@ -643,7 +660,7 @@ public class QueryBatcherTest {
   private void testListenerException(QueryBatchListener listener) {
     final AtomicInteger failureBatchCount = new AtomicInteger();
     Iterator<String> iterator = Arrays.asList(new String[] {uri1}).iterator();
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(iterator)
+    QueryBatcher queryBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(iterator))
       .onUrisReady( batch -> logger.debug("uri={}", batch.getItems()[0]) )
       .onUrisReady(listener)
       .onQueryFailure( queryThrowable -> failureBatchCount.incrementAndGet() );
@@ -657,7 +674,7 @@ public class QueryBatcherTest {
   @Test
   public void issue623() {
     String issue623Collection = qhbTestCollection + "_issue623";
-    WriteBatcher wb = moveMgr.newWriteBatcher();
+    WriteBatcher wb = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
 
     String uniqueDir = issue623Collection + "/";
     ArrayList<String> uris = new ArrayList<>();
@@ -683,7 +700,7 @@ public class QueryBatcherTest {
 
     AtomicInteger deletedCount = new AtomicInteger(0);
     StringBuffer errors = new StringBuffer();
-    QueryBatcher qb = moveMgr.newQueryBatcher(uris.iterator())
+    QueryBatcher qb = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(uris.iterator()))
       .withThreadCount(2)
       .withBatchSize(99)
       .withConsistentSnapshot()
@@ -711,7 +728,9 @@ public class QueryBatcherTest {
 
   @Test
   public void testIssue658() throws Exception{
-    QueryBatcher batcher = moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
+    QueryBatcher batcher = Common.initBatcher(moveMgr,
+          moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
+          )
       .withBatchSize(20)
       .withThreadCount(20);
 

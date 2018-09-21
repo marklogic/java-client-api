@@ -264,6 +264,7 @@ public class TransformTest {
       "</search:response>}\n" +
       "};";
     extensionMgr.writeXQueryTransform( "test118", new StringHandle().with(naiveTransform));
+
     QueryManager q = Common.client.newQueryManager();
     StringQueryDefinition s = q.newStringDefinition("");
     s.setCriteria("a");
@@ -299,6 +300,7 @@ public class TransformTest {
       "    return $json" +
       "};";
     extensionMgr.writeXQueryTransform( "testIssue471", new StringHandle().with(transform));
+
     QueryManager q = Common.client.newQueryManager();
     StringQueryDefinition s = q.newStringDefinition();
     s.setCriteria("a");

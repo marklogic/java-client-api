@@ -15,7 +15,6 @@
  */
 package com.marklogic.client.impl;
 
-
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
@@ -702,6 +701,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestOnce(Request request) {
+// System.out.println(request.method()+ " "+request.url().url().toExternalForm());
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
@@ -2625,9 +2625,17 @@ public class OkHttpServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
+    return getValue(reqlog, type, key, null, isNullable, mimetype, as);
+  }
+  @Override
+  public <T> T getValue(RequestLogger reqlog, String type, String key, Transaction transaction,
+                        boolean isNullable, String mimetype, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
     logger.debug("Getting {}/{}", type, key);
 
     Request.Builder requestBldr = setupRequest(type + "/" + key, null, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
 
     Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
@@ -4099,12 +4107,14 @@ public class OkHttpServices implements RESTServices {
       if ( requestBldr == null ) {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
-      requestBldr = addCookies(requestBldr, transaction.getCookies(), (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone());
+      requestBldr = addCookies(
+          requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
+          );
     }
     return requestBldr;
   }
 
-  private Request.Builder addCookies(Request.Builder requestBldr, List<ClientCookie> cookies, Calendar expiration) {
+  private Request.Builder addCookies(Request.Builder requestBldr, List<ClientCookie> cookies, Calendar creation) {
     HttpUrl uri = requestBldr.build().url();
     for (ClientCookie cookie : cookies) {
       // don't forward the cookie if it requires https and we're not using https
@@ -4128,12 +4138,17 @@ public class OkHttpServices implements RESTServices {
       if ( cookie.getMaxAge() == 0 ) {
         continue;
       }
-      // TODO: eval if we need handling for MIN_VALUE
+      // TODO: determine if we need handling for MIN_VALUE
       // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
       // don't forward the cookie if it has a max age and we're past the max age
-      if ( expiration != null && cookie.getMaxAge() > 0 ) {
-        expiration.roll(Calendar.SECOND, cookie.getMaxAge());
-        if ( System.currentTimeMillis() > expiration.getTimeInMillis() ) {
+      if ( creation != null && cookie.getMaxAge() > 0 ) {
+        int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
+              System.currentTimeMillis() - creation.getTimeInMillis()
+        );
+        if ( currentAge > cookie.getMaxAge() ) {
+          logger.warn(
+                cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+          );
           continue;
         }
       }
@@ -4246,6 +4261,7 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
+// System.out.println(uri.toString());
     return request;
   }
 
@@ -5487,9 +5503,7 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        Calendar expiration = session.getCreatedTimestamp() != null ?
-            (Calendar) session.getCreatedTimestamp().clone() : null;
-        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), expiration);
+        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }

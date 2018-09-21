@@ -119,6 +119,7 @@ public class QueryOptionsManagerTest {
     FileHandle jsonHandle = new FileHandle(new File("src/test/resources/json-config.json"));
     jsonHandle.setFormat(Format.JSON);
     mgr.writeOptions("jsonoptions", jsonHandle);
+
     JsonNode options = mgr.readOptions("jsonoptions", new JacksonHandle()).get();
 
     assertEquals("JSON options came back incorrectly", options.findPath("constraint").get(0).get("name").textValue(), "decade");

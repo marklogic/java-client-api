@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -126,7 +127,7 @@ public class LegalHoldsTest {
     DataMovementManager moveMgr = evalClient.newDataMovementManager();
     StringBuilder anyFailure = new StringBuilder();
     Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
-    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
       .withBatchSize(1)
       .withConsistentSnapshot()
       .onUrisReady(

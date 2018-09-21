@@ -17,11 +17,7 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
 
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -51,7 +47,7 @@ public class DeleteListenerTest {
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
-    WriteBatcher writeBatcher = moveMgr.newWriteBatcher();
+    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
     moveMgr.startJob(writeBatcher);
     String[] uris = new String[100];
     for ( int i=0; i < 100; i++ ) {
@@ -64,9 +60,9 @@ public class DeleteListenerTest {
     assertEquals( "There should be 100 documents in the db",
       100, client.newDocumentManager().read(uris).size() );
 
-    QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
+    QueryBatcher queryBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(
         new StructuredQueryBuilder().collection(collection)
-      )
+        ))
       .withBatchSize(10)
       .onUrisReady(new DeleteListener())
       .withConsistentSnapshot();

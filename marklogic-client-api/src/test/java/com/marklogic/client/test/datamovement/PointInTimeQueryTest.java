@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import com.marklogic.client.datamovement.*;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.AfterClass;
@@ -35,13 +37,6 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.QueryBatcher;
 
 import com.marklogic.client.test.Common;
 
@@ -69,7 +64,7 @@ public class PointInTimeQueryTest {
 
   public static void setup() throws Exception {
     StringBuffer failures = new StringBuffer();
-    WriteBatcher writeBatcher = moveMgr.newWriteBatcher()
+    WriteBatcher writeBatcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
       .withBatchSize(10)
       .onBatchFailure((event, throwable) -> {
         throwable.printStackTrace();
@@ -106,7 +101,7 @@ public class PointInTimeQueryTest {
       logger.error("ERORR:[{}]", throwable);
       failures.append("ERORR:[" + throwable.toString() + "]");
     };
-    QueryBatcher exportBatcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher exportBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
       .withThreadCount(1)
       .withBatchSize(30)
       .withConsistentSnapshot()
@@ -132,7 +127,7 @@ public class PointInTimeQueryTest {
     moveMgr.startJob(exportBatcher);
 
     // while the exportBatcher is still running, let's delete the docs out from under it
-    QueryBatcher deleteBatcher = moveMgr.newQueryBatcher(query)
+    QueryBatcher deleteBatcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
       .withBatchSize(10)
       .withConsistentSnapshot()
       .onUrisReady(new DeleteListener())
