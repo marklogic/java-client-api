@@ -138,6 +138,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       }
     } else {
       if (numHosts <= 0) throw new IllegalArgumentException("numHosts must be > 0");
+// TODO: use existing forest configuration instead of refreshing?
       int numConfigHosts = moveMgr.readForestConfig().getPreferredHosts().length;
       if (numHosts > numConfigHosts) throw new IllegalArgumentException
           ("numHosts must be less than or equal to the number of hosts in the cluster");
@@ -274,23 +275,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
           filteredForestConfig = filteredForestConfig.withRenamedHost(host, randomAvailableHost);
         }
         batcher.withForestConfig(filteredForestConfig);
-        // cancel any previously scheduled re-sync
-        if ( future != null ) future.cancel(false);
-        // schedule a re-sync with the server forest config
-        future = Executors.newScheduledThreadPool(1)
-          .schedule( () -> {
-              if ( batcher.isStopped() ) {
-                logger.debug("Job \"{}\" is stopped, so cancelling re-sync with the server forest config",
-                  batcher.getJobName());
-              } else {
-                ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
-                logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
-                  suspendTimeForHostUnavailable.toString(), host, Arrays.asList(updatedForestConfig.getPreferredHosts()));
-                // set the forestConfig back to whatever the server says it is
-                batcher.withForestConfig(updatedForestConfig);
-              }
-            }
-            , suspendTimeForHostUnavailable.toMillis(), TimeUnit.MILLISECONDS);
+        scheduleForestResynch(batcher, host);
       } else {
         // by black-listing this host we'd move below minHosts, so it's time to
         // stop this job
@@ -302,6 +287,26 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       }
     }
     return shouldWeRetry;
+  }
+
+  private void scheduleForestResynch(Batcher batcher, String host) {
+    // cancel any previously scheduled re-sync
+    if ( future != null ) future.cancel(false);
+    // schedule a re-sync with the server forest config
+    future = Executors.newScheduledThreadPool(1)
+      .schedule( () -> {
+          if ( batcher.isStopped() ) {
+            logger.debug("Job \"{}\" is stopped, so cancelling re-sync with the server forest config",
+              batcher.getJobName());
+          } else {
+            ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
+            logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
+              suspendTimeForHostUnavailable.toString(), host, Arrays.asList(updatedForestConfig.getPreferredHosts()));
+            // set the forestConfig back to whatever the server says it is
+            batcher.withForestConfig(updatedForestConfig);
+          }
+        }
+        , suspendTimeForHostUnavailable.toMillis(), TimeUnit.MILLISECONDS);
   }
 
   protected boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {
