@@ -47,16 +47,10 @@ public class DataMovementManagerImpl implements DataMovementManager {
   private static ConcurrentHashMap<String, JobTicket> activeJobs = new ConcurrentHashMap<>();
   private ForestConfiguration forestConfig;
   private DatabaseClient primaryClient;
-  private DatabaseClient.ConnectionType connectionType;
   // clientMap key is the hostname_database
   private Map<String,DatabaseClient> clientMap = new HashMap<>();
 
   public DataMovementManagerImpl(DatabaseClient client) {
-    connectionType = client.getConnectionType();
-    if (connectionType == DatabaseClient.ConnectionType.GATEWAY) {
-      forestConfig = new AnyForestConfiguration(client);
-    }
-
     setPrimaryClient(client);
 
     clientMap.put(primaryClient.getHost(), primaryClient);
@@ -163,9 +157,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public ForestConfiguration readForestConfig() {
-    if (getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
-     forestConfig = service.readForestConfig();
-    }
+    forestConfig = service.readForestConfig();
     return forestConfig;
   }
 
@@ -204,7 +196,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   @Override
   public DatabaseClient.ConnectionType getConnectionType() {
-    return connectionType;
+    return primaryClient.getConnectionType();
   }
 
   public DataMovementServices getDataMovementServices() {

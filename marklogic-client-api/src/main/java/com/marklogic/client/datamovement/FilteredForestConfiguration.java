@@ -16,18 +16,13 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.datamovement.Forest.HostType;
-import com.marklogic.client.datamovement.impl.AnyForestConfiguration;
-import com.marklogic.client.datamovement.impl.ForestConfigurationImpl;
+import com.marklogic.client.datamovement.impl.GatewayForestConfiguration;
 import com.marklogic.client.datamovement.impl.ForestImpl;
 
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 /**
@@ -66,8 +61,8 @@ public class FilteredForestConfiguration implements ForestConfiguration {
    * @param forestConfig the ForestConfiguration to wrap
    */
   public FilteredForestConfiguration(ForestConfiguration forestConfig) {
-    if (forestConfig instanceof AnyForestConfiguration) {
-      throw new IllegalArgumentException("cannot filter the forest hosts when using only the primary host");
+    if (forestConfig instanceof GatewayForestConfiguration) {
+      throw new IllegalArgumentException("cannot filter the forest hosts when connecting using a gateway");
     }
     this.wrappedForestConfig = forestConfig;
   }
