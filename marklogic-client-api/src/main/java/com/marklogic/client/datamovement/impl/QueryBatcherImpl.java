@@ -61,7 +61,6 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private static Logger logger = LoggerFactory.getLogger(QueryBatcherImpl.class);
   private QueryDefinition query;
   private Iterator<String> iterator;
-  private DataMovementManager moveMgr;
   private boolean threadCountSet = false;
   private List<QueryBatchListener> urisReadyListeners = new ArrayList<>();
   private List<QueryFailureListener> failureListeners = new ArrayList<>();
@@ -83,16 +82,14 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private Thread runJobCompletionListeners;
 
   public QueryBatcherImpl(QueryDefinition query, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super();
-    this.moveMgr = moveMgr;
+    super(moveMgr);
     this.query = query;
     withForestConfig(forestConfig);
     withBatchSize(1000);
   }
 
   public QueryBatcherImpl(Iterator<String> iterator, DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super();
-    this.moveMgr = moveMgr;
+    super(moveMgr);
     this.iterator = iterator;
     withForestConfig(forestConfig);
     withBatchSize(1000);
@@ -161,7 +158,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     long start = queryEvent.getForestResultsSoFar() + 1;
     logger.trace("retryForest: {}, retryHost: {}, start: {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
-    QueryTask runnable = new QueryTask(moveMgr, this, retryForest, query,
+    QueryTask runnable = new QueryTask(getMoveMgr(), this, retryForest, query,
       queryEvent.getForestBatchNumber(), start, queryEvent.getJobBatchNumber(), callFailListeners);
     runnable.run();
   }
@@ -178,7 +175,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     Forest[] forests = batch.getBatcher().getForestConfig().listForests();
     for(Forest forest : forests) {
       if(forest.equals(batch.getForest()))
-        client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+        client = getMoveMgr().getForestClient(forest);
     }
     QueryBatchImpl retryBatch = new QueryBatchImpl()
         .withClient( client )
@@ -435,7 +432,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     List<DatabaseClient> newClientList = new ArrayList<>();
     for ( String host : hosts.keySet() ) {
       Forest forest = hosts.get(host);
-      DatabaseClient client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+      DatabaseClient client = getMoveMgr().getForestClient(forest);
       newClientList.add(client);
     }
     clientList.set(newClientList);
@@ -462,7 +459,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       blackListedForests.remove(forest);
     }
     if ( blackListedForests.size() > 0 ) {
-      DataMovementManagerImpl moveMgrImpl = (DataMovementManagerImpl) moveMgr;
+      DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( getHostNames(blackListedForests).contains(primaryHost) ) {
         int randomPos = Math.abs(primaryHost.hashCode()) % clientList.get().size();
@@ -504,7 +501,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     for ( Forest forest : addedForests ) {
       // we don't need to worry about consistentSnapshotFirstQueryHasRun because that's already done
       // or we wouldn't be here because we wouldn't have a synchronized lock on this
-      threadPool.execute(new QueryTask(moveMgr, this, forest, query, 1, 1));
+      threadPool.execute(new QueryTask(getMoveMgr(), this, forest, query, 1, 1));
     }
     if ( restartedForests.size() > 0 ) {
       logger.warn("re-adding jobs related to forests [{}] to the queue", getForestNames(restartedForests));
@@ -548,7 +545,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
   private synchronized void startQuerying() {
     boolean consistentSnapshotFirstQueryHasRun = false;
     for ( Forest forest : getForestConfig().listForests() ) {
-      QueryTask runnable = new QueryTask(moveMgr, this, forest, query, 1, 1);
+      QueryTask runnable = new QueryTask(getMoveMgr(), this, forest, query, 1, 1);
       if ( consistentSnapshot == true && consistentSnapshotFirstQueryHasRun == false ) {
         // let's run this first time in-line so we'll have the serverTimestamp set
         // before we launch all the parallel threads
@@ -712,8 +709,10 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     }
     // if we made it this far, all forests are done. let's run the Job
     // completion listeners and shutdown.
-    synchronized(this) {
-      if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
+    if ( !runJobCompletionListeners.isAlive() ) {
+      synchronized(this) {
+        if ( !runJobCompletionListeners.isAlive() ) runJobCompletionListeners.start();
+      }
     }
     threadPool.shutdown();
   }
@@ -950,7 +949,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
 
   @Override
   public DatabaseClient getPrimaryClient() {
-    return ((DataMovementManagerImpl) moveMgr).getPrimaryClient();
+    return getMoveMgr().getPrimaryClient();
   }
 
   @Override

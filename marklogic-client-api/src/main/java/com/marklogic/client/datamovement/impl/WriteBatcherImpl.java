@@ -213,7 +213,6 @@ public class WriteBatcherImpl
   implements WriteBatcher
 {
   private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
-  private DataMovementManager moveMgr;
   private int transactionSize;
   private String temporalCollection;
   private ServerTransform transform;
@@ -233,10 +232,7 @@ public class WriteBatcherImpl
   private JobTicket jobTicket;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super();
-    if (moveMgr == null)      throw new IllegalArgumentException("moveMgr must not be null");
-    if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
-    this.moveMgr = moveMgr;
+    super(moveMgr);
     withForestConfig( forestConfig );
   }
 
@@ -781,6 +777,7 @@ public class WriteBatcherImpl
 
   @Override
   public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
+    super.withForestConfig(forestConfig);
     if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
     // get the list of hosts to use
     Forest[] forests = forestConfig.listForests();
@@ -821,7 +818,7 @@ public class WriteBatcherImpl
         newHostInfos[i].hostName = host;
         Forest forest = hosts.get(host);
         // this is a host-specific client (no DatabaseClient is actually forest-specific)
-        newHostInfos[i].client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
+        newHostInfos[i].client = getMoveMgr().getForestClient(forest);
         logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
           newHostInfos[i].client.getPort(), host);
       }
@@ -831,7 +828,7 @@ public class WriteBatcherImpl
     this.hostInfos = newHostInfos;
 
     if ( removedHostInfos.size() > 0 ) {
-      DataMovementManagerImpl moveMgrImpl = (DataMovementManagerImpl) moveMgr;
+      DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( removedHostInfos.containsKey(primaryHost) ) {
         int randomPos = Math.abs(primaryHost.hashCode()) % newHostInfos.length;

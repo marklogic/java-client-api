@@ -257,6 +257,15 @@ public class OkHttpServices implements RESTServices {
     return retryStatus;
   }
 
+  @Override
+  public int getMaxDelay() {
+    return maxDelay;
+  }
+  @Override
+  public void setMaxDelay(int maxDelay) {
+    this.maxDelay = maxDelay;
+  }
+
   private FailedRequest extractErrorFields(Response response) {
     if ( response == null ) return null;
     try {
@@ -746,11 +755,11 @@ public class OkHttpServices implements RESTServices {
     }
     /*
      * If the service is still unavailable after all the retries, we throw a
-     * FailedRequestException indicating that the service is unavailable.
+     * FailedRetryException indicating that the service is unavailable.
      */
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -1417,7 +1426,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -1559,7 +1568,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -2256,7 +2265,7 @@ public class OkHttpServices implements RESTServices {
       }
       if (retryStatus.contains(status)) {
         checkFirstRequest();
-        throw new FailedRequestException(
+        throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
             Math.round((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
@@ -2855,7 +2864,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3208,7 +3217,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3380,7 +3389,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3905,7 +3914,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -4931,7 +4940,7 @@ public class OkHttpServices implements RESTServices {
     }
     if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
