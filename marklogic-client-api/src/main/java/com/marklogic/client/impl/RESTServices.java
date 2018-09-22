@@ -118,6 +118,8 @@ public interface RESTServices {
   String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
 
   Set<Integer> getRetryStatus();
+  int getMaxDelay();
+  void setMaxDelay(int maxDelay);
 
   @Deprecated
   public void connect(String host, int port, String database, String user, String password, Authentication type,

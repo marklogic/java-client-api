@@ -16,6 +16,7 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRetryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -97,7 +98,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * Manages refreshing the connection hosts and retrying events after a host
+   * Manages refreshing the forests and hosts and retrying events after a host
    * becomes unavailable.
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
    */
@@ -231,8 +232,26 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   private boolean processGatewayException(Batcher batcher, Throwable throwable, String host) {
-    // if the nested retry failed, assume the MarkLogic cluster is unavailable
-    return false;
+    boolean isRetryException = (throwable instanceof FailedRetryException);
+    boolean shouldWeRetry = false;
+    if ( isRetryException == true ) {
+      ForestConfiguration existingForestConfig = batcher.getForestConfig();
+      Forest[] existingForests = existingForestConfig.listForests();
+      Set<String> existingNames =
+            Arrays.stream(existingForests).map(Forest::getForestName).collect(Collectors.toSet());
+      ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
+      Forest[] updatedForests = updatedForestConfig.listForests();
+      boolean changedForests =
+            Arrays.stream(updatedForests).anyMatch(forest -> existingNames.contains(forest.getForestName()));
+      if (changedForests) {
+        batcher.withForestConfig(updatedForestConfig);
+        shouldWeRetry = true;
+      } else {
+        logger.error("retry exception without forest failover for " + batcher.getJobName() + "\"", throwable);
+        moveMgr.stopJob(batcher);
+      }
+    }
+    return shouldWeRetry;
   }
 
   private boolean processForestHostException(Batcher batcher, Throwable throwable, String host) {

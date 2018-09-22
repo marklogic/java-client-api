@@ -16,7 +16,6 @@
 package com.marklogic.client.datamovement;
 
 import com.marklogic.client.datamovement.Forest.HostType;
-import com.marklogic.client.datamovement.impl.GatewayForestConfiguration;
 import com.marklogic.client.datamovement.impl.ForestImpl;
 
 import java.util.HashMap;
@@ -61,9 +60,6 @@ public class FilteredForestConfiguration implements ForestConfiguration {
    * @param forestConfig the ForestConfiguration to wrap
    */
   public FilteredForestConfiguration(ForestConfiguration forestConfig) {
-    if (forestConfig instanceof GatewayForestConfiguration) {
-      throw new IllegalArgumentException("cannot filter the forest hosts when connecting using a gateway");
-    }
     this.wrappedForestConfig = forestConfig;
   }
 
