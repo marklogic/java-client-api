@@ -237,13 +237,17 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
     if ( isRetryException == true ) {
       ForestConfiguration existingForestConfig = batcher.getForestConfig();
       Forest[] existingForests = existingForestConfig.listForests();
-      Set<String> existingNames =
-            Arrays.stream(existingForests).map(Forest::getForestName).collect(Collectors.toSet());
       ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
       Forest[] updatedForests = updatedForestConfig.listForests();
-      boolean changedForests =
-            Arrays.stream(updatedForests).anyMatch(forest -> existingNames.contains(forest.getForestName()));
-      if (changedForests) {
+      boolean forestsChanged = (existingForests.length != updatedForests.length);
+      if (!forestsChanged) {
+         Set<String> existingNames = Arrays.stream(existingForests)
+               .map(Forest::getForestName)
+               .collect(Collectors.toSet());
+         forestsChanged = Arrays.stream(updatedForests)
+               .anyMatch(forest -> !existingNames.contains(forest.getForestName()));
+      }
+      if (forestsChanged) {
         batcher.withForestConfig(updatedForestConfig);
         shouldWeRetry = true;
       } else {
