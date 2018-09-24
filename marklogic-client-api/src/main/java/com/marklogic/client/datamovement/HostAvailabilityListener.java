@@ -232,30 +232,8 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   private boolean processGatewayException(Batcher batcher, Throwable throwable, String host) {
-    boolean isRetryException = (throwable instanceof FailedRetryException);
-    boolean shouldWeRetry = false;
-    if ( isRetryException == true ) {
-      ForestConfiguration existingForestConfig = batcher.getForestConfig();
-      Forest[] existingForests = existingForestConfig.listForests();
-      ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
-      Forest[] updatedForests = updatedForestConfig.listForests();
-      boolean forestsChanged = (existingForests.length != updatedForests.length);
-      if (!forestsChanged) {
-         Set<String> existingNames = Arrays.stream(existingForests)
-               .map(Forest::getForestName)
-               .collect(Collectors.toSet());
-         forestsChanged = Arrays.stream(updatedForests)
-               .anyMatch(forest -> !existingNames.contains(forest.getForestName()));
-      }
-      if (forestsChanged) {
-        batcher.withForestConfig(updatedForestConfig);
-        shouldWeRetry = true;
-      } else {
-        logger.error("retry exception without forest failover for " + batcher.getJobName() + "\"", throwable);
-        moveMgr.stopJob(batcher);
-      }
-    }
-    return shouldWeRetry;
+    // if the nested retry failed, assume the MarkLogic cluster is unavailable
+    return false;
   }
 
   private boolean processForestHostException(Batcher batcher, Throwable throwable, String host) {
