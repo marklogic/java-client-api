@@ -69,9 +69,6 @@ public class DatabaseClientImpl implements DatabaseClient {
     this.connectionType  = connectionType;
 
     services.setDatabaseClient(this);
-    if (connectionType == ConnectionType.GATEWAY) {
-      services.setMaxDelay(45000);
-    }
   }
 
   @Override
