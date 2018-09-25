@@ -721,7 +721,7 @@ public class DatabaseClientFactory {
    * @return a new client for making database requests
    */
   static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
-    return newClient(host, port, null, securityContext, null);
+    return newClient(host, port, database, securityContext, null);
   }
 
   /**
