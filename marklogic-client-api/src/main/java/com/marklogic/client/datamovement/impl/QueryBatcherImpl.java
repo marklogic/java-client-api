@@ -156,7 +156,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
     // we're obviously not done with this forest
     forestIsDone.get(retryForest).set(false);
     long start = queryEvent.getForestResultsSoFar() + 1;
-    logger.trace("retryForest: {}, retryHost: {}, start: {}",
+    logger.trace("retryForest {} on retryHost {} at start {}",
       retryForest.getForestName(), retryForest.getPreferredHost(), start);
     QueryTask runnable = new QueryTask(getMoveMgr(), this, retryForest, query,
       queryEvent.getForestBatchNumber(), start, queryEvent.getJobBatchNumber(), callFailListeners);
@@ -428,7 +428,7 @@ public class QueryBatcherImpl extends BatcherImpl implements QueryBatcher {
       if ( forestResults.get(forest) == null ) forestResults.put(forest, new AtomicLong());
       if ( forestIsDone.get(forest) == null  ) forestIsDone.put(forest, new AtomicBoolean(false));
     }
-    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     List<DatabaseClient> newClientList = new ArrayList<>();
     for ( String host : hosts.keySet() ) {
       Forest forest = hosts.get(host);

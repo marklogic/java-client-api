@@ -805,7 +805,7 @@ public class WriteBatcherImpl
         removedHostInfos.put(hostInfo.hostName, hostInfo);
       }
     }
-    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     // initialize a DatabaseClient for each host
     HostInfo[] newHostInfos = new HostInfo[hosts.size()];
     int i=0;
@@ -819,8 +819,10 @@ public class WriteBatcherImpl
         Forest forest = hosts.get(host);
         // this is a host-specific client (no DatabaseClient is actually forest-specific)
         newHostInfos[i].client = getMoveMgr().getForestClient(forest);
-        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
-          newHostInfos[i].client.getPort(), host);
+        if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+          logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
+                newHostInfos[i].client.getPort(), host);
+        }
       }
       i++;
     }
@@ -1052,7 +1054,7 @@ public class WriteBatcherImpl
             transaction = transactionInfo.transaction;
             transactionInfo.written.set(true);
           }
-          logger.trace("begin write batch {} to host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
+          logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
           if ( writeSet.getTemporalCollection() == null ) {
             writeSet.getClient().newDocumentManager().write(
               writeSet.getWriteSet(), writeSet.getTransform(), transaction
@@ -1077,7 +1079,7 @@ public class WriteBatcherImpl
           throw new DataMovementException("Failed to write because transaction already underwent commit or rollback", null);
         }
       } catch (Throwable t) {
-        logger.trace("failed batch sent to host \"{}\"", writeSet.getClient().getHost());
+        logger.trace("failed batch sent to forest on host \"{}\"", writeSet.getClient().getHost());
         Consumer<Throwable> onFailure = writeSet.getOnFailure();
         if ( onFailure != null ) {
           onFailure.accept(t);
