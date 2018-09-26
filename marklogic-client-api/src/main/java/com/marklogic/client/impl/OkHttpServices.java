@@ -20,6 +20,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.KerberosConfig;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.MarkLogicIOException;
@@ -294,14 +295,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,KerberosConfig kerberosConfig,
       Authentication authenType, SSLContext sslContext,
       SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, authenType, sslContext, null, verifier);
+    connect(host, port, database, user, password, kerberosConfig, authenType, sslContext, null, verifier);
   }
 
   @Override
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,KerberosConfig kerberosConfig,
       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
       SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
@@ -322,10 +323,10 @@ public class OkHttpServices implements RESTServices {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, kerberosConfig, authenType, sslContext, trustManager, hostnameVerifier);
   }
 
-  private void connect(String host, int port, String database, String user, String password,
+  private void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
                        Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
@@ -353,7 +354,7 @@ public class OkHttpServices implements RESTServices {
     if (authenType == null || authenType == Authentication.CERTIFICATE) {
       checkFirstRequest = false;
     } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, user);
+      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosConfig);
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");

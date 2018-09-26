@@ -9,6 +9,7 @@ import java.util.Base64;
 
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import com.marklogic.client.DatabaseClientFactory.KerberosConfig;
 import com.marklogic.client.FailedRequestException;
 
 import javax.security.auth.login.LoginContext;
@@ -37,12 +38,12 @@ import okhttp3.Response;
  */
 public class HTTPKerberosAuthInterceptor implements Interceptor {
 	String host;
-	String username;
+	KerberosConfig krbConfig;
 	LoginContext loginContext;
 
-  public HTTPKerberosAuthInterceptor(String host, String username) {
+  public HTTPKerberosAuthInterceptor(String host, KerberosConfig krbConfig) {
     this.host = host;
-    this.username = username;
+    this.krbConfig = krbConfig;
     try {
       buildSubjectCredentials();
     } catch (LoginException e) {
@@ -56,23 +57,18 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    *
    */
   private class KerberosLoginConfiguration extends Configuration {
-    String principalName = null;
+    KerberosConfig krbConfig = null;
 
     public KerberosLoginConfiguration() {}
 
-    KerberosLoginConfiguration(String principalName) {
-      this.principalName = principalName;
+    KerberosLoginConfiguration(KerberosConfig krbConfig) {
+      this.krbConfig = krbConfig;
     }
     @Override
     public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-      Map<String, String> options = new HashMap<>();
-      options.put("refreshKrb5Config", "true");
-      options.put("useTicketCache", "true");
-      options.put("doNotPrompt", "true");
-      if (principalName != null)
-        options.put("principal", principalName);
+
       return new AppConfigurationEntry[] { new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
-          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options) };
+          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, krbConfig.toOptions()) };
     }
   }
 
@@ -82,8 +78,6 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    * the Kerberos client. It assumes that a valid TGT is already present in the
    * kerberos client's cache.
    *
-   * @throws KrbException
-   * @throws IOException
    * @throws LoginException
    */
   private void buildSubjectCredentials() throws LoginException {
@@ -95,7 +89,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
      * Krb5LoginModule
      */
     LoginContext lc = new LoginContext("Krb5LoginContext", subject, null,
-        (username != null) ? new KerberosLoginConfiguration(username) : new KerberosLoginConfiguration());
+        (krbConfig != null) ? new KerberosLoginConfiguration(krbConfig) : new KerberosLoginConfiguration());
     lc.login();
     loginContext = lc;
   }
