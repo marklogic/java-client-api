@@ -9,6 +9,7 @@ import java.util.Base64;
 
 import java.security.Principal;
 import java.security.PrivilegedAction;
+import com.marklogic.client.DatabaseClientFactory.KerberosConfig;
 import com.marklogic.client.FailedRequestException;
 
 import javax.security.auth.login.LoginContext;
@@ -65,28 +66,9 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
     }
     @Override
     public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
-      Map<String, String> options = new HashMap<>();
-      options.put("refreshKrb5Config", krbConfig.getRefreshKrb5Config());
-      if (krbConfig.getPrincipal() != null)
-        options.put("principal", krbConfig.getPrincipal());
-      options.put("useTicketCache", krbConfig.getUseTicketCache());
-      if (krbConfig.getUseTicketCache() == "true" && krbConfig.getTicketCache() != null)
-        options.put("ticketCache", krbConfig.getTicketCache());
-      options.put("renewTGT", krbConfig.getRenewTGT());
-      options.put("doNotPrompt", krbConfig.getDoNotPrompt());
-      options.put("useKeyTab", krbConfig.getUseKeyTab());
-      if (krbConfig.getUseKeyTab() == "true" && krbConfig.getKeyTab() != null)
-        options.put("keyTab", krbConfig.getKeyTab());
-      options.put("storeKey", krbConfig.getStoreKey());
-      options.put("useFirstPass", krbConfig.getUseFirstPass());
-      options.put("tryFirstPass", krbConfig.getTryFirstPass());
-      options.put("storePass", krbConfig.getStorePass());
-      options.put("clearPass", krbConfig.getClearPass());
-      options.put("isInitiator", krbConfig.getInitiator());
-      options.put("debug", krbConfig.getDebug());
 
       return new AppConfigurationEntry[] { new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
-          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, options) };
+          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, krbConfig.toOptions()) };
     }
   }
 
