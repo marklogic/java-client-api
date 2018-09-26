@@ -66,9 +66,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClient.ConnectionType;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
@@ -102,6 +104,7 @@ public abstract class ConnectedRESTQA {
 	private static String ml_certificate_file = null;
 	private static String ml_certificate_path = null;
 	private static String mlDataConfigDirPath = null;
+	private static Boolean isLBHost = false;
 
 	SSLContext sslContext = null;
 
@@ -2374,6 +2377,25 @@ public abstract class ConnectedRESTQA {
 		DatabaseClient client = DatabaseClientFactory.newClient(getServer(), getRestServerPort());
 		return client;
 	}
+	
+	public static DatabaseClient getDatabaseClient(String user, String password, ConnectionType connType)
+			throws KeyManagementException, NoSuchAlgorithmException, IOException {
+		DatabaseClient client = null;
+		
+		SSLContext sslcontext = null;
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+		if (IsSecurityEnabled()) {
+			try {
+				sslcontext = getSslContext();
+			} catch (UnrecoverableKeyException | KeyStoreException | CertificateException e) {
+				e.printStackTrace();
+			}
+			secContext = secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
+		}
+			client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(),
+					secContext, connType);				
+		return client;
+	}
 
 	public static DatabaseClient getDatabaseClient(String user, String password, Authentication authType)
 			throws KeyManagementException, NoSuchAlgorithmException, IOException {
@@ -2518,8 +2540,16 @@ public abstract class ConnectedRESTQA {
 		ml_certificate_file = property.getProperty("ml_certificate_file");
 		ml_certificate_path = property.getProperty("ml_certificate_path");
 		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
+		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
+	}
+	
+	public static boolean isLBHost() {
+		return isLBHost;
 	}
 
+	public static DatabaseClient.ConnectionType getConnType(){
+		return (isLBHost==true)?ConnectionType.GATEWAY:ConnectionType.DIRECT;
+	}
 	public static String getAdminUser() {
 		return admin_user;
 	}
