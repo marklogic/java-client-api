@@ -105,6 +105,8 @@ public abstract class ConnectedRESTQA {
 	private static String ml_certificate_path = null;
 	private static String mlDataConfigDirPath = null;
 	private static Boolean isLBHost = false;
+	
+	private static int PROPERTY_WAIT = 0;
 
 	SSLContext sslContext = null;
 
@@ -2325,6 +2327,8 @@ public abstract class ConnectedRESTQA {
 			setupJavaRESTServer(dbName, fNames[0], restSslServerName, getRestServerPort());
 		else
 			setupJavaRESTServer(dbName, fNames[0], restServerName, getRestServerPort());
+		if (isLBHost())
+			setRESTServerWithDistributeTimestamps(restServerName, "cluster");
 	}
 
 	/**
@@ -2541,6 +2545,7 @@ public abstract class ConnectedRESTQA {
 		ml_certificate_path = property.getProperty("ml_certificate_path");
 		mlDataConfigDirPath = property.getProperty("mlDataConfigDirPath");
 		isLBHost = Boolean.parseBoolean(property.getProperty("lbHost"));
+		PROPERTY_WAIT = Integer.parseInt(isLBHost ? "15000" : "0");		
 	}
 	
 	public static boolean isLBHost() {
@@ -2985,5 +2990,46 @@ public abstract class ConnectedRESTQA {
 	          client.getConnectionManager().shutdown();
 	      }
 	      return nCount;
+	  }
+	  // Wait for all nodes to be informed when property is updated in AWS env
+	  public static void waitForPropertyPropagate() {
+		  waitFor(PROPERTY_WAIT);
+	  }
+
+	  public static void waitFor(int milliseconds) {
+		  if (milliseconds > 0) {
+			  try {
+				  Thread.sleep(milliseconds);
+			  } catch (InterruptedException e) {
+				  e.printStackTrace(System.out);
+			  }
+		  }
+	  }
+	  /*
+	   * Associate REST server with timestamps in "distribute timestamps" to specify distribution of commit timestamps
+	   * For example set to "strict" for Application Load Balancing (AWS) 
+	   * 
+	   */
+	  private static void setRESTServerWithDistributeTimestamps(String restServerName, String distributeTimestampType) throws Exception {
+		  DefaultHttpClient client = new DefaultHttpClient();
+
+		  client.getCredentialsProvider().setCredentials(new AuthScope(host_name, getAdminPort()),
+				  new UsernamePasswordCredentials("admin", "admin"));
+		  String extSecurityrName = "";
+		  String body = "{\"group-name\": \"Default\",\"distribute-timestamps\": \"" + distributeTimestampType + "\"}";
+		  ;
+
+		  HttpPut put = new HttpPut("http://" + host_name + ":" + admin_port + "/manage/v2/servers/" + restServerName
+				  + "/properties?server-type=http");
+		  put.addHeader("Content-type", "application/json");
+		  put.setEntity(new StringEntity(body));
+
+		  HttpResponse response2 = client.execute(put);
+		  HttpEntity respEntity = response2.getEntity();
+		  if (respEntity != null) {
+			  String content = EntityUtils.toString(respEntity);
+			  System.out.println(content);
+		  }
+		  client.getConnectionManager().shutdown();
 	  }
 }
