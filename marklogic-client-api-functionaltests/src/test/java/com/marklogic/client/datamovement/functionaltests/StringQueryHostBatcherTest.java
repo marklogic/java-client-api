@@ -1,18 +1,18 @@
 /*
- * Copyright 2014-2018 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2014-2018 MarkLogic Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
@@ -76,12 +76,12 @@ import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 /**
- * @author ageorge Purpose : Test String Queries - On multiple documents using
- *         Java Client DocumentManager Write method and WriteBatcher. - On
- *         meta-data. - On non-existent document. Verify error message. - With
- *         invalid string query. Verify error message.
- *
- */
+* @author ageorge Purpose : Test String Queries - On multiple documents using
+*         Java Client DocumentManager Write method and WriteBatcher. - On
+*         meta-data. - On non-existent document. Verify error message. - With
+*         invalid string query. Verify error message.
+*
+*/
 public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   private static String dbName = "StringQueryHostBatcherDB";
   private static String[] fNames = { "StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3" };
@@ -196,7 +196,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clearDB(8000);
 
       // Use WriteBatcher to write the same files.
-      WriteBatcher batcher = dmManager.newWriteBatcher();
+      WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
       // Move to individual data sub folders.
       String dataFileDir = dataConfigDirPath + "/data/";
 
@@ -229,7 +229,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -254,11 +254,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 
       if (queryBatcher1.isStopped()) {
-
-        if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
-          fail("Test failed due to exceptions");
-        }
-
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
 
@@ -345,7 +340,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -404,7 +399,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * 
    * String[] filenames = {"constraint1.json", "constraint2.json",
    * "constraint3.json", "constraint4.json", "constraint5.json"}; WriteBatcher
-   * batcher = dmManager.newWriteBatcher();
+   * batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
    * 
    * batcher.withBatchSize(2);
    * 
@@ -440,7 +435,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * (fileHandle.withFormat(Format.JSON));
    * 
    * // Run a QueryBatcher. QueryBatcher queryBatcher1 =
-   * dmManager.newQueryBatcher(qbyexDef); queryBatcher1.onUrisReady(batch-> {
+   * Common.initBatcher(dmManager, dmManager.newQueryBatcher(qbyexDef); queryBatcher1.onUrisReady(batch-> {
    * 
    * for (String str : batch.getItems()) { querybatchResults.append(str)
    * .append('|'); }
@@ -551,7 +546,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
       queryBatcher1.withBatchSize(1);
       writer = new FileWriter(fileName);
 
@@ -695,7 +690,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -825,7 +820,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -917,7 +912,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String combQueryFileDir = dataConfigDirPath + "/combined/";
 
       // Use WriteBatcher to write the same files.
-      WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
+     WriteBatcher wbatcher = dmManagerTmp.newWriteBatcher();
 
       wbatcher.withBatchSize(2);
       InputStreamHandle contentHandle1 = new InputStreamHandle();
@@ -947,7 +942,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -1008,7 +1003,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     System.out.println("Running testQueryBatcherQueryFailures");
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-    WriteBatcher batcher = dmManager.newWriteBatcher();
+    WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
 
     batcher.withBatchSize(2);
     // Move to individual data sub folders.
@@ -1053,7 +1048,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     RawCombinedQueryDefinition querydef = queryMgr.newRawCombinedQueryDefinition(rawHandle);
 
     // Run a QueryBatcher.
-    QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcher1 = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
     queryBatcher1.onUrisReady(batch -> {
 
       for (String str : batch.getItems()) {
@@ -1122,7 +1117,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     System.out.println("Running testQueryBatcherCallbackClient");
 
     String[] filenames = { "constraint1.json" };
-    WriteBatcher batcher = dmManager.newWriteBatcher();
+    WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
 
     batcher.withBatchSize(2);
     // Move to individual data sub folders.
@@ -1142,7 +1137,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     querydef.setCriteria("Vannevar");
 
     // Run a QueryBatcher.
-    QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcher1 = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
 
     queryBatcher1.withBatchSize(1000);
     // Hold for contents read back from callback client.
@@ -1203,7 +1198,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     querydef.setCriteria("John AND Bob");
 
     // Run a QueryBatcher when no results are returned.
-    QueryBatcher queryBatcherNoResult = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcherNoResult = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
 
     StringBuilder batchNoResults = new StringBuilder();
     StringBuilder batchNoFailResults = new StringBuilder();
@@ -1254,7 +1249,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
     querydef.setCriteria("John AND Bob");
 
-    WriteBatcher batcher = dmManager.newWriteBatcher();
+    WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
     batcher.withBatchSize(1000);
     StringHandle handle = new StringHandle();
     handle.set(jsonDoc);
@@ -1272,7 +1267,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     StringBuffer batchFailResults = new StringBuffer();
 
     // Run a QueryBatcher with a large AwaitTermination.
-    QueryBatcher queryBatcherbatchSize = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcherbatchSize = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
     queryBatcherbatchSize.withBatchSize(20);
 
     Calendar calBef = Calendar.getInstance();
@@ -1318,7 +1313,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     batchResults.delete(0, (batchResults.capacity() - 1));
     batchFailResults.delete(0, (batchFailResults.capacity() - 1));
     // Run a QueryBatcher with a small AwaitTermination.
-    QueryBatcher queryBatcherSmallTimeout = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcherSmallTimeout = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
     queryBatcherSmallTimeout.withBatchSize(1000);
 
     queryBatcherSmallTimeout.onUrisReady(batch -> {
@@ -1370,7 +1365,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     StringQueryDefinition querydef = queryMgr.newStringDefinition();
     querydef.setCriteria("John AND Bob");
 
-    WriteBatcher batcher = dmManager.newWriteBatcher();
+    WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
     batcher.withBatchSize(1000);
     StringHandle handle = new StringHandle();
     handle.set(jsonDoc);
@@ -1388,7 +1383,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     StringBuilder batchFailResults = new StringBuilder();
 
     // Run a QueryBatcher with AwaitTermination.
-    QueryBatcher queryBatcherAwait = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcherAwait = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
 
     Calendar calBef = Calendar.getInstance();
     long before = calBef.getTimeInMillis();
@@ -1459,7 +1454,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     String xmlStr2 = "<?xml  version=\"1.0\" encoding=\"UTF-8\"?><foo>This is so bar</foo>";
 
     // Use WriteBatcher to write the same files.
-    WriteBatcher batcher = dmManager.newWriteBatcher();
+    WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
 
     batcher.withBatchSize(5);
     batcher.withTransform(transform);
@@ -1492,7 +1487,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     querydef.setCriteria("foo OR bar");
 
     // Run a QueryBatcher on the new URIs.
-    QueryBatcher queryBatcher1 = dmManager.newQueryBatcher(querydef);
+    QueryBatcher queryBatcher1 = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
     queryBatcher1.withBatchSize(5);
 
     queryBatcher1.onUrisReady(batch -> {
@@ -1563,7 +1558,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringQueryDefinition querydef = queryMgr.newStringDefinition();
       querydef.setCriteria("John AND Bob");
 
-      WriteBatcher batcher = dmManager.newWriteBatcher();
+      WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
       batcher.withBatchSize(1000);
       StringHandle handle = new StringHandle();
       handle.set(jsonDoc);
@@ -1581,7 +1576,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuffer batchFailResults = new StringBuffer();
 
       // Run a QueryBatcher with AwaitTermination.
-      QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
+      QueryBatcher queryBatcherAddForest = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
       queryBatcherAddForest.withBatchSize(2000);
 
       queryBatcherAddForest.onUrisReady(batch -> {
@@ -1592,7 +1587,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       queryBatcherAddForest.onQueryFailure(throwable -> {
         System.out.println("Exceptions thrown from callback onQueryFailure");
 
-        batchFailResults.append("Test has Exceptions")
+       batchFailResults.append("Test has Exceptions")
             .append('|')
             .append(throwable.getMessage());
       });
@@ -1626,7 +1621,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuffer batchFailResultsRem = new StringBuffer();
 
       // Run a QueryBatcher with AwaitTermination.
-      QueryBatcher queryBatcherRemoveForest = dmManager.newQueryBatcher(querydef);
+      QueryBatcher queryBatcherRemoveForest = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
       queryBatcherRemoveForest.withBatchSize(2000);
 
       queryBatcherRemoveForest.onUrisReady(batch -> {
@@ -1654,7 +1649,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       if (queryBatcherRemoveForest.isStopped()) {
         if (batchResultsRem != null && !batchResultsRem.toString().isEmpty()) {
-          System.out.print("Results from onUrisReady === ");
+         System.out.print("Results from onUrisReady === ");
           // We should be having 10 batches numbered 1 to 10.
           // TODO Add rest of the validations when feature complete.
           System.out.print(batchResultsRem.toString());
@@ -1727,7 +1722,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringQueryDefinition querydef = queryMgr.newStringDefinition();
       querydef.setCriteria("John AND Bob");
 
-      WriteBatcher batcher = dmManager.newWriteBatcher();
+      WriteBatcher batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
       batcher.withBatchSize(1000);
       StringHandle handle = new StringHandle();
       handle.set(jsonDoc);
@@ -1746,7 +1741,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder ccBuf = new StringBuilder();
 
       // Run a QueryBatcher with AwaitTermination.
-      QueryBatcher queryBatcherAddForest = dmManager.newQueryBatcher(querydef);
+      QueryBatcher queryBatcherAddForest = Common.initBatcher(dmManager, dmManager.newQueryBatcher(querydef));
       queryBatcherAddForest.withBatchSize(200);
 
       queryBatcherAddForest.onUrisReady(batch -> {
@@ -1828,7 +1823,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * 
    * String[] filenames = {"constraint1.json", "constraint2.json",
    * "constraint3.json", "constraint4.json", "constraint5.json"}; WriteBatcher
-   * batcher = dmManager.newWriteBatcher();
+   * batcher = Common.initBatcher(dmManager, dmManager.newWriteBatcher());
    * 
    * batcher.withBatchSize(2);
    * 
@@ -1864,7 +1859,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * (fileHandle.withFormat(Format.JSON));
    * 
    * // Run a QueryBatcher. QueryBatcher queryBatcher1 =
-   * dmManager.newQueryBatcher(qbyexDef); queryBatcher1.onUrisReady(batch-> {
+   * Common.initBatcher(dmManager, dmManager.newQueryBatcher(qbyexDef); queryBatcher1.onUrisReady(batch-> {
    * 
    * for (String str : batch.getItems()) { querybatchResults.append(str)
    * .append('|'); }
@@ -1880,7 +1875,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
    * querybatchFailResults.append(throwable.getMessage()); } );
    * 
    * // Trying to use a WriteBatcher on the same docId. WriteBatcher batcherTwo
-   * = dmManager.newWriteBatcher(); String jsonDoc = "{" + "\"employees\": [" +
+   * = Common.initBatcher(dmManager, dmManager.newWriteBatcher()); String jsonDoc = "{" + "\"employees\": [" +
    * "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" }," +
    * "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" }," +
    * "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}"; StringHandle
@@ -1944,7 +1939,8 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       querydef.setCriteria("0012");
 
       // Use WriteBatcher to write the same files.
-      WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
+      
+      WriteBatcher batcher = Common.initBatcher(dmManagerTmp, dmManagerTmp.newWriteBatcher());
 
       batcher.withBatchSize(2);
       // Move to individual data sub folders.
@@ -1976,7 +1972,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(querydef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -2106,7 +2102,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StructuredQueryDefinition queryWorddef = qb.word(qb.element("id"), "0026");
 
       // Use WriteBatcher to write the some files.
-      WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
+      WriteBatcher batcher = Common.initBatcher(dmManagerTmp, dmManagerTmp.newWriteBatcher());
 
       batcher.withBatchSize(2);
       // Move to individual data sub folders.
@@ -2136,7 +2132,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       StringBuilder batchWordFailResults = new StringBuilder();
 
       // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(queryWorddef);
+      QueryBatcher queryBatcher1 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(queryWorddef));
 
       queryBatcher1.onUrisReady(batch -> {
         for (String str : batch.getItems()) {
@@ -2169,13 +2165,13 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       // Run a range query.
 
       StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:integer", Operator.GE, 4);
-      QueryBatcher queryBatcher2 = dmManagerTmp.newQueryBatcher(queryRangedef);
+      QueryBatcher queryBatcher2 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(queryRangedef));
       // StringBuilder batchRangeResults = new StringBuilder();
       List<String> batchRangeResults = new ArrayList<String>();
       StringBuilder batchRangeFailResults = new StringBuilder();
 
       queryBatcher2.onUrisReady(batch -> {
-        for (String str : batch.getItems()) {
+       for (String str : batch.getItems()) {
           batchRangeResults.add(str);
           // batchRangeResults.append(str)
           // .append('|');
@@ -2209,7 +2205,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       // Run a ValueQueryOnAttribute query.
 
       StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
-      QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
+      QueryBatcher queryBatcher3 = Common.initBatcher(dmManagerTmp, dmManagerTmp.newQueryBatcher(valuequeyDef));
       // StringBuilder batchRangeResults = new StringBuilder();
       List<String> batchValueResults = new ArrayList<String>();
       StringBuilder batchvalueFailResults = new StringBuilder();
