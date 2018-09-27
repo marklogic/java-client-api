@@ -253,6 +253,7 @@ public class TestMetadata extends BasicJavaClientREST {
       docMgr.readAs(docId1, readMetadataHandle, String.class);
       metadatavalues = readMetadataHandle.getMetadataValues();
       assertTrue(" metadata doesnot contains  string 'valueTrx2' after trx commit", metadatavalues.containsValue("valueTrx2"));
+      waitForPropertyPropagate();
 
       t1 = t2 = null;
     } catch (Exception e) {
