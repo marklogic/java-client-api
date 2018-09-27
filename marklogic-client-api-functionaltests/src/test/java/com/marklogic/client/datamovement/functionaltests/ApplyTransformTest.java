@@ -22,31 +22,21 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
-import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Assume;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -63,7 +53,6 @@ import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.FileHandle;
@@ -84,8 +73,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	private static int port = 8000;
 	private static String password = "admin";
 	private static String server = "App-Services";
-	private static JsonNode clusterInfo;
-
+	
 	private static JacksonHandle jacksonHandle;
 	private static JacksonHandle jacksonHandle1;
 	private static StringHandle stringHandle;
@@ -97,13 +85,14 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	private static DocumentMetadataHandle meta4;
 	private static DocumentMetadataHandle meta5;
 	private static DocumentMetadataHandle meta6;
-
+	private static List<String> outputList;
 	private static String stringTriple;
 	private static File fileJson;
 	private static JsonNode jsonNode;
 	private static JsonNode jsonNode1;
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames;
+	private static int forestCount = 1;
 
 	/**
 	 * @throws Exception
@@ -118,10 +107,14 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		hostNames = getHosts();
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);
-		int count = 1;
+		//Ensure db has atleast one forest
+		createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
+		forestCount++;
 		for (String forestHost : hostNames) {
-			createForestonHost(dbName + "-" + count, dbName, forestHost);
-			count++;
+			for(int i = 0; i < new Random().nextInt(3); i++) {
+				createForestonHost(dbName + "-" + forestCount, dbName, forestHost);
+				forestCount++;
+			}
 			Thread.currentThread().sleep(500L);
 		}
 		// Create App Server if needed.
@@ -131,12 +124,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 			enableSecurityOnRESTServer(server, dbName);
 		}
 
-		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
-        DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
-		dmManager = dbClient.newDataMovementManager();
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
+		dbClient = getDatabaseClient(user, password, getConnType());
+       	dmManager = dbClient.newDataMovementManager();
 
 		// FileHandle
 		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));
@@ -192,6 +181,7 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		});
 
 		dmManager.startJob(ihb2);
+		outputList = new ArrayList<String>();
 		for (int j = 0; j < 2000; j++) {
 			String uri = "/local/json-" + j;
 			ihb2.add(uri, meta1, fileHandle);
@@ -202,10 +192,11 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 
 		for (int j = 0; j < 2000; j++) {
 			String uri = "/local/string-" + j;
+			outputList.add(uri);
 			ihb2.add(uri, meta2, stringHandle);
 		}
-
 		ihb2.flushAndWait();
+		
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4000);
 
 		ihb2.add("/local/quality", meta3, jacksonHandle);
@@ -239,22 +230,12 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
+		for (int i = 0; i < forestCount -1; i++) {
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));
 		}
 
 		deleteDB(dbName);
-	}
-
-	@Before
-	public void setUp() throws Exception {
-
-	}
-
-	@After
-	public void tearDown() throws Exception {
-
 	}
 
 	@Test
@@ -277,31 +258,35 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 
 				});
 
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.onUrisReady(listener);
+		
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
-
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/string-" + i;
-		}
-		int count = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		DOMHandle dh = new DOMHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
-			assertEquals("Attribute value should be English", "English",
-					dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
-			count++;
-		}
-
-		assertEquals("document count", 2000, count);
+		
+		AtomicInteger count = new AtomicInteger(0);
+		QueryBatcher resultBatcher = 
+				dmManager.newQueryBatcher(outputList.iterator())
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					DOMHandle dh = new DOMHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if(dh.get().getElementsByTagName("foo").item(0).getAttributes()
+								.item(0).getNodeValue().equals("English"));
+							count.incrementAndGet();
+					}					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
+		assertEquals("document count", 2000, count.get());
 		assertEquals("document count", 2000, success.intValue());
 		assertEquals("document count", 0, skipped.intValue());
+
 	}
 
 	@Test
@@ -328,7 +313,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		Set<String> urisList = new HashSet<>();
 		urisList.add("/local/nonexistent");
 		urisList.add("/local/nonexistent-1");
-		QueryBatcher batcher = dmManager.newQueryBatcher(urisList.iterator()).withBatchSize(2).onUrisReady(listener);
+		QueryBatcher batcher = 
+				dmManager.newQueryBatcher(urisList.iterator()).withBatchSize(2).onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
@@ -343,7 +329,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has attribure ? :", dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			assertTrue("Element has attribure ? :", dh.get()
+					.getElementsByTagName("foo").item(0).hasAttributes());
 			assertEquals("Attribute value should be English", "English",
 					dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0).getNodeValue());
 
@@ -358,27 +345,31 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
 				.onUrisReady(listener);
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
-
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/json-" + i;
-		}
-		int count = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		JacksonHandle dh = new JacksonHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
-			count++;
-		}
-
-		assertEquals("document count", 2000, count);
+		
+		AtomicInteger count = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					JacksonHandle dh = new JacksonHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if(dh.get().get("c").asText().equals("new Value"))
+							count.incrementAndGet();
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
+		assertEquals("document count", 2000, count.get());
 	}
 
 	@Test
@@ -389,7 +380,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE);
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener).onUrisReady(batch -> {
 				});
 		JobTicket ticket = dmManager.startJob(batcher);
@@ -428,7 +420,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(null);
 
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener).onUrisReady(batch -> {
 					System.out.println("notransformTest: URI " + batch.getItems()[0]);
 				});
@@ -470,7 +463,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.IGNORE);
 
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("Single Match"))
 				.onUrisReady(listener).onUrisReady(batch -> {
 					System.out.println("ignoreTransformTest: URI " + batch.getItems()[0]);
 					urisList.addAll(Arrays.asList(batch.getItems()));
@@ -505,7 +499,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo")
+					.item(0).hasAttributes());
 		}
 		Set<String> urisList = new HashSet<>();
 
@@ -529,7 +524,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					skippedBatch.addAll(batchList);
 				});
 
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("FailTransform"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("FailTransform"))
 				.withBatchSize(2).onUrisReady(listener).onUrisReady(batch -> {
 
 					System.out.println(batch.getClient().getHost());
@@ -540,7 +536,11 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		properties.put("locking", "strict");
 		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 
-		String insertQuery = "xdmp:document-insert(\"/local/failed\", <foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") );xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )";
+		String insertQuery = "xdmp:document-insert(\"/local/failed\", "
+				+ "<foo>This is so foo</foo>, (), \"FailTransform\", 0, xdmp:forest(\"ApplyTransform-1\") )"
+				+ ";xdmp:document-insert(\"/local/failed-1\", object-node {\"c\":\"v1\"}, (),"
+				+ " \"FailTransform\","
+				+ " 0, xdmp:forest(\"ApplyTransform-1\") )";
 
 		String response = dbClient.newServerEval().xquery(insertQuery).evalAs(String.class);
 		System.out.println(response);
@@ -554,7 +554,8 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		while (page.hasNext()) {
 			DocumentRecord rec = page.next();
 			rec.getContent(dh);
-			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo").item(0).hasAttributes());
+			assertTrue("Element has no attribures:", !dh.get().getElementsByTagName("foo").item(0)
+					.hasAttributes());
 		}
 
 		uri = new String("/local/failed-1");
@@ -618,14 +619,20 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		// Query collection "Replace Snapshot", a listener forTransform and
 		// another
 		// for Deletion are attached
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Replace Snapshot"))
-				.withBatchSize(1).onUrisReady(listener).withConsistentSnapshot().onUrisReady(new DeleteListener())
+		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder()
+				.collection("Replace Snapshot"))
+				.withBatchSize(1).onUrisReady(listener).withConsistentSnapshot()
+				.onUrisReady(new DeleteListener())
 				.onQueryFailure(throwable -> {
 					throwable.printStackTrace();
 
 				});
-		batcher.setQueryFailureListeners(new HostAvailabilityListener(dmManager)
-				.withSuspendTimeForHostUnavailable(Duration.ofSeconds(30)).withMinHosts(2));
+		HostAvailabilityListener hal = new HostAvailabilityListener(dmManager)
+		.withSuspendTimeForHostUnavailable(Duration.ofSeconds(30));
+		if(!isLBHost()) {
+			hal = hal.withMinHosts(2);
+		}
+		batcher.setQueryFailureListeners(hal);
 		JobTicket ticket = dmManager.startJob(batcher);
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(ticket);
@@ -638,8 +645,9 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 		Set<String> urisList = Collections.synchronizedSet(new HashSet<String>());
 
 		assertTrue(urisList.isEmpty());
-		QueryBatcher queryBatcher = dmManager
-				.newQueryBatcher(new StructuredQueryBuilder().collection("Replace Snapshot")).withBatchSize(11)
+		QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder()
+				.collection("Replace Snapshot"))
+				.withBatchSize(11)
 				.onUrisReady(batch -> {
 					urisList.addAll(Arrays.asList(batch.getItems()));
 				}).onQueryFailure(throwable -> {
@@ -717,39 +725,46 @@ public class ApplyTransformTest extends BasicJavaClientREST {
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
 
 				});
-		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
+		QueryBatcher batcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
 				.onUrisReady(listener).withBatchSize(1).withThreadCount(1);
 		JobTicket ticket = dmManager.startJob(batcher);
 		Thread.currentThread().sleep(4000L);
 		dmManager.stopJob(ticket);
-		batcher.awaitCompletion();
+		batcher.awaitCompletion();	
+		
+		AtomicInteger count = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("Skipped"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					DOMHandle dh = new DOMHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if (dh.get().getElementsByTagName("foo")
+								.item(0).getAttributes().item(0) == null) {
+							count.incrementAndGet();
+						}
 
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/skipped-" + i;
-		}
-		int count = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		DOMHandle dh = new DOMHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
-				count++;
-			}
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
 
-		}
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
 		System.out.println("stopTransformJobTest : count " + count);
-		Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() + count);
-		Assert.assertEquals(2000 - count, successBatch.size());
+		Assert.assertEquals(2000, successBatch.size() + skippedBatch.size() + count.get());
+		Assert.assertEquals(2000 - count.get(), successBatch.size());
 
 	}
 
 	@Test
 	public void jsMasstransformReplaceFiltered() throws Exception {
-
+		Assume.assumeFalse(isLBHost());
 		ServerTransform transform = new ServerTransform("jsTransform");
 		transform.put("newValue", "new Value");
 
