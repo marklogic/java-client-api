@@ -1540,24 +1540,24 @@ public class SearchHandle
           case XMLStreamConstants.START_ELEMENT:
             StartElement startElement = event.asStartElement();
             QName startName = startElement.getName();
-            if (queryName.equals(startName)) {
-              qrTime = parseTime(dtFactory, now, reader.getElementText());
-            } else if (facetName.equals(startName)) {
-              frTime = parseTime(dtFactory, now, reader.getElementText());
-            } else if (snippetName.equals(startName)) {
-              srTime = parseTime(dtFactory, now, reader.getElementText());
-            } else if (metadataName.equals(startName)) {
-              mrTime = parseTime(dtFactory, now, reader.getElementText());
-            } else if (extractName.equals(startName)) {
-              String extractResolutionTime = reader.getElementText();
-              if ( extractResolutionTime.length() > 0 ) {
-                erTime = parseTime(dtFactory, now, extractResolutionTime);
-              }
-            } else if (totalName.equals(startName)) {
-              tTime = parseTime(dtFactory, now, reader.getElementText());
-            } else {
-              logger.warn("Unexpected metrics element "+startName.toString());
-            }
+            String readerValue = reader.getElementText();
+	    if (readerValue != null && readerValue.length() > 0) {
+		if (queryName.equals(startName)) {
+			qrTime = parseTime(dtFactory, now, readerValue);
+		} else if (facetName.equals(startName)) {
+			frTime = parseTime(dtFactory, now, readerValue);
+		} else if (snippetName.equals(startName)) {
+			srTime = parseTime(dtFactory, now, readerValue);
+		} else if (metadataName.equals(startName)) {
+			mrTime = parseTime(dtFactory, now, readerValue);
+		} else if (extractName.equals(startName)) {
+			erTime = parseTime(dtFactory, now, readerValue);
+		} else if (totalName.equals(startName)) {
+			tTime = parseTime(dtFactory, now, readerValue);
+		} else {
+			logger.warn("Unexpected metrics element " + startName.toString());
+		}
+	    }
             break;
           case XMLStreamConstants.END_ELEMENT:
             if (metricsName.equals(event.asEndElement().getName())) {
