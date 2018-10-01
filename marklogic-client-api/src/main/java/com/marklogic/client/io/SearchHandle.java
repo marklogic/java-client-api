@@ -1541,23 +1541,23 @@ public class SearchHandle
             StartElement startElement = event.asStartElement();
             QName startName = startElement.getName();
             String readerValue = reader.getElementText();
-					if (readerValue != null && readerValue.length() > 0) {
-						if (queryName.equals(startName)) {
-							qrTime = parseTime(dtFactory, now, readerValue);
-						} else if (facetName.equals(startName)) {
-							frTime = parseTime(dtFactory, now, readerValue);
-						} else if (snippetName.equals(startName)) {
-							srTime = parseTime(dtFactory, now, readerValue);
-						} else if (metadataName.equals(startName)) {
-							mrTime = parseTime(dtFactory, now, readerValue);
-						} else if (extractName.equals(startName)) {
-								erTime = parseTime(dtFactory, now, readerValue);
-						} else if (totalName.equals(startName)) {
-							tTime = parseTime(dtFactory, now, readerValue);
-						} else {
-							logger.warn("Unexpected metrics element " + startName.toString());
-						}
-					}
+	    if (readerValue != null && readerValue.length() > 0) {
+		if (queryName.equals(startName)) {
+			qrTime = parseTime(dtFactory, now, readerValue);
+		} else if (facetName.equals(startName)) {
+			frTime = parseTime(dtFactory, now, readerValue);
+		} else if (snippetName.equals(startName)) {
+			srTime = parseTime(dtFactory, now, readerValue);
+		} else if (metadataName.equals(startName)) {
+			mrTime = parseTime(dtFactory, now, readerValue);
+		} else if (extractName.equals(startName)) {
+			erTime = parseTime(dtFactory, now, readerValue);
+		} else if (totalName.equals(startName)) {
+			tTime = parseTime(dtFactory, now, readerValue);
+		} else {
+			logger.warn("Unexpected metrics element " + startName.toString());
+		}
+	    }
             break;
           case XMLStreamConstants.END_ELEMENT:
             if (metricsName.equals(event.asEndElement().getName())) {
