@@ -104,7 +104,6 @@ public class QBFailover extends BasicJavaClientREST {
 	private static final String query1 = "fn:count(fn:doc())";
 	private static String[] hostNames;
 	private static JobTicket ticket;
-	private static List<String> outputList;
 	private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
 	@BeforeClass
@@ -140,15 +139,9 @@ public class QBFailover extends BasicJavaClientREST {
 			}
 			hostLists.add("localhost");
 			int index = new Random().nextInt(hostLists.size());
-			if(isLBHost()) {
-				dbClient = getDatabaseClient(user, password, getConnType());
-				evalClient = dbClient;
-			}
-			else {
-				dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
+			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
 					Authentication.DIGEST);
-				evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
-			}
+			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
 			dmManager = dbClient.newDataMovementManager();
 			tempMgr = evalClient.newDataMovementManager();
 			Map<String, String> props = new HashMap<>();
@@ -291,14 +284,12 @@ public class QBFailover extends BasicJavaClientREST {
 			addDocs();
 			waitForForest("after");
 			Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 20000);
-			if(!isLBHost()) {
-				ForestConfiguration fc = dmManager.readForestConfig();
-				Forest[] f = fc.listForests();
-				f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
-						.toArray(new Forest[hostNames.length]);
-				Assert.assertEquals(f.length, hostNames.length);
-				Assert.assertEquals(f.length, 3L);
-			}
+			ForestConfiguration fc = dmManager.readForestConfig();
+			Forest[] f = fc.listForests();
+			f = (Forest[]) Arrays.stream(f).filter(x -> x.getDatabaseName().equals(dbName)).collect(Collectors.toList())
+					.toArray(new Forest[hostNames.length]);
+			Assert.assertEquals(f.length, hostNames.length);
+			Assert.assertEquals(f.length, 3L);
 		} else {
 			System.out.println("Test skipped -  setUp");
 		}
@@ -340,7 +331,7 @@ public class QBFailover extends BasicJavaClientREST {
 	@After
 	public void tearDown() throws Exception {
 		// Perform the setup on multiple nodes only.
-		if (hostNames.length > 1 && !isLBHost()) {
+		if (hostNames.length > 1) {
 			System.out.println("Restarting servers");
 			for (int i = hostNames.length - 1; i >= 1; i--) {
 				System.out.println("Restarting server " + hostNames[i]);
@@ -634,7 +625,7 @@ public class QBFailover extends BasicJavaClientREST {
 			AtomicBoolean isNode3Running = new AtomicBoolean(true);
 			AtomicBoolean isNode2Running = new AtomicBoolean(true);
 			QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
-					.withBatchSize(25).withThreadCount(10);
+					.withBatchSize(5).withThreadCount(6);
 
 			HostAvailabilityListener.getInstance(batcher).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
 					.withMinHosts(1);
@@ -722,9 +713,7 @@ public class QBFailover extends BasicJavaClientREST {
 		System.out.println("State is :" + getForestState("QBFailover-2-replica"));
 		AtomicInteger modified = new AtomicInteger(0);
 		AtomicBoolean passed = new AtomicBoolean(true);
-		System.out.println("Finished transforming");
-		
-		QueryBatcher readBatcher = tempMgr.newQueryBatcher(outputList.iterator())
+		QueryBatcher readBatcher = tempMgr.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(10).withThreadCount(5).onUrisReady((batch) -> {
 					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
 					while (page.hasNext()) {
@@ -1112,10 +1101,9 @@ public class QBFailover extends BasicJavaClientREST {
 		});
 
 		dmManager.startJob(ihb2);
-		outputList = new ArrayList<String>();
+
 		for (int j = 0; j < 20000; j++) {
 			String uri = "/local/string-" + j;
-			outputList.add(uri);
 			ihb2.add(uri, meta2, stringHandle);
 		}
 		ihb2.flushAndWait();

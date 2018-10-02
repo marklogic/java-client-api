@@ -111,16 +111,9 @@ public class WBFailover extends BasicJavaClientREST {
 			Assert.assertEquals(hostLists.size(), 7);
 
 			int index = new Random().nextInt(hostLists.size());
-			if(isLBHost()) {
-				dbClient = getDatabaseClient(user, password, getConnType());
-				evalClient = dbClient;
-			}
-			else {
-				dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
+			dbClient = getDatabaseClientOnDatabase(hostLists.get(index), port, dbName, user, password,
 					Authentication.DIGEST);
-				evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
-			}
-			
+			evalClient = getDatabaseClientOnDatabase(host, port, dbName, user, password, Authentication.DIGEST);
 			dmManager = dbClient.newDataMovementManager();
 			Map<String, String> props = new HashMap<>();
 			createDB(dbName);
@@ -264,36 +257,31 @@ public class WBFailover extends BasicJavaClientREST {
 	}
 
 	private void waitForForest(String testStatus) throws InterruptedException {
-		if(!isLBHost()) {
-			for (int i = hostNames.length - 1; i >= 1; i--) {
-				boolean cond1 = false;
-				boolean cond2 = false;
-				int count = 12;
-				while (count > 0) {
-					count--;
-					String status1 = getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase();
-					String status2 = getForestState(dbName + "-" + (i + 1)).toLowerCase();
-					cond1 = (status1.equals("open") || status1.equals("sync replicating"));
-					cond2 = (status2.equals("open") || status2.equals("sync replicating"));
-					if ("test".equals(testStatus)) {
-						if (isRunning(hostNames[i])) {
-							cond1 = status1.equals("sync replicating");
-							cond2 = status2.equals("open");
-						} else {
-							cond2 = status2.equals("unmounted");
-							cond1 = status1.equals("open");
-						}
+		for (int i = hostNames.length - 1; i >= 1; i--) {
+			boolean cond1 = false;
+			boolean cond2 = false;
+			int count = 12;
+			while (count > 0) {
+				count--;
+				String status1 = getForestState(dbName + "-" + (i + 1) + "-replica").toLowerCase();
+				String status2 = getForestState(dbName + "-" + (i + 1)).toLowerCase();
+				cond1 = (status1.equals("open") || status1.equals("sync replicating"));
+				cond2 = (status2.equals("open") || status2.equals("sync replicating"));
+				if ("test".equals(testStatus)) {
+					if (isRunning(hostNames[i])) {
+						cond1 = status1.equals("sync replicating");
+						cond2 = status2.equals("open");
+					} else {
+						cond2 = status2.equals("unmounted");
+						cond1 = status1.equals("open");
 					}
-					System.out.println("Status 1: " + status1);
-					System.out.println("Status 2: " + status2);
-					if (cond1 && cond2)
-						break;
-					Thread.sleep(10000L);
 				}
+				System.out.println("Status 1: " + status1);
+				System.out.println("Status 2: " + status2);
+				if (cond1 && cond2)
+					break;
+				Thread.sleep(5000L);
 			}
-		}
-		else {
-			Thread.sleep(15000L);
 		}
 	}
 
@@ -306,10 +294,7 @@ public class WBFailover extends BasicJavaClientREST {
 				System.out.println("Restarting server " + hostNames[i]);
 				serverStartStop(hostNames[i], "start");
 				Thread.sleep(2000L);
-				if(!isLBHost()) {
-					Assert.assertTrue(isRunning(hostNames[i]));
-				}
-				
+				Assert.assertTrue(isRunning(hostNames[i]));
 			}
 			waitForForest("after");
 			clearForests();
@@ -341,7 +326,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testBlackListHost() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		Assume.assumeTrue(!isLBHost());
+
 		try {
 			System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -388,7 +373,7 @@ public class WBFailover extends BasicJavaClientREST {
 		}
 	}
 
-	@Test
+	@Test(timeout = 350000)
 	public void testStopOneNode() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
 
@@ -401,17 +386,13 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(2);
 			ihb2.withThreadCount(99);
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
-				.withMinHosts(2);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
-				.withMinHosts(2);				
-			}
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					.withMinHosts(2);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					.withMinHosts(2);
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
-				System.out.println("Success: "+batch.getItems().toString());
 			}).onBatchFailure((batch, throwable) -> {
-				System.out.println("Failure: "+batch.getItems().toString());
 				System.out.println(throwable.getMessage());
 				failState.set(true);
 				failCount.addAndGet(batch.getItems().length);
@@ -422,7 +403,7 @@ public class WBFailover extends BasicJavaClientREST {
 
 			writeTicket = dmManager.startJob(ihb2);
 			AtomicBoolean isRunning = new AtomicBoolean(true);
-			for (int j = 0; j < 10000; j++) {
+			for (int j = 0; j < 50000; j++) {
 				String uri = "/local/ABC-" + j;
 				ihb2.add(uri, stringHandle);
 				if (dmManager.getJobReport(writeTicket).getSuccessEventsCount() > 200 && isRunning.get()) {
@@ -432,10 +413,8 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			if(!isLBHost()) {
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
-			}
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -443,7 +422,7 @@ public class WBFailover extends BasicJavaClientREST {
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
-		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 10000);
+		Assert.assertTrue(evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 50000);
 	}
 
 	@Test(timeout = 350000)
@@ -459,12 +438,10 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(2);
 			ihb2.withThreadCount(99);
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
-				.withMinHosts(2);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
-				.withMinHosts(2);				
-			}
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofMinutes(1))
+					.withMinHosts(2);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofMinutes(1))
+					.withMinHosts(2);
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -492,10 +469,8 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		if(!isLBHost()) {
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
-		}
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -515,14 +490,10 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(2);
 			ihb2.withThreadCount(99);
-			
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
-				.withMinHosts(2);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
-				.withMinHosts(2);				
-			}
-			
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
+					.withMinHosts(2);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(1))
+					.withMinHosts(2);
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -550,10 +521,8 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		if(!isLBHost()) {
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
-		}
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -573,13 +542,11 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(2);
 			ihb2.withThreadCount(49);
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(10))
-				.withMinHosts(2);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(10))
-				.withMinHosts(2);				
-			}
 
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(10))
+					.withMinHosts(2);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(10))
+					.withMinHosts(2);
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -609,9 +576,8 @@ public class WBFailover extends BasicJavaClientREST {
 			e.printStackTrace();
 		}
 		Thread.sleep(2000L);
-		if(!isLBHost()) {
-			Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
-		}
+		Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
+
 		System.out.println("Fail : " + failCount.intValue());
 		System.out.println("Success : " + successCount.intValue());
 		System.out.println("Count : " + evalClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
@@ -631,12 +597,12 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(40);
 			ihb2.withThreadCount(3);
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(5))
-				.withMinHosts(2);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(5))
-				.withMinHosts(2);				
-			}
+
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(5))
+					.withMinHosts(2);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(5))
+					.withMinHosts(2);
+
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -668,11 +634,8 @@ public class WBFailover extends BasicJavaClientREST {
 			}
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			if(!isLBHost()) {
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
-			}
-			
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 2]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
@@ -688,7 +651,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testStopTwoNodes() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		Thread.sleep(5000L);
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			final AtomicInteger successCount = new AtomicInteger(0);
@@ -698,13 +661,12 @@ public class WBFailover extends BasicJavaClientREST {
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
 			ihb2.withBatchSize(25);
 			ihb2.withThreadCount(2);
-			
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
-				.withMinHosts(1);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
-				.withMinHosts(1);				
-			}
+
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					.withMinHosts(1);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					.withMinHosts(1);
+
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -730,18 +692,15 @@ public class WBFailover extends BasicJavaClientREST {
 				if (dmManager.getJobReport(writeTicket).getSuccessEventsCount() > 350 && isNode2Running.get()) {
 					isNode2Running.set(false);
 					serverStartStop(hostNames[hostNames.length - 2], "stop");
+					Thread.currentThread().sleep(5000L);
 					serverStartStop(hostNames[hostNames.length - 1], "start");
 				}
 			}
 
 			ihb2.flushAndWait();
 			Thread.sleep(2000L);
-			if(!isLBHost()) {
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
-				Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
-			}
-			
-		
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 3]));
+			Assert.assertTrue(isRunning(hostNames[hostNames.length - 1]));
 			System.out.println("Fail : " + failCount.intValue());
 			System.out.println("Success : " + successCount.intValue());
 			System.out.println(
@@ -758,7 +717,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testMinHosts() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		Assume.assumeTrue(!isLBHost());
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		final AtomicInteger successCount = new AtomicInteger(0);
 		final AtomicInteger failCount = new AtomicInteger(0);
@@ -768,12 +727,10 @@ public class WBFailover extends BasicJavaClientREST {
 			ihb2.withBatchSize(13);
 			ihb2.withThreadCount(4);
 			AtomicBoolean isNodesRunning = new AtomicBoolean(true);
-			if(!isLBHost()) {
-				HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(3))
-				.withMinHosts(3);
-				NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(3))
-				.withMinHosts(3);				
-			}
+			HostAvailabilityListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(3))
+					.withMinHosts(3);
+			NoResponseListener.getInstance(ihb2).withSuspendTimeForHostUnavailable(Duration.ofSeconds(3))
+					.withMinHosts(3);
 			ihb2.onBatchSuccess(batch -> {
 				successCount.addAndGet(batch.getItems().length);
 			}).onBatchFailure((batch, throwable) -> {
@@ -805,7 +762,7 @@ public class WBFailover extends BasicJavaClientREST {
 	@Test(timeout = 350000)
 	public void testWhiteBlackListNPE() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
-		Assume.assumeTrue(!isLBHost());
+
 		System.out.println(Thread.currentThread().getStackTrace()[1].getMethodName());
 		try {
 			FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig())
@@ -827,7 +784,7 @@ public class WBFailover extends BasicJavaClientREST {
 	private void serverStartStop(String server, String command) throws Exception {
 		System.out.println("Preparing to " + command + " " + server);
 		String commandtoRun = null;
-				
+
 		if (OS.indexOf("win") >= 0) {
 			commandtoRun = "net " + command.toLowerCase() + " MarkLogic";
 		} else {
@@ -839,12 +796,7 @@ public class WBFailover extends BasicJavaClientREST {
 			return;
 
 		}
-		String[] temp = new String[]{ "sh", "-c", "ssh " + server + " " + commandtoRun };
-		if(isLBHost()) {
-			temp = new String[] { "ssh" , "-o", "StrictHostKeyChecking no","-i", "src/test/resources/qa-builder",         
-							"ec2-user@ec2-35-180-38-61.eu-west-3.compute.amazonaws.com -tt", "./mlopt.sh " + server + " "+ command };
-				
-		}
+		String[] temp = { "sh", "-c", "ssh " + server + " " + commandtoRun };
 		Process proc = Runtime.getRuntime().exec(temp);
 		BufferedReader stdOut = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 		BufferedReader stdError = new BufferedReader(new InputStreamReader(proc.getErrorStream()));
@@ -857,12 +809,9 @@ public class WBFailover extends BasicJavaClientREST {
 		System.out.println("Here is the standard error of the command (if any):\n");
 		while ((s = stdError.readLine()) != null) {
 			System.out.println(s);
-			
-		}					
+		}
 		System.out.println(command + " " + server + " completed");
-		//Thread.sleep(5000L);
 	}
-
 
 	private boolean isRunning(String host) {
 		try {
