@@ -2194,9 +2194,9 @@ public class TestBiTemporal extends BasicJavaClientREST {
     long start = 1;
     System.out.println("Query is " + periodQuery.serialize() );
     JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
-    //docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
+    docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
     DocumentPage termQueryResults = docMgr.search(periodQuery, start);   
-    Thread.sleep(20000);
+    Thread.sleep(2000);
     
     long count = 0;
     while (termQueryResults.hasNext()) {
