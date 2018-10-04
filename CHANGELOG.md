@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## 4.1.1
+#### New FUnctionality
+- [#1006](https://github.com/marklogic/java-client-api/issues/1006) - Data Services First - MarkLogic's support for microservices
+
+#### Improvements and Bug Fixes
+- [#999](https://github.com/marklogic/java-client-api/issues/999) - Connect only to primary host for load balancer scenario
+- [#991](https://github.com/marklogic/java-client-api/issues/991) - Correct cookie expiration for Application Load Balancer
+- [#989](https://github.com/marklogic/java-client-api/issues/989) - Manage cookies for used for host affinity in Transaction
+- [#968](https://github.com/marklogic/java-client-api/issues/968) - Deprecate XOMHandle
+
 ## 4.1.0
 
 #### New Functionality
