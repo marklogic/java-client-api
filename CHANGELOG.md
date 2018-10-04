@@ -1,7 +1,7 @@
 # CHANGELOG
 
 ## 4.1.1
-#### New FUnctionality
+#### New Functionality
 - [#1006](https://github.com/marklogic/java-client-api/issues/1006) - Data Services First - MarkLogic's support for microservices
 
 #### Improvements and Bug Fixes
