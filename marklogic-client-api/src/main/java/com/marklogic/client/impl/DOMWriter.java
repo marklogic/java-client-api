@@ -18,9 +18,6 @@ package com.marklogic.client.impl;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import org.w3c.dom.Attr;
 import org.w3c.dom.CDATASection;
 import org.w3c.dom.Comment;
@@ -35,7 +32,6 @@ import org.w3c.dom.Text;
 import com.marklogic.client.MarkLogicInternalException;
 
 public class DOMWriter {
-  final static private Logger logger = LoggerFactory.getLogger(DOMWriter.class);
   private XMLStreamWriter serializer;
 
   public DOMWriter() {

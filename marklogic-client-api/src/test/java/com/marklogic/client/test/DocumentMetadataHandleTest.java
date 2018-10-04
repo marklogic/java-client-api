@@ -32,8 +32,6 @@ import org.custommonkey.xmlunit.exceptions.XpathException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -56,7 +54,6 @@ import com.marklogic.client.io.StringHandle;
 import java.util.List;
 
 public class DocumentMetadataHandleTest {
-  final static private Logger logger = LoggerFactory.getLogger(DocumentMetadataHandleTest.class);
   @BeforeClass
   public static void beforeClass() {
     Common.connect();
