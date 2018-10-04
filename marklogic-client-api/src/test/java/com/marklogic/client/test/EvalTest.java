@@ -125,8 +125,10 @@ public class EvalTest {
 
     // libMgr is connected with  admin privileges (as rest-admin user)
     libMgr.write("/ext/test/evaltest.sjs", javascriptModule);
+
     // now module is installed, let's invoke it
     runAndTestJavascript( Common.evalClient.newServerEval().modulePath("/ext/test/evaltest.sjs") );
+
     // clean up module we no longer need
     libMgr.delete("/ext/test/evaltest.sjs");
   }
@@ -147,8 +149,10 @@ public class EvalTest {
 
     // libMgr is connected with  admin privileges (as rest-admin user)
     libMgr.write("/ext/test/evaltest.xqy", xquery);
+
     // now module is installed, let's invoke it
     runAndTestXQuery( Common.evalClient.newServerEval().modulePath("/ext/test/evaltest.xqy") );
+
     // clean up module we no longer need
     libMgr.delete("/ext/test/evaltest.xqy");
   }

@@ -261,7 +261,7 @@ public class WriteBatcherTest {
     assertEquals(1, successListeners.length);
     assertEquals(successListener, successListeners[0]);
 
-    batcher.setBatchSuccessListeners(null);
+    batcher.setBatchSuccessListeners((WriteBatchListener[]) null);
     successListeners = batcher.getBatchSuccessListeners();
     assertEquals(0, successListeners.length);
 
@@ -274,7 +274,7 @@ public class WriteBatcherTest {
     assertEquals(1, failureListeners.length);
     assertEquals(failureListener, failureListeners[0]);
 
-    batcher.setBatchFailureListeners(null);
+    batcher.setBatchFailureListeners((WriteFailureListener[]) null);
     failureListeners = batcher.getBatchFailureListeners();
     assertEquals(0, failureListeners.length);
 
@@ -734,7 +734,7 @@ public class WriteBatcherTest {
   public void testAddMultiThreadedSuccess_Issue48() throws Exception{
     String collection = whbTestCollection + ".testAddMultiThreadedSuccess_Issue48";
     String query1 = "fn:count(fn:collection('" + collection + "'))";
-    WriteBatcher batcher =  moveMgr.newWriteBatcher();
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     batcher.withBatchSize(120);
     batcher
       .onBatchSuccess( batch -> {
@@ -831,7 +831,7 @@ public class WriteBatcherTest {
 
 
     final AtomicInteger failCount = new AtomicInteger(0);
-    WriteBatcher batcher =  moveMgr.newWriteBatcher()
+    WriteBatcher batcher = moveMgr.newWriteBatcher()
       .onBatchFailure(
         (batch, throwable) -> {
           logger.error("Error in testCloseHandles", throwable);
@@ -1040,7 +1040,8 @@ public class WriteBatcherTest {
   @Ignore
   public void testIssue646() throws Exception {
 
-    WriteBatcher ihb2 =  moveMgr.newWriteBatcher().withBatchSize(10);
+    WriteBatcher ihb2 = moveMgr.newWriteBatcher()
+      .withBatchSize(10);
 
     ihb2.onBatchFailure( (batch, throwable) -> throwable.printStackTrace() );
 

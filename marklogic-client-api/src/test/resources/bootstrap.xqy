@@ -1301,6 +1301,16 @@ xdmp:document-set-permissions("/sample/tuples-test4.xml",
     )
 };
 
+declare function bootstrap:appserver-config()
+{
+    let $config   := admin:get-configuration()
+    let $groupid  := admin:group-get-id($config, "Default")
+    let $serverid := admin:appserver-get-id($config, $groupid, "java-unittest")
+    return $config
+        => admin:appserver-set-distribute-timestamps($serverid,"cluster")
+        => admin:save-configuration-without-restart()
+};
+
 declare function bootstrap:post(
     $context as map:map,
     $params  as map:map,
@@ -1318,12 +1328,20 @@ declare function bootstrap:post(
 
         bootstrap:load-modules-db(),
         bootstrap:temporal-setup(),
-        bootstrap:load-data()
-    )
-    return if ( $responses ) then 
-        document{<responses>{
-            for $response in $responses
-            return <response>{$response}</response>
-        }</responses>}
-    else ()
+        bootstrap:load-data(),
+
+        let $is-balanced := (map:get($params,"balanced") eq "true")
+        return
+            if (not($is-balanced)) then ()
+            else bootstrap:appserver-config()
+        )
+    return
+        if (empty($responses)) then  ()
+        else (
+            document{<responses>{
+                for $response in $responses
+                return <response>{$response}</response>
+            }</responses>},
+            admin:save-configuration(admin:get-configuration())
+            )
 };

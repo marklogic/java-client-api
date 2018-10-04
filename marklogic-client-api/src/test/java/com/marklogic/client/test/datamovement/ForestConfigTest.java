@@ -25,7 +25,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 import com.marklogic.client.datamovement.Forest;
@@ -47,6 +46,8 @@ public class ForestConfigTest {
 
   @Test
   public void testArgs() throws Exception {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
     int defaultPort = client.getPort();
     Class<?> defaultAuthContext = client.getSecurityContext().getClass();
     ForestConfiguration forestConfig = moveMgr.readForestConfig();

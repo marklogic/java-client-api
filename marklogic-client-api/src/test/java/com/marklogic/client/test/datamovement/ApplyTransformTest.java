@@ -20,6 +20,7 @@ import static org.junit.Assert.fail;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.datamovement.*;
 import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -28,12 +29,7 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener;
 import com.marklogic.client.datamovement.ApplyTransformListener.ApplyResult;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.test.Common;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -128,7 +124,8 @@ public class ApplyTransformTest {
     DocumentMetadataHandle meta = new DocumentMetadataHandle().withCollections(collection);
     int numDocs = 1000;
     // write the documents
-    WriteBatcher batcher1 = moveMgr.newWriteBatcher().withBatchSize(100)
+    WriteBatcher batcher1 = moveMgr.newWriteBatcher()
+      .withBatchSize(100)
       .onBatchFailure((batch, throwable) -> throwable.printStackTrace());
     JobTicket ticket1 = moveMgr.startJob( batcher1 );
     for ( int i=0; i < numDocs; i++) {

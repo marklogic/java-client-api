@@ -25,7 +25,6 @@ import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URL;
 
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -56,8 +55,18 @@ public class Common {
   final public static String READ_PRIVILIGED_PASS = "x";
   final public static String WRITE_PRIVILIGED_USER = "write-privileged";
   final public static String WRITE_PRIVILIGED_PASS = "x";
-  final public static String HOST     = "localhost";
-  final public static int    PORT     = 8012;
+
+  final public static String  HOST          = System.getProperty("TEST_HOST", "localhost");
+
+  final public static int     PORT          = Integer.parseInt(System.getProperty("TEST_PORT", "8012"));
+  final public static boolean WITH_WAIT     = Boolean.parseBoolean(System.getProperty("TEST_WAIT", "false"));
+  final public static int     MODULES_WAIT  = Integer.parseInt(System.getProperty("TEST_MODULES_WAIT",  WITH_WAIT ? "1200" : "0"));
+  final public static int     PROPERTY_WAIT = Integer.parseInt(System.getProperty("TEST_PROPERTY_WAIT", WITH_WAIT ? "8200" : "0"));
+
+  final public static DatabaseClient.ConnectionType CONNECTION_TYPE =
+      DatabaseClient.ConnectionType.valueOf(System.getProperty("TEST_CONNECT_TYPE", "DIRECT"));
+
+  final public static boolean BALANCED = Boolean.parseBoolean(System.getProperty("TEST_BALANCED", "false"));
 
   public static DatabaseClient client;
   public static DatabaseClient adminClient;
@@ -95,26 +104,31 @@ public class Common {
   }
   public static DatabaseClient newClient(String databaseName) {
     return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-      new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS));
+      new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
+          CONNECTION_TYPE);
   }
   public static DatabaseClient newAdminClient() {
     return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS));
+      Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
+          CONNECTION_TYPE);
   }
   public static DatabaseClient newServerAdminClient() {
     return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS));
+      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
+          CONNECTION_TYPE);
   }
   public static DatabaseClient newEvalClient() {
     return newEvalClient(null);
   }
   public static DatabaseClient newEvalClient(String databaseName) {
     return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, databaseName, new DigestAuthContext(Common.EVAL_USER, Common.EVAL_PASS));
+      Common.HOST, Common.PORT, databaseName, new DigestAuthContext(Common.EVAL_USER, Common.EVAL_PASS),
+          CONNECTION_TYPE);
   }
   public static DatabaseClient newReadOnlyClient() {
     return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS));
+      Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS),
+          CONNECTION_TYPE);
   }
 
   public static byte[] streamToBytes(InputStream is) throws IOException {
@@ -188,6 +202,21 @@ public class Common {
       throw new RuntimeException(e);
     } catch (ParserConfigurationException e) {
       throw new RuntimeException(e);
+    }
+  }
+  public static void modulesWait() {
+    waitFor(MODULES_WAIT);
+  }
+  public static void propertyWait() {
+    waitFor(PROPERTY_WAIT);
+  }
+  public static void waitFor(int milliseconds) {
+    if (milliseconds > 0) {
+      try {
+        Thread.sleep(milliseconds);
+      } catch (InterruptedException e) {
+        e.printStackTrace(System.out);
+      }
     }
   }
 }

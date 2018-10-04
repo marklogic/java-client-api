@@ -34,17 +34,19 @@ import com.marklogic.client.util.RequestLogger;
 import com.marklogic.client.pojo.PojoRepository;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.SPARQLQueryManager;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
 import com.marklogic.client.DatabaseClientFactory.SecurityContext;
-
-import javax.net.ssl.SSLContext;
 
 /**
  * A Database Client instantiates document and query managers and other objects
  * with shared access to a database.
  */
 public interface DatabaseClient {
+  /**
+   * Identifies whether the client connects directly to MarkLogic (the default) or
+   * by means of a gateway such as a load balancer.
+   */
+  enum ConnectionType {DIRECT, GATEWAY}
+
   /**
    * Starts a transaction.  You can pass the transaction to the read(), write(), or delete() methods
    * of a document manager or the search() method of a query manager to perform operations within a
@@ -100,8 +102,14 @@ public interface DatabaseClient {
   XMLDocumentManager newXMLDocumentManager();
 
   /**
-   * Creates a manager for long-running asynchronous write or query jobs.  Don't forget
-   * to call dataMovementManager.release() when you're done with it.
+   * Creates a manager for long-running asynchronous write or query jobs.
+   * When the primary database client has the default ConnectionType.DIRECT
+   * connection type, the DataMovementManager creates a new connection
+   * for each host that has forests for the database.  When the primary
+   * database client has the ConnectionType.GATEWAY connection type
+   * (for instance, when connecting to a load balancer), the DataMovementManager
+   * uses the primary database client for all communication.
+   * Don't forget to call dataMovementManager.release() when you're done with it.
    * @return	a manager supporting long-running asynchronous write or query jobs
    */
   DataMovementManager newDataMovementManager();
@@ -211,6 +219,12 @@ public interface DatabaseClient {
    * @return the new ServerEvaluationCall instance
    */
   ServerEvaluationCall newServerEval();
+
+  /**
+   * How the client connects to MarkLogic.
+   * @return the connection type
+   */
+  ConnectionType getConnectionType();
 
   String getHost();
 

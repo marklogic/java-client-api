@@ -60,7 +60,7 @@ To use the API in your maven project, include the following in your pom.xml:
     <dependency>
         <groupId>com.marklogic</groupId>
         <artifactId>marklogic-client-api</artifactId>
-        <version>4.1.0</version>
+        <version>4.1.1</version>
     </dependency>
 
 And add this repository to your pom.xml repositories section:
@@ -73,7 +73,7 @@ And add this repository to your pom.xml repositories section:
 For gradle projects, include the following:
 
     dependencies {
-        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '4.1.0'
+        compile group: 'com.marklogic', name: 'marklogic-client-api', version: '4.1.1'
     }
 
 Use gradle 1.7+ and add this to your build.gradle repositories section:

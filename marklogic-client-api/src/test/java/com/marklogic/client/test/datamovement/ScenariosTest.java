@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.marklogic.client.datamovement.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,11 +28,6 @@ import org.w3c.dom.Element;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.WriteEvent;
-import com.marklogic.client.datamovement.WriteBatcher;
 
 import com.marklogic.client.test.Common;
 

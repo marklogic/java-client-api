@@ -52,6 +52,8 @@ public class GeospatialRegionQueriesTest {
     XMLDocumentManager docMgr = Common.client.newXMLDocumentManager();
     docMgr.delete("usa.xml", "cuba.xml", "mexico.xml", "p1.xml", "p2.xml","newpolygon.xml");
     Common.adminClient.newServerConfigManager().setQueryValidation(false);
+
+    Common.propertyWait();
   }
 
   @BeforeClass
@@ -140,6 +142,8 @@ public class GeospatialRegionQueriesTest {
 
     docMgr.write(writeset);
     Common.adminClient.newServerConfigManager().setQueryValidation(true);
+
+    Common.propertyWait();
   }
 
   @Ignore
@@ -198,6 +202,7 @@ public class GeospatialRegionQueriesTest {
 
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geodoubleoptions", writeHandle);
+
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder("geodoubleoptions");
 
@@ -303,6 +308,7 @@ public class GeospatialRegionQueriesTest {
 
     QueryOptionsManager optionsMgr = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     optionsMgr.writeOptions("geooptions", writeHandle);
+
     QueryManager queryMgr = Common.client.newQueryManager();
     StructuredQueryBuilder qb = new StructuredQueryBuilder("geooptions");
     StructuredQueryDefinition qdef;

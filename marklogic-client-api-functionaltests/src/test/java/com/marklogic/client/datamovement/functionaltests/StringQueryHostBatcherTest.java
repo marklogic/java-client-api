@@ -1,18 +1,18 @@
 /*
- * Copyright 2014-2018 MarkLogic Corporation
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *    http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
+* Copyright 2014-2018 MarkLogic Corporation
+*
+* Licensed under the Apache License, Version 2.0 (the "License");
+* you may not use this file except in compliance with the License.
+* You may obtain a copy of the License at
+*
+*    http://www.apache.org/licenses/LICENSE-2.0
+*
+* Unless required by applicable law or agreed to in writing, software
+* distributed under the License is distributed on an "AS IS" BASIS,
+* WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+* See the License for the specific language governing permissions and
+* limitations under the License.
+*/
 package com.marklogic.client.datamovement.functionaltests;
 
 import static org.junit.Assert.assertEquals;
@@ -76,12 +76,12 @@ import com.marklogic.client.query.StructuredQueryBuilder.Operator;
 import com.marklogic.client.query.StructuredQueryDefinition;
 
 /**
- * @author ageorge Purpose : Test String Queries - On multiple documents using
- *         Java Client DocumentManager Write method and WriteBatcher. - On
- *         meta-data. - On non-existent document. Verify error message. - With
- *         invalid string query. Verify error message.
- *
- */
+* @author ageorge Purpose : Test String Queries - On multiple documents using
+*         Java Client DocumentManager Write method and WriteBatcher. - On
+*         meta-data. - On non-existent document. Verify error message. - With
+*         invalid string query. Verify error message.
+*
+*/
 public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   private static String dbName = "StringQueryHostBatcherDB";
   private static String[] fNames = { "StringQueryHostBatcherDB-1", "StringQueryHostBatcherDB-2", "StringQueryHostBatcherDB-3" };
@@ -110,7 +110,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with Java/REST Client API
-    client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
     dmManager = client.newDataMovementManager();
   }
 
@@ -124,6 +124,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     client.release();
     associateRESTServerWithDB(restServerName, "Documents");
     deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
     detachForest(dbName, fNames[0]);
 
     deleteDB(dbName);
@@ -192,9 +193,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       assertTrue("Expected String not available", contents.contains("Vannevar served"));
       assertTrue("Expected amt not available", contents.contains("12.34"));
 
-      // Clear the database.
-      clearDB(8000);
-
       // Use WriteBatcher to write the same files.
       WriteBatcher batcher = dmManager.newWriteBatcher();
       // Move to individual data sub folders.
@@ -254,11 +252,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
 
       if (queryBatcher1.isStopped()) {
-
-        if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
-          fail("Test failed due to exceptions");
-        }
-
         // Verify the batch results now.
         String[] res = batchResults.toString().split("\\|");
 
@@ -272,124 +265,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
     }
   }
-
-  /*
-   * To test String query with multiple forests.
-   * 
-   * @throws Exception
-   */
-  @Ignore
-  public void testAndWordQueryWithMultipleForests() throws Exception
-  {
-    String testMultipleDB = "QBMultipleForestDB";
-    String[] testMultipleForest = { "QBMultipleForestDB-1", "QBMultipleForestDB-2", "QBMultipleForestDB-3" };
-    DatabaseClient clientTmp = null;
-    DataMovementManager dmManagerTmp = null;
-
-    try {
-      System.out.println("Running testAndWordQueryWithMultipleForests");
-
-      // Setup a separate database/
-      createDB(testMultipleDB);
-      createForest(testMultipleForest[0], testMultipleDB);
-      createForest(testMultipleForest[1], testMultipleDB);
-      associateRESTServerWithDB(restServerName, testMultipleDB);
-
-      setupAppServicesConstraint(testMultipleDB);
-      Thread.sleep(10000);
-
-      String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-      String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
-      addRangeElementAttributeIndex(dbName, "decimal", "http://cloudbank.com", "price", "", "amt", "http://marklogic.com/collation/");
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
-      //clientTmp = DatabaseClientFactory.newClient(restServerHost, restServerPort, "eval-user", "x", Authentication.DIGEST);
-      dmManagerTmp = clientTmp.newDataMovementManager();
-
-      setQueryOption(clientTmp, queryOptionName);
-
-      QueryManager queryMgr = clientTmp.newQueryManager();
-
-      StringQueryDefinition querydef = queryMgr.newStringDefinition();
-      querydef.setCriteria("0012");
-      // Move to individual data sub folders.
-      String dataFileDir = dataConfigDirPath + "/data/";
-
-      // Use WriteBatcher to write the same files.
-      WriteBatcher batcher = dmManagerTmp.newWriteBatcher();
-
-      batcher.withBatchSize(2);
-      InputStreamHandle contentHandle1 = new InputStreamHandle();
-      contentHandle1.set(new FileInputStream(dataFileDir + filenames[0]));
-      InputStreamHandle contentHandle2 = new InputStreamHandle();
-      contentHandle2.set(new FileInputStream(dataFileDir + filenames[1]));
-      InputStreamHandle contentHandle3 = new InputStreamHandle();
-      contentHandle3.set(new FileInputStream(dataFileDir + filenames[2]));
-      InputStreamHandle contentHandle4 = new InputStreamHandle();
-      contentHandle4.set(new FileInputStream(dataFileDir + filenames[3]));
-      InputStreamHandle contentHandle5 = new InputStreamHandle();
-      contentHandle5.set(new FileInputStream(dataFileDir + filenames[4]));
-
-      batcher.add("/abs-range-constraint/batcher-contraints1.xml", contentHandle1);
-      batcher.add("/abs-range-constraint/batcher-contraints2.xml", contentHandle2);
-      batcher.add("/abs-range-constraint/batcher-contraints3.xml", contentHandle3);
-      batcher.add("/abs-range-constraint/batcher-contraints4.xml", contentHandle4);
-      batcher.add("/abs-range-constraint/batcher-contraints5.xml", contentHandle5);
-
-      // Verify if the batch flushes when batch size is reached.
-      // Flush
-      batcher.flushAndWait();
-      // Hold for asserting the callbacks batch contents, since callback are on
-      // different threads than the main JUnit thread.
-      // JUnit can not assert on different threads; other than the main one.
-      StringBuilder batchResults = new StringBuilder();
-      StringBuilder batchFailResults = new StringBuilder();
-
-      // Run a QueryBatcher on the new URIs.
-      QueryBatcher queryBatcher1 = dmManagerTmp.newQueryBatcher(querydef);
-
-      queryBatcher1.onUrisReady(batch -> {
-        for (String str : batch.getItems()) {
-          batchResults.append(str)
-              .append('|');
-        }
-      });
-      queryBatcher1.onQueryFailure(throwable -> {
-        System.out.println("Exceptions thrown from callback onQueryFailure");
-        throwable.printStackTrace();
-        batchFailResults.append("Test has Exceptions");
-      });
-
-      JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher1);
-      boolean bJobFinished = queryBatcher1.awaitCompletion(3, TimeUnit.MINUTES);
-
-      if (queryBatcher1.isStopped()) {
-
-        if (!batchFailResults.toString().isEmpty() && batchFailResults.toString().contains("Exceptions")) {
-          fail("Test failed due to exceptions");
-        }
-
-        // Verify the batch results now.
-        String[] res = batchResults.toString().split("\\|");
-        assertEquals("Number of reults returned is incorrect", 1, res.length);
-        assertTrue("URI returned not correct", res[0].contains("/abs-range-constraint/batcher-contraints2.xml"));
-      }
-    } catch (Exception e) {
-      System.out.println("Exceptions thrown from Test testAndWordQueryWithMultipleForests");
-      System.out.println(e.getMessage());
-    } finally {
-      // Associate back the original DB.
-      associateRESTServerWithDB(restServerName, dbName);
-      detachForest(testMultipleDB, testMultipleForest[0]);
-      detachForest(testMultipleDB, testMultipleForest[1]);
-      deleteDB(testMultipleDB);
-
-      deleteForest(testMultipleForest[0]);
-      deleteForest(testMultipleForest[1]);
-      Thread.sleep(10000);
-      clientTmp.release();
-    }
-  }
-
+  
   /*
    * To test query by example with WriteBatcher and QueryBatcher.
    * 
@@ -904,7 +780,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       createForest(testMultipleForest[1], testMultipleDB);
       associateRESTServerWithDB(restServerName, testMultipleDB);
       setupAppServicesConstraint(testMultipleDB);
-      Thread.sleep(10000);
+      Thread.sleep(60000);
 
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";

@@ -39,14 +39,13 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.Set;
 
+import com.marklogic.client.datamovement.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.admin.QueryOptionsManager;
-import com.marklogic.client.document.DocumentManager;
-import com.marklogic.client.document.GenericDocumentManager;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -61,28 +60,9 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.ApplyTransformListener;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryBatchListener;
-import com.marklogic.client.datamovement.UrisToWriterListener;
-import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatch;
-import com.marklogic.client.datamovement.QueryBatchException;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.impl.DatabaseClientImpl;
-import com.marklogic.client.impl.GenericDocumentImpl;
 import com.marklogic.client.datamovement.impl.QueryBatchImpl;
 
 import com.marklogic.client.test.Common;
-
-import java.util.Map;
-import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -341,7 +321,11 @@ public class QueryBatcherTest {
     assertEquals("Job Report has incorrect failure events counts", failureBatchCount.get(), report.getFailureEventsCount());
     //assertEquals("Job Report has incorrect job completion information", true, report.isJobComplete());
 
-    if(queryBatcherChecks) {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
+
+// TODO: verify for the entire database instead of per forest
+
+    } else if(queryBatcherChecks) {
       assertEquals("java-unittest", batchDatabaseName.get());
       // make sure we get the same number of results via search for the same query
       SearchHandle searchResults = client.newQueryManager().search(query, new SearchHandle());
@@ -400,9 +384,9 @@ public class QueryBatcherTest {
       public Iterator<String> iterator() {
         AtomicInteger steps = new AtomicInteger(0);
         return new Iterator<String>() {
-          public boolean hasNext() { return steps.incrementAndGet() <= 2; }
+          public boolean hasNext() { return steps.get() <= 2; }
           public String next() {
-            if ( steps.get() == 1 ) return "some uri.txt";
+            if ( steps.incrementAndGet() == 1 ) return "some uri.txt";
             else throw new InternalError(errorMessage);
           }
         };
@@ -525,7 +509,6 @@ public class QueryBatcherTest {
 
   @Test
   public void testJobCompletionListeners() throws InterruptedException {
-
     AtomicBoolean urisReadyFlag = new AtomicBoolean(false);
     AtomicBoolean jobCompletionFlag = new AtomicBoolean(false);
 
@@ -553,6 +536,7 @@ public class QueryBatcherTest {
     queryBatcher.awaitCompletion();
     moveMgr.stopJob(queryBatcher);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
     urisReadyFlag.set(false);
     jobCompletionFlag.set(false);
     QueryBatcher queryBatcher2 = moveMgr.newQueryBatcher(query)
@@ -570,6 +554,31 @@ public class QueryBatcherTest {
         });
     moveMgr.startJob(queryBatcher2);
     Thread.sleep(1100);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    QueryBatcher queryBatcher3 = moveMgr.newQueryBatcher(query)
+      .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher3);
+    queryBatcher3.awaitCompletion();
+    moveMgr.stopJob(queryBatcher3);
+    assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
+
+    jobCompletionFlag.set(false);
+    String[] uris = new String[] {"uri1.txt", "uri2.txt", "uri3.json", "uri4.xml","uri5.png"};
+    QueryBatcher queryBatcher4 = moveMgr.newQueryBatcher(Arrays.asList(uris).iterator())
+        .onUrisReady(batch -> {
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            logger.warn("Thread interrupted while sleeping", e);
+          }
+          urisReadyFlag.set(true);
+        })
+        .onJobCompletion(batcher -> jobCompletionFlag.set(true));
+    moveMgr.startJob(queryBatcher4);
+    queryBatcher4.awaitCompletion();
+    moveMgr.stopJob(queryBatcher4);
     assertTrue("onJobCompletionListener is not called", jobCompletionFlag.get());
   }
 
@@ -711,7 +720,8 @@ public class QueryBatcherTest {
 
   @Test
   public void testIssue658() throws Exception{
-    QueryBatcher batcher = moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
+    QueryBatcher batcher =
+      moveMgr.newQueryBatcher(new StructuredQueryBuilder().collection(qhbTestCollection))
       .withBatchSize(20)
       .withThreadCount(20);
 

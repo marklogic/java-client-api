@@ -17,11 +17,7 @@ package com.marklogic.client.test.datamovement;
 
 import static org.junit.Assert.assertEquals;
 
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.JobTicket;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
+import com.marklogic.client.datamovement.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -66,7 +62,7 @@ public class DeleteListenerTest {
 
     QueryBatcher queryBatcher = moveMgr.newQueryBatcher(
         new StructuredQueryBuilder().collection(collection)
-      )
+        )
       .withBatchSize(10)
       .onUrisReady(new DeleteListener())
       .withConsistentSnapshot();

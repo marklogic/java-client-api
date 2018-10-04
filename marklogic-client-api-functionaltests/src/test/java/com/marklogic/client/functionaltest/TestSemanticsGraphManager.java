@@ -872,6 +872,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
     GraphPermissions perms = gmTestPerm.permission("test-perm", Capability.UPDATE);
     // Write Graph with triples into DB
     gmTestPerm.write(uri, handle.withMimetype(RDFMimeTypes.RDFXML), perms);
+    waitForPropertyPropagate();
     // Get PErmissions for the User and Validate
     System.out.println("Permissions after create , Shold not see Execute" + gmTestPerm.getPermissions(uri));
     perms = gmTestPerm.getPermissions(uri);
@@ -1020,7 +1021,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
   }
 
   // TODO:: Re-write this Method into multiple tests after 8.0-4 release
-  @Test
+  @Ignore
   public void testPermissions_withTrx() throws Exception {
     File file = new File(datasource + "semantics.rdf");
     FileHandle handle = new FileHandle();
@@ -1083,6 +1084,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
       perms = gmTestPerm.permission("test-perm", Capability.EXECUTE);
 
       gmTestPerm.writePermissions(uri, perms, trx);
+      waitForPropertyPropagate();
 
       // Read and Validate triples
       try {
@@ -1315,6 +1317,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
       trxDelIn = writerClient.openTransaction();
       gmWriter.delete(uri, trxDelIn);
       trxDelIn.commit();
+      waitForPropertyPropagate();
       trxDelIn = null;
       trxIn = null;
       trxInMergeGraph = null;
@@ -1518,6 +1521,7 @@ public class TestSemanticsGraphManager extends BasicJavaClientREST {
       trxDelIn = writerClient.openTransaction();
       gmWriter.delete(uri, trxDelIn);
       trxDelIn.commit();
+      this.waitForPropertyPropagate();
       trxDelIn = null;
       handle = null;
       readFile = null;

@@ -110,10 +110,16 @@ public interface RESTServices {
   int STATUS_NOT_FOUND = 404;
   int STATUS_PRECONDITION_FAILED = 412;
   int STATUS_PRECONDITION_REQUIRED = 428;
+  int STATUS_BAD_GATEWAY = 502;
   int STATUS_SERVICE_UNAVAILABLE = 503;
+  int STATUS_GATEWAY_TIMEOUT = 504;
 
   String MAX_DELAY_PROP = "com.marklogic.client.maximumRetrySeconds";
   String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
+
+  Set<Integer> getRetryStatus();
+  int getMaxDelay();
+  void setMaxDelay(int maxDelay);
 
   @Deprecated
   public void connect(String host, int port, String database, String user, String password, Authentication type,
@@ -197,6 +203,9 @@ public interface RESTServices {
 
   // namespaces, etc.
   public <T> T getValue(RequestLogger logger, String type, String key,
+                        boolean isNullable, String mimetype, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
+  public <T> T getValue(RequestLogger logger, String type, String key, Transaction transaction,
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException;
   public <T> T getValues(RequestLogger logger, String type, String mimetype, Class<T> as)

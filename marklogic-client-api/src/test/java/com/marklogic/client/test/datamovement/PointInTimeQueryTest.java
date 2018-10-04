@@ -20,6 +20,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+
+import com.marklogic.client.datamovement.*;
 import org.junit.FixMethodOrder;
 import org.junit.runners.MethodSorters;
 import org.junit.AfterClass;
@@ -35,13 +37,6 @@ import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-
-import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.DeleteListener;
-import com.marklogic.client.datamovement.ExportListener;
-import com.marklogic.client.datamovement.QueryFailureListener;
-import com.marklogic.client.datamovement.QueryBatcher;
 
 import com.marklogic.client.test.Common;
 

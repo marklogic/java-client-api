@@ -66,8 +66,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	private static int port = 8000;
 	private static String password = "admin";
 	private static String server = "App-Services";
-	private static JsonNode clusterInfo;
-
+	
 	private static StringHandle stringHandle;
 	private static FileHandle fileHandle;
 
@@ -92,7 +91,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	    port = getRestAppServerPort();
 	    
 		host = getRestAppServerHostName();
-		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, getConnType());
 		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 		hostNames = getHosts();
@@ -110,9 +109,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		if (IsSecurityEnabled()) {
 			enableSecurityOnRESTServer(server, dbName);
 		}
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-	            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// FileHandle
 		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));
@@ -219,7 +215,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500)
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(500)
 				.withThreadCount(20);
 		batcher.onUrisReady(batch -> {
 			if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount
@@ -233,7 +230,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500)
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(500)
 				.withThreadCount(20);
 		batcher.onUrisReady(batch -> {
 			if (Math.abs(dmManager.getJobReport(queryTicket).getReportTimestamp().getTime().getTime()
@@ -346,8 +344,10 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+		if(!isLBHost()) {
+			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
+			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+		}
 	}
 
 	class DisabledDBRunnable implements Runnable {
@@ -485,21 +485,25 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/json-" + i;
-		}
-		int doccount = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		JacksonHandle dh = new JacksonHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
-			doccount++;
-		}
+		AtomicInteger doccount = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					JacksonHandle dh = new JacksonHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if(dh.get().get("c").asText().equals("new Value"))
+							doccount.incrementAndGet();
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
 
-		assertEquals("document count", 2000, doccount);
+		assertEquals("document count", 2000, doccount.get());
 		Assert.assertTrue(success.get());
 		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		Assert.assertEquals(batchCount.get(), count.get());
@@ -546,28 +550,32 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		queryTicket = dmManager.startJob(batcher);
 		Thread.currentThread().sleep(4000L);
 		dmManager.stopJob(queryTicket);
+		
+		AtomicInteger count = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					DOMHandle dh = new DOMHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
+							count.incrementAndGet();
+							System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
+						}
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
 
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/string-" + i;
-		}
-		int doccount = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		DOMHandle dh = new DOMHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
-				doccount++;
-				System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
-			}
-
-		}
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : count " + doccount);
-		Assert.assertEquals(2000 - doccount, successBatch.size());
-		Assert.assertEquals(2000 - doccount, successCount.get());
+		System.out.println("stopTransformJobTest : count " + count);
+		Assert.assertEquals(2000 - count.get(), successBatch.size());
+		Assert.assertEquals(2000 - count.get(), successCount.get());
 
 	}
 }

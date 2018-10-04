@@ -229,7 +229,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
    */
   @Test
   public void testWithSnapshots() throws Exception {
-    System.out.println("Running testPointInTimeQueryDeterministicSet");
+    System.out.println("Running testWithSnapshots");
     Map<String, String> props = new HashMap<String, String>();
     props.put("merge-timestamp", "-6000000000");
     changeProperty(props, "/manage/v2/databases/" + dbName + "/properties");
@@ -251,6 +251,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
           .onDocumentReady(doc -> {
             String uriOfDoc = doc.getUri();
             // Make sure the docs are available. Not deleted from DB.
+            System.out.println("Document exported is " + uriOfDoc);
               docExporterList.add(uriOfDoc);
             }
           );
@@ -263,7 +264,7 @@ public class ExportListenerTest extends BasicJavaClientREST {
             if (batch.getJobBatchNumber() == 1) {
               // Verifying getServerTimestamp with withConsistentSnapshot - Git
               // Issue 629.
-              System.out.println("Server Time from Batch 1 is " + batch.getServerTimestamp());
+              System.out.println("Server Time from Batch 1 in exportBatcher is " + batch.getServerTimestamp());
               assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() > 0);
             }
             for (String u : batch.getItems()) {
@@ -299,6 +300,13 @@ public class ExportListenerTest extends BasicJavaClientREST {
       QueryBatcher deleteBatcher = dmManager.newQueryBatcher(querydef)
           .withConsistentSnapshot()
           .withBatchSize(100)
+          .onUrisReady(batch -> {
+              if (batch.getJobBatchNumber() == 1) {               
+                System.out.println("Server Time from Batch 1 in deleteBatcher is " + batch.getServerTimestamp());
+                assertTrue("Server Timestamp incorrect", batch.getServerTimestamp() > 0);
+              }
+            }
+          )
           .onUrisReady(new DeleteListener());
 
       dmManager.startJob(deleteBatcher);

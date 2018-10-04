@@ -21,6 +21,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
+import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
@@ -69,8 +70,9 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   private static final String DIRECTORY = "/bulkread/";
   private static String dbName = "TestBulkReadSampleDB";
   private static String[] fNames = { "TestBulkReadSampleDB-1" };
+  private static int ndocCount = 0;
 
-  private DatabaseClient client;
+  private static DatabaseClient client;
 
   @BeforeClass
   public static void setUp() throws Exception
@@ -78,23 +80,13 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
     setupAppServicesConstraint(dbName);
-
-  }
-
-  @Before
-  public void testSetup() throws Exception
-  {
-    // create new connection for each test below
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
-  }
-
-  @After
-  public void testCleanUp() throws Exception
-  {
-    System.out.println("Running CleanUp script");
-    // release client
-    client.release();
-
+    
+	  if (isLBHost()) {
+		  ndocCount = 5;
+	  }
+	  else {
+		  ndocCount = 102; 
+	  }
   }
 
   /*
@@ -103,36 +95,48 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
    * Read to see you can read all the documents?
    */
   @Test
-  public void test1ReadMultipleTextDoc()
+  public void test1ReadMultipleTextDoc() throws Exception
   {
-    int count = 1;
-    TextDocumentManager docMgr = client.newTextDocumentManager();
-    DocumentWriteSet writeset = docMgr.newWriteSet();
+	  System.out.println("Inside test1ReadMultipleTextDoc");
+    try {
+		int count = 1;
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		
+		TextDocumentManager docMgr = client.newTextDocumentManager();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
 
-    for (int i = 0; i < 102; i++) {
-      writeset.add(DIRECTORY + "foo" + i + ".txt", new StringHandle().with("This is so foo" + i));
-      if (count % BATCH_SIZE == 0) {
-        docMgr.write(writeset);
-        writeset = docMgr.newWriteSet();
-      }
-      count++;
+		for (int i = 0; i < 102; i++) {
+		  writeset.add(DIRECTORY + "foo" + i + ".txt", new StringHandle().with("This is so foo" + i));
+		  if (count % BATCH_SIZE == 0) {
+		    docMgr.write(writeset);
+		    writeset = docMgr.newWriteSet();
+		  }
+		  count++;
+		}
+		if (count % BATCH_SIZE > 0) {
+		  docMgr.write(writeset);
+		}
+		waitForPropertyPropagate();
+		String uris[] = new String[102];
+		for (int i = 0; i < 102; i++) {
+		  uris[i] = DIRECTORY + "foo" + i + ".txt";
+		}
+		count = 0;
+		DocumentPage page = docMgr.read(uris);
+		while (page.hasNext()) {
+		  DocumentRecord rec = page.next();
+		  validateRecord(rec, Format.TEXT);
+		  count++;
+		}
+		System.out.println("Document count test1ReadMultipleTextDoc " + count);
+		assertEquals("document count", 102, count);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    finally {
+    	client.release();
     }
-    if (count % BATCH_SIZE > 0) {
-      docMgr.write(writeset);
-    }
-    String uris[] = new String[102];
-    for (int i = 0; i < 102; i++) {
-      uris[i] = DIRECTORY + "foo" + i + ".txt";
-    }
-    count = 0;
-    DocumentPage page = docMgr.read(uris);
-    while (page.hasNext()) {
-      DocumentRecord rec = page.next();
-      validateRecord(rec, Format.TEXT);
-      count++;
-    }
-    assertEquals("document count", 102, count);
-
   }
 
   /*
@@ -142,40 +146,50 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   @Test
   public void test2ReadMultipleXMLDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
-    int count = 1;
-    XMLDocumentManager docMgr = client.newXMLDocumentManager();
-    Map<String, String> map = new HashMap<>();
-    DocumentWriteSet writeset = docMgr.newWriteSet();
-    for (int i = 0; i < 102; i++) {
+	  System.out.println("Inside test2ReadMultipleXMLDoc");
+    try {
+		int count = 1;
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		XMLDocumentManager docMgr = client.newXMLDocumentManager();
+		Map<String, String> map = new HashMap<>();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		for (int i = 0; i < 102; i++) {
 
-      writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
-      map.put(DIRECTORY + "foo" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
-      if (count % BATCH_SIZE == 0) {
-        docMgr.write(writeset);
-        writeset = docMgr.newWriteSet();
-      }
-      count++;
+		  writeset.add(DIRECTORY + "foo" + i + ".xml", new DOMHandle(getDocumentContent("This is so foo" + i)));
+		  map.put(DIRECTORY + "foo" + i + ".xml", convertXMLDocumentToString(getDocumentContent("This is so foo" + i)));
+		  if (count % BATCH_SIZE == 0) {
+		    docMgr.write(writeset);
+		    writeset = docMgr.newWriteSet();
+		  }
+		  count++;
+		}
+		if (count % BATCH_SIZE > 0) {
+		  docMgr.write(writeset);
+		}
+		waitForPropertyPropagate();
+		String uris[] = new String[102];
+		for (int i = 0; i < 102; i++) {
+		  uris[i] = DIRECTORY + "foo" + i + ".xml";
+		}
+		count = 0;
+		DocumentPage page = docMgr.read(uris);
+		DOMHandle dh = new DOMHandle();
+		while (page.hasNext()) {
+		  DocumentRecord rec = page.next();
+		  validateRecord(rec, Format.XML);
+		  rec.getContent(dh);
+		  assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
+		  count++;
+		}
+		System.out.println("Document count test2ReadMultipleXMLDoc " + count);
+		assertEquals("document count", 102, count);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();		
+	}
+    finally {
+    	client.release();
     }
-    if (count % BATCH_SIZE > 0) {
-      docMgr.write(writeset);
-    }
-    String uris[] = new String[102];
-    for (int i = 0; i < 102; i++) {
-      uris[i] = DIRECTORY + "foo" + i + ".xml";
-    }
-    count = 0;
-    DocumentPage page = docMgr.read(uris);
-    DOMHandle dh = new DOMHandle();
-    while (page.hasNext()) {
-      DocumentRecord rec = page.next();
-      validateRecord(rec, Format.XML);
-      rec.getContent(dh);
-      assertEquals("Comparing the content :", map.get(rec.getUri()), convertXMLDocumentToString(dh.get()));
-      count++;
-    }
-
-    assertEquals("document count", 102, count);
-
   }
 
   /*
@@ -185,51 +199,65 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   @Test
   public void test3ReadMultipleBinaryDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
-    String docId[] = { "Sega-4MB.jpg" };
-    int count = 1;
-    BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
-    DocumentWriteSet writeset = docMgr.newWriteSet();
-    File file1 = null;
-    file1 = new File("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
-    FileHandle h1 = new FileHandle(file1);
-    for (int i = 0; i < 102; i++) {
-      writeset.add(DIRECTORY + "binary" + i + ".jpg", h1);
-      if (count % BATCH_SIZE == 0) {
-        docMgr.write(writeset);
-        writeset = docMgr.newWriteSet();
-      }
-      count++;
+	  System.out.println("Inside test3ReadMultipleBinaryDoc");
+	  
+    try {
+		String docId[] = { "Sega-4MB.jpg" };
+		int count = 1;
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
+		File file1 = null;
+		file1 = new File("src/test/java/com/marklogic/client/functionaltest/data/" + docId[0]);
+		FileHandle h1 = new FileHandle(file1);
+		for (int i = 0; i < ndocCount; i++) {
+		  writeset.add(DIRECTORY + "binary" + i + ".jpg", h1);
+		  if (count % BATCH_SIZE == 0) {
+		    docMgr.write(writeset);
+		    writeset = docMgr.newWriteSet();
+		  }
+		  count++;
+		}
+		if (count % BATCH_SIZE > 0) {
+		  docMgr.write(writeset);
+		}
+		
+		String uris[] = new String[ndocCount];
+		for (int i = 0; i < ndocCount; i++) {
+		  uris[i] = DIRECTORY + "binary" + i + ".jpg";
+		}
+		count = 0;
+		FileHandle rh = new FileHandle();
+		DocumentPage page = docMgr.read(uris);
+		while (page.hasNext()) {
+		  DocumentRecord rec = page.next();
+		  validateRecord(rec, Format.BINARY);
+		  rec.getContent(rh);
+		  assertEquals("Content length :", file1.length(), rh.get().length());
+		  count++;
+		}
+		assertEquals("document count", ndocCount, count);
+		// Testing the multiple same uris will not read multiple records
+		
+		for (int i = 0; i < ndocCount; i++) {
+		  uris[i] = DIRECTORY + "binary" + 1 + ".jpg";
+		}
+		count = 0;
+		page = docMgr.read(uris);
+		while (page.hasNext()) {
+		  DocumentRecord rec = page.next();
+		  validateRecord(rec, Format.BINARY);
+		  count++;
+		}
+		System.out.println("Document count test3ReadMultipleBinaryDoc " + count);
+		assertEquals("document count", 1, count);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    finally {
+    	client.release();
     }
-    if (count % BATCH_SIZE > 0) {
-      docMgr.write(writeset);
-    }
-    String uris[] = new String[102];
-    for (int i = 0; i < 102; i++) {
-      uris[i] = DIRECTORY + "binary" + i + ".jpg";
-    }
-    count = 0;
-    FileHandle rh = new FileHandle();
-    DocumentPage page = docMgr.read(uris);
-    while (page.hasNext()) {
-      DocumentRecord rec = page.next();
-      validateRecord(rec, Format.BINARY);
-      rec.getContent(rh);
-      assertEquals("Content length :", file1.length(), rh.get().length());
-      count++;
-    }
-    assertEquals("document count", 102, count);
-    // Testing the multiple same uris will not read multiple records
-    for (int i = 0; i < 102; i++) {
-      uris[i] = DIRECTORY + "binary" + 12 + ".jpg";
-    }
-    count = 0;
-    page = docMgr.read(uris);
-    while (page.hasNext()) {
-      DocumentRecord rec = page.next();
-      validateRecord(rec, Format.BINARY);
-      count++;
-    }
-    assertEquals("document count", 1, count);
   }
 
   /*
@@ -240,47 +268,58 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   @Test
   public void test4WriteMultipleJSONDocs() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
-    int count = 1;
-    JSONDocumentManager docMgr = client.newJSONDocumentManager();
-    DocumentWriteSet writeset = docMgr.newWriteSet();
+	  System.out.println("Inside test4WriteMultipleJSONDocs");
+    try {
+		int count = 1;
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
 
-    Map<String, String> map = new HashMap<>();
+		Map<String, String> map = new HashMap<>();
 
-    for (int i = 0; i < 102; i++) {
-      JsonNode jn = new ObjectMapper().readTree("{\"animal" + i + "\":\"dog" + i + "\", \"says\":\"woof\"}");
-      JacksonHandle jh = new JacksonHandle();
-      jh.set(jn);
-      writeset.add(DIRECTORY + "dog" + i + ".json", jh);
-      map.put(DIRECTORY + "dog" + i + ".json", jn.toString());
-      if (count % BATCH_SIZE == 0) {
-        docMgr.write(writeset);
-        writeset = docMgr.newWriteSet();
-      }
-      count++;
-      // System.out.println(jn.toString());
+		for (int i = 0; i < 102; i++) {
+		  JsonNode jn = new ObjectMapper().readTree("{\"animal" + i + "\":\"dog" + i + "\", \"says\":\"woof\"}");
+		  JacksonHandle jh = new JacksonHandle();
+		  jh.set(jn);
+		  writeset.add(DIRECTORY + "dog" + i + ".json", jh);
+		  map.put(DIRECTORY + "dog" + i + ".json", jn.toString());
+		  if (count % BATCH_SIZE == 0) {
+		    docMgr.write(writeset);
+		    writeset = docMgr.newWriteSet();
+		  }
+		  count++;
+		  // System.out.println(jn.toString());
+		}
+		if (count % BATCH_SIZE > 0) {
+		  docMgr.write(writeset);
+		}
+		waitForPropertyPropagate();
+		
+		String uris[] = new String[103];
+		for (int i = 0; i < 102; i++) {
+		  uris[i] = DIRECTORY + "dog" + i + ".json";
+		}
+		uris[102] = "junkURL/test.json";
+		count = 0;
+		DocumentPage page = docMgr.read(uris);
+		DocumentRecord rec;
+		JacksonHandle jh = new JacksonHandle();
+		while (page.hasNext()) {
+		  rec = page.next();
+		  validateRecord(rec, Format.JSON);
+		  rec.getContent(jh);
+		  assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
+		  count++;
+		}
+		System.out.println("Document count test4WriteMultipleJSONDocs " + count);
+		assertEquals("document count", 102, count);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    finally {
+    	client.release();
     }
-    if (count % BATCH_SIZE > 0) {
-      docMgr.write(writeset);
-    }
-    String uris[] = new String[103];
-    for (int i = 0; i < 102; i++) {
-      uris[i] = DIRECTORY + "dog" + i + ".json";
-    }
-    uris[102] = "junkURL/test.json";
-    count = 0;
-    DocumentPage page = docMgr.read(uris);
-    DocumentRecord rec;
-    JacksonHandle jh = new JacksonHandle();
-    while (page.hasNext()) {
-      rec = page.next();
-      validateRecord(rec, Format.JSON);
-      rec.getContent(jh);
-      assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
-      count++;
-    }
-    // validateRecord(rec,Format.JSON);
-    assertEquals("document count", 102, count);
-
   }
 
   /*
@@ -290,95 +329,119 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   @Test
   public void test5WriteGenericDocMgr() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
+	  System.out.println("Inside test5WriteGenericDocMgr");
+    try {
+    	client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		GenericDocumentManager docMgr = client.newDocumentManager();
+		int countXML = 0, countJson = 0, countJpg = 0, countTEXT = 0;
+		String uris[] = new String[102];
+		for (int i = 0; i < 99;) {
+		  uris[i] = DIRECTORY + "foo" + i + ".xml";
+		  i++;
+		  uris[i] = DIRECTORY + "foo" + i + ".txt";
+		  i++;
+		  uris[i] = DIRECTORY + "binary" + i + ".jpg";
+		  i++;
+		  uris[i] = DIRECTORY + "dog" + i + ".json";
+		  i++;
+		}
+		// for(String uri:uris){System.out.println(uri);}
+		DocumentPage page = docMgr.read(uris);
 
-    GenericDocumentManager docMgr = client.newDocumentManager();
-    int countXML = 0, countJson = 0, countJpg = 0, countTEXT = 0;
-    String uris[] = new String[102];
-    for (int i = 0; i < 99;) {
-      uris[i] = DIRECTORY + "foo" + i + ".xml";
-      i++;
-      uris[i] = DIRECTORY + "foo" + i + ".txt";
-      i++;
-      uris[i] = DIRECTORY + "binary" + i + ".jpg";
-      i++;
-      uris[i] = DIRECTORY + "dog" + i + ".json";
-      i++;
+		while (page.hasNext()) {
+		  DocumentRecord rec = page.next();
+		  switch (rec.getFormat())
+		  {
+		    case XML:
+		      countXML++;
+		      break;
+		    case TEXT:
+		      countTEXT++;
+		      break;
+		    case JSON:
+		      countJson++;
+		      break;
+		    case BINARY:
+		      countJpg++;
+		      break;
+		    default:
+		      break;
+		  }
+		  validateRecord(rec, rec.getFormat());
+		}
+		System.out.println("xml :" + countXML + "TXT :" + countTEXT + " json :" + countJpg + " " + countJson);
+		System.out.println("Document countXML test5WriteGenericDocMgr " + countXML);
+		System.out.println("Document countTEXT test5WriteGenericDocMgr " + countTEXT);
+		System.out.println("Document countJpg test5WriteGenericDocMgr " + countJpg);
+		System.out.println("Document countJson test5WriteGenericDocMgr " + countJson);
+		assertEquals("xml document count", 25, countXML);
+		assertEquals("text document count", 25, countTEXT);
+		assertEquals("binary document count", isLBHost()?1:25, countJpg);
+		assertEquals("Json document count", 25, countJson);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    finally {
+    	client.release();
     }
-    // for(String uri:uris){System.out.println(uri);}
-    DocumentPage page = docMgr.read(uris);
-
-    while (page.hasNext()) {
-      DocumentRecord rec = page.next();
-      switch (rec.getFormat())
-      {
-        case XML:
-          countXML++;
-          break;
-        case TEXT:
-          countTEXT++;
-          break;
-        case JSON:
-          countJson++;
-          break;
-        case BINARY:
-          countJpg++;
-          break;
-        default:
-          break;
-      }
-      validateRecord(rec, rec.getFormat());
-    }
-    System.out.println("xml :" + countXML + "TXT :" + countTEXT + " json :" + countJpg + " " + countJson);
-    assertEquals("xml document count", 25, countXML);
-    assertEquals("text document count", 25, countTEXT);
-    assertEquals("binary document count", 25, countJpg);
-    assertEquals("Json document count", 25, countJson);
   }
 
   // test for Issue# 107
   @Test
   public void test6CloseMethodforReadMultipleDoc() throws KeyManagementException, NoSuchAlgorithmException, Exception
   {
+	  System.out.println("Inside test6CloseMethodforReadMultipleDoc");
     int count = 1;
     DocumentPage page;
-    JSONDocumentManager docMgr = client.newJSONDocumentManager();
-    DocumentWriteSet writeset = docMgr.newWriteSet();
+    try {
+		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		JSONDocumentManager docMgr = client.newJSONDocumentManager();
+		DocumentWriteSet writeset = docMgr.newWriteSet();
 
-    Map<String, String> map = new HashMap<>();
-    for (int j = 0; j < 102; j++) {
-      for (int i = 0; i < 10; i++) {
-        JsonNode jn = new ObjectMapper().readTree("{\"animal" + i + "\":\"dog" + i + "\", \"says\":\"woof\"}");
-        JacksonHandle jh = new JacksonHandle();
-        jh.set(jn);
-        writeset.add(DIRECTORY + j + "/dog" + i + ".json", jh);
-        map.put(DIRECTORY + j + "/dog" + i + ".json", jn.toString());
-      }
-      docMgr.write(writeset);
-      writeset = docMgr.newWriteSet();
+		Map<String, String> map = new HashMap<>();
+		for (int j = 0; j < 102; j++) {
+		  for (int i = 0; i < 10; i++) {
+		    JsonNode jn = new ObjectMapper().readTree("{\"animal" + i + "\":\"dog" + i + "\", \"says\":\"woof\"}");
+		    JacksonHandle jh = new JacksonHandle();
+		    jh.set(jn);
+		    writeset.add(DIRECTORY + j + "/cm-dog" + i + ".json", jh);
+		    map.put(DIRECTORY + j + "/cm-dog" + i + ".json", jn.toString());
+		  }
+		  docMgr.write(writeset);
+		  writeset = docMgr.newWriteSet();
+		}
+		waitForPropertyPropagate();
+
+		String uris[] = new String[100];
+		for (int j = 0; j < 102; j++) {
+		  for (int i = 0; i < 10; i++) {
+		    uris[i] = DIRECTORY + j + "/cm-dog" + i + ".json";
+		  }
+		  count = 0;
+		  page = docMgr.read(uris);
+
+		  DocumentRecord rec;
+		  JacksonHandle jh = new JacksonHandle();
+		  while (page.hasNext()) {
+		    rec = page.next();
+		    validateRecord(rec, Format.JSON);
+		    rec.getContent(jh);
+		    assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
+		    count++;
+		  }
+		  page.close();		  
+		}
+		// validateRecord(rec,Format.JSON);
+		System.out.println("Document count test6CloseMethodforReadMultipleDoc " + count);
+		assertEquals("document count", 10, count);
+	} catch (Exception e) {
+		// TODO Auto-generated catch block
+		e.printStackTrace();
+	}
+    finally {
+    	client.release();
     }
-
-    String uris[] = new String[100];
-    for (int j = 0; j < 102; j++) {
-      for (int i = 0; i < 10; i++) {
-        uris[i] = DIRECTORY + j + "/dog" + i + ".json";
-      }
-      count = 0;
-      page = docMgr.read(uris);
-
-      DocumentRecord rec;
-      JacksonHandle jh = new JacksonHandle();
-      while (page.hasNext()) {
-        rec = page.next();
-        validateRecord(rec, Format.JSON);
-        rec.getContent(jh);
-        assertEquals("Comparing the content :", map.get(rec.getUri()), jh.get().toString());
-        count++;
-      }
-      page.close();
-      // validateRecord(rec,Format.JSON);
-      assertEquals("document count", 10, count);
-    }
-
   }
 
   @AfterClass

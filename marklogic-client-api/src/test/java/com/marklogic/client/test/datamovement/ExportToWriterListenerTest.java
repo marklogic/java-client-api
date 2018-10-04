@@ -25,6 +25,7 @@ import java.nio.file.Files;
 import java.util.concurrent.TimeUnit;
 import java.util.Random;
 
+import com.marklogic.client.datamovement.*;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,10 +38,6 @@ import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.datamovement.DataMovementManager;
-import com.marklogic.client.datamovement.ExportToWriterListener;
-import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.WriteBatcher;
 
 import com.marklogic.client.test.Common;
 

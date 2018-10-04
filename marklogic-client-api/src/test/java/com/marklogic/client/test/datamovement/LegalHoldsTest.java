@@ -15,6 +15,7 @@
  */
 package com.marklogic.client.test.datamovement;
 
+import com.marklogic.client.datamovement.FilteredForestConfiguration;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;

@@ -15,19 +15,9 @@
  */
 package com.marklogic.client.impl;
 
-
-import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.FailedRequestException;
-import com.marklogic.client.ForbiddenUserException;
-import com.marklogic.client.MarkLogicIOException;
-import com.marklogic.client.MarkLogicInternalException;
-import com.marklogic.client.ResourceNotFoundException;
-import com.marklogic.client.ResourceNotResendableException;
-import com.marklogic.client.SessionState;
-import com.marklogic.client.Transaction;
 import com.marklogic.client.bitemporal.TemporalDescriptor;
 import com.marklogic.client.bitemporal.TemporalDocumentManager.ProtectionLevel;
 import com.marklogic.client.document.ContentDescriptor;
@@ -146,19 +136,7 @@ import java.nio.file.Path;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Enumeration;
-import java.util.TreeMap;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Properties;
-import java.util.Random;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.TimeUnit;
@@ -252,6 +230,8 @@ public class OkHttpServices implements RESTServices {
 
   private boolean checkFirstRequest = true;
 
+  private Set<Integer> retryStatus = new HashSet<>();
+
   static protected class ThreadState {
     boolean isFirstRequest;
     ThreadState(boolean value) {
@@ -267,6 +247,23 @@ public class OkHttpServices implements RESTServices {
   };
 
   public OkHttpServices() {
+    retryStatus.add(STATUS_BAD_GATEWAY);
+    retryStatus.add(STATUS_SERVICE_UNAVAILABLE);
+    retryStatus.add(STATUS_GATEWAY_TIMEOUT);
+  }
+
+  @Override
+  public Set<Integer> getRetryStatus() {
+    return retryStatus;
+  }
+
+  @Override
+  public int getMaxDelay() {
+    return maxDelay;
+  }
+  @Override
+  public void setMaxDelay(int maxDelay) {
+    this.maxDelay = maxDelay;
   }
 
   private FailedRequest extractErrorFields(Response response) {
@@ -510,7 +507,7 @@ public class OkHttpServices implements RESTServices {
   private int makeFirstRequest(HttpUrl requestUri, String path, int retry) {
     Response response = sendRequestOnce(setupRequest(requestUri, path, null).head());
     int statusCode = response.code();
-    if (statusCode != STATUS_SERVICE_UNAVAILABLE) {
+    if (!retryStatus.contains(statusCode)) {
       response.close();
       return 0;
     }
@@ -702,6 +699,7 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestOnce(Request request) {
+// System.out.println(request.method()+ " "+request.url().url().toExternalForm());
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
@@ -729,7 +727,7 @@ public class OkHttpServices implements RESTServices {
        */
       response = doFunction.apply(requestBldr);
       status = response.code();
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
         /*
          * If we don't get a service unavailable status, we break
@@ -757,11 +755,11 @@ public class OkHttpServices implements RESTServices {
     }
     /*
      * If the service is still unavailable after all the retries, we throw a
-     * FailedRequestException indicating that the service is unavailable.
+     * FailedRetryException indicating that the service is unavailable.
      */
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -1407,7 +1405,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -1426,9 +1424,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -1551,7 +1549,7 @@ public class OkHttpServices implements RESTServices {
       status = response.code();
 
       responseHeaders = response.headers();
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -1568,9 +1566,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -2252,7 +2250,7 @@ public class OkHttpServices implements RESTServices {
 
         status = response.code();
 
-        if (status != STATUS_SERVICE_UNAVAILABLE) {
+        if (!retryStatus.contains(status)) {
           if (isFirstRequest()) setFirstRequest(false);
 
           break;
@@ -2265,9 +2263,9 @@ public class OkHttpServices implements RESTServices {
 
         nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
       }
-      if (status == STATUS_SERVICE_UNAVAILABLE) {
+      if (retryStatus.contains(status)) {
         checkFirstRequest();
-        throw new FailedRequestException(
+        throw new FailedRetryException(
           "Service unavailable and maximum retry period elapsed: "+
             Math.round((System.currentTimeMillis() - startTime) / 1000)+
             " seconds after "+retry+" retries");
@@ -2625,9 +2623,17 @@ public class OkHttpServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
+    return getValue(reqlog, type, key, null, isNullable, mimetype, as);
+  }
+  @Override
+  public <T> T getValue(RequestLogger reqlog, String type, String key, Transaction transaction,
+                        boolean isNullable, String mimetype, Class<T> as)
+    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+  {
     logger.debug("Getting {}/{}", type, key);
 
     Request.Builder requestBldr = setupRequest(type + "/" + key, null, null, mimetype);
+    requestBldr = addTransactionScopedCookies(requestBldr, transaction);
     requestBldr = addTelemetryAgentId(requestBldr);
 
     Function<Request.Builder, Response> doGetFunction = new Function<Request.Builder, Response>() {
@@ -2838,7 +2844,7 @@ public class OkHttpServices implements RESTServices {
 
       status = response.code();
 
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -2856,9 +2862,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3192,7 +3198,7 @@ public class OkHttpServices implements RESTServices {
       response = doPut(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3209,9 +3215,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3364,7 +3370,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3381,9 +3387,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -3889,7 +3895,7 @@ public class OkHttpServices implements RESTServices {
       response = doPost(requestBldr, multiPart, hasStreamingPart);
       status = response.code();
 
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -3906,9 +3912,9 @@ public class OkHttpServices implements RESTServices {
       int retryAfter = (retryAfterRaw != null) ? Integer.parseInt(retryAfterRaw) : -1;
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -4099,12 +4105,14 @@ public class OkHttpServices implements RESTServices {
       if ( requestBldr == null ) {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
-      requestBldr = addCookies(requestBldr, transaction.getCookies(), (Calendar) ((TransactionImpl) transaction).getCreatedTimestamp().clone());
+      requestBldr = addCookies(
+          requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
+          );
     }
     return requestBldr;
   }
 
-  private Request.Builder addCookies(Request.Builder requestBldr, List<ClientCookie> cookies, Calendar expiration) {
+  private Request.Builder addCookies(Request.Builder requestBldr, List<ClientCookie> cookies, Calendar creation) {
     HttpUrl uri = requestBldr.build().url();
     for (ClientCookie cookie : cookies) {
       // don't forward the cookie if it requires https and we're not using https
@@ -4128,12 +4136,17 @@ public class OkHttpServices implements RESTServices {
       if ( cookie.getMaxAge() == 0 ) {
         continue;
       }
-      // TODO: eval if we need handling for MIN_VALUE
+      // TODO: determine if we need handling for MIN_VALUE
       // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
       // don't forward the cookie if it has a max age and we're past the max age
-      if ( expiration != null && cookie.getMaxAge() > 0 ) {
-        expiration.roll(Calendar.SECOND, cookie.getMaxAge());
-        if ( System.currentTimeMillis() > expiration.getTimeInMillis() ) {
+      if ( creation != null && cookie.getMaxAge() > 0 ) {
+        int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
+              System.currentTimeMillis() - creation.getTimeInMillis()
+        );
+        if ( currentAge > cookie.getMaxAge() ) {
+          logger.warn(
+                cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+          );
           continue;
         }
       }
@@ -4246,6 +4259,7 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
+// System.out.println(uri.toString());
     return request;
   }
 
@@ -4911,7 +4925,7 @@ public class OkHttpServices implements RESTServices {
       }
       status = response.code();
 
-      if (status != STATUS_SERVICE_UNAVAILABLE) {
+      if (!retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
 
         break;
@@ -4924,9 +4938,9 @@ public class OkHttpServices implements RESTServices {
 
       nextDelay = Math.max(retryAfter, calculateDelay(randRetry, retry));
     }
-    if (status == STATUS_SERVICE_UNAVAILABLE) {
+    if (retryStatus.contains(status)) {
       checkFirstRequest();
-      throw new FailedRequestException(
+      throw new FailedRetryException(
         "Service unavailable and maximum retry period elapsed: "+
           Math.round((System.currentTimeMillis() - startTime) / 1000)+
           " seconds after "+retry+" retries");
@@ -5487,9 +5501,7 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        Calendar expiration = session.getCreatedTimestamp() != null ?
-            (Calendar) session.getCreatedTimestamp().clone() : null;
-        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), expiration);
+        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }

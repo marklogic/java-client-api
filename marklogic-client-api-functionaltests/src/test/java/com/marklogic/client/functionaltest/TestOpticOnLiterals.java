@@ -72,6 +72,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   private static String[] schemafNames = { "TestOpticOnLiteralsSchemaDB-1" };
  
   private static DatabaseClient client;
+  private static DatabaseClient clientRes;
 
   private static String datasource = "src/test/java/com/marklogic/client/functionaltest/data/optics/";
   private static Map<String, Object>[] literals1 = new HashMap[5];
@@ -79,6 +80,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   private static Map<String, Object>[] storeInformation = new HashMap[4];
   private static Map<String, Object>[] internetSales = new HashMap[4];
   private static ResourceExtensionsManager resourceMgr;
+  private static String resourceName = "OpticsJSResourceModule";
 
   @BeforeClass
   public static void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception
@@ -286,7 +288,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     
     
-    DatabaseClient clientRes = getDatabaseClient("eval-user", "x", Authentication.DIGEST); 
+    clientRes = getDatabaseClient("eval-user", "x", Authentication.DIGEST); 
     
     resourceMgr = clientRes.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
@@ -301,10 +303,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     FileInputStream myStream = new FileInputStream("src/test/java/com/marklogic/client/functionaltest/data/OpticsTestJSResource.js");
     InputStreamHandle handle = new InputStreamHandle(myStream);
     handle.set(myStream);
-    resourceMgr.writeServices("OpticsJSResourceModule", handle, resextMetadata, getParams);
+    resourceMgr.writeServices(resourceName, handle, resextMetadata, getParams);
     Thread.sleep(10000);
-    schemaDBclient.release();
-    clientRes.release();
+    schemaDBclient.release();    
   }
 
   /**
@@ -1638,6 +1639,9 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
   public static void tearDownAfterClass() throws Exception
   {
     System.out.println("In tear down");
+    // Delete the services.
+    resourceMgr.deleteServices(resourceName);
+    
     // Delete the temp schema DB after resetting the Schema DB on content DB.
     // Else delete fails.
     deleteUserRole("opticRole");
@@ -1646,7 +1650,10 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
     deleteDB(schemadbName);
     deleteForest(schemafNames[0]);
     // release client
+    clientRes.release();
     client.release();
     cleanupRESTServer(dbName, fNames);
+    deleteRESTUser("eval-user");
+    deleteUserRole("test-eval");
   }
 }

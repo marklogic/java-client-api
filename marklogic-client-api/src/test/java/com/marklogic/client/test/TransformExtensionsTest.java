@@ -135,6 +135,7 @@ public class TransformExtensionsTest {
 
     extensionMgr.deleteTransform(XQUERY_NAME);
     boolean transformDeleted = true;
+
     try {
       handle = new StringHandle();
       extensionMgr.readXQueryTransform(XQUERY_NAME, handle);
@@ -145,6 +146,7 @@ public class TransformExtensionsTest {
     assertTrue("Failed to delete XQuery transform", transformDeleted);
 
     extensionMgr.deleteTransform(XSLT_NAME);
+
     try {
       handle = new StringHandle();
       extensionMgr.readXSLTransform(XSLT_NAME, handle);
@@ -153,6 +155,7 @@ public class TransformExtensionsTest {
       transformDeleted = (result == null || result.length() == 0);
     } catch(FailedRequestException ex) {
     }
+
     assertTrue("Failed to delete XSLT transform", transformDeleted);
   }
   public void writeXQueryTransform(TransformExtensionsManager extensionMgr)
