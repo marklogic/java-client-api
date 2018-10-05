@@ -29,6 +29,9 @@ import java.net.URISyntaxException;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import com.marklogic.client.config.ConfiguredDatabaseClientFactory;
+import com.marklogic.client.config.DatabaseClientConfig;
+import com.marklogic.client.config.DefaultConfiguredDatabaseClientFactory;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Document;
 import org.w3c.dom.ls.DOMImplementationLS;
@@ -37,8 +40,6 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 
 public class Common {
   final public static String USER= "rest-writer";
@@ -74,6 +75,8 @@ public class Common {
   public static DatabaseClient evalClient;
   public static DatabaseClient readOnlyClient;
 
+  private static ConfiguredDatabaseClientFactory configuredDatabaseClientFactory = new DefaultConfiguredDatabaseClientFactory();
+
   public static DatabaseClient connect() {
     if (client != null) return client;
     client = newClient();
@@ -103,32 +106,33 @@ public class Common {
     return newClient(null);
   }
   public static DatabaseClient newClient(String databaseName) {
-    return DatabaseClientFactory.newClient(Common.HOST, Common.PORT, databaseName,
-      new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS),
-          CONNECTION_TYPE);
+    DatabaseClientConfig config = new DatabaseClientConfig(HOST, PORT, USER, PASS);
+    config.setDatabase(databaseName);
+    config.setConnectionType(CONNECTION_TYPE);
+    return configuredDatabaseClientFactory.newDatabaseClient(config);
   }
   public static DatabaseClient newAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.REST_ADMIN_USER, Common.REST_ADMIN_PASS),
-          CONNECTION_TYPE);
+    DatabaseClientConfig config = new DatabaseClientConfig(HOST, PORT, REST_ADMIN_USER, REST_ADMIN_PASS);
+    config.setConnectionType(CONNECTION_TYPE);
+    return configuredDatabaseClientFactory.newDatabaseClient(config);
   }
   public static DatabaseClient newServerAdminClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.SERVER_ADMIN_USER, Common.SERVER_ADMIN_PASS),
-          CONNECTION_TYPE);
+    DatabaseClientConfig config = new DatabaseClientConfig(HOST, PORT, SERVER_ADMIN_USER, SERVER_ADMIN_PASS);
+    config.setConnectionType(CONNECTION_TYPE);
+    return configuredDatabaseClientFactory.newDatabaseClient(config);
   }
   public static DatabaseClient newEvalClient() {
     return newEvalClient(null);
   }
   public static DatabaseClient newEvalClient(String databaseName) {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, databaseName, new DigestAuthContext(Common.EVAL_USER, Common.EVAL_PASS),
-          CONNECTION_TYPE);
+    DatabaseClientConfig config = new DatabaseClientConfig(HOST, PORT, EVAL_USER, EVAL_PASS);
+    config.setConnectionType(CONNECTION_TYPE);
+    return configuredDatabaseClientFactory.newDatabaseClient(config);
   }
   public static DatabaseClient newReadOnlyClient() {
-    return DatabaseClientFactory.newClient(
-      Common.HOST, Common.PORT, new DigestAuthContext(Common.READ_ONLY_USER, Common.READ_ONLY_PASS),
-          CONNECTION_TYPE);
+    DatabaseClientConfig config = new DatabaseClientConfig(HOST, PORT, READ_ONLY_USER, READ_ONLY_PASS);
+    config.setConnectionType(CONNECTION_TYPE);
+    return configuredDatabaseClientFactory.newDatabaseClient(config);
   }
 
   public static byte[] streamToBytes(InputStream is) throws IOException {
