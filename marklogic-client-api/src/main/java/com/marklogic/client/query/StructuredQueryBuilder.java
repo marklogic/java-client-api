@@ -41,6 +41,8 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamResult;
 import javax.xml.transform.stream.StreamSource;
 
+import org.apache.xml.serializer.ToUnknownStream;
+
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
 import com.marklogic.client.impl.RawQueryDefinitionImpl;
@@ -2035,6 +2037,26 @@ public class StructuredQueryBuilder {
       serializer.writeEndElement();
     }
   }
+    
+  protected class TimeQuery extends AbstractStructuredQuery {
+	  private String formattedTimestamp = null;
+	  private String startElement = null;
+	  TimeQuery(String timestamp, String startElement) {
+		  if (timestamp == null || timestamp.length() == 0) {
+			  throw new IllegalArgumentException("timestamp cannot be null or empty.");
+		  }
+		  this.formattedTimestamp = timestamp;
+		  this.startElement = startElement;
+	  }
+	  @Override
+	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+		  serializer.writeStartElement(startElement);
+		  if (formattedTimestamp != null && formattedTimestamp.length() > 0) {
+			  writeText(serializer, "timestamp", formattedTimestamp);
+		  }
+		  serializer.writeEndElement();
+	  }
+  }
 
     /* ************************************************************************************* */
 
@@ -2856,5 +2878,28 @@ public class StructuredQueryBuilder {
   {
     if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
     return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
+  }
+  
+  /**
+   * Matches documents with timestamp prior to the given timestamp.
+   * @param timestamp time in ISO 8601 format - documents with timestamp equal to or
+   *        prior to this timestamp will match
+   * @return a query to filter.
+   */
+  public StructuredQueryDefinition beforeQuery(long timestamp) 
+  {
+	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
+		return new TimeQuery(Long.toUnsignedString(timestamp), "before-query");
+  }
+
+  /**
+   * Matches documents with timestamp after the given timestamp.
+   * @param timestamp time in ISO 8601 format - documents with timestamp after this time will match.
+   * @return a query to filter.
+   */
+  public StructuredQueryDefinition afterQuery(long timestamp) 
+  {
+	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
+		return new TimeQuery(Long.toUnsignedString(timestamp), "after-query");
   }
 }
