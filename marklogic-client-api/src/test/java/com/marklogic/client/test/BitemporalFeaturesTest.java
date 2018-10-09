@@ -234,11 +234,9 @@ public class BitemporalFeaturesTest {
     StringHandle handle2 = new StringHandle(doc2).withFormat(Format.XML);
     docMgr.write(protectDocIDv2, logicalID, null, handle2, null, null, temporalCollection);
     docMgr.protect(logicalID, temporalCollection, ProtectionLevel.NOWIPE, DatatypeFactory.newInstance().newDuration("PT1S"));
-    try {
-      Thread.sleep(1500);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+
+    Common.waitFor(1500);
+
     docMgr.wipe(logicalID, temporalCollection);
     QueryManager queryMgr = Common.adminClient.newQueryManager();
     queryMgr.setPageLength(1000);
@@ -255,11 +253,9 @@ public class BitemporalFeaturesTest {
       docMgr.protect(temporalDoc + i, temporalCollection, ProtectionLevel.NOWIPE,
         DatatypeFactory.newInstance().newDuration("PT1S"));
     }
-    try {
-      Thread.sleep(1500);
-    } catch (InterruptedException e) {
-      e.printStackTrace();
-    }
+
+    Common.waitFor(1500);
+
     for (int i = 1; i < 6; i++) {
       docMgr.wipe(temporalDoc + i, temporalCollection);
     }

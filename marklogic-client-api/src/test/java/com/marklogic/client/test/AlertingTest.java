@@ -102,7 +102,6 @@ public class AlertingTest {
     File ruleTransform = new File("src/test/resources/rule-transform.xqy");
     transformManager.writeXQueryTransform("ruleTransform", new FileHandle(ruleTransform));
 
-
     adminClient.newServerConfigManager().setServerRequestLogging(true);
     Common.connect();
 

@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.datamovement;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.FailedRetryException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 /** <p>HostAvailabilityListener is automatically registered with all QueryBatcher
  * and WriteBatcher instances to monitor for failover scenarios.  When
  * HostAvailabilityListener detects that a host is unavailable (matches one of
- * {@link #getHostUnavailableExceptions()}), it black-lists the host for a
+ * {@link #getHostUnavailableExceptions()}), it blacklists the MarkLogic host for a
  * period of time equal to {@link #getSuspendTimeForHostUnavailable()}.  After
  * that time, it calls {@link DataMovementManager#readForestConfig()} then
  * passes that updated ForestConfiguration to batcher.withForestConfig() so the
@@ -69,11 +71,6 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   private ScheduledFuture<?> future;
   Set<QueryBatchListener> retryListenersSet = new HashSet<>();
   List<Class<?>> hostUnavailableExceptions = new ArrayList<>();
-  {
-    hostUnavailableExceptions.add(SocketException.class);
-    hostUnavailableExceptions.add(SSLException.class);
-    hostUnavailableExceptions.add(UnknownHostException.class);
-  }
 
   // Retry listener for Query batches, for which the list of URIs have been
   // retrieved from the server but the batch failed while applying the listener
@@ -101,11 +98,18 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
+   * Manages refreshing the forests and hosts and retrying events after a host
+   * becomes unavailable.
    * @param moveMgr the DataMovementManager (used to call readForestConfig to reset after black-listing an unavailable host)
    */
   public HostAvailabilityListener(DataMovementManager moveMgr) {
     if (moveMgr == null) throw new IllegalArgumentException("moveMgr must not be null");
     this.moveMgr = moveMgr;
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+      hostUnavailableExceptions.add(SocketException.class);
+      hostUnavailableExceptions.add(SSLException.class);
+      hostUnavailableExceptions.add(UnknownHostException.class);
+    }
   }
 
   /** If a host becomes unavailable (SocketException, SSLException,
@@ -129,15 +133,23 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
    * @return this instance (for method chaining)
    */
   public HostAvailabilityListener withMinHosts(int numHosts) {
-    if (numHosts <= 0) throw new IllegalArgumentException("numHosts must be > 0");
-    int numConfigHosts = moveMgr.readForestConfig().getPreferredHosts().length;
-    if (numHosts > numConfigHosts) throw new IllegalArgumentException
-      ("numHosts must be less than or equal to the number of hosts in the cluster");
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
+      if (numHosts != 1) {
+        throw new IllegalArgumentException("numHosts must be 1 when using only the primary host for the connection");
+      }
+    } else {
+      if (numHosts <= 0) throw new IllegalArgumentException("numHosts must be > 0");
+// TODO: use existing forest configuration instead of refreshing?
+      int numConfigHosts = moveMgr.readForestConfig().getPreferredHosts().length;
+      if (numHosts > numConfigHosts) throw new IllegalArgumentException
+          ("numHosts must be less than or equal to the number of hosts in the cluster");
+    }
     this.minHosts = numHosts;
     return this;
   }
 
-  /** Overwrites the list of exceptions for which a host will be blacklisted
+  /** Overwrites the list of exceptions for which a request can be retried and
+   * a MarkLogic host can be blacklisted
    *
    * @param exceptionTypes the list of types of Throwable, any of which constitute a host that's unavailable
    *
@@ -152,7 +164,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   /**
-   * @return the list of types of Throwable, any of which constitute a host that's unavailable
+   * @return the list of types of Throwable, any of which constitute a MarkLogic host that's unavailable
    */
   public Throwable[] getHostUnavailableExceptions() {
     return hostUnavailableExceptions.toArray(new Throwable[hostUnavailableExceptions.size()]);
@@ -214,6 +226,17 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
   }
 
   private synchronized boolean processException(Batcher batcher, Throwable throwable, String host) {
+    return (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) ?
+           processGatewayException(batcher, throwable, host) :
+           processForestHostException(batcher, throwable, host);
+  }
+
+  private boolean processGatewayException(Batcher batcher, Throwable throwable, String host) {
+    // if the nested retry failed, assume the MarkLogic cluster is unavailable
+    return false;
+  }
+
+  private boolean processForestHostException(Batcher batcher, Throwable throwable, String host) {
     // we only do something if this throwable is on our list of exceptions
     // which we consider marking a host as unavilable
     boolean isHostUnavailableException = isHostUnavailableException(throwable, new HashSet<>());
@@ -253,23 +276,7 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
           filteredForestConfig = filteredForestConfig.withRenamedHost(host, randomAvailableHost);
         }
         batcher.withForestConfig(filteredForestConfig);
-        // cancel any previously scheduled re-sync
-        if ( future != null ) future.cancel(false);
-        // schedule a re-sync with the server forest config
-        future = Executors.newScheduledThreadPool(1)
-          .schedule( () -> {
-              if ( batcher.isStopped() ) {
-                logger.debug("Job \"{}\" is stopped, so cancelling re-sync with the server forest config",
-                  batcher.getJobName());
-              } else {
-                ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
-                logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
-                  suspendTimeForHostUnavailable.toString(), host, Arrays.asList(updatedForestConfig.getPreferredHosts()));
-                // set the forestConfig back to whatever the server says it is
-                batcher.withForestConfig(updatedForestConfig);
-              }
-            }
-            , suspendTimeForHostUnavailable.toMillis(), TimeUnit.MILLISECONDS);
+        scheduleForestResynch(batcher, host);
       } else {
         // by black-listing this host we'd move below minHosts, so it's time to
         // stop this job
@@ -281,6 +288,26 @@ public class HostAvailabilityListener implements QueryFailureListener, WriteFail
       }
     }
     return shouldWeRetry;
+  }
+
+  private void scheduleForestResynch(Batcher batcher, String host) {
+    // cancel any previously scheduled re-sync
+    if ( future != null ) future.cancel(false);
+    // schedule a re-sync with the server forest config
+    future = Executors.newScheduledThreadPool(1)
+      .schedule( () -> {
+          if ( batcher.isStopped() ) {
+            logger.debug("Job \"{}\" is stopped, so cancelling re-sync with the server forest config",
+              batcher.getJobName());
+          } else {
+            ForestConfiguration updatedForestConfig = moveMgr.readForestConfig();
+            logger.info("it's been {} since host {} failed, opening communication to all server hosts [{}]",
+              suspendTimeForHostUnavailable.toString(), host, Arrays.asList(updatedForestConfig.getPreferredHosts()));
+            // set the forestConfig back to whatever the server says it is
+            batcher.withForestConfig(updatedForestConfig);
+          }
+        }
+        , suspendTimeForHostUnavailable.toMillis(), TimeUnit.MILLISECONDS);
   }
 
   protected boolean isHostUnavailableException(Throwable throwable, Set<Throwable> path) {

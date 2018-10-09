@@ -113,6 +113,7 @@ public class ResourceExtensionsTest {
     ).getLength() == 1);
 
     extensionMgr.deleteServices(RESOURCE_NAME);
+
     result = extensionMgr.readServices(RESOURCE_NAME, handle).get();
     assertTrue("Failed to delete resource services", result == null);
   }

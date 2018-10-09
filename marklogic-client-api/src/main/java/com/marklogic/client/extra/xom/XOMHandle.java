@@ -44,7 +44,10 @@ import com.marklogic.client.io.marker.XMLWriteHandle;
 /**
  * A XOM Handle represents XML content as a XOM document for reading or writing.
  * You must install the XOM library to use this class.
+ * @deprecated
+ * Changed to Gradle.
  */
+@Deprecated
 public class XOMHandle
   extends BaseHandle<InputStream, OutputStreamSender>
   implements OutputStreamSender, BufferableHandle, ContentHandle<Document>,

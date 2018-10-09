@@ -79,6 +79,7 @@ public class XMLDocumentTest {
     // write XQuery file to the modules database
     libsMgr.write("/ext/my-lib.xqy", new FileHandle(
       new File("src/test/resources/my-lib.xqy")).withFormat(Format.TEXT));
+
     Common.connect();
   }
   @AfterClass

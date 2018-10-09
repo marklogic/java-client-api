@@ -203,7 +203,6 @@ public class WriteBatcherImpl
   implements WriteBatcher
 {
   private static Logger logger = LoggerFactory.getLogger(WriteBatcherImpl.class);
-  private DataMovementManager moveMgr;
   private int transactionSize;
   private String temporalCollection;
   private ServerTransform transform;
@@ -225,10 +224,7 @@ public class WriteBatcherImpl
   private Calendar jobEndTime;
 
   public WriteBatcherImpl(DataMovementManager moveMgr, ForestConfiguration forestConfig) {
-    super();
-    if (moveMgr == null)      throw new IllegalArgumentException("moveMgr must not be null");
-    if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
-    this.moveMgr = moveMgr;
+    super(moveMgr);
     withForestConfig( forestConfig );
   }
 
@@ -798,6 +794,7 @@ public class WriteBatcherImpl
 
   @Override
   public synchronized WriteBatcher withForestConfig(ForestConfiguration forestConfig) {
+    super.withForestConfig(forestConfig);
     if (forestConfig == null) throw new IllegalArgumentException("forestConfig must not be null");
     // get the list of hosts to use
     Forest[] forests = forestConfig.listForests();
@@ -825,7 +822,7 @@ public class WriteBatcherImpl
         removedHostInfos.put(hostInfo.hostName, hostInfo);
       }
     }
-    logger.info("(withForestConfig) Using {} hosts with forests for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
+    logger.info("(withForestConfig) Using forests on {} hosts for \"{}\"", hosts.keySet(), forests[0].getDatabaseName());
     // initialize a DatabaseClient for each host
     HostInfo[] newHostInfos = new HostInfo[hosts.size()];
     int i=0;
@@ -838,9 +835,11 @@ public class WriteBatcherImpl
         newHostInfos[i].hostName = host;
         Forest forest = hosts.get(host);
         // this is a host-specific client (no DatabaseClient is actually forest-specific)
-        newHostInfos[i].client = ((DataMovementManagerImpl) moveMgr).getForestClient(forest);
-        logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
-          newHostInfos[i].client.getPort(), host);
+        newHostInfos[i].client = getMoveMgr().getForestClient(forest);
+        if (getMoveMgr().getConnectionType() == DatabaseClient.ConnectionType.DIRECT) {
+          logger.info("Adding DatabaseClient on port {} for host \"{}\" to the rotation",
+                newHostInfos[i].client.getPort(), host);
+        }
       }
       i++;
     }
@@ -848,7 +847,7 @@ public class WriteBatcherImpl
     this.hostInfos = newHostInfos;
 
     if ( removedHostInfos.size() > 0 ) {
-      DataMovementManagerImpl moveMgrImpl = (DataMovementManagerImpl) moveMgr;
+      DataMovementManagerImpl moveMgrImpl = getMoveMgr();
       String primaryHost = moveMgrImpl.getPrimaryClient().getHost();
       if ( removedHostInfos.containsKey(primaryHost) ) {
         int randomPos = Math.abs(primaryHost.hashCode()) % newHostInfos.length;
@@ -1072,7 +1071,7 @@ public class WriteBatcherImpl
             transaction = transactionInfo.transaction;
             transactionInfo.written.set(true);
           }
-          logger.trace("begin write batch {} to host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
+          logger.trace("begin write batch {} to forest on host \"{}\"", writeSet.getBatchNumber(), writeSet.getClient().getHost());
           if ( writeSet.getTemporalCollection() == null ) {
             writeSet.getClient().newDocumentManager().write(
               writeSet.getWriteSet(), writeSet.getTransform(), transaction
@@ -1097,7 +1096,7 @@ public class WriteBatcherImpl
           throw new DataMovementException("Failed to write because transaction already underwent commit or rollback", null);
         }
       } catch (Throwable t) {
-        logger.trace("failed batch sent to host \"{}\"", writeSet.getClient().getHost());
+        logger.trace("failed batch sent to forest on host \"{}\"", writeSet.getClient().getHost());
         Consumer<Throwable> onFailure = writeSet.getOnFailure();
         if ( onFailure != null ) {
           onFailure.accept(t);

@@ -19,8 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
+
 import org.junit.Test;
 
 import org.slf4j.Logger;
@@ -66,6 +65,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testRename() {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withRenamedHost("host1", "host1a");
 
@@ -110,6 +111,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testBlackList() {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withBlackList("host1")
       .withBlackList("openReplicaHost2")
@@ -153,6 +156,8 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWhiteList() {
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forests)
       .withWhiteList("host1")
       .withWhiteList("openReplicaHost2")
@@ -200,7 +205,9 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithWriteAndQueryBatcher() throws Exception{
-    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
 
     long hostNum = Stream.of(forestConfig.listForests()).map(forest->forest.getPreferredHost()).distinct().count();
     if ( hostNum <= 1 ) return; // we're not in a cluster, so this test isn't valid
@@ -219,7 +226,9 @@ public class FilteredForestConfigTest {
 
   @Test
   public void testWithInvalidHosts() throws Exception{
-    ForestConfiguration forestConfig = Common.initForestConfig(moveMgr.readForestConfig());
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) return;
+
+    ForestConfiguration forestConfig = moveMgr.readForestConfig();
     String host1 = forestConfig.listForests()[0].getPreferredHost();
 
     FilteredForestConfiguration ffg = new FilteredForestConfiguration(forestConfig)

@@ -18,6 +18,7 @@ package com.marklogic.client.test.util;
 import java.io.File;
 import java.io.IOException;
 
+// TODO: switch to OkHTTP
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.auth.AuthScope;
@@ -61,7 +62,7 @@ public class TestServerBootstrapper {
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope(Common.HOST, 8002),
+      new AuthScope(host, 8002),
       new UsernamePasswordCredentials(username, password));
 
     HttpDelete delete = new HttpDelete(
@@ -73,15 +74,16 @@ public class TestServerBootstrapper {
   }
 
   private void invokeBootstrapExtension() throws ClientProtocolException, IOException {
+    final String params = Common.BALANCED ? "?rs%3Abalanced=true" : "";
 
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope(Common.HOST, port),
+      new AuthScope(host, port),
       new UsernamePasswordCredentials(username, password));
 
     HttpPost post = new HttpPost("http://" + host + ":" + port
-      + "/v1/resources/bootstrap");
+      + "/v1/resources/bootstrap" + params);
 
     HttpResponse response = client.execute(post);
     @SuppressWarnings("unused")
@@ -95,11 +97,11 @@ public class TestServerBootstrapper {
     DefaultHttpClient client = new DefaultHttpClient();
 
     client.getCredentialsProvider().setCredentials(
-      new AuthScope(Common.HOST, port),
+      new AuthScope(host, port),
       new UsernamePasswordCredentials(username, password));
 
     HttpPut put = new HttpPut("http://" + host + ":" + port
-      + "/v1/config/resources/bootstrap?method=POST");
+      + "/v1/config/resources/bootstrap?method=POST&post%3Abalanced=string%3F");
 
     put.setEntity(new FileEntity(new File("src/test/resources/bootstrap.xqy"), "application/xquery"));
     HttpResponse response = client.execute(put);
@@ -121,6 +123,7 @@ public class TestServerBootstrapper {
     } else {
       bootstrapper.bootstrapRestServer();
       bootstrapper.installBootstrapExtension();
+      Common.modulesWait();
       bootstrapper.invokeBootstrapExtension();
     }
 

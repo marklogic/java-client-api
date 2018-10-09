@@ -28,7 +28,8 @@ import org.junit.Test;
 import com.marklogic.client.extra.dom4j.DOM4JHandle;
 import com.marklogic.client.extra.gson.GSONHandle;
 import com.marklogic.client.extra.jdom.JDOMHandle;
-import com.marklogic.client.extra.xom.XOMHandle;
+// NOTE: uncomment to test XOMHandle
+// import com.marklogic.client.extra.xom.XOMHandle;
 import com.marklogic.client.impl.HandleAccessor;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -98,7 +99,8 @@ public class ClosingHandlesTest {
       new ValuesListHandle(), "<values-list xmlns='http://marklogic.com/rest-api'/>");
     validateClosingHandleClosesUnderlyingStream(new XMLEventReaderHandle(), "<xml/>");
     validateClosingHandleClosesUnderlyingStream(new XMLStreamReaderHandle(), "<xml/>");
-    validateClosingHandleClosesUnderlyingStream(new XOMHandle(), "<xml/>");
+// NOTE: uncomment to test XOMHandle
+//  validateClosingHandleClosesUnderlyingStream(new XOMHandle(), "<xml/>");
   }
 
   private void validateClosingHandleClosesUnderlyingStream(AbstractReadHandle handle, String content)

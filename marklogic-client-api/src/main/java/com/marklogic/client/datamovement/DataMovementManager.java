@@ -22,7 +22,6 @@ import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryDefinition;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.datamovement.impl.DataMovementManagerImpl;
 
 import java.util.Iterator;
 
@@ -195,4 +194,12 @@ public interface DataMovementManager {
    * @return the latest ForestConfiguration from the server
    */
   public ForestConfiguration readForestConfig();
+
+  /**
+   * Identify whether the DataMovementManager connects directly to each MarkLogic host
+   * with a forest for the database or whether the DataMovementManager uses a gateway
+   * such as a load balancer to communicate with the MarkLogic hosts.
+   * @return the connection type
+   */
+  public DatabaseClient.ConnectionType getConnectionType();
 }

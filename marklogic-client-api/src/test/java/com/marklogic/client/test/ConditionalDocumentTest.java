@@ -51,6 +51,9 @@ public class ConditionalDocumentTest {
     serverConfig.readConfiguration();
     serverConfig.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
     serverConfig.writeConfiguration();
+
+    Common.propertyWait();
+
     Common.connect();
   }
   @AfterClass
@@ -59,6 +62,8 @@ public class ConditionalDocumentTest {
   {
     serverConfig.setUpdatePolicy(UpdatePolicy.MERGE_METADATA);
     serverConfig.writeConfiguration();
+
+    Common.propertyWait();
   }
 
   @Test

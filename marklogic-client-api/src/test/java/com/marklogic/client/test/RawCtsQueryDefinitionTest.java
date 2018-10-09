@@ -95,7 +95,9 @@ public class RawCtsQueryDefinitionTest {
     QueryOptionsManager queryOptionsManager = Common.adminClient.newServerConfigManager().newQueryOptionsManager();
     File options = new File("src/test/resources/alerting-options.xml");
     queryOptionsManager.writeOptions("alerts", new FileHandle(options));
+
     Common.adminClient.newServerConfigManager().setServerRequestLogging(true);
+
     Common.connect();
     JSONDocumentManager jsonDocMgr = Common.client.newJSONDocumentManager();
     jsonDocMgr.write("/basic1.json", new FileHandle(new File("src/test/resources/basic1.json")));

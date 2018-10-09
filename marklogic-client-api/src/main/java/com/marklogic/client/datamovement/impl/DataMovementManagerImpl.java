@@ -31,22 +31,15 @@ import com.marklogic.client.datamovement.Batcher;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.NoResponseListener;
 import com.marklogic.client.datamovement.QueryBatcher;
-import com.marklogic.client.datamovement.impl.QueryJobReportListener;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.datamovement.JobReport;
-import com.marklogic.client.datamovement.impl.WriteJobReportListener;
-import com.marklogic.client.datamovement.impl.QueryBatcherImpl;
-import com.marklogic.client.datamovement.impl.DataMovementServices;
-import com.marklogic.client.datamovement.impl.WriteBatcherImpl;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.HashMap;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataMovementManagerImpl implements DataMovementManager {
@@ -60,6 +53,7 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public DataMovementManagerImpl(DatabaseClient client) {
     setPrimaryClient(client);
+
     clientMap.put(primaryClient.getHost(), primaryClient);
   }
 
@@ -142,19 +136,16 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   private QueryBatcher newQueryBatcherImpl(QueryDefinition query) {
     if ( query == null ) throw new IllegalArgumentException("query must not be null");
-    QueryBatcherImpl batcher = new QueryBatcherImpl(query, this, getForestConfig());
-    batcher.onQueryFailure(new HostAvailabilityListener(this));
-    QueryJobReportListener queryJobListener = new QueryJobReportListener();
-    batcher.onQueryFailure(queryJobListener);
-    batcher.onQueryFailure(new NoResponseListener(this));
-    batcher.onUrisReady(queryJobListener);
-    return batcher;
+    return newQueryBatcher(new QueryBatcherImpl(query, this, getForestConfig()));
   }
 
   @Override
   public QueryBatcher newQueryBatcher(Iterator<String> iterator) {
     if ( iterator == null ) throw new IllegalArgumentException("iterator must not be null");
-    QueryBatcherImpl batcher = new QueryBatcherImpl(iterator, this, getForestConfig());
+    return newQueryBatcher(new QueryBatcherImpl(iterator, this, getForestConfig()));
+  }
+
+  private QueryBatcher newQueryBatcher(QueryBatcherImpl batcher) {
     // add a default listener to handle host failover scenarios
     batcher.onQueryFailure(new HostAvailabilityListener(this));
     QueryJobReportListener queryJobListener = new QueryJobReportListener();
@@ -177,6 +168,9 @@ public class DataMovementManagerImpl implements DataMovementManager {
 
   public DatabaseClient getForestClient(Forest forest) {
     if ( forest == null ) throw new IllegalArgumentException("forest must not be null");
+    if (getConnectionType() == DatabaseClient.ConnectionType.GATEWAY) {
+      return getPrimaryClient();
+    }
     String hostName = forest.getPreferredHost();
     String key = hostName;
     DatabaseClient client = clientMap.get(key);
@@ -206,6 +200,11 @@ public class DataMovementManagerImpl implements DataMovementManager {
     } else {
       return null;
     }
+  }
+
+  @Override
+  public DatabaseClient.ConnectionType getConnectionType() {
+    return primaryClient.getConnectionType();
   }
 
   public DataMovementServices getDataMovementServices() {

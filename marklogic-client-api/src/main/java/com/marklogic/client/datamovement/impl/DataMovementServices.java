@@ -62,13 +62,15 @@ public class DataMovementServices {
       String alternateHost = null;
       if ( forestNode.get("alternateHost") != null ) alternateHost = forestNode.get("alternateHost").asText();
       // Since we added the forestinfo end point to populate both alternateHost and requestHost
-      // in case we have a requestHost so that we don't break the existing API code, we will make the 
+      // in case we have a requestHost so that we don't break the existing API code, we will make the
       // alternateHost as null if both alternateHost and requestHost is set.
       if ( requestHost != null && alternateHost != null )
         alternateHost = null;
       boolean isUpdateable = "all".equals(forestNode.get("updatesAllowed").asText());
       boolean isDeleteOnly = false; // TODO: get this for real after we start using a REST endpoint
-      forests.add(new ForestImpl(host, openReplicaHost, requestHost, alternateHost, database, name, id, isUpdateable, isDeleteOnly));
+      forests.add(
+            new ForestImpl(host, openReplicaHost, requestHost, alternateHost, database, name, id, isUpdateable, isDeleteOnly)
+      );
     }
 
     return new ForestConfigurationImpl(forests.toArray(new ForestImpl[forests.size()]));

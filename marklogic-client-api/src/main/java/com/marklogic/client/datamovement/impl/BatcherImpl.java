@@ -17,6 +17,7 @@ package com.marklogic.client.datamovement.impl;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.datamovement.Batcher;
+import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.ForestConfiguration;
 
 public abstract class BatcherImpl implements Batcher {
@@ -26,6 +27,15 @@ public abstract class BatcherImpl implements Batcher {
   private int threadCount = 1;
   private ForestConfiguration forestConfig;
   private DatabaseClient client;
+  private DataMovementManagerImpl moveMgr;
+
+  protected BatcherImpl(DataMovementManager moveMgr){
+    if (moveMgr == null)
+      throw new IllegalArgumentException("moveMgr must not be null");
+    if (!(moveMgr instanceof DataMovementManagerImpl))
+      throw new IllegalArgumentException("moveMgr must be DataMovementManagerImpl");
+    this.moveMgr = (DataMovementManagerImpl) moveMgr;
+  }
 
   @Override
   public Batcher withJobName(String jobName) {
@@ -85,6 +95,8 @@ public abstract class BatcherImpl implements Batcher {
   @Override
   public Batcher withForestConfig(ForestConfiguration forestConfig) {
     if ( forestConfig == null ) throw new IllegalArgumentException("forestConfig must not be null");
+    if (moveMgr.getConnectionType() == DatabaseClient.ConnectionType.GATEWAY && !(forestConfig instanceof ForestConfigurationImpl))
+      throw new IllegalArgumentException("cannot change internal forestConfig when using a gateway");
     this.forestConfig = forestConfig;
     return this;
   }
@@ -94,4 +106,8 @@ public abstract class BatcherImpl implements Batcher {
 
   @Override
   public abstract boolean isStarted();
+
+  public DataMovementManagerImpl getMoveMgr() {
+    return moveMgr;
+  }
 }
