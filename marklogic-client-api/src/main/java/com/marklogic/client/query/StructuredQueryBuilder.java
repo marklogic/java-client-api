@@ -18,8 +18,6 @@ package com.marklogic.client.query;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,12 +32,6 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
@@ -2035,6 +2027,26 @@ public class StructuredQueryBuilder {
       serializer.writeEndElement();
     }
   }
+    
+  protected class TimeQuery extends AbstractStructuredQuery {
+	  private String formattedTimestamp = null;
+	  private String startElement = null;
+	  TimeQuery(String timestamp, String startElement) {
+		  if (timestamp == null || timestamp.length() == 0) {
+			  throw new IllegalArgumentException("timestamp cannot be null or empty.");
+		  }
+		  this.formattedTimestamp = timestamp;
+		  this.startElement = startElement;
+	  }
+	  @Override
+	  public void innerSerialize(XMLStreamWriter serializer) throws XMLStreamException {
+		  serializer.writeStartElement(startElement);
+		  if (formattedTimestamp != null && formattedTimestamp.length() > 0) {
+			  writeText(serializer, "timestamp", formattedTimestamp);
+		  }
+		  serializer.writeEndElement();
+	  }
+  }
 
     /* ************************************************************************************* */
 
@@ -2856,5 +2868,28 @@ public class StructuredQueryBuilder {
   {
     if ( temporalCollection == null ) throw new IllegalArgumentException("temporalCollection cannot be null");
     return new TemporalLsqtQuery(temporalCollection, timestamp, weight, options);
+  }
+  
+  /**
+   * Matches documents with timestamp prior to the given timestamp.
+   * @param timestamp time in ISO 8601 format - documents with timestamp equal to or
+   *        prior to this timestamp will match
+   * @return a query to filter.
+   */
+  public StructuredQueryDefinition beforeQuery(long timestamp) 
+  {
+	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
+	  return new TimeQuery(Long.toUnsignedString(timestamp), "before-query");
+  }
+
+  /**
+   * Matches documents with timestamp after the given timestamp.
+   * @param timestamp time in ISO 8601 format - documents with timestamp after this time will match.
+   * @return a query to filter.
+   */
+  public StructuredQueryDefinition afterQuery(long timestamp) 
+  {
+	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
+	  return new TimeQuery(Long.toUnsignedString(timestamp), "after-query");
   }
 }
