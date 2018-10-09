@@ -73,7 +73,7 @@ public class PackageExamplesTest {
     StructuredQueryDefinition query = collectionQuery;
 
     // begin copy from "Using QueryBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    QueryBatcher qhb = Common.initBatcher(dataMovementManager, dataMovementManager.newQueryBatcher(query))
+    QueryBatcher qhb = dataMovementManager.newQueryBatcher(query)
       .withBatchSize(1000)
       .withThreadCount(20)
       .withConsistentSnapshot()
@@ -103,7 +103,7 @@ public class PackageExamplesTest {
     assertEquals(null, client.newDocumentManager().exists("doc2.txt"));
 
     // begin copy from "Using WriteBatcher" in src/main/java/com/marklogic/datamovement/package-info.java
-    WriteBatcher whb = Common.initBatcher(dataMovementManager, dataMovementManager.newWriteBatcher())
+    WriteBatcher whb = dataMovementManager.newWriteBatcher()
       .withBatchSize(100)
       .withThreadCount(20)
       .onBatchSuccess(batch -> {

@@ -64,7 +64,7 @@ public class ExportToWriterListenerTest {
     // write 100 simple text files to the db
     DocumentMetadataHandle meta = new DocumentMetadataHandle()
       .withCollections(collection);
-    WriteBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher());
+    WriteBatcher batcher = moveMgr.newWriteBatcher();
     moveMgr.startJob(batcher);
     String[] uris = new String[100];
     for ( int i=0; i < 100; i++ ) {
@@ -93,7 +93,7 @@ public class ExportToWriterListenerTest {
         );
 
       QueryBatcher queryJob =
-        Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+        moveMgr.newQueryBatcher(query)
           .withThreadCount(5)
           .withBatchSize(10)
           .onUrisReady(exportListener)

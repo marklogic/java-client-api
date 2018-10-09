@@ -99,7 +99,7 @@ public class ScenariosTest {
 
     public OurJbossESBPlugin(DatabaseClient client) {
       moveMgr = client.newDataMovementManager();
-      batcher = Common.initBatcher(moveMgr, moveMgr.newWriteBatcher())
+      batcher = moveMgr.newWriteBatcher()
         .withJobName("OurJbossESBPlugin")
         .withBatchSize(BATCH_SIZE)
         // every time a batch is full, write it to the database via mlcp

@@ -37,7 +37,7 @@ import com.marklogic.client.query.RawQueryByExampleDefinition;
 public class QueryByExampleTest {
   @BeforeClass
   public static void beforeClass() {
-    Common.connectAdmin();
+    Common.connect();
     setupData();
   }
 

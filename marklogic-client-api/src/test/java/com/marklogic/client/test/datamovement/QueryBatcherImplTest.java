@@ -40,7 +40,7 @@ public class QueryBatcherImplTest {
     // Expect something like:
     //   18:03:52.308 [Finalizer] WARN  c.m.c.d.impl.QueryBatcherImpl - QueryBatcher instance "unnamed" was never cleanly stopped.  You should call dataMovementManager.stopJob.
     //
-    Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(new ArrayList<String>().iterator()));
+    moveMgr.newQueryBatcher(new ArrayList<String>().iterator());
   }
 
   @Test
@@ -51,7 +51,7 @@ public class QueryBatcherImplTest {
     //   18:14:58.420 [main] WARN  c.m.c.d.impl.QueryBatcherImpl - QueryBatcher instance "unnamed" stopped before all results were processed
     List<String> list = new ArrayList<>();
     list.add("firstUri.txt");
-    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(list.iterator()));
+    QueryBatcher batcher = moveMgr.newQueryBatcher(list.iterator());
     moveMgr.stopJob(batcher);
   }
 
@@ -62,7 +62,7 @@ public class QueryBatcherImplTest {
     // Expected something like: 
     //   18:20:33.607 [main] WARN  c.m.c.d.impl.QueryBatcherImpl - QueryBatcher instance "unnamed" stopped before all results were retrieved
     StructuredQueryDefinition query = new StructuredQueryBuilder().and();
-    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query));
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query);
     moveMgr.stopJob(batcher);
   }
 

@@ -699,7 +699,6 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestOnce(Request request) {
-// System.out.println(request.method()+ " "+request.url().url().toExternalForm());
     try {
       return getConnection().newCall(request).execute();
     } catch (IOException e) {
@@ -2151,6 +2150,8 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) queryDef).getCriteria();
       } else if (queryDef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
+      } else if (queryDef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
         params.add("q", text);
@@ -2990,13 +2991,22 @@ public class OkHttpServices implements RESTServices {
         text = ((StructuredQueryDefinition) qdef).getCriteria();
       } else if (qdef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) qdef).getCriteria();
+      } else if (qdef instanceof RawCtsQueryDefinition) {
+        text = ((RawCtsQueryDefinition) qdef).getCriteria();
       }
       String qtextMessage = "";
       if (text != null) {
         params.add("q", text);
         qtextMessage = " and string query \"" + text + "\"";
       }
-      if (qdef instanceof StructuredQueryDefinition) {
+      if (qdef instanceof RawCtsQueryDefinition) {
+        String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
+        logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
+
+        CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
+
+        return postResource(reqlog, "internal/uris", transaction, params, input, output);
+      } else if (qdef instanceof StructuredQueryDefinition) {
         String structure = ((StructuredQueryDefinition) qdef).serialize();
 
         logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
@@ -4259,7 +4269,6 @@ public class OkHttpServices implements RESTServices {
     }
     Request.Builder request = new Request.Builder()
         .url(uri.build());
-// System.out.println(uri.toString());
     return request;
   }
 

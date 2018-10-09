@@ -784,7 +784,7 @@ public class WriteBatcherImpl
 
   @Override
   public DatabaseClient getPrimaryClient() {
-    return ((DataMovementManagerImpl) moveMgr).getPrimaryClient();
+    return ((DataMovementManagerImpl) getMoveMgr()).getPrimaryClient();
   }
 
   @Override

@@ -127,7 +127,7 @@ public class LegalHoldsTest {
     DataMovementManager moveMgr = evalClient.newDataMovementManager();
     StringBuilder anyFailure = new StringBuilder();
     Hashtable<String,AtomicInteger> urisDeleted = new Hashtable<>();
-    QueryBatcher batcher = Common.initBatcher(moveMgr, moveMgr.newQueryBatcher(query))
+    QueryBatcher batcher = moveMgr.newQueryBatcher(query)
       .withBatchSize(1)
       .withConsistentSnapshot()
       .onUrisReady(
