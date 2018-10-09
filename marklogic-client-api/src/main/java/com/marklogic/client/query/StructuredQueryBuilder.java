@@ -18,8 +18,6 @@ package com.marklogic.client.query;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
-import java.io.StringReader;
-import java.io.StringWriter;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -34,14 +32,6 @@ import javax.xml.stream.XMLOutputFactory;
 import javax.xml.stream.XMLStreamException;
 import javax.xml.stream.XMLStreamWriter;
 import javax.xml.transform.Templates;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamResult;
-import javax.xml.transform.stream.StreamSource;
-
-import org.apache.xml.serializer.ToUnknownStream;
 
 import com.marklogic.client.MarkLogicIOException;
 import com.marklogic.client.impl.AbstractQueryDefinition;
@@ -2889,7 +2879,7 @@ public class StructuredQueryBuilder {
   public StructuredQueryDefinition beforeQuery(long timestamp) 
   {
 	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
-		return new TimeQuery(Long.toUnsignedString(timestamp), "before-query");
+	  return new TimeQuery(Long.toUnsignedString(timestamp), "before-query");
   }
 
   /**
@@ -2900,6 +2890,6 @@ public class StructuredQueryBuilder {
   public StructuredQueryDefinition afterQuery(long timestamp) 
   {
 	  if (timestamp == 0) throw new IllegalArgumentException("timestamp cannot be zero");
-		return new TimeQuery(Long.toUnsignedString(timestamp), "after-query");
+	  return new TimeQuery(Long.toUnsignedString(timestamp), "after-query");
   }
 }
