@@ -15,6 +15,8 @@
  */
 package com.marklogic.client.impl;
 
+import com.marklogic.client.DatabaseClient;
+import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.*;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
@@ -291,14 +293,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext,
       SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, authenType, sslContext, null, verifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, null, verifier);
   }
 
   @Override
-  public void connect(String host, int port, String database, String user, String password,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
       SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
@@ -319,10 +321,10 @@ public class OkHttpServices implements RESTServices {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier);
   }
 
-  private void connect(String host, int port, String database, String user, String password,
+  private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                        Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
@@ -350,7 +352,7 @@ public class OkHttpServices implements RESTServices {
     if (authenType == null || authenType == Authentication.CERTIFICATE) {
       checkFirstRequest = false;
     } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, user);
+      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");
@@ -2151,7 +2153,7 @@ public class OkHttpServices implements RESTServices {
       } else if (queryDef instanceof RawStructuredQueryDefinition) {
         text = ((RawStructuredQueryDefinition) queryDef).getCriteria();
       } else if (queryDef instanceof RawCtsQueryDefinition) {
-        text = ((RawCtsQueryDefinition) queryDef).getCriteria();
+    	text = ((RawCtsQueryDefinition) queryDef).getCriteria();
       }
       if (text != null) {
         params.add("q", text);
@@ -2624,12 +2626,12 @@ public class OkHttpServices implements RESTServices {
                         boolean isNullable, String mimetype, Class<T> as)
     throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
-    return getValue(reqlog, type, key, null, isNullable, mimetype, as);
+	  return getValue(reqlog, type, key, null, isNullable, mimetype, as);
   }
   @Override
   public <T> T getValue(RequestLogger reqlog, String type, String key, Transaction transaction,
-                        boolean isNullable, String mimetype, Class<T> as)
-    throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
+		  boolean isNullable, String mimetype, Class<T> as)
+				  throws ResourceNotFoundException, ForbiddenUserException, FailedRequestException
   {
     logger.debug("Getting {}/{}", type, key);
 
@@ -3000,29 +3002,26 @@ public class OkHttpServices implements RESTServices {
         qtextMessage = " and string query \"" + text + "\"";
       }
       if (qdef instanceof RawCtsQueryDefinition) {
-        String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
-        logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
-
-        CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
-
+          String structure = qdef instanceof RawQueryDefinitionImpl.CtsQuery ? ((RawQueryDefinitionImpl.CtsQuery) qdef).serialize() : "";
+          logger.debug("Query uris with raw cts query {}{}", structure, qtextMessage);
+           CtsQueryWriteHandle input = ((RawCtsQueryDefinition) qdef).getHandle();
         return postResource(reqlog, "internal/uris", transaction, params, input, output);
       } else if (qdef instanceof StructuredQueryDefinition) {
-        String structure = ((StructuredQueryDefinition) qdef).serialize();
-
-        logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
-          params.add("structuredQuery", structure);
-        }
-      } else if (qdef instanceof RawStructuredQueryDefinition) {
-        String structure = ((RawStructuredQueryDefinition) qdef).serialize();
-
-        logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
-        if (structure != null) {
+          String structure = ((StructuredQueryDefinition) qdef).serialize();
+          
+          logger.debug("Query uris with structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
+            params.add("structuredQuery", structure);
+          }
+        } else if (qdef instanceof RawStructuredQueryDefinition) {
+          String structure = ((RawStructuredQueryDefinition) qdef).serialize();
+          logger.debug("Query uris with raw structured query {}{}", structure, qtextMessage);
+          if (structure != null) {
           params.add("structuredQuery", structure);
         }
       } else if (qdef instanceof CombinedQueryDefinition) {
         String structure = ((CombinedQueryDefinition) qdef).serialize();
-
+        
         logger.debug("Query uris with combined query {}", structure);
         if (structure != null) {
           params.add("structuredQuery", structure);
@@ -3031,11 +3030,12 @@ public class OkHttpServices implements RESTServices {
         logger.debug("Query uris with string query \"{}\"", text);
       } else {
         throw new UnsupportedOperationException("Cannot query uris with " +
-          qdef.getClass().getName());
+            qdef.getClass().getName());
+        }
+        return getResource(reqlog, "internal/uris", transaction, params, output);
       }
-      return getResource(reqlog, "internal/uris", transaction, params, output);
     }
-  }
+
 
   @Override
   public <R extends AbstractReadHandle> R getResource(RequestLogger reqlog,
@@ -4116,8 +4116,8 @@ public class OkHttpServices implements RESTServices {
         throw new MarkLogicInternalException("no requestBldr available to get the URI");
       }
       requestBldr = addCookies(
-          requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
-          );
+              requestBldr, transaction.getCookies(), ((TransactionImpl) transaction).getCreatedTimestamp()
+              );
     }
     return requestBldr;
   }
@@ -4150,13 +4150,13 @@ public class OkHttpServices implements RESTServices {
       // else if ( cookie.getMaxAge() == Integer.MIN_VALUE ) {
       // don't forward the cookie if it has a max age and we're past the max age
       if ( creation != null && cookie.getMaxAge() > 0 ) {
-        int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
-              System.currentTimeMillis() - creation.getTimeInMillis()
-        );
-        if ( currentAge > cookie.getMaxAge() ) {
-          logger.warn(
-                cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+          int currentAge = (int) TimeUnit.MILLISECONDS.toSeconds(
+                System.currentTimeMillis() - creation.getTimeInMillis()
           );
+          if ( currentAge > cookie.getMaxAge() ) {
+            logger.warn(
+                  cookie.getName()+" cookie expired after "+cookie.getMaxAge()+" seconds: "+cookie.getValue()
+            );
           continue;
         }
       }
@@ -5510,7 +5510,7 @@ public class OkHttpServices implements RESTServices {
     private void prepareRequestBuilder() {
       this.requestBldr = setupRequest(callBaseUri, endpoint, null);
       if (session != null) {
-        this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
+    	this.requestBldr = addCookies(this.requestBldr, session.getCookies(), session.getCreatedTimestamp());
         // Add the Cookie header for SessionId if we have a session object passed
         this.requestBldr.addHeader(HEADER_COOKIE, "SessionID="+session.getSessionId());
       }
