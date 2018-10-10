@@ -38,12 +38,12 @@ import okhttp3.Response;
  */
 public class HTTPKerberosAuthInterceptor implements Interceptor {
 	String host;
-	KerberosConfig krbConfig;
+	Map<String,String> krbOptions;
 	LoginContext loginContext;
 
-  public HTTPKerberosAuthInterceptor(String host, KerberosConfig krbConfig) {
+  public HTTPKerberosAuthInterceptor(String host, Map<String,String> krbOptions) {
     this.host = host;
-    this.krbConfig = krbConfig;
+    this.krbOptions = krbOptions;
     try {
       buildSubjectCredentials();
     } catch (LoginException e) {
@@ -57,18 +57,19 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
    *
    */
   private class KerberosLoginConfiguration extends Configuration {
-    KerberosConfig krbConfig = null;
+    Map<String,String> krbOptions = null;
 
     public KerberosLoginConfiguration() {}
 
-    KerberosLoginConfiguration(KerberosConfig krbConfig) {
-      this.krbConfig = krbConfig;
+    KerberosLoginConfiguration(Map<String,String> krbOptions) {
+
+      this.krbOptions = krbOptions;
     }
     @Override
     public AppConfigurationEntry[] getAppConfigurationEntry(String name) {
 
       return new AppConfigurationEntry[] { new AppConfigurationEntry("com.sun.security.auth.module.Krb5LoginModule",
-          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, krbConfig.toOptions()) };
+          AppConfigurationEntry.LoginModuleControlFlag.REQUIRED, krbOptions) };
     }
   }
 
@@ -89,7 +90,7 @@ public class HTTPKerberosAuthInterceptor implements Interceptor {
      * Krb5LoginModule
      */
     LoginContext lc = new LoginContext("Krb5LoginContext", subject, null,
-        (krbConfig != null) ? new KerberosLoginConfiguration(krbConfig) : new KerberosLoginConfiguration());
+        (krbOptions != null) ? new KerberosLoginConfiguration(krbOptions) : new KerberosLoginConfiguration());
     lc.login();
     loginContext = lc;
   }

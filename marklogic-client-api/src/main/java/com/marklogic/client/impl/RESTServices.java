@@ -29,7 +29,6 @@ import javax.net.ssl.X509TrustManager;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.SSLHostnameVerifier;
-import com.marklogic.client.DatabaseClientFactory.KerberosConfig;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.ResourceNotFoundException;
@@ -117,9 +116,9 @@ public interface RESTServices {
   String MIN_RETRY_PROP = "com.marklogic.client.minimumRetries";
 
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
+  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                       Authentication type, SSLContext context, SSLHostnameVerifier verifier);
-  public void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
+  public void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                       Authentication type, SSLContext context, X509TrustManager trustManager, SSLHostnameVerifier verifier);
   public DatabaseClient getDatabaseClient();
   public void setDatabaseClient(DatabaseClient client);

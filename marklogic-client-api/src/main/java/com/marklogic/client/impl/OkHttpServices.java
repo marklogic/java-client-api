@@ -295,14 +295,14 @@ public class OkHttpServices implements RESTServices {
 
   @Override
   @Deprecated
-  public void connect(String host, int port, String database, String user, String password,KerberosConfig kerberosConfig,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext,
       SSLHostnameVerifier verifier) {
-    connect(host, port, database, user, password, kerberosConfig, authenType, sslContext, null, verifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, null, verifier);
   }
 
   @Override
-  public void connect(String host, int port, String database, String user, String password,KerberosConfig kerberosConfig,
+  public void connect(String host, int port, String database, String user, String password,Map<String,String> kerberosOptions,
       Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
       SSLHostnameVerifier verifier) {
     HostnameVerifier hostnameVerifier = null;
@@ -323,10 +323,10 @@ public class OkHttpServices implements RESTServices {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
     //}
-    connect(host, port, database, user, password, kerberosConfig, authenType, sslContext, trustManager, hostnameVerifier);
+    connect(host, port, database, user, password, kerberosOptions, authenType, sslContext, trustManager, hostnameVerifier);
   }
 
-  private void connect(String host, int port, String database, String user, String password, KerberosConfig kerberosConfig,
+  private void connect(String host, int port, String database, String user, String password, Map<String,String> kerberosOptions,
                        Authentication authenType, SSLContext sslContext, X509TrustManager trustManager,
                        HostnameVerifier verifier) {
     logger.debug("Connecting to {} at {} as {}", new Object[]{host, port, user});
@@ -354,7 +354,7 @@ public class OkHttpServices implements RESTServices {
     if (authenType == null || authenType == Authentication.CERTIFICATE) {
       checkFirstRequest = false;
     } else if (authenType == Authentication.KERBEROS) {
-      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosConfig);
+      interceptor = new HTTPKerberosAuthInterceptor(host, kerberosOptions);
       checkFirstRequest = false;
     } else {
       if (user == null) throw new IllegalArgumentException("No user provided");

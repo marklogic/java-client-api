@@ -24,6 +24,7 @@ import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
 import java.security.cert.CertificateException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -392,24 +393,21 @@ public class DatabaseClientFactory {
 
   public static class KerberosAuthContext extends AuthContext {
 
-    KerberosConfig krbConfig;
+    Map<String, String> krbOptions;
 
     public KerberosAuthContext() {
-      krbConfig = new KerberosConfig();
+
+      krbOptions = Collections.unmodifiableMap(new KerberosConfig().toOptions());
     }
 
     public KerberosAuthContext(String principal) {
-      krbConfig = new KerberosConfig();
-      this.krbConfig.withPrincipal(principal);
+
+      krbOptions = Collections.unmodifiableMap(new KerberosConfig().withPrincipal(principal).toOptions());
     }
 
     public KerberosAuthContext(KerberosConfig krbConfig) {
-      this.krbConfig = krbConfig;
-    }
 
-    public KerberosAuthContext withDebug(boolean debug) {
-      this.krbConfig.withDebug(debug);
-      return this;
+      krbOptions = Collections.unmodifiableMap(krbConfig.toOptions());
     }
 
     @Override
@@ -434,21 +432,22 @@ public class DatabaseClientFactory {
   }
 
   public static class KerberosConfig {
-    boolean refreshKrb5Config = true;
-    String principal = null;
-    boolean useTicketCache = true;
-    String ticketCache = null;
-    boolean renewTGT = false;
-    boolean doNotPrompt = true;
-    boolean useKeyTab = false;
-    String keyTab = null;
-    boolean storeKey = false;
-    boolean isInitiator = true;
-    boolean useFirstPass = false;
-    boolean tryFirstPass = false;
-    boolean storePass = false;
-    boolean clearPass = false;
-    boolean debug = false;
+
+    private boolean refreshKrb5Config;
+    private String principal = null;
+    private boolean useTicketCache = true;
+    private String ticketCache = null;
+    private boolean renewTGT = false;
+    private boolean doNotPrompt = true;
+    private boolean useKeyTab = false;
+    private String keyTab = null;
+    private boolean storeKey = false;
+    private boolean isInitiator = true;
+    private boolean useFirstPass = false;
+    private boolean tryFirstPass = false;
+    private boolean storePass = false;
+    private boolean clearPass = false;
+    private boolean debug = false;
 
     public KerberosConfig() {
     }
@@ -458,7 +457,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getRefreshKrb5Config() {
+    private String getRefreshKrb5Config() {
       return String.valueOf(this.refreshKrb5Config);
     }
 
@@ -467,7 +466,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getPrincipal() {
+    private String getPrincipal() {
       return this.principal;
     }
 
@@ -476,7 +475,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getUseTicketCache() {
+    private String getUseTicketCache() {
       return String.valueOf(this.useTicketCache);
     }
 
@@ -485,7 +484,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getTicketCache() {
+    private String getTicketCache() {
       return this.ticketCache;
     }
 
@@ -494,7 +493,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getRenewTGT() {
+    private String getRenewTGT() {
       return String.valueOf(this.renewTGT);
     }
 
@@ -503,7 +502,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getDoNotPrompt() {
+    private String getDoNotPrompt() {
       return String.valueOf(this.doNotPrompt);
     }
 
@@ -512,7 +511,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getUseKeyTab() {
+    private String getUseKeyTab() {
       return String.valueOf(this.useKeyTab);
     }
 
@@ -521,7 +520,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getKeyTab() {
+    private String getKeyTab() {
       return this.keyTab;
     }
 
@@ -530,7 +529,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getStoreKey() {
+    private String getStoreKey() {
       return String.valueOf(this.storeKey);
     }
 
@@ -539,7 +538,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getUseFirstPass() {
+    private String getUseFirstPass() {
       return String.valueOf(this.useFirstPass);
     }
 
@@ -548,7 +547,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getTryFirstPass() {
+    private String getTryFirstPass() {
       return String.valueOf(this.tryFirstPass);
     }
 
@@ -557,7 +556,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getStorePass() {
+    private String getStorePass() {
       return String.valueOf(this.storePass);
     }
 
@@ -566,7 +565,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getClearPass() {
+    private String getClearPass() {
       return String.valueOf(this.clearPass);
     }
 
@@ -575,7 +574,7 @@ public class DatabaseClientFactory {
       return this;
     }
 
-    public String getInitiator() {
+    private String getInitiator() {
       return String.valueOf(this.isInitiator);
     }
 
@@ -899,7 +898,7 @@ public class DatabaseClientFactory {
    */
   static public DatabaseClient newClient(String host, int port, String database, SecurityContext securityContext) {
     String user = null;
-    KerberosConfig kerberosConfig = null;
+    Map<String,String> kerberosOptions = null;
     String password = null;
     Authentication type = null;
     SSLContext sslContext = null;
@@ -935,7 +934,7 @@ public class DatabaseClientFactory {
       }
     } else if (securityContext instanceof KerberosAuthContext) {
       KerberosAuthContext kerberosContext = (KerberosAuthContext) securityContext;
-      kerberosConfig = kerberosContext.krbConfig;
+      kerberosOptions = kerberosContext.krbOptions;
       type = Authentication.KERBEROS;
       if (kerberosContext.sslContext != null) {
         sslContext = kerberosContext.sslContext;
@@ -962,7 +961,7 @@ public class DatabaseClientFactory {
     }
 
     OkHttpServices services = new OkHttpServices();
-    services.connect(host, port, database, user, password, kerberosConfig, type, sslContext, trustManager, sslVerifier);
+    services.connect(host, port, database, user, password, kerberosOptions, type, sslContext, trustManager, sslVerifier);
 
     if (clientConfigurator != null) {
       if ( clientConfigurator instanceof OkHttpClientConfigurator ) {
