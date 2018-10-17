@@ -1216,6 +1216,9 @@ public class DatabaseClientFactory {
     private           DatabaseClient.ConnectionType connectionType;
     private           HandleFactoryRegistry handleRegistry =
       HandleFactoryRegistryImpl.newDefault();
+    private String certFile;
+	private String certPassword;
+	private X509TrustManager trustManager;
 
     transient private SSLContext            context;
     transient private SSLHostnameVerifier   verifier;
@@ -1229,6 +1232,19 @@ public class DatabaseClientFactory {
     public Bean() {
       super();
     }
+    
+    public Bean(String host, int port) {
+		this.host = host;
+		this.port = port;
+	}
+
+	public Bean(String host, int port, String username, String password) {
+		this.host = host;
+		this.port = port;
+		this.user = username;
+		this.password = password;
+		this.authentication = Authentication.DIGEST;
+	}
 
     /**
      * Returns the host for clients created with a
@@ -1441,7 +1457,29 @@ public class DatabaseClientFactory {
     public void setConnectionType(DatabaseClient.ConnectionType connectionType) {
       this.connectionType = connectionType;
     }
+    public String getCertFile() {
+		return certFile;
+	}
 
+	public void setCertFile(String certFile) {
+		this.certFile = certFile;
+	}
+
+	public String getCertPassword() {
+		return certPassword;
+	}
+
+	public void setCertPassword(String certPassword) {
+		this.certPassword = certPassword;
+	}
+
+	public X509TrustManager getTrustManager() {
+		return trustManager;
+	}
+
+	public void setTrustManager(X509TrustManager trustManager) {
+		this.trustManager = trustManager;
+	}
 
     /**
      * Returns the registry for associating
