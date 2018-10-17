@@ -111,6 +111,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -130,6 +131,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     // write the document content
     docMgr.write(xmlDocId, contentHandle);
+    this.waitForPropertyPropagate();
 
     // Read it back to make sure the write worked.
     String contentXml = docMgr.read(xmlDocId, new StringHandle()).get();
@@ -145,6 +147,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(xmlDocId, patchHandleBool);
+    this.waitForPropertyPropagate();
 
     String content1 = docMgr.read(xmlDocId, new StringHandle()).get();
     System.out.println(content1);
@@ -217,6 +220,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -236,6 +240,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandleBool = patchBldrBool.build();
     docMgr.patch(docId, patchHandleBool);
+    this.waitForPropertyPropagate();
 
     String content1 = docMgr.read(docId, new StringHandle()).get();
 
@@ -274,6 +279,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String contentBefore = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" Before Updating " + contentBefore);
@@ -282,6 +288,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode = xmlPatchBldr.replaceFragment("/root/modified", "<modified>2012-11-5</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode);
+    this.waitForPropertyPropagate();
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -295,6 +302,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     System.out.println(" Before Updating " + contentBeforeElement);
     DocumentPatchHandle xmlPatchForElement = xmlPatchBldr.replaceValue("/root/popularity", 10).build();
     xmlDocMgr.patch(docId, xmlPatchForElement);
+    this.waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -313,11 +321,12 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // xmlPatchBldr.replaceValue("/root/*:price/@xmlns","http://marklogic.com");
     DocumentPatchHandle xmlPatchForValue = xmlPatchBldr.build();
     xmlDocMgr.patch(docId, xmlPatchForValue);
+    this.waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
     // Check
-    assertTrue("Value of amt has not Chenged", contentAfter.contains("<price amt=\"0.5\" xmlns=\"http://cloudbank.com\"/>"));
+    assertTrue("Value of amt has not Changed", contentAfter.contains("<price amt=\"0.5\" xmlns=\"http://cloudbank.com\"/>"));
 
     // //
     // Updating Doc Namespace
@@ -328,6 +337,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // Changing Element Value
     DocumentPatchHandle xmlPatch = xmlPatchBldr.replaceValue("/root/*:date", "2006-02-02").build();
     xmlDocMgr.patch(docId, xmlPatch);
+    this.waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Updating" + contentAfter);
@@ -362,11 +372,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // "2006-02-02").build();
     DocumentPatchHandle xmlPatch = xmlPatchBldr.delete("/root/*:date").build();
     xmlDocMgr.patch(docId, xmlPatch);
+    this.waitForPropertyPropagate();
 
     // Delete invalid Path
     try {
       xmlPatch = xmlPatchBldr.delete("InvalidPath").build();
       xmlDocMgr.patch(docId, xmlPatch);
+      this.waitForPropertyPropagate();
     } catch (Exception e) {
       System.out.println(e.toString());
       assertTrue("Haven't deleted Invalid path", e.toString().contains(" invalid path: //InvalidPath"));
@@ -388,6 +400,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // write docs
     String filename = "constraint1.xml";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
+    this.waitForPropertyPropagate();
     String docId = "/partial-update/constraint1.xml";
 
     // Creating Manager
@@ -403,6 +416,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root/someinvalidpath", Position.BEFORE, "<false>Entry</false>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -437,6 +451,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceInsertFragment("/root/nonexist", "/root", Position.LAST_CHILD, "  <foo>bar</foo>\n ");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -469,6 +484,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceInsertFragment("/root/p", "/root", Position.AFTER, "<foo>After</foo>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(content);
@@ -517,6 +533,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // patchBldr.call().applyLibraryValues("any-content","<applyLibraryValues>")).library("http://marklogic.com/ext/patch/custom-lib","/ext/patch/custom-lib.xqy");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After Update" + content);
@@ -556,6 +573,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle xmlPatch = xmlPatchBldr.insertFragment("/root", Position.LAST_CHILD, "<modified>2012-11-5</modified>").delete("/root/*:date")
         .replaceApply("/root/popularity", xmlPatchBldr.call().multiply(2)).build();
     xmlDocMgr.patch(docId, xmlPatch);
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" After Updating " + content);
@@ -590,6 +608,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
         .replaceApply("/root/popularity", xmlPatchBldr.call().multiply(2)).build();
     xmlDocMgr.patch(docId, xmlPatch, t);
     t.commit();
+    this.waitForPropertyPropagate();
     String content = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" After Updating " + content);
@@ -631,11 +650,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     Transaction t1 = client.openTransaction();
     xmlDocMgr1.patch(docId1, xmlPatch1, t1);
     t1.commit();
+    this.waitForPropertyPropagate();
     String content1 = xmlDocMgr1.read(docId1, new StringHandle()).get();
     System.out.println(" After Updating Documant 1 : Transaction Commit" + content1);
     Transaction t2 = client.openTransaction();
     xmlDocMgr1.patch(docId2, xmlPatch2, t2);
     t2.rollback();
+    this.waitForPropertyPropagate();
 
     String content2 = xmlDocMgr2.read(docId2, new StringHandle()).get();
     System.out.println(" After Updating Document 2 : Transaction Rollback" + content2);
@@ -679,6 +700,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("$.employees[0]", Position.AFTER, fragment).delete("$.employees[2]").replaceApply("$.employees[1].firstName", patchBldr.call().concatenateAfter("Hi"));
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -713,11 +735,12 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.addPropertyValue("Hello", "Hi");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String contentMetadata1 = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Changing " + contentMetadata1);
 
-    // Check    
+    // Check
     assertTrue("Collection not added", contentMetadata1.contains("<rapi:collection>/document/collection3</rapi:collection>"));
     assertTrue("Permission not added", contentMetadata1.contains("<rapi:role-name>replaceRoleTest</rapi:role-name>"));    
     assertTrue("Property not added", contentMetadata1.contains("<Hello xsi:type=\"xs:string\">Hi</Hello>"));
@@ -731,6 +754,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldrRep.replacePropertyValue("Hello", "Bye");
     DocumentPatchHandle patchHandleRep = patchBldrRep.build();
     xmlDocMgr.patch(docId, patchHandleRep);
+    this.waitForPropertyPropagate();
     String contentMetadataRep = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Updating " + contentMetadataRep);
 
@@ -748,6 +772,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldrDel.deleteProperty("Hello");
     DocumentPatchHandle patchHandleDel = patchBldrDel.build();
     xmlDocMgr.patch(docId, patchHandleDel);
+    this.waitForPropertyPropagate();
     String contentMetadataDel = xmlDocMgr.readMetadata(docId, new StringHandle()).get();
     System.out.println(" After Deleting " + contentMetadataDel);
 
@@ -784,6 +809,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle patchHandle = patchBldr.build();
 
     docMgr.patch(desc, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -827,6 +853,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchHandle patchHandle = patchBldr.build();
 
     docMgr.patch(desc, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -865,6 +892,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     Transaction t = client.openTransaction("Tranc");
     docMgr.patch(desc, patchHandle, t);
     t.commit();
+    this.waitForPropertyPropagate();
     String content = docMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After" + content);
@@ -908,6 +936,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     // Transaction t = client.openTransaction("Tranc");
     docMgr.patch(desc, patchHandle);// ,t);
     // t.commit();
+    this.waitForPropertyPropagate();
     String content = docMgr.read(docId, new StringHandle()).get();
 
     System.out.println("After" + content);
@@ -940,6 +969,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.insertFragment("/root", Position.LAST_CHILD, Cardinality.ONE, "<modified>2013-03-21</modified>");
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
     String contentBefore = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println(" Content after Updating with Cardinality.ONE : " + contentBefore);
@@ -948,6 +978,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode = xmlPatchBldr.insertFragment("/root/id", Position.BEFORE, Cardinality.ONE_OR_MORE, "<modified>1989-04-06</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode);
+    this.waitForPropertyPropagate();
     String contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ONE_OR_MORE" + contentAfter);
@@ -956,6 +987,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     DocumentPatchBuilder xmlPatchBldr1 = xmlDocMgr.newPatchBuilder();
     DocumentPatchHandle xmlPatchForNode1 = xmlPatchBldr1.insertFragment("/root/id", Position.AFTER, Cardinality.ZERO_OR_ONE, "<modified>2013-07-29</modified>").build();
     xmlDocMgr.patch(docId, xmlPatchForNode1);
+    this.waitForPropertyPropagate();
     contentAfter = xmlDocMgr.read(docId, new StringHandle()).get();
 
     System.out.println("Content after Updating with Cardinality.ZERO_OR_ONE" + contentAfter);
@@ -996,6 +1028,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1041,6 +1074,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1087,6 +1121,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1134,6 +1169,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1179,6 +1215,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentPatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 
@@ -1269,6 +1306,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
       DocumentPatchHandle patchHandle = patchBldr.build();
       docMgr.patch(docId, patchHandle);
+      this.waitForPropertyPropagate();
       
       // Verify the results again. Poppulation should be 500 for second document
       String content = docMgr.read(docId, new StringHandle()).get();
@@ -1309,12 +1347,7 @@ public class TestPartialUpdate extends BasicJavaClientREST {
 
     DocumentMetadataPatchBuilder.PatchHandle patchHandle = patchBldr.build();
     docMgr.patch(docId, patchHandle);
-    try {
-      Thread.sleep(5000);
-    } catch (InterruptedException e) {
-      // TODO Auto-generated catch block
-      e.printStackTrace();
-    }
+    this.waitForPropertyPropagate();
 
     String content = docMgr.read(docId, new StringHandle()).get();
 

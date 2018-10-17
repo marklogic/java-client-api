@@ -64,7 +64,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 	private static DocumentMetadataHandle docMeta2;
 
 	private static WriteBatcher ihbMT;
-	private static JsonNode clusterInfo;
 	private static String[] hostNames;
 
 	private static String stringTriple;
@@ -99,12 +98,9 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			enableSecurityOnRESTServer(server, dbName);
 		}
 
-		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, getConnType());
 		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-				.getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// JacksonHandle
 		jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
@@ -174,7 +170,7 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			props.put("enabled", "true");
 			changeProperty(props, "/manage/v2/servers/" + server + "/properties");
 		}
-		Thread.sleep(10000L);
+
 		clearDB(port);
 	}
 
@@ -684,15 +680,14 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		// Flush
 		ihb1.flushAndWait();
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 4);
-		// These counts may trip, hence use a delta.
 
-		Assert.assertTrue(Math.abs(succEvents.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(succBatches.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(failEvents.intValue()-4) <= 2);
-		Assert.assertTrue(Math.abs(failBatches.intValue()-4) <= 2);
+		Assert.assertTrue(succEvents.intValue() == 4);
+		Assert.assertTrue(succBatches.intValue() == 4);
+		Assert.assertTrue(failEvents.intValue() == 4);
+		Assert.assertTrue(failBatches.intValue() == 4);
 
-		/*Assert.assertTrue(failure.get());
-		Assert.assertTrue(success.get());*/
+		Assert.assertTrue(failure.get());
+		Assert.assertTrue(success.get());
 	}
 
 	// Adding 25000 docs with thread count = 20

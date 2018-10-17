@@ -66,8 +66,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	private static int port = 8000;
 	private static String password = "admin";
 	private static String server = "App-Services";
-	private static JsonNode clusterInfo;
-
+	
 	private static StringHandle stringHandle;
 	private static FileHandle fileHandle;
 
@@ -92,7 +91,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	    port = getRestAppServerPort();
 	    
 		host = getRestAppServerHostName();
-		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, getConnType());
 		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 		hostNames = getHosts();
@@ -110,9 +109,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		if (IsSecurityEnabled()) {
 			enableSecurityOnRESTServer(server, dbName);
 		}
-
-		clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-	            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
 		// FileHandle
 		fileJson = FileUtils.toFile(WriteHostBatcherTest.class.getResource(TEST_DIR_PREFIX + "dir.json"));
@@ -195,7 +191,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void jobReport() throws Exception {
-		System.out.println("Running jobReport");
+
 		AtomicInteger batchCount = new AtomicInteger(0);
 		AtomicInteger successCount = new AtomicInteger(0);
 		AtomicLong count1 = new AtomicLong(0);
@@ -219,7 +215,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500)
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(500)
 				.withThreadCount(20);
 		batcher.onUrisReady(batch -> {
 			if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount
@@ -233,7 +230,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform")).withBatchSize(500)
+		batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(500)
 				.withThreadCount(20);
 		batcher.onUrisReady(batch -> {
 			if (Math.abs(dmManager.getJobReport(queryTicket).getReportTimestamp().getTime().getTime()
@@ -248,28 +246,17 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		System.out.println("Counter's values from end of TEST");
-
-		System.out.println("getFailureEventsCount(): " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		System.out.println("getSuccessBatchesCount(): " +dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		System.out.println("batchCount.get(): " + batchCount.get());
-		System.out.println("successCount.get(): " + successCount.get());
-		System.out.println("count1.get(): " + count1.get());
-		System.out.println("count2.get(): " + count2.get());
-		System.out.println("count3.get(): " + count3.get());
-
 		Assert.assertEquals(0, dmManager.getJobReport(queryTicket).getFailureEventsCount());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), batchCount.get());
 		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessEventsCount(), successCount.get());
-		// Tolerate upto 2 for these counts
-		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count1.get()) <= 2);
-		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count2.get()) <= 2);
-		Assert.assertTrue(Math.abs(dmManager.getJobReport(queryTicket).getSuccessBatchesCount() - count3.get()) <= 2);
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count1.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count2.get());
+		Assert.assertEquals(dmManager.getJobReport(queryTicket).getSuccessBatchesCount(), count3.get());
+
 	}
 
 	@Test
 	public void testNullQdef() throws IOException, InterruptedException {
-		System.out.println("Running testNullQdef");
 		JsonNode node = null;
 		JacksonHandle jacksonHandle = null;
 
@@ -303,7 +290,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void queryFailures() throws Exception {
-		System.out.println("Running queryFailures");
 
 		Thread t1 = new Thread(new DisabledDBRunnable());
 		t1.setName("Status Check -1");
@@ -324,7 +310,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		String uri = null;
 
 		// Insert 10 K documents
-		for (int i = 0; i < 60000; i++) {
+		for (int i = 0; i < 6000; i++) {
 			uri = "/firstName" + i + ".json";
 			wbatcher.add(uri, handle);
 		}
@@ -355,17 +341,13 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		t1.join();
 
 		batcher.awaitCompletion();
-		System.out.println("Counter's values from end of TEST");
 
-		System.out.println("getSuccessEventsCount(): " + dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-		System.out.println("getSuccessBatchesCount(): " + dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		System.out.println("getFailureEventsCount(): " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		System.out.println("getFailureBatchesCount(): " + dmManager.getJobReport(queryTicket).getFailureBatchesCount());
-
-		Assert.assertEquals(60000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
+		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
-		Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+		if(!isLBHost()) {
+			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
+			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
+		}
 	}
 
 	class DisabledDBRunnable implements Runnable {
@@ -400,7 +382,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void jobReportStopJob() throws Exception {
-		System.out.println("Running jobReportStopJob");
 
 		QueryBatcher batcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
 				.withBatchSize(20).withThreadCount(20);
@@ -435,7 +416,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	// Making sure we can stop jobs based on the JobId.
 	@Test
 	public void stopJobUsingJobId() throws Exception {
-		System.out.println("Running stopJobUsingJobId");
 
 		String jobId = UUID.randomUUID().toString();
 
@@ -476,7 +456,7 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 
 	@Test
 	public void jsMasstransformReplace() throws Exception {
-		System.out.println("Running jsMasstransformReplace");
+
 		ServerTransform transform = new ServerTransform("jsTransform");
 		transform.put("newValue", "new Value");
 
@@ -497,11 +477,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 			if (dmManager.getJobReport(queryTicket).getSuccessEventsCount() == successCount.get()) {
 				success.set(true);
 				count.incrementAndGet();
-				// help debug 
-				System.out.println("Inside onUrisReady - getSuccessEventsCount(): " + dmManager.getJobReport(queryTicket).getSuccessEventsCount());
-				System.out.println("Inside onUrisReady - successCount.get(): " + successCount.get());
-				System.out.println("Inside onUrisReady - batchCount.get(): " + batchCount.get());
-				System.out.println("Inside onUrisReady - count: " + count.get());
 			}
 
 		}).onUrisReady(listener).onQueryFailure((throwable) -> throwable.printStackTrace());
@@ -510,33 +485,28 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		batcher.awaitCompletion(Long.MAX_VALUE, TimeUnit.DAYS);
 		dmManager.stopJob(queryTicket);
 
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/json-" + i;
-		}
-		int doccount = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		JacksonHandle dh = new JacksonHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			assertEquals("Attribute value should be new Value", "new Value", dh.get().get("c").asText());
-			doccount++;
-		}
-		
-		// To help debug, if test fails
-		System.out.println("Counter's values from end of TEST");
+		AtomicInteger doccount = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("JsonTransform"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					JacksonHandle dh = new JacksonHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if(dh.get().get("c").asText().equals("new Value"))
+							doccount.incrementAndGet();
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
 
-		System.out.println("doccount: " + doccount);
-		System.out.println("getSuccessBatchesCount(): " + dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		System.out.println("batchCount.get(): " + batchCount.get());
-		System.out.println("count.get(): " + count.get());
-
-		assertEquals("document count", 2000, doccount);
+		assertEquals("document count", 2000, doccount.get());
 		Assert.assertTrue(success.get());
 		Assert.assertEquals(batchCount.get(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
-		// Tolerate a difference of 5 between the counts
-		Assert.assertTrue(Math.abs(batchCount.get()-count.get()) <= 5);
+		Assert.assertEquals(batchCount.get(), count.get());
 		Assert.assertEquals(2000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 
 	}
@@ -544,13 +514,12 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 	// ISSUE # 106
 	@Test
 	public void stopTransformJobTest() throws Exception {
-		System.out.println("Running stopTransformJobTest");
+
 		ServerTransform transform = new ServerTransform("add-attr-xquery-transform");
 		transform.put("name", "Lang");
 		transform.put("value", "French");
 		List<String> skippedBatch = new ArrayList<>();
 		List<String> successBatch = new ArrayList<>();
-		List<String> failureBatch = new ArrayList<>();
 		ApplyTransformListener listener = new ApplyTransformListener().withTransform(transform)
 				.withApplyResult(ApplyResult.REPLACE).onSuccess(batch -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
@@ -564,7 +533,6 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 					System.out.println("stopTransformJobTest : Skipped: " + batch.getItems()[0]);
 				}).onBatchFailure((batch, throwable) -> {
 					List<String> batchList = Arrays.asList(batch.getItems());
-					failureBatch.addAll(batchList);
 					throwable.printStackTrace();
 					System.out.println("stopTransformJobTest: Failed: " + batch.getItems()[0]);
 
@@ -582,31 +550,32 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		queryTicket = dmManager.startJob(batcher);
 		Thread.currentThread().sleep(4000L);
 		dmManager.stopJob(queryTicket);
-
-		String uris[] = new String[2000];
-		for (int i = 0; i < 2000; i++) {
-			uris[i] = "/local/string-" + i;
-		}
-		int doccount = 0;
-		DocumentPage page = dbClient.newDocumentManager().read(uris);
-		DOMHandle dh = new DOMHandle();
-		while (page.hasNext()) {
-			DocumentRecord rec = page.next();
-			rec.getContent(dh);
-			if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
-				doccount++;
-				System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
-				System.out.println("stopTransformJobTest: doccount is : " + doccount);
-			}
-
-		}
-		System.out.println("Counter values from end of TEST");
 		
+		AtomicInteger count = new AtomicInteger(0);
+		QueryBatcher resultBatcher = dmManager
+				.newQueryBatcher(new StructuredQueryBuilder().collection("XmlTransform"))
+				.withBatchSize(25).withThreadCount(5)
+				.onUrisReady((batch)->{
+					DocumentPage page = batch.getClient().newDocumentManager().read(batch.getItems());
+					DOMHandle dh = new DOMHandle();
+					while (page.hasNext()) {
+						DocumentRecord rec = page.next();
+						rec.getContent(dh);
+						if (dh.get().getElementsByTagName("foo").item(0).getAttributes().item(0) == null) {
+							count.incrementAndGet();
+							System.out.println("stopTransformJobTest: skipped in server" + rec.getUri());
+						}
+					}
+					
+				});
+		dmManager.startJob(resultBatcher);				
+		resultBatcher.awaitCompletion();
+
 		System.out.println("stopTransformJobTest: Success: " + successBatch.size());
-		System.out.println("stopTransformJobTest: Failed: " + failureBatch.size());
 		System.out.println("stopTransformJobTest: Skipped: " + skippedBatch.size());
-		System.out.println("stopTransformJobTest : Value of doccount from DocumentManager read " + doccount);
-		Assert.assertEquals(2000 - doccount, successBatch.size());
+		System.out.println("stopTransformJobTest : count " + count);
+		Assert.assertEquals(2000 - count.get(), successBatch.size());
+		Assert.assertEquals(2000 - count.get(), successCount.get());
 
 	}
 }

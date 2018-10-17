@@ -91,6 +91,9 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     // create new connection for each test below
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
+    if (isLBHost())
+    	client	= getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    else
     client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
   }
 

@@ -133,8 +133,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
         validEndERIName);
     createDB(schemadbName);
     createForest(schemafNames[0], schemadbName);
+    waitForPropertyPropagate();
     // Set the schemadbName database as the Schema database.
     setDatabaseProperties(dbName, "schema-database", schemadbName);
+    waitForPropertyPropagate();
 
     // Temporal axis must be created before temporal collection associated with
     // those axes is created
@@ -184,9 +186,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
         "xdbc:invoke", "temporal:statement-set-system-time");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "temporal-admin");
     int restPort = getRestServerPort();
-    adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
-    writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
-    readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);
+    adminClient = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    //adminClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-admin", "x", Authentication.DIGEST);
+    //writerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    writerClient = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    //readerClient = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "rest-reader", "x", Authentication.DIGEST);
+    readerClient = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
   }
 
   @After
@@ -2166,8 +2171,10 @@ public class TestBiTemporal extends BasicJavaClientREST {
     String docId = "javaSingleJSONDoc.json";
 
     insertJSONSingleDocument(temporalCollectionName, docId, null);
+    waitForPropertyPropagate();
 
     updateJSONSingleDocument(temporalCollectionName, docId);
+    waitForPropertyPropagate();
 
     // Fetch documents associated with a search term (such as XML) in Address
     // element
@@ -2185,10 +2192,12 @@ public class TestBiTemporal extends BasicJavaClientREST {
             TemporalOperator.ALN_CONTAINS, period1));
 
     long start = 1;
+    System.out.println("Query is " + periodQuery.serialize() );
     JSONDocumentManager docMgr = readerClient.newJSONDocumentManager();
     docMgr.setMetadataCategories(Metadata.ALL); // Get all metadata
-    DocumentPage termQueryResults = docMgr.search(periodQuery, start);
-
+    DocumentPage termQueryResults = docMgr.search(periodQuery, start);   
+    Thread.sleep(2000);
+    
     long count = 0;
     while (termQueryResults.hasNext()) {
       ++count;

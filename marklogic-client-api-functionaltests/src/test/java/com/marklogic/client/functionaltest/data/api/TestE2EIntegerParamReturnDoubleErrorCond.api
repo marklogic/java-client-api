@@ -1,0 +1,23 @@
+{
+  "functionName" : "TestE2EItemPriceErrorCond",
+ "params" : [ {
+    "name" : "items",
+    "datatype" : "int",
+    "multiple" : false,
+    "nullable" : true
+  }, 
+  {
+    "name" : "price",
+    "datatype" : "int",
+    "multiple" : false,
+    "nullable" : true,
+	"$javaClass" : "java.lang.Integer"
+  } 
+  ],
+  "return" : {
+    "datatype" : "float",
+    "multiple" : false,
+    "nullable" : true,
+	"$javaClass" : "java.lang.Float"
+  }
+}

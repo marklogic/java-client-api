@@ -28,17 +28,8 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Calendar;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
@@ -75,6 +66,7 @@ import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.FilteredForestConfiguration;
+import com.marklogic.client.datamovement.ForestConfiguration;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -85,22 +77,10 @@ import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteOperation.OperationType;
 import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.impl.DocumentWriteOperationImpl;
-import com.marklogic.client.io.BytesHandle;
-import com.marklogic.client.io.DOMHandle;
-import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.InputStreamHandle;
-import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.OutputStreamHandle;
-import com.marklogic.client.io.OutputStreamSender;
-import com.marklogic.client.io.ReaderHandle;
-import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.io.*;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentCollections;
-import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentProperties;
 import com.marklogic.client.query.StructuredQueryBuilder;
 
@@ -129,7 +109,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	private static DocumentMetadataHandle docMeta2;
 	private static ReaderHandle readerHandle1;
 	private static OutputStreamHandle osHandle1;
-	private static WriteBatcher ihbMT;	
+	private static WriteBatcher ihbMT;
 	private static String[] hostNames;
 
 	private static String stringTriple;
@@ -145,6 +125,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	private static JsonNode jsonNode;
 	private static JobTicket writeTicket;
 	private static JobTicket testBatchJobTicket;
+	private static int forestCount = 1;
 
 	@BeforeClass
 	public static void setUpBeforeClass() throws Exception {
@@ -158,10 +139,14 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		createDB(dbName);
 		Thread.currentThread().sleep(500L);
-		int count = 1;
+		//Ensure db has atleast one forest
+		createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
+		forestCount++;
 		for (String forestHost : hostNames) {
-			createForestonHost(dbName + "-" + count, dbName, forestHost);
-			count++;
+			for(int i = 0; i < new Random().nextInt(3); i++) {
+				createForestonHost(dbName + "-" + forestCount, dbName, forestHost);
+				forestCount++;
+			}
 			Thread.currentThread().sleep(500L);
 		}
 		// Create App Server if needed.
@@ -171,10 +156,9 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			enableSecurityOnRESTServer(server, dbName);
 		}
 
-		dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
+		dbClient = getDatabaseClient(user, password, getConnType());
 		dmManager = dbClient.newDataMovementManager();
-		
+
 		// JacksonHandle
 		jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
 		jacksonHandle = new JacksonHandle();
@@ -211,7 +195,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@AfterClass
 	public static void tearDownAfterClass() throws Exception {
 		associateRESTServerWithDB(server, "Documents");
-		for (int i = 0; i < hostNames.length; i++) {
+		for (int i = 0; i < forestCount -1 ; i++) {
 			System.out.println(dbName + "-" + (i + 1));
 			detachForest(dbName, dbName + "-" + (i + 1));
 			deleteForest(dbName + "-" + (i + 1));
@@ -224,7 +208,6 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	public void setUp() throws Exception {
 		if (getDocumentCount(dbName) != 0) {
 			clearDB(port);
-			Thread.sleep(10000L);
 		}
 	}
 
@@ -239,14 +222,13 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				.path("status-properties");
 		props.clear();
 		String s = output.findValue("enabled").get("value").asText();
-		System.out.println("S is " + s);
 		if (s.trim().equals("false")) {
 			props.put("server-name", server);
 			props.put("group-name", "Default");
 			props.put("enabled", "true");
 			changeProperty(props, "/manage/v2/servers/" + server + "/properties");
 		}
-		Thread.sleep(10000L);
+
 		clearDB(port);
 	}
 
@@ -272,7 +254,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 				int byteCount = 0;
 				while ((byteCount = docStreamwrongjson.read(buf)) != -1) {
 					out.write(buf, 0, byteCount);
-				}				
+				}
+
 			}
 		};
 
@@ -715,7 +698,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		WriteBatcher ihb = dmManager.newWriteBatcher();
 		ServerTransform transform = null;
-		FilteredForestConfiguration forestConfig = new FilteredForestConfiguration(dmManager.readForestConfig());
+		ForestConfiguration forestConfig = dmManager.readForestConfig();
 
 		ihb.withJobName(null);
 		ihb.withBatchSize(2);
@@ -850,12 +833,12 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		System.out.println(successDb.toString());
 
 		Assert.assertTrue(count(successPort.toString(), String.valueOf(port)) == 10);
-		if (hostNames.length > 1) {
+		if (hostNames.length > 1 && !isLBHost()) {
 			Assert.assertTrue(count(successHost.toString(), String.valueOf(host)) != 10);
 		}
 
 		Assert.assertTrue(count(failurePort.toString(), String.valueOf(port)) == 5);
-		if (hostNames.length > 1) {
+		if (hostNames.length > 1 && !isLBHost()) {
 			Assert.assertTrue(count(failureHost.toString(), String.valueOf(host)) != 5);
 		}
 
@@ -884,11 +867,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(batch -> {
 			System.out.println("Success");
-			if (batch.getJobTicket().getJobId().equalsIgnoreCase(testBatchJobTicket.getJobId())) {
+			if (batch.getJobTicket() == testBatchJobTicket) {
 				succObj.set(true);
 			}
 			if (batch.getJobBatchNumber() == 1 && succObj.get()) {
-				System.out.println("onBatchSuccess: batch # is " + batch.getJobBatchNumber());
+				System.out.println(batch.getJobBatchNumber());
 				succObj.set(true);
 			} else {
 				succObj.set(false);
@@ -911,11 +894,11 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		}).onBatchFailure((batch, throwable) -> {
 			System.out.println("Failure");
-			if (batch.getJobTicket().getJobId().equalsIgnoreCase(testBatchJobTicket.getJobId())) {
+			if (batch.getJobTicket() == testBatchJobTicket) {
 				failObj.set(true);
 			}
 			if (batch.getJobBatchNumber() == 2 && failObj.get()) {
-				System.out.println("onBatchFailure: batch # is " + batch.getJobBatchNumber());
+				System.out.println(batch.getJobBatchNumber());
 				failObj.set(true);
 			} else {
 				failObj.set(false);
@@ -1034,7 +1017,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		
 		Map<String, String> properties = new HashMap<>();
 		properties.put("updates-allowed", "read-only");
-		for (int i = 0; i < hostNames.length; i++)
+		for (int i = 0; i < forestCount; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 		final String query1 = "fn:count(fn:doc())";
 
@@ -1043,7 +1026,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		final AtomicBoolean failState = new AtomicBoolean(false);
 		final AtomicInteger failCount = new AtomicInteger(0);
 
-		for (int i = 0; i < hostNames.length; i++)
+		for (int i = 0; i < forestCount; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 
 		WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -1065,7 +1048,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		ihb2.flushAndWait();
 
 		properties.put("updates-allowed", "all");
-		for (int i = 0; i < hostNames.length; i++)
+		for (int i = 0; i < forestCount; i++)
 			changeProperty(properties, "/manage/v2/forests/" + dbName + "-" + (i + 1) + "/properties");
 
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 0);
@@ -1348,8 +1331,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		t1.join();
 		t2.join();
 		t3.join();
-
-		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 300);
+		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
+		Assert.assertEquals("300 docs expected", 300, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 	}
 
 	// ISSUE 48
@@ -1731,7 +1714,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			final AtomicBoolean count = new AtomicBoolean(false);
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
-			ihb2.withBatchSize(200);
+			ihb2.withBatchSize(5);
 			// ihb2.withTransactionSize(2);
 			ihb2.withThreadCount(20);
 			dmManager.startJob(ihb2);
@@ -2063,7 +2046,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 		t1.join();
 		t2.join();
-
+		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		Assert.assertEquals(200, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		dmManager.stopJob(writeTicket);
 	}
@@ -2165,6 +2148,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 		properties.put("enabled", "true");
 		changeProperty(properties, "/manage/v2/databases/" + dbName + "/properties");
 		ihbMT.awaitCompletion();
+		System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 		Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 200);
 		Assert.assertTrue(successCalled.get());
 	}
@@ -2306,7 +2290,8 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	}
 
 	@Test
-	public void testNoHost() throws Exception {		
+	public void testNoHost() throws Exception {	
+		Assume.assumeTrue(!isLBHost());
 		Assume.assumeTrue(hostNames.length > 1);
 		System.out.println("In testNoHost method");
 
@@ -2405,6 +2390,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testQBWhiteList() throws Exception {
+		Assume.assumeTrue(!isLBHost());
 		Assume.assumeTrue(hostNames.length > 1);
 		System.out.println("In testQBWhiteList method");
 
@@ -2468,6 +2454,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testWBWhiteList() throws Exception {
+		Assume.assumeTrue(!isLBHost());
 		Assume.assumeTrue(hostNames.length > 1);
 		System.out.println("In testWBWhiteList method");
 
@@ -2519,6 +2506,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testQBBlackList() throws Exception {
+		Assume.assumeTrue(!isLBHost());
 		Assume.assumeTrue(hostNames.length > 1);
 		System.out.println("In testQBBlackList method");
 
@@ -2584,6 +2572,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testWBBlackList() throws Exception {
+		Assume.assumeTrue(!isLBHost());
 		Assume.assumeTrue(hostNames.length > 1);
 		System.out.println("In testWBBlackList method");
 
@@ -2639,6 +2628,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 	@Test
 	public void testBlackWhiteList() throws Exception {
+		Assume.assumeTrue(!isLBHost());
 		System.out.println("In testBlackWhiteList method");
 		FilteredForestConfiguration forestConfig = null;
 
@@ -2670,6 +2660,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 	@Test
 	public void testNoServer() throws Exception {
 		Assume.assumeTrue(hostNames.length > 1);
+		Assume.assumeTrue(!isLBHost());
 		System.out.println("In testNoServer method");
 
 		final String query1 = "fn:count(fn:doc())";
@@ -2692,8 +2683,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			Thread.currentThread().sleep(5000L);
 
-			DatabaseClient dbClient = DatabaseClientFactory.newClient(host, port, user, password,
-					Authentication.DIGEST);
+			DatabaseClient dbClient = getDatabaseClient(user, password, getConnType());
 			DataMovementManager dmManager = dbClient.newDataMovementManager();
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
@@ -2710,7 +2700,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 			}
 
 			ihb2.flushAndWait();
-
+			System.out.println(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 			Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 1000);
 
 			Set<String> uris = Collections.synchronizedSet(new HashSet<String>());
@@ -2796,8 +2786,7 @@ public class WriteHostBatcherTest extends BasicJavaClientREST {
 
 			Thread.currentThread().sleep(5000L);
 
-			DatabaseClient dbClient = DatabaseClientFactory.newClient(host, port, user, password,
-					Authentication.DIGEST);
+			DatabaseClient dbClient = getDatabaseClient(user, password, getConnType());
 			DataMovementManager dmManager = dbClient.newDataMovementManager();
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();

@@ -324,13 +324,17 @@ public class TestDatabaseClientConnection extends BasicJavaClientREST {
   // Trying to access database by specifying the database name.
   @SuppressWarnings("deprecation")
   @Test
-  public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException
+  public void testDBClientUsingWithDatabaseName() throws IOException, SAXException, ParserConfigurationException, KeyManagementException, NoSuchAlgorithmException
   {
     System.out.println("Running testDBClientUsingWithDatabaseName");
 
     String filename = "xml-original-test.xml";
     String uri = "/write-xml-string/";
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
+    DatabaseClient client = null;
+    if (isLBHost())
+    	client	= getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    else
+    	client = DatabaseClientFactory.newClient(appServerHostname, Uberport, UberdbName, "eval-user", "x", Authentication.DIGEST);
     String exception = "";
 
     // write doc

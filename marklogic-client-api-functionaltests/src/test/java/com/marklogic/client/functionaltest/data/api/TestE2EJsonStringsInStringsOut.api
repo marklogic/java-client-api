@@ -1,0 +1,32 @@
+{
+  "functionName" : "stringsInAndStringOutAsArray",
+  "params" : [ {
+    "name" : "inputFiles",
+    "datatype" : "string",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "A sequence of strings that need to be written to Database"    
+  },
+  {
+    "name" : "uris",
+    "datatype" : "string",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "A sequence of document uris for docs written to Database"    
+  },
+  {
+    "name" : "searchItem",
+    "datatype" : "string",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "Search string with 1 word or multiples"    
+  }
+  ],
+  "return" : {
+    "desc" : "Module to return array of doc Ids",
+	"datatype" : "array",
+    "multiple" : false,
+    "nullable" : false,
+	"$javaClass" : "com.fasterxml.jackson.databind.node.ArrayNode"
+	}
+}

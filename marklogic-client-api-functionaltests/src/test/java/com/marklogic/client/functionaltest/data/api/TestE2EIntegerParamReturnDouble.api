@@ -1,0 +1,14 @@
+{
+  "functionName" : "TestE2EItemPrice",
+ "params" : [ {
+    "name" : "itemId",
+    "datatype" : "int",
+    "multiple" : false,
+    "nullable" : true
+  } ],
+  "return" : {
+    "datatype" : "double",
+    "multiple" : false,
+    "nullable" : true
+  }
+}

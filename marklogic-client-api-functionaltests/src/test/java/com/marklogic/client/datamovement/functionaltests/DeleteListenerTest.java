@@ -17,8 +17,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.FileUtils;
@@ -41,7 +41,6 @@ import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
 import com.marklogic.client.datamovement.WriteBatcher;
-import com.marklogic.client.datamovement.WriteEvent;
 import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -65,8 +64,6 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   private static int port = 8000;
   private static String password = "admin";
   private static String server = "App-Services";
-  private static JsonNode clusterInfo;
-
   private static JacksonHandle jacksonHandle;
   private static StringHandle stringHandle;
   private static FileHandle fileHandle;
@@ -78,6 +75,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   private static JsonNode jsonNode;
   private static final String query1 = "fn:count(fn:doc())";
   private static String[] hostNames;
+  private static int forestCount = 1; 
 
   @BeforeClass
   public static void setUpBeforeClass() throws Exception {
@@ -89,12 +87,16 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
-    int count = 1;
-    for (String forestHost : hostNames) {
-      createForestonHost(dbName + "-" + count, dbName, forestHost);
-      count++;
-      Thread.currentThread().sleep(500L);
-    }
+  //Ensure db has atleast one forest
+	createForestonHost(dbName + "-" + forestCount, dbName, hostNames[0]);
+	forestCount++;
+	for (String forestHost : hostNames) {
+		for(int i = 0; i < new Random().nextInt(3); i++) {
+			createForestonHost(dbName + "-" + forestCount, dbName, forestHost);
+			forestCount++;
+		}
+		Thread.currentThread().sleep(500L);
+	}
     // Create App Server if needed.
  	createRESTServerWithDB(server, port);
 
@@ -103,12 +105,9 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 		enableSecurityOnRESTServer(server, dbName);
 	}
 
-    dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
+    dbClient = getDatabaseClient(user, password, getConnType());
     DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
     dmManager = dbClient.newDataMovementManager();
-
-    clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
 
     // JacksonHandle
     jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
@@ -131,7 +130,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
   @AfterClass
   public static void tearDownAfterClass() throws Exception {
     associateRESTServerWithDB(server, "Documents");
-    for (int i = 0; i < hostNames.length; i++) {
+    for (int i = 0; i < forestCount -1; i++) {
       System.out.println(dbName + "-" + (i + 1));
       detachForest(dbName, dbName + "-" + (i + 1));
       deleteForest(dbName + "-" + (i + 1));
@@ -142,14 +141,12 @@ public class DeleteListenerTest extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    Thread.currentThread().sleep(10000L);
+    Thread.currentThread().sleep(1000L);
     WriteBatcher ihb2 = dmManager.newWriteBatcher();
     ihb2.withBatchSize(27).withThreadCount(10);
     ihb2.onBatchSuccess(
         batch -> {
-        	for (WriteEvent w : batch.getItems()) {
-        		 System.out.println("URI written is " + w.getTargetUri());
-			}
+
         }
         )
         .onBatchFailure(
@@ -163,20 +160,9 @@ public class DeleteListenerTest extends BasicJavaClientREST {
       ihb2.add(uri, meta, jacksonHandle);
     }
 
-    int docCount = 0;
     ihb2.flushAndWait();
-    boolean bfin = ihb2.awaitCompletion(3, TimeUnit.MINUTES);
-    
-    if (bfin) {
-    	Thread.currentThread().sleep(2000L);
-        docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-        System.out.println("Number of docs written to DB from DeleteListenerTest setup method is " + docCount);
-        Assert.assertTrue(docCount == 2000);
-    }
-    else {
-    	docCount = dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue();
-    	System.out.println("Not all docs written to DB from DeleteListenerTest setup method. Doc count is " + docCount);
-    }    
+    Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
+
   }
 
   @After
@@ -191,8 +177,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     Assert.assertTrue(uriSet.isEmpty());
     Assert.assertTrue(dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue() == 2000);
 
-    QueryBatcher queryBatcher = dmManager.newQueryBatcher(
-        new StructuredQueryBuilder().collection("DeleteListener"))
+    QueryBatcher queryBatcher = dmManager.newQueryBatcher(new StructuredQueryBuilder().collection("DeleteListener"))
         .withBatchSize(11)
         .withThreadCount(1)
         .onUrisReady(batch -> {

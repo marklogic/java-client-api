@@ -1,0 +1,23 @@
+{
+  "functionName" : "SessionChecks",
+  "params" : [ {
+    "name" : "api_session",
+    "datatype" : "session",
+    "desc" : "Holds the session object"    
+  },
+  {
+    "name" : "uri",
+    "datatype" : "string",
+    "multiple" : false,
+    "nullable" : false,
+    "desc" : "Doc Id of the inserted document"
+  },
+  {
+    "name" : "content",
+    "datatype" : "string",
+    "multiple" : false,
+    "nullable" : false,
+    "desc" : "Doc contents of the inserted document"
+  }
+]
+}

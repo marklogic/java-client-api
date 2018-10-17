@@ -1,0 +1,25 @@
+{
+  "functionName" : "ModuleNotFound",
+  "params" : [ {
+    "name" : "inputFiles",
+    "datatype" : "jsonDocument",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "A sequence of JSON documents that need to be written to Database"    
+  },
+  {
+    "name" : "uris",
+    "datatype" : "string",
+    "multiple" : true,
+    "nullable" : false,
+    "desc" : "A sequence of document uris for docs written to Database"    
+  }
+  ],
+  "return" : {
+    "desc" : "Module to return array of doc Ids",
+    "datatype" : "array",
+    "multiple" : true,
+    "nullable" : false,
+    "$javaClass" : "java.lang.String"
+	}
+}
