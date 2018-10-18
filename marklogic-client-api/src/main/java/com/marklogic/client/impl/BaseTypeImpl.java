@@ -16,37 +16,13 @@
 package com.marklogic.client.impl;
 
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
-import com.marklogic.client.type.ArrayNodeExpr;
-import com.marklogic.client.type.ArrayNodeSeqExpr;
-import com.marklogic.client.type.AttributeNodeExpr;
-import com.marklogic.client.type.AttributeNodeSeqExpr;
-import com.marklogic.client.type.BooleanNodeExpr;
-import com.marklogic.client.type.BooleanNodeSeqExpr;
-import com.marklogic.client.type.CommentNodeExpr;
-import com.marklogic.client.type.CommentNodeSeqExpr;
-import com.marklogic.client.type.DocumentNodeExpr;
-import com.marklogic.client.type.DocumentNodeSeqExpr;
-import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ElementNodeSeqExpr;
-import com.marklogic.client.type.ItemExpr;
-import com.marklogic.client.type.ItemSeqExpr;
-import com.marklogic.client.type.NodeExpr;
-import com.marklogic.client.type.NodeSeqExpr;
-import com.marklogic.client.type.NullNodeExpr;
-import com.marklogic.client.type.NullNodeSeqExpr;
-import com.marklogic.client.type.NumberNodeExpr;
-import com.marklogic.client.type.NumberNodeSeqExpr;
-import com.marklogic.client.type.ObjectNodeExpr;
-import com.marklogic.client.type.ObjectNodeSeqExpr;
-import com.marklogic.client.type.ProcessingInstructionNodeExpr;
-import com.marklogic.client.type.ProcessingInstructionNodeSeqExpr;
-import com.marklogic.client.type.TextNodeExpr;
-import com.marklogic.client.type.TextNodeSeqExpr;
-import com.marklogic.client.type.XmlContentNodeSeqExpr;
+import com.marklogic.client.type.*;
 
 public class BaseTypeImpl {
   public static interface BaseArgImpl {
@@ -102,12 +78,6 @@ public class BaseTypeImpl {
     }
   }
 
-  static BaseListImpl<BaseArgImpl> baseListImpl(Object[] items) {
-    return new BaseListImpl<>(convertList(items));
-  }
-  static <T extends BaseArgImpl> BaseListImpl<T> baseListImpl(Object[] items, Class<T> as) {
-    return new BaseListImpl<>(convertList(items, as));
-  }
   static class BaseListImpl<T extends BaseArgImpl> implements BaseArgImpl {
     protected T[] args;
     protected BaseListImpl(T[] args) {
@@ -126,12 +96,6 @@ public class BaseTypeImpl {
     }
   }
 
-  static BaseCallImpl<BaseArgImpl> baseCallImpl(String fnPrefix, String fnName, Object[] items) {
-    return new BaseCallImpl<>(fnPrefix, fnName, convertList(items));
-  }
-  static <T extends BaseArgImpl> BaseCallImpl<T> baseCallImpl(String fnPrefix, String fnName, Object[] items, Class<T> as) {
-    return new BaseCallImpl<>(fnPrefix, fnName, convertList(items, as));
-  }
   static class BaseCallImpl<T extends BaseArgImpl> extends BaseListImpl<T> {
     protected String fnPrefix = null;
     protected String fnName   = null;
@@ -179,19 +143,33 @@ public class BaseTypeImpl {
     }
   }
 
-  static class ItemSeqListImpl extends BaseListImpl<BaseArgImpl> implements ItemSeqExpr {
+  static class ServerExpressionListImpl extends BaseListImpl<BaseArgImpl> implements ServerExpression {
+    ServerExpressionListImpl(Object[] items) {
+      this(items, false);
+    }
+    ServerExpressionListImpl(Object[] items, boolean flatten) {
+      super(flatten ? convertSequence(items) : convertList(items));
+    }
+  }
+  static class ServerExpressionCallImpl extends BaseCallImpl<BaseArgImpl> implements ServerExpression {
+    ServerExpressionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
+      super(fnPrefix, fnName, convertList(fnArgs));
+    }
+  }
+
+  static class ItemSeqListImpl extends ServerExpressionListImpl implements ItemSeqExpr {
     ItemSeqListImpl(Object[] items) {
-      super(convertList(items));
+      super(items);
     }
   }
-  static class ItemSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements ItemSeqExpr {
+  static class ItemSeqCallImpl extends ServerExpressionCallImpl implements ItemSeqExpr {
     ItemSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ItemCallImpl extends BaseCallImpl<BaseArgImpl> implements ItemExpr {
+  static class ItemCallImpl extends ServerExpressionCallImpl implements ItemExpr {
     ItemCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
   static class NodeSeqListImpl extends ItemSeqListImpl implements NodeSeqExpr {
@@ -199,9 +177,9 @@ public class BaseTypeImpl {
       super(items);
     }
   }
-  static class NodeSeqCallImpl extends BaseCallImpl<BaseArgImpl> implements NodeSeqExpr {
+  static class NodeSeqCallImpl extends ServerExpressionCallImpl implements NodeSeqExpr {
     NodeSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
   static class NodeCallImpl extends ItemCallImpl implements NodeExpr {
@@ -437,5 +415,67 @@ public class BaseTypeImpl {
           return (T) item;
         })
         .toArray(size -> (T[]) Array.newInstance(as, size));
+  }
+
+  static BaseArgImpl[] convertSequence(Object[] items) {
+    return convertSequence(items, BaseArgImpl.class);
+  }
+  @SuppressWarnings("unchecked")
+  static <T extends BaseArgImpl> T[] convertSequence(Object[] items, Class<T> as) {
+    if (items == null) {
+      return null;
+    } else if (items.length == 0) {
+      return (T[]) (as.isAssignableFrom(items.getClass().getComponentType()) ?
+            items : Array.newInstance(as, 0));
+    }
+
+    T[] optBuf = (T[]) Array.newInstance(as, items.length);
+    List<T> pessBuf = null;
+    for (int i=0; i < items.length; i++) {
+      Object item = items[i];
+
+      T castItem = null;
+      if (item != null) {
+        if (!BaseListImpl.class.isInstance(item)) {
+          if (!as.isInstance(item)) {
+            throw new IllegalArgumentException("requires "+as.getName()+" argument instead of "+item.getClass().getName());
+          }
+          castItem = (T) item;
+        } else {
+          BaseArgImpl[] itemList = ((BaseListImpl) item).getArgsImpl();
+          switch(itemList.length) {
+            case 0:
+              break;
+            case 1:
+              BaseArgImpl firstListItem = itemList[0];
+              if (!as.isInstance(firstListItem)) {
+                throw new IllegalArgumentException("requires "+as.getName()+" first list item instead of "+firstListItem.getClass().getName());
+              }
+              castItem = (T) firstListItem;
+              break;
+            default:
+              if (pessBuf == null) {
+                pessBuf = new ArrayList<T>(items.length + itemList.length);
+              }
+              for (int j=0; j < itemList.length; j++) {
+                BaseArgImpl listItem = itemList[j];
+                if (!as.isInstance(listItem)) {
+                  throw new IllegalArgumentException("requires "+as.getName()+" list item instead of "+listItem.getClass().getName());
+                }
+                pessBuf.add((T) listItem);
+              }
+              continue;
+          }
+        }
+      }
+
+      if (pessBuf == null) {
+        optBuf[i] = castItem;
+      } else {
+        pessBuf.add(castItem);
+      }
+    }
+
+    return (pessBuf == null) ? optBuf : pessBuf.toArray((T[]) Array.newInstance(as, pessBuf.size()));
   }
 }

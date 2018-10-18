@@ -32,7 +32,6 @@ import com.marklogic.client.type.BooleanNodeExpr;
 import com.marklogic.client.type.CommentNodeExpr;
 import com.marklogic.client.type.DocumentNodeExpr;
 import com.marklogic.client.type.ElementNodeExpr;
-import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.JsonContentNodeExpr;
 import com.marklogic.client.type.JsonRootNodeExpr;
@@ -61,6 +60,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.PlanAggregateCol;
 import com.marklogic.client.type.PlanAggregateColSeq;
 import com.marklogic.client.type.PlanCase;
@@ -172,137 +172,137 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This function returns the sum of the specified numeric expressions. In expressions, the call should pass the result from an op:col function to identify a column. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a>
-  * @param left  The left value expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:add" target="mlserverdoc">op:add</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr add(XsNumericExpr... left);
+  public abstract XsNumericExpr add(ServerExpression... left);
   /**
   * This function returns true if the specified expressions all return true. Otherwise, it returns false. You can either compair 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a>
-  * @param left  The left value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:and" target="mlserverdoc">op:and</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr and(XsAnyAtomicTypeExpr... left);
+  public abstract XsBooleanExpr and(ServerExpression... left);
   /**
   * This function divides the left numericExpression by the right numericExpression and returns the value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:divide" target="mlserverdoc">op:divide</a>
-  * @param left  The left numeric expression.
-  * @param right  The right numeric expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:divide" target="mlserverdoc">op:divide</a> server function.
+  * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr divide(XsNumericExpr left, XsNumericExpr right);
+  public abstract XsNumericExpr divide(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the left and right expressions return the same value. Otherwise, it returns false. In expressions, the call should pass the result from an op:col function to identify a column.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:eq" target="mlserverdoc">op:eq</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr eq(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr eq(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is greater than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:ge" target="mlserverdoc">op:ge</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:ge" target="mlserverdoc">op:ge</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr ge(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr ge(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is greater than the value of the right expression. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:gt" target="mlserverdoc">op:gt</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:gt" target="mlserverdoc">op:gt</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr gt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr gt(ServerExpression left, ServerExpression right);
   /**
   * This function tests whether the value of an expression is null in the row where the expression might be as simple as a column identified by op:col.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:is-defined" target="mlserverdoc">op:is-defined</a>
-  * @param operand  A boolean expression, such as op:eq or op:not, that might be null.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:is-defined" target="mlserverdoc">op:is-defined</a> server function.
+  * @param operand  A boolean expression, such as op:eq or op:not, that might be null.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr isDefined(ItemExpr operand);
+  public abstract XsBooleanExpr isDefined(ServerExpression operand);
   /**
   * This function returns true if the value of the left expression is less than or equal to the value of the right expression. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:le" target="mlserverdoc">op:le</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:le" target="mlserverdoc">op:le</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr le(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr le(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if the value of the left expression is less than the value of the right expression. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:lt" target="mlserverdoc">op:lt</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:lt" target="mlserverdoc">op:lt</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr lt(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr lt(ServerExpression left, ServerExpression right);
   /**
   * This function multipies the left numericExpression by the right numericExpression and returns the value. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a>
-  * @param left  The left numeric expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:multiply" target="mlserverdoc">op:multiply</a> server function.
+  * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr multiply(XsNumericExpr... left);
+  public abstract XsNumericExpr multiply(ServerExpression... left);
   /**
   * This function returns true if the value of the left expression is not equal to the value of the right expression. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:ne" target="mlserverdoc">op:ne</a>
-  * @param left  The left value expression.
-  * @param right  The right value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:ne" target="mlserverdoc">op:ne</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr ne(XsAnyAtomicTypeExpr left, XsAnyAtomicTypeExpr right);
+  public abstract XsBooleanExpr ne(ServerExpression left, ServerExpression right);
   /**
   * This function returns true if neither of the specified boolean expressions return true. Otherwise, it returns false.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:not" target="mlserverdoc">op:not</a>
-  * @param operand  Exactly one boolean expression, such as op:and or op:or, or op:is-defined.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:not" target="mlserverdoc">op:not</a> server function.
+  * @param operand  Exactly one boolean expression, such as op:and or op:or, or op:is-defined.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr not(XsAnyAtomicTypeExpr operand);
+  public abstract XsBooleanExpr not(ServerExpression operand);
   /**
   * This function returns true if the specified expressions all return true. Otherwise, it returns false. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:or" target="mlserverdoc">op:or</a>
-  * @param left  The left value expression.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:or" target="mlserverdoc">op:or</a> server function.
+  * @param left  The left value expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public abstract XsBooleanExpr or(XsAnyAtomicTypeExpr... left);
+  public abstract XsBooleanExpr or(ServerExpression... left);
   /**
   * This function subtracts the right numericExpression from the left numericExpression and returns the value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:subtract" target="mlserverdoc">op:subtract</a>
-  * @param left  The left numeric expression.
-  * @param right  The right numeric expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:subtract" target="mlserverdoc">op:subtract</a> server function.
+  * @param left  The left numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @param right  The right numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr subtract(XsNumericExpr left, XsNumericExpr right);
+  public abstract XsNumericExpr subtract(ServerExpression left, ServerExpression right);
   /**
   * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The op:result function throws in an error if the binding parameter does not specify a literal value for the parameter.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a PlanParamExpr expression
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
   */
   public abstract PlanParamExpr param(String name);
   /**
   * This function creates a placeholder for a literal value in an expression or as the offset or max for a limit. The op:result function throws in an error if the binding parameter does not specify a literal value for the parameter.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:param" target="mlserverdoc">op:param</a> server function.
   * @param name  The name of the parameter.
-  * @return  a PlanParamExpr expression
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/plan_param.html">plan:param</a> server data type
   */
   public abstract PlanParamExpr param(XsStringVal name);
   /**
@@ -349,13 +349,13 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   public abstract PlanColumn viewCol(XsStringVal view, XsStringVal column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
-  * @param column  the column  value
+  * @param column  the column  value.
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(String column);
   /**
   * Specifies a name for adding a fragment id column to the row set identifying the source documents for the rows from a view, lexicons or triples. The only use for the fragment id is joining other rows from the same document, the document uri, or the document content. The fragment id is only useful during execution of the query and not after.
-  * @param column  the column  value
+  * @param column  the column  value.
   * @return  a PlanSystemColumn object
   */
   public abstract PlanSystemColumn fragmentIdCol(XsStringVal column);
@@ -374,17 +374,17 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function defines a column by assigning the value of an expression over the rows in the row set.
   * @param column  The name of the column to be defined. This can be either a string or the return value from op:col, op:view-col, or op:schema-col.
-  * @param expression  The expression used to define the value the column.
+  * @param expression  The expression used to define the value the column.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a PlanExprCol object
   */
-  public abstract PlanExprCol as(String column, ItemSeqExpr expression);
+  public abstract PlanExprCol as(String column, ServerExpression expression);
   /**
   * This function defines a column by assigning the value of an expression over the rows in the row set.
   * @param column  The name of the column to be defined. This can be either a string or the return value from op:col, op:view-col, or op:schema-col.
-  * @param expression  The expression used to define the value the column.
+  * @param expression  The expression used to define the value the column.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a PlanExprCol object
   */
-  public abstract PlanExprCol as(PlanColumn column, ItemSeqExpr expression);
+  public abstract PlanExprCol as(PlanColumn column, ServerExpression expression);
   public abstract PlanExprColSeq colSeq(String... col);
   public abstract PlanExprColSeq colSeq(PlanExprCol... col);
   /**
@@ -564,15 +564,69 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * @return  a AccessPlan object
   */
   public abstract AccessPlan fromLexicons(Map<String,CtsReferenceExpr> indexes, XsStringVal qualifierName, PlanSystemColumn sysCols);
+  /**
+  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSparql(String select);
+  /**
+  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSparql(XsStringVal select);
+  /**
+  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSparql(String select, String qualifierName);
+  /**
+  * This function dynamically constructs a row set based on an SPARQL SELECT query from triples.
+  * @param select  A SPARQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SPARQL string may be bound in the result() call
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSparql(XsStringVal select, XsStringVal qualifierName);
+  /**
+  * This function dynamically constructs a row set based on a SQL SELECT query from views.
+  * @param select  A SQL SELECT query expressed as a string.
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSql(String select);
+  /**
+  * This function dynamically constructs a row set based on a SQL SELECT query from views.
+  * @param select  A SQL SELECT query expressed as a string.
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSql(XsStringVal select);
+  /**
+  * This function dynamically constructs a row set based on a SQL SELECT query from views.
+  * @param select  A SQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SQL string may be bound in the result() call
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSql(String select, String qualifierName);
+  /**
+  * This function dynamically constructs a row set based on a SQL SELECT query from views.
+  * @param select  A SQL SELECT query expressed as a string.
+  * @param qualifierName  Specifies a name for qualifying the column names. Placeholder parameters in the SQL string may be bound in the result() call
+  * @return  a ModifyPlan object
+  */
   public abstract ModifyPlan fromSql(XsStringVal select, XsStringVal qualifierName);
+  /**
+  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
+  * @param expression  A boolean expression, such as op:eq or op:not, that might be null.
+  * @return  a PlanCondition object
+  */
   public abstract PlanCondition sqlCondition(String expression);
+  /**
+  * This function returns a filter definition as input for a WHERE operation. As with a cts:query or sem:store, the filter definition cannot be used in an Optic Boolean expression but, instead, must be the only argument to the WHERE call. Add a separate WHERE call to filter based on an Optic Boolean expression. The condition must be a valid simple SQL Boolean expression expressed as a string. 
+  * @param expression  A boolean expression, such as op:eq or op:not, that might be null.
+  * @return  a PlanCondition object
+  */
   public abstract PlanCondition sqlCondition(XsStringVal expression);
   /**
   * Specifies an equijoin using one columndef each from the left and right rows. The result is used by the op:join-inner and op:join-left-outer functions. 
@@ -892,261 +946,271 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   /**
   * This function returns the remainder afer the division of the dividend and divisor expressions. For example, op:modulo(5, 2) returns 1.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a>
-  * @param left  The dividend numeric expression.
-  * @param right  The divisor numeric expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a> server function.
+  * @param left  The dividend numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param right  The divisor numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
   public abstract XsNumericExpr modulo(double left, double right);
   /**
   * This function returns the remainder afer the division of the dividend and divisor expressions. For example, op:modulo(5, 2) returns 1.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a>
-  * @param left  The dividend numeric expression.
-  * @param right  The divisor numeric expression.
-  * @return  a XsNumericExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:modulo" target="mlserverdoc">op:modulo</a> server function.
+  * @param left  The dividend numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param right  The divisor numeric expression.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a> server data type
   */
-  public abstract XsNumericExpr modulo(XsNumericExpr left, XsNumericExpr right);
+  public abstract XsNumericExpr modulo(ServerExpression left, ServerExpression right);
   /**
   * This function executes the specified expression if the specified condition is true for the row. Otherwise, the expression is not executed and the next 'when' test is checked or, if there is no next 'when' text, the otherwise expression for the op:case expression is executed.
-  * @param condition  A boolean expression.
-  * @param value  The value expression to return if the boolean expression is true.
+  * @param condition  A boolean expression.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param value  The value expression to return if the boolean expression is true.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a PlanCase object
   */
-  public abstract PlanCase when(boolean condition, ItemExpr... value);
+  public abstract PlanCase when(boolean condition, ServerExpression... value);
   /**
   * This function executes the specified expression if the specified condition is true for the row. Otherwise, the expression is not executed and the next 'when' test is checked or, if there is no next 'when' text, the otherwise expression for the op:case expression is executed.
-  * @param condition  A boolean expression.
-  * @param value  The value expression to return if the boolean expression is true.
+  * @param condition  A boolean expression.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @param value  The value expression to return if the boolean expression is true.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
   * @return  a PlanCase object
   */
-  public abstract PlanCase when(XsBooleanExpr condition, ItemExpr... value);
+  public abstract PlanCase when(ServerExpression condition, ServerExpression... value);
   /**
   * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
   * @param column  The name of the column from which to extract the child nodes.
-  * @param path  An XPath (specified as a string) to apply to each node.
-  * @return  a NodeSeqExpr expression sequence
+  * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
   public abstract NodeSeqExpr xpath(String column, String path);
   /**
   * This function extracts a sequence of child nodes from a column with node values -- especially, the document nodes from a document join. The path is an XPath (specified as a string) to apply to each node to generate a sequence of nodes as an expression value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xpath" target="mlserverdoc">op:xpath</a> server function.
   * @param column  The name of the column from which to extract the child nodes.
-  * @param path  An XPath (specified as a string) to apply to each node.
-  * @return  a NodeSeqExpr expression sequence
+  * @param path  An XPath (specified as a string) to apply to each node.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public abstract NodeSeqExpr xpath(PlanColumn column, XsStringExpr path);
+  public abstract NodeSeqExpr xpath(PlanColumn column, ServerExpression path);
   /**
   * This function constructs a JSON document with the root content, which must be exactly one JSON object or array node.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-document" target="mlserverdoc">op:json-document</a>
-  * @param root  The JSON object or array node used to construct the JSON document.
-  * @return  a DocumentNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-document" target="mlserverdoc">op:json-document</a> server function.
+  * @param root  The JSON object or array node used to construct the JSON document.  (of <a href="{@docRoot}/doc-files/types/json-root-node.html">json-root-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
   */
-  public abstract DocumentNodeExpr jsonDocument(JsonRootNodeExpr root);
+  public abstract DocumentNodeExpr jsonDocument(ServerExpression root);
   /**
   * This function specifies the key expression and value content for a JSON property of a JSON object contructed by the op:json-object function.
-  * @param key  The key expression. This must evaluate to a string.
-  * @param value  The value content. This must be exactly one JSON node expression.
+  * @param key  The key expression. This must evaluate to a string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The value content. This must be exactly one JSON node expression.  (of <a href="{@docRoot}/doc-files/types/json-content-node.html">json-content-node</a>)
   * @return  a PlanJsonProperty object
   */
-  public abstract PlanJsonProperty prop(String key, JsonContentNodeExpr value);
+  public abstract PlanJsonProperty prop(String key, ServerExpression value);
   /**
   * This function specifies the key expression and value content for a JSON property of a JSON object contructed by the op:json-object function.
-  * @param key  The key expression. This must evaluate to a string.
-  * @param value  The value content. This must be exactly one JSON node expression.
+  * @param key  The key expression. This must evaluate to a string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The value content. This must be exactly one JSON node expression.  (of <a href="{@docRoot}/doc-files/types/json-content-node.html">json-content-node</a>)
   * @return  a PlanJsonProperty object
   */
-  public abstract PlanJsonProperty prop(XsStringExpr key, JsonContentNodeExpr value);
+  public abstract PlanJsonProperty prop(ServerExpression key, ServerExpression value);
   /**
   * This function constructs a JSON text node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a>
-  * @param value  The value of the JSON text node.
-  * @return  a TextNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a> server function.
+  * @param value  The value of the JSON text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
   public abstract TextNodeExpr jsonString(String value);
   /**
   * This function constructs a JSON text node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a>
-  * @param value  The value of the JSON text node.
-  * @return  a TextNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-string" target="mlserverdoc">op:json-string</a> server function.
+  * @param value  The value of the JSON text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr jsonString(XsAnyAtomicTypeExpr value);
+  public abstract TextNodeExpr jsonString(ServerExpression value);
   /**
   * This function constructs a JSON number node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a>
-  * @param value  The value of the JSON number node.
-  * @return  a NumberNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a> server function.
+  * @param value  The value of the JSON number node.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/number-node.html">number-node</a> server data type
   */
   public abstract NumberNodeExpr jsonNumber(double value);
   /**
   * This function constructs a JSON number node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a>
-  * @param value  The value of the JSON number node.
-  * @return  a NumberNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-number" target="mlserverdoc">op:json-number</a> server function.
+  * @param value  The value of the JSON number node.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/number-node.html">number-node</a> server data type
   */
-  public abstract NumberNodeExpr jsonNumber(XsNumericExpr value);
+  public abstract NumberNodeExpr jsonNumber(ServerExpression value);
   /**
   * This function constructs a JSON boolean node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a>
-  * @param value  The value of the JSON boolean node.
-  * @return  a BooleanNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a> server function.
+  * @param value  The value of the JSON boolean node.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/boolean-node.html">boolean-node</a> server data type
   */
   public abstract BooleanNodeExpr jsonBoolean(boolean value);
   /**
   * This function constructs a JSON boolean node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a>
-  * @param value  The value of the JSON boolean node.
-  * @return  a BooleanNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-boolean" target="mlserverdoc">op:json-boolean</a> server function.
+  * @param value  The value of the JSON boolean node.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/boolean-node.html">boolean-node</a> server data type
   */
-  public abstract BooleanNodeExpr jsonBoolean(XsBooleanExpr value);
+  public abstract BooleanNodeExpr jsonBoolean(ServerExpression value);
   /**
   * This function constructs a JSON null node.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:json-null" target="mlserverdoc">op:json-null</a>
-  * @return  a NullNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:json-null" target="mlserverdoc">op:json-null</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/null-node.html">null-node</a> server data type
   */
   public abstract NullNodeExpr jsonNull();
   /**
   * This function constructs an XML document with the root content, which must be exactly one node.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-document" target="mlserverdoc">op:xml-document</a>
-  * @param root  The XML node used to construct the XML document.
-  * @return  a DocumentNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-document" target="mlserverdoc">op:xml-document</a> server function.
+  * @param root  The XML node used to construct the XML document.  (of <a href="{@docRoot}/doc-files/types/xml-root-node.html">xml-root-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/document-node.html">document-node</a> server data type
   */
-  public abstract DocumentNodeExpr xmlDocument(XmlRootNodeExpr root);
+  public abstract DocumentNodeExpr xmlDocument(ServerExpression root);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
   public abstract ElementNodeExpr xmlElement(String name);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(XsQNameExpr name);
+  public abstract ElementNodeExpr xmlElement(ServerExpression name);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
+  * @deprecated (as of 4.2) pass a {@link com.marklogic.client.type.ServerExpression} for the last parameter
   */
   public abstract ElementNodeExpr xmlElement(String name, AttributeNodeExpr... attributes);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes);
+  public abstract ElementNodeExpr xmlElement(String name, ServerExpression attributes);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
-  * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(String name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content);
+  public abstract ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes);
   /**
   * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-  * @param name  The string or QName for the constructed element.
-  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
-  * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.
-  * @return  a ElementNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
+  * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.  (of <a href="{@docRoot}/doc-files/types/xml-content-node.html">xml-content-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
   */
-  public abstract ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeExpr... content);
+  public abstract ElementNodeExpr xmlElement(String name, ServerExpression attributes, ServerExpression... content);
+  /**
+  * This function constructs an XML element with the name (which can be a string or QName), zero or more attributes, and child content. The child content can include a sequence or array of atomic values or an element, comment, or processing instruction nodes. Atomic values are converted to text nodes.
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a> server function.
+  * @param name  The string or QName for the constructed element.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.  (of <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a>)
+  * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.  (of <a href="{@docRoot}/doc-files/types/xml-content-node.html">xml-content-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a> server data type
+  */
+  public abstract ElementNodeExpr xmlElement(ServerExpression name, ServerExpression attributes, ServerExpression... content);
   /**
   * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a>
-  * @param name  The attribute name.
-  * @param value  The attribute value.
-  * @return  a AttributeNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a> server function.
+  * @param name  The attribute name.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param value  The attribute value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
   */
   public abstract AttributeNodeExpr xmlAttribute(String name, String value);
   /**
   * This function constructs an XML attribute with the name (which can be a string or QName) and atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a>
-  * @param name  The attribute name.
-  * @param value  The attribute value.
-  * @return  a AttributeNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-attribute" target="mlserverdoc">op:xml-attribute</a> server function.
+  * @param name  The attribute name.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @param value  The attribute value.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/attribute-node.html">attribute-node</a> server data type
   */
-  public abstract AttributeNodeExpr xmlAttribute(XsQNameExpr name, XsAnyAtomicTypeExpr value);
+  public abstract AttributeNodeExpr xmlAttribute(ServerExpression name, ServerExpression value);
   /**
   * This function constructs an XML text node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a>
-  * @param value  The value of the XML text node.
-  * @return  a TextNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a> server function.
+  * @param value  The value of the XML text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
   public abstract TextNodeExpr xmlText(String value);
   /**
   * This function constructs an XML text node with the specified value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a>
-  * @param value  The value of the XML text node.
-  * @return  a TextNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-text" target="mlserverdoc">op:xml-text</a> server function.
+  * @param value  The value of the XML text node.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/text-node.html">text-node</a> server data type
   */
-  public abstract TextNodeExpr xmlText(XsAnyAtomicTypeExpr value);
+  public abstract TextNodeExpr xmlText(ServerExpression value);
   /**
   * This function constructs an XML comment with the atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a>
-  * @param content  The comment text.
-  * @return  a CommentNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a> server function.
+  * @param content  The comment text.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/comment-node.html">comment-node</a> server data type
   */
   public abstract CommentNodeExpr xmlComment(String content);
   /**
   * This function constructs an XML comment with the atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a>
-  * @param content  The comment text.
-  * @return  a CommentNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-comment" target="mlserverdoc">op:xml-comment</a> server function.
+  * @param content  The comment text.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/comment-node.html">comment-node</a> server data type
   */
-  public abstract CommentNodeExpr xmlComment(XsAnyAtomicTypeExpr content);
+  public abstract CommentNodeExpr xmlComment(ServerExpression content);
   /**
   * This function constructs an XML processing instruction with the atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a>
-  * @param name  The name of the processing instruction.
-  * @param value  The value of the processing instruction.
-  * @return  a ProcessingInstructionNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a> server function.
+  * @param name  The name of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The value of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/processing-instruction-node.html">processing-instruction-node</a> server data type
   */
   public abstract ProcessingInstructionNodeExpr xmlPi(String name, String value);
   /**
   * This function constructs an XML processing instruction with the atomic value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a>
-  * @param name  The name of the processing instruction.
-  * @param value  The value of the processing instruction.
-  * @return  a ProcessingInstructionNodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/op:xml-pi" target="mlserverdoc">op:xml-pi</a> server function.
+  * @param name  The name of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The value of the processing instruction.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/processing-instruction-node.html">processing-instruction-node</a> server data type
   */
-  public abstract ProcessingInstructionNodeExpr xmlPi(XsStringExpr name, XsAnyAtomicTypeExpr value);
-  public abstract AttributeNodeSeqExpr xmlAttributeSeq(AttributeNodeExpr... attribute);
+  public abstract ProcessingInstructionNodeExpr xmlPi(ServerExpression name, ServerExpression value);
+  public abstract AttributeNodeSeqExpr xmlAttributeSeq(ServerExpression... attribute);
   public abstract PlanFunction resolveFunction(String functionName, String modulePath);
   public abstract PlanFunction resolveFunction(XsQNameVal functionName, XsStringVal modulePath);
 /**
@@ -1217,17 +1281,17 @@ public abstract class PlanBuilder implements PlanBuilderBase {
 /**
   * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
   * @param right  The row set from the right view.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinCrossProduct(ModifyPlan right, boolean condition);
 /**
   * This method yields one output row set that concatenates every left row with every right row. Matches other than equality matches (for instance, greater-than comparisons between keys) can be implemented with a condition on the cross product. 
   * @param right  The row set from the right view.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
-  public abstract ModifyPlan joinCrossProduct(ModifyPlan right, XsBooleanExpr condition);
+  public abstract ModifyPlan joinCrossProduct(ModifyPlan right, ServerExpression condition);
 /**
   * This function specifies a document column to add to the rows by reading the documents for an existing source column having a value of a document uri (which can be used to read other documents) or a fragment id (which can be used to read the source documents for rows). 
   * @param docCol  The document column to add to the rows. This can be a string or column specifying the name of the new column that should have the document as its value.
@@ -1280,7 +1344,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
@@ -1288,10 +1352,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This method returns all rows from multiple tables where the join condition is met. In the output row set, each row concatenates one left row and one right row for each match between the keys in the left and right row sets. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
-  public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
+  public abstract ModifyPlan joinInner(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
   * @param right  The row set from the right view.
@@ -1316,7 +1380,7 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
   public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, boolean condition);
@@ -1324,10 +1388,10 @@ public abstract class PlanBuilder implements PlanBuilderBase {
   * This method yields one output row set with the rows from an inner join as well as rows from the left row set. 
   * @param right  The row set from the right view.
   * @param keys  The equijoin from one or more calls to the op:on function.
-  * @param condition  A boolean expression that filters the join output rows.
+  * @param condition  A boolean expression that filters the join output rows.  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
   * @return  a ModifyPlan object
   */
-  public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, XsBooleanExpr condition);
+  public abstract ModifyPlan joinLeftOuter(ModifyPlan right, PlanJoinKeySeq keys, ServerExpression condition);
 /**
   * This method sorts the row set by the specified order definition.
   * @param keys  The specified column or sortdef output from the op:asc or op:desc function.

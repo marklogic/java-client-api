@@ -19,7 +19,7 @@ import com.marklogic.client.type.XsIntegerExpr;
 import com.marklogic.client.type.XsStringExpr;
 import com.marklogic.client.type.XsStringSeqExpr;
 
-
+import com.marklogic.client.type.ServerExpression;
 
 import com.marklogic.client.expression.SpellExpr;
 import com.marklogic.client.impl.BaseTypeImpl;
@@ -36,7 +36,7 @@ class SpellExprImpl implements SpellExpr {
 
     
   @Override
-  public XsStringSeqExpr doubleMetaphone(XsStringExpr word) {
+  public XsStringSeqExpr doubleMetaphone(ServerExpression word) {
     if (word == null) {
       throw new IllegalArgumentException("word parameter for doubleMetaphone() cannot be null");
     }
@@ -45,13 +45,13 @@ class SpellExprImpl implements SpellExpr {
 
   
   @Override
-  public XsIntegerExpr levenshteinDistance(XsStringExpr str1, String str2) {
+  public XsIntegerExpr levenshteinDistance(ServerExpression str1, String str2) {
     return levenshteinDistance(str1, (str2 == null) ? (XsStringExpr) null : xs.string(str2));
   }
 
   
   @Override
-  public XsIntegerExpr levenshteinDistance(XsStringExpr str1, XsStringExpr str2) {
+  public XsIntegerExpr levenshteinDistance(ServerExpression str1, ServerExpression str2) {
     if (str1 == null) {
       throw new IllegalArgumentException("str1 parameter for levenshteinDistance() cannot be null");
     }
@@ -63,7 +63,7 @@ class SpellExprImpl implements SpellExpr {
 
   
   @Override
-  public XsStringExpr romanize(XsStringExpr string) {
+  public XsStringExpr romanize(ServerExpression string) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for romanize() cannot be null");
     }

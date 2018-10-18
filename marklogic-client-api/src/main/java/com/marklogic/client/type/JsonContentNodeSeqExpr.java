@@ -17,5 +17,6 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of JSON boolean, null, number, or text node expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface JsonContentNodeSeqExpr extends NodeSeqExpr { }

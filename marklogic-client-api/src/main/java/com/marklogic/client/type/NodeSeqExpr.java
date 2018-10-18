@@ -17,5 +17,6 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of node expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface NodeSeqExpr extends ItemSeqExpr { }

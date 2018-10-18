@@ -33,6 +33,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.CtsBoxExpr;
 import com.marklogic.client.type.CtsBoxSeqExpr;
 import com.marklogic.client.type.CtsCircleExpr;
@@ -1550,7 +1551,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(XsStringExpr text) {
+  public XsStringSeqExpr stem(ServerExpression text) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1559,13 +1560,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(XsStringExpr text, String language) {
+  public XsStringSeqExpr stem(ServerExpression text, String language) {
     return stem(text, (language == null) ? (XsStringExpr) null : xs.string(language));
   }
 
   
   @Override
-  public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language) {
+  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1574,13 +1575,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr stem(XsStringExpr text, String language, String partOfSpeech) {
+  public XsStringSeqExpr stem(ServerExpression text, String language, String partOfSpeech) {
     return stem(text, (language == null) ? (XsStringExpr) null : xs.string(language), (partOfSpeech == null) ? (XsStringExpr) null : xs.string(partOfSpeech));
   }
 
   
   @Override
-  public XsStringSeqExpr stem(XsStringExpr text, XsStringExpr language, XsStringExpr partOfSpeech) {
+  public XsStringSeqExpr stem(ServerExpression text, ServerExpression language, ServerExpression partOfSpeech) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for stem() cannot be null");
     }
@@ -1589,7 +1590,7 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(XsStringExpr text) {
+  public XsStringSeqExpr tokenize(ServerExpression text) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }
@@ -1598,13 +1599,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(XsStringExpr text, String language) {
+  public XsStringSeqExpr tokenize(ServerExpression text, String language) {
     return tokenize(text, (language == null) ? (XsStringExpr) null : xs.string(language));
   }
 
   
   @Override
-  public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language) {
+  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }
@@ -1613,13 +1614,13 @@ class CtsExprImpl implements CtsExpr {
 
   
   @Override
-  public XsStringSeqExpr tokenize(XsStringExpr text, String language, String field) {
+  public XsStringSeqExpr tokenize(ServerExpression text, String language, String field) {
     return tokenize(text, (language == null) ? (XsStringExpr) null : xs.string(language), (field == null) ? (XsStringExpr) null : xs.string(field));
   }
 
   
   @Override
-  public XsStringSeqExpr tokenize(XsStringExpr text, XsStringExpr language, XsStringExpr field) {
+  public XsStringSeqExpr tokenize(ServerExpression text, ServerExpression language, ServerExpression field) {
     if (text == null) {
       throw new IllegalArgumentException("text parameter for tokenize() cannot be null");
     }
@@ -1726,19 +1727,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsBoxSeqExpr boxSeq(CtsBoxExpr... items) {
     return new BoxSeqListImpl(items);
   }
-  static class BoxSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsBoxSeqExpr {
+  static class BoxSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsBoxSeqExpr {
     BoxSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class BoxSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsBoxSeqExpr {
+  static class BoxSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsBoxSeqExpr {
     BoxSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class BoxCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsBoxExpr {
+  static class BoxCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsBoxExpr {
     BoxCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1746,19 +1747,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsCircleSeqExpr circleSeq(CtsCircleExpr... items) {
     return new CircleSeqListImpl(items);
   }
-  static class CircleSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsCircleSeqExpr {
+  static class CircleSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsCircleSeqExpr {
     CircleSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class CircleSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsCircleSeqExpr {
+  static class CircleSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsCircleSeqExpr {
     CircleSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class CircleCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsCircleExpr {
+  static class CircleCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsCircleExpr {
     CircleCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1766,19 +1767,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsPeriodSeqExpr periodSeq(CtsPeriodExpr... items) {
     return new PeriodSeqListImpl(items);
   }
-  static class PeriodSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsPeriodSeqExpr {
+  static class PeriodSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsPeriodSeqExpr {
     PeriodSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class PeriodSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPeriodSeqExpr {
+  static class PeriodSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPeriodSeqExpr {
     PeriodSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PeriodCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPeriodExpr {
+  static class PeriodCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPeriodExpr {
     PeriodCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1786,19 +1787,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsPointSeqExpr pointSeq(CtsPointExpr... items) {
     return new PointSeqListImpl(items);
   }
-  static class PointSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsPointSeqExpr {
+  static class PointSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsPointSeqExpr {
     PointSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class PointSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPointSeqExpr {
+  static class PointSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPointSeqExpr {
     PointSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PointCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPointExpr {
+  static class PointCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPointExpr {
     PointCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1806,19 +1807,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsPolygonSeqExpr polygonSeq(CtsPolygonExpr... items) {
     return new PolygonSeqListImpl(items);
   }
-  static class PolygonSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsPolygonSeqExpr {
+  static class PolygonSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsPolygonSeqExpr {
     PolygonSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class PolygonSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPolygonSeqExpr {
+  static class PolygonSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonSeqExpr {
     PolygonSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PolygonCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsPolygonExpr {
+  static class PolygonCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsPolygonExpr {
     PolygonCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1826,19 +1827,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsQuerySeqExpr querySeq(CtsQueryExpr... items) {
     return new QuerySeqListImpl(items);
   }
-  static class QuerySeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsQuerySeqExpr {
+  static class QuerySeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsQuerySeqExpr {
     QuerySeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class QuerySeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsQuerySeqExpr {
+  static class QuerySeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsQuerySeqExpr {
     QuerySeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class QueryCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsQueryExpr {
+  static class QueryCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsQueryExpr {
     QueryCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1846,19 +1847,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsReferenceSeqExpr referenceSeq(CtsReferenceExpr... items) {
     return new ReferenceSeqListImpl(items);
   }
-  static class ReferenceSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsReferenceSeqExpr {
+  static class ReferenceSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsReferenceSeqExpr {
     ReferenceSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class ReferenceSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsReferenceSeqExpr {
+  static class ReferenceSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsReferenceSeqExpr {
     ReferenceSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class ReferenceCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsReferenceExpr {
+  static class ReferenceCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsReferenceExpr {
     ReferenceCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -1866,19 +1867,19 @@ class CtsExprImpl implements CtsExpr {
   public CtsRegionSeqExpr regionSeq(CtsRegionExpr... items) {
     return new RegionSeqListImpl(items);
   }
-  static class RegionSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements CtsRegionSeqExpr {
+  static class RegionSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements CtsRegionSeqExpr {
     RegionSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class RegionSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsRegionSeqExpr {
+  static class RegionSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsRegionSeqExpr {
     RegionSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class RegionCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements CtsRegionExpr {
+  static class RegionCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements CtsRegionExpr {
     RegionCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
 

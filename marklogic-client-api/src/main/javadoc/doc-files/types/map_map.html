@@ -1,0 +1,79 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>map:map Server Expression Type</title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style"/>
+    <script type="text/javascript" src="../../script.js"></script>
+  </head>
+  <body><div class="topNav"><ul class="navList" title="Navigation">
+	<li><a href="../../overview-summary.html">Overview</a></li>
+	<li><a href="../../com/marklogic/client/expression/package-summary.html">Package</a></li>
+	<li><a href="../../deprecated-list.html">Deprecated</a></li>
+	<li><a href="../../index-all.html">Index</a></li>
+	<li><a href="../../help-doc.html">Help</a></li>
+      </ul></div><div class="header"><h2>map:map Server Expression</h2></div><div class="contentContainer"><p>A server expression that returns a value of (or implicitly castable to) the map:map server type.
+For all server types, see the <a href="ml-server-type-tree.html">Server Expression Type Hierarchy</a>.</p><br/><div class="summary"><h3>Cast With</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">map:map</td>
+	    <td class="colLast"><span class="memberNameLink">map:map</span>(<span><a href="element-node.html">element-node</a> <i>map</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-map">java</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="item.html">item</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Subtypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="json_object.html">json:object</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Parameter Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="xs_boolean.html">xs:boolean</a></td>
+	    <td class="colLast"><span class="memberNameLink">map:contains</span>(<span>map:map <i>map</i></span>, <span><a href="xs_string.html">xs:string</a> <i>key</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-contains">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:contains" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_unsignedInt.html">xs:unsignedInt</a></td>
+	    <td class="colLast"><span class="memberNameLink">map:count</span>(<span>map:map <i>map</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-count">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:count" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst"><a href="item.html">item</a>*</td>
+	    <td class="colLast"><span class="memberNameLink">map:get</span>(<span>map:map <i>map</i></span>, <span><a href="xs_string.html">xs:string</a> <i>key</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-get">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:get" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst"><a href="xs_string.html">xs:string</a>*</td>
+	    <td class="colLast"><span class="memberNameLink">map:keys</span>(<span>map:map <i>map</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-keys">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:keys" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">map:map</td>
+	    <td class="colLast"><span class="memberNameLink">map:entry</span>(<span><a href="xs_string.html">xs:string</a> <i>key</i></span>, <span><a href="item.html">item</a> <i>value</i>*</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/MapExpr.html#ml-server-type-entry">java</a></td>
+	    <td><a href="http://docs.marklogic.com/map:entry" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">map:map?</td>
+	    <td class="colLast"><span class="memberNameLink">xdmp:node-metadata</span>(<span><a href="node.html">node</a> <i>node</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-node-metadata">java</a></td>
+	    <td><a href="http://docs.marklogic.com/xdmp:node-metadata" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div></div></body>
+</html>

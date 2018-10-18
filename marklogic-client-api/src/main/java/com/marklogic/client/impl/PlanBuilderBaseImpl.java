@@ -123,14 +123,14 @@ abstract class PlanBuilderBaseImpl extends PlanBuilder {
     }
   }
 
-  static class PlanCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> {
+  static class PlanCallImpl extends BaseTypeImpl.ServerExpressionCallImpl {
     PlanCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class PlanSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> {
+  static class PlanSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl {
     PlanSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
 }

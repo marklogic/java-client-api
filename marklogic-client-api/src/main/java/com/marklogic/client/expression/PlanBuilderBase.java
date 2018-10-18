@@ -62,17 +62,7 @@ public interface PlanBuilderBase {
      * @param property  The JSON nodes for the array.
      * @return  a ArrayNodeExpr expression
      */
-    public abstract ArrayNodeExpr jsonArray(JsonContentNodeExpr... property);
-    /**
-    * This function constructs an XML element with the name (which can be a string or QName), a sequence of zero or more attributes, and child content. 
-    * <p>
-    * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/op:xml-element" target="mlserverdoc">op:xml-element</a>
-    * @param name  The string or QName for the constructed element.
-    * @param attributes  Any element attributes returned from op:xml-attribute, or null if no attributes.
-    * @param content  A sequence or array of atomic values or an element, a comment from op:xml-comment, or processing instruction nodes from op:xml-pi.
-    * @return  a ElementNodeExpr expression
-    */
-    public ElementNodeExpr xmlElement(XsQNameExpr name, AttributeNodeSeqExpr attributes, XmlContentNodeSeqExpr content);
+    public abstract ArrayNodeExpr jsonArray(ServerExpression... property);
 
     /**
      * This function returns the specified value expression if the specified value expression is true. Otherwise, it returns null.
@@ -82,20 +72,13 @@ public interface PlanBuilderBase {
      * @return  a ItemSeqExpr expression sequence
      */
     public ItemSeqExpr caseExpr(PlanCase... cases);
-    /**
-    * This function returns the specified value if the specified condition is true. Otherwise, it returns null.
-    * @param condition  A boolean expression.
-    * @param value  The value expression to return if the boolean expression is true.
-    * @return  a PlanCase object
-    */
-    public PlanCase when(XsBooleanExpr condition, ItemSeqExpr value);
 
     /**
      * This function returns the specified value if none of the preceeding when() conditions are true.
      * @param value  The value expression to return
      * @return  a PlanCase object
      */
-    public PlanCase elseExpr(ItemExpr value);
+    public PlanCase elseExpr(ServerExpression value);
 
     /**
      * This function concatenates the non-null values of the column for the rows in the group or row set. The result is used for building the parameters used by the groupBy() function.
@@ -159,6 +142,21 @@ public interface PlanBuilderBase {
      * @return  a PlanFunction object
      */
     public PlanFunction resolveFunction(XsQNameVal functionName, String modulePath);
+
+    /**
+     * Collects a sequence of server expressions as a new server expression
+     * for evaluation on the server.
+     *
+     * <a name="ml-server-expression-sequence"></a>
+     * The collected server expressions can include values, the results produced
+     * by executing callson the server, and other sequences of server expressions.
+     * The individual items in another sequence of server expressions become items
+     * in the new sequence.
+     *
+     * @param expression  one or more server expressions
+     * @return a server expression representing a sequence of server expressions
+     */
+    public ServerExpression seq(ServerExpression... expression);
 
     /**
      * Defines base methods for Plan. This interface is an implementation detail.
@@ -320,11 +318,11 @@ public interface PlanBuilderBase {
          */
         public PlanBuilder.ModifyPlan offsetLimit(XsLongVal start, XsLongVal length);
         /**
-         * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions. 
+         * This method restricts the row set to rows matched by the boolean expression. Use boolean composers such as op.and and op.or to combine multiple expressions.
          * @param condition  The boolean expression on which to match. 
          * @return  a ModifyPlan object
          */
-        public PlanBuilder.ModifyPlan where(XsBooleanExpr condition);
+        public PlanBuilder.ModifyPlan where(ServerExpression condition);
         /**
          * This method restricts the row set to rows from the documents matched by the cts.query expression.  
          * @param condition  The cts.query expression for matching the documents.
@@ -338,9 +336,9 @@ public interface PlanBuilderBase {
          */
         public PlanBuilder.ModifyPlan where(PlanCondition condition);
         /**
-         * This method adjusts the row set based on the triples for the sem.store definition, 
+         * This method adjusts the row set based on the triples for the sem.store definition,
          * restricting the triples to the documents matched by a cts.query expression and
-         * expanding the triples based on inferencing rules.  
+         * expanding the triples based on inferencing rules.
          * @param condition  The sem.store for modifying the initial set of triples from which rows are projected.
          * @return  a ModifyPlan object
          */

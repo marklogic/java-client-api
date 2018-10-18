@@ -64,7 +64,7 @@ task sourcesJar(type: Jar) {
 }
 
 javadoc {
-    maxMemory="3500m"
+    maxMemory="6000m"
     options.overview = "src/main/javadoc/overview.html"
     options.windowTitle = "$rootProject.describedName $rootProject.version"
     options.docTitle = "$rootProject.describedName $rootProject.version"
@@ -76,6 +76,13 @@ javadoc {
             'com/marklogic/client/extra/xom/**',
             'com/marklogic/client/example/handle/XOMHandleExample.java'
     ])
+// workaround for bug in options.docFilesSubDirs = true
+    doLast{
+        copy{
+            from "${projectDir}/src/main/javadoc/doc-files"
+            into "${buildDir}/docs/javadoc/doc-files"
+        }
+    }
 }
 
 task javadocJar (type: Jar, dependsOn: javadoc) {

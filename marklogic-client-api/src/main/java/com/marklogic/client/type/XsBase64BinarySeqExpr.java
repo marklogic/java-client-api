@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server base 64 binary expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsBase64BinarySeqExpr extends XsAnyAtomicTypeSeqExpr {
 }

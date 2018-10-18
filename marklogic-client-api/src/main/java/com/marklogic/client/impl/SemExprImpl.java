@@ -16,7 +16,6 @@
 package com.marklogic.client.impl;
 
 import com.marklogic.client.type.CtsQueryExpr;
-import com.marklogic.client.type.ItemExpr;
 import com.marklogic.client.type.ItemSeqExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeExpr;
 import com.marklogic.client.type.XsAnyAtomicTypeVal;
@@ -33,6 +32,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsStringSeqVal;
 import com.marklogic.client.type.XsStringVal;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.SemBlankExpr;
 import com.marklogic.client.type.SemBlankSeqExpr;
 import com.marklogic.client.type.SemInvalidExpr;
@@ -65,7 +65,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemBlankExpr bnode(XsAnyAtomicTypeExpr value) {
+  public SemBlankExpr bnode(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for bnode() cannot be null");
     }
@@ -74,13 +74,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public ItemSeqExpr coalesce(ItemExpr... parameter1) {
+  public ItemSeqExpr coalesce(ServerExpression... parameter1) {
     return new BaseTypeImpl.ItemSeqCallImpl("sem", "coalesce", parameter1);
   }
 
   
   @Override
-  public SemIriExpr datatype(XsAnyAtomicTypeExpr value) {
+  public SemIriExpr datatype(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for datatype() cannot be null");
     }
@@ -89,7 +89,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public ItemSeqExpr ifExpr(XsBooleanExpr condition, ItemSeqExpr then, ItemSeqExpr elseExpr) {
+  public ItemSeqExpr ifExpr(ServerExpression condition, ServerExpression then, ServerExpression elseExpr) {
     if (condition == null) {
       throw new IllegalArgumentException("condition parameter for ifExpr() cannot be null");
     }
@@ -98,13 +98,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemInvalidExpr invalid(XsStringExpr string, String datatype) {
+  public SemInvalidExpr invalid(ServerExpression string, String datatype) {
     return invalid(string, (datatype == null) ? (SemIriExpr) null : iri(datatype));
   }
 
   
   @Override
-  public SemInvalidExpr invalid(XsStringExpr string, SemIriExpr datatype) {
+  public SemInvalidExpr invalid(ServerExpression string, ServerExpression datatype) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for invalid() cannot be null");
     }
@@ -116,7 +116,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemIriExpr invalidDatatype(SemInvalidExpr val) {
+  public SemIriExpr invalidDatatype(ServerExpression val) {
     if (val == null) {
       throw new IllegalArgumentException("val parameter for invalidDatatype() cannot be null");
     }
@@ -125,13 +125,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemIriExpr iri(ItemSeqExpr stringIri) {
+  public SemIriExpr iri(ServerExpression stringIri) {
     return new IriCallImpl("sem", "iri", new Object[]{ stringIri });
   }
 
   
   @Override
-  public XsQNameExpr iriToQName(XsStringExpr arg1) {
+  public XsQNameExpr iriToQName(ServerExpression arg1) {
     if (arg1 == null) {
       throw new IllegalArgumentException("arg1 parameter for iriToQName() cannot be null");
     }
@@ -140,7 +140,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr isBlank(XsAnyAtomicTypeExpr value) {
+  public XsBooleanExpr isBlank(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for isBlank() cannot be null");
     }
@@ -149,7 +149,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr isIRI(XsAnyAtomicTypeExpr value) {
+  public XsBooleanExpr isIRI(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for isIRI() cannot be null");
     }
@@ -158,7 +158,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr isLiteral(XsAnyAtomicTypeExpr value) {
+  public XsBooleanExpr isLiteral(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for isLiteral() cannot be null");
     }
@@ -167,7 +167,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr isNumeric(XsAnyAtomicTypeExpr value) {
+  public XsBooleanExpr isNumeric(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for isNumeric() cannot be null");
     }
@@ -176,7 +176,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsStringExpr lang(XsAnyAtomicTypeExpr value) {
+  public XsStringExpr lang(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for lang() cannot be null");
     }
@@ -185,13 +185,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr langMatches(XsStringExpr langTag, String langRange) {
+  public XsBooleanExpr langMatches(ServerExpression langTag, String langRange) {
     return langMatches(langTag, (langRange == null) ? (XsStringExpr) null : xs.string(langRange));
   }
 
   
   @Override
-  public XsBooleanExpr langMatches(XsStringExpr langTag, XsStringExpr langRange) {
+  public XsBooleanExpr langMatches(ServerExpression langTag, ServerExpression langRange) {
     if (langTag == null) {
       throw new IllegalArgumentException("langTag parameter for langMatches() cannot be null");
     }
@@ -203,7 +203,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemIriExpr QNameToIri(XsQNameExpr arg1) {
+  public SemIriExpr QNameToIri(ServerExpression arg1) {
     if (arg1 == null) {
       throw new IllegalArgumentException("arg1 parameter for QNameToIri() cannot be null");
     }
@@ -254,13 +254,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, String b) {
+  public XsBooleanExpr sameTerm(ServerExpression a, String b) {
     return sameTerm(a, (b == null) ? (XsAnyAtomicTypeExpr) null : xs.string(b));
   }
 
   
   @Override
-  public XsBooleanExpr sameTerm(XsAnyAtomicTypeExpr a, XsAnyAtomicTypeExpr b) {
+  public XsBooleanExpr sameTerm(ServerExpression a, ServerExpression b) {
     if (a == null) {
       throw new IllegalArgumentException("a parameter for sameTerm() cannot be null");
     }
@@ -302,7 +302,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsStringExpr timezoneString(XsDateTimeExpr value) {
+  public XsStringExpr timezoneString(ServerExpression value) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for timezoneString() cannot be null");
     }
@@ -311,13 +311,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, String datatype) {
+  public XsAnyAtomicTypeExpr typedLiteral(ServerExpression value, String datatype) {
     return typedLiteral(value, (datatype == null) ? (SemIriExpr) null : iri(datatype));
   }
 
   
   @Override
-  public XsAnyAtomicTypeExpr typedLiteral(XsStringExpr value, SemIriExpr datatype) {
+  public XsAnyAtomicTypeExpr typedLiteral(ServerExpression value, ServerExpression datatype) {
     if (value == null) {
       throw new IllegalArgumentException("value parameter for typedLiteral() cannot be null");
     }
@@ -329,13 +329,13 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemUnknownExpr unknown(XsStringExpr string, String datatype) {
+  public SemUnknownExpr unknown(ServerExpression string, String datatype) {
     return unknown(string, (datatype == null) ? (SemIriExpr) null : iri(datatype));
   }
 
   
   @Override
-  public SemUnknownExpr unknown(XsStringExpr string, SemIriExpr datatype) {
+  public SemUnknownExpr unknown(ServerExpression string, ServerExpression datatype) {
     if (string == null) {
       throw new IllegalArgumentException("string parameter for unknown() cannot be null");
     }
@@ -347,7 +347,7 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
 
   
   @Override
-  public SemIriExpr unknownDatatype(SemUnknownExpr val) {
+  public SemIriExpr unknownDatatype(ServerExpression val) {
     if (val == null) {
       throw new IllegalArgumentException("val parameter for unknownDatatype() cannot be null");
     }
@@ -370,19 +370,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   public SemBlankSeqExpr blankSeq(SemBlankExpr... items) {
     return new BlankSeqListImpl(items);
   }
-  static class BlankSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemBlankSeqExpr {
+  static class BlankSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements SemBlankSeqExpr {
     BlankSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class BlankSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemBlankSeqExpr {
+  static class BlankSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemBlankSeqExpr {
     BlankSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class BlankCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemBlankExpr {
+  static class BlankCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemBlankExpr {
     BlankCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -390,19 +390,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   public SemInvalidSeqExpr invalidSeq(SemInvalidExpr... items) {
     return new InvalidSeqListImpl(items);
   }
-  static class InvalidSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemInvalidSeqExpr {
+  static class InvalidSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements SemInvalidSeqExpr {
     InvalidSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class InvalidSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemInvalidSeqExpr {
+  static class InvalidSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemInvalidSeqExpr {
     InvalidSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class InvalidCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemInvalidExpr {
+  static class InvalidCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemInvalidExpr {
     InvalidCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -410,19 +410,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   public SemIriSeqExpr iriSeq(SemIriExpr... items) {
     return new IriSeqListImpl(items);
   }
-  static class IriSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemIriSeqExpr {
+  static class IriSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements SemIriSeqExpr {
     IriSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class IriSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemIriSeqExpr {
+  static class IriSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemIriSeqExpr {
     IriSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class IriCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemIriExpr {
+  static class IriCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemIriExpr {
     IriCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -430,19 +430,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   public SemStoreSeqExpr storeSeq(SemStoreExpr... items) {
     return new StoreSeqListImpl(items);
   }
-  static class StoreSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreSeqExpr {
+  static class StoreSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements SemStoreSeqExpr {
     StoreSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class StoreSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreSeqExpr {
+  static class StoreSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemStoreSeqExpr {
     StoreSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class StoreCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemStoreExpr {
+  static class StoreCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemStoreExpr {
     StoreCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
  
@@ -450,19 +450,19 @@ class SemExprImpl extends SemValueImpl implements SemExpr {
   public SemUnknownSeqExpr unknownSeq(SemUnknownExpr... items) {
     return new UnknownSeqListImpl(items);
   }
-  static class UnknownSeqListImpl extends BaseTypeImpl.BaseListImpl<BaseTypeImpl.BaseArgImpl> implements SemUnknownSeqExpr {
+  static class UnknownSeqListImpl extends BaseTypeImpl.ServerExpressionListImpl implements SemUnknownSeqExpr {
     UnknownSeqListImpl(Object[] items) {
-      super(BaseTypeImpl.convertList(items));
+      super(items);
     }
   }
-  static class UnknownSeqCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemUnknownSeqExpr {
+  static class UnknownSeqCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemUnknownSeqExpr {
     UnknownSeqCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
-  static class UnknownCallImpl extends BaseTypeImpl.BaseCallImpl<BaseTypeImpl.BaseArgImpl> implements SemUnknownExpr {
+  static class UnknownCallImpl extends BaseTypeImpl.ServerExpressionCallImpl implements SemUnknownExpr {
     UnknownCallImpl(String fnPrefix, String fnName, Object[] fnArgs) {
-      super(fnPrefix, fnName, BaseTypeImpl.convertList(fnArgs));
+      super(fnPrefix, fnName, fnArgs);
     }
   }
 

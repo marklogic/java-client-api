@@ -1,0 +1,81 @@
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <title>xs:anyURI Server Expression Type</title>
+    <link rel="stylesheet" type="text/css" href="../../stylesheet.css" title="Style"/>
+    <script type="text/javascript" src="../../script.js"></script>
+  </head>
+  <body><div class="topNav"><ul class="navList" title="Navigation">
+	<li><a href="../../overview-summary.html">Overview</a></li>
+	<li><a href="../../com/marklogic/client/expression/package-summary.html">Package</a></li>
+	<li><a href="../../deprecated-list.html">Deprecated</a></li>
+	<li><a href="../../index-all.html">Index</a></li>
+	<li><a href="../../help-doc.html">Help</a></li>
+      </ul></div><div class="header"><h2>xs:anyURI Server Expression</h2></div><div class="contentContainer"><p>A server expression that returns a value of (or implicitly castable to) the xs:anyURI server type.
+For all server types, see the <a href="ml-server-type-tree.html">Server Expression Type Hierarchy</a>.</p><br/><div class="summary"><h3>Cast With</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">xs:anyURI</span>(<span><a href="xs_anyAtomicType.html">item</a> <i>arg1</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XsExpr.html#ml-server-type-anyURI">java</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Supertypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="item.html">item</a></td>
+	    <td><a href="xs_anyAtomicType.html">xs:anyAtomicType</a></td>
+	    <td><a href="xs_anySimpleType.html">xs:anySimpleType</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Subtypes</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr class="altColor">
+	    <td><a href="sem_iri.html">sem:iri</a></td>
+	  </tr>
+</table></div><br/><div class="summary"><h3>Return Value Of</h3><table class="memberSummary" border="0" cellpadding="3" cellspacing="0"><tr>
+	    <th class="colFirst" scope="col">Server Return Type</th>
+	    <th class="colLast" scope="col">Server Function</th>
+	    <th class="colLast" scope="col">Java Doc</th>
+	    <th class="colLast" scope="col">Server Doc</th>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">fn:base-uri</span>(<span><a href="node.html">node</a> <i>arg</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-base-uri">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:base-uri" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">fn:document-uri</span>(<span><a href="node.html">node</a> <i>arg</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-document-uri">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:document-uri" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:anyURI</td>
+	    <td class="colLast"><span class="memberNameLink">fn:namespace-uri</span>(<span><a href="node.html">node</a> <i>arg</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-namespace-uri">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:namespace-uri" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">fn:namespace-uri-for-prefix</span>(<span><a href="xs_string.html">xs:string</a> <i>prefix</i>?</span>, <span><a href="element-node.html">element-node</a> <i>element</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-namespace-uri-for-prefix">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:namespace-uri-for-prefix" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">fn:namespace-uri-from-QName</span>(<span><a href="xs_QName.html">xs:QName</a> <i>arg</i>?</span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-namespace-uri-from-QName">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:namespace-uri-from-QName" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="rowColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">fn:resolve-uri</span>(<span><a href="xs_string.html">xs:string</a> <i>relative</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>base</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/FnExpr.html#ml-server-type-resolve-uri">java</a></td>
+	    <td><a href="http://docs.marklogic.com/fn:resolve-uri" target="mlserverdoc">server</a></td>
+	  </tr>
+<tr class="altColor">
+	    <td class="colFirst">xs:anyURI?</td>
+	    <td class="colLast"><span class="memberNameLink">xdmp:resolve-uri</span>(<span><a href="xs_string.html">xs:string</a> <i>relative</i>?</span>, <span><a href="xs_string.html">xs:string</a> <i>base</i></span>)</td>
+	    <td><a href="../../com/marklogic/client/expression/XdmpExpr.html#ml-server-type-resolve-uri">java</a></td>
+	    <td><a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">server</a></td>
+	  </tr>
+</table></div></div></body>
+</html>

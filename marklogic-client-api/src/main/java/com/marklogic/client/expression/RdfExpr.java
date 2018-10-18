@@ -17,6 +17,7 @@ package com.marklogic.client.expression;
 
 import com.marklogic.client.type.XsStringExpr;
 
+import com.marklogic.client.type.ServerExpression;
 import com.marklogic.client.type.RdfLangStringExpr;
 import com.marklogic.client.type.RdfLangStringSeqExpr;
 
@@ -30,33 +31,40 @@ public interface RdfExpr extends RdfValue {
     /**
   * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a>
-  * @param string  The lexical value.
-  * @param lang  The language.
-  * @return  a RdfLangStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a> server function.
+  * @param string  The lexical value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param lang  The language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/rdf_langString.html">rdf:langString</a> server data type
   */
-  public RdfLangStringExpr langString(XsStringExpr string, String lang);
+  public RdfLangStringExpr langString(ServerExpression string, String lang);
 /**
   * Returns an rdf:langString value with the given value and language tag. The rdf:langString type extends xs:string, and represents a language tagged string in RDF. 
+  *
+  * <a name="ml-server-type-langString"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a>
-  * @param string  The lexical value.
-  * @param lang  The language.
-  * @return  a RdfLangStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/rdf:langString" target="mlserverdoc">rdf:langString</a> server function.
+  * @param string  The lexical value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param lang  The language.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/rdf_langString.html">rdf:langString</a> server data type
   */
-  public RdfLangStringExpr langString(XsStringExpr string, XsStringExpr lang);
+  public RdfLangStringExpr langString(ServerExpression string, ServerExpression lang);
 /**
   * Returns the language of an rdf:langString value. 
+  *
+  * <a name="ml-server-type-langString-language"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/rdf:langString-language" target="mlserverdoc">rdf:langString-language</a>
-  * @param val  The rdf:langString value.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/rdf:langString-language" target="mlserverdoc">rdf:langString-language</a> server function.
+  * @param val  The rdf:langString value.  (of <a href="{@docRoot}/doc-files/types/rdf_langString.html">rdf:langString</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr langStringLanguage(RdfLangStringExpr val);
+  public XsStringExpr langStringLanguage(ServerExpression val);
 /**
   * Constructs a sequence of RdfLangStringExpr items.
   * @param items  the RdfLangStringExpr items collected by the sequence
   * @return  a RdfLangStringSeqExpr sequence
+  * @deprecated (as of 4.2) construct a {@link com.marklogic.client.type.ServerExpression} sequence with <a href="PlanBuilderBase.html#ml-server-expression-sequence">PlanBuilder.seq()</a>
   */
   public RdfLangStringSeqExpr langStringSeq(RdfLangStringExpr... items);
 

@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * A sequence of server float expressions.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsFloatSeqExpr extends XsAnyAtomicTypeSeqExpr, XsNumericSeqExpr {
 }

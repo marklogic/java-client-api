@@ -19,6 +19,7 @@ package com.marklogic.client.type;
 
 /**
  * An instance of a server token expression.
+ * @deprecated (as of 4.2) Use {@link com.marklogic.client.type.ServerExpression}
  */
 public interface XsTokenExpr extends XsTokenSeqExpr, XsNormalizedStringExpr {
 }

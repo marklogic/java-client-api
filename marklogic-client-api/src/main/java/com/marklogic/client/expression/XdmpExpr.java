@@ -35,7 +35,7 @@ import com.marklogic.client.type.XsStringSeqExpr;
 import com.marklogic.client.type.XsUnsignedIntExpr;
 import com.marklogic.client.type.XsUnsignedLongExpr;
 
-
+import com.marklogic.client.type.ServerExpression;
 
 // IMPORTANT: Do not edit. This file is generated. 
 
@@ -46,1211 +46,1407 @@ import com.marklogic.client.type.XsUnsignedLongExpr;
 public interface XdmpExpr {
     /**
   * Add two 64-bit integer values, discarding overflow.
+  *
+  * <a name="ml-server-type-add64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:add64" target="mlserverdoc">xdmp:add64</a>
-  * @param x  The first value.
-  * @param y  The second value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:add64" target="mlserverdoc">xdmp:add64</a> server function.
+  * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr add64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
+  public XsUnsignedLongExpr add64(ServerExpression x, ServerExpression y);
 /**
   * AND two 64-bit integer values.
+  *
+  * <a name="ml-server-type-and64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:and64" target="mlserverdoc">xdmp:and64</a>
-  * @param x  The first value.
-  * @param y  The second value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:and64" target="mlserverdoc">xdmp:and64</a> server function.
+  * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr and64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
+  public XsUnsignedLongExpr and64(ServerExpression x, ServerExpression y);
 /**
   * Converts base64-encoded string to plaintext.
+  *
+  * <a name="ml-server-type-base64-decode"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:base64-decode" target="mlserverdoc">xdmp:base64-decode</a>
-  * @param encoded  Encoded text to be decoded.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:base64-decode" target="mlserverdoc">xdmp:base64-decode</a> server function.
+  * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr base64Decode(XsStringExpr encoded);
+  public XsStringExpr base64Decode(ServerExpression encoded);
 /**
   * Converts plaintext into base64-encoded string.
+  *
+  * <a name="ml-server-type-base64-encode"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:base64-encode" target="mlserverdoc">xdmp:base64-encode</a>
-  * @param plaintext  Plaintext to be encoded.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:base64-encode" target="mlserverdoc">xdmp:base64-encode</a> server function.
+  * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr base64Encode(XsStringExpr plaintext);
+  public XsStringExpr base64Encode(ServerExpression plaintext);
 /**
   * Returns true if a value is castable. This is similar to the "castable as" XQuery predicate, except that the type is determined at runtime.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:castable-as" target="mlserverdoc">xdmp:castable-as</a>
-  * @param namespaceUri  The namespace URI of the type.
-  * @param localName  The local-name of the type.
-  * @param item  The item to be cast.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:castable-as" target="mlserverdoc">xdmp:castable-as</a> server function.
+  * @param namespaceUri  The namespace URI of the type.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param localName  The local-name of the type.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param item  The item to be cast.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr castableAs(XsStringExpr namespaceUri, String localName, ItemExpr item);
+  public XsBooleanExpr castableAs(ServerExpression namespaceUri, String localName, ServerExpression item);
 /**
   * Returns true if a value is castable. This is similar to the "castable as" XQuery predicate, except that the type is determined at runtime.
+  *
+  * <a name="ml-server-type-castable-as"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:castable-as" target="mlserverdoc">xdmp:castable-as</a>
-  * @param namespaceUri  The namespace URI of the type.
-  * @param localName  The local-name of the type.
-  * @param item  The item to be cast.
-  * @return  a XsBooleanExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:castable-as" target="mlserverdoc">xdmp:castable-as</a> server function.
+  * @param namespaceUri  The namespace URI of the type.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param localName  The local-name of the type.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param item  The item to be cast.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a> server data type
   */
-  public XsBooleanExpr castableAs(XsStringExpr namespaceUri, XsStringExpr localName, ItemExpr item);
+  public XsBooleanExpr castableAs(ServerExpression namespaceUri, ServerExpression localName, ServerExpression item);
 /**
   * Calculates the password hash for the given password and salt.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:crypt" target="mlserverdoc">xdmp:crypt</a>
-  * @param password  String to be hashed.
-  * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:crypt" target="mlserverdoc">xdmp:crypt</a> server function.
+  * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt(XsStringExpr password, String salt);
+  public XsStringExpr crypt(ServerExpression password, String salt);
 /**
   * Calculates the password hash for the given password and salt.
+  *
+  * <a name="ml-server-type-crypt"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:crypt" target="mlserverdoc">xdmp:crypt</a>
-  * @param password  String to be hashed.
-  * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:crypt" target="mlserverdoc">xdmp:crypt</a> server function.
+  * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param salt  Salt to avoid 1:1 mapping from passwords to hashes. Only the first 8 characters of the salt are significant; any characters beyond the eighth are ignored.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt(XsStringExpr password, XsStringExpr salt);
+  public XsStringExpr crypt(ServerExpression password, ServerExpression salt);
 /**
   * Calculates the password hash for the given plain-text password.
+  *
+  * <a name="ml-server-type-crypt2"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:crypt2" target="mlserverdoc">xdmp:crypt2</a>
-  * @param password  String to be hashed.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:crypt2" target="mlserverdoc">xdmp:crypt2</a> server function.
+  * @param password  String to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr crypt2(XsStringExpr password);
+  public XsStringExpr crypt2(ServerExpression password);
 /**
   * Returns an xs:string representing the dayname value in the localized value of arg. 
+  *
+  * <a name="ml-server-type-dayname-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:dayname-from-date" target="mlserverdoc">xdmp:dayname-from-date</a>
-  * @param arg  The date whose dayname value will be returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:dayname-from-date" target="mlserverdoc">xdmp:dayname-from-date</a> server function.
+  * @param arg  The date whose dayname value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr daynameFromDate(XsDateExpr arg);
+  public XsStringExpr daynameFromDate(ServerExpression arg);
 /**
   * Invertible function that decodes characters an NCName produced by xdmp:encode-for-NCName. Given the NCName produced by xdmp:encode-for-NCName this function returns the original string.
+  *
+  * <a name="ml-server-type-decode-from-NCName"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:decode-from-NCName" target="mlserverdoc">xdmp:decode-from-NCName</a>
-  * @param name  A string representing an NCName. This string must have been the result of a previous call to xdmp:decode-from-NCName or undefined results will occur.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:decode-from-NCName" target="mlserverdoc">xdmp:decode-from-NCName</a> server function.
+  * @param name  A string representing an NCName. This string must have been the result of a previous call to xdmp:decode-from-NCName or undefined results will occur.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr decodeFromNCName(XsStringExpr name);
+  public XsStringExpr decodeFromNCName(ServerExpression name);
+/**
+  * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
+  *
+  * <a name="ml-server-type-describe"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
+  * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public XsStringExpr describe(ServerExpression item);
 /**
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a>
-  * @param item  The item sequence whose description is returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
+  * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr describe(ItemSeqExpr item);
+  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength);
 /**
   * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a>
-  * @param item  The item sequence whose description is returned.
-  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a> server function.
+  * @param item  The item sequence whose description is returned.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @param maxItemLength  Represents the maximum number of characters per item to print. The default is 64. The minimum is 8. () means no limit.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr describe(ItemSeqExpr item, XsUnsignedIntExpr maxSequenceLength);
-/**
-  * Returns a string representing the description of a given item sequence. If you take the output of this function and evaluate it as an XQuery program, it returns the item(s) input to the function.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:describe" target="mlserverdoc">xdmp:describe</a>
-  * @param item  The item sequence whose description is returned.
-  * @param maxSequenceLength  Represents the maximum number of items per sequence to print. The default is 3. () means no maximum.
-  * @param maxItemLength  Represents the maximum number of characters per item to print. The default is 64. The minimum is 8. () means no limit.
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr describe(ItemSeqExpr item, XsUnsignedIntExpr maxSequenceLength, XsUnsignedIntExpr maxItemLength);
+  public XsStringExpr describe(ServerExpression item, ServerExpression maxSequenceLength, ServerExpression maxItemLength);
 /**
   * Returns the specified string, converting all of the characters with diacritics to characters without diacritics.
+  *
+  * <a name="ml-server-type-diacritic-less"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:diacritic-less" target="mlserverdoc">xdmp:diacritic-less</a>
-  * @param string  The string to convert.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:diacritic-less" target="mlserverdoc">xdmp:diacritic-less</a> server function.
+  * @param string  The string to convert.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr diacriticLess(XsStringExpr string);
+  public XsStringExpr diacriticLess(ServerExpression string);
 /**
   * Returns the schema-defined content-type of an element ("empty", "simple", "element-only", or "mixed").
+  *
+  * <a name="ml-server-type-element-content-type"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:element-content-type" target="mlserverdoc">xdmp:element-content-type</a>
-  * @param element  An element node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:element-content-type" target="mlserverdoc">xdmp:element-content-type</a> server function.
+  * @param element  An element node.  (of <a href="{@docRoot}/doc-files/types/element-node.html">element-node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr elementContentType(ElementNodeExpr element);
+  public XsStringExpr elementContentType(ServerExpression element);
 /**
   * Invertible function that escapes characters required to be part of an NCName. This is useful when translating names from other representations such as JSON to XML. Given any string, the result is always a valid NCName. Providing all names are passed through this function the result is distinct NCNames so the results can be used for searching as well as name generation. The inverse function is xdmp:decode-for-NCName.
+  *
+  * <a name="ml-server-type-encode-for-NCName"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:encode-for-NCName" target="mlserverdoc">xdmp:encode-for-NCName</a>
-  * @param name  A string which is used as an NCName (such as the localname for an element or attribute).
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:encode-for-NCName" target="mlserverdoc">xdmp:encode-for-NCName</a> server function.
+  * @param name  A string which is used as an NCName (such as the localname for an element or attribute).  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr encodeForNCName(XsStringExpr name);
+  public XsStringExpr encodeForNCName(ServerExpression name);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  * @deprecated (as of 4.2) pass a {@link com.marklogic.client.type.ServerExpression} for the last parameter
   */
   public XsStringExpr formatNumber(XsNumericExpr... value);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
+  *
+  * <a name="ml-server-type-format-number"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value);
+  public XsStringExpr formatNumber(ServerExpression value);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture);
+  public XsStringExpr formatNumber(ServerExpression value, String picture);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding, XsStringExpr groupingSeparator);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.
-  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
+  public XsStringExpr formatNumber(ServerExpression value, String picture, String language, String letterValue, String ordchar, String zeroPadding, String groupingSeparator, long groupingSize);
 /**
   * Returns a formatted number value based on the picture argument. The difference between this function and the W3C standards fn:format-number function is that this function imitates the XSLT xsl:number instruction, which has richer formatting options than the fn:format-number function. This function can be used for spelled-out and ordinal numbering in many languages. This function is available in XSLT as well as in all dialects of XQuery and Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a>
-  * @param value  The given numeric $value that needs to be formatted.
-  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.
-  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.
-  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:format-number" target="mlserverdoc">xdmp:format-number</a> server function.
+  * @param value  The given numeric $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_numeric.html">xs:numeric</a>)
+  * @param picture  The desired string representation of the given numeric $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. Unlike fn:format-number(), here the picture string allows spelled-out (uppercase, lowercase and Capitalcase) formatting.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The desired language for string representation of the numeric $value. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param letterValue  Same as letter-value attribute in xsl:number. This argument is ignored during formatting as of now. It may be used in future. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param ordchar  If $ordchar is "yes" then ordinal numbering is attempted. If this is any other string, including an empty string, then then cardinal numbering is generated. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param zeroPadding  Value of $zero-padding is used to pad integer part of a number on the left and fractional part on the right, if needed. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSeparator  Value of $grouping-separator is a character, used to groups of digits, especially useful in making long sequence of digits more readable. For example, 10,000,000- here "," is used as a separator after each group of three digits. An empty sequence must be passed in even if a user doesn't want to specify this argument.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param groupingSize  Represents size of the group, i.e. the number of digits before after which grouping separator is inserted. An empty sequence must be passed in even if a user doesn't want to specifiy this argument.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr formatNumber(XsNumericSeqExpr value, XsStringExpr picture, XsStringExpr language, XsStringExpr letterValue, XsStringExpr ordchar, XsStringExpr zeroPadding, XsStringExpr groupingSeparator, XsIntegerExpr groupingSize);
+  public XsStringExpr formatNumber(ServerExpression value, ServerExpression picture, ServerExpression language, ServerExpression letterValue, ServerExpression ordchar, ServerExpression zeroPadding, ServerExpression groupingSeparator, ServerExpression groupingSize);
 /**
   * Atomizes a JSON node, returning a JSON value.
+  *
+  * <a name="ml-server-type-from-json"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:from-json" target="mlserverdoc">xdmp:from-json</a>
-  * @param arg  A node of kind object-node(), array-node(), text(), number-node(), boolean-node(), null-node(), or document-node().
-  * @return  a ItemSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:from-json" target="mlserverdoc">xdmp:from-json</a> server function.
+  * @param arg  A node of kind object-node(), array-node(), text(), number-node(), boolean-node(), null-node(), or document-node().  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr fromJson(NodeExpr arg);
+  public ItemSeqExpr fromJson(ServerExpression arg);
 /**
   * Returns the name of the current user.
+  *
+  * <a name="ml-server-type-get-current-user"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:get-current-user" target="mlserverdoc">xdmp:get-current-user</a>
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:get-current-user" target="mlserverdoc">xdmp:get-current-user</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
   public XsStringExpr getCurrentUser();
 /**
   * Returns the 32-bit hash of a string.
+  *
+  * <a name="ml-server-type-hash32"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hash32" target="mlserverdoc">xdmp:hash32</a>
-  * @param string  The string to be hashed.
-  * @return  a XsUnsignedIntExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hash32" target="mlserverdoc">xdmp:hash32</a> server function.
+  * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedInt.html">xs:unsignedInt</a> server data type
   */
-  public XsUnsignedIntExpr hash32(XsStringExpr string);
+  public XsUnsignedIntExpr hash32(ServerExpression string);
 /**
   * Returns the 64-bit hash of a string.
+  *
+  * <a name="ml-server-type-hash64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hash64" target="mlserverdoc">xdmp:hash64</a>
-  * @param string  The string to be hashed.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hash64" target="mlserverdoc">xdmp:hash64</a> server function.
+  * @param string  The string to be hashed.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr hash64(XsStringExpr string);
+  public XsUnsignedLongExpr hash64(ServerExpression string);
 /**
   * Parses a hexadecimal string, returning an integer.
+  *
+  * <a name="ml-server-type-hex-to-integer"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hex-to-integer" target="mlserverdoc">xdmp:hex-to-integer</a>
-  * @param hex  The hexadecimal string.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hex-to-integer" target="mlserverdoc">xdmp:hex-to-integer</a> server function.
+  * @param hex  The hexadecimal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr hexToInteger(XsStringExpr hex);
+  public XsIntegerExpr hexToInteger(ServerExpression hex);
+/**
+  * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
+  *
+  * <a name="ml-server-type-hmac-md5"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message);
+  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message, String encoding);
+  public XsStringExpr hmacMd5(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
-  * Calculates the Hash-based Message Authentication Code (HMAC) using the md5 hash function of the given secret key and message arguments.
+  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
+  *
+  * <a name="ml-server-type-hmac-sha1"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-md5" target="mlserverdoc">xdmp:hmac-md5</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacMd5(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding);
+  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message);
+  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message, String encoding);
+  public XsStringExpr hmacSha1(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
-  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA1 hash function of the given secret key and message arguments.
+  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
+  *
+  * <a name="ml-server-type-hmac-sha256"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha1" target="mlserverdoc">xdmp:hmac-sha1</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha1(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding);
+  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message);
+  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message, String encoding);
+  public XsStringExpr hmacSha256(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
-  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA256 hash function of the given secret key and message arguments.
+  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
+  *
+  * <a name="ml-server-type-hmac-sha512"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha256" target="mlserverdoc">xdmp:hmac-sha256</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha256(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding);
+  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message);
+  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, String encoding);
 /**
   * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a> server function.
+  * @param secretkey  The secret key. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param message  Message to be authenticated. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, String encoding);
-/**
-  * Calculates the Hash-based Message Authentication Code (HMAC) using the SHA512 hash function of the given secret key and message arguments.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:hmac-sha512" target="mlserverdoc">xdmp:hmac-sha512</a>
-  * @param secretkey  The secret key. Must be xs:string or a binary node.
-  * @param message  Message to be authenticated. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr hmacSha512(ItemExpr secretkey, ItemExpr message, XsStringExpr encoding);
+  public XsStringExpr hmacSha512(ServerExpression secretkey, ServerExpression message, ServerExpression encoding);
 /**
   * Returns the string where the first letter of each token has been uppercased.
+  *
+  * <a name="ml-server-type-initcap"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:initcap" target="mlserverdoc">xdmp:initcap</a>
-  * @param string  The string to modify.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:initcap" target="mlserverdoc">xdmp:initcap</a> server function.
+  * @param string  The string to modify.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr initcap(XsStringExpr string);
+  public XsStringExpr initcap(ServerExpression string);
 /**
   * Returns a hexadecimal representation of an integer.
+  *
+  * <a name="ml-server-type-integer-to-hex"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:integer-to-hex" target="mlserverdoc">xdmp:integer-to-hex</a>
-  * @param val  The integer value.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:integer-to-hex" target="mlserverdoc">xdmp:integer-to-hex</a> server function.
+  * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr integerToHex(XsIntegerExpr val);
+  public XsStringExpr integerToHex(ServerExpression val);
 /**
   * Returns an octal representation of an integer.
+  *
+  * <a name="ml-server-type-integer-to-octal"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:integer-to-octal" target="mlserverdoc">xdmp:integer-to-octal</a>
-  * @param val  The integer value.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:integer-to-octal" target="mlserverdoc">xdmp:integer-to-octal</a> server function.
+  * @param val  The integer value.  (of <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr integerToOctal(XsIntegerExpr val);
+  public XsStringExpr integerToOctal(ServerExpression val);
 /**
   * Construct a context-independent string from a QName. This string is of the form "{namespaceURI}localname" and is suitable for use as a map key.
+  *
+  * <a name="ml-server-type-key-from-QName"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:key-from-QName" target="mlserverdoc">xdmp:key-from-QName</a>
-  * @param name  The QName to compute a key for.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:key-from-QName" target="mlserverdoc">xdmp:key-from-QName</a> server function.
+  * @param name  The QName to compute a key for.  (of <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr keyFromQName(XsQNameExpr name);
+  public XsStringExpr keyFromQName(ServerExpression name);
 /**
   * Left-shift a 64-bit integer value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:lshift64" target="mlserverdoc">xdmp:lshift64</a>
-  * @param x  The value to shift.
-  * @param y  The left shift to perform. This value may be negative.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:lshift64" target="mlserverdoc">xdmp:lshift64</a> server function.
+  * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The left shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr lshift64(XsUnsignedLongExpr x, long y);
+  public XsUnsignedLongExpr lshift64(ServerExpression x, long y);
 /**
   * Left-shift a 64-bit integer value.
+  *
+  * <a name="ml-server-type-lshift64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:lshift64" target="mlserverdoc">xdmp:lshift64</a>
-  * @param x  The value to shift.
-  * @param y  The left shift to perform. This value may be negative.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:lshift64" target="mlserverdoc">xdmp:lshift64</a> server function.
+  * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The left shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr lshift64(XsUnsignedLongExpr x, XsLongExpr y);
+  public XsUnsignedLongExpr lshift64(ServerExpression x, ServerExpression y);
+/**
+  * Calculates the md5 hash of the given argument.
+  *
+  * <a name="ml-server-type-md5"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public XsStringExpr md5(ServerExpression data);
 /**
   * Calculates the md5 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr md5(ItemExpr data);
+  public XsStringExpr md5(ServerExpression data, String encoding);
 /**
   * Calculates the md5 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr md5(ItemExpr data, String encoding);
-/**
-  * Calculates the md5 hash of the given argument.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:md5" target="mlserverdoc">xdmp:md5</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr md5(ItemExpr data, XsStringExpr encoding);
+  public XsStringExpr md5(ServerExpression data, ServerExpression encoding);
 /**
   * Returns month name, calculated from the localized value of arg. 
+  *
+  * <a name="ml-server-type-month-name-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:month-name-from-date" target="mlserverdoc">xdmp:month-name-from-date</a>
-  * @param arg  The date whose month-name will be returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:month-name-from-date" target="mlserverdoc">xdmp:month-name-from-date</a> server function.
+  * @param arg  The date whose month-name will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr monthNameFromDate(XsDateExpr arg);
+  public XsStringExpr monthNameFromDate(ServerExpression arg);
 /**
   * Muliply two 64-bit integer values, discarding overflow.
+  *
+  * <a name="ml-server-type-mul64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:mul64" target="mlserverdoc">xdmp:mul64</a>
-  * @param x  The first value.
-  * @param y  The second value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:mul64" target="mlserverdoc">xdmp:mul64</a> server function.
+  * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr mul64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
+  public XsUnsignedLongExpr mul64(ServerExpression x, ServerExpression y);
 /**
   * Returns any collections for the node's document in the database. If the specified node does not come from a document in a database, then xdmp:node-collections returns an empty sequence.
+  *
+  * <a name="ml-server-type-node-collections"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-collections" target="mlserverdoc">xdmp:node-collections</a>
-  * @param node  The node whose collections are to be returned.
-  * @return  a XsStringSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-collections" target="mlserverdoc">xdmp:node-collections</a> server function.
+  * @param node  The node whose collections are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringSeqExpr nodeCollections(NodeExpr node);
+  public XsStringSeqExpr nodeCollections(ServerExpression node);
 /**
   * Returns an xs:string representing the node's kind: either "document", "element", "attribute", "text", "namespace", "processing-instruction", "binary", or "comment".  
+  *
+  * <a name="ml-server-type-node-kind"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-kind" target="mlserverdoc">xdmp:node-kind</a>
-  * @param node  The node whose kind is to be returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-kind" target="mlserverdoc">xdmp:node-kind</a> server function.
+  * @param node  The node whose kind is to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeKind(NodeExpr node);
+  public XsStringExpr nodeKind(ServerExpression node);
 /**
   * Returns the metadata value of a given node.
+  *
+  * <a name="ml-server-type-node-metadata"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-metadata" target="mlserverdoc">xdmp:node-metadata</a>
-  * @param node  The node whose metadata are to be returned.
-  * @return  a MapMapExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata" target="mlserverdoc">xdmp:node-metadata</a> server function.
+  * @param node  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/map_map.html">map:map</a> server data type
   */
-  public MapMapExpr nodeMetadata(NodeExpr node);
+  public MapMapExpr nodeMetadata(ServerExpression node);
 /**
   * Returns the metadata value of a node for a particular key.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a>
-  * @param uri  The node whose metadata are to be returned.
-  * @param keyName  Name of the key for the metadata.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a> server function.
+  * @param uri  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeMetadataValue(NodeExpr uri, String keyName);
+  public XsStringExpr nodeMetadataValue(ServerExpression uri, String keyName);
 /**
   * Returns the metadata value of a node for a particular key.
+  *
+  * <a name="ml-server-type-node-metadata-value"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a>
-  * @param uri  The node whose metadata are to be returned.
-  * @param keyName  Name of the key for the metadata.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-metadata-value" target="mlserverdoc">xdmp:node-metadata-value</a> server function.
+  * @param uri  The node whose metadata are to be returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param keyName  Name of the key for the metadata.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeMetadataValue(NodeExpr uri, XsStringExpr keyName);
+  public XsStringExpr nodeMetadataValue(ServerExpression uri, ServerExpression keyName);
+/**
+  * Returns the permissions to a node's document.
+  *
+  * <a name="ml-server-type-node-permissions"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a> server function.
+  * @param node  The node.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
+  */
+  public ItemSeqExpr nodePermissions(ServerExpression node);
 /**
   * Returns the permissions to a node's document.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a>
-  * @param node  The node.
-  * @return  a ItemSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a> server function.
+  * @param node  The node.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr nodePermissions(NodeExpr node);
+  public ItemSeqExpr nodePermissions(ServerExpression node, String outputKind);
 /**
   * Returns the permissions to a node's document.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a>
-  * @param node  The node.
-  * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".
-  * @return  a ItemSeqExpr expression sequence
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a> server function.
+  * @param node  The node.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/item.html">item</a> server data type
   */
-  public ItemSeqExpr nodePermissions(NodeExpr node, String outputKind);
-/**
-  * Returns the permissions to a node's document.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-permissions" target="mlserverdoc">xdmp:node-permissions</a>
-  * @param node  The node.
-  * @param outputKind  The output kind. It can be either "elements" or "objects". With "elements", the built-in returns a sequence of XML elements. With "objects", the built-in returns a sequence of map:map. The default is "elements".
-  * @return  a ItemSeqExpr expression sequence
-  */
-  public ItemSeqExpr nodePermissions(NodeExpr node, XsStringExpr outputKind);
+  public ItemSeqExpr nodePermissions(ServerExpression node, ServerExpression outputKind);
 /**
   * Returns the document-uri property of the parameter or its ancestor.
+  *
+  * <a name="ml-server-type-node-uri"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:node-uri" target="mlserverdoc">xdmp:node-uri</a>
-  * @param node  The node whose URI is returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:node-uri" target="mlserverdoc">xdmp:node-uri</a> server function.
+  * @param node  The node whose URI is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr nodeUri(NodeExpr node);
+  public XsStringExpr nodeUri(ServerExpression node);
 /**
   * NOT a 64-bit integer value.
+  *
+  * <a name="ml-server-type-not64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:not64" target="mlserverdoc">xdmp:not64</a>
-  * @param x  The input value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:not64" target="mlserverdoc">xdmp:not64</a> server function.
+  * @param x  The input value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr not64(XsUnsignedLongExpr x);
+  public XsUnsignedLongExpr not64(ServerExpression x);
 /**
   * Parses an octal string, returning an integer.
+  *
+  * <a name="ml-server-type-octal-to-integer"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:octal-to-integer" target="mlserverdoc">xdmp:octal-to-integer</a>
-  * @param octal  The octal string.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:octal-to-integer" target="mlserverdoc">xdmp:octal-to-integer</a> server function.
+  * @param octal  The octal string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr octalToInteger(XsStringExpr octal);
+  public XsIntegerExpr octalToInteger(ServerExpression octal);
 /**
   * OR two 64-bit integer values.
+  *
+  * <a name="ml-server-type-or64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:or64" target="mlserverdoc">xdmp:or64</a>
-  * @param x  The first value.
-  * @param y  The second value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:or64" target="mlserverdoc">xdmp:or64</a> server function.
+  * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr or64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
+  public XsUnsignedLongExpr or64(ServerExpression x, ServerExpression y);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value);
+/**
+  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
+  *
+  * <a name="ml-server-type-parse-dateTime"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language, String calendar);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, String value, String language, String calendar, String country);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a> server function.
+  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1   (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value representing the dateTime value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, String value, String language, String calendar, String country);
+  public XsDateTimeExpr parseDateTime(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-dateTime" target="mlserverdoc">xdmp:parse-dateTime</a>
-  * @param picture  The desired string representation of the given $value. The picture string is a sequence of characters, in which the characters represent variables such as, decimal-separator-sign, grouping-sign, zero-digit-sign, digit-sign, pattern-separator, percent sign and per-mille-sign. For details on the picture string, see http://www.w3.org/TR/xslt20/#date-picture-string. This follows the specification of picture string in the W3C XSLT 2.0 specification for the fn:format-dateTime function.  Symbol Description ----------------------------------- 'Y' year(absolute value) 'M' month in year 'D' day in month 'd' day in year 'F' day of week 'W' week in year 'w' week in month 'H' hour in day 'h' hour in half-day 'P' am/pm marker 'm' minute in hour 's' second in minute 'f' fractional seconds 'Z' timezone as a time offset from UTC for example PST 'z' timezone as an offset using GMT, for example GMT+1 
-  * @param value  The given string $value representing the dateTime value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseDateTime(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value);
+/**
+  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
+  *
+  * <a name="ml-server-type-parse-yymmdd"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
+  */
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language, String calendar);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, String value, String language, String calendar, String country);
 /**
   * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a> server function.
+  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1    (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The given string $value that needs to be formatted.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param language  The language used in string representation of the date, time or dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar);
+  public XsDateTimeExpr parseYymmdd(ServerExpression picture, ServerExpression value, ServerExpression language, ServerExpression calendar, ServerExpression country);
 /**
-  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
+  * Returns a string whose value corresponds to the path of the node.
+  *
+  * <a name="ml-server-type-path"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a> server function.
+  * @param node  The node whose path is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, String value, String language, String calendar, String country);
-/**
-  * Parses a string containing date, time or dateTime using the supplied picture argument and returns a dateTime value. While this function is closely related to other XSLT functions, it is available in XSLT as well as in all XQuery dialects and in Server-Side JavaScript.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:parse-yymmdd" target="mlserverdoc">xdmp:parse-yymmdd</a>
-  * @param picture  The desired string representation of the given $value. This follows the specification of picture string which is compatible to the format specification in icu. See http://icu-project.org/apiref/icu4j/com/ibm/icu/text/SimpleDateFormat.html for more details. The following is the summary of the formatting symbols:  Symbol Description ---------------------------- "y" year(absolute value) "M" month in year "d" day in month "D" day in year "E" day of week "w" week in year "W" week in month "H" hour in day "K" hour in half-day "a" am/pm marker "s" second in minute "S" fractional seconds "Z" timezone as a time offset from UTC for example PST "ZZZZ" timezone as an offset using GMT, for example GMT+1  
-  * @param value  The given string $value that needs to be formatted.
-  * @param language  The language used in string representation of the date, time or dateTime value.
-  * @param calendar  This argument is reserved for future use. The only calendar supported at this point is "Gregorian" or "AD".
-  * @param country  $country is used to take into account if there any country specific interpretation of the string while converting it into dateTime value.
-  * @return  a XsDateTimeExpr expression
-  */
-  public XsDateTimeExpr parseYymmdd(XsStringExpr picture, XsStringExpr value, XsStringExpr language, XsStringExpr calendar, XsStringExpr country);
+  public XsStringExpr path(ServerExpression node);
 /**
   * Returns a string whose value corresponds to the path of the node.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a>
-  * @param node  The node whose path is returned.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a> server function.
+  * @param node  The node whose path is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr path(NodeExpr node);
+  public XsStringExpr path(ServerExpression node, boolean includeDocument);
 /**
   * Returns a string whose value corresponds to the path of the node.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a>
-  * @param node  The node whose path is returned.
-  * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a> server function.
+  * @param node  The node whose path is returned.  (of <a href="{@docRoot}/doc-files/types/node.html">node</a>)
+  * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr path(NodeExpr node, boolean includeDocument);
-/**
-  * Returns a string whose value corresponds to the path of the node.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:path" target="mlserverdoc">xdmp:path</a>
-  * @param node  The node whose path is returned.
-  * @param includeDocument  If true, then the path is presented with a leading doc(..)/.., otherwise the path is presented as /...
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr path(NodeExpr node, XsBooleanExpr includeDocument);
+  public XsStringExpr path(ServerExpression node, ServerExpression includeDocument);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a>
-  * @param test  The string to test for existence in the second parameter.
-  * @param target  The string from which to test.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a> server function.
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(XsStringExpr test, String target);
+  public XsIntegerExpr position(ServerExpression test, String target);
+/**
+  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
+  *
+  * <a name="ml-server-type-position"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a> server function.
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
+  */
+  public XsIntegerExpr position(ServerExpression test, ServerExpression target);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a>
-  * @param test  The string to test for existence in the second parameter.
-  * @param target  The string from which to test.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a> server function.
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(XsStringExpr test, XsStringExpr target);
+  public XsIntegerExpr position(ServerExpression test, String target, String collation);
 /**
   * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a>
-  * @param test  The string to test for existence in the second parameter.
-  * @param target  The string from which to test.
-  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a> server function.
+  * @param test  The string to test for existence in the second parameter.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param target  The string from which to test.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr position(XsStringExpr test, String target, String collation);
-/**
-  * Returns an integer value representing the starting position of a string within the search string. Note, the string starting position is 1. If the first parameter is empty, the result is the empty sequence.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:position" target="mlserverdoc">xdmp:position</a>
-  * @param test  The string to test for existence in the second parameter.
-  * @param target  The string from which to test.
-  * @param collation  The optional name of a valid collation URI. For information on the collation URI syntax, see the Search Developer's Guide.
-  * @return  a XsIntegerExpr expression
-  */
-  public XsIntegerExpr position(XsStringExpr test, XsStringExpr target, XsStringExpr collation);
+  public XsIntegerExpr position(ServerExpression test, ServerExpression target, ServerExpression collation);
 /**
   * Construct a QName from a string of the form "{namespaceURI}localname". This function is useful for constructing Clark notation parameters for the xdmp:xslt-eval and xdmp:xslt-invoke functions.
+  *
+  * <a name="ml-server-type-QName-from-key"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:QName-from-key" target="mlserverdoc">xdmp:QName-from-key</a>
-  * @param key  The string from which to construct a QName.
-  * @return  a XsQNameExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:QName-from-key" target="mlserverdoc">xdmp:QName-from-key</a> server function.
+  * @param key  The string from which to construct a QName.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr QNameFromKey(XsStringExpr key);
+  public XsQNameExpr QNameFromKey(ServerExpression key);
 /**
   * Returns an xs:integer between 1 and 4, both inclusive, calculating the quarter component in the localized value of arg. 
+  *
+  * <a name="ml-server-type-quarter-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:quarter-from-date" target="mlserverdoc">xdmp:quarter-from-date</a>
-  * @param arg  The date whose quarter component will be returned.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:quarter-from-date" target="mlserverdoc">xdmp:quarter-from-date</a> server function.
+  * @param arg  The date whose quarter component will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr quarterFromDate(XsDateExpr arg);
+  public XsIntegerExpr quarterFromDate(ServerExpression arg);
 /**
   * Returns a random unsigned integer between 0 and a number up to 64 bits long.
+  *
+  * <a name="ml-server-type-random"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a>
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a> server function.
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
   public XsUnsignedLongExpr random();
 /**
   * Returns a random unsigned integer between 0 and a number up to 64 bits long.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a>
-  * @param max  The optional maximum value (inclusive).
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:random" target="mlserverdoc">xdmp:random</a> server function.
+  * @param max  The optional maximum value (inclusive).  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr random(XsUnsignedLongExpr max);
+  public XsUnsignedLongExpr random(ServerExpression max);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">xdmp:resolve-uri</a>
-  * @param relative  A URI reference to resolve against the base.
-  * @param base  An absolute URI to use as the base of the resolution.
-  * @return  a XsAnyURIExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">xdmp:resolve-uri</a> server function.
+  * @param relative  A URI reference to resolve against the base.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(XsStringExpr relative, String base);
+  public XsAnyURIExpr resolveUri(ServerExpression relative, String base);
 /**
   * Resolves a relative URI against an absolute URI. If base is specified, the URI is resolved relative to that base. If base is not specified, the base is set to the base-uri property from the static context, if the property exists; if it does not exist, an error is thrown.
+  *
+  * <a name="ml-server-type-resolve-uri"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">xdmp:resolve-uri</a>
-  * @param relative  A URI reference to resolve against the base.
-  * @param base  An absolute URI to use as the base of the resolution.
-  * @return  a XsAnyURIExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:resolve-uri" target="mlserverdoc">xdmp:resolve-uri</a> server function.
+  * @param relative  A URI reference to resolve against the base.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param base  An absolute URI to use as the base of the resolution.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_anyURI.html">xs:anyURI</a> server data type
   */
-  public XsAnyURIExpr resolveUri(XsStringExpr relative, XsStringExpr base);
+  public XsAnyURIExpr resolveUri(ServerExpression relative, ServerExpression base);
 /**
   * Right-shift a 64-bit integer value.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:rshift64" target="mlserverdoc">xdmp:rshift64</a>
-  * @param x  The value to shift.
-  * @param y  The right shift to perform. This value may be negative.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:rshift64" target="mlserverdoc">xdmp:rshift64</a> server function.
+  * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The right shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr rshift64(XsUnsignedLongExpr x, long y);
+  public XsUnsignedLongExpr rshift64(ServerExpression x, long y);
 /**
   * Right-shift a 64-bit integer value.
+  *
+  * <a name="ml-server-type-rshift64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:rshift64" target="mlserverdoc">xdmp:rshift64</a>
-  * @param x  The value to shift.
-  * @param y  The right shift to perform. This value may be negative.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:rshift64" target="mlserverdoc">xdmp:rshift64</a> server function.
+  * @param x  The value to shift.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The right shift to perform. This value may be negative.  (of <a href="{@docRoot}/doc-files/types/xs_long.html">xs:long</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr rshift64(XsUnsignedLongExpr x, XsLongExpr y);
+  public XsUnsignedLongExpr rshift64(ServerExpression x, ServerExpression y);
+/**
+  * Calculates the SHA1 hash of the given argument.
+  *
+  * <a name="ml-server-type-sha1"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public XsStringExpr sha1(ServerExpression data);
 /**
   * Calculates the SHA1 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ItemExpr data);
+  public XsStringExpr sha1(ServerExpression data, String encoding);
 /**
   * Calculates the SHA1 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ItemExpr data, String encoding);
+  public XsStringExpr sha1(ServerExpression data, ServerExpression encoding);
 /**
-  * Calculates the SHA1 hash of the given argument.
+  * Calculates the SHA256 hash of the given argument.
+  *
+  * <a name="ml-server-type-sha256"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha1" target="mlserverdoc">xdmp:sha1</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha1(ItemExpr data, XsStringExpr encoding);
+  public XsStringExpr sha256(ServerExpression data);
 /**
   * Calculates the SHA256 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ItemExpr data);
+  public XsStringExpr sha256(ServerExpression data, String encoding);
 /**
   * Calculates the SHA256 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ItemExpr data, String encoding);
+  public XsStringExpr sha256(ServerExpression data, ServerExpression encoding);
 /**
-  * Calculates the SHA256 hash of the given argument.
+  * Calculates the SHA384 hash of the given argument.
+  *
+  * <a name="ml-server-type-sha384"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha256" target="mlserverdoc">xdmp:sha256</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha256(ItemExpr data, XsStringExpr encoding);
+  public XsStringExpr sha384(ServerExpression data);
 /**
   * Calculates the SHA384 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ItemExpr data);
+  public XsStringExpr sha384(ServerExpression data, String encoding);
 /**
   * Calculates the SHA384 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ItemExpr data, String encoding);
+  public XsStringExpr sha384(ServerExpression data, ServerExpression encoding);
 /**
-  * Calculates the SHA384 hash of the given argument.
+  * Calculates the SHA512 hash of the given argument.
+  *
+  * <a name="ml-server-type-sha512"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha384" target="mlserverdoc">xdmp:sha384</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha384(ItemExpr data, XsStringExpr encoding);
+  public XsStringExpr sha512(ServerExpression data);
 /**
   * Calculates the SHA512 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha512(ItemExpr data);
+  public XsStringExpr sha512(ServerExpression data, String encoding);
 /**
   * Calculates the SHA512 hash of the given argument.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a> server function.
+  * @param data  Data to be hashed. Must be xs:string or a binary node.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr sha512(ItemExpr data, String encoding);
-/**
-  * Calculates the SHA512 hash of the given argument.
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:sha512" target="mlserverdoc">xdmp:sha512</a>
-  * @param data  Data to be hashed. Must be xs:string or a binary node.
-  * @param encoding  Encoding format for the output string, must be "hex" for hexadecimal or "base64". Default is "hex".
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr sha512(ItemExpr data, XsStringExpr encoding);
+  public XsStringExpr sha512(ServerExpression data, ServerExpression encoding);
 /**
   * Combines an initial hash with a subsequent hash.
+  *
+  * <a name="ml-server-type-step64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:step64" target="mlserverdoc">xdmp:step64</a>
-  * @param initial  An initial hash.
-  * @param step  A step hash to be combined with the initial hash.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:step64" target="mlserverdoc">xdmp:step64</a> server function.
+  * @param initial  An initial hash.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param step  A step hash to be combined with the initial hash.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr step64(XsUnsignedLongExpr initial, XsUnsignedLongExpr step);
+  public XsUnsignedLongExpr step64(ServerExpression initial, ServerExpression step);
 /**
   * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a>
-  * @param format  The strftime format string.
-  * @param value  The dateTime value.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a> server function.
+  * @param format  The strftime format string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr strftime(XsStringExpr format, String value);
+  public XsStringExpr strftime(ServerExpression format, String value);
 /**
   * Formats a dateTime value using POSIX strftime. This function uses the POSIX strftime system call in the way it is implemented on each platform. For other XQuery functions that have more functionality (for example, for things like timezones), use one or more if the various XQuery or XSLT standard functions such as fn:format-dateTime.
+  *
+  * <a name="ml-server-type-strftime"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a>
-  * @param format  The strftime format string.
-  * @param value  The dateTime value.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:strftime" target="mlserverdoc">xdmp:strftime</a> server function.
+  * @param format  The strftime format string.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param value  The dateTime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr strftime(XsStringExpr format, XsDateTimeExpr value);
+  public XsStringExpr strftime(ServerExpression format, ServerExpression value);
 /**
   * Converts a 64 bit timestamp value to an xs:dateTime.
+  *
+  * <a name="ml-server-type-timestamp-to-wallclock"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:timestamp-to-wallclock" target="mlserverdoc">xdmp:timestamp-to-wallclock</a>
-  * @param timestamp  The timestamp.
-  * @return  a XsDateTimeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:timestamp-to-wallclock" target="mlserverdoc">xdmp:timestamp-to-wallclock</a> server function.
+  * @param timestamp  The timestamp.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a> server data type
   */
-  public XsDateTimeExpr timestampToWallclock(XsUnsignedLongExpr timestamp);
+  public XsDateTimeExpr timestampToWallclock(ServerExpression timestamp);
 /**
   * Constructs a JSON document.
+  *
+  * <a name="ml-server-type-to-json"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:to-json" target="mlserverdoc">xdmp:to-json</a>
-  * @param item  A sequence of items from which the JSON document is to be constructed. The item sequence from which the JSON document is constructed.
-  * @return  a NodeExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:to-json" target="mlserverdoc">xdmp:to-json</a> server function.
+  * @param item  A sequence of items from which the JSON document is to be constructed. The item sequence from which the JSON document is constructed.  (of <a href="{@docRoot}/doc-files/types/item.html">item</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/node.html">node</a> server data type
   */
-  public NodeExpr toJson(ItemSeqExpr item);
+  public NodeExpr toJson(ServerExpression item);
 /**
   * Returns the name of the simple type of the atomic value argument as an xs:QName. 
+  *
+  * <a name="ml-server-type-type"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:type" target="mlserverdoc">xdmp:type</a>
-  * @param value  The value to return the type of.
-  * @return  a XsQNameExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:type" target="mlserverdoc">xdmp:type</a> server function.
+  * @param value  The value to return the type of.  (of <a href="{@docRoot}/doc-files/types/xs_anyAtomicType.html">xs:anyAtomicType</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_QName.html">xs:QName</a> server data type
   */
-  public XsQNameExpr type(XsAnyAtomicTypeExpr value);
+  public XsQNameExpr type(ServerExpression value);
 /**
   * Converts URL-encoded string to plaintext. This decodes the string created with xdmp:url-encode.
+  *
+  * <a name="ml-server-type-url-decode"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:url-decode" target="mlserverdoc">xdmp:url-decode</a>
-  * @param encoded  Encoded text to be decoded.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-decode" target="mlserverdoc">xdmp:url-decode</a> server function.
+  * @param encoded  Encoded text to be decoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlDecode(XsStringExpr encoded);
+  public XsStringExpr urlDecode(ServerExpression encoded);
+/**
+  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
+  *
+  * <a name="ml-server-type-url-encode"></a>
+  
+  * <p>
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
+  * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
+  */
+  public XsStringExpr urlEncode(ServerExpression plaintext);
 /**
   * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a>
-  * @param plaintext  Plaintext to be encoded.
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
+  * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param noSpacePlus  True to encode space as "%20" instead of "+".  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlEncode(XsStringExpr plaintext);
+  public XsStringExpr urlEncode(ServerExpression plaintext, boolean noSpacePlus);
 /**
   * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a>
-  * @param plaintext  Plaintext to be encoded.
-  * @param noSpacePlus  True to encode space as "%20" instead of "+".
-  * @return  a XsStringExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a> server function.
+  * @param plaintext  Plaintext to be encoded.  (of <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a>)
+  * @param noSpacePlus  True to encode space as "%20" instead of "+".  (of <a href="{@docRoot}/doc-files/types/xs_boolean.html">xs:boolean</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_string.html">xs:string</a> server data type
   */
-  public XsStringExpr urlEncode(XsStringExpr plaintext, boolean noSpacePlus);
-/**
-  * Converts plaintext into URL-encoded string. To decode the string, use xdmp:url-decode. 
-  * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:url-encode" target="mlserverdoc">xdmp:url-encode</a>
-  * @param plaintext  Plaintext to be encoded.
-  * @param noSpacePlus  True to encode space as "%20" instead of "+".
-  * @return  a XsStringExpr expression
-  */
-  public XsStringExpr urlEncode(XsStringExpr plaintext, XsBooleanExpr noSpacePlus);
+  public XsStringExpr urlEncode(ServerExpression plaintext, ServerExpression noSpacePlus);
 /**
   * Converts an xs:dateTime to a 64 bit timestamp value.
+  *
+  * <a name="ml-server-type-wallclock-to-timestamp"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:wallclock-to-timestamp" target="mlserverdoc">xdmp:wallclock-to-timestamp</a>
-  * @param timestamp  The xs:datetime value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:wallclock-to-timestamp" target="mlserverdoc">xdmp:wallclock-to-timestamp</a> server function.
+  * @param timestamp  The xs:datetime value.  (of <a href="{@docRoot}/doc-files/types/xs_dateTime.html">xs:dateTime</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr wallclockToTimestamp(XsDateTimeExpr timestamp);
+  public XsUnsignedLongExpr wallclockToTimestamp(ServerExpression timestamp);
 /**
   * Returns an xs:integer between 1 and 53, both inclusive, representing the week value in the localized value of arg. 
+  *
+  * <a name="ml-server-type-week-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:week-from-date" target="mlserverdoc">xdmp:week-from-date</a>
-  * @param arg  The date whose weeks of the year will be returned.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:week-from-date" target="mlserverdoc">xdmp:week-from-date</a> server function.
+  * @param arg  The date whose weeks of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr weekFromDate(XsDateExpr arg);
+  public XsIntegerExpr weekFromDate(ServerExpression arg);
 /**
   * Returns an xs:integer in the range 1 to 7, inclusive, representing the weekday value in the localized value of arg. Monday is the first weekday value (value of 1), and Sunday is the last (value of 7). 
+  *
+  * <a name="ml-server-type-weekday-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:weekday-from-date" target="mlserverdoc">xdmp:weekday-from-date</a>
-  * @param arg  The date whose weekday value will be returned.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:weekday-from-date" target="mlserverdoc">xdmp:weekday-from-date</a> server function.
+  * @param arg  The date whose weekday value will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr weekdayFromDate(XsDateExpr arg);
+  public XsIntegerExpr weekdayFromDate(ServerExpression arg);
 /**
   * XOR two 64-bit integer values.
+  *
+  * <a name="ml-server-type-xor64"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:xor64" target="mlserverdoc">xdmp:xor64</a>
-  * @param x  The first value.
-  * @param y  The second value.
-  * @return  a XsUnsignedLongExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:xor64" target="mlserverdoc">xdmp:xor64</a> server function.
+  * @param x  The first value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @param y  The second value.  (of <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_unsignedLong.html">xs:unsignedLong</a> server data type
   */
-  public XsUnsignedLongExpr xor64(XsUnsignedLongExpr x, XsUnsignedLongExpr y);
+  public XsUnsignedLongExpr xor64(ServerExpression x, ServerExpression y);
 /**
   * Returns an xs:integer between 1 and 366, both inclusive, representing the yearday value in the localized value of arg. 
+  *
+  * <a name="ml-server-type-yearday-from-date"></a>
+  
   * <p>
-  * Provides a client interface to a server function. See <a href="http://docs.marklogic.com/xdmp:yearday-from-date" target="mlserverdoc">xdmp:yearday-from-date</a>
-  * @param arg  The date whose days of the year will be returned.
-  * @return  a XsIntegerExpr expression
+  * Provides a client interface to the <a href="http://docs.marklogic.com/xdmp:yearday-from-date" target="mlserverdoc">xdmp:yearday-from-date</a> server function.
+  * @param arg  The date whose days of the year will be returned.  (of <a href="{@docRoot}/doc-files/types/xs_date.html">xs:date</a>)
+  * @return  a server expression with the <a href="{@docRoot}/doc-files/types/xs_integer.html">xs:integer</a> server data type
   */
-  public XsIntegerExpr yeardayFromDate(XsDateExpr arg);
+  public XsIntegerExpr yeardayFromDate(ServerExpression arg);
 }
