@@ -26,6 +26,7 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
@@ -54,6 +55,7 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.Forest;
+import com.marklogic.client.datamovement.HostAvailabilityListener;
 import com.marklogic.client.datamovement.JobTicket;
 import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.UrisToWriterListener;
@@ -2128,5 +2130,54 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       clientTmp.release();
       Thread.sleep(10000);
     }
+  }
+  
+  @Test
+  public void testMinHostWithHostAvailabilityListener() throws Exception
+  {
+	  DatabaseClient client = null;
+	  DataMovementManager dmManagerTmp = null;
+	  StringBuilder batchFailResults = new StringBuilder();
+
+	  if(!isLBHost()) {
+		  try {
+			  System.out.println("Running testMinHostWithHostAvailabilityListener");
+			  String[] hostNames = null;
+			  client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+			  dmManagerTmp = client.newDataMovementManager();
+
+			  QueryManager queryMgr = client.newQueryManager();
+			  StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+			  StructuredQueryDefinition queryWorddef = qb.word(qb.element("id"), "0026");
+
+			  hostNames = getHosts();
+			  StructuredQueryDefinition queryRangedef = qb.range(qb.element("popularity"), "xs:integer", Operator.GE, 4);
+			  QueryBatcher queryBatcher = dmManagerTmp.newQueryBatcher(queryRangedef);
+
+			  queryBatcher.setQueryFailureListeners(
+					  new HostAvailabilityListener(dmManagerTmp)
+					  .withSuspendTimeForHostUnavailable(Duration.ofSeconds(15))
+					  .withMinHosts(5)
+					  );
+			  queryBatcher.onUrisReady(batch -> {
+				  System.out.println("Batch results are: " + batch.getJobResultsSoFar());
+			  }
+					  );
+			  queryBatcher.onQueryFailure(throwable -> {
+				  System.out.println("Exceptions thrown from callback onQueryFailure in testMinHostWithHostAvailabilityListener");
+				  throwable.printStackTrace();
+
+			  });
+			  JobTicket jobTicket = dmManagerTmp.startJob(queryBatcher);
+		  }
+		  catch(IllegalArgumentException ex) {
+			  batchFailResults.append(ex.getMessage());
+		  }
+		  finally {
+			  client.release();
+			  System.out.println("Exception Message is " + batchFailResults.toString());
+			  assertTrue("Exception incorrect", batchFailResults.toString().contains("numHosts must be less than or equal to the number of hosts in the cluster"));
+		  }
+	  }
   }
 }
