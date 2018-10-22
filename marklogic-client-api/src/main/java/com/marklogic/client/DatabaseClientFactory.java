@@ -170,7 +170,7 @@ public class DatabaseClientFactory {
       }
     }
     
-    static class HostnameVerifierAdapter implements HostnameVerifier {
+    private static class HostnameVerifierAdapter implements HostnameVerifier {
         private SSLHostnameVerifier verifier;
 
         protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
