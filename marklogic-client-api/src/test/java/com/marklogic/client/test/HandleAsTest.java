@@ -395,6 +395,7 @@ public class HandleAsTest {
 	  DatabaseClientFactory.DigestAuthContext clientFactoryContext = new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS);
 	  clientFactoryBean.setHost(Common.HOST);
 	  clientFactoryBean.setPort(Common.PORT);
+	  clientFactoryBean.setSecurityContext(clientFactoryContext);
 	  return clientFactoryBean;
 	  }
   
