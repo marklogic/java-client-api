@@ -219,7 +219,7 @@ public class HandleAsTest {
 
   @Test
   public void testSearch() throws JAXBException {
-    DatabaseClientFactory.Bean clientFactoryBean = makeClientFactory();
+    DatabaseClientFactory.Bean clientFactoryBean = makeClientBeanFactory();
 
     clientFactoryBean.getHandleRegistry().register(
       JAXBHandle.newFactory(Product.class)
@@ -389,6 +389,15 @@ public class HandleAsTest {
     clientFactoryBean.setAuthentication(Authentication.DIGEST);
     return clientFactoryBean;
   }
+  
+  private DatabaseClientFactory.Bean makeClientBeanFactory() {
+	  DatabaseClientFactory.Bean clientFactoryBean = new DatabaseClientFactory.Bean();
+	  DatabaseClientFactory.DigestAuthContext clientFactoryContext = new DatabaseClientFactory.DigestAuthContext(Common.USER, Common.PASS);
+	  clientFactoryBean.setHost(Common.HOST);
+	  clientFactoryBean.setPort(Common.PORT);
+	  return clientFactoryBean;
+	  }
+  
 
   static public class BufferHandle
     extends BaseHandle<String, String>
