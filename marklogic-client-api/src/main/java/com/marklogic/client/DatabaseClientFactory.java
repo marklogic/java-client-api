@@ -23,16 +23,27 @@ import java.security.KeyStore;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.UnrecoverableKeyException;
+import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.naming.InvalidNameException;
+import javax.naming.ldap.LdapName;
+import javax.naming.ldap.Rdn;
+import javax.net.ssl.HostnameVerifier;
 import javax.net.ssl.KeyManager;
 import javax.net.ssl.KeyManagerFactory;
 import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLException;
+import javax.net.ssl.SSLSession;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
@@ -130,6 +141,8 @@ public class DatabaseClientFactory {
      * @throws SSLException if the hostname isn't acceptable
      */
     public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
+    
+    public HostnameVerifier asHostnameVerifier();
 
     /**
      * Builtin supports builtin implementations of SSLHostnameVerifier.
@@ -152,7 +165,64 @@ public class DatabaseClientFactory {
       public String getName() {
         return name;
       }
+      public HostnameVerifier asHostnameVerifier(){
+    	  return new HostnameVerifierAdapter(this);
+      }
     }
+    
+    static class HostnameVerifierAdapter implements HostnameVerifier {
+        private SSLHostnameVerifier verifier;
+
+        protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
+          this.verifier = verifier;
+        }
+
+        @Override
+        public boolean verify(String hostname, SSLSession session) {
+          try {
+            Certificate[] certificates = session.getPeerCertificates();
+            verify(hostname, (X509Certificate) certificates[0]);
+            return true;
+          } catch(SSLException e) {
+            return false;
+          }
+        }
+
+        public void verify(String hostname, X509Certificate cert) throws SSLException {
+          ArrayList<String> cnArray = new ArrayList<>();
+          try {
+            LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
+            for(Rdn rdn: ldapDN.getRdns()) {
+              Object value = rdn.getValue();
+              if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
+                cnArray.add((String) value);
+              }
+            }
+
+            int type_dnsName = 2;
+            int type_ipAddress = 7;
+            ArrayList<String> subjectAltArray = new ArrayList<>();
+            Collection<List<?>> alts = cert.getSubjectAlternativeNames();
+            if ( alts != null ) {
+              for ( List<?> alt : alts ) {
+                if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
+                  Integer type = (Integer) alt.get(0);
+                  if ( type == type_dnsName || type == type_ipAddress ) {
+                    subjectAltArray.add((String) alt.get(1));
+                  }
+                }
+              }
+            }
+            String[] cns = cnArray.toArray(new String[cnArray.size()]);
+            String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
+            verifier.verify(hostname, cns, subjectAlts);
+          } catch(CertificateParsingException e) {
+            throw new MarkLogicIOException(e);
+          } catch(InvalidNameException e) {
+            throw new MarkLogicIOException(e);
+          }
+        }
+      }
   }
 
   /**
