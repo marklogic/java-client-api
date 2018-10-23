@@ -142,6 +142,10 @@ public class DatabaseClientFactory {
      */
     public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
     
+    /**
+     * asHostnameVerifier exposes the Security context details.
+     * @return hostnameverifier.
+     * */
     public HostnameVerifier asHostnameVerifier();
 
     /**
@@ -165,6 +169,11 @@ public class DatabaseClientFactory {
       public String getName() {
         return name;
       }
+      
+      /**
+       * asHostnameVerifier exposes the Security context details.
+       * @return hostnameverifier.
+       * */
       public HostnameVerifier asHostnameVerifier(){
     	  
     	   final class HostnameVerifierAdapter implements HostnameVerifier {
@@ -222,8 +231,6 @@ public class DatabaseClientFactory {
     	   }
     	  return new HostnameVerifierAdapter(this);
       }
-      
-      
     }
   }
 
