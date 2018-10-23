@@ -163,60 +163,6 @@ public class OkHttpServices implements RESTServices {
   private final static MediaType URLENCODED_MIME_TYPE = MediaType.parse("application/x-www-form-urlencoded; charset=UTF-8");
   private final static String UTF8_ID = StandardCharsets.UTF_8.toString();
 
-  static protected class HostnameVerifierAdapter implements HostnameVerifier {
-    private SSLHostnameVerifier verifier;
-
-    protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
-      this.verifier = verifier;
-    }
-
-    @Override
-    public boolean verify(String hostname, SSLSession session) {
-      try {
-        Certificate[] certificates = session.getPeerCertificates();
-        verify(hostname, (X509Certificate) certificates[0]);
-        return true;
-      } catch(SSLException e) {
-        return false;
-      }
-    }
-
-    public void verify(String hostname, X509Certificate cert) throws SSLException {
-      ArrayList<String> cnArray = new ArrayList<>();
-      try {
-        LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
-        for(Rdn rdn: ldapDN.getRdns()) {
-          Object value = rdn.getValue();
-          if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
-            cnArray.add((String) value);
-          }
-        }
-
-        int type_dnsName = 2;
-        int type_ipAddress = 7;
-        ArrayList<String> subjectAltArray = new ArrayList<>();
-        Collection<List<?>> alts = cert.getSubjectAlternativeNames();
-        if ( alts != null ) {
-          for ( List<?> alt : alts ) {
-            if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
-              Integer type = (Integer) alt.get(0);
-              if ( type == type_dnsName || type == type_ipAddress ) {
-                subjectAltArray.add((String) alt.get(1));
-              }
-            }
-          }
-        }
-        String[] cns = cnArray.toArray(new String[cnArray.size()]);
-        String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
-        verifier.verify(hostname, cns, subjectAlts);
-      } catch(CertificateParsingException e) {
-        throw new MarkLogicIOException(e);
-      } catch(InvalidNameException e) {
-        throw new MarkLogicIOException(e);
-      }
-    }
-  }
-
   static final private ConnectionPool connectionPool = new ConnectionPool();
 
   private DatabaseClient databaseClient;
@@ -316,7 +262,7 @@ public class OkHttpServices implements RESTServices {
     } else if (verifier == SSLHostnameVerifier.STRICT) {
       hostnameVerifier = null;
     } else if (verifier != null) {
-      hostnameVerifier = new HostnameVerifierAdapter(verifier);
+      hostnameVerifier = verifier.asHostnameVerifier();
     }// else {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");
