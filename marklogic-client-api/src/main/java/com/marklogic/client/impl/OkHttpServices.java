@@ -262,7 +262,7 @@ public class OkHttpServices implements RESTServices {
     } else if (verifier == SSLHostnameVerifier.STRICT) {
       hostnameVerifier = null;
     } else if (verifier != null) {
-      hostnameVerifier = verifier.asHostnameVerifier();
+      hostnameVerifier = new SSLHostnameVerifier.HostnameVerifierAdapter(verifier);
     }// else {
     //  throw new IllegalArgumentException(
     //    "Null SSLContext but non-null SSLHostnameVerifier for client");

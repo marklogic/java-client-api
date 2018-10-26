@@ -143,10 +143,72 @@ public class DatabaseClientFactory {
     public void verify(String hostname, String[] cns, String[] subjectAlts) throws SSLException;
     
     /**
-     * asHostnameVerifier exposes the Security context details.
-     * @return hostnameverifier.
+     * HostnameVerifierAdapter verifies the hostname,SSLSession and X509Certificate certificate.
      * */
-    public HostnameVerifier asHostnameVerifier();
+    static class HostnameVerifierAdapter implements HostnameVerifier {
+    	private SSLHostnameVerifier verifier;
+
+    	public HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
+	          this.verifier = verifier;
+	        }
+    	/**
+    	 * verify method verifies the incoming hostname and SSLSession.
+    	 * @param hostname denotes the hostname.
+    	 * @param session represents the SSLSession containing the pper certificates.
+    	 * @return true if the hostname and peer certificates are valid and false if they are invalid.
+    	 * */
+    	@Override
+    	public boolean verify(String hostname, SSLSession session) {
+    		try {
+    			Certificate[] certificates = session.getPeerCertificates();
+	            verify(hostname, (X509Certificate) certificates[0]);
+	            return true;
+	          } catch(SSLException e) {
+	            return false;
+	          }
+	        }
+    	/**
+    	 * verify method verifies the hostname and X509Certificate certificate.
+    	 * @param hostname denotes the hostname.
+    	 * @param cert represents the X509Certificate certificate.
+    	 * @throws SSLException if the hostname or certificate is/are invalid.
+    	 * */
+    	public void verify(String hostname, X509Certificate cert) throws SSLException {
+    		ArrayList<String> cnArray = new ArrayList<>();
+    		try {
+    			LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
+	            for(Rdn rdn: ldapDN.getRdns()) {
+	              Object value = rdn.getValue();
+	              if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
+	                cnArray.add((String) value);
+	              }
+	            }
+	            int type_dnsName = 2;
+	            int type_ipAddress = 7;
+	            ArrayList<String> subjectAltArray = new ArrayList<>();
+	            Collection<List<?>> alts = cert.getSubjectAlternativeNames();
+	            if ( alts != null ) {
+	              for ( List<?> alt : alts ) {
+	                if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
+	                  Integer type = (Integer) alt.get(0);
+	                  if ( type == type_dnsName || type == type_ipAddress ) {
+	                    subjectAltArray.add((String) alt.get(1));
+	                  }
+	                }
+	              }
+	            }
+	            String[] cns = cnArray.toArray(new String[cnArray.size()]);
+	            String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
+	            verifier.verify(hostname, cns, subjectAlts);
+	          } 
+    		catch(CertificateParsingException e) {
+	            throw new MarkLogicIOException(e);
+	          } 
+    		catch(InvalidNameException e) {
+	            throw new MarkLogicIOException(e);
+	          }
+	        }
+	   }
 
     /**
      * Builtin supports builtin implementations of SSLHostnameVerifier.
@@ -170,67 +232,6 @@ public class DatabaseClientFactory {
         return name;
       }
       
-      /**
-       * asHostnameVerifier exposes the Security context details.
-       * @return hostnameverifier.
-       * */
-      public HostnameVerifier asHostnameVerifier(){
-    	  
-    	   final class HostnameVerifierAdapter implements HostnameVerifier {
-    	        private SSLHostnameVerifier verifier;
-
-    	        protected HostnameVerifierAdapter(SSLHostnameVerifier verifier) {
-    	          this.verifier = verifier;
-    	        }
-
-    	        @Override
-    	        public boolean verify(String hostname, SSLSession session) {
-    	          try {
-    	            Certificate[] certificates = session.getPeerCertificates();
-    	            verify(hostname, (X509Certificate) certificates[0]);
-    	            return true;
-    	          } catch(SSLException e) {
-    	            return false;
-    	          }
-    	        }
-
-    	        public void verify(String hostname, X509Certificate cert) throws SSLException {
-    	          ArrayList<String> cnArray = new ArrayList<>();
-    	          try {
-    	            LdapName ldapDN = new LdapName(cert.getSubjectX500Principal().getName());
-    	            for(Rdn rdn: ldapDN.getRdns()) {
-    	              Object value = rdn.getValue();
-    	              if ( "CN".equalsIgnoreCase(rdn.getType()) && value instanceof String ) {
-    	                cnArray.add((String) value);
-    	              }
-    	            }
-
-    	            int type_dnsName = 2;
-    	            int type_ipAddress = 7;
-    	            ArrayList<String> subjectAltArray = new ArrayList<>();
-    	            Collection<List<?>> alts = cert.getSubjectAlternativeNames();
-    	            if ( alts != null ) {
-    	              for ( List<?> alt : alts ) {
-    	                if ( alt != null && alt.size() == 2 && alt.get(1) instanceof String ) {
-    	                  Integer type = (Integer) alt.get(0);
-    	                  if ( type == type_dnsName || type == type_ipAddress ) {
-    	                    subjectAltArray.add((String) alt.get(1));
-    	                  }
-    	                }
-    	              }
-    	            }
-    	            String[] cns = cnArray.toArray(new String[cnArray.size()]);
-    	            String[] subjectAlts = subjectAltArray.toArray(new String[subjectAltArray.size()]);
-    	            verifier.verify(hostname, cns, subjectAlts);
-    	          } catch(CertificateParsingException e) {
-    	            throw new MarkLogicIOException(e);
-    	          } catch(InvalidNameException e) {
-    	            throw new MarkLogicIOException(e);
-    	          }
-    	        }
-    	   }
-    	  return new HostnameVerifierAdapter(this);
-      }
     }
   }
 

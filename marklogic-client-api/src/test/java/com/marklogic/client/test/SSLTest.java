@@ -82,14 +82,6 @@ public class SSLTest {
     }
   }
 
-  private static class SSLTestServices extends OkHttpServices {
-    static class SSLTestHostnameVerifierAdapter extends SSLTestServices.HostnameVerifierAdapter {
-      SSLTestHostnameVerifierAdapter(SSLHostnameVerifier hostnameVerifier) {
-        super(hostnameVerifier);
-      }
-    }
-  }
-
   @Test
   public void testHostnameVerifier() throws SSLException, CertificateParsingException {
     // three things our SSLHostnameVerifier will capture
@@ -105,7 +97,7 @@ public class SSLTest {
     };
     // rather than attempt a real SSL connection, let's just test the implementation
     // with some mocks
-    SSLTestServices.SSLTestHostnameVerifierAdapter adapter = new SSLTestServices.SSLTestHostnameVerifierAdapter(verifier);
+    SSLHostnameVerifier.HostnameVerifierAdapter adapter = new SSLHostnameVerifier.HostnameVerifierAdapter(verifier);
 
     // three things we'll pass and expect we can capture when verify is called
     String passedHost = "somehost";
