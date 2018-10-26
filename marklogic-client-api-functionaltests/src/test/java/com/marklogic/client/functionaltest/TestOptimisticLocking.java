@@ -16,12 +16,24 @@
 
 package com.marklogic.client.functionaltest;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
+import java.time.temporal.Temporal;
+import java.time.temporal.TemporalUnit;
+import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -32,6 +44,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.xml.sax.SAXException;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
@@ -40,10 +53,16 @@ import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
+import com.marklogic.client.document.DocumentMetadataPatchBuilder;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
+import com.marklogic.client.io.Format;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
+import com.marklogic.client.query.QueryManager;
+import com.marklogic.client.query.StructuredQueryBuilder;
+import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestOptimisticLocking extends BasicJavaClientREST {
   private static String dbName = "TestOptimisticLockingDB";
@@ -677,6 +696,222 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 
     System.out.println(configMgr.getUpdatePolicy().toString());
   }
+  
+  @Test
+  public void testAfterAndBeforeQuery() throws KeyManagementException, NoSuchAlgorithmException, IOException, ParserConfigurationException, SAXException, XpathException
+  {
+	  System.out.println("Running testAfterAndBeforeQuery");
+
+	  String[] filenames1 = { "constraint1.xml", "constraint2.xml" };
+	  String[] filenames2 = { "constraint3.xml" };
+	  String[] filenames3 = { "constraint4.xml" };
+	  String[] filenames4 = { "constraint5.xml" };
+	  String queryOptionName = "valueConstraintWildCardOpt.xml";
+	  String URLprefix = "/structured-query-andnot/";
+
+	  // connect the client
+	  DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+
+	  // create a manager for the server configuration
+	  ServerConfigurationManager configMgr = client.newServerConfigManager();
+
+	  // read the server configuration from the database
+	  configMgr.readConfiguration();
+
+	  // require content versions for updates and deletes
+	  // use Policy.OPTIONAL to allow but not require versions
+	  configMgr.setUpdatePolicy(UpdatePolicy.VERSION_REQUIRED);
+	  configMgr.setQueryOptionValidation(true);
+
+	  // write the server configuration to the database
+	  configMgr.writeConfiguration();
+
+	  // write docs
+	  for (String filename : filenames1) {
+		  writeDocumentUsingInputStreamHandle(client, filename, URLprefix, "XML");
+	  }
+	  // Sleep before next batch
+	  try {
+		  Thread.sleep(10000L);
+	  } catch (InterruptedException e) {
+		  // TODO Auto-generated catch block
+		  e.printStackTrace();
+	  }
+	  for (String filename : filenames2) {
+		  writeDocumentUsingInputStreamHandle(client, filename, URLprefix, "XML");
+	  }
+	  // Sleep before next batch
+	  try {
+		  Thread.sleep(35000L);
+	  } catch (InterruptedException e) {
+		  // TODO Auto-generated catch block
+		  e.printStackTrace();
+	  }
+	  for (String filename : filenames3) {
+		  writeDocumentUsingInputStreamHandle(client, filename, URLprefix, "XML");
+	  }
+	  try {
+		  Thread.sleep(35000L);
+	  } catch (InterruptedException e) {
+		  // TODO Auto-generated catch block
+		  e.printStackTrace();
+	  }
+	  
+	// write docs
+	  for (String filename : filenames4) {
+		  writeDocumentUsingInputStreamHandle(client, filename, URLprefix, "XML");
+	  }
+	  // create document manager
+	  XMLDocumentManager docMgr = client.newXMLDocumentManager();
+	  QueryManager queryMgr = client.newQueryManager();
+
+	  DocumentDescriptor desc1 = docMgr.exists(URLprefix + "constraint1.xml");
+	  long constraint1 = desc1.getVersion();
+
+	  DocumentDescriptor desc3 = docMgr.exists(URLprefix + "constraint3.xml");
+	  long constraint3 = desc3.getVersion();
+
+	  DocumentDescriptor desc4 = docMgr.exists(URLprefix + "constraint4.xml");
+	  long constraint4 = desc4.getVersion();
+	  
+	  DocumentDescriptor desc5 = docMgr.exists(URLprefix + "constraint5.xml");
+	  long constraint5 = desc5.getVersion();
+
+	  System.out.println("TimeStamp for constraint1.xml is : " + constraint1);
+	  System.out.println("TimeStamp for constraint3.xml is : " + constraint3);
+	  System.out.println("TimeStamp for constraint4.xml is : " + constraint4);
+	  System.out.println("TimeStamp for constraint5.xml is : " + constraint5);
+
+	  StructuredQueryBuilder qb = queryMgr.newStructuredQueryBuilder();
+	  StructuredQueryDefinition qd = null, qd2 = null, qd3 = null, qd4 = null;
+	  try {
+		  qd = qb.afterQuery(0L);
+	  }
+	  catch (Exception ex) {
+		  String aftQueryExMsg = ex.getMessage();
+		  assertTrue("Exception message incorrect - afterQuery with zero timestamp", 
+				  aftQueryExMsg.contains("timestamp cannot be zero") );
+	  }    
+	  try {
+		  qd = qb.beforeQuery(0L);
+	  }
+	  catch (Exception ex) {
+		  String aftQueryExMsg = ex.getMessage();
+		  assertTrue("Exception message incorrect - beforeQuery with zero timestamp", 
+				  aftQueryExMsg.contains("timestamp cannot be zero") );
+	  }
+	  // Search with actual constarint1 time-stamp value
+	  try {
+		  qd = qb.afterQuery(constraint1);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("afterQuery with constraint1 timestamp failed");
+	  }
+	  // create handle    
+	  JacksonHandle resultsHandle = new JacksonHandle();
+	  queryMgr.search(qd, resultsHandle);
+	  JsonNode jsRes = resultsHandle.get();
+	  System.out.println("Total from results is : " + jsRes.get("total").asText());
+	  assertEquals("After Query returned incorrect value with contraint1 timestamp", "4", jsRes.get("total").asText());
+	  jsRes = null;
+	  resultsHandle = null;
+	  
+	  Instant inst = Instant.ofEpochMilli(constraint1);
+	  Instant inst2 = inst.minus(1L, ChronoUnit.DAYS);
+	 
+	  QueryManager queryMgr2 = client.newQueryManager();
+	  StructuredQueryBuilder qb2 = queryMgr2.newStructuredQueryBuilder();
+	  // Search with constarint1 time-stamp value minus 1 day.
+	  try {		  
+		  qd2 = qb2.beforeQuery(inst2.getEpochSecond() * 1000);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("resultsHandleBef2 with constraint1 timestamp failed");
+	  } 
+	  JacksonHandle resultsHandleBef2 = new JacksonHandle();
+	  queryMgr2.search(qd2, resultsHandleBef2);
+	  JsonNode jsRes2 = resultsHandleBef2.get();
+	  System.out.println("Total from results is on the day before: " + jsRes2.get("total").asText());
+	  // Zero documents should be available for yesterday
+	  assertEquals("Before Query returned incorrect value with contraint1 timestamp minus 1 day", "0", jsRes2.get("total").asText());
+	  
+	  inst = Instant.ofEpochMilli(constraint3);
+	  Instant inst3 = inst.plus(1L, ChronoUnit.MINUTES);
+	  
+	  System.out.println("inst3 " + inst3.toString());
+	 
+	  QueryManager queryMgr3 = client.newQueryManager();
+	  StructuredQueryBuilder qb3 = queryMgr3.newStructuredQueryBuilder();
+	  // Search with constarint3 time-stamp value plus 1 minute.
+	  try {  
+		  qd3 = qb3.afterQuery(inst3.getEpochSecond() * 1000);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("afterQuery with constraint3 timestamp failed");
+	  } 
+	  JacksonHandle resultsHandleBef3 = new JacksonHandle();
+	  queryMgr3.search(qd3, resultsHandleBef3);
+	  JsonNode jsRes3 = resultsHandleBef3.get();
+	  System.out.println("Total from results is : " + jsRes3.get("total").asText());
+	  // Two documents should be available for the time
+	  assertEquals("After Query returned incorrect value with contraint3 timestamp", "2", jsRes3.get("total").asText());
+	  
+	  QueryManager queryMgr4 = client.newQueryManager();
+	  StructuredQueryBuilder qb4 = queryMgr4.newStructuredQueryBuilder();
+	  // Search with constarint3 time-stamp value plus 1 minute.
+	  try {
+		  qd4 = qb4.beforeQuery(inst3.getEpochSecond() * 1000);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("beforeQuery with constraint3 timestamp failed");
+	  } 
+	  JacksonHandle resultsHandleBef4 = new JacksonHandle();
+	  queryMgr3.search(qd4, resultsHandleBef4);
+	  JsonNode jsRes4 = resultsHandleBef4.get();
+	  System.out.println("Total from results is : " + jsRes4.get("total").asText());
+	  // Three documents should be available for the time
+	  assertEquals("Before Query returned incorrect value with contraint3 timestamp", "3", jsRes4.get("total").asText());
+	  
+	  // Test for meta data changes. First make sure after constraint5 timestamp + 1 there are no docs. Should be zero.
+	  inst = Instant.ofEpochMilli(constraint5);
+	  Instant inst5 = inst.plus(1L, ChronoUnit.MINUTES);
+	  try {
+		  qd4 = qb4.afterQuery(inst5.getEpochSecond() * 1000);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("afterQuery with constraint5 timestamp failed");
+	  } 
+	  resultsHandleBef4 = new JacksonHandle();
+	  queryMgr3.search(qd4, resultsHandleBef4);
+	  jsRes4 = resultsHandleBef4.get();
+	  System.out.println("Total from results is : " + jsRes4.get("total").asText());
+	  // Zero documents should be available for the time
+	  assertEquals("Afetr Query returned incorrect value with contraint5 timestamp", "0", jsRes4.get("total").asText());
+	  //Now update meta data for contraint5.xml file and see if update is reflected.
+	  DocumentMetadataPatchBuilder patchBldr = docMgr.newPatchBuilder(Format.JSON);
+	  // Adding the initial meta-data, since there are none.
+      patchBldr.addCollection("XMLPatch1", "XMLPatch2");
+      DocumentMetadataPatchBuilder.PatchHandle patchHandle = patchBldr.build();
+      docMgr.patch(URLprefix + "constraint5.xml", patchHandle);
+      waitForPropertyPropagate();
+      try {
+		  qd4 = qb4.afterQuery(inst5.getEpochSecond() * 1000);
+	  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+		  fail("afterQuery with constraint5 timestamp failed");
+	  } 
+      resultsHandleBef4 = new JacksonHandle();
+      queryMgr3.search(qd4, resultsHandleBef4);
+      jsRes4 = resultsHandleBef4.get();
+      System.out.println("Total from results after meta-data update is : " + jsRes4.get("total").asText());
+      assertEquals("Afetr Query returned incorrect value with contraint5 timestamp", "1", jsRes4.get("total").asText());  
+}
 
   @AfterClass
   public static void tearDown() throws Exception
