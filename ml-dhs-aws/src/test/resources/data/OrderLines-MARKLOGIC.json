@@ -1,0 +1,29 @@
+{
+  "job": {
+    "id": "OPTIONAL",
+    "metatadata": {
+      "provenance": {
+        "wasGeneratedBy": "OPTIONAL"
+      }
+    }
+  },
+  "record": {
+    "document": {
+      "directory": "OPTIONAL",
+      "primaryKey": "OPTIONAL",
+      "collections":["OPTIONAL"],
+      "permissions":{
+        "ROLE_NAME":["read", "update"]
+      }
+    },
+    "transform": "OPTIONAL",
+    "mapping":{
+      "FIELD_NAME": "NODE_TYPE"
+    },
+    "metatadata": {
+      "reconciliation": {
+        "minimumRecords": 1
+      }
+    }
+  }
+}
