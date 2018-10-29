@@ -2,12 +2,15 @@
   "job": {
     "id": "OPTIONAL",
     "metatadata": {
-      "provenance": {
-        "wasGeneratedBy": "OPTIONAL"
+      "reconciliation": {
+        "minimumRecords": 1
       }
     }
   },
   "record": {
+    "mapping":{
+      "FIELD_NAME": "NODE_TYPE"
+    },
     "document": {
       "directory": "OPTIONAL",
       "primaryKey": "OPTIONAL",
@@ -17,12 +20,9 @@
       }
     },
     "transform": "OPTIONAL",
-    "mapping":{
-      "FIELD_NAME": "NODE_TYPE"
-    },
     "metatadata": {
-      "reconciliation": {
-        "minimumRecords": 1
+      "provenance": {
+        "wasGeneratedBy": "OPTIONAL"
       }
     }
   }
