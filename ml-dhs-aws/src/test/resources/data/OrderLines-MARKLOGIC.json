@@ -13,7 +13,6 @@
     },
     "document": {
       "directory": "OPTIONAL",
-      "primaryKey": "OPTIONAL",
       "collections":["OPTIONAL"],
       "permissions":{
         "ROLE_NAME":["read", "update"]
