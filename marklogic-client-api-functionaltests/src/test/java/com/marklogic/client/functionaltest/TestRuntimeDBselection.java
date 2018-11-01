@@ -30,8 +30,7 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import com.marklogic.client.FailedRequestException;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 
 public class TestRuntimeDBselection extends BasicJavaClientREST {
   private static String dbName = "TestRuntimeDB";
@@ -85,8 +84,9 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
     if (!IsSecurityEnabled()) {
       associateRESTServerWithDefaultUser(getRestServerName(), "nobody", "basic");
       int restPort = getRestServerPort();
+      SecurityContext secContext = new DatabaseClientFactory.BasicAuthContext("eval-user", "x");
 
-      client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.BASIC);
+      client = DatabaseClientFactory.newClient(appServerHostname, restPort, dbName, secContext, getConnType());
       String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
       client.newServerEval().xquery(insertJSON).eval();
       String query1 = "fn:count(fn:doc())";
@@ -107,7 +107,7 @@ public class TestRuntimeDBselection extends BasicJavaClientREST {
    */
   @Test
   public void testRuntimeDBclientWithNoPrivUser() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
     String insertJSON = "xdmp:document-insert(\"test2.json\",object-node {\"test\":\"hello\"})";
     try {
       client.newServerEval().xquery(insertJSON).eval();

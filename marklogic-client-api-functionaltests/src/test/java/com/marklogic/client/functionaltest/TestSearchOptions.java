@@ -19,12 +19,12 @@ package com.marklogic.client.functionaltest;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathExists;
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathNotExists;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.util.regex.Pattern;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -39,22 +39,21 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
-import com.marklogic.client.io.SearchHandle;
-import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
+import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.ExtractedItem;
 import com.marklogic.client.query.ExtractedResult;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.QueryManager;
-import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.QueryManager.QueryView;
+import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.StringQueryDefinition;
 
 public class TestSearchOptions extends BasicJavaClientREST {
@@ -86,7 +85,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "searchReturnResultsFalseOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -126,7 +125,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "setViewOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -175,7 +174,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "setViewOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -216,7 +215,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "setViewOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -257,7 +256,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "setViewOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -299,7 +298,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "setViewOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -366,7 +365,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     content2.append("{ \"RegionId\": \"2004\", \"Direction\": \"SW\" }");
     content2.append("]}}]}");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     int count = 1;
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     // Write docs
@@ -594,7 +593,7 @@ public class TestSearchOptions extends BasicJavaClientREST {
     content1.append("<p>Vannevar Bush wrote an article for The Atlantic Monthly</p>");
     content1.append("</root>");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     int count = 1;
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
     // Write docs

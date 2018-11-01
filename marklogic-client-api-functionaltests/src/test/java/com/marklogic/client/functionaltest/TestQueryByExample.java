@@ -35,7 +35,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
@@ -51,8 +50,6 @@ import com.marklogic.client.query.RawQueryByExampleDefinition;
 public class TestQueryByExample extends BasicJavaClientREST {
   private static String dbName = "TestQueryByExampleDB";
   private static String[] fNames = { "TestQueryByExampleDB-1" };
-
-  private static int restPort = 8011;
 
   @BeforeClass
   public static void setUp() throws Exception
@@ -79,7 +76,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -116,7 +113,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -152,7 +149,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -191,7 +188,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -221,7 +218,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -254,7 +251,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -283,7 +280,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -321,7 +318,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String filename = "WrongFormat.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
     try {
       // write docs
       writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "XML");
@@ -355,7 +352,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String filename = "WrongFormat.json";
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
     try {
       // write docs
       writeDocumentUsingInputStreamHandle(client, filename, "/qbe/", "JSON");
@@ -393,7 +390,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -442,7 +439,7 @@ public class TestQueryByExample extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

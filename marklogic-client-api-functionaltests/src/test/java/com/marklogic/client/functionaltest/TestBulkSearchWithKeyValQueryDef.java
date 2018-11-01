@@ -43,7 +43,7 @@ public class TestBulkSearchWithKeyValQueryDef extends BasicJavaClientREST {
    * @Before public void setUp() throws KeyManagementException,
    * NoSuchAlgorithmException, Exception { // create new connection for each
    * test below client = getDatabaseClient("usr1", "password",
-   * Authentication.DIGEST); }
+   * getConnType()); }
    * 
    * @After public void tearDown() throws Exception {
    * System.out.println("Running clear script"); // release client

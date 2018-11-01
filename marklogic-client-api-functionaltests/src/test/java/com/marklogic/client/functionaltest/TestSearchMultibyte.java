@@ -34,7 +34,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -68,7 +67,7 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "multibyteSearchOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -107,7 +106,7 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "multibyteSearchOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -147,7 +146,7 @@ public class TestSearchMultibyte extends BasicJavaClientREST {
     String[] filenames = { "multibyte1.xml", "multibyte2.xml", "multibyte3.xml" };
     String queryOptionName = "multibyteSearchOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

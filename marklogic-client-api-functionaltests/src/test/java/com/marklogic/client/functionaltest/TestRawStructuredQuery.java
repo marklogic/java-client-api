@@ -38,7 +38,6 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -48,7 +47,6 @@ import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawStructuredQueryDefinition;
-import com.marklogic.client.query.StructuredQueryDefinition;
 
 public class TestRawStructuredQuery extends BasicJavaClientREST {
   private static String dbName = "TestRawStructuredQueryDB";
@@ -78,7 +76,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -126,7 +124,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -177,7 +175,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -228,7 +226,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWithoutIndexSettingsAndNSOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -284,7 +282,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
     String filename4 = "constraint4.xml";
     String filename5 = "constraint5.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -348,7 +346,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
     String filename4 = "constraint4.xml";
     String filename5 = "constraint5.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -408,7 +406,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -453,7 +451,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -506,7 +504,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -599,7 +597,7 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -645,13 +643,10 @@ public class TestRawStructuredQuery extends BasicJavaClientREST {
     JacksonHandle strHandlePos = new JacksonHandle();
     JacksonHandle resultsPos = queryMgr.search(rawquerydefPos, strHandlePos.withFormat(Format.JSON));
 
-    JsonNode nodePos = results.get();
+    JsonNode nodePos = resultsPos.get();
     // Return 2 nodes.
-    assertEquals("Number of results returned incorrect in response", "2", nodePos.path("total").asText());
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint1.xml") ||
-        nodePos.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint1.xml"));
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml") ||
-        nodePos.path("results").get(1).path("uri").asText().contains("/raw-combined-query/constraint4.xml"));
+    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/raw-combined-query/constraint4.xml"));
 
     /*
      * With multiple withCriteria - negativeThis is an invalid scenario--you can

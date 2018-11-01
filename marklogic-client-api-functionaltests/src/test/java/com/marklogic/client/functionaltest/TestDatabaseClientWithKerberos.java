@@ -116,9 +116,7 @@ public class TestDatabaseClientWithKerberos extends BasicJavaClientREST {
   private static int appServerHostPort = 8021;
 
   private static String UberdbName = "UberDatabaseClientConnectionDB";
-  private static String UberDefaultdbName = "Documents";
   private static String[] UberfNames = { "UberDatabaseClientConnectionDB-1" };
-  private static int Uberport = 8000;
   private static String UberrestServerName = "App-Services";
 
   private static String appServerName = "REST-Java-Client-API-ServerKerberos";

@@ -41,8 +41,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.datamovement.DataMovementManager;
 import com.marklogic.client.datamovement.DeleteListener;
 import com.marklogic.client.datamovement.ExportToWriterListener;
@@ -50,8 +48,8 @@ import com.marklogic.client.datamovement.QueryBatcher;
 import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.functionaltest.Artifact;
+import com.marklogic.client.functionaltest.BasicJavaClientREST;
 import com.marklogic.client.functionaltest.Company;
-import com.marklogic.client.impl.DatabaseClientImpl;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.DocumentMetadataValues;
 import com.marklogic.client.io.FileHandle;
@@ -64,7 +62,6 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryDefinition;
-import com.marklogic.client.functionaltest.BasicJavaClientREST;
 
 public class ExportToWriterListenerTest extends BasicJavaClientREST {
 
@@ -73,12 +70,10 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
   private static final String TEST_DIR_PREFIX = "/WriteHostBatcher-testdata/";
 
   private static DatabaseClient dbClient;
-  private static String host = null;
   private static String user = "admin";
   private static int port = 8000;
   private static String password = "admin";
   private static String server = "App-Services";
-  private static JsonNode clusterInfo;
 
   private static JacksonHandle jacksonHandle;
   private static StringHandle stringHandle;
@@ -103,7 +98,6 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
     port = getRestAppServerPort();
     
     dataConfigDirPath = getDataConfigDirPath();
-    host = getRestAppServerHostName();
     hostNames = getHosts();
     createDB(dbName);
     Thread.currentThread().sleep(500L);
@@ -120,12 +114,9 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
 		enableSecurityOnRESTServer(server, dbName);
 	}
 
-    dbClient = getDatabaseClient(user, password, Authentication.DIGEST);
-    DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
+    dbClient = getDatabaseClient(user, password, getConnType());
     dmManager = dbClient.newDataMovementManager();
 
-    clusterInfo = ((DatabaseClientImpl) adminClient).getServices()
-            .getResource(null, "internal/forestinfo", null, null, new JacksonHandle()).get();
     // JacksonHandle
     jsonNode = new ObjectMapper().readTree("{\"k1\":\"v1\"}");
     jacksonHandle = new JacksonHandle();
@@ -592,7 +583,7 @@ public class ExportToWriterListenerTest extends BasicJavaClientREST {
                         return uri + "," + collection + "," + quality + "," + contents;
                       }
                   )
-                  .onBatchFailure((batch, throwable) -> {
+                  .onFailure((batch, throwable) -> {
                     onBatchFailureStr.append("From onBatchFailure QA Exception");
                     System.out.println("From onBatchFailure QA Exception");
                   }))

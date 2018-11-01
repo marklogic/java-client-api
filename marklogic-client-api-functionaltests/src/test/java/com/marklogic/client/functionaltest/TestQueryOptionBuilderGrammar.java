@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.w3c.dom.Document;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
@@ -65,7 +64,7 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -137,7 +136,7 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -208,7 +207,7 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -280,7 +279,7 @@ public class TestQueryOptionBuilderGrammar extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames) {

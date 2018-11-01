@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StringQueryDefinition;
@@ -55,7 +54,7 @@ public class TestBug19016 extends BasicJavaClientREST {
 
     String[] filenames = { "bug19016.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

@@ -34,7 +34,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.DigestAuthContext;
 import com.marklogic.client.expression.PlanBuilder;
 import com.marklogic.client.expression.PlanBuilder.ModifyPlan;
@@ -44,7 +43,6 @@ import com.marklogic.client.row.RowManager;
 import com.marklogic.client.semantics.GraphManager;
 import com.marklogic.client.semantics.RDFMimeTypes;
 
-@SuppressWarnings("deprecation")
 public class TestOpticOnFromSparql extends BasicJavaClientREST {
 
   private static String dbName = "TestOpticOnFromSparqlDB";
@@ -71,7 +69,7 @@ public class TestOpticOnFromSparql extends BasicJavaClientREST {
     configureRESTServer(dbName, fNames);
 
     if (IsSecurityEnabled()) {
-        client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+        client = getDatabaseClient("admin", "admin", getConnType());
     }
     else {
         client = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), new DigestAuthContext("admin", "admin"));

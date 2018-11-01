@@ -31,7 +31,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.io.SearchHandle;
@@ -58,7 +57,7 @@ public class TestSearchMultipleForests extends BasicJavaClientREST {
   {
     System.out.println("Running testSearchMultipleForest");
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     DocumentManager docMgr = client.newDocumentManager();
     StringHandle writeHandle1 = new StringHandle();

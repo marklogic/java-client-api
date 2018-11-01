@@ -36,7 +36,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.StringHandle;
@@ -71,7 +70,7 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)
@@ -127,7 +126,6 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
     JsonNode jn = new ObjectMapper().readTree(resultDoc);
     // System.out.println(resultDoc);
     System.out.println(jn.get("results").findValue("uri").textValue());
-    String expectedResult = "{\"snippet-format\":\"snippet\",\"total\":1,\"start\":1,\"page-length\":10,\"results\":[{\"index\":1,\"uri\":\"/trans-res-with-snip-func/constraint3.xml\"";
 
     assertTrue("Result is wrong", jn.get("results").findValue("uri").textValue().contains("/trans-res-with-snip-func/constraint3.xml"));
 
@@ -143,7 +141,7 @@ public class TestQueryOptionBuilderTransformResults extends BasicJavaClientREST 
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (String filename : filenames)

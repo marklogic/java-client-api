@@ -35,7 +35,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.query.QueryManager;
@@ -75,7 +74,7 @@ public class TestAppServicesCollectionConstraint extends BasicJavaClientREST {
     String filename5 = "constraint5.xml";
     String queryOptionName = "collectionConstraintWithFacetOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -141,7 +140,7 @@ public class TestAppServicesCollectionConstraint extends BasicJavaClientREST {
     String filename5 = "constraint5.xml";
     String queryOptionName = "collectionConstraintWithNoFacetOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();
@@ -211,7 +210,7 @@ public class TestAppServicesCollectionConstraint extends BasicJavaClientREST {
     String filename5 = "constraint5.xml";
     String queryOptionName = "collectionConstraintWithWordConstraintAndGoogleGrammarOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle1 = new DocumentMetadataHandle();

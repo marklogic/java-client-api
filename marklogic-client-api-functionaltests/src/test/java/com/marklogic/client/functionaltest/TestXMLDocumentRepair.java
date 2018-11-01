@@ -16,18 +16,24 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.Scanner;
+
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.document.XMLDocumentManager.DocumentRepair;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
-import org.junit.*;
 
 public class TestXMLDocumentRepair extends BasicJavaClientREST {
 
@@ -75,7 +81,8 @@ public class TestXMLDocumentRepair extends BasicJavaClientREST {
     out.close();
 
     // create database client
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, "rest-writer", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("rest-writer", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, 8015, secContext, getConnType());
 
     // create doc id
     String docId = "/repair/xml/" + file.getName();

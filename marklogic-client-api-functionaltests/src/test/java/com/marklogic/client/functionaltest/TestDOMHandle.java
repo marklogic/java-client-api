@@ -33,7 +33,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 
 public class TestDOMHandle extends BasicJavaClientREST {
@@ -60,7 +59,7 @@ public class TestDOMHandle extends BasicJavaClientREST {
     XMLUnit.setNormalizeWhitespace(true);
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingDOMHandle(client, filename, uri, "XML");
@@ -91,9 +90,6 @@ public class TestDOMHandle extends BasicJavaClientREST {
 
     Document readDocUpdate = updateHandle.get();
 
-    // get xml document for expected result
-    Document expectedDocUpdate = expectedXMLDocument(updateFilename);
-
     assertEquals("First Node incorrect in output doc", readDocUpdate.getFirstChild().getNodeName().trim(), "food");
     assertEquals("First Node attribute incorrect in output doc", readDocUpdate.getFirstChild().getAttributes().item(0).getNodeValue().trim(), "en");
     assertEquals("Child Node value incorrect in output doc", readDocUpdate.getChildNodes().item(0).getTextContent().trim(), "fried noodle");
@@ -113,9 +109,6 @@ public class TestDOMHandle extends BasicJavaClientREST {
     String expectedException = "Could not read non-existent document";
     boolean documentIsDeleted = exception.contains(expectedException);
     assertTrue("Document is not deleted", documentIsDeleted);
-
-    // assertFalse("Document is not deleted", isDocumentExist(client, uri +
-    // filename, "XML"));
 
     // release client
     client.release();

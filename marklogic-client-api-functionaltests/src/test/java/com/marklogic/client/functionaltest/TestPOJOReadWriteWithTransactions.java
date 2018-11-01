@@ -34,7 +34,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.pojo.PojoPage;
@@ -64,7 +63,7 @@ public class TestPOJOReadWriteWithTransactions extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After

@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.SessionState;
 import com.marklogic.client.document.JSONDocumentManager;
@@ -92,10 +93,10 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		createUserRolesWithPrevilages("ForbiddenRole", "any-uri");
 		createRESTUser("ForbiddenUser", "ap1U53r", "apiRole", "rest-admin", "rest-writer", "rest-reader",
 				"manage-user");
-		 
-		dbclient = DatabaseClientFactory.newClient(host, port, "apiUser", "ap1U53r", Authentication.DIGEST);		
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r"); 
+		dbclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());		
 		schemaDBclient = getDatabaseClientOnDatabase(host, modulesPort, dbNameMod, user, "admin",
-				Authentication.DIGEST);	
+				getConnType());	
 
 		TextDocumentManager docMgr = schemaDBclient.newTextDocumentManager();
 		File file = new File(
@@ -343,7 +344,8 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 
 		System.out.println("Running TestE2EUnAuthorizedUser");
 		associateRESTServerWithDefaultUser(serverName, "security", "digest");
-		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, "ForbiddenUser", "ap1U53r", Authentication.DIGEST); 				
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("ForbiddenUser", "ap1U53r");
+		DatabaseClient dbForbiddenclient = DatabaseClientFactory.newClient(host, port, secContext, getConnType()); 				
 		String msg;
 		try {
 			Float responseBack1 = TestE2EIntegerParaReturnDouble.on(dbForbiddenclient).TestE2EItemPriceErrorCond(10, 50);
@@ -365,7 +367,7 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 
 		System.out.println("Running TestE2EModuleNotFound");
 		DatabaseClient dbForbiddenclient = getDatabaseClientOnDatabase(host, port, dbName, "ForbiddenUser", "ap1U53r",
-				Authentication.DIGEST);
+				getConnType());
 		String msg;
 		try {
 			String responseBack1 = TestE2EModuleNotFound.on(dbclient).ModuleNotFound("a", "b");
@@ -445,8 +447,8 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		// Used this test to verify ResourceNotFoundException when sjs module is installed with incorrect doc URI
 
 		System.out.println("Running TestE2EuserWithInvalidRole");
-		
-		DatabaseClient dbSecondClient = DatabaseClientFactory.newClient(host, port, "secondApiUser", "ap1U53r", Authentication.DIGEST);
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("secondApiUser", "ap1U53r");
+		DatabaseClient dbSecondClient = DatabaseClientFactory.newClient(host, port, secContext, getConnType());
 		String msg;
 		try {
 			Float responseBack1 = TestE2EIntegerParaReturnDouble.on(dbSecondClient).TestE2EItemPriceErrorCond(10, 50);
@@ -516,8 +518,8 @@ public class ClientApiFunctionalTest extends BasicJavaClientREST {
 		} catch (Exception ex) {
 			System.out.println("Exception - session2.json / session3.json - Client API call is " + ex.toString());
 		}
-		
-		DatabaseClient dbclientRest = DatabaseClientFactory.newClient(host, restTestport, "apiUser", "ap1U53r", Authentication.DIGEST);
+		SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("apiUser", "ap1U53r");
+		DatabaseClient dbclientRest = DatabaseClientFactory.newClient(host, restTestport, secContext, getConnType());
 		this.waitForPropertyPropagate();
 		JSONDocumentManager docMgr = dbclientRest.newJSONDocumentManager();
 		 JacksonHandle jh = new JacksonHandle();

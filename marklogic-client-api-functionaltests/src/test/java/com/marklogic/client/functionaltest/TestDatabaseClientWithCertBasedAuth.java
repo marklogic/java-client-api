@@ -43,8 +43,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.DatabaseClientFactory.CertificateAuthContext;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.document.TextDocumentManager;
 import com.marklogic.client.io.StringHandle;
 
@@ -69,7 +69,8 @@ public class TestDatabaseClientWithCertBasedAuth extends BasicJavaClientREST {
     createRESTServerWithDB(server, port);
     createRESTUser("portal", "seekrit", "admin", "rest-admin", "rest-writer", "rest-reader");
     associateRESTServerWithDB(setupServer, "Security");
-    secClient = DatabaseClientFactory.newClient(host, setupPort, "admin", "admin", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("admin", "admin");
+    secClient = DatabaseClientFactory.newClient(host, setupPort, secContext, getConnType());
 
     createCACert();
     createCertTemplate();

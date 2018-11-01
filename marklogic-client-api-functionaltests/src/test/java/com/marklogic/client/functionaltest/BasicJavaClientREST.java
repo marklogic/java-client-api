@@ -89,6 +89,7 @@ import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.query.MatchDocumentSummary;
 import com.marklogic.client.query.MatchLocation;
 import com.marklogic.client.query.StringQueryDefinition;
+import com.marklogic.client.io.BaseHandle;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -107,6 +108,8 @@ import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.io.XMLEventReaderHandle;
 import com.marklogic.client.io.XMLStreamReaderHandle;
+import com.marklogic.client.io.marker.GenericReadHandle;
+import com.marklogic.client.io.marker.GenericWriteHandle;
 
 public abstract class BasicJavaClientREST extends ConnectedRESTQA
 {
@@ -1829,7 +1832,7 @@ public abstract class BasicJavaClientREST extends ConnectedRESTQA
    */
   public void loadGeoData() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 24; i++)

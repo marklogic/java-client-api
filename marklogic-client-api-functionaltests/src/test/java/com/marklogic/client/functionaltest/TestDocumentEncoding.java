@@ -26,6 +26,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.OutputKeys;
+import javax.xml.transform.Source;
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
@@ -41,11 +42,9 @@ import org.w3c.dom.Element;
 import org.w3c.dom.Text;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.BytesHandle;
 import com.marklogic.client.io.StringHandle;
-import javax.xml.transform.Source;
 
 public class TestDocumentEncoding extends BasicJavaClientREST
 {
@@ -63,7 +62,7 @@ public class TestDocumentEncoding extends BasicJavaClientREST
   public void testEncoding() throws KeyManagementException, NoSuchAlgorithmException, IOException, TransformerException, ParserConfigurationException
   {
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
     DocumentBuilder builder = factory.newDocumentBuilder();

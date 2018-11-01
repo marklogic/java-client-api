@@ -24,6 +24,7 @@ import java.io.FileInputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,8 +35,6 @@ import org.junit.Test;
 import org.junit.runners.MethodSorters;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.DocumentWriteSet;
 import com.marklogic.client.document.GenericDocumentManager;
@@ -48,7 +47,6 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.InputStreamHandle;
-import java.util.Map;
 
 /*
  * This test is intended for 
@@ -80,7 +78,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", getConnType());
   }
 
   @After
@@ -186,7 +184,7 @@ public class TestEvalwithRunTimeDBnTransactions extends BasicJavaClientREST {
 
     configureRESTServer(dbNameTmp, fNamesTmp);
 
-    DatabaseClient client2 = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    DatabaseClient client2 = getDatabaseClient("eval-user", "x", getConnType());
     Transaction t1 = client2.openTransaction();
     try {
       XMLDocumentManager docMgr = client2.newXMLDocumentManager();

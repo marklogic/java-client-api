@@ -35,7 +35,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
@@ -67,7 +66,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -110,7 +109,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -158,7 +157,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -200,7 +199,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -243,7 +242,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -285,7 +284,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -328,7 +327,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -370,7 +369,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -414,7 +413,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -456,7 +455,7 @@ public class TestStandaloneQuery extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();

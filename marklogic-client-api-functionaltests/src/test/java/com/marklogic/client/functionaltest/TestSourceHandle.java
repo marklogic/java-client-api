@@ -34,7 +34,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.SourceHandle;
 
 public class TestSourceHandle extends BasicJavaClientREST {
@@ -58,7 +57,7 @@ public class TestSourceHandle extends BasicJavaClientREST {
     System.out.println("Running testXmlCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, uri, "XML");

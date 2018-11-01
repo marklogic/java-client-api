@@ -29,7 +29,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.TextDocumentManager;
 
 public class TestMultithreading extends BasicJavaClientREST {
@@ -61,7 +60,7 @@ public class TestMultithreading extends BasicJavaClientREST {
     t2.start(); // this will start thread of object 2
     t2.join();
 
-    DatabaseClient client = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-reader", "x", getConnType());
     TextDocumentManager docMgr = client.newTextDocumentManager();
 
     for (int i = 1; i <= 5; i++) {

@@ -27,6 +27,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.datamovement.DataMovementManager;
@@ -99,7 +100,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		}
 
 		dbClient = getDatabaseClient(user, password, getConnType());
-		DatabaseClient adminClient = DatabaseClientFactory.newClient(host, 8000, user, password, Authentication.DIGEST);
 		dmManager = dbClient.newDataMovementManager();
 
 		// JacksonHandle
@@ -260,7 +260,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 		WriteBatcher ihb1 = dmManager.newWriteBatcher();
 
 		AtomicInteger batchCount = new AtomicInteger(0);
-		AtomicInteger successCount = new AtomicInteger(0);
 
 		ihb1.withBatchSize(10);
 		ihb1.onBatchSuccess(batch -> {
@@ -697,7 +696,6 @@ public class WriteBatcherJobReportTest extends BasicJavaClientREST {
 			final String query1 = "fn:count(fn:doc())";
 
 			WriteBatcher ihb2 = dmManager.newWriteBatcher();
-			AtomicInteger call = new AtomicInteger(0);
 			ihb2.withBatchSize(200);
 			ihb2.withThreadCount(60);
 			ihb2.onBatchSuccess(batch -> {

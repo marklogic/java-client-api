@@ -24,16 +24,8 @@ import java.io.File;
 import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
 import java.time.Instant;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.time.temporal.Temporal;
-import java.time.temporal.TemporalUnit;
-import java.util.Date;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -46,11 +38,9 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ServerConfigurationManager;
-import com.marklogic.client.admin.ServerConfigurationManager.Policy;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentMetadataPatchBuilder;
@@ -67,8 +57,6 @@ import com.marklogic.client.query.StructuredQueryDefinition;
 public class TestOptimisticLocking extends BasicJavaClientREST {
   private static String dbName = "TestOptimisticLockingDB";
   private static String[] fNames = { "TestOptimisticLockingDB-1" };
-
-  private static int restPort = 8011;
 
   @BeforeClass
   public static void setUp() throws Exception {
@@ -94,7 +82,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
     long badVersion = 1111;
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create a manager for the server configuration
     ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -285,7 +273,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
     long badVersion = 1111;
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create a manager for the server configuration
     ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -447,7 +435,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
     long badVersion = 1111;
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create a manager for the server configuration
     ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -609,7 +597,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
     long badVersion = 1111;
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // create a manager for the server configuration
     ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -706,11 +694,11 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  String[] filenames2 = { "constraint3.xml" };
 	  String[] filenames3 = { "constraint4.xml" };
 	  String[] filenames4 = { "constraint5.xml" };
-	  String queryOptionName = "valueConstraintWildCardOpt.xml";
+	
 	  String URLprefix = "/structured-query-andnot/";
 
 	  // connect the client
-	  DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+	  DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
 	  // create a manager for the server configuration
 	  ServerConfigurationManager configMgr = client.newServerConfigManager();
@@ -910,14 +898,14 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
       queryMgr3.search(qd4, resultsHandleBef4);
       jsRes4 = resultsHandleBef4.get();
       System.out.println("Total from results after meta-data update is : " + jsRes4.get("total").asText());
-      assertEquals("Afetr Query returned incorrect value with contraint5 timestamp", "1", jsRes4.get("total").asText());  
+      assertEquals("After Query returned incorrect value with contraint5 timestamp", "1", jsRes4.get("total").asText());  
 }
 
   @AfterClass
   public static void tearDown() throws Exception
   {
     System.out.println("In tear down");
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
     ServerConfigurationManager configMgr = client.newServerConfigManager();
 
     // read the server configuration from the database

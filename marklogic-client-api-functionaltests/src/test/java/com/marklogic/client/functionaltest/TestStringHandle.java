@@ -36,7 +36,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.StringHandle;
 
@@ -61,7 +60,7 @@ public class TestStringHandle extends BasicJavaClientREST {
     System.out.println("Running testXmlCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingStringHandle(client, filename, uri, "XML");
@@ -129,7 +128,7 @@ public class TestStringHandle extends BasicJavaClientREST {
     System.out.println("Running testTextCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingStringHandle(client, filename, uri, "Text");
@@ -192,7 +191,7 @@ public class TestStringHandle extends BasicJavaClientREST {
     ObjectMapper mapper = new ObjectMapper();
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingStringHandle(client, filename, uri, "JSON");
@@ -250,7 +249,7 @@ public class TestStringHandle extends BasicJavaClientREST {
     System.out.println("Running testBug22356");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // read docs
     StringHandle contentHandle = null;

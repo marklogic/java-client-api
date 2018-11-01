@@ -145,8 +145,8 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     		                             "rest-reader", "rest-extension-user", "manage-user");    
 
     if (IsSecurityEnabled()) {
-        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", Authentication.DIGEST);
-        client = getDatabaseClient("opticUser", "0pt1c", Authentication.DIGEST);
+        schemaDBclient = getDatabaseClientOnDatabase(getRestServerHostName(), getRestServerPort(), schemadbName, "opticUser", "0pt1c", getConnType());
+        client = getDatabaseClient("opticUser", "0pt1c", getConnType());
     }
     else {
         schemaDBclient = DatabaseClientFactory.newClient(getRestServerHostName(), getRestServerPort(), schemadbName, new DigestAuthContext("opticUser", "0pt1c"));
@@ -709,8 +709,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
   @Test
   public void testjoinInnerWithNullSchema() throws KeyManagementException, NoSuchAlgorithmException, IOException, SAXException, ParserConfigurationException
   {
-    StringBuilder str = new StringBuilder();
-
     System.out.println("In testjoinInnerWithNullSchema method");
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
@@ -768,8 +766,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     PlanColumn idCol1 = plan2.col("id");
     PlanColumn idCol2 = plan1.col("id");
     PlanColumn detailNameCol = plan1.col("name");
-    PlanColumn masterNameCol = plan2.col("name");
-
+    
     ModifyPlan exportedPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol2), p.on(idCol1, idCol2))
         .orderBy(p.desc(detailNameCol))
         .offsetLimit(1, 100);
@@ -827,10 +824,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     assertEquals("Plan exportAs incorrect", "offset-limit", JsonNodeAs.path("$optic").path("args").get(3).path("fn").asText());
 
     // Export a plan with error / incorrect column
-    PlanColumn masterIdCol1AA = p.viewCol("detail", "masterIdAA");
-    ExportablePlan exportedErrorPlan = plan1.joinInner(plan2, p.on(masterIdCol1, masterIdCol1AA), p.on(idCol1, idCol2))
-        .orderBy(p.desc(detailNameCol))
-        .offsetLimit(1, 100);
     exportHandle = new JacksonHandle();
     exportedPlan.export(exportHandle);
     JsonNode exportNodedAA = exportHandle.get();
@@ -1318,7 +1311,6 @@ public class TestOpticOnViews extends BasicJavaClientREST {
     RowManager rowMgr = client.newRowManager();
     PlanBuilder p = rowMgr.newPlanBuilder();
 
-    double[] numbers = { 10.0, 40.0, 50.0, 30.0, 60.0, 0.0, 100.0 };
     ModifyPlan plan1 = p.fromView("opticFunctionalTest", "detail")
         .orderBy(p.col( "id"));
     ModifyPlan plan2 = p.fromView("opticFunctionalTest", "master")

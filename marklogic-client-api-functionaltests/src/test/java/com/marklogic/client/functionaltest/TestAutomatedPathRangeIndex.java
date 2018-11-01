@@ -22,10 +22,9 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
-
-import java.io.InputStream;
 import java.util.List;
 
 import org.apache.http.HttpResponse;
@@ -42,8 +41,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoQueryBuilder;
@@ -91,7 +88,7 @@ public class TestAutomatedPathRangeIndex extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws Exception {
-    client = getDatabaseClient("admin", "admin", Authentication.DIGEST);
+    client = getDatabaseClient("admin", "admin", getConnType());
   }
 
   @After

@@ -32,7 +32,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
-import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 import org.w3c.dom.Document;
 
@@ -40,7 +39,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.admin.QueryOptionsManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.Format;
@@ -60,7 +59,6 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
   private static String dbName = "TestQueryOptionBuilderSortOrderDB";
   private static String[] fNames = { "TestQueryOptionBuilderSortOrderDB-1" };
   private static String appServerHostname = null;
-  private static int adminPort = 0;
 
   // Additional port to test for Uber port
   private static int uberPort = 8000;
@@ -75,7 +73,6 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     appServerHostname = getRestAppServerHostName();
-    adminPort = getAdminPort();
   }
 
   @After
@@ -90,8 +87,8 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
     System.out.println("Running testSortOrderDescendingScore");
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
-
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -155,7 +152,8 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -227,7 +225,8 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {
@@ -376,7 +375,8 @@ public class TestQueryOptionBuilderSortOrder extends BasicJavaClientREST {
 
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
 
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     for (String filename : filenames) {

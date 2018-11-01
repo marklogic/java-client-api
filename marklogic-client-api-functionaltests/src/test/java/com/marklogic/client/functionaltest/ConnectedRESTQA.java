@@ -2432,7 +2432,7 @@ public abstract class ConnectedRESTQA {
 	 * through uber server on port (specifically port 8000)
 	 */
 	public static DatabaseClient getDatabaseClientOnDatabase(String hostName, int port, String databaseName,
-			String user, String password, Authentication authType)
+			String user, String password, ConnectionType connType)
 			throws KeyManagementException, NoSuchAlgorithmException, IOException {
 		DatabaseClient client = null;
 		try {
@@ -2440,16 +2440,22 @@ public abstract class ConnectedRESTQA {
 			// Enable secure access on non 8000 port. Uber servers on port 8000
 			// aren't
 			// security enabled as of now.
+			
 			if (IsSecurityEnabled() && port != 8000) {
+				
 				sslcontext = getSslContext();
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getSslServer();
-				client = DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType,
-						sslcontext, SSLHostnameVerifier.ANY);
+				
+				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
+				secContext.withSSLContext(sslcontext).withSSLHostnameVerifier(SSLHostnameVerifier.ANY);
+				
+				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			} else {
+				SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext(user,password);
 				if (hostName.equalsIgnoreCase(host_name))
 					hostName = getServer();
-				client = DatabaseClientFactory.newClient(hostName, port, databaseName, user, password, authType);
+				client = DatabaseClientFactory.newClient(hostName, port, databaseName, secContext, connType);
 			}
 		} catch (CertificateException certEx) {
 			// TODO Auto-generated catch block

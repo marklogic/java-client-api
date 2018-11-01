@@ -31,7 +31,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.admin.ExtensionLibrariesManager;
 import com.marklogic.client.admin.ExtensionLibraryDescriptor;
@@ -61,7 +60,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDDuplicateFile() throws KeyManagementException, NoSuchAlgorithmException, IOException
   {
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     // ExtensionLibrariesManager libsMgr =
@@ -108,7 +107,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDDifferentPath() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -151,7 +150,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDBinaryFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -188,7 +187,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDTextFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -225,7 +224,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDXmlFile() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -262,7 +261,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleReadModulesDb() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -309,7 +308,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   public void testXQueryModuleReadExtensionLibraryDescriptor() throws KeyManagementException, NoSuchAlgorithmException, IOException {
     System.out.println("testXQueryModuleReadExtensionLibraryDescriptor");
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
@@ -358,7 +357,7 @@ public class TestCRUDModulesDb extends BasicJavaClientREST {
   @Test
   public void testXQueryModuleCRUDXmlFileNegative() throws KeyManagementException, NoSuchAlgorithmException, IOException {
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get a manager
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();

@@ -26,6 +26,7 @@ import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
@@ -45,7 +46,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.DocumentWriteSet;
@@ -62,7 +62,6 @@ import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
 import com.marklogic.client.query.RawCombinedQueryDefinition;
 import com.marklogic.client.query.RawQueryByExampleDefinition;
-import java.util.Map;
 
 public class TestBulkSearchEWithQBE extends BasicJavaClientREST {
   private static final int BATCH_SIZE = 100;
@@ -91,7 +90,7 @@ public class TestBulkSearchEWithQBE extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
     loadTxtDocuments();
     loadXMLDocuments();
     loadJSONDocuments();

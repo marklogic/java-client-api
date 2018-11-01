@@ -28,6 +28,7 @@ import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.Calendar;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.After;
@@ -39,7 +40,6 @@ import org.junit.Test;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
@@ -62,7 +62,6 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import javax.xml.transform.Source;
 
 /**
  * @author skottam This test is test the DocumentWriteSet function public
@@ -116,7 +115,7 @@ public class TestBulkWriteMetadata2 extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
   }
 
   /**

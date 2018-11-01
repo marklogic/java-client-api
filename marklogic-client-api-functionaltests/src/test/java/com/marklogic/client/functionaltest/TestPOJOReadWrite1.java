@@ -147,7 +147,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -285,7 +285,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
     // test for page methods
     System.out.println("Total number of estimated results:" + p.getTotalSize() + ids.length);
     System.out.println("Total number of estimated pages :" + p.getTotalPages());
-    long pageNo = 1, count = 0;
+    long count = 0;
     while (p.hasNext()) {
       this.validateArtifact(p.next());
       count++;
@@ -368,7 +368,7 @@ public class TestPOJOReadWrite1 extends BasicJavaClientREST {
   public void testPOJOgetDocumentUri() {
     PojoRepository<StringPOJO, String> strPojoRepo = client.newPojoRepository(StringPOJO.class, String.class);
     StringPOJO sobj = new StringPOJO();
-    String uri = "StringUri";
+    
     sobj.setName("StringUri");
     strPojoRepo.write(sobj);
     System.out.println(strPojoRepo.getDocumentUri(sobj));

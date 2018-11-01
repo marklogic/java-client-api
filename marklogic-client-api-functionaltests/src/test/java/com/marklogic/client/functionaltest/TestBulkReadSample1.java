@@ -21,14 +21,12 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.io.IOException;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 
-import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.FixMethodOrder;
 import org.junit.Test;
@@ -37,7 +35,6 @@ import org.junit.runners.MethodSorters;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -51,7 +48,6 @@ import com.marklogic.client.io.FileHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.StringHandle;
-import java.util.Map;
 
 /*
  * This test is designed to to test simple bulk reads with different types of Managers and different content type like JSON,text,binary,XMl by passing set of uris
@@ -100,7 +96,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 	  System.out.println("Inside test1ReadMultipleTextDoc");
     try {
 		int count = 1;
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", getConnType());
 		
 		TextDocumentManager docMgr = client.newTextDocumentManager();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -149,7 +145,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 	  System.out.println("Inside test2ReadMultipleXMLDoc");
     try {
 		int count = 1;
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", getConnType());
 		XMLDocumentManager docMgr = client.newXMLDocumentManager();
 		Map<String, String> map = new HashMap<>();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
@@ -204,7 +200,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
     try {
 		String docId[] = { "Sega-4MB.jpg" };
 		int count = 1;
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", getConnType());
 		BinaryDocumentManager docMgr = client.newBinaryDocumentManager();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
 		File file1 = null;
@@ -271,7 +267,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
 	  System.out.println("Inside test4WriteMultipleJSONDocs");
     try {
 		int count = 1;
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", getConnType());
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
 
@@ -331,7 +327,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
   {
 	  System.out.println("Inside test5WriteGenericDocMgr");
     try {
-    	client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    	client = getDatabaseClient("rest-admin", "x", getConnType());
 		GenericDocumentManager docMgr = client.newDocumentManager();
 		int countXML = 0, countJson = 0, countJpg = 0, countTEXT = 0;
 		String uris[] = new String[102];
@@ -395,7 +391,7 @@ public class TestBulkReadSample1 extends BasicJavaClientREST {
     int count = 1;
     DocumentPage page;
     try {
-		client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+		client = getDatabaseClient("rest-admin", "x", getConnType());
 		JSONDocumentManager docMgr = client.newJSONDocumentManager();
 		DocumentWriteSet writeset = docMgr.newWriteSet();
 

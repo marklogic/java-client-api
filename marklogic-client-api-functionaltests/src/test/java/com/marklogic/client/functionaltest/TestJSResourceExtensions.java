@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ExtensionMetadata;
 import com.marklogic.client.admin.ExtensionMetadata.ScriptLanguage;
 import com.marklogic.client.admin.MethodType;
@@ -96,7 +95,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
       params.add("uri", docUri);
       // specify the mime type for each expected document returned
       String[] mimetypes = new String[] { "text/plain" };
-      StringHandle output = new StringHandle();
+      
       String input = "{\"array\" : [1,2,3]}";
       // call the service
       ServiceResultIterator resultItr = getServices().post(params, new StringHandle(input).withFormat(Format.JSON), mimetypes);
@@ -118,9 +117,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
     public String putJSON(String docUri) {
       RequestParameters params = new RequestParameters();
       params.add("uri", docUri);
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] { "text/plain" };
-      StringHandle output = new StringHandle();
+      
       String input = "{\"argument1\":\"hello\", \"argument2\":\"Earth\", \"content\":\"This is a JSON document\", \"response\":[200, \"OK\"], \"outputTypes\":\"application/json\"}";
       StringHandle readHandle = new StringHandle();
       // call the service
@@ -132,8 +129,6 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
     public String deleteJSON(String docUri) {
       RequestParameters params = new RequestParameters();
       params.add("uri", docUri);
-      // specify the mime type for each expected document returned
-      String[] mimetypes = new String[] { "text/plain" };
       StringHandle output = new StringHandle();
       // call the service
       getServices().delete(params, output);
@@ -163,7 +158,7 @@ public class TestJSResourceExtensions extends BasicJavaClientREST {
 
     int restPort = getRestServerPort();
     String appServerHostname = getRestAppServerHostName();
-    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClientOnDatabase(appServerHostname, restPort, dbName, "eval-user", "x", getConnType());
     resourceMgr = client.newServerConfigManager().newResourceExtensionsManager();
     ExtensionMetadata resextMetadata = new ExtensionMetadata();
     resextMetadata.setTitle("BasicJSTest");

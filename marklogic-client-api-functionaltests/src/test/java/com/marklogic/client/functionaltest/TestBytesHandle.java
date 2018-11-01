@@ -17,7 +17,8 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXMLEqual;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -26,6 +27,9 @@ import java.security.NoSuchAlgorithmException;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.custommonkey.xmlunit.XMLUnit;
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
@@ -33,10 +37,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.io.BytesHandle;
-
-import org.junit.*;
 
 public class TestBytesHandle extends BasicJavaClientREST {
 
@@ -66,7 +68,8 @@ public class TestBytesHandle extends BasicJavaClientREST {
     XMLUnit.setNormalizeWhitespace(true);
 
     // connect the client
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingBytesHandle(client, filename, uri, null, "XML");
@@ -131,7 +134,8 @@ public class TestBytesHandle extends BasicJavaClientREST {
     System.out.println("Runing test TextCRUD");
 
     // connect the client
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingBytesHandle(client, filename, uri, "Text");
@@ -194,7 +198,8 @@ public class TestBytesHandle extends BasicJavaClientREST {
     ObjectMapper mapper = new ObjectMapper();
 
     // connect the client
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingBytesHandle(client, filename, uri, "JSON");
@@ -256,7 +261,8 @@ public class TestBytesHandle extends BasicJavaClientREST {
     System.out.println("Running testBinaryCRUD");
 
     // connect the client
-    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    DatabaseClient client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
 
     // write docs
     writeDocumentUsingBytesHandle(client, filename, uri, "Binary");

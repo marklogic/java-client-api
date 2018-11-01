@@ -33,7 +33,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.pojo.PojoPage;
 import com.marklogic.client.pojo.PojoRepository;
@@ -223,7 +222,7 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -853,13 +852,13 @@ public class TestPOJOSpecialCharRead extends BasicJavaClientREST {
     }
     // Validate the artifact read back.
     PojoPage<AnnotateByteArray> page;
-    int count = 1, c, i;
+    int count = 1, i;
     for (i = 1; count < 501; i++) {
       page = pojoReposProductsString.readAll(count);
       while (page.hasNext()) {
         String artifactName = new String("Byte Array test " + count);
         byte[] testByteArray = artifactName.getBytes();
-        assertNotNull("Should returen an object", page.next());
+        assertNotNull("Should return an object", page.next());
         count++;
       }
       page.close();

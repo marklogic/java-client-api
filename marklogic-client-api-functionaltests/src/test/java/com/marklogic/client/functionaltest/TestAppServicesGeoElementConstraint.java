@@ -35,7 +35,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.QueryManager.QueryView;
@@ -70,7 +69,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 7; i++)
@@ -109,7 +108,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 7; i++)
@@ -147,7 +146,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 7; i++)
@@ -193,7 +192,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 7; i++)
@@ -235,7 +234,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 7; i++)
@@ -276,7 +275,7 @@ public class TestAppServicesGeoElementConstraint extends BasicJavaClientREST {
 
     String queryOptionName = "geoConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // write docs
     for (int i = 1; i <= 9; i++)

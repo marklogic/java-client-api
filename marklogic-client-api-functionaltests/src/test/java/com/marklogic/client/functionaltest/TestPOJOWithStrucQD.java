@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SearchHandle;
@@ -75,7 +74,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After
@@ -393,7 +392,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
 
       while (p.iterator().hasNext()) {
         ArtifactIndexedOnString a = p.iterator().next();
-        // validateArtifact(a);
+        //validateArtifact(a);
         count++;
       }
       assertEquals("Page total results", count, p.getTotalSize());
@@ -427,10 +426,7 @@ public class TestPOJOWithStrucQD extends BasicJavaClientREST {
             "</search:term-query> </search:and-query>" +
             "</search:query>";
     StringHandle rh = new StringHandle(rawXMLQuery);
-    /*
-     * PojoQueryDefinition qd =
-     * (PojoQueryDefinition)queryMgr.newRawStructuredQueryDefinition(rh);
-     */
+    
     StringQueryDefinition qd = queryMgr.newStringDefinition();
     qd.setCriteria("special AND Acme");
     JacksonHandle results = new JacksonHandle();

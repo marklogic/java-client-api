@@ -28,6 +28,7 @@ import java.util.Calendar;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.xml.transform.Source;
 import javax.xml.transform.dom.DOMSource;
 
 import org.junit.After;
@@ -40,7 +41,6 @@ import org.w3c.dom.Document;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentDescriptor;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -61,7 +61,6 @@ import com.marklogic.client.io.InputStreamHandle;
 import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
-import javax.xml.transform.Source;
 
 /**
  * @author skottam This test is test the DocumentWriteSet function public
@@ -110,7 +109,7 @@ public class TestBulkWriteMetadatawithRawXML extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("usr1", "password", Authentication.DIGEST);
+    client = getDatabaseClient("usr1", "password", getConnType());
   }
 
   /**

@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.FileHandle;
@@ -55,7 +54,7 @@ public class TestRequestLogger extends BasicJavaClientREST {
     String filename = "bbq1.xml";
     String uri = "/request-logger/";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
 

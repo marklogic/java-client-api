@@ -35,7 +35,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.ResourceNotFoundException;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.TransformExtensionsManager;
@@ -68,7 +67,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     String filename = "flipper.xml";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -108,7 +107,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     String filename = "flipper.xml";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -153,7 +152,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     String filename = "flipper.xml";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -194,7 +193,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     String filename = "flipper.xml";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create doc manager
     XMLDocumentManager docMgr = client.newXMLDocumentManager();
@@ -231,7 +230,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     System.out.println("Running testCreateWithTransformerTxMetadata");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // get the doc
     Source source = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee.xml");
@@ -250,7 +249,7 @@ public class TestServerAssignedDocumentURI extends BasicJavaClientREST {
     client.release();
 
     // connect the rest-writer client
-    DatabaseClient client1 = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client1 = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create a doc manager
     XMLDocumentManager docMgr = client1.newXMLDocumentManager();

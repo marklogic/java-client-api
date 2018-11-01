@@ -41,7 +41,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.document.DocumentManager.Metadata;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -86,7 +85,7 @@ public class TestBulkReadWriteWithJacksonParserHandle extends
   @Before
   public void testSetup() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     // create new connection for each test below
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
   }
 
   @After

@@ -46,8 +46,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.ForbiddenUserException;
 import com.marklogic.client.Transaction;
@@ -225,9 +223,9 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 
     // You can enable the triple positions index for faster near searches using
     // cts:triple-range-query.
-    writeclient = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
-    readclient = getDatabaseClient("rest-reader", "x", Authentication.DIGEST);
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    writeclient = getDatabaseClient("rest-writer", "x", getConnType());
+    readclient = getDatabaseClient("rest-reader", "x", getConnType());
+    client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // Build up custom data.
     StringBuffer sparqldata = new StringBuffer().append("prefix ad: <http://marklogicsparql.com/addressbook#>");
@@ -2353,7 +2351,7 @@ public class TestSparqlQueryManager extends BasicJavaClientREST {
 
     createUserRolesWithPrevilages("sem-query-role");
     createRESTUser("sem-query-user", "x", "sem-query-role", "rest-writer");
-    DatabaseClient semQueryclient = getDatabaseClient("sem-query-user", "x", Authentication.DIGEST);
+    DatabaseClient semQueryclient = getDatabaseClient("sem-query-user", "x", getConnType());
 
     GraphManager graphManagerPerm = semQueryclient.newGraphManager();
     GraphPermissions graphPermissions = graphManagerPerm.permission("sem-query-role", Capability.UPDATE, Capability.EXECUTE);

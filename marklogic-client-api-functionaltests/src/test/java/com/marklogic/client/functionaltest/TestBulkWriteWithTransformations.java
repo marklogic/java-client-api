@@ -16,12 +16,14 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.util.HashMap;
+import java.util.Map;
 import java.util.Scanner;
 
 import javax.xml.transform.OutputKeys;
@@ -38,10 +40,9 @@ import org.junit.Test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
+import com.marklogic.client.DatabaseClientFactory.SecurityContext;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.admin.ExtensionMetadata;
-import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.TransformExtensionsManager;
 import com.marklogic.client.document.DocumentPage;
 import com.marklogic.client.document.DocumentRecord;
@@ -50,14 +51,10 @@ import com.marklogic.client.document.ServerTransform;
 import com.marklogic.client.document.XMLDocumentManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.FileHandle;
-import com.marklogic.client.io.Format;
-import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.SourceHandle;
 import com.marklogic.client.io.StringHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.RawCtsQueryDefinition;
-
-import java.util.Map;
 
 public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
   private static final int BATCH_SIZE = 100;
@@ -92,9 +89,11 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     createUserRolesWithPrevilages("test-eval", "xdbc:eval", "xdbc:eval-in", "xdmp:eval-in", "any-uri", "xdbc:invoke");
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader");
     if (isLBHost())
-    	client	= getDatabaseClient("eval-user", "x", Authentication.DIGEST);
-    else
-    client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, "eval-user", "x", Authentication.DIGEST);
+    	client	= getDatabaseClient("eval-user", "x", getConnType());
+    else {
+    	SecurityContext secContext = new DatabaseClientFactory.DigestAuthContext("eval-user", "x");
+    client = DatabaseClientFactory.newClient(appServerHostname, uberPort, dbName, secContext, getConnType());
+    }
   }
 
   @After
@@ -108,6 +107,7 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
   public void testBulkLoadWithXSLTClientSideTransform() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     String docId[] = { "/transform/emp.xml", "/transform/food1.xml", "/transform/food2.xml" };
     Source s[] = new Source[3];
+    Scanner scanner=null, sc1 = null, sc2 = null;
     s[0] = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/employee.xml");
     s[1] = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/xml-original.xml");
     s[2] = new StreamSource("src/test/java/com/marklogic/client/functionaltest/data/xml-original-test.xml");
@@ -132,19 +132,29 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     }
     docMgr.write(writeset);
     FileHandle dh = new FileHandle();
-    // DOMHandle dh = new DOMHandle();
+    
+    try {
     docMgr.read(docId[0], dh);
-    Scanner scanner = new Scanner(dh.get()).useDelimiter("\\Z");
+    scanner = new Scanner(dh.get()).useDelimiter("\\Z");
     String readContent = scanner.next();
     assertTrue("xml document contains firstname", readContent.contains("firstname"));
     docMgr.read(docId[1], dh);
-    Scanner sc1 = new Scanner(dh.get()).useDelimiter("\\Z");
+    sc1 = new Scanner(dh.get()).useDelimiter("\\Z");
     readContent = sc1.next();
     assertTrue("xml document contains firstname", readContent.contains("firstname"));
     docMgr.read(docId[2], dh);
-    Scanner sc2 = new Scanner(dh.get()).useDelimiter("\\Z");
+    sc2 = new Scanner(dh.get()).useDelimiter("\\Z");
     readContent = sc2.next();
     assertTrue("xml document contains firstname", readContent.contains("firstname"));
+    }
+    catch (Exception e) {
+    	e.printStackTrace();
+    }
+    finally {
+    	scanner.close();
+    	sc1.close();
+    	sc2.close();
+    }
 
   }
 
@@ -377,7 +387,6 @@ public class TestBulkWriteWithTransformations extends BasicJavaClientREST {
     
     // Test search() with SearchReadHandle
     // create result handle
-    JacksonHandle resultsJacksonHandle = new JacksonHandle();
     DOMHandle resultsDOMHandle = new DOMHandle();
     DocumentPage pageSrch1 = docMgrSrch.search(querydef, 1, resultsDOMHandle);
     

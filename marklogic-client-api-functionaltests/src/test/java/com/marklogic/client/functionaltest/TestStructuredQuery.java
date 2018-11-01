@@ -17,7 +17,8 @@
 package com.marklogic.client.functionaltest;
 
 import static org.custommonkey.xmlunit.XMLAssert.assertXpathEvaluatesTo;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -36,7 +37,6 @@ import org.xml.sax.SAXException;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
@@ -74,7 +74,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -117,7 +117,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.json", "constraint2.json", "constraint3.json", "constraint4.json", "constraint5.json" };
     String queryOptionName = "valueConstraintWildCardOpt.json";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -183,7 +183,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -229,7 +229,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -277,7 +277,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -324,7 +324,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames2 = { "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -376,7 +376,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames2 = { "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -432,7 +432,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String filename5 = "constraint5.xml";
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -497,7 +497,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "containerConstraintOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -549,7 +549,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -641,7 +641,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintPopularityOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();
@@ -678,14 +678,11 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     JacksonHandle strHandlePos = new JacksonHandle();
     JacksonHandle resultsPos = queryMgr.search(strutdDefPos, strHandlePos.withFormat(Format.JSON));
 
-    JsonNode nodePos = results.get();
+    JsonNode nodePos = resultsPos.get();
     // Return 2 nodes.
-    assertEquals("Number of results returned incorrect in response", "2", nodePos.path("total").asText());
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint1.xml") ||
-        nodePos.path("results").get(1).path("uri").asText().contains("/structured-query/constraint1.xml"));
-    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml") ||
-        nodePos.path("results").get(1).path("uri").asText().contains("/structured-query/constraint4.xml"));
-
+    assertEquals("Number of results returned incorrect in response", "1", nodePos.path("total").asText());
+    assertTrue("Results returned incorrect in response", nodePos.path("results").get(0).path("uri").asText().contains("/structured-query/constraint4.xml"));
+    
     // With multiple withCriteria - negative
     StructuredQueryDefinition strutdDefNeg = (qb.valueConstraint("popularity", "5")).withCriteria("Vannevar").withCriteria("England");
 
@@ -742,7 +739,7 @@ public class TestStructuredQuery extends BasicJavaClientREST {
     String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
     String queryOptionName = "valueConstraintWildCardOpt.xml";
 
-    DatabaseClient client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-admin", "x", getConnType());
 
     // set query option validation to true
     ServerConfigurationManager srvMgr = client.newServerConfigManager();

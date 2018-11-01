@@ -32,7 +32,6 @@ import org.junit.Test;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.FailedRequestException;
 import com.marklogic.client.admin.ServerConfigurationManager;
 import com.marklogic.client.admin.ServerConfigurationManager.UpdatePolicy;
@@ -52,7 +51,7 @@ public class TestBug18920 extends BasicJavaClientREST {
   {
     System.out.println("In setup");
     configureRESTServer(dbName, fNames);
-    client = getDatabaseClient("rest-admin", "x", Authentication.DIGEST);
+    client = getDatabaseClient("rest-admin", "x", getConnType());
     // create a manager for the server configuration
     configMgr = client.newServerConfigManager();
 

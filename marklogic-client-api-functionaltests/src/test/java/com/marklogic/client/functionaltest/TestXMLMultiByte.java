@@ -16,7 +16,7 @@
 
 package com.marklogic.client.functionaltest;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 import java.io.IOException;
 import java.security.KeyManagementException;
@@ -25,7 +25,6 @@ import java.security.NoSuchAlgorithmException;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.transform.TransformerException;
 
-import org.custommonkey.xmlunit.XMLUnit;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,7 +32,6 @@ import org.w3c.dom.Document;
 import org.xml.sax.SAXException;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.DOMHandle;
 
 public class TestXMLMultiByte extends BasicJavaClientREST {
@@ -56,7 +54,7 @@ public class TestXMLMultiByte extends BasicJavaClientREST {
     System.out.println("Running testXmlMultibyte");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write docs
     writeDocumentUsingInputStreamHandle(client, filename, uri, "XML");

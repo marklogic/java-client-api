@@ -38,7 +38,6 @@ import org.junit.Test;
 import org.skyscreamer.jsonassert.JSONAssert;
 
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.Transaction;
 import com.marklogic.client.document.BinaryDocumentManager;
 import com.marklogic.client.document.DocumentDescriptor;
@@ -83,7 +82,7 @@ public class TestMetadata extends BasicJavaClientREST {
     String filename = "Simple_ScanTe.png";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -205,7 +204,7 @@ public class TestMetadata extends BasicJavaClientREST {
   @Test
   public void testMetadataValuesTransaction() throws Exception {
     String filename = "facebook-10443244874876159931";
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
     DocumentMetadataHandle readMetadataHandle = new DocumentMetadataHandle();
     DocumentMetadataValues metadatavalues = readMetadataHandle.getMetadataValues();
@@ -218,12 +217,20 @@ public class TestMetadata extends BasicJavaClientREST {
     TextDocumentManager docMgr = client.newTextDocumentManager();
     String uri = "/trx-jsonhandle-metadatavalues/";
     String docId = uri + filename;
-    File file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
-    FileInputStream fis = new FileInputStream(file);
-    Scanner scanner = new Scanner(fis).useDelimiter("\\Z");
-    String readContent = scanner.next();
-    fis.close();
-    scanner.close();
+    FileInputStream fis = null;
+    Scanner scanner = null;
+    String readContent;
+    File file = null;
+    
+	try {
+		file = new File("src/test/java/com/marklogic/client/functionaltest/data/" + filename);
+		fis = new FileInputStream(file);
+		scanner = new Scanner(fis).useDelimiter("\\Z");
+		readContent = scanner.next();
+	} finally {
+		fis.close();
+	    scanner.close();
+	}
     StringHandle contentHandle = new StringHandle();
     contentHandle.set(readContent);
     // write the doc
@@ -279,7 +286,7 @@ public class TestMetadata extends BasicJavaClientREST {
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -350,7 +357,7 @@ public class TestMetadata extends BasicJavaClientREST {
     System.out.println("Running testXMLMetadataJAXBHandle");
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     Product product1 = new Product();
     product1.setName("iPad");
@@ -434,7 +441,7 @@ public class TestMetadata extends BasicJavaClientREST {
     String filename = "myJSONFile.json";
     StringBuffer calProperty = new StringBuffer("myCalendar:").append(Calendar.getInstance().get(Calendar.YEAR));
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -512,7 +519,7 @@ public class TestMetadata extends BasicJavaClientREST {
 
     String filename = "myJSONFile.json";
 
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // create and initialize a handle on the metadata
     DocumentMetadataHandle metadataHandle = new DocumentMetadataHandle();
@@ -558,7 +565,7 @@ public class TestMetadata extends BasicJavaClientREST {
 
       String[] filenames = { "json-original.json" };
 
-      client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+      client = getDatabaseClient("rest-writer", "x", getConnType());
       DocumentMetadataHandle mhRead = new DocumentMetadataHandle();
 
       // write docs
@@ -646,7 +653,7 @@ public class TestMetadata extends BasicJavaClientREST {
           elsPerms[0].contains("READ") || elsPerms[1].contains("READ") || elsPerms[2].contains("READ"));
 
       // Now use elsrole to do an document update
-      elsclient = getDatabaseClient("elsuser", "x", Authentication.DIGEST);
+      elsclient = getDatabaseClient("elsuser", "x", getConnType());
 
       JSONDocumentManager docMgrEls = elsclient.newJSONDocumentManager();
       DocumentPatchBuilder patchBldrEls = docMgrEls.newPatchBuilder();

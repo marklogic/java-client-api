@@ -38,7 +38,6 @@ import org.xml.sax.SAXException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.marklogic.client.DatabaseClient;
-import com.marklogic.client.DatabaseClientFactory.Authentication;
 import com.marklogic.client.io.ReaderHandle;
 
 public class TestReaderHandle extends BasicJavaClientREST {
@@ -64,7 +63,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
     XMLUnit.setNormalizeWhitespace(true);
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write the doc
     writeDocumentReaderHandle(client, filename, uri, "XML");
@@ -135,7 +134,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
     String uri = "/write-text-readerhandle/";
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write the doc
     writeDocumentReaderHandle(client, filename, uri, "Text");
@@ -200,7 +199,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
     ObjectMapper mapper = new ObjectMapper();
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
 
     // write the doc
     writeDocumentReaderHandle(client, filename, uri, "JSON");
@@ -263,7 +262,7 @@ public class TestReaderHandle extends BasicJavaClientREST {
     System.out.println("Running testBinaryCRUD");
 
     // connect the client
-    DatabaseClient client = getDatabaseClient("rest-writer", "x", Authentication.DIGEST);
+    DatabaseClient client = getDatabaseClient("rest-writer", "x", getConnType());
     writeDocumentReaderHandle(client, filename, uri, "Binary");
 
     // read docs

@@ -112,7 +112,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
     createRESTUser("eval-user", "x", "test-eval", "rest-admin", "rest-writer", "rest-reader", "rest-extension-user", "manage-user");
 
     // For use with Java/REST Client API
-    client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+    client = getDatabaseClient("eval-user", "x", getConnType());
     dmManager = client.newDataMovementManager();
   }
 
@@ -383,7 +383,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "curbappeal.xml", "flipper.xml", "justintime.xml" };
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -526,7 +526,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String queryName = "combinedQueryNoOption.xml";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -657,7 +657,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String combinedQueryFileName = "combinedQueryOptionJSON.json";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -787,7 +787,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       String[] filenames = { "pathindex1.xml", "pathindex2.xml" };
       String combinedQueryFileName = "combinedQueryOptionPathIndex.xml";
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -1611,7 +1611,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       handle.set(jsonDoc);
       String uri = null;
 
-      // Insert 2K documents to have a sufficient large query seek time
+      // Insert 20K documents to have a sufficient large query seek time
       for (int i = 0; i < 20000; i++) {
         uri = "/firstName" + i + ".json";
         batcher.add(uri, handle);
@@ -1811,7 +1811,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       String[] filenames = { "constraint1.xml", "constraint2.xml", "constraint3.xml", "constraint4.xml", "constraint5.xml" };
       String queryOptionName = "absRangeConstraintWithVariousGrammarAndWordQueryOpt.xml";
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       setQueryOption(clientTmp, queryOptionName);
@@ -1974,7 +1974,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
       srvMgr.setQueryOptionValidation(true);
       srvMgr.writeConfiguration();
 
-      clientTmp = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+      clientTmp = getDatabaseClient("eval-user", "x", getConnType());
       dmManagerTmp = clientTmp.newDataMovementManager();
 
       QueryManager queryMgr = clientTmp.newQueryManager();
@@ -2088,7 +2088,6 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 
       StructuredQueryDefinition valuequeyDef = qb.value(qb.elementAttribute(qb.element(new QName("http://cloudbank.com", "price")), qb.attribute("amt")), "0.1");
       QueryBatcher queryBatcher3 = dmManagerTmp.newQueryBatcher(valuequeyDef);
-      // StringBuilder batchRangeResults = new StringBuilder();
       List<String> batchValueResults = new ArrayList<String>();
       StringBuilder batchvalueFailResults = new StringBuilder();
 
@@ -2143,7 +2142,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 		  try {
 			  System.out.println("Running testMinHostWithHostAvailabilityListener");
 			  String[] hostNames = null;
-			  client = getDatabaseClient("eval-user", "x", Authentication.DIGEST);
+			  client = getDatabaseClient("eval-user", "x", getConnType());
 			  dmManagerTmp = client.newDataMovementManager();
 
 			  QueryManager queryMgr = client.newQueryManager();
