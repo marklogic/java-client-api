@@ -720,7 +720,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  }
 	  // Sleep before next batch
 	  try {
-		  Thread.sleep(10000L);
+		  Thread.sleep(40000L);
 	  } catch (InterruptedException e) {
 		  // TODO Auto-generated catch block
 		  e.printStackTrace();
@@ -790,7 +790,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  }
 	  // Search with actual constarint1 time-stamp value
 	  try {
-		  qd = qb.afterQuery(constraint1);
+		  qd = qb.afterQuery(constraint3 - 10000);
 	  }
 	  catch (Exception ex) {
 		  ex.printStackTrace();
@@ -801,7 +801,7 @@ public class TestOptimisticLocking extends BasicJavaClientREST {
 	  queryMgr.search(qd, resultsHandle);
 	  JsonNode jsRes = resultsHandle.get();
 	  System.out.println("Total from results is : " + jsRes.get("total").asText());
-	  assertEquals("After Query returned incorrect value with contraint1 timestamp", "4", jsRes.get("total").asText());
+	  assertEquals("After Query returned incorrect value with contraint1 timestamp", "3", jsRes.get("total").asText());
 	  jsRes = null;
 	  resultsHandle = null;
 	  
