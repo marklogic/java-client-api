@@ -1,4 +1,4 @@
-package com.marklogic.client.dhs.aws;
+package com.marklogic.client.dhs;
 
 import com.fasterxml.jackson.databind.node.ObjectNode;
 // import com.fasterxml.jackson.dataformat.csv.CsvFactory;

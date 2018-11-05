@@ -1,27 +1,16 @@
 {
   "job": {
-    "id": "OPTIONAL",
+    "id": "9a8351a1-31bc-417b-96fa-d27525e6664d",
     "metatadata": {
       "reconciliation": {
-        "minimumRecords": 1
+        "minimumRecords": 1960
       }
     }
   },
   "record": {
-    "mapping":{
-      "FIELD_NAME": "NODE_TYPE"
-    },
-    "document": {
-      "directory": "OPTIONAL",
-      "collections":["OPTIONAL"],
-      "permissions":{
-        "ROLE_NAME":["read", "update"]
-      }
-    },
-    "transform": "OPTIONAL",
     "metatadata": {
       "provenance": {
-        "wasGeneratedBy": "OPTIONAL"
+        "wasGeneratedBy": "JUnit test"
       }
     }
   }

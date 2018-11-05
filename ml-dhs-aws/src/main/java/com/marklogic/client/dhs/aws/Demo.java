@@ -7,9 +7,11 @@ import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.dhs.JobRunner;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.UUID;
 
 public class Demo {
    public static void main(String... args) throws IOException {
@@ -23,10 +25,7 @@ public class Demo {
       String objectKey  = "csvTest/OrderLines.csv";
 
 // TODO: real authentication and authorization
-      AWSCredentials credentials = new BasicAWSCredentials(
-            "<ACCESS_KEY>",
-            "<SECRET_KEY>"
-      );
+      AWSCredentials credentials = getCredentials();
       AmazonS3 s3Client = AmazonS3ClientBuilder
          .standard()
          .withCredentials(new AWSStaticCredentialsProvider(credentials))
@@ -34,11 +33,11 @@ public class Demo {
          .build();
 
 
-// TODO: take hostname for Curation load balancer, set ConnectionType.GATEWAY
+// TODO: take hostname for static enode - direct connect because within VPC
       DatabaseClient client = DatabaseClientFactory.newClient(
             "localhost", 8005, new DatabaseClientFactory.DigestAuthContext("admin", "admin")
       );
-// TODO: configure logger for AWS
+// TODO: configure logger for AWS CloudWatch
 
       S3BucketAccessor bucketAccessor = new S3BucketAccessor(s3Client, bucketName);
 
@@ -53,5 +52,11 @@ public class Demo {
 // TODO: notification of success or failure - logging? SMS?
          client.release();
       }
+   }
+   private AWSCredentials getCredentials() {
+      return new BasicAWSCredentials(
+            "<ACCESS_KEY>",
+            "<SECRET_KEY>"
+      );
    }
 }
