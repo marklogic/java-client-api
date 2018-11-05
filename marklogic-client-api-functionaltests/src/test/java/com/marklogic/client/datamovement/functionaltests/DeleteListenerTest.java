@@ -398,7 +398,7 @@ public class DeleteListenerTest extends BasicJavaClientREST {
     if (failures2.length() > 0)
       fail(failures2.toString());
 
-    assertEquals("There should be 0 documents in t++he db",
+    assertEquals("There should be 0 documents in the db",
         0, dbClient.newServerEval().xquery(query1).eval().next().getNumber().intValue());
 
     DocumentPage page = dbClient.newDocumentManager().read("/local/json-1998");

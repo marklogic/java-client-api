@@ -343,6 +343,8 @@ public class QueryBatcherJobReportTest extends BasicJavaClientREST {
 		Assert.assertEquals(6000, dmManager.getJobReport(queryTicket).getSuccessEventsCount());
 		Assert.assertEquals(batches.intValue(), dmManager.getJobReport(queryTicket).getSuccessBatchesCount());
 		if(!isLBHost()) {
+			System.out.println("Method queryFailure hostNames.length " + hostNames.length);
+			System.out.println("Method queryFailure getFailureEventsCount() " + dmManager.getJobReport(queryTicket).getFailureEventsCount());
 			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureEventsCount());
 			Assert.assertEquals(hostNames.length, dmManager.getJobReport(queryTicket).getFailureBatchesCount());
 		}
