@@ -1,8 +1,8 @@
-package com.marklogic.client.dhs.aws.test;
+package com.marklogic.client.dhs.test;
 
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
-import com.marklogic.client.dhs.aws.JobRunner;
+import com.marklogic.client.dhs.JobRunner;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import org.junit.Test;

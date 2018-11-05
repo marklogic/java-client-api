@@ -1,4 +1,4 @@
-package com.marklogic.client.dhs.aws;
+package com.marklogic.client.dhs;
 
 import com.marklogic.client.document.DocumentWriteOperation;
 import com.marklogic.client.io.DocumentMetadataHandle;

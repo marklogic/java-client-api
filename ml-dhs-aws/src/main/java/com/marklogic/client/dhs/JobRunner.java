@@ -1,4 +1,4 @@
-package com.marklogic.client.dhs.aws;
+package com.marklogic.client.dhs;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
@@ -43,11 +43,11 @@ public class JobRunner {
          documentMetadata.withCollections("/jobs/"+jobId);
 // TODO: permissions
 
-// TODO: write batcher configuration such as transform
          WriteBatcher batcher = moveMgr.newWriteBatcher()
 // TODO: sized to 500 in real thing?
                .withBatchSize(2)
 // TODO: intermittent logging using logger
+// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html
                .onBatchSuccess(
                      batch -> {
                         System.out.println(
@@ -80,12 +80,12 @@ public class JobRunner {
          moveMgr.stopJob(ticket);
 
 // TODO: write after job document with job metadata in /jobEnd and /jobs/ID collections or send after job payload to DHF endpoint
-// NOTE: DHF can fire CPF on after job document or query for pairs, elapsed time, unfinished jobs, etc.
       } finally {
          moveMgr.release();
       }
    }
 
+// TODO: archaic - was part of the staging directory concept
    public static String jobFileFor(String csvFile) {
       if (!csvFile.endsWith(".csv")) {
          throw new IllegalArgumentException("Invalid object key: "+csvFile);
