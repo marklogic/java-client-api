@@ -14,9 +14,7 @@ import com.marklogic.client.io.JacksonHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.util.Date;
+import java.time.LocalDateTime;
 import java.util.Iterator;
 import java.util.UUID;
 
@@ -55,23 +53,17 @@ public class JobRunner {
           ObjectNode recordDef     = (ObjectNode) jobControlObj.get("record");
           
           if(jobDef.isMissingNode()) {
-         	 throw new MarkLogicIOException("job Node is missing.");
+         	 throw new MarkLogicIOException("job Node cannot be empty.");
           }
           String id = jobDef.path("id").asText();
           if(id==null || id.length()==0) {
          	 throw new MarkLogicIOException("job id cannot be empty or Null");
           }
   		JsonNode metadataNode = jobDef.path("metadata");
-		if (metadataNode.isMissingNode()) {
-			throw new MarkLogicIOException("metadata is  missing.");
-		}
-		String reconciliation = metadataNode.path("reconciliation").asText();
+		String jobMetadataValue = metadataNode.asText();
 		DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
 		documentMetadata.withCollections("/jobs/"+id);
          
-		DateFormat sdf = new SimpleDateFormat("yyyy/MM/dd HH:mm:ss");
-		Date date = new Date();
-		String dateTime = sdf.format(date);
 // TODO: permissions
 
          WriteBatcher batcher = moveMgr.newWriteBatcher()
@@ -97,9 +89,7 @@ public class JobRunner {
 
 
          ObjectLoader loader = new ObjectLoader(batcher, recordDef, getJobDirectory(), documentMetadata);
-         CSVConverter converter = new CSVConverter();
-
-
+         CSVConverter converter = new CSVConverter();  
 
          Iterator<ObjectNode> itr = converter.convertObject(csvRecords);
          if(!itr.hasNext()) {
@@ -107,14 +97,23 @@ public class JobRunner {
          }
          ObjectNode csvNode = itr.next();
          
-         Iterator<String> csvHeader = csvNode.fieldNames();
-         String headerValue = csvNode.get(csvHeader.next()).toString();
+         String headerValue = csvNode.fieldNames().toString();
          
-   // TODO: write before job document in /jobStart and /jobs/ID collections or send before job payload to DHF endpoint        
+   // write before job document in /jobStart and /jobs/ID collections or send before job payload to DHF endpoint        
          String beforeDocId = "/jobs/"+id+"/beforeJob.json";
          
          DocumentMetadataHandle beforeDocumentMetadata = new DocumentMetadataHandle();
          beforeDocumentMetadata.withCollections("/jobs/"+beforeDocId, "/beforeJob");
+         
+         ObjectNode beforeDocRoot = objectMapper.createObjectNode();
+         beforeDocRoot.put("job id", id);
+         beforeDocRoot.put("jobMetadataValue",  jobMetadataValue);
+         beforeDocRoot.put("Date",  LocalDateTime.now().toString());
+         beforeDocRoot.put("headerValue",  headerValue);
+         
+         JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
+         jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
+         
          JobTicket ticket = moveMgr.startJob(batcher);
          loader.loadRecord(csvNode);
          
@@ -122,15 +121,6 @@ public class JobRunner {
          batcher.flushAndWait();
          moveMgr.stopJob(ticket);
          
-         ObjectNode beforeDocRoot = objectMapper.createObjectNode();
-         beforeDocRoot.put("job id", id);
-         beforeDocRoot.put("reconciliation",  reconciliation);
-         beforeDocRoot.put("Date",  dateTime.toString());
-         beforeDocRoot.put("headerValue",  headerValue);
-         
-         JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
-         
-         jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
 
 // TODO: write after job document with job metadata in /jobEnd and /jobs/ID collections or send after job payload to DHF endpoint
       } finally {
