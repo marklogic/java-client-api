@@ -42,6 +42,7 @@ import com.marklogic.client.io.DOMHandle;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.Format;
 import com.marklogic.client.io.JacksonHandle;
+import com.marklogic.client.io.SearchHandle;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
 import com.marklogic.client.query.StructuredQueryBuilder.Operator;
@@ -263,6 +264,25 @@ public class TestStructuredQuery extends BasicJavaClientREST {
 
     assertXpathEvaluatesTo("1", "string(//*[local-name()='result'][last()]//@*[local-name()='index'])", resultDoc);
     assertXpathEvaluatesTo("0113", "string(//*[local-name()='result']//*[local-name()='id'])", resultDoc);
+    
+    // To test Git issue 908
+    StructuredQueryDefinition termQuery11 = qb.term("Pacific");
+    StructuredQueryDefinition termQuery21 = qb.term("Yearly");
+    StructuredQueryDefinition termQuery31 = qb.term("DT");
+    StructuredQueryDefinition andQuery1 = qb.and(termQuery11, termQuery21);
+    StructuredQueryDefinition andNotFinalQuery1 = qb.andNot(andQuery1, termQuery31);
+    SearchHandle results = null;
+    StringBuilder searchHandleEx = new StringBuilder();
+    try {
+     results = queryMgr.search(andNotFinalQuery1, new SearchHandle());
+    }
+    catch (Exception ex) {
+    	searchHandleEx.append(ex);
+    }
+    long res = results.getTotalResults();
+    System.out.println("No query results available. Total Results should be zero: " + res);
+    assertTrue("Exception should not have been thrown when no query results are available", searchHandleEx.toString().isEmpty());
+    assertEquals("No query results available. Should be zero.", 0, res);
 
     // release client
     client.release();
