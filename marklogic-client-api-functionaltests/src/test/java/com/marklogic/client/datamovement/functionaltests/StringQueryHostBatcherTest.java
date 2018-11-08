@@ -2184,7 +2184,7 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   
   @Test
   public void testProgressListener() throws Exception {
-
+	  try {
 	  DataMovementManager dmManager = null;
 	  
 	  client = getDatabaseClient("eval-user", "x", getConnType());
@@ -2318,5 +2318,12 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
 	  System.out.println("From buffer Err: " + strErr.toString());
 	  // No updates are available
 	  assertTrue("Progress Update Batch 1 incorrect", strErr.toString().isEmpty());	  
+  }
+  catch (Exception ex) {
+	  ex.printStackTrace();
+  }
+	  finally {
+		  client.release();
+	  }
   }
 }
