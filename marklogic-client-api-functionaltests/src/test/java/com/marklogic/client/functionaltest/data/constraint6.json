@@ -1,0 +1,17 @@
+{
+  "root": {
+    "add": "5",
+    "subtract": "5",
+    "multiply": "2",
+    "divide": "20",
+    "concatenateAfter": "Hi",
+    "concatenateBetween": "Version",
+    "concatenateBefore": "7",
+    "substringAfter": "ML Version 7",
+    "substringBefore": "ML Version 7",
+    "replaceRegex": "Client",
+    "applyLibrary": "API",
+    "applyLibraryValues": "Tests",
+    "applyLibraryFragments": "Mayank"
+  }
+}

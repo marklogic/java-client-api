@@ -510,11 +510,13 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     ExtensionLibrariesManager libsMgr = client.newServerConfigManager().newExtensionLibrariesManager();
 
     libsMgr.write("/ext/patch/custom-lib.xqy", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/custom-lib.xqy")).withFormat(Format.TEXT));
+    libsMgr.write("/ext/patch/qatests.sjs", new FileHandle(new File("src/test/java/com/marklogic/client/functionaltest/data/qatests.sjs")).withFormat(Format.TEXT));
     // write docs
     String filename = "constraint6.xml";
+    String filename2 = "constraint6.json";
     writeDocumentUsingInputStreamHandle(client, filename, "/partial-update/", "XML");
-    // writeDocumentUsingInputStreamHandle(client, "custom-lib.xqy",
-    // "/partial-update/", "XML");
+    writeDocumentUsingInputStreamHandle(client, filename2, "/partial-update/", "JSON");
+    
     String docId = "/partial-update/constraint6.xml";
 
     // Creating Manager
@@ -535,8 +537,6 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     patchBldr.replaceApply("/root/replaceRegex", patchBldr.call().replaceRegex("[a-m]", "1"));
     patchBldr.replaceApply("/root/applyLibrary", patchBldr.call().applyLibraryFragments("underwrite", "<applyLibrary>API</applyLibrary>")).library(
         "http://marklogic.com/ext/patch/custom-lib", "/ext/patch/custom-lib.xqy");
-    // patchBldr.replaceApply("/root/applyLibrary",
-    // patchBldr.call().applyLibraryValues("any-content","<applyLibraryValues>")).library("http://marklogic.com/ext/patch/custom-lib","/ext/patch/custom-lib.xqy");
     DocumentPatchHandle patchHandle = patchBldr.build();
     xmlDocMgr.patch(docId, patchHandle);
     waitForPropertyPropagate();
@@ -555,8 +555,75 @@ public class TestPartialUpdate extends BasicJavaClientREST {
     assertTrue("concatenateBetween Failed", content.contains("<concatenateBetween>ML Version 7</concatenateBetween>"));
     assertTrue("Ragex Failed", content.contains("<replaceRegex>C111nt</replaceRegex>"));
     assertTrue("Apply Library Fragments Failed ", content.contains("<applyLibrary>APIAPI</applyLibrary>"));
+    
+    String docId2 = "/partial-update/constraint6.json";
+    
+    JSONDocumentManager jdm = client.newJSONDocumentManager();
+    DocumentPatchBuilder patchBldrSJS = jdm.newPatchBuilder();
+    patchBldrSJS.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJS.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJS.replaceApply("root.divide", 
+    		patchBldrSJS.call().applyLibraryValues("Mymin", 18, 21));
+    DocumentPatchHandle patchHandleSJS = patchBldrSJS.build();
+    jdm.patch(docId2, patchHandleSJS);
+    System.out.println(patchBldrSJS.build().toString());
+    
+    waitForPropertyPropagate();
+    String content1 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on divide with fn() values " + content1);
+    assertTrue("Division Failed", content1.contains("\"divide\":18"));
+    
+    // Work on the different element with different values and another patch update
+    DocumentPatchBuilder patchBldrSJS1 = jdm.newPatchBuilder();
+    patchBldrSJS1.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJS1.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJS1.replaceApply("root.add", 
+    		patchBldrSJS1.call().applyLibraryValues("Mymin", -12, 21));
+    ObjectMapper mapper = new ObjectMapper();
+    ObjectNode fragmentNode = mapper.createObjectNode();
+    fragmentNode = mapper.createObjectNode();
+    fragmentNode.put("modulo", 2);
+    String fragment = mapper.writeValueAsString(fragmentNode);
+    patchBldrSJS1.insertFragment("root.divide", Position.AFTER, fragment);
+    
+    DocumentPatchHandle patchHandleSJS1 = patchBldrSJS1.build();
+    jdm.patch(docId2, patchHandleSJS1);
+    System.out.println(patchBldrSJS1.build().toString());
+    
+    waitForPropertyPropagate();
+    String content2 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on add with fn() values " + content2);
+    assertTrue("Add Failed", content2.contains("\"add\":-12"));
+    assertTrue("Modulo Failed", content2.contains("\"modulo\":2"));
+    
+    // Error condition checks
+    DocumentPatchBuilder patchBldrSJSErr = jdm.newPatchBuilder();
+    patchBldrSJSErr.pathLanguage(PathLanguage.JSONPATH);
+	
+    patchBldrSJSErr.library("", "/ext/patch/qatests.sjs");
+    patchBldrSJSErr.replaceApply("root.add", 
+    		patchBldrSJSErr.call().applyLibraryValues("Mymin", new String("A"),  new String("A")));
+    StringBuilder strErr = new StringBuilder();
+    try {
+    DocumentPatchHandle patchHandleSJSErr = patchBldrSJSErr.build();
+    jdm.patch(docId2, patchHandleSJSErr);
+    }
+    catch (Exception ex) {
+    	System.out.println(ex.getMessage());
+    	strErr.append(ex.getMessage());
+    }
+    System.out.println(patchBldrSJSErr.build().toString());
+    
+    waitForPropertyPropagate();
+    String content3 = xmlDocMgr.read(docId2, new StringHandle()).get();
+    System.out.println("After Update on divide with fn() values " + content3);
+    assertTrue("No exception should be available", strErr.toString().isEmpty());
+
     // release client
     libsMgr.delete("/ext/patch/custom-lib.xqy");
+    libsMgr.delete("/ext/patch/qatests.sjs");
     client.release();
   }
 
