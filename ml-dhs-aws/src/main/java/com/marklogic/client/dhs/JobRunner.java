@@ -105,12 +105,10 @@ public class JobRunner {
          DocumentMetadataHandle beforeDocumentMetadata = new DocumentMetadataHandle();
          beforeDocumentMetadata.withCollections("/jobs/"+beforeDocId, "/beforeJob");
          
-         String ingestionStartTime = LocalDateTime.now().toString();
-         
          ObjectNode beforeDocRoot = objectMapper.createObjectNode();
          beforeDocRoot.put("job id", id);
          beforeDocRoot.put("jobMetadataValue",  jobMetadataValue);
-         beforeDocRoot.put("ingestionStartTime",  ingestionStartTime);
+         beforeDocRoot.put("Date",  LocalDateTime.now().toString());
          beforeDocRoot.put("headerValue",  headerValue);
          
          JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
@@ -123,28 +121,8 @@ public class JobRunner {
          batcher.flushAndWait();
          moveMgr.stopJob(ticket);
          
-         String ingestionStopTime = LocalDateTime.now().toString();
 
-// write after job document with job metadata in /jobEnd and /jobs/ID collections or send after job payload to DHF endpoint
-         String afterDocId = "/jobs/"+id+"/afterJob.json";
-         
-         DocumentMetadataHandle afterDocumentMetadata = new DocumentMetadataHandle();
-         afterDocumentMetadata.withCollections("/jobs/"+afterDocId, "/afterJob");
-         
-         ObjectNode afterDocRoot = objectMapper.createObjectNode();
-         afterDocRoot.put("job id", id);
-         afterDocRoot.put("jobMetadataValue",  jobMetadataValue);
-         afterDocRoot.put("ingestionStartTime",  ingestionStartTime);
-         afterDocRoot.put("ingestionStopTime",  ingestionStopTime);
-         
-         jacksonHandle = new JacksonHandle(afterDocRoot);
-         jsonMgr.write(afterDocId, afterDocumentMetadata, jacksonHandle);
-         
-         JobTicket afterTicket = moveMgr.startJob(batcher);
-
-         batcher.flushAndWait();
-         moveMgr.stopJob(afterTicket);
-         
+// TODO: write after job document with job metadata in /jobEnd and /jobs/ID collections or send after job payload to DHF endpoint
       } finally {
          moveMgr.release();
       }
