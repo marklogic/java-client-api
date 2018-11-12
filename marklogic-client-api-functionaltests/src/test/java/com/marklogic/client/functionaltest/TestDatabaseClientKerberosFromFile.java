@@ -173,6 +173,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
   			.withUseKeyTab(true)
   			.withDoNotPrompt(true)
+  			.withDebug(true)
   			.withKeyTab(keytabFile);
       client = DatabaseClientFactory.newClient(
               appServerHostName, appServerHostPort,
