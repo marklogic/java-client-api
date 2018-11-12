@@ -2,7 +2,6 @@ package com.marklogic.client.dhs;
 
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.MarkLogicIOException;
@@ -42,8 +41,7 @@ public class JobRunner {
       return jobDirectory;
    }
 
-   @SuppressWarnings("deprecation")
-public void run(DatabaseClient client, InputStream csvRecords, InputStream jobControl) throws IOException {
+   public void run(DatabaseClient client, InputStream csvRecords, InputStream jobControl) throws IOException {
       DataMovementManager moveMgr = client.newDataMovementManager();
       JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
 
@@ -62,6 +60,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          	 throw new MarkLogicIOException("job id cannot be empty or Null");
           }
   		JsonNode metadataNode = jobDef.path("metadata");
+		String jobMetadataValue = metadataNode.asText();
 		DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
 		documentMetadata.withCollections("/jobs/"+id);
          
@@ -97,11 +96,8 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
         	 throw new MarkLogicIOException("No header found.");
          }
          ObjectNode csvNode = itr.next();
-         Iterator<String> headerValue = csvNode.fieldNames();
-         ArrayNode headers = objectMapper.createArrayNode();
-         while(headerValue.hasNext()) {
-        	 headers.add(headerValue.next());
-         }
+         
+         String headerValue = csvNode.fieldNames().toString();
          
    // write before job document in /jobStart and /jobs/ID collections or send before job payload to DHF endpoint        
          String beforeDocId = "/jobs/"+id+"/beforeJob.json";
@@ -112,10 +108,10 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          String ingestionStartTime = LocalDateTime.now().toString();
          
          ObjectNode beforeDocRoot = objectMapper.createObjectNode();
-         beforeDocRoot.put("jobId", id);
-         beforeDocRoot.put("jobMetadata",  metadataNode);
+         beforeDocRoot.put("job id", id);
+         beforeDocRoot.put("jobMetadataValue",  jobMetadataValue);
          beforeDocRoot.put("ingestionStartTime",  ingestionStartTime);
-         beforeDocRoot.put("headers",  headers);
+         beforeDocRoot.put("headerValue",  headerValue);
          
          JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
          jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
@@ -136,15 +132,18 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          afterDocumentMetadata.withCollections("/jobs/"+afterDocId, "/afterJob");
          
          ObjectNode afterDocRoot = objectMapper.createObjectNode();
-         afterDocRoot.put("jobId", id);
-         afterDocRoot.put("jobMetadata",  metadataNode);
+         afterDocRoot.put("job id", id);
+         afterDocRoot.put("jobMetadataValue",  jobMetadataValue);
          afterDocRoot.put("ingestionStartTime",  ingestionStartTime);
          afterDocRoot.put("ingestionStopTime",  ingestionStopTime);
-         afterDocRoot.put("headers",  headers);
-         afterDocRoot.put("numberOfRecords", loader.getCount());
          
          jacksonHandle = new JacksonHandle(afterDocRoot);
          jsonMgr.write(afterDocId, afterDocumentMetadata, jacksonHandle);
+         
+         JobTicket afterTicket = moveMgr.startJob(batcher);
+
+         batcher.flushAndWait();
+         moveMgr.stopJob(afterTicket);
          
       } finally {
          moveMgr.release();
