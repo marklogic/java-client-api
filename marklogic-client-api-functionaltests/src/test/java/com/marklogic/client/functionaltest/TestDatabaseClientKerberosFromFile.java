@@ -23,6 +23,7 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.File;
 import java.io.IOException;
@@ -158,12 +159,20 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   @Before
   public void setUp() throws KeyManagementException, NoSuchAlgorithmException, Exception {
     SSLContext sslcontext = null;
+    // Modify default location if needed for services.keytab file.
+	keytabFile = System.getProperty("keytabFile", "/space/Jenkins/workspace/services.keytab");
+    System.out.println("Location of key tab file is " + keytabFile);
+    
+    if (keytabFile == null || !(new File(keytabFile).exists())) {
+    	fail("Key tab file does not exist or is invalid");
+    }
 
     if (IsSecurityEnabled()) {
       sslcontext = getSslContext();
-      keytabFile = System.getProperty("keytabFile", "/space/Jenkins/workspace/services.keytab");
+      
       KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
   			.withUseKeyTab(true)
+  			.withDoNotPrompt(true)
   			.withKeyTab(keytabFile);
       client = DatabaseClientFactory.newClient(
               appServerHostName, appServerHostPort,
@@ -173,9 +182,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     	  QA functional test project's build.gradle file has << systemProperty "keytabFile", System.getProperty("keytabFile") >>
     	  On gradle command line use the following syntax to pass in the location of the keytab file:
     	  ./gradlew marklogic-client-api-functionaltests:test -DkeytabFile=/space/Jenkins/workspace/services.keytab .....other options
-    	  */
-    	// Modify default location if needed for services.keytab file.
-    	keytabFile = System.getProperty("keytabFile", "/space/Jenkins/workspace/services.keytab");
+    	  */   	
     	KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
     			.withUseKeyTab(true)
     			.withKeyTab(keytabFile);
