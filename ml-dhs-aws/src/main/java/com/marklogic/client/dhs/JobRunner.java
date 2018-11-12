@@ -42,7 +42,6 @@ public class JobRunner {
       return jobDirectory;
    }
 
-   @SuppressWarnings("deprecation")
 public void run(DatabaseClient client, InputStream csvRecords, InputStream jobControl) throws IOException {
       DataMovementManager moveMgr = client.newDataMovementManager();
       JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
@@ -113,9 +112,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          
          ObjectNode beforeDocRoot = objectMapper.createObjectNode();
          beforeDocRoot.put("jobId", id);
-         beforeDocRoot.put("jobMetadata",  metadataNode);
+         beforeDocRoot.set("jobMetadata",  metadataNode);
          beforeDocRoot.put("ingestionStartTime",  ingestionStartTime);
-         beforeDocRoot.put("headers",  headers);
+         beforeDocRoot.set("headers",  headers);
          
          JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
          jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
@@ -137,10 +136,10 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          
          ObjectNode afterDocRoot = objectMapper.createObjectNode();
          afterDocRoot.put("jobId", id);
-         afterDocRoot.put("jobMetadata",  metadataNode);
+         afterDocRoot.set("jobMetadata",  metadataNode);
          afterDocRoot.put("ingestionStartTime",  ingestionStartTime);
          afterDocRoot.put("ingestionStopTime",  ingestionStopTime);
-         afterDocRoot.put("headers",  headers);
+         afterDocRoot.set("headers",  headers);
          afterDocRoot.put("numberOfRecords", loader.getCount());
          
          jacksonHandle = new JacksonHandle(afterDocRoot);
