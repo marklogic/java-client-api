@@ -14,12 +14,18 @@ public class ObjectLoader {
    private ObjectNode recordDef;
    private String directory;
    private DocumentMetadataHandle documentMetadata;
+   private int count;
 
-   public ObjectLoader(WriteBatcher batcher, ObjectNode recordDef, String directory, DocumentMetadataHandle documentMetadata) {
+   public int getCount() {
+	return count;
+}
+
+public ObjectLoader(WriteBatcher batcher, ObjectNode recordDef, String directory, DocumentMetadataHandle documentMetadata) {
       this.batcher = batcher;
       this.recordDef = recordDef;
       this.directory = directory;
       this.documentMetadata = documentMetadata;
+      this.count = 0;
    }
 
    public void loadRecords(Iterator<ObjectNode> objectItr) {
@@ -27,6 +33,7 @@ public class ObjectLoader {
    }
    public void loadRecord(ObjectNode record) {
       String uri = directory+UUID.randomUUID().toString()+".json";
+      count++;
 
 // TODO: wrap per-record metadata and record in DHF envelope
       JacksonHandle handle = new JacksonHandle(record);
