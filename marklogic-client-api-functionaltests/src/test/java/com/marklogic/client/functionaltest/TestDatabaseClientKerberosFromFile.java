@@ -173,6 +173,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
       KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
   			.withUseKeyTab(true)
   			.withDoNotPrompt(true)
+  			.withStoreKey(true)
   			.withDebug(true)
   			.withKeyTab(keytabFile);
       client = DatabaseClientFactory.newClient(
@@ -187,7 +188,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     	KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
     			.withUseKeyTab(true)
     			.withDoNotPrompt(true)
-    			.withDebug(true)
+    			.withStoreKey(true)
     			.withKeyTab(keytabFile);
     	System.out.println("Password of key tab file is " + krbConfig.getStorePass());
     	System.out.println("Principle of key tab file is " + krbConfig.getPrincipal());
