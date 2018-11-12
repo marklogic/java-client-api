@@ -2,10 +2,13 @@ test {
   testLogging{
     events 'started','passed', 'skipped'
   }
-
+  /* For use in testing TestDatabaseClientKerberosFromFile */
+  systemProperty "keytabFile", System.getProperty("keytabFile")
+  
   exclude 'com/marklogic/client/functionaltest/TestSSLConnection.class'
   exclude 'com/marklogic/client/functionaltest/TestBug18993.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithKerberos.class'
+  exclude 'com/marklogic/client/functionaltest/TestDatabaseClientKerberosFromFile.class'
   exclude 'com/marklogic/client/functionaltest/TestDatabaseClientWithCertBasedAuth.class'
   exclude 'com/marklogic/client/functionaltest/TestSandBox.class'
 }
