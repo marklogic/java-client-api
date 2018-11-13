@@ -126,6 +126,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
   private static String extSecurityName = "KerberosExtSec";
   private static String kdcPrincipalUser = "user2@MLTEST1.LOCAL";
   private static String keytabFile;
+  private static String principal;
 
   private DatabaseClient client;
 
@@ -161,6 +162,8 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     SSLContext sslcontext = null;
     // Modify default location if needed for services.keytab file.
 	keytabFile = System.getProperty("keytabFile", "/space/Jenkins/workspace/services.keytab");
+	principal = System.getProperty("principal");
+	
     System.out.println("Location of key tab file is " + keytabFile);
     
     if (keytabFile == null || !(new File(keytabFile).exists())) {
@@ -170,7 +173,7 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     if (IsSecurityEnabled()) {
       sslcontext = getSslContext();
       
-      KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
+      KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(principal)
   			.withUseKeyTab(true)
   			.withDoNotPrompt(true)
   			.withStoreKey(true)
@@ -183,9 +186,9 @@ public class TestDatabaseClientKerberosFromFile extends BasicJavaClientREST {
     	/*Pass this file's location for the gradle (thru Jenkins job) 
     	  QA functional test project's build.gradle file has << systemProperty "keytabFile", System.getProperty("keytabFile") >>
     	  On gradle command line use the following syntax to pass in the location of the keytab file:
-    	  ./gradlew marklogic-client-api-functionaltests:test -DkeytabFile=/space/Jenkins/workspace/services.keytab .....other options
+    	  ./gradlew marklogic-client-api-functionaltests:test -DkeytabFile=/space/Jenkins/workspace/services.keytab -Dprincipal=user2  .....other options
     	  */   	
-    	KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(kdcPrincipalUser)
+    	KerberosConfig krbConfig = new DatabaseClientFactory.KerberosConfig().withPrincipal(principal)
     			.withUseKeyTab(true)
     			.withDoNotPrompt(true)
     			.withStoreKey(true)
