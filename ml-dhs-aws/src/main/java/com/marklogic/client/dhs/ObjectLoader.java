@@ -1,6 +1,7 @@
 package com.marklogic.client.dhs;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.JsonNodeFactory;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import com.marklogic.client.datamovement.WriteBatcher;
@@ -37,11 +38,12 @@ public ObjectLoader(WriteBatcher batcher, ObjectNode recordDef, String directory
    public void loadRecord(ObjectNode record) {
       String uri = directory+UUID.randomUUID().toString()+".json";
       count++;
-      record.set("instance", this.recordDef);
-      record.set("metadata", this.recordMetadata);
+      ObjectNode recordData = JsonNodeFactory.instance.objectNode();
+      recordData.set("metadata", this.recordMetadata);
+      recordData.set("instance", record);
 
 // TODO: wrap per-record metadata and record in DHF envelope
-      JacksonHandle handle = new JacksonHandle(record);
+      JacksonHandle handle = new JacksonHandle(recordData);
       JSONWriteOperation operation = new JSONWriteOperation(uri, documentMetadata, handle);
       batcher.add(operation);
    }

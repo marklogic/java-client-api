@@ -12,26 +12,22 @@ import com.marklogic.client.datamovement.WriteBatcher;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.DocumentMetadataHandle.Capability;
+import com.marklogic.client.io.DocumentMetadataHandle.DocumentPermissions;
 import com.marklogic.client.io.JacksonHandle;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Iterator;
-import java.util.Set;
 import java.util.UUID;
 
 import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class JobRunner {
    private String jobId;
    private String jobDirectory;
    private int batchSize = 100;
-   private Set<String> roles;
-   private int countSinceLastLog = 0;
-   private int totalSuccessCount = 0;
-   private int totalFailureCount = 0;
+   private String[] roles;
    private int timeIntervalInSeconds = 10;
    public int getTimeIntervalInSeconds() {
 	return timeIntervalInSeconds;
@@ -57,12 +53,17 @@ public void setLastFailureLogTime(long lastFailureLogTime) {
 private long lastFailureLogTime;
 
 
-private static final Logger logger = (Logger) LoggerFactory
-		    .getLogger(JobRunner.class);
-public Set<String> getRoles() {
+private Logger logger;
+public Logger getLogger() {
+	return logger;
+}
+public void setLogger(Logger logger) {
+	this.logger = logger;
+}
+public String[] getRoles() {
 	return roles;
 }
-public void setRoles(Set<String> roles) {
+public void setRoles(String... roles) {
 	this.roles = roles;
 }
 public int getBatchSize() {
@@ -95,7 +96,15 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
       DataMovementManager moveMgr = client.newDataMovementManager();
       JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
       Long startTime = System.currentTimeMillis();
-
+      
+      final class JobRunnerVariables{
+    	  int successCountSinceLastLog = 0;
+    	  int failureCountSinceLastLog = 0;
+    	  int totalSuccessCount = 0;
+    	  int totalFailureCount = 0;
+      }
+      final JobRunnerVariables jobRunnerVariables = new JobRunnerVariables();
+      
       try {
           ObjectMapper objectMapper = new ObjectMapper();
           
@@ -113,61 +122,61 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
   		JsonNode metadataNode = jobDef.path("metadata");
 		DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
 		documentMetadata.withCollections("/jobs/"+id);
-		logger.info("Adding read and update permissions for the roles");
+		DocumentPermissions permissions = documentMetadata.getPermissions();
 		for(String temp:getRoles()) {
-			documentMetadata.withPermission(temp, Capability.READ, Capability.UPDATE);
+			permissions.add(temp, Capability.READ, Capability.UPDATE);
 		}
          
 // TODO: permissions
 
          WriteBatcher batcher = moveMgr.newWriteBatcher()
 // TODO: sized to 500 in real thing?
-               .withBatchSize(getBatchSize())
+               .withBatchSize(getBatchSize());
 // TODO: intermittent logging using logger
 // https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html
-               .onBatchSuccess(
+         if(logger!=null) {
+        	 batcher = batcher.onBatchSuccess(
                      batch -> {
                     	 if(getBatchSize()==1) {
-                    		 System.out.println("Number of batch = 1. Batch succeeded");
+                    		 System.out.println("Success for the batch-" + batch.getJobBatchNumber() + ". Total successes - 1");
                     	 } else {
-                    		 if(totalSuccessCount == 0){
-                    			 logger.info("Success for the batch-" + batch.getJobBatchNumber());
+                    		 if(jobRunnerVariables.totalSuccessCount == 0){
+                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber());
                     			 setLastSuccessLogTime(System.currentTimeMillis());
-                    			 totalSuccessCount++;
-                    			 countSinceLastLog = 1;
+                    			 jobRunnerVariables.successCountSinceLastLog = 1;
                     		 } else if(((System.currentTimeMillis() - getLastSuccessLogTime())/1000) >= getTimeIntervalInSeconds()) {
                     			 setLastSuccessLogTime(System.currentTimeMillis());
-                    			 countSinceLastLog = 1;
-                    			 totalSuccessCount++;
-                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + countSinceLastLog + ". Total successes - " + totalSuccessCount);
+                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalSuccessCount - jobRunnerVariables.successCountSinceLastLog + 1) + ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
+                    			 jobRunnerVariables.successCountSinceLastLog = jobRunnerVariables.totalSuccessCount + 1;
                     		 } else {
-                    			 totalSuccessCount++;
-                    			 countSinceLastLog++;
+                    			 jobRunnerVariables.successCountSinceLastLog++;
                     		 }
+                    		 jobRunnerVariables.totalSuccessCount++;
                     	 }
                      })
                .onBatchFailure(
                      (batch, throwable) -> {
                     	 if(getBatchSize()==1) {
-                    		 System.out.println("Number of batch = 1. Batch failed");
+                    		 System.out.println("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
                     	 } else {
-                    		 if(totalFailureCount == 0){
+                    		 if(jobRunnerVariables.totalFailureCount == 0){
                     			 logger.info("Failure for the batch-" + batch.getJobBatchNumber());
                     			 setLastFailureLogTime(System.currentTimeMillis());
-                    			 totalFailureCount++;
-                    			 countSinceLastLog = 1;
+                    			 jobRunnerVariables.totalFailureCount++;
+                    			 jobRunnerVariables.failureCountSinceLastLog = 1;
                     		 } else if(((System.currentTimeMillis() - getLastFailureLogTime())/1000) >= getTimeIntervalInSeconds()) {
-                    			 countSinceLastLog = 1;
-                    			 totalFailureCount++;
-                    			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + countSinceLastLog + ". Total failures - " + totalFailureCount);
+                    			 jobRunnerVariables.totalFailureCount++;
+                    			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalFailureCount - jobRunnerVariables.failureCountSinceLastLog + 1) + ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
+                    			 jobRunnerVariables.failureCountSinceLastLog = jobRunnerVariables.totalFailureCount + 1;
                     		 } else {
-                    			 totalFailureCount++;
-                    			 countSinceLastLog++;
+                    			 jobRunnerVariables.failureCountSinceLastLog++;
                     		 }
+                    		 jobRunnerVariables.totalFailureCount++;
                     	 }
+                    	 System.out.println(throwable.getStackTrace());
                      });
 
-
+         }
          ObjectLoader loader = new ObjectLoader(batcher, recordDef, getJobDirectory(), documentMetadata);
          CSVConverter converter = new CSVConverter();  
 
@@ -183,14 +192,13 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          }
          
    // write before job document in /jobStart and /jobs/ID collections or send before job payload to DHF endpoint  
-         logger.info("Starting the before job document.");
          String beforeDocId = "/jobs/"+id+"/beforeJob.json";
          
          DocumentMetadataHandle beforeDocumentMetadata = new DocumentMetadataHandle();
          beforeDocumentMetadata.withCollections("/jobs/"+beforeDocId, "/beforeJob");
-         logger.info("Adding read and update permissions to before job document for the roles");
+         DocumentPermissions beforeDocPermissions = beforeDocumentMetadata.getPermissions();
          for(String temp:getRoles()) {
-        	 beforeDocumentMetadata.withPermission(temp, Capability.READ, Capability.UPDATE);
+        	 beforeDocPermissions.add(temp, Capability.READ, Capability.UPDATE);
  		}
          
          String ingestionStartTime = LocalDateTime.now().toString();
@@ -203,14 +211,15 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          
          JacksonHandle jacksonHandle = new JacksonHandle(beforeDocRoot);
          
-         logger.info("Writing the before job document to the database.");
+         logger.info("Writing the before job document to the database. BeforeDocId - "+beforeDocId);
          jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
-         
+         logger.info("Starting the job.");
          JobTicket ticket = moveMgr.startJob(batcher);
          loader.loadRecord(csvNode);
          
          loader.loadRecords(itr);
          batcher.flushAndWait();
+         logger.info("Finishing the job");
          moveMgr.stopJob(ticket);
          
          String ingestionStopTime = LocalDateTime.now().toString();
@@ -221,9 +230,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          
          DocumentMetadataHandle afterDocumentMetadata = new DocumentMetadataHandle();
          afterDocumentMetadata.withCollections("/jobs/"+afterDocId, "/afterJob");
-         logger.info("Adding read and update permissions to after job document for the roles");
+         DocumentPermissions afterDocPermissions = afterDocumentMetadata.getPermissions();
          for(String temp:getRoles()) {
-        	 afterDocumentMetadata.withPermission(temp, Capability.READ, Capability.UPDATE);
+        	 afterDocPermissions.add(temp, Capability.READ, Capability.UPDATE);
  		}
          
          ObjectNode afterDocRoot = objectMapper.createObjectNode();
@@ -235,8 +244,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          afterDocRoot.put("numberOfRecords", loader.getCount());
          
          jacksonHandle = new JacksonHandle(afterDocRoot);
-         logger.info("Writing the after job document to the database.");
+         logger.info("Writing the after job document to the database. AfterDocId - "+afterDocId);
          jsonMgr.write(afterDocId, afterDocumentMetadata, jacksonHandle);
+         logger.info("Finished writing the after job document at - " + LocalDateTime.now().toString() + " Number of records written to the database - " + loader.getCount());
          
       } finally {
     	  logger.info("Finishing the job. Time elapsed = " + (System.currentTimeMillis() - startTime)/1000 + "seconds.");
