@@ -98,8 +98,8 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
       Long startTime = System.currentTimeMillis();
       
       final class JobRunnerVariables{
-    	  int successCountSinceLastLog = 0;
-    	  int failureCountSinceLastLog = 0;
+    	  int lastSuccessCount = 0;
+    	  int lastFailureCount = 0;
     	  int totalSuccessCount = 0;
     	  int totalFailureCount = 0;
       }
@@ -143,14 +143,12 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                     		 if(jobRunnerVariables.totalSuccessCount == 0){
                     			 logger.info("Success for batch number - " + batch.getJobBatchNumber());
                     			 setLastSuccessLogTime(System.currentTimeMillis());
-                    			 jobRunnerVariables.successCountSinceLastLog = 1;
+                    			 jobRunnerVariables.lastSuccessCount = 1;
                     		 } else if(((System.currentTimeMillis() - getLastSuccessLogTime())/1000) >= getTimeIntervalInSeconds()) {
                     			 setLastSuccessLogTime(System.currentTimeMillis());
-                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalSuccessCount - jobRunnerVariables.successCountSinceLastLog + 1) + ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
-                    			 jobRunnerVariables.successCountSinceLastLog = jobRunnerVariables.totalSuccessCount + 1;
-                    		 } else {
-                    			 jobRunnerVariables.successCountSinceLastLog++;
-                    		 }
+                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalSuccessCount - jobRunnerVariables.lastSuccessCount + 1) + ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
+                    			 jobRunnerVariables.lastSuccessCount = jobRunnerVariables.totalSuccessCount + 1;
+                    		 } 
                     		 jobRunnerVariables.totalSuccessCount++;
                     	 }
                      })
@@ -162,14 +160,11 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                     		 if(jobRunnerVariables.totalFailureCount == 0){
                     			 logger.info("Failure for the batch-" + batch.getJobBatchNumber());
                     			 setLastFailureLogTime(System.currentTimeMillis());
-                    			 jobRunnerVariables.totalFailureCount++;
-                    			 jobRunnerVariables.failureCountSinceLastLog = 1;
+                    			 jobRunnerVariables.lastFailureCount = 1;
                     		 } else if(((System.currentTimeMillis() - getLastFailureLogTime())/1000) >= getTimeIntervalInSeconds()) {
-                    			 jobRunnerVariables.totalFailureCount++;
-                    			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalFailureCount - jobRunnerVariables.failureCountSinceLastLog + 1) + ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
-                    			 jobRunnerVariables.failureCountSinceLastLog = jobRunnerVariables.totalFailureCount + 1;
-                    		 } else {
-                    			 jobRunnerVariables.failureCountSinceLastLog++;
+                    			 setLastFailureLogTime(System.currentTimeMillis());
+                    			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalFailureCount - jobRunnerVariables.lastFailureCount + 1) + ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
+                    			 jobRunnerVariables.lastFailureCount = jobRunnerVariables.totalFailureCount + 1;
                     		 }
                     		 jobRunnerVariables.totalFailureCount++;
                     	 }
