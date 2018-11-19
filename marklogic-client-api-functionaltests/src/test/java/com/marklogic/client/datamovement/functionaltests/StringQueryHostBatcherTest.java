@@ -2184,146 +2184,147 @@ public class StringQueryHostBatcherTest extends BasicJavaClientREST {
   
   @Test
   public void testProgressListener() throws Exception {
+	  DatabaseClient clientTmp = null;
 	  try {
-	  DataMovementManager dmManager = null;
-	  
-	  client = getDatabaseClient("eval-user", "x", getConnType());
-	  dmManager = client.newDataMovementManager();
-	  QueryManager queryMgr = client.newQueryManager();
-	  StringQueryDefinition querydef = queryMgr.newStringDefinition();
-	  querydef.setCriteria("John AND Bob");
+		  DataMovementManager dmManager = null;
 
-	  String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
-			  + "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" },"
-			  + "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}";
-	  WriteBatcher wbatcher = dmManager.newWriteBatcher();
-	  wbatcher.withBatchSize(600);
-	  wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
-	  StringHandle handle = new StringHandle();
-	  handle.set(jsonDoc);
-	  String uri = null;
+		  clientTmp = getDatabaseClient("eval-user", "x", getConnType());
+		  dmManager = clientTmp.newDataMovementManager();
+		  QueryManager queryMgr = clientTmp.newQueryManager();
+		  StringQueryDefinition querydef = queryMgr.newStringDefinition();
+		  querydef.setCriteria("John AND Bob");
 
-	  // Insert 6 K documents
-	  for (int i = 0; i < 6000; i++) {
-		  uri = "/firstName" + i + ".json";
-		  wbatcher.add(uri, handle);
+		  String jsonDoc = "{" + "\"employees\": [" + "{ \"firstName\":\"John\" , \"lastName\":\"Doe\" },"
+				  + "{ \"firstName\":\"Ann\" , \"lastName\":\"Smith\" },"
+				  + "{ \"firstName\":\"Bob\" , \"lastName\":\"Foo\" }]" + "}";
+		  WriteBatcher wbatcher = dmManager.newWriteBatcher();
+		  wbatcher.withBatchSize(600);
+		  wbatcher.onBatchFailure((batch, throwable) -> throwable.printStackTrace());
+		  StringHandle handle = new StringHandle();
+		  handle.set(jsonDoc);
+		  String uri = null;
+
+		  // Insert 6 K documents
+		  for (int i = 0; i < 6000; i++) {
+			  uri = "/firstName" + i + ".json";
+			  wbatcher.add(uri, handle);
+		  }
+
+		  wbatcher.flushAndWait();
+		  // Read all 6000 docs in a batch and monitor progress.
+		  StringBuilder str6000 = new StringBuilder();
+		  QueryBatcher batcher6000 = dmManager.newQueryBatcher(querydef).withBatchSize(6000).withThreadCount(1);
+		  batcher6000.onUrisReady(
+
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (Batch 6000): " + progressUpdate.getProgressAsString());
+					  str6000.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher6000.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 6000: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket6000 = dmManager.startJob(batcher6000);
+		  batcher6000.awaitCompletion();
+		  System.out.println("From buffer 6000: " + str6000.toString());
+		  assertTrue("Progress Update incorrect", str6000.toString().contains("Progress: 6000 results"));
+
+		  // Read in smaller batches and monitor progress
+		  StringBuilder str60 = new StringBuilder();
+		  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60).withThreadCount(1);
+		  batcher60.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch 60): " + progressUpdate.getProgressAsString());
+					  str60.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher60.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 60: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket60 = dmManager.startJob(batcher60);
+		  batcher60.awaitCompletion();
+
+		  System.out.println("From buffer 60: " + str60.toString());
+		  // Make sure all updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", str60.toString().contains("Progress: 60 results"));
+		  assertTrue("Progress Update Batch 5940 incorrect", str60.toString().contains("Progress: 5940 results"));
+		  assertTrue("Progress Update incorrect", str60.toString().contains("Progress: 6000 results"));
+		  // Batches read are uneven and with multiple threads
+		  StringBuilder str33 = new StringBuilder();
+		  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
+		  batcher33.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch 33): " + progressUpdate.getProgressAsString());
+					  str33.append(progressUpdate.getProgressAsString());
+				  }));
+		  batcher33.onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures 33: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicket33 = dmManager.startJob(batcher33);
+		  batcher33.awaitCompletion();
+
+		  System.out.println("From buffer 33: " + str33.toString());
+		  // Make sure all updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", str33.toString().contains("Progress: 33 results"));
+		  assertTrue("Progress Update Batch 5973 incorrect", str33.toString().contains("Progress: 5973 results"));
+		  assertTrue("Progress Update incorrect", str33.toString().contains("Progress: 6000 results"));
+
+		  // Batches read errors
+		  StringBuilder strErr = new StringBuilder();	  
+		  StringQueryDefinition querydefErr = queryMgr.newStringDefinition();
+		  querydefErr.setCriteria("Jhn AND BAA");
+
+		  QueryBatcher batcherErr = dmManager.newQueryBatcher(querydefErr).withBatchSize(100).withThreadCount(3);
+		  batcherErr.onUrisReady(
+				  new ProgressListener()
+				  .onProgressUpdate(progressUpdate -> {
+					  System.out.println("From ProgressListener (From Batch Err): " + progressUpdate.getProgressAsString());
+					  strErr.append(progressUpdate.getProgressAsString());	  
+				  }))
+		  .onQueryFailure((throwable) -> {
+			  System.out.println("queryFailures Err: ");
+			  try {
+				  Thread.currentThread().sleep(7000L);
+			  } catch (Exception e) {
+				  // TODO Auto-generated catch block
+				  e.printStackTrace();
+			  }
+		  });
+
+		  JobTicket queryTicketErr = dmManager.startJob(batcherErr);
+		  batcherErr.awaitCompletion();
+
+		  System.out.println("From buffer Err: " + strErr.toString());
+		  // No updates are available
+		  assertTrue("Progress Update Batch 1 incorrect", strErr.toString().isEmpty());	  
 	  }
-
-	  wbatcher.flushAndWait();
-	  // Read all 6000 docs in a batch and monitor progress.
-	  StringBuilder str6000 = new StringBuilder();
-	  QueryBatcher batcher6000 = dmManager.newQueryBatcher(querydef).withBatchSize(6000).withThreadCount(1);
-	  batcher6000.onUrisReady(
-		 
-		  new ProgressListener()
-		               .onProgressUpdate(progressUpdate -> {
-		                System.out.println("From ProgressListener (Batch 6000): " + progressUpdate.getProgressAsString());
-		                str6000.append(progressUpdate.getProgressAsString());
-	  }));
-	  batcher6000.onQueryFailure((throwable) -> {
-		  System.out.println("queryFailures 6000: ");
-		  try {
-			  Thread.currentThread().sleep(7000L);
-		  } catch (Exception e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
-		  }
-	  });
-
-	  JobTicket queryTicket6000 = dmManager.startJob(batcher6000);
-	  batcher6000.awaitCompletion();
-	  System.out.println("From buffer 6000: " + str6000.toString());
-	  assertTrue("Progress Update incorrect", str6000.toString().contains("Progress: 6000 results"));
-	  
-	  // Read in smaller batches and monitor progress
-	  StringBuilder str60 = new StringBuilder();
-	  QueryBatcher batcher60 = dmManager.newQueryBatcher(querydef).withBatchSize(60).withThreadCount(1);
-	  batcher60.onUrisReady(
-		  new ProgressListener()
-		               .onProgressUpdate(progressUpdate -> {
-		                System.out.println("From ProgressListener (From Batch 60): " + progressUpdate.getProgressAsString());
-		                str60.append(progressUpdate.getProgressAsString());
-	  }));
-	  batcher60.onQueryFailure((throwable) -> {
-		  System.out.println("queryFailures 60: ");
-		  try {
-			  Thread.currentThread().sleep(7000L);
-		  } catch (Exception e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
-		  }
-	  });
-
-	  JobTicket queryTicket60 = dmManager.startJob(batcher60);
-	  batcher60.awaitCompletion();
-	  
-	  System.out.println("From buffer 60: " + str60.toString());
-	  // Make sure all updates are available
-	  assertTrue("Progress Update Batch 1 incorrect", str60.toString().contains("Progress: 60 results"));
-	  assertTrue("Progress Update Batch 5940 incorrect", str60.toString().contains("Progress: 5940 results"));
-	  assertTrue("Progress Update incorrect", str60.toString().contains("Progress: 6000 results"));
-	  // Batches read are uneven and with multiple threads
-	  StringBuilder str33 = new StringBuilder();
-	  QueryBatcher batcher33 = dmManager.newQueryBatcher(querydef).withBatchSize(33).withThreadCount(3);
-	  batcher33.onUrisReady(
-		  new ProgressListener()
-		               .onProgressUpdate(progressUpdate -> {
-		                System.out.println("From ProgressListener (From Batch 33): " + progressUpdate.getProgressAsString());
-		                str33.append(progressUpdate.getProgressAsString());
-	  }));
-	  batcher33.onQueryFailure((throwable) -> {
-		  System.out.println("queryFailures 33: ");
-		  try {
-			  Thread.currentThread().sleep(7000L);
-		  } catch (Exception e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
-		  }
-	  });
-
-	  JobTicket queryTicket33 = dmManager.startJob(batcher33);
-	  batcher33.awaitCompletion();
-	  
-	  System.out.println("From buffer 33: " + str33.toString());
-	  // Make sure all updates are available
-	  assertTrue("Progress Update Batch 1 incorrect", str33.toString().contains("Progress: 33 results"));
-	  assertTrue("Progress Update Batch 5973 incorrect", str33.toString().contains("Progress: 5973 results"));
-	  assertTrue("Progress Update incorrect", str33.toString().contains("Progress: 6000 results"));
-	  
-	  // Batches read errors
-	  StringBuilder strErr = new StringBuilder();	  
-	  StringQueryDefinition querydefErr = queryMgr.newStringDefinition();
-	  querydefErr.setCriteria("Jhn AND BAA");
-	  
-	  QueryBatcher batcherErr = dmManager.newQueryBatcher(querydefErr).withBatchSize(100).withThreadCount(3);
-	  batcherErr.onUrisReady(
-			  new ProgressListener()
-			  .onProgressUpdate(progressUpdate -> {
-				  System.out.println("From ProgressListener (From Batch Err): " + progressUpdate.getProgressAsString());
-				  strErr.append(progressUpdate.getProgressAsString());	  
-			  }))
-	  .onQueryFailure((throwable) -> {
-		  System.out.println("queryFailures Err: ");
-		  try {
-			  Thread.currentThread().sleep(7000L);
-		  } catch (Exception e) {
-			  // TODO Auto-generated catch block
-			  e.printStackTrace();
-		  }
-	  });
-
-	  JobTicket queryTicketErr = dmManager.startJob(batcherErr);
-	  batcherErr.awaitCompletion();
-
-	  System.out.println("From buffer Err: " + strErr.toString());
-	  // No updates are available
-	  assertTrue("Progress Update Batch 1 incorrect", strErr.toString().isEmpty());	  
-  }
-  catch (Exception ex) {
-	  ex.printStackTrace();
-  }
+	  catch (Exception ex) {
+		  ex.printStackTrace();
+	  }
 	  finally {
-		  client.release();
+		  clientTmp.release();
 	  }
   }
 }
