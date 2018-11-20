@@ -1273,7 +1273,7 @@ public class TestOpticOnViews extends BasicJavaClientREST {
         .select(p.as("added", p.add(p.col("amount"), p.col( "masterId"))),
             p.as("substracted", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
             p.as("modulo", p.modulo(p.col("amount"), p.viewCol("master", "id"))),
-            p.as("invSubstract", p.subtract(p.col("amount"), p.viewCol("master", "date"))),
+            p.as("invSubstract", p.subtract(p.col("amount"), p.viewCol("master", "id"))),
             p.as("divided", p.divide(p.col("amount"), p.multiply(p.col("amount"), p.viewCol("detail", "id"))))
         )
         .orderBy(p.asc("substracted"));
