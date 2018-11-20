@@ -682,7 +682,7 @@ public class TestOpticOnLiterals extends BasicJavaClientREST {
                 p.col("colorDesc"),
                 p.as("added", p.add(p.col("rowId"), p.col("colorId"), p.xs.intVal(10))),
                 p.as("subtracted", p.subtract(p.col("colorId"), p.col("rowId"))),
-                p.as("negSubtracted", p.subtract(p.col("colorId"), p.col("desc"))),
+                p.as("negSubtracted", p.subtract(p.col("colorId"), p.col("rowId"))),
                 p.as("divided", p.divide(p.col("colorId"), p.col("rowId"))),
                 p.as("multiplied", p.multiply(p.col("colorId"), p.col("rowId"), p.xs.floatVal(0.6f))),
                 p.as("colDefined", p.isDefined(p.col("added"))),
