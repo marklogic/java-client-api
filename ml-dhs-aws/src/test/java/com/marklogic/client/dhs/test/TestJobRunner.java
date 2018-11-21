@@ -6,6 +6,7 @@ import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.dhs.JobRunner;
+import com.marklogic.client.io.JacksonHandle;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -77,8 +78,9 @@ public class TestJobRunner {
 
 			DocumentMetadataReadHandle beforeDocumentMetadata = new DocumentMetadataReadHandle() {
 			};
+			JacksonHandle readHandle = new JacksonHandle();
 
-			assertNotNull(jsonMgr.read(beforeDocId, beforeDocumentMetadata, null));
+			assertNotNull(jsonMgr.read(beforeDocId, beforeDocumentMetadata, readHandle));
 
 			// TODO: assert expected count of 1960 against documents in jobDirectory
 		} catch(Exception ex) {
@@ -106,10 +108,12 @@ public class TestJobRunner {
 
 			String afterDocId = "/jobs/" + jobDef.path("id").asText() + "/afterJob.json";
 
+			JacksonHandle readHandle = new JacksonHandle();
+
 			DocumentMetadataReadHandle afterDocumentMetadata = new DocumentMetadataReadHandle() {
 			};
 
-			assertNotNull(jsonMgr.read(afterDocId, afterDocumentMetadata, null));
+			assertNotNull(jsonMgr.read(afterDocId, afterDocumentMetadata, readHandle));
 
 			// TODO: assert expected count of 1960 against documents in jobDirectory
 		} catch(Exception ex) {
