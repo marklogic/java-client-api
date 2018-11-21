@@ -5,7 +5,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
 import com.marklogic.client.document.JSONDocumentManager;
-import com.marklogic.client.example.cookbook.JobRunner;
+import com.marklogic.client.dhs.JobRunner;
 import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
@@ -14,6 +14,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import java.io.File;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.IOException;
