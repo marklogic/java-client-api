@@ -3,4 +3,3 @@ include ':marklogic-client-api'
 include ':marklogic-client-api-functionaltests'
 include ':ml-development-tools'
 include ':ml-dhs-aws'
-
