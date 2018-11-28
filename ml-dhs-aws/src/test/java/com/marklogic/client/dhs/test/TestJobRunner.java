@@ -96,6 +96,10 @@ public class TestJobRunner {
 			assertTrue(beforeDocumentMetadata.getPermissions().containsKey("admin"));
 			assertTrue(beforeDocumentMetadata.getPermissions().get("admin").contains(Capability.READ));
 			assertTrue(beforeDocumentMetadata.getPermissions().get("admin").contains(Capability.UPDATE));
+			
+			JsonNode readHandleNode = readHandle.get();
+			assertNotNull(readHandleNode);
+			assertNotNull(readHandleNode.fields());
 
 		} catch(Exception ex) {
 			ex.printStackTrace();
@@ -131,6 +135,10 @@ public class TestJobRunner {
 			assertTrue(afterDocumentMetadata.getPermissions().containsKey("admin"));
 			assertTrue(afterDocumentMetadata.getPermissions().get("admin").contains(Capability.READ));
 			assertTrue(afterDocumentMetadata.getPermissions().get("admin").contains(Capability.UPDATE));
+			
+			JsonNode readHandleNode = readHandle.get();
+			assertNotNull(readHandleNode);
+			assertNotNull(readHandleNode.fields());
 
 		} catch(Exception ex) {
 			ex.printStackTrace();
@@ -181,8 +189,13 @@ public class TestJobRunner {
 			JsonNode firstObject = firstDocHandle.get();
 
 			// verify the record metadata and the instance keys by navigating the nodes using Jackson methods
-			assertNotNull(firstObject.get("metadata"));
-			assertNotNull(firstObject.get("instance"));
+			JsonNode metadataNode = firstObject.get("metadata");
+			assertNotNull(metadataNode);
+			assertNotNull(metadataNode.get(0));
+			
+			JsonNode instanceNode = firstObject.get("instance");
+			assertNotNull(instanceNode);
+			assertNotNull(instanceNode.get(0));
 
 		} catch(Exception ex) {
 			ex.printStackTrace();

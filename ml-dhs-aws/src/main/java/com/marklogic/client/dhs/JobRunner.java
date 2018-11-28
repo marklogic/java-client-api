@@ -102,14 +102,22 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
     	  AtomicLong lastFailureCount;
     	  AtomicLong totalSuccessCount;
     	  AtomicLong totalFailureCount;
-    	  
-    	  synchronized void trackLastSuccessCount(){
-    		  lastSuccessCount.set(totalSuccessCount.longValue());
- 			  lastSuccessCount.incrementAndGet();
-    	  }
-    	  synchronized void trackLastFailureCount(){
-    		  lastFailureCount.set(totalFailureCount.longValue());
-    		  lastFailureCount.incrementAndGet();
+
+			synchronized boolean trackLastSuccessCount() {
+				if (((System.currentTimeMillis() - getLastSuccessLogTime()) / 1000) >= getTimeIntervalInSeconds()) {
+					setLastSuccessLogTime(System.currentTimeMillis());
+					lastSuccessCount.set(totalSuccessCount.longValue() + 1);
+					return true;
+				}
+				return false;
+			}
+    	  synchronized boolean trackLastFailureCount(){
+    		  if(((System.currentTimeMillis() - getLastFailureLogTime())/1000) >= getTimeIntervalInSeconds()) {
+    			  setLastFailureLogTime(System.currentTimeMillis());
+    			  lastFailureCount.set(totalFailureCount.longValue() + 1);
+    			  return true;
+    		  }
+    		  return false;
     	  }
       }
       final JobRunnerVariables jobRunnerVariables = new JobRunnerVariables();
@@ -153,10 +161,8 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                     			 logger.info("Success for batch number - " + batch.getJobBatchNumber());
                     			 setLastSuccessLogTime(System.currentTimeMillis());
                     			 jobRunnerVariables.lastSuccessCount.set(1);;
-                    		 } else if(((System.currentTimeMillis() - getLastSuccessLogTime())/1000) >= getTimeIntervalInSeconds()) {
-                    			 setLastSuccessLogTime(System.currentTimeMillis());
+                    		 } else if(jobRunnerVariables.trackLastSuccessCount()) {
                     			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalSuccessCount.get() - jobRunnerVariables.lastSuccessCount.get() + 1) + ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
-                    			 jobRunnerVariables.trackLastSuccessCount();
                     		 } 
                     		 jobRunnerVariables.totalSuccessCount.incrementAndGet();
                     	 }
@@ -170,10 +176,8 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                     			 logger.info("Failure for the batch-" + batch.getJobBatchNumber());
                     			 setLastFailureLogTime(System.currentTimeMillis());
                     			 jobRunnerVariables.lastFailureCount.set(1);;
-                    		 } else if(((System.currentTimeMillis() - getLastFailureLogTime())/1000) >= getTimeIntervalInSeconds()) {
-                    			 setLastFailureLogTime(System.currentTimeMillis());
+                    		 } else if(jobRunnerVariables.trackLastFailureCount()) {
                     			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalFailureCount.get() - jobRunnerVariables.lastFailureCount.get() + 1) + ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
-                    			 jobRunnerVariables.trackLastFailureCount();
                     		 }
                     		 jobRunnerVariables.totalFailureCount.incrementAndGet();
                     	 }
@@ -253,9 +257,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          logger.info("Finished writing the after job document at - " + LocalDateTime.now().toString() + " Number of records written to the database - " + loader.getCount());
          
       } catch(Exception e){
-    	  e.printStackTrace();
+    	  logger.error(e.getMessage());
       }finally {
-    	  logger.info("Finishing the job. Time elapsed = " + (System.currentTimeMillis() - startTime)/1000 + "seconds.");
+    	  logger.info("Finishing the job. Time elapsed = " + (System.currentTimeMillis() - startTime)/1000.0f + " seconds.");
     	  moveMgr.release();
       }
    }
