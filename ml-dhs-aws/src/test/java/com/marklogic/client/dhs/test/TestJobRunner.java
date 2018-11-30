@@ -5,201 +5,188 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.marklogic.client.DatabaseClient;
 import com.marklogic.client.DatabaseClientFactory;
+import com.marklogic.client.document.DocumentManager;
 import com.marklogic.client.document.DocumentPage;
+import com.marklogic.client.document.DocumentRecord;
 import com.marklogic.client.document.JSONDocumentManager;
 import com.marklogic.client.dhs.JobRunner;
 import com.marklogic.client.io.DocumentMetadataHandle;
 import com.marklogic.client.io.JacksonHandle;
-import com.marklogic.client.io.marker.DocumentMetadataReadHandle;
 import com.marklogic.client.query.DeleteQueryDefinition;
 import com.marklogic.client.query.QueryManager;
 import com.marklogic.client.query.StructuredQueryBuilder;
-import com.marklogic.client.semantics.Capability;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import java.io.File;
-import java.io.FileReader;
+import java.io.*;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.LineNumberReader;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 public class TestJobRunner {
-	DatabaseClient client;
+   static final private Logger logger = LoggerFactory.getLogger(TestJobRunner.class);
+   static final private String csvFile = "data"+File.separator+"OrderLines.csv";
+   static final private String role = "rest-tracer";
+
+   DatabaseClient client;
 	
 	@Before
 	public void setUp() {
-		// TODO: switch to 8011
 	      this.client = DatabaseClientFactory.newClient(
-	            "localhost", 8011, new DatabaseClientFactory.DigestAuthContext("admin", "admin")
+	            "localhost", 8012, new DatabaseClientFactory.DigestAuthContext("rest-admin", "x")
 	      );
 	}
 	
    @Test
    public void testRun() throws IOException {
-      String csvFile = "data"+File.separator+"OrderLines.csv";
-
-      QueryManager queryMgr = client.newQueryManager();
+      String jobFile = JobRunner.jobFileFor(csvFile);
 
       JobRunner jobRunner = new JobRunner();
-      String jobDirectory = jobRunner.getJobDirectory();
+      jobRunner.setLogger(logger);
+
+      String[] roles = { role };
+      jobRunner.setRoles(roles);
+
+      String jobCollection = null;
 
       try (
             InputStream csvStream = openStream(csvFile);
-            InputStream jobStream = openStream(JobRunner.jobFileFor(csvFile));
+            InputStream jobStream = openStream(jobFile);
+            InputStream jobStream2 = openStream(jobFile)
       ) {
          jobRunner.run(client, csvStream, jobStream);
 
-// TODO: assert expected count of 1960 against documents in jobDirectory
-      } finally {
-         DeleteQueryDefinition deleteDef = queryMgr.newDeleteDefinition();
-         deleteDef.setDirectory(jobDirectory);
-         queryMgr.delete(deleteDef);
-      }
+         jobCollection = JobRunner.getJobCollection(jobRunner.getJobId());
 
+         ObjectMapper objectMapper = new ObjectMapper();
+         ObjectNode jobControlObj = (ObjectNode) objectMapper.readTree(jobStream2);
+
+         testBeforeJobDocument(jobControlObj);
+         testAfterJobDocument(jobControlObj);
+         testJsonDataStructure(jobControlObj);
+      } catch(Exception ex) {
+         ex.printStackTrace();
+         fail("test exception");
+      } finally {
+         if (jobCollection != null) {
+            QueryManager queryMgr = client.newQueryManager();
+            DeleteQueryDefinition deleteDef = queryMgr.newDeleteDefinition();
+            deleteDef.setCollections(jobCollection);
+            queryMgr.delete(deleteDef);
+         }
+      }
    }
    
-	@Test
-	public void testBeforeJobDocument() throws Exception {
-		String csvFile = "data"+File.separator+"OrderLines.csv";
-
-		JobRunner jobRunner = new JobRunner();
-		String[] roles = { "admin" };
-		jobRunner.setRoles(roles);
+	public void testBeforeJobDocument(ObjectNode jobControlObj) {
 		JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
 
-		try (InputStream csvStream = openStream(csvFile);
-				InputStream jobStream = openStream(JobRunner.jobFileFor(csvFile));) {
-			jobRunner.run(client, csvStream, jobStream);
+      ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
 
-			ObjectMapper objectMapper = new ObjectMapper();
+      String beforeDocId = JobRunner.getBeforeJobDocumentUri(jobDef.path("id").asText());
+      assertNotNull(jsonMgr.exists(beforeDocId));
 
-			ObjectNode jobControlObj = (ObjectNode) objectMapper.readTree(jobStream);
-			ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
+      DocumentMetadataHandle beforeDocumentMetadata = new DocumentMetadataHandle();
+      JacksonHandle readHandle = new JacksonHandle();
 
-			String beforeDocId = JobRunner.getBeforeJobDocumentUri(jobDef.path("id").asText());
-			assertNotNull(jsonMgr.exists(beforeDocId));
+      assertNotNull(jsonMgr.read(beforeDocId, beforeDocumentMetadata, readHandle));
+      assertTrue(beforeDocumentMetadata.getCollections().contains(JobRunner.getJobCollection(jobDef.path("id").asText())));
+      assertTrue(beforeDocumentMetadata.getCollections().contains("/beforeJob"));
+      assertTrue(beforeDocumentMetadata.getPermissions().containsKey(role));
+      assertTrue(beforeDocumentMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.READ));
+      assertTrue(beforeDocumentMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.UPDATE));
 
-			DocumentMetadataHandle beforeDocumentMetadata = new DocumentMetadataHandle();
-			JacksonHandle readHandle = new JacksonHandle();
-			
-			assertNotNull(jsonMgr.read(beforeDocId, beforeDocumentMetadata, readHandle)); 
-			assertTrue(beforeDocumentMetadata.getCollections().contains(JobRunner.getJobCollection(jobDef.path("id").asText())));
-			assertTrue(beforeDocumentMetadata.getCollections().contains("/beforeJob"));
-			assertTrue(beforeDocumentMetadata.getPermissions().containsKey("admin"));
-			assertTrue(beforeDocumentMetadata.getPermissions().get("admin").contains(Capability.READ));
-			assertTrue(beforeDocumentMetadata.getPermissions().get("admin").contains(Capability.UPDATE));
-			
-			JsonNode readHandleNode = readHandle.get();
-			assertNotNull(readHandleNode);
-			assertNotNull(readHandleNode.fields());
-
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
+      JsonNode readHandleNode = readHandle.get();
+      assertNotNull(readHandleNode);
+      assertNotNull(readHandleNode.fields());
 	}
    
-	@Test
-	public void testAfterJobDocument() throws Exception {
-		String csvFile = "data"+File.separator+"OrderLines.csv";
-
-		JobRunner jobRunner = new JobRunner();
-		String[] roles = { "admin" };
-		jobRunner.setRoles(roles);
+	public void testAfterJobDocument(ObjectNode jobControlObj) {
 		JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
+      ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
 
-		try (InputStream csvStream = openStream(csvFile);
-				InputStream jobStream = openStream(JobRunner.jobFileFor(csvFile));) {
-			jobRunner.run(client, csvStream, jobStream);
+      String afterDocId = JobRunner.getAfterJobDocumentUri(jobDef.path("id").asText());
+      assertNotNull(jsonMgr.exists(afterDocId));
+      DocumentMetadataHandle afterDocumentMetadata = new DocumentMetadataHandle();
+      JacksonHandle readHandle = new JacksonHandle();
 
-			ObjectMapper objectMapper = new ObjectMapper();
+      assertNotNull(jsonMgr.read(afterDocId, afterDocumentMetadata, readHandle));
+      assertTrue(afterDocumentMetadata.getCollections().contains(JobRunner.getJobCollection(jobDef.path("id").asText())));
+      assertTrue(afterDocumentMetadata.getCollections().contains("/afterJob"));
+      assertTrue(afterDocumentMetadata.getPermissions().containsKey(role));
+      assertTrue(afterDocumentMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.READ));
+      assertTrue(afterDocumentMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.UPDATE));
 
-			ObjectNode jobControlObj = (ObjectNode) objectMapper.readTree(jobStream);
-			ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
-
-			String afterDocId = JobRunner.getAfterJobDocumentUri(jobDef.path("id").asText());
-			assertNotNull(jsonMgr.exists(afterDocId));
-			DocumentMetadataHandle afterDocumentMetadata = new DocumentMetadataHandle();
-			JacksonHandle readHandle = new JacksonHandle();
-			
-			assertNotNull(jsonMgr.read(afterDocId, afterDocumentMetadata, readHandle)); 
-			assertTrue(afterDocumentMetadata.getCollections().contains(JobRunner.getJobCollection(jobDef.path("id").asText())));
-			assertTrue(afterDocumentMetadata.getCollections().contains("/afterJob"));
-			assertTrue(afterDocumentMetadata.getPermissions().containsKey("admin"));
-			assertTrue(afterDocumentMetadata.getPermissions().get("admin").contains(Capability.READ));
-			assertTrue(afterDocumentMetadata.getPermissions().get("admin").contains(Capability.UPDATE));
-			
-			JsonNode readHandleNode = readHandle.get();
-			assertNotNull(readHandleNode);
-			assertNotNull(readHandleNode.fields());
-
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
+      JsonNode readHandleNode = readHandle.get();
+      assertNotNull(readHandleNode);
+      assertNotNull(readHandleNode.fields());
 	}
 	
-	@Test
-	public void testJsonDataStructure() throws Exception {
-		String csvFile = "data"+File.separator+"OrderLines.csv";
-
-		JobRunner jobRunner = new JobRunner();
-		String[] roles = { "admin" };
-		jobRunner.setRoles(roles);
+	public void testJsonDataStructure(ObjectNode jobControlObj) {
 		JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
+		jsonMgr.setMetadataCategories(DocumentManager.Metadata.COLLECTIONS, DocumentManager.Metadata.PERMISSIONS);
 
-		try (InputStream csvStream = openStream(csvFile);
-				InputStream jobStream = openStream(JobRunner.jobFileFor(csvFile));) {
-			jobRunner.run(client, csvStream, jobStream);
+      ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
 
-			ObjectMapper objectMapper = new ObjectMapper();
+      int linenumber = 0;
+      try (LineNumberReader lnr = new LineNumberReader(new InputStreamReader(openStream(csvFile)))) {
+         while (lnr.readLine() != null) {
+            linenumber++;
+         }
+      } catch(Exception ex) {
+         ex.printStackTrace();
+         fail("test exception");
+      }
 
-			ObjectNode jobControlObj = (ObjectNode) objectMapper.readTree(jobStream);
-			ObjectNode jobDef = (ObjectNode) jobControlObj.get("job");
+      DocumentPage docPage = null;
+      try {
+         StructuredQueryBuilder queryBldr = new StructuredQueryBuilder();
+         // get only one result
+         jsonMgr.setPageLength(1);
 
-			StructuredQueryBuilder queryBldr = new StructuredQueryBuilder();
-			// get only one result
-			jsonMgr.setPageLength(1);
-			
-			// match documents that are in the job collection other than the before or after document
-			DocumentPage docPage = jsonMgr.search(
-					queryBldr.andNot(queryBldr.collection(JobRunner.getJobCollection(jobDef.path("id").asText())),
-							queryBldr.document(JobRunner.getBeforeJobDocumentUri(jobDef.path("id").asText()),
-									JobRunner.getAfterJobDocumentUri(jobDef.path("id").asText()))),
-					1);
-			long docCount = docPage.getTotalSize();
+         // match documents that are in the job collection other than the before or after document
+         docPage = jsonMgr.search(
+               queryBldr.andNot(queryBldr.collection(JobRunner.getJobCollection(jobDef.path("id").asText())),
+                     queryBldr.document(JobRunner.getBeforeJobDocumentUri(jobDef.path("id").asText()),
+                           JobRunner.getAfterJobDocumentUri(jobDef.path("id").asText()))),
+               1);
+         long docCount = docPage.getTotalSize();
 
-			FileReader fr = new FileReader(csvFile);
-			LineNumberReader lnr = new LineNumberReader(fr);
-			int linenumber = 0;
-			while (lnr.readLine() != null) {
-				linenumber++;
-			}
-			lnr.close();
-			// compare with the number of CSV records excluding the CSV header
-			assertEquals(docCount, (linenumber - 1));
-			
-			JacksonHandle firstDocHandle = docPage.nextContent(new JacksonHandle());
-			JsonNode firstObject = firstDocHandle.get();
+         // compare with the number of CSV records excluding the CSV header
+         assertEquals(docCount, (linenumber - 1));
 
-			// verify the record metadata and the instance keys by navigating the nodes using Jackson methods
-			JsonNode metadataNode = firstObject.get("metadata");
-			assertNotNull(metadataNode);
-			assertNotNull(metadataNode.get(0));
-			
-			JsonNode instanceNode = firstObject.get("instance");
-			assertNotNull(instanceNode);
-			assertNotNull(instanceNode.get(0));
+         DocumentRecord docRecord = docPage.next();
 
-		} catch(Exception ex) {
-			ex.printStackTrace();
-		}
+         DocumentMetadataHandle firstMetadata = docRecord.getMetadata(new DocumentMetadataHandle());
+         assertTrue(firstMetadata.getCollections().contains(JobRunner.getJobCollection(jobDef.path("id").asText())));
+         assertTrue(firstMetadata.getPermissions().containsKey(role));
+         assertTrue(firstMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.READ));
+         assertTrue(firstMetadata.getPermissions().get(role).contains(DocumentMetadataHandle.Capability.UPDATE));
+
+         JacksonHandle firstDocHandle = docRecord.getContent(new JacksonHandle());
+         JsonNode firstObject = firstDocHandle.get();
+
+         // verify the record metadata and the instance keys by navigating the nodes using Jackson methods
+         JsonNode metadataNode = firstObject.get("metadata");
+         assertNotNull(metadataNode);
+         assertNotNull(metadataNode.fields());
+
+         JsonNode instanceNode = firstObject.get("instance");
+         assertNotNull(instanceNode);
+         assertNotNull(instanceNode.fields());
+      } catch(Exception ex) {
+         ex.printStackTrace();
+         fail("test exception");
+      } finally {
+         if (docPage != null) {
+            docPage.close();
+         }
+      }
 	}
 	
 	@After

@@ -1,14 +1,14 @@
 {
   "job": {
     "id": "9a8351a1-31bc-417b-96fa-d27525e6664d",
-    "metatadata": {
+    "metadata": {
       "reconciliation": {
         "minimumRecords": 1960
       }
     }
   },
   "record": {
-    "metatadata": {
+    "metadata": {
       "provenance": {
         "wasGeneratedBy": "JUnit test"
       }

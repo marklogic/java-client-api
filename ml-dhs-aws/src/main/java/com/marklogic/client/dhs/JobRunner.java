@@ -73,23 +73,11 @@ public void setBatchSize(int batchSize) {
 	this.batchSize = batchSize;
 }
 
-// TODO: pass in environmental information from AWS for job and record metadata
    public JobRunner() {
-      this(null);
-   }
-   public JobRunner(String jobId) {
-      if (jobId == null) {
-         jobId = UUID.randomUUID().toString();
-      }
-      this.jobId = jobId;
-      this.jobDirectory = "/jobs/"+jobId+"/";
    }
 
    public String getJobId() {
       return jobId;
-   }
-   public String getJobDirectory() {
-      return jobDirectory;
    }
 
 public void run(DatabaseClient client, InputStream csvRecords, InputStream jobControl) throws IOException {
@@ -126,8 +114,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
           ObjectMapper objectMapper = new ObjectMapper();
           
           ObjectNode jobControlObj = (ObjectNode) objectMapper.readTree(jobControl);
-          ObjectNode jobDef        = (ObjectNode) jobControlObj.get("job");
-          ObjectNode recordDef     = (ObjectNode) jobControlObj.get("record");
+         // TODO: cope with MissingNode on all path() calls
+          ObjectNode jobDef        = (ObjectNode) jobControlObj.path("job");
+          ObjectNode recordDef     = (ObjectNode) jobControlObj.path("record");
           
           if(jobDef.isMissingNode()) {
          	 throw new MarkLogicIOException("job Node cannot be empty.");
@@ -136,6 +125,8 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
           if(id==null || id.length()==0) {
          	 throw new MarkLogicIOException("job id cannot be empty or Null");
           }
+         this.jobId = id;
+
   		JsonNode metadataNode = jobDef.path("metadata");
 		DocumentMetadataHandle documentMetadata = new DocumentMetadataHandle();
 		documentMetadata.withCollections(getJobCollection(id));
@@ -144,18 +135,14 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 			permissions.add(temp, Capability.READ, Capability.UPDATE);
 		}
          
-// TODO: permissions
 
          WriteBatcher batcher = moveMgr.newWriteBatcher()
-// TODO: sized to 500 in real thing?
                .withBatchSize(getBatchSize());
-// TODO: intermittent logging using logger
-// https://docs.aws.amazon.com/AmazonECS/latest/developerguide/using_awslogs.html
          if(logger!=null) {
         	 batcher = batcher.onBatchSuccess(
                      batch -> {
                     	 if(getBatchSize()==1) {
-                    		 System.out.println("Success for the batch-" + batch.getJobBatchNumber() + ". Total successes - 1");
+                         logger.info("Success for the batch-" + batch.getJobBatchNumber() + ". Total successes - 1");
                     	 } else {
                     		 if(jobRunnerVariables.totalSuccessCount.equals(0)){
                     			 logger.info("Success for batch number - " + batch.getJobBatchNumber());
@@ -170,7 +157,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                .onBatchFailure(
                      (batch, throwable) -> {
                     	 if(getBatchSize()==1) {
-                    		 System.out.println("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
+                         logger.info("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
                     	 } else {
                     		 if(jobRunnerVariables.totalFailureCount.equals(0)){
                     			 logger.info("Failure for the batch-" + batch.getJobBatchNumber());
@@ -181,11 +168,12 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
                     		 }
                     		 jobRunnerVariables.totalFailureCount.incrementAndGet();
                     	 }
+                    	 // TODO: using logger
                     	 System.out.println(throwable.getStackTrace());
                      });
 
          }
-         ObjectLoader loader = new ObjectLoader(batcher, recordDef, getJobDirectory(), documentMetadata);
+         ObjectLoader loader = new ObjectLoader(batcher, recordDef, getJobDirectory(id), documentMetadata);
          CSVConverter converter = new CSVConverter();  
 
          Iterator<ObjectNode> itr = converter.convertObject(csvRecords);
@@ -255,7 +243,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
          logger.info("Writing the after job document to the database. AfterDocId - "+afterDocId);
          jsonMgr.write(afterDocId, afterDocumentMetadata, jacksonHandle);
          logger.info("Finished writing the after job document at - " + LocalDateTime.now().toString() + " Number of records written to the database - " + loader.getCount());
-         
+
       } catch(Exception e){
     	  logger.error(e.getMessage());
       }finally {
@@ -264,7 +252,6 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
       }
    }
 
-// TODO: archaic - was part of the staging directory concept
    public static String jobFileFor(String csvFile) {
       if (!csvFile.endsWith(".csv")) {
          throw new IllegalArgumentException("Invalid object key: "+csvFile);
@@ -277,7 +264,10 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
    public static String getAfterJobDocumentUri(String id) {
 	   return ("/jobs/"+id+"/afterJob.json");
    }
-   public static String getJobCollection(String docUri) {
-	   return ("/jobs/"+ docUri);
+   public static String getJobCollection(String id) {
+	   return ("/jobs/"+ id);
+   }
+   public static String getJobDirectory(String id) {
+      return "/jobs/"+id+"/";
    }
 }

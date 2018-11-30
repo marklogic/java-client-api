@@ -42,7 +42,6 @@ public ObjectLoader(WriteBatcher batcher, ObjectNode recordDef, String directory
       recordData.set("metadata", this.recordMetadata);
       recordData.set("instance", record);
 
-// TODO: wrap per-record metadata and record in DHF envelope
       JacksonHandle handle = new JacksonHandle(recordData);
       JSONWriteOperation operation = new JSONWriteOperation(uri, documentMetadata, handle);
       batcher.add(operation);
