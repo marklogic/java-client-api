@@ -47,13 +47,11 @@ public class TestJobRunner {
    public void testRun() throws IOException {
       String jobFile = JobRunner.jobFileFor(csvFile);
 
+      String jobCollection = null;
+
       JobRunner jobRunner = new JobRunner();
       jobRunner.setLogger(logger);
-
-      String[] roles = { role };
-      jobRunner.setRoles(roles);
-
-      String jobCollection = null;
+      jobRunner.setRoles(role);
 
       try (
             InputStream csvStream = openStream(csvFile);
@@ -78,6 +76,7 @@ public class TestJobRunner {
             QueryManager queryMgr = client.newQueryManager();
             DeleteQueryDefinition deleteDef = queryMgr.newDeleteDefinition();
             deleteDef.setCollections(jobCollection);
+            // comment to inspect the database after running the test
             queryMgr.delete(deleteDef);
          }
       }
