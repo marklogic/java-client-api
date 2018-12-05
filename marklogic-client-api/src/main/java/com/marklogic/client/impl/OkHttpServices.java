@@ -552,7 +552,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
 
     if (status == STATUS_NOT_FOUND) {
@@ -655,6 +655,12 @@ public class OkHttpServices implements RESTServices {
   }
 
   private Response sendRequestWithRetry(Request.Builder requestBldr, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer) {
+    return sendRequestWithRetry(requestBldr, true, doFunction, resendableConsumer);
+  }
+
+  private Response sendRequestWithRetry(
+        Request.Builder requestBldr, boolean isRetryable, Function<Request.Builder, Response> doFunction, Consumer<Boolean> resendableConsumer
+  ) {
     Response response = null;
     int status = -1;
     long startTime = System.currentTimeMillis();
@@ -674,11 +680,12 @@ public class OkHttpServices implements RESTServices {
        */
       response = doFunction.apply(requestBldr);
       status = response.code();
-      if (!retryStatus.contains(status)) {
+      if (!isRetryable || !retryStatus.contains(status)) {
         if (isFirstRequest()) setFirstRequest(false);
         /*
-         * If we don't get a service unavailable status, we break
-         * from the retrying loop and return the response
+         * If we don't get a service unavailable status or if the request
+         * is not retryable, we break from the retrying loop and return
+         * the response
          */
         break;
       }
@@ -753,7 +760,8 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
+
     int status = response.code();
     if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
@@ -1029,7 +1037,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.addHeader(HEADER_ACCEPT, multipartMixedWithBoundary()).get());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     if (status == STATUS_NOT_FOUND) {
       throw new ResourceNotFoundException(
@@ -1147,7 +1155,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.head().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doHeadFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doHeadFunction, null);
     int status = response.code();
     if (status != STATUS_OK) {
       if (status == STATUS_NOT_FOUND) {
@@ -1684,7 +1692,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.post(RequestBody.create(null, "")).build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, false, doPostFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2285,7 +2293,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.delete().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
     if (status == STATUS_FORBIDDEN) {
       throw new ForbiddenUserException("User is not allowed to delete",
@@ -2438,21 +2446,21 @@ public class OkHttpServices implements RESTServices {
     requestBldr = addTelemetryAgentId(requestBldr);
 
     final HandleImplementation tempBaseHandle = baseHandle;
-    Function<Request.Builder, Response> doGetFunction =
+
+    Function<Request.Builder, Response> doFunction = (baseHandle == null) ?
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
           return doGet(funcBuilder);
         }
-      };
-    Function<Request.Builder, Response> doPostFunction =
+      } :
       new Function<Request.Builder, Response>() {
         public Response apply(Request.Builder funcBuilder) {
           return doPost(null, funcBuilder.header(HEADER_CONTENT_TYPE, tempBaseHandle.getMimetype()),
             tempBaseHandle.sendContent());
         }
       };
-    Response response = baseHandle == null ? sendRequestWithRetry(requestBldr, doGetFunction, null)
-      : sendRequestWithRetry(requestBldr, doPostFunction, null);
+
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2502,7 +2510,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2545,7 +2553,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status == STATUS_FORBIDDEN) {
@@ -2590,7 +2598,7 @@ public class OkHttpServices implements RESTServices {
         return sendRequestOnce(funcBuilder.get().build());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
 
     if (status != STATUS_OK) {
@@ -3007,7 +3015,7 @@ public class OkHttpServices implements RESTServices {
         return doGet(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
@@ -3049,7 +3057,7 @@ public class OkHttpServices implements RESTServices {
         return doGet(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doGetFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doGetFunction, null);
     int status = response.code();
     checkStatus(response, status, "read", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
@@ -3096,7 +3104,7 @@ public class OkHttpServices implements RESTServices {
         return doPut(reqlog, funcBuilder, inputBase.sendContent());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPutFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPutFunction, resendableConsumer);
     int status = response.code();
 
     checkStatus(response, status, "write", "resource", path,
@@ -3259,7 +3267,7 @@ public class OkHttpServices implements RESTServices {
       }
     };
 
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
     int status = response.code();
     checkStatus(response, status, operation, "resource", path,
       ResponseStatus.OK_OR_CREATED_OR_NO_CONTENT);
@@ -3798,7 +3806,7 @@ public class OkHttpServices implements RESTServices {
           inputBase.sendContent());
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doPostFunction, resendableConsumer);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doPostFunction, resendableConsumer);
     int status = response.code();
 
     checkStatus(response, status, "apply", "resource", path,
@@ -3909,7 +3917,7 @@ public class OkHttpServices implements RESTServices {
         return doDelete(funcBuilder);
       }
     };
-    Response response = sendRequestWithRetry(requestBldr, doDeleteFunction, null);
+    Response response = sendRequestWithRetry(requestBldr, (transaction == null), doDeleteFunction, null);
     int status = response.code();
     checkStatus(response, status, "delete", "resource", path,
       ResponseStatus.OK_OR_NO_CONTENT);
