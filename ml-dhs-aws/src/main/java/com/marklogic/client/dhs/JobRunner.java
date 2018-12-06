@@ -151,7 +151,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 						jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
 						jobRunnerVariables.lastFailureLogTime.set(System.currentTimeMillis());
 					} else {
-						long lastTime = jobRunnerVariables.lastSuccessLogTime.longValue();
+						long lastTime = jobRunnerVariables.lastFailureLogTime.longValue();
 						long currentTime = System.currentTimeMillis();
 						long threshhold = lastTime + (getTimeIntervalInSeconds() * 1000);
 						if (threshhold <= currentTime
@@ -162,7 +162,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 									+ (jobRunnerVariables.totalFailureCount.get()
 											- jobRunnerVariables.lastFailureCount.get() + 1)
 									+ ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
-							jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+							jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalFailureCount.longValue() + 1);
 							jobRunnerVariables.lastFailureLogTime.set(System.currentTimeMillis());
 						}
 					}
