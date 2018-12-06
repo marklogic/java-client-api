@@ -148,7 +148,7 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 				}).onBatchFailure((batch, throwable) -> {
 					if (getBatchSize() == 1) {
 						logger.info("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
-						jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+						jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalFailureCount.longValue() + 1);
 						jobRunnerVariables.lastFailureLogTime.set(System.currentTimeMillis());
 					} else {
 						long lastTime = jobRunnerVariables.lastFailureLogTime.longValue();
