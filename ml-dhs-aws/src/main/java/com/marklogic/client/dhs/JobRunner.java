@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.util.Iterator;
-import java.util.UUID;
 import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
@@ -85,29 +84,15 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
       JSONDocumentManager jsonMgr = client.newJSONDocumentManager();
       Long startTime = System.currentTimeMillis();
       
-      final class JobRunnerVariables{
-    	  AtomicLong lastSuccessCount;
-    	  AtomicLong lastFailureCount;
-    	  AtomicLong totalSuccessCount;
-    	  AtomicLong totalFailureCount;
-
-			synchronized boolean trackLastSuccessCount() {
-				if (((System.currentTimeMillis() - getLastSuccessLogTime()) / 1000) >= getTimeIntervalInSeconds()) {
-					setLastSuccessLogTime(System.currentTimeMillis());
-					lastSuccessCount.set(totalSuccessCount.longValue() + 1);
-					return true;
-				}
-				return false;
-			}
-    	  synchronized boolean trackLastFailureCount(){
-    		  if(((System.currentTimeMillis() - getLastFailureLogTime())/1000) >= getTimeIntervalInSeconds()) {
-    			  setLastFailureLogTime(System.currentTimeMillis());
-    			  lastFailureCount.set(totalFailureCount.longValue() + 1);
-    			  return true;
-    		  }
-    		  return false;
-    	  }
-      }
+		final class JobRunnerVariables {
+			AtomicLong lastSuccessCount = new AtomicLong();
+			AtomicLong lastFailureCount = new AtomicLong();
+			AtomicLong totalSuccessCount = new AtomicLong();
+			AtomicLong totalFailureCount = new AtomicLong();
+			AtomicLong lastSuccessLogTime = new AtomicLong();
+			AtomicLong lastFailureLogTime = new AtomicLong();
+		}
+		
       final JobRunnerVariables jobRunnerVariables = new JobRunnerVariables();
       
       try {
@@ -134,43 +119,56 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 		for(String temp:getRoles()) {
 			permissions.add(temp, Capability.READ, Capability.UPDATE);
 		}
-         
 
          WriteBatcher batcher = moveMgr.newWriteBatcher()
                .withBatchSize(getBatchSize());
-         if(logger!=null) {
-        	 batcher = batcher.onBatchSuccess(
-                     batch -> {
-                    	 if(getBatchSize()==1) {
-                         logger.info("Success for the batch-" + batch.getJobBatchNumber() + ". Total successes - 1");
-                    	 } else {
-                    		 if(jobRunnerVariables.totalSuccessCount.equals(0)){
-                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber());
-                    			 setLastSuccessLogTime(System.currentTimeMillis());
-                    			 jobRunnerVariables.lastSuccessCount.set(1);;
-                    		 } else if(jobRunnerVariables.trackLastSuccessCount()) {
-                    			 logger.info("Success for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalSuccessCount.get() - jobRunnerVariables.lastSuccessCount.get() + 1) + ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
-                    		 } 
-                    		 jobRunnerVariables.totalSuccessCount.incrementAndGet();
-                    	 }
-                     })
-               .onBatchFailure(
-                     (batch, throwable) -> {
-                    	 if(getBatchSize()==1) {
-                         logger.info("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
-                    	 } else {
-                    		 if(jobRunnerVariables.totalFailureCount.equals(0)){
-                    			 logger.info("Failure for the batch-" + batch.getJobBatchNumber());
-                    			 setLastFailureLogTime(System.currentTimeMillis());
-                    			 jobRunnerVariables.lastFailureCount.set(1);;
-                    		 } else if(jobRunnerVariables.trackLastFailureCount()) {
-                    			 logger.info("Failure for batch number - " + batch.getJobBatchNumber() + ". Batch running since last log - " + (jobRunnerVariables.totalFailureCount.get() - jobRunnerVariables.lastFailureCount.get() + 1) + ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
-                    		 }
-                    		 jobRunnerVariables.totalFailureCount.incrementAndGet();
-                    	 }
-                    	 // TODO: using logger
-                    	 System.out.println(throwable.getStackTrace());
-                     });
+			if (logger != null) {
+				batcher = batcher.onBatchSuccess(batch -> {
+					if (getBatchSize() == 1) {
+						logger.info("Success for the batch-" + batch.getJobBatchNumber() + ". Total successes - 1");
+						jobRunnerVariables.lastSuccessCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+						jobRunnerVariables.lastSuccessLogTime.set(System.currentTimeMillis());
+					} else {
+						long lastTime = jobRunnerVariables.lastSuccessLogTime.longValue();
+						long currentTime = System.currentTimeMillis();
+						long threshhold = lastTime + (getTimeIntervalInSeconds() * 1000);
+						if (threshhold <= currentTime
+								&& jobRunnerVariables.lastSuccessLogTime.compareAndSet(lastTime, currentTime)) {
+							logger.info("Success for batch number - " + batch.getJobBatchNumber()
+									+ ". Batch running since last log - "
+									+ (jobRunnerVariables.totalSuccessCount.get()
+											- jobRunnerVariables.lastSuccessCount.get() + 1)
+									+ ". Total successes - " + jobRunnerVariables.totalSuccessCount + 1);
+							jobRunnerVariables.lastSuccessCount
+									.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+							jobRunnerVariables.lastSuccessLogTime.set(System.currentTimeMillis());
+						}
+					}
+					jobRunnerVariables.totalSuccessCount.incrementAndGet();
+				}).onBatchFailure((batch, throwable) -> {
+					if (getBatchSize() == 1) {
+						logger.info("Failure for the batch-" + batch.getJobBatchNumber() + ". Total failures - 1");
+						jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+						jobRunnerVariables.lastFailureLogTime.set(System.currentTimeMillis());
+					} else {
+						long lastTime = jobRunnerVariables.lastSuccessLogTime.longValue();
+						long currentTime = System.currentTimeMillis();
+						long threshhold = lastTime + (getTimeIntervalInSeconds() * 1000);
+						if (threshhold <= currentTime
+								&& jobRunnerVariables.lastFailureLogTime.compareAndSet(lastTime, currentTime)) {
+
+							logger.info("Failure for batch number - " + batch.getJobBatchNumber()
+									+ ". Batch running since last log - "
+									+ (jobRunnerVariables.totalFailureCount.get()
+											- jobRunnerVariables.lastFailureCount.get() + 1)
+									+ ". Total failures - " + jobRunnerVariables.totalFailureCount + 1);
+							jobRunnerVariables.lastFailureCount.set(jobRunnerVariables.totalSuccessCount.longValue() + 1);
+							jobRunnerVariables.lastFailureLogTime.set(System.currentTimeMillis());
+						}
+					}
+					jobRunnerVariables.totalFailureCount.incrementAndGet();
+					logger.error("Exception Occured", throwable.getMessage());
+				});
 
          }
          ObjectLoader loader = new ObjectLoader(batcher, recordDef, getJobDirectory(id), documentMetadata);
