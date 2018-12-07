@@ -127,10 +127,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 						long lastTime = jobRunnerVariables.lastSuccessLogTime.longValue();
 						long currentTime = System.currentTimeMillis();
 						long threshhold = lastTime + (getTimeIntervalInSeconds() * 1000);
-						jobRunnerVariables.totalSuccessCount.incrementAndGet();
+						long currentTotalSuccessCount = jobRunnerVariables.totalSuccessCount.incrementAndGet();
 						if (threshhold <= currentTime
 								&& jobRunnerVariables.lastSuccessLogTime.compareAndSet(lastTime, currentTime)) {
-							long currentTotalSuccessCount = jobRunnerVariables.totalSuccessCount.get();
 							logger.info("Success for batch number - " + batch.getJobBatchNumber()
 									+ ". Batch running since last log - "
 									+ (currentTotalSuccessCount - jobRunnerVariables.lastSuccessCount.get())
@@ -141,10 +140,9 @@ public void run(DatabaseClient client, InputStream csvRecords, InputStream jobCo
 						long lastTime = jobRunnerVariables.lastFailureLogTime.longValue();
 						long currentTime = System.currentTimeMillis();
 						long threshhold = lastTime + (getTimeIntervalInSeconds() * 1000);
-						jobRunnerVariables.totalFailureCount.incrementAndGet();
+						long currentTotalFailureCount = jobRunnerVariables.totalFailureCount.incrementAndGet();
 						if (threshhold <= currentTime
 								&& jobRunnerVariables.lastFailureLogTime.compareAndSet(lastTime, currentTime)) {
-							long currentTotalFailureCount = jobRunnerVariables.totalFailureCount.get();
 							logger.info("Failure for batch number - " + batch.getJobBatchNumber()
 									+ ". Batch running since last log - "
 									+ (currentTotalFailureCount - jobRunnerVariables.lastFailureCount.get())
