@@ -41,8 +41,16 @@ public class TestJobRunner {
 		public void status(ObjectNode obj) {
 			countSuccesses++;
 			assertNotNull(obj);
-			assertNotNull(obj.path("Timestamp"));
-			assertNotNull(obj.path("Current status"));
+			assertNotNull(obj.get("Timestamp"));
+			assertNotNull(obj.get("Current status"));
+			if (!obj.path("Current status").isMissingNode()
+					&& obj.get("Current status").textValue().equals("Batch Success Recorded.")) {
+				assertNotNull(obj.get("Estimated total bytes in the CSV file"));
+				assertNotNull(obj.get("Bytes read so far"));
+				assertNotNull(obj.get("Success Batch Number"));
+				assertNotNull(obj.get("Batch running since last log"));
+				assertNotNull(obj.get("Total successes"));
+			}
 		}
 
 		@Override

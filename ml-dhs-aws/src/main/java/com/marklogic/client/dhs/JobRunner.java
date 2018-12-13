@@ -138,6 +138,7 @@ public class JobRunner {
 							&& jobRunnerVariables.lastSuccessLogTime.compareAndSet(lastTime, currentTime)) {
 						ObjectNode statusNode = new ObjectMapper().createObjectNode();
 						statusNode.put("Timestamp", new Timestamp(System.currentTimeMillis()).toString());
+						statusNode.put("Current status", "Batch Success Recorded.");
 						statusNode.put("Estimated total bytes in the CSV file", totalCsvBytes);
 						statusNode.put("Bytes read so far", converter.getByteCount());
 						statusNode.put("Success Batch Number", batch.getJobBatchNumber());
@@ -201,6 +202,11 @@ public class JobRunner {
 			jobLogger.status(statusNode);
 
 			jsonMgr.write(beforeDocId, beforeDocumentMetadata, jacksonHandle);
+			
+			statusNode = new ObjectMapper().createObjectNode();
+			statusNode.put("Timestamp", new Timestamp(System.currentTimeMillis()).toString());
+			statusNode.put("Current status", "Before job document written successfully.");
+			jobLogger.status(statusNode);
 
 			statusNode = new ObjectMapper().createObjectNode();
 			statusNode.put("Timestamp", new Timestamp(System.currentTimeMillis()).toString());
@@ -257,7 +263,7 @@ public class JobRunner {
 
 			statusNode = new ObjectMapper().createObjectNode();
 			statusNode.put("Timestamp", new Timestamp(System.currentTimeMillis()).toString());
-			statusNode.put("Current status", "Finished writing the after job document.");
+			statusNode.put("Current status", "After job document written successfully.");
 			statusNode.put(" Number of records written to the database - ", loader.getCount());
 			jobLogger.status(statusNode);
 
