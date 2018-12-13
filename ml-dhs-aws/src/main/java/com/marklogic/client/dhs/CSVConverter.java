@@ -29,11 +29,11 @@ public class CSVConverter {
 
 // TODO: in job control file, expose schema control over whether the value is a JSON string, number, or boolean
 	public Iterator<ObjectNode> convertObject(InputStream csvSource) throws IOException {
-		CountInputStream countInputStream = new CountInputStream(csvSource);
+		this.countInputStream =  new CountInputStream(csvSource);
 		CsvSchema firstLineSchema = CsvSchema.emptySchema().withHeader();
 
 		Iterator<ObjectNode> objectItr = csvMapper.readerFor(ObjectNode.class).with(firstLineSchema)
-				.readValues(countInputStream);
+				.readValues(this.countInputStream);
 		return objectItr;
 	}
 
