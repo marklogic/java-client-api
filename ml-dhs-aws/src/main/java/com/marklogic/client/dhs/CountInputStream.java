@@ -25,9 +25,6 @@ public class CountInputStream extends FilterInputStream {
 
 	@Override
 	public int read() throws IOException {
-		int readLength = super.read();
-		if (readLength > 0)
-			byteCount += readLength;
 		return addToByteCount(super.read());
 	}
 
